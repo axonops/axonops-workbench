@@ -1,2 +1,2 @@
 # axonops-developer-workbench-cassandra
-AxonOps Developer Workbenchfor Apache Cassandra
+AxonOps Developer Workbench for Apache Cassandra®

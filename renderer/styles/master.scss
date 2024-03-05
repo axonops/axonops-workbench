@@ -7,7 +7,6 @@
 /**
 * Import different components
 */
-
 @import 'components/material_design';
 @import 'components/modals';
 
@@ -1981,7 +1980,8 @@ div.toast-container {
         }
       }
 
-      &.neutral, &.bg-progress {
+      &.bg-progress,
+      &.neutral {
         div.bar {
           background: #929292;
         }

@@ -1,0 +1,364 @@
+// Mixin to change the scrollbar's appearence
+@mixin scrollbar($thumbColor, $trackColor) {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    margin-left: -5px;
+  }
+
+  &::-webkit-scrollbar-button {
+    width: 0;
+    height: 1px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $thumbColor;
+    border: 0 none #ffffff;
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $trackColor;
+    border: 0 none #ffffff;
+    border-radius: 2px;
+  }
+
+  &::-webkit-scrollbar-track:hover {
+    background: $trackColor;
+  }
+
+  &::-webkit-scrollbar-track:active {
+    background: darken($trackColor, 1);
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+// Mixin for a faster font defining
+@mixin fontface($name, $folder, $fontname, $format, $style, $weight) {
+  font-family: '#{$name}';
+
+  @if $folder != 'none' {
+    src: url("../assets/fonts/#{$folder}/#{$fontname}.#{$format}");
+  } @else {
+    src: url("../assets/fonts/#{$fontname}.#{$format}");
+  }
+  font: {
+    style: $style;
+    weight: $weight;
+    display: auto;
+  }
+}
+// Mixin to add either absolute or fixed position
+@mixin position($pos: absolute, $top: 0, $bottom: 0, $right: 0, $left: 0) {
+  position: $pos;
+  top: $top;
+  bottom: $bottom;
+  right: $right;
+  left: $left;
+  margin: auto;
+}
+/**
+* Styling applied on a wide range of elements
+* Localization sub-processes for elements - capitalize and uppercase characters -
+*/
+[mulang] {
+  &[capitalize] {
+    text-transform: capitalize;
+  }
+
+  &[uppercase] {
+    text-transform: uppercase;
+  }
+}
+/**
+* For all elements in the UI
+*/
+* {
+  @include scrollbar(#515151, #201f23);
+  /**
+  * For all columns inside a `table` element
+  */
+  &[class^='col-'] {
+    position: relative;
+    padding: 0;
+
+    &.center {
+      display: flex;
+      flex: {
+        direction: column;
+        wrap: nowrap;
+      }
+      justify-content: center;
+      align-items: flex-end;
+
+      div.box-row {
+        margin-bottom: 10px;
+      }
+    }
+  }
+}
+/**
+* For JSTree JQuery plugin
+*/
+.jstree-node,
+li.jstree-node {
+  font: {
+    family: 'Main', sans-serif;
+    size: 14px;
+  }
+}
+
+.jstree-anchor {
+  span {
+    font-weight: 500;
+  }
+}
+
+a.jstree-anchor {
+  color: #e3e3e3 !important;
+  font-size: 100%;
+  line-height: 24px !important;
+  opacity: 0.85;
+  text-shadow: 0 0;
+
+  &.jstree-clicked,
+  &.jstree-hovered {
+    background: #2c2c2c;
+    border-radius: 4px;
+    box-shadow: inset 0 0 0;
+
+    &.jstree-clicked {
+      background: #3e3e3e;
+    }
+  }
+}
+
+.jstree-icon.jstree-themeicon {
+  background-size: 50% !important;
+  opacity: 0.8;
+}
+
+.material-icons.for-treeview {
+  position: relative;
+  left: -5px;
+  vertical-align: middle;
+  transform: scale(0.7);
+}
+
+.jstree-default-dark a {
+  color: #dfdfdf !important;
+}
+
+.jstree-icon.jstree-themeicon[style*="theme/extra"] {
+  position: relative;
+  left: -1px;
+  background-size: 100% !important;
+  opacity: 0.7;
+}
+/**
+* For different elements in the UI
+*/
+span.reveal-password {
+  position: relative;
+  bottom: 4px;
+
+  button {
+    transform: scale(0.8);
+    height: 64px;
+    border-radius: 50%;
+    overflow: hidden;
+
+    span.mdc-button__label {
+      transform: scale(1.2);
+    }
+  }
+}
+
+.box-row.max {
+  width: 100%;
+}
+
+button:disabled {
+  background-color: #9e9e9e !important;
+  filter: grayscale(1) invert(1) !important;
+  color: #292929 !important;
+}
+
+.force_width {
+  width: 31.25px !important;
+}
+
+div.row {
+  position: relative;
+}
+
+div.click {
+  &[for-info-key],
+  &[for-input] {
+    @include position();
+    cursor: pointer;
+  }
+}
+
+a {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+webview {
+  @include position();
+}
+
+.ui-resizable-handle {
+  z-index: 0 !important;
+  transition: background 0.2s ease-in-out;
+}
+
+div.row {
+  width: 100%;
+}
+
+.line-forbidden {
+  background: rgba(167,35,35,.1);
+}
+
+.forbidden {
+  border-radius: 50%;
+  background: rgba(255, 0, 0, 0.6);
+  transform: scale(0.55);
+  margin-left: 20px;
+}
+
+.diff {
+  background: rgba(255,255,255,.15);
+}
+
+div.query-tracing div.mdc-data-table {
+  margin-bottom: 30px;
+
+  div.mdc-data-table__table-container {
+    table {
+      width: 100%;
+
+      tbody tr {
+        td {
+          span.color {
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            border-radius: 3px;
+            vertical-align: middle;
+            margin-right: 5px;
+          }
+        }
+      }
+    }
+  }
+}
+
+div.invalid-feedback,
+div.valid-feedback {
+  font-size: 80% !important;
+}
+
+div.modal-body {
+  padding-top: 30px;
+}
+
+div.form-outline {
+  div.clickable {
+    @include position();
+    cursor: pointer;
+  }
+
+  &.file {
+    display: flex;
+    flex: {
+      direction: row;
+      wrap: nowrap;
+    }
+    align: {
+      items: center;
+      content: center;
+    }
+    justify-content: flex-start;
+  }
+}
+
+div.clr-picker {
+  z-index: 10000;
+}
+
+.tooltip {
+  font-family: 'Main', 'Minor', 'SimplifiedChinese', sans-serif;
+}
+
+div.toast-header button.navigation {
+  position: relative;
+  display: flex;
+  width: 18px;
+  height: 1em;
+  flex: {
+    direction: column;
+    wrap: nowrap;
+  }
+  align-items: center;
+  justify-content: center;
+  margin-right: 3px;
+  color: #000;
+  filter: invert(1) grayscale(100%) brightness(200%);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  opacity: 0.5;
+  box-sizing: content-box;
+  padding: 0.25em;
+  border: 0;
+  background: transparent;
+
+  ion-icon {
+    @include position();
+    transform: rotate(75deg);
+    font-size: 130%;
+    margin-top: 2px;
+  }
+
+  &:hover {
+    opacity: 0.75;
+  }
+
+  &:active,
+  &:focus {
+    opacity: 1;
+  }
+}
+
+input[type="number"] {
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+div.row {
+  --mdb-gutter-x: 0;
+}
+
+div.small-hint {
+  position: absolute;
+  opacity: 0.7;
+  font-size: 90%;
+}
+
+div.toast[toast-id] {
+  div.toast-body {
+    max-height: 200px;
+    overflow: auto;
+
+    code {
+      color: inherit;
+    }
+  }
+}

@@ -1,0 +1,45 @@
+/*
+* Inter font
+* https://fonts.google.com/specimen/Inter
+* Font name: 'Main'
+*/
+$mainWeights: 'thin', 'extralight', 'light', 'regular', 'medium', 'semibold', 'bold', 'extrabold', 'black';
+@for $i from 1 through length($mainWeights) {
+  $weight: nth($mainWeights, $i);
+  @font-face {
+    @include fontface('Main', 'inter', $weight, 'otf', normal, $i * 100)
+  }
+}
+/*
+* IBM Plex Sans Arabic
+* https://fonts.google.com/specimen/IBM+Plex+Sans+Arabic
+* Font name: 'Minor'
+*/
+$minorWeights: 'thin', 'extralight', 'light', 'regular', 'medium', 'semibold', 'bold';
+@for $i from 1 through length($minorWeights) {
+  $weight: nth($minorWeights, $i);
+  @font-face {
+    @include fontface('Minor', 'ibm_plex_sans_arabic', $weight, 'ttf', normal, $i * 100)
+  }
+}
+/*
+* Noto Sans Simplified Chinese
+* https://fonts.google.com/noto/specimen/Noto+Sans+SC?subset=chinese-simplified
+* Font name: 'SimplifiedChinese'
+*/
+@font-face {
+  @include fontface('SimplifiedChinese', 'noto_sans_sc', 'regular', 'ttf', normal, 400)
+}
+/*
+* JetBrains Mono font
+* https://www.jetbrains.com/lp/mono
+* Font name: 'Terminal'
+*/
+$terminalWeights: ('regular', 400), ('medium', 500), ('bold', 700);
+@each $weight in $terminalWeights {
+  $name: nth($weight, 1);
+  $num: nth($weight, 2);
+  @font-face {
+    @include fontface('Terminal', 'jetbrains_mono', $name, 'ttf', normal, $num)
+  }
+}

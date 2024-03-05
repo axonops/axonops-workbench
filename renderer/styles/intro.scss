@@ -1,0 +1,97 @@
+body,
+html {
+  background-color: transparent;
+}
+
+body {
+  pointer-events: none;
+  margin-top: -1px;
+}
+
+center {
+  position: relative;
+  display: flex;
+  background: #071534;
+  padding: 10px;
+  border-radius: 40px;
+  opacity: 0;
+  animation: show 0.25s forwards ease-in-out;
+
+  div.icon img {
+    width: 50px;
+  }
+
+  div.info {
+    display: flex;
+    font-weight: 600;
+    flex: {
+      direction: column;
+      wrap: nowrap;
+    }
+    justify-content: center;
+    margin-left: 13px;
+    color: #fff;
+    text-align: left;
+
+    div#title {
+      position: relative;
+      top: 4px;
+      left: -3px;
+      font-size: 109%;
+      transform: translateX(-2px);
+      opacity: 0;
+      animation: show 0.8s forwards ease-in-out, slideleft 0.8s forwards ease-in-out;
+    }
+
+    div.version {
+      font: {
+        weight: 300;
+        size: 70%;
+      }
+      opacity: 0;
+      transform: translateX(-5px);
+      animation: show 1.25s forwards ease-in-out, slideleft 1.25s forwards ease-out;
+      animation-delay: 0.25s;
+    }
+  }
+
+  div.loading {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+    width: 15px;
+    height: 15px;
+    border: 2px rgba(255, 255, 255, 0.25) solid;
+    border: {
+      radius: 50%;
+      top: 2px #ffffff solid;
+    }
+    margin-right: 20px;
+    opacity: 0;
+    animation: rotate 0.7s infinite linear, show 1.5s forwards ease-in-out;
+  }
+}
+/**
+* Define animations for the intro
+*/
+@keyframes slideleft {
+  100% {
+    transform: translateX(0px);
+  }
+}
+@keyframes show {
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

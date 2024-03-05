@@ -1,0 +1,57 @@
+@import 'components/globs';
+@import 'components/fonts';
+@import 'components/animations';
+
+body {
+  font-family: 'Main', sans-serif;
+
+  #content {
+    @include scrollbar(#515151, #1c1c1c);
+    scroll-behavior: smooth;
+  }
+
+  &.light {
+    #content {
+      @include scrollbar(#2f2f2f, #ffffff);
+    }
+  }
+}
+
+div.theme-toggle {
+  position: relative;
+  top: 4px;
+  left: 8px;
+  transform: scale(0.7);
+}
+
+#sidebar .header .version-and-toggle .version {
+  small,
+  svg {
+    display: none;
+  }
+
+  &:before {
+    content: 'Documentation';
+    position: relative;
+    top: 4px;
+    font: {
+      size: 140%;
+      weight: 600;
+    }
+  }
+}
+
+a,
+a:active,
+a:focus,
+a:hover,
+a:visited {
+  color: var(--gray800);
+}
+
+.toc details summary {
+  color: var(--gray800);
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: 0;
+}

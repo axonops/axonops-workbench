@@ -1,0 +1,105 @@
+name: "macOS: Build and Pack"
+
+on:
+  workflow_dispatch:
+  
+jobs:
+  macOS:
+    runs-on: macos-13
+
+    steps:
+      - name: Start with CQLSH tool
+        run: echo ""
+
+      - name: Switch to cqlsh branch
+        uses: actions/checkout@v2
+        with:
+          ref: cqlsh
+       
+      - name: Setup Python v3.8
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+         
+      - name: Build CQLSH v6.0.0
+        run: |
+          cd "v6.0.0-ACv4.0.7"
+          pip install --upgrade pip
+          pip install virtualenv 
+          virtualenv venv
+          pip install -r requirements.txt
+          export PATH="$PWD/venv/bin:$PATH"
+          pyinstaller --noconfirm --clean --onefile --noupx --additional-hooks-dir "$PWD" --hiddenimport concurrent.futures --hiddenimport ast --hiddenimport urllib2 cqlsh.py
+    
+      - name: Build CQLSH v6.1.0
+        run: |
+          cd "v6.1.0-ACv4.1.0"
+          pip install --upgrade pip
+          pip install virtualenv 
+          virtualenv venv
+          pip install -r requirements.txt
+          export PATH="$PWD/venv/bin:$PATH"
+          pyinstaller --noconfirm --clean --onefile --noupx --additional-hooks-dir "$PWD" --hiddenimport concurrent.futures --hiddenimport ast --hiddenimport urllib2 cqlsh.py
+    
+      - name: Rename artifacts
+        run: |
+          mkdir CQLSH_ALL
+          mv v6.0.0-ACv4.0.7/dist/cqlsh CQLSH_ALL/cqlsh-407
+          mv v6.1.0-ACv4.1.0/dist/cqlsh CQLSH_ALL/cqlsh-410
+        
+      - name: Save artifacts to be used next
+        run: |
+          mv CQLSH_ALL ~/
+        
+      - name: Switch to keys_generator branch
+        uses: actions/checkout@v2
+        with:
+          ref: keys_generator
+      
+      - name: Build Keys Generator Tool
+        run: |
+          pip install --upgrade pip
+          pip install virtualenv 
+          virtualenv venv
+          pip install -r requirements.txt
+          export PATH="$PWD/venv/bin:$PATH"
+          pyinstaller --noconfirm --clean --noupx --onefile keys_generator.py
+      
+      - name: Save artifact to be used next
+        run: |
+          mv dist/*keys_generator* ~/CQLSH_ALL
+ 
+      - name: Start with Cassandra Workbench
+        run: echo ""
+    
+      - name: Switch to main branch
+        uses: actions/checkout@v2
+        with:
+          ref: main
+      
+      - name: Setup Node.js v16.13.2
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.13.2
+      
+      - name: Install Cassandra Workbench dependencies
+        run: |
+          npm i
+          npm run rebuild
+    
+      - name: Move CQLSH to bin folder
+        run: |
+          mkdir -p main/bin
+          mv  -v ~/CQLSH_ALL/* main/bin
+      
+      - name: Pack Cassandra Workbench for macOS
+        run: |
+          npm run pack:macos
+          tar -cvzf pack-macos.tar pack-macos
+        
+      - name: Upload macOS packed version as artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Cassandra.Workbench-macOS
+          path: pack-macos.tar
+          

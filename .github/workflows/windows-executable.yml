@@ -72,7 +72,7 @@ jobs:
         run: |
           move dist/*keys_generator* D:\CQLSH_ALL\    
           
-      - name: Start With Cassandra Workbench
+      - name: Start With AxonOps Developer Workbench
         run: echo ""
         
       - name: Switch To `main` Branch
@@ -85,7 +85,7 @@ jobs:
         with:
           node-version: 16.13.2
           
-      - name: Install Cassandra Workbench Dependencies
+      - name: Install AxonOps Developer Workbench Dependencies
         run: |
           npm cache clear --force
           npm i
@@ -95,7 +95,7 @@ jobs:
         run: |
           move D:\CQLSH_ALL\* main\bin\
           
-      - name: Pack Cassandra Workbench For Windows
+      - name: Pack AxonOps Developer Workbench For Windows
         run: |
           npm run pack:win
           tar -cvzf pack-win.tar pack-win
@@ -103,5 +103,5 @@ jobs:
       - name: Upload Windows Packed Version As Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: Cassandra.Workbench-Windows
+          name: AxonOps.Developer.Workbench-Windows
           path: pack-win.tar

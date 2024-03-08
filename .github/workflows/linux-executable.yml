@@ -72,7 +72,7 @@ jobs:
         run: |
           mv dist/*keys_generator* ~/CQLSH_ALL
       
-      - name: Start with Cassandra Workbench
+      - name: Start with AxonOps Developer Workbench
         run: echo ""
       
       - name: Switch to main branch
@@ -85,7 +85,7 @@ jobs:
         with:
           node-version: 16.13.2
         
-      - name: Install Cassandra Workbench dependencies
+      - name: Install AxonOps Developer Workbench dependencies
         run: |
           npm i
           npm run rebuild
@@ -95,7 +95,7 @@ jobs:
           mkdir -p main/bin
           mv  -v ~/CQLSH_ALL/* main/bin
         
-      - name: Pack Cassandra Workbench for Linux
+      - name: Pack AxonOps Developer Workbench for Linux
         run: |
           npm run pack:linux
           tar -cvzf pack-linux.tar pack-linux
@@ -103,6 +103,6 @@ jobs:
       - name: Upload Linux packed version as artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: Cassandra.Workbench-Linux
+          name: AxonOps.Developer.Workbench-Linux
           path: pack-linux.tar
           

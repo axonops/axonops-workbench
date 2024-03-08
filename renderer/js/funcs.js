@@ -3,8 +3,7 @@
  *
  * @Parameters:
  * {object} `element` the HTML element in the UI
- * {string} `?type` the type of the element to be fetched [`Input`, `Tooltip`, `Modal`, etc...]
- * All possible types are: [`Button`, `Dropdown`, `Input`, `Modal`, `Range`, `Ripple`, `Tab`, `Tooltip`]
+ * {string} `?type` the type of the element to be fetched, all possible types are: [`Button`, `Dropdown`, `Input`, `Modal`, `Range`, `Ripple`, `Tab`, `Tooltip`]
  *
  * @Return: {object} the Material Design's object
  */
@@ -25,14 +24,14 @@ let getElementMDBObject = (element, type = 'Input') => {
   /**
    * Check if the type is a tooltip
    * Tooltips are handled by `TippyJS` instead of MDB tooltip; because `Tippy` adds a trackable ID to the created tooltip element; so we can change its position as needed
-   * This feature available by many libraries not only Tippy, but it's not available in MDB nor `Bootstrap`
+   * This feature available by many libraries besides `TippyJS`, it's not available in MDB or `Bootstrap` though
    */
   try {
     // If the type is not a tooltip then skip this try-catch block
     if (type != 'Tooltip')
       throw 0
 
-    // Create `Tippy` instance
+    // Create a `Tippy` instance
     object = tippy(element[0], {
       content: getAttributes(element, 'data-title'),
       arrow: false,
@@ -171,8 +170,8 @@ let loadStyleSheet = (path) => $('head').prepend(`<link rel="stylesheet" href="$
  * @Parameters:
  * {string} `title` the title of the toast
  * {string} `text` the text to be shown in the toast
- * {string} `?type` the toast type, the value could be: [`success`, `failure`, `warning`, and `neutral`]
- * {string} `?toastID` if an ID has been passed then the toast will be pinned
+ * {string} `?type` the toast's type, the value could be: [`success`, `failure`, `warning`, and `neutral`]
+ * {string} `?toastID` if an ID has been passed then the toast will be pinned for a while
  * {object} `?clickCallback` a function to be called once the navigation icon is clicked - will be shown only if a callback function has been passed -
  */
 let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = null) => {
@@ -371,7 +370,8 @@ let updatePinnedToast = (pinnedToastID, text, destroy = false) => {
       closeBtn = toast.find('button.btn-close')
 
     // Show the toast if needed
-    toast.addClass('show')
+    if (text != true && `${text}`.length != 0)
+      toast.addClass('show')
 
     try {
       // If the passed `text` is not set to `true` then skip this try-catch block and keep the body's content
@@ -2255,7 +2255,7 @@ let handleClusterSwitcherMargin = () => {
   visibleClusters.filter(':not(:first)').css('margin-top', '10px')
 
   // Get the number of active clusters' work areas
-  let numOfActiveWorkareas = $('div.body div.right div.content div[content="workarea"] div.workarea[cluster-id*="cluster-"]').length
+  let numOfActiveWorkareas = $('div.body div.right div.content div[content="workarea"] div.workarea').length
 
   // If there's one at least then activate the option to close them all in one click - in the more options list -
   $(`div.body div.left div.content div.navigation div.group div.item ul.dropdown-menu li a[action="closeWorkareas"]`).toggleClass('disabled', numOfActiveWorkareas <= 0)
@@ -2356,4 +2356,39 @@ let errorLog = (error, process) => {
 
   // Log the error
   addLog(`Error in process ${process}. Details: ${error}`, 'error')
+}
+
+/**
+ * Close all active work areas - clusters and sandbox projects -
+ * This function is called once the user decides to close all work areas, and on app termination
+ */
+let closeAllWorkareas = () => {
+  // Point at all work areas
+  let workareas = $('div.body div.right div.content div[content="workarea"] div.workarea[cluster-id]')
+
+  // Loop through all work areas
+  workareas.each(function() {
+    // Point at the cluster's element associated with the current work area
+    let clusterElement = $(`div.clusters-container div.clusters div.cluster[data-id="${getAttributes($(this), 'cluster-id')}"]`),
+      // Also point at the workspace's elemenet associated with the cluster
+      workspaceElement = $(`div.workspaces-container div.workspace[data-id="${getAttributes(clusterElement, 'data-workspace-id')}"]`),
+      // Whether or not the current work area is actually for a sandbox project
+      isSandboxProject = getAttributes(clusterElement, 'data-is-sandbox') == 'true'
+
+    try {
+      // Attempt of click the `close workarea` button
+      $(this).find('div.sub-sides.right div.header div.cluster-actions div.action[action="close"] div.btn-container div.btn').click()
+
+      /**
+       * Show feedback to the user
+       *
+       * If the work area is actually for a sandbox project
+       */
+      if (isSandboxProject)
+        return showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of docker project [b]$data[/b] is being terminated`, [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+
+      // Otherwise, show this toast
+      showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of cluster [b]$data[/b] in workspace [b]$data[/b] has been successfully closed`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
+    } catch (e) {}
+  })
 }

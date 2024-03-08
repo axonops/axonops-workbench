@@ -1,5 +1,5 @@
 /**
- * Get/Refresh all workspaces events
+ * Events of Getting/Refreshing all workspaces
  *
  * `getWorkspaces` event will remove all workspaces in the UI, and retrieve them from the workspaces' folder or the specific location of each one of them
  * `refreshWorkspaces` event, on the other hand, will keep the current workspaces in the UI, update them as needed, and just add the ones that are not in the UI already
@@ -21,7 +21,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     // Add or remove the empty class based on the number of saved workspaces
     workspacesContainer.parent().toggleClass('empty', workspaces.length <= 0 && dockerProjects.length <= 0)
 
-    // Add the docker sandbox element
+    // Add the docker/sandbox element
     try {
       workspaces.unshift({
         id: 'workspace-sandbox',
@@ -207,7 +207,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               }
 
               // Update the show/hide of cleaning Docker
-              // TODO: Will be updated soon
+              // TODO: Will be updated
               {
                 // $('div.content div[content="clusters"] div.section-actions').toggleClass('sandbox', activeWorkspaceID == 'workspace-sandbox')
               }
@@ -353,7 +353,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                     throw 0
 
                   // Show the toast to the user
-                  showToast(I18next.capitalize(I18next.t('sandbox feature requires docker')), I18next.capitalizeFirstLetter(I18next.t('starting or stopping a sandbox project may prompt an authentication request due to its reliance on [code]docker[/code] and [code]docker-compose[/code]')) + '.')
+                  // showToast(I18next.capitalize(I18next.t('sandbox feature requires docker')), I18next.capitalizeFirstLetter(I18next.t('starting or stopping a sandbox project may prompt an authentication request due to its reliance on [code]docker[/code] and [code]docker-compose[/code]')) + '.')
 
                   // Update the global variable which tells if the info toast has been shown or not
                   isSandboxDockerInfoShown = true
@@ -697,14 +697,16 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         // Loop through each input ID
         inputsIDs.forEach((inputID) => {
           // Point at the input
-          let input = $(`input#${inputID}`)
+          let input = $(`input#${inputID}`),
+            // Get its MDB object
+            inputObject = getElementMDBObject(input)
 
           // Remove its value and remove the `active` class
           input.val('').removeClass('active')
 
-          // Get its MDB object and update it
-          getElementMDBObject(input).update()
-          getElementMDBObject(input)._deactivate()
+          // Update the MDB object
+          inputObject.update()
+          inputObject._deactivate()
         })
 
         // Clear the color picker's value and trigger the `input` event as a refresh
@@ -753,8 +755,10 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     // Clicks the `SAVE WORKSPACE` button
     {
       addWorkspaceBtn.click(async function() {
-        // Point at the dialog's different elements
-        let name = $(`input#workspaceName`),
+        // Define the dialog path's CSS selector
+        let dialog = 'div.modal#addEditWorkspaceDialog',
+          // Point at the dialog's different elements
+          name = $(`input#workspaceName`),
           color = $(`input#workspaceColor`),
           folderPath = $(`input#workspacePath`),
           // Check if `editing` is the current mode
@@ -847,6 +851,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             // Show feedback to the user about the success of the update process
             showToast(I18next.capitalize(I18next.t('edit workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('workspace [b]$data[/b] has been successfully updated', [getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
 
+            // Click the close button
+            $(`${dialog}`).find('button.btn-close').click()
+
             // Update the workspace's attributes
             workspaceElement.attr({
               'data-name': name.val(),
@@ -938,6 +945,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               toastType = 'success'
 
               $(document).trigger('refreshWorkspaces')
+
+              // Click the close button
+              $(`${dialog}`).find('button.btn-close').click()
               break
             }
             case 0: {

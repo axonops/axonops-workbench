@@ -394,29 +394,13 @@
           addLog(`Request to close all active work areas.`, 'action')
 
           // Confirm the close of all work areas
-          openDialog(I18next.capitalizeFirstLetter(I18next.t('are you sure about closing all active work areas - excluding sandbox projects - ?')), (confirm) => {
+          openDialog(I18next.capitalizeFirstLetter(I18next.t('are you sure about closing all active work areas - including sandbox projects - ?')), (confirm) => {
             // If canceled, or not confirmed then skip the upcoming code
             if (!confirm)
               return
 
-            // Point at all work areas
-            let workareas = $('div.body div.right div.content div[content="workarea"] div.workarea[cluster-id*="cluster-"]')
-
-            // Loop through all work areas
-            workareas.each(function() {
-              // Point at the cluster's element associated with the current work area
-              let clusterElement = $(`div.clusters-container div.clusters div.cluster[data-id="${getAttributes($(this), 'cluster-id')}"]`),
-                // Also point at the workspace's elemenet associated with the cluster
-                workspaceElement = $(`div.workspaces-container div.workspace[data-id="${getAttributes(clusterElement, 'data-workspace-id')}"]`)
-
-              try {
-                // Attempt of click the `close workarea` button
-                $(this).find('div.sub-sides.right div.header div.cluster-actions div.action[action="close"] div.btn-container div.btn').click()
-
-                // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of cluster [b]$data[/b] in workspace [b]$data[/b] has been successfully closed`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
-              } catch (e) {}
-            })
+            // Call the closing function
+            closeAllWorkareas()
 
             /**
              * Disable the `close all workareas` button

@@ -8,7 +8,7 @@ require('v8-compile-cache')
 // Import Electron module
 const Electron = require('electron'),
   /**
-   * Import different modules from the Electron module
+   * Import different sub-modules from the Electron module
    *
    * `app`
    * For controlling the app's event lifecycle
@@ -358,23 +358,9 @@ App.on('ready', () => {
       mainViewPreventClose = false
     } catch (e) {}
 
-    // Close all cqlsh instances and save the logs
+    // Close all active work areas - clusters and sandbox projects -
     try {
-      // Get clusters' IDs
-      let ids = Object.keys(CQLSHInstances)
-
-      // Loop through all IDs
-      for (let id of ids) {
-        // Send the quit command for the cqlsh session
-        CQLSHInstances[id].command('quit')
-
-        // Close the pty sessions entirely
-        setTimeout(() => {
-          try {
-            CQLSHInstances[id].close()
-          } catch (e) {}
-        }, 100)
-      }
+      mainView.webContents.send(`app-terminating`)
     } catch (e) {} finally {
       // Once the pre-close processes finished we may trigger the `close` event again for all windows
       setTimeout(() => {
@@ -396,7 +382,7 @@ App.on('ready', () => {
           // Close the documentation view
           documentationView.close()
         } catch (e) {}
-      }, 150)
+      }, 250)
     }
   })
 })

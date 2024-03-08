@@ -1679,7 +1679,15 @@ div.body {
 
               div.footer {
                 div.actions {
-                  width: calc(80px - 26.67px);
+                  width: 80px;
+                }
+              }
+
+              &[data-is-sandbox="true"] {
+                div.footer {
+                  div.actions {
+                    width: calc(80px - 26.67px);
+                  }
                 }
               }
 

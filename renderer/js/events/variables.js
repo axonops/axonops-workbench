@@ -336,7 +336,7 @@
     let [
       variableNameID,
       variableValueID,
-      btnDeleteID
+      deleteBtnID
     ] = getRandomID(15, 3)
 
     // Variable UI element structure
@@ -362,8 +362,8 @@
               </div>
               <div class="col-md-2 flex">
                 <div class="actions left-margin">
-                  <a action="delete" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false" button-id="${btnDeleteID}" variable-name="${variable.name}" variable-value="${variable.value}"
-                    variable-scope="${variable.scope}" ${variable.name.length <=0 && variable.value.length <=0 ? 'ignored' : '' }>
+                  <a action="delete" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false" button-id="${deleteBtnID}" variable-name="${variable.name}" variable-value="${variable.value}"
+                    variable-scope="${variable.scope}" ${variable.name.length <= 0 && variable.value.length <= 0 ? 'ignored' : '' }>
                     <ion-icon name="trash"></ion-icon>
                   </a>
                   <a action="multiple" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="#262626">
@@ -494,7 +494,7 @@
         }
 
         // Clicks the deletion button
-        $(`a[button-id="${btnDeleteID}"]`).click(function() {
+        $(`a[button-id="${deleteBtnID}"]`).click(function() {
           // Define saved name, value, and scope
           let [name, value, scope] = getAttributes($(this), ['variable-name', 'variable-value', 'variable-scope'])
 

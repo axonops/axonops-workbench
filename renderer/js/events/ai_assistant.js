@@ -40,14 +40,14 @@
         <div class="block _left">
           <div class="question" question-id="${questionID}" date="${formatTimestamp(new Date().getTime())}">
             <sdpan>${questionValue}</span>
-            <div class="buttons">
-              <button type="button" class="btn btn-tertiary copy" data-mdb-ripple-color="dark">
-                <ion-icon name="copy"></ion-icon>
-              </button>
-              <button type="button" class="btn btn-tertiary delete" data-mdb-ripple-color="dark">
-                <ion-icon name="trash-outline"></ion-icon>
-              </button>
-            </div>
+              <div class="buttons">
+                <button type="button" class="btn btn-tertiary copy" data-mdb-ripple-color="dark">
+                  <ion-icon name="copy"></ion-icon>
+                </button>
+                <button type="button" class="btn btn-tertiary delete" data-mdb-ripple-color="dark">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </button>
+              </div>
           </div>
         </div>`
 
@@ -153,7 +153,7 @@
 
               // Type the answer with set of properties
               new Typed(answerElement.children('div.text').children('span')[0], {
-                strings: [answer],
+                strings: [answer.replace(/\n/gm, '<br>')],
                 typeSpeed: 48,
                 startDelay: 210,
                 showCursor: false,
@@ -526,6 +526,9 @@
                         // Put any code - CQL queries mainly - between `code` tags
                         answer = question.answer.replace(/\|\|(.+)\|\|/gm, '<code>$1</code>')
                         answer = answer.replace(/`{1,}(.+)`{1,}/gm, '<code>$1</code>')
+
+                        // Make break lines
+                        answer = answer.replace(/\n/gm, '<br>')
 
                         // Perform other necessary changes to the answer
                         answer = answer.replace(/(\<br\>){2,}/gm, '<br>')

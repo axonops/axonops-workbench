@@ -6,7 +6,7 @@
     selectDropdown = getElementMDBObject($(`${dialog}`).find('div.dropdown'), 'Dropdown')
 
   // On input's `focus` event show the dropdown menu
-  $(`${dialog}`).find(`input#apacheCassandraVersion`).on('focus', () => selectDropdown.show()).on('focusout', () => selectDropdown.hide())
+  $(`${dialog}`).find(`input#apacheCassandraVersion`).on('focus', () => selectDropdown.show()).on('focusout', () => setTimeout(() => selectDropdown.hide(), 100))
 
   // Clicks one of the items on the dropdown menu
   $(`${dialog}`).find('ul li a.dropdown-item').click(function() {
@@ -26,13 +26,17 @@
     addLog(`Request to create docker/sandbox project.`, 'action')
 
     // Check the existence of Docker in the machine
-    Modules.Docker.checkDockerCompose((exists) => {
+    Modules.Docker.checkDockerCompose((dockerExists, userGroup) => {
       // Enable the button again
       $(this).removeAttr('disabled')
 
       // If Docker doesn't exist then show feedback to the user and skip the upcoming code
-      if (!exists)
-        return showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires [code]Docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure its installed and accessible before attempting to create a docker project')) + '.', 'failure')
+      if (!dockerExists)
+        return showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure its installed and accessible before attempting to create a docker project')) + '.', 'failure')
+
+      // If the current user in not in the `docker` group
+      if (!userGroup)
+        return showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again')) + '.', 'failure')
 
       /**
        * Get associated inputs
@@ -88,6 +92,9 @@
 
           // Refresh clusters
           $(document).trigger('refreshClusters', 'workspace-sandbox')
+
+          // Click the close button of the dialog
+          $(`${dialog}`).find('button.btn-close').click()
 
           // If there's no need to run the project then skip the upcoming code
           if (!immediateProjectRun)

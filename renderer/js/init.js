@@ -729,6 +729,9 @@ $(document).ready(() => setTimeout(() => IPCRenderer.send('loaded'), 1000))
 // Get the view content's ID from the main thread
 $(document).ready(() => IPCRenderer.on('view-content-id', (_, contentID) => viewContentID = contentID))
 
+// The app is terminating and there's a need to close all active work areas
+$(document).ready(() => IPCRenderer.on('app-terminating', () => closeAllWorkareas()))
+
 // Make sure to hide the tooltip when its parent element has been clicked
 $(document).ready(() => {
   setTimeout(() => {

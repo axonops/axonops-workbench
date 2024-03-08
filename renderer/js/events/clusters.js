@@ -68,9 +68,10 @@
             testConnectionBtnID,
             connectBtnID,
             startProjectBtnID,
+            folderBtnID,
             settingsBtnID,
             deleteBtnID
-          ] = getRandomID(15, 5),
+          ] = getRandomID(15, 6),
           /**
            * The AxonOps sectin ID
            * It's defined here as it's being used in different parts of the event
@@ -154,6 +155,10 @@
               </button>
             </div>
             <div class="actions">
+              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the cluster folder"
+                data-mulang="open the cluster folder" capitalize-first>
+                <ion-icon name="folder-open"></ion-icon>
+              </div>
               <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${settingsBtnID}" data-mdb-ripple-color="dark" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="cluster settings" capitalize-first
                 data-title="Cluster settings">
                 <ion-icon name="cog"></ion-icon>
@@ -172,7 +177,11 @@
               </button>
               <button type="button" class="btn btn-primary btn-dark btn-sm connect changed-bg changed-color" reference-id="${clusterID}" button-id="${connectBtnID}" hidden></button>
             </div>
-            <div class="actions" style="width: 26.66px;">
+            <div class="actions">
+              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the docker project folder"
+                data-mulang="open the docker project folder" capitalize-first>
+                <ion-icon name="folder-open"></ion-icon>
+              </div>
               <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete docker project"
                 data-mulang="delete docker project" capitalize-first>
                 <ion-icon name="trash"></ion-icon>
@@ -259,7 +268,7 @@
 
               // Enable tooltip for the actions buttons
               setTimeout(() => {
-                ([settingsBtnID, deleteBtnID]).forEach((btn) => getElementMDBObject($(`div[button-id="${btn}"]`), 'Tooltip'))
+                ([settingsBtnID, deleteBtnID, folderBtnID]).forEach((btn) => getElementMDBObject($(`div[button-id="${btn}"]`), 'Tooltip'))
               })
 
               // Apply the chosen language on the UI element after being fully loaded
@@ -279,7 +288,7 @@
                 // Determine if the app is already connected with that cluster, and if it has an active work area
                 let [connected, hasWorkarea] = getAttributes(clusterElement, ['data-connected', 'data-workarea'])
 
-                // Add log for that request
+                // Add log for this request
                 addLog(`Request to test connection with cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])}.`, 'action')
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
@@ -305,7 +314,7 @@
                     allSecrets = getAttributes(clusterElement, ['data-username', 'data-password', 'data-ssh-username', 'data-ssh-password', 'data-ssh-passphrase'])
 
                   /**
-                   * Multiple condiftions to check
+                   * Multiple conditions to check
                    * DB authentication credentials are needed - and SSH credentials not -, and they've been provided
                    * SSH credentials are needed - and DB authentication credentials not -, and they've been provided
                    * Both types of credentials are needed and all of them have been provided
@@ -1893,7 +1902,7 @@
                            *
                            * Define the info message and regex syntax for Linux and macOS
                            */
-                          let infoMessage = 'Please input the sudo privileges in order to execute bash inside the Docker project.',
+                          let infoMessage = 'Please input the sudo privileges in order to execute bash inside the docker project.',
                             regex = new RegExp('.*password.*\:', 'gm')
 
                           // Handle the info message and regex syntax for Windows
@@ -1912,6 +1921,12 @@
                           // Remove all previous listeners to the channel between the main and renderer threads
                           IPCRenderer.removeAllListeners(`pty:${clusterID}-bash-${sessionID}:data:bash-session`)
 
+                          /**
+                           * Get the terminal's active buffer
+                           * This process for detect any attempt to execute `exit` command
+                           */
+                          let activeBuffer = terminalBash.buffer.active
+
                           // Listen to data sent from the pty instance
                           IPCRenderer.on(`pty:${clusterID}-bash-${sessionID}:data:bash-session`, (_, data) => {
                             // Update the printing status if the regex execution has returned a posivite result
@@ -1924,6 +1939,20 @@
 
                             // Write data to the terminal
                             terminalBash.write(data)
+
+                            // Detect any attempt to execute the `exit` command
+                            setTimeout(() => {
+                              // Get the active's line content
+                              let activeLine = activeBuffer.getLine(activeBuffer.cursorY).translateToString(),
+                                // Manipulate the entire line, get only the command and get rid of the prompt
+                                minifiedActiveLine = minifyText(activeLine).slice(activeLine.indexOf(':/#') + 3),
+                                // Whether or not the `exit` is in the line
+                                isExitFound = ['exit', 'exit&', 'exit;'].some((exit) => minifiedActiveLine.endsWith(exit) || minifiedActiveLine.startsWith(exit))
+
+                              // If there's an `exit` command then suffix the entire line with `!` symbol
+                              if (isExitFound && !minifiedActiveLine.endsWith('!'))
+                                IPCRenderer.send(`pty:${clusterID}-bash-${sessionID}:command:bash-session`, '!')
+                            })
                           })
 
                           // As the user typing and inputing data to the terminal
@@ -1931,10 +1960,15 @@
                             // Add the data to the `latestCommand` variable
                             latestCommand += data
 
-                            // If the command starts with `exit` then don't send that command
-                            if (['exit', '\x04'].some((command) => minifyText(latestCommand).startsWith(command))) {
-                              terminalBash.clear()
-                              data = '\n'
+                            // If the command has `exit` character then remove it
+                            {
+                              // Define the exit character
+                              let exitChar = '\x04',
+                                // Create a regular expression to match the character everywhere in the data
+                                regex = new RegExp(exitChar, 'gm')
+
+                              // Remove the character
+                              data = data.replace(regex, '')
                             }
 
                             // Send the data to the pty instance
@@ -1956,13 +1990,6 @@
                             switch (keyCode) {
                               // `ENTER`
                               case 13: {
-                                // Quit the CQLSH session
-                                if (minifyText(latestCommand).startsWith('exit')) {
-                                  terminalPrintMessage(terminalBash, 'warning', 'Trying to quit')
-                                  terminalBash.clear()
-                                  IPCRenderer.send(`pty:${clusterID}-bash-${sessionID}:command:bash-session`, '\n')
-                                }
-
                                 // Empty the latest command
                                 latestCommand = ''
 
@@ -1976,24 +2003,6 @@
                               }
                             }
                           })
-
-                          /**
-                           * Listen to keys pressed from user - input to the terminal -
-                           * This listener is mainly for `CTRL+D`
-                           */
-                          terminalBash.onKey((e) => {
-                            try {
-                              // If `CTRL+D` is not pressed then skip this try-catch block
-                              if (!(e.domEvent.ctrlKey && e.key === '\x04'))
-                                throw 0
-
-                              // Prevent the default behavior
-                              e.domEvent.preventDefault()
-
-                              // Stop the event from propagating
-                              e.domEvent.stopPropagation()
-                            } catch (e) {}
-                          })
                         })
                         // End of handling the app's terminal
                       }
@@ -2006,9 +2015,9 @@
                         // Point at the visualized metadata's container of the cluster
                         let visualizedMetadataTabContent = $(`div[tab="visualized-metadata"]#_${visualizedMetadataContentID}`),
                           // Point at the `VISUALIZE METADATA` button's container - to show the progress bar -
-                          btnContainer = visualizedMetadataTabContent.children('div.loading').children('div.btn-container'),
+                          containerBtn = visualizedMetadataTabContent.children('div.loading').children('div.btn-container'),
                           // Point at the progress bar
-                          progressBar = btnContainer.children('div.progress').children('div.progress-bar'),
+                          progressBar = containerBtn.children('div.progress').children('div.progress-bar'),
                           // Point at the lottie element
                           lottiePlayer = visualizedMetadataTabContent.children('div.loading').find('lottie-player')
 
@@ -2065,7 +2074,7 @@
                           visualizedMetadataObject = buildTreeviewVisualized(buildTreeview(JSON.parse(JSON.stringify(metadataToVisualized))), $(`div.visualized-metadata-container[data-id="${visualizedMetadataContainerID}"]`)[0])
 
                           // Show the progress bar
-                          btnContainer.addClass('show-progress')
+                          containerBtn.addClass('show-progress')
 
                           // Animate the lottie element
                           lottiePlayer[0].play()
@@ -2126,7 +2135,7 @@
                         // Destory the entire visualized version
                         visualizedMetadataTabContent.find('div.action[action="destroy"] div.btn').on('click', function(e, instant = false) {
                           // Back to the initial state of the visualized metadata section
-                          btnContainer.toggleClass('show-progress', instant)
+                          containerBtn.toggleClass('show-progress', instant)
 
                           // Reset the progress bar
                           progressBar.css('width', `0%`)
@@ -2481,7 +2490,7 @@
                             let pinnedToastID = getRandomID(10)
 
                             // Show/create that toast
-                            showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop docker containers')) + ' ' + getAttributes(clusterElement, 'data-folder'), '')
+                            showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
 
                             // Attempt to close/stop the docker project
                             Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, (feedback) => {
@@ -2490,13 +2499,13 @@
                                * Show feedback to the user and skip the upcoming code
                                */
                               if (!feedback.status)
-                                return showToast(I18next.capitalize(I18next.t('stop docker containers')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the Docker project in folder [b]$data[/b] were not successfully stopped', [getAttributes(clusterElement, 'data-folder')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                                return showToast(I18next.capitalize(I18next.t('stop docker containers')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the docker project [b]$data[/b] were not successfully stopped', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
 
                               /**
                                * Successfully closed/stopped
                                * Show feedback to the user
                                */
-                              showToast(I18next.capitalize(I18next.t('stop docker containers')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the Docker project in folder [b]$data[/b] have been successfully stopped', [getAttributes(clusterElement, 'data-folder')])) + '.', 'success')
+                              showToast(I18next.capitalize(I18next.t('stop docker containers')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the docker project [b]$data[/b] have been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                               // Reset the sandbox project's element in the clusters/sandbox projects container
                               clusterElement.removeClass('test-connection')
@@ -2505,7 +2514,10 @@
                             })
 
                             // Show the inital feedback to the user which
-                            showToast(I18next.capitalize(I18next.t('close docker project work area')), I18next.capitalizeFirstLetter(I18next.replaceData('the work area of the Docker project in folder [b]$data[/b] has been successfully closed, attempting to stop the docker containers', [getAttributes(clusterElement, 'data-folder')])) + '.', 'success')
+                            showToast(I18next.capitalize(I18next.t('close docker project work area')), I18next.capitalizeFirstLetter(I18next.replaceData('the work area of the docker project [b]$data[/b] has been successfully closed, attempting to stop the docker containers', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+
+                            // Reset the button's text
+                            setTimeout(() => $(`button[button-id="${startProjectBtnID}"]`).children('span').attr('mulang', 'start').text(I18next.t('start')))
                           } catch (e) {}
 
                           // Point at the current active work aree
@@ -2628,6 +2640,9 @@
 
                             // Clicks the `ENTER` button for the cluster's workspace
                             $(`div.workspaces-container div.workspace[data-id="${getAttributes(clusterElement, 'data-workspace-id')}"]`).find('div.button button').click()
+
+                            // Reset the button's text
+                            setTimeout(() => $(`button[button-id="${connectBtnID}"]`).children('span').attr('mulang', 'connect').text(I18next.t('connect')))
 
                             setTimeout(() => {
                               /**
@@ -2853,6 +2868,9 @@
                         })
                       })
                     }
+
+                    // Update the button's text to be `ENTER`
+                    setTimeout(() => $(`button[button-id="${connectBtnID}"]`).children('span').attr('mulang', 'enter').text(I18next.t('enter')), 1000)
                   }))
                 })
               })
@@ -2871,6 +2889,13 @@
                  * Other is `instant` which tells if the animation and transitions should not be applied
                  */
                 $(`button[button-id="${startProjectBtnID}"]`).on('click', function(_, restart = false, instant = false) {
+                  // Point at the project's work area
+                  let projectWorkarea = $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`)
+
+                  // If exists then click the hidden `CONNECT` button and skip the upcoming code
+                  if (projectWorkarea.length > 0)
+                    return $(`button[button-id="${connectBtnID}"]`).trigger('click')
+
                   // Get the app's config
                   Modules.Config.getConfig((config) => {
                     // Get the maximum allowed number of running projects at the same time
@@ -2889,13 +2914,6 @@
                     // If the currently running projects are more than or equals to the maximum allowed number then end the process and show feedback to the user
                     if (([numRunningSandbox, numAttemptingSandbox]).some((num) => num >= maximumRunningSandbox))
                       return showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of sandbox projects which allowed to be started simultaneously is [b]$data[/b]', [maximumRunningSandbox])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limitation can be changed from the app\'s settings in the limitation section')) + `.`, 'failure')
-
-                    // Point at the project's work area
-                    let projectWorkarea = $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`)
-
-                    // If exists then click the hidden `CONNECT` button and skip the upcoming code
-                    if (projectWorkarea.length > 0)
-                      return $(`button[button-id="${connectBtnID}"]`).trigger('click')
 
                     // Inner function to execute the post-start code
                     let startPostProcess = (success = false) => {
@@ -2952,105 +2970,129 @@
                       let pinnedToastID = getRandomID(10)
 
                       // Show/create that toast
-                      showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start docker containers')) + ' ' + getAttributes(clusterElement, 'data-folder'), '')
+                      showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
 
-                      // Start the project
-                      Modules.Docker.getDockerInstance(clusterElement).startDockerCompose(pinnedToastID, (feedback) => {
-                        // Don't trigger the time out function
-                        clearTimeout(installationInfo)
+                      // Check the existence of Docker in the machine
+                      Modules.Docker.checkDockerCompose((dockerExists, userGroup) => {
+                        // If Docker doesn't exist then show feedback to the user and skip the upcoming code
+                        if (!dockerExists) {
+                          showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure its installed and accessible before attempting to create a docker project')) + '.', 'failure')
 
-                        // The project didn't run as expected
-                        if (!feedback.status) {
-                          // Show failure feedback to the user
-                          showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the docker project in folder [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-folder')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
-
-                          // Call the post function
                           startPostProcess()
 
-                          // Skip the upcoming code
                           return
                         }
 
-                        // Show success feedback to the user
-                        showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('docker project in folder [b]$data[/b] has been successfully started, waiting for Apache Cassandra ® to be up, you\'ll be automatically navigated to the project work area once it\'s up', [getAttributes(clusterElement, 'data-folder')])) + '.', 'success')
+                        // If the current user in not in the `docker` group
+                        if (!userGroup) {
+                          showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again')) + '.', 'failure')
 
-                        // Remove all previous states
-                        clusterElement.children('div.status').removeClass('success failure').addClass('show')
+                          startPostProcess()
 
-                        setTimeout(() => {
-                          // Start watching Cassandra's node inside the project
-                          Modules.Docker.checkCassandraInContainer(pinnedToastID, ports.cassandra, (status) => {
-                            // Failed to connect with the node
-                            if (!status.connected) {
-                              // Show a failure feedback to the user
-                              showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the Apache Cassandra ® nodes of the docker project in folder [b]$data[/b] didn\'t start as expected, automatic stop of the docker project will be started in seconds', [getAttributes(clusterElement, 'data-folder')])) + '.', 'failure')
+                          return
+                        }
+
+                        // Start the project
+                        Modules.Docker.getDockerInstance(clusterElement).startDockerCompose(pinnedToastID, (feedback) => {
+                          // Don't trigger the time out function
+                          clearTimeout(installationInfo)
+
+                          // The project didn't run as expected
+                          if (!feedback.status) {
+                            // Show failure feedback to the user
+                            showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the docker project [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+
+                            // Call the post function
+                            startPostProcess()
+
+                            // Skip the upcoming code
+                            return
+                          }
+
+                          // Show success feedback to the user
+                          showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra ® to be up, you\'ll be automatically navigated to the project work area once it\'s up', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+
+                          // Remove all previous states
+                          clusterElement.children('div.status').removeClass('success failure').addClass('show')
+
+                          setTimeout(() => {
+                            // Start watching Cassandra's node inside the project
+                            Modules.Docker.checkCassandraInContainer(pinnedToastID, ports.cassandra, (status) => {
+                              // Failed to connect with the node
+                              if (!status.connected) {
+                                // Show a failure feedback to the user
+                                showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the Apache Cassandra ® nodes of the docker project [b]$data[/b] didn\'t start as expected, automatic stop of the docker project will be started in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+
+                                /**
+                                 * Create a pinned toast to show the output of the process
+                                 *
+                                 * Get a random ID for the toast
+                                 */
+                                let pinnedToastID = getRandomID(10)
+
+                                // Show/create that toast
+                                showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+
+                                setTimeout(() => {
+                                  // Attempt to stop the project
+                                  Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, (feedback) => {
+                                    // Call the post function
+                                    startPostProcess()
+
+                                    /**
+                                     * Failed to stop the project
+                                     * Show failure feedback to the user and tell how to stop it manually
+                                     */
+                                    if (!feedback.status)
+                                      return showToast(I18next.capitalize(I18next.t('stop docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to stop the docker project [b]$data[/b], please consider to do it manually by stopping the project [b]cassandra_$data[/b]', [getAttributes(clusterElement, 'data-name'), getAttributes(clusterElement, 'data-folder')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+
+                                    // The Docker project has successfully stopped
+                                    showToast(I18next.capitalize(I18next.t('stop docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the docker project [b]$data[/b] has been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                                  })
+                                }, 3000)
+
+                                // Skip the upcoming code
+                                return
+                              }
 
                               /**
-                               * Create a pinned toast to show the output of the process
-                               *
-                               * Get a random ID for the toast
+                               * Successfully started the project and Cassandra's one node at least is up
+                               * Show feedback to the user
                                */
-                              let pinnedToastID = getRandomID(10)
+                              showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra ® nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
-                              // Show/create that toast
-                              showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start docker containers')) + ' ' + getAttributes(clusterElement, 'data-folder'), '')
+                              // Request to destroy the associated pinned toast
+                              updatePinnedToast(pinnedToastID, true, true)
+
+                              // Update the data center title
+                              clusterElement.attr('data-datacenter', 'datacenter1')
 
                               setTimeout(() => {
-                                // Attempt to stop the project
-                                Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, (feedback) => {
+                                // Click the hidden `CONNECT` button
+                                $(`button[button-id="${connectBtnID}"]`).trigger('click')
+
+                                // Update the button's text to be `ENTER`
+                                setTimeout(() => $(this).children('span').attr('mulang', 'enter').text(I18next.t('enter')), 1000)
+
+                                setTimeout(() => {
                                   // Call the post function
-                                  startPostProcess()
+                                  startPostProcess(true)
 
-                                  /**
-                                   * Failed to stop the project
-                                   * Show failure feedback to the user and tell how to stop it manually
-                                   */
-                                  if (!feedback.status)
-                                    return showToast(I18next.capitalize(I18next.t('stop docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to stop the docker project in folder [b]$data[/b], please consider to do it manually by stopping the project [b]cassandra_$data[/b]', [getAttributes(clusterElement, 'data-folder'), getAttributes(clusterElement, 'data-folder')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                                  try {
+                                    // Define the AxonOps localhost URL
+                                    let axonopsURL = `http://localhost:${getAttributes(clusterElement, 'data-port-axonops')}`
 
-                                  // The Docker project has successfully stopped
-                                  showToast(I18next.capitalize(I18next.t('stop docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the docker project in folder [b]$data[/b] has been successfully stopped', [getAttributes(clusterElement, 'data-folder')])) + '.', 'success')
-                                })
+                                    // Append a `webview` tag to the AxonOps tab
+                                    $(`div.tab-pane#_${axonOpsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration></webview>`))
+
+                                    // Clicks the globe icon in the cluster's info
+                                    $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
+                                  } catch (e) {}
+                                }, 1000)
                               }, 3000)
-
-                              // Skip the upcoming code
-                              return
-                            }
-
-                            /**
-                             * Successfully started the project and Cassandra's one node at least is up
-                             * Show feedback to the user
-                             */
-                            showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra ® nodes of the docker project in folder [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(clusterElement, 'data-folder')])) + '.', 'success')
-
-                            // Request to destroy the associated pinned toast
-                            updatePinnedToast(pinnedToastID, true, true)
-
-                            // Update the data center title
-                            clusterElement.attr('data-datacenter', 'datacenter1')
-
-                            setTimeout(() => {
-                              // Click the hidden `CONNECT` button
-                              $(`button[button-id="${connectBtnID}"]`).trigger('click')
-
-                              setTimeout(() => {
-                                // Call the post function
-                                startPostProcess(true)
-
-                                try {
-                                  // Define the AxonOps localhost URL
-                                  let axonopsURL = `http://localhost:${getAttributes(clusterElement, 'data-port-axonops')}`
-
-                                  // Append a `webview` tag to the AxonOps tab
-                                  $(`div.tab-pane#_${axonOpsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration></webview>`))
-
-                                  // Clicks the globe icon in the cluster's info
-                                  $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
-                                } catch (e) {}
-                              }, 1000)
-                            }, 3000)
-                          })
-                        }, 20000)
+                            })
+                          }, 20000)
+                        })
                       })
                     })
                   })
@@ -3343,7 +3385,7 @@
 
                   // If there's a work area already then stop the deletion process
                   if (clusterWorkarea.length != 0)
-                    return showToast(I18next.capitalize(I18next.t('delete docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('there\'s an active work area for the docker project in folder [b]$data[/b], please consider to close it before attempting to delete the project again', [getAttributes(clusterElement, 'data-folder')])) + '.', 'failure')
+                    return showToast(I18next.capitalize(I18next.t('delete docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('there\'s an active work area for the docker project [b]$data[/b], please consider to close it before attempting to delete the project again', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                   try {
                     // If the current workspace is not the sandbox then skip this try-catch block
@@ -3354,10 +3396,10 @@
                     Modules.Docker.deleteProject(getAttributes(clusterElement, 'data-folder')).then((status) => {
                       // Failed to delete the project
                       if (!status)
-                        return showToast(I18next.capitalize(I18next.t('delete docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to delete the docker project in folder [b]$data[/b]', [getAttributes(clusterElement, 'data-folder')])) + '.', 'failure')
+                        return showToast(I18next.capitalize(I18next.t('delete docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to delete the docker project [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                       // Successfully deleted the project
-                      showToast(I18next.capitalize(I18next.t('delete docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the docker project in folder [b]$data[/b] has been successfully deleted', [getAttributes(clusterElement, 'data-folder')])) + '.', 'success')
+                      showToast(I18next.capitalize(I18next.t('delete docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the docker project [b]$data[/b] has been successfully deleted', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                       // Point at the projects' container
                       let projectsContainer = $(`div.clusters-container div.clusters[workspace-id="${workspaceID}"]`)
@@ -3415,6 +3457,27 @@
                     showToast(I18next.capitalize(I18next.t('delete cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('cluster [b]$data[/b] in workspace [b]$data[/b] has been successfully deleted', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
                   })
                 })
+              })
+
+              // Clicks the folder button
+              $(`div.btn[button-id="${folderBtnID}"]`).click(() => {
+                // Define the inital element's path variable
+                let elementPath = ''
+
+                try {
+                  // If the current workspace is the sandbox then skip this try-catch block
+                  if (isSandbox)
+                    throw 0
+
+                  // Get the cluster's path
+                  elementPath = Path.join(getWorkspaceFolderPath(getAttributes(clusterElement, 'data-workspace-id')), getAttributes(clusterElement, 'data-folder'))
+                } catch (e) {
+                  // Get the sandbox project's path
+                  elementPath = Path.join(__dirname, '..', '..', 'data', 'docker', getAttributes(clusterElement, 'data-folder'))
+                }
+
+                // Open the final path
+                Open(elementPath)
               })
             })
             // End of handling the `click` events for actions buttons

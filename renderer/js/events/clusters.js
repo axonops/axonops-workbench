@@ -15,7 +15,7 @@
       // Point at the cluster's container
       clustersContainer = parentClusterContainer.children(`div.clusters-container`).children(`div.clusters[workspace-id="${workspaceID}"]`)
 
-    // Determine if the associated workspace is actually the Docker-sandbox
+    // Determine if the associated workspace is the Docker-sandbox
     let isSandbox = workspaceID == 'workspace-sandbox',
       // Set the suitable function to get clusters/projects based on the type of the workspace
       getModuleFunction = !isSandbox ? Modules.Clusters.getClusters : Modules.Docker.getProjects
@@ -77,7 +77,7 @@
            * It's defined here as it's being used in different parts of the event
            */
           axonOpsContentID = getRandomID(15),
-          // Flag to tell if this cluster is going to be added/appended to the UI as a new element or if it's already exists, by default it's `true`
+          // Flag to tell if this cluster is going to be added/appended to the UI as a new element or if it already exists, by default it's `true`
           append = true
 
         /**
@@ -87,7 +87,7 @@
         if (event == 'refreshClusters')
           append = $(`div.cluster[data-id="${clusterID}"][data-workspace-id="${workspaceID}"]`).length != 0 ? false : append
 
-        // This variable will contain username and password of DB and SSH in UI attributes if needed
+        // This variable will contain the username and password of DB and SSH in UI attributes if needed
         let secrets = ''
 
         try {
@@ -141,7 +141,7 @@
 
         /**
          * Define the footer of the cluster's UI based on the workspace's type
-         * It can be a normal cluster, or a sandbox project
+         * It can be a normal cluster or a sandbox project
          */
         let footerStructure = {
           nonSandbox: `
@@ -191,13 +191,13 @@
         }
 
         /**
-         * Define the info's UI structure of the number of chosen nodes in Docker project
+         * Define the info's UI structure of the number of chosen nodes in the Docker project
          * By default, it's empty
          */
         let numOfNodesInfo = ''
 
         try {
-          // If the current cluster is not a docker project then skip try-catch block
+          // If the current cluster is not a docker project then skip this try-catch block
           if (!isSandbox)
             throw 0
 
@@ -385,12 +385,12 @@
                   } catch (e) {}
                 } catch (e) {}
 
-                // Reset the status of the connection with cluster
+                // Reset the status of the connection with the cluster
                 clusterElement.children('div.status')
                   .removeClass('success failure')
                   .addClass('show')
 
-                // The app is now testing connection with the cluster
+                // The app is now testing the connection with the cluster
                 clusterElement.addClass('test-connection')
 
                 // Disable the button
@@ -425,7 +425,7 @@
                   // Add log for this request
                   addLog(`Request to connect with cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])}.`, 'action')
 
-                  // If the currently running clusters are more than or equals to the maximum allowed number and this is not the sandbox workspace then end the process and show feedback to the user
+                  // If the currently running clusters are more than or equal to the maximum allowed number and this is not the sandbox workspace then end the process and show feedback to the user
                   if (([numRunningClusters, numAttemptingClusters]).some((num) => num >= maximumRunningClusters) && !isSandbox)
                     return showToast(I18next.capitalize(I18next.t('connect with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of clusters which allowed to be connected to simultaneously is [b]$data[/b]', [maximumRunningClusters])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limitation can be changed from the app\'s settings in the limitation section')) + `.`, 'failure')
 
@@ -458,7 +458,7 @@
                       // Point at the target cluster's switcher
                       let targetCluster = $(`div.switch-clusters div.cluster[_cluster-id="${clusterID}"]`)
 
-                      // If the switcher of the cluster is actually visible then skip this try-catch block
+                      // If the switcher of the cluster is visible then skip this try-catch block
                       if (targetCluster.is(':visible'))
                         throw 0
 
@@ -485,7 +485,7 @@
                   } catch (e) {}
 
                   try {
-                    // If `restart` flag is `true` then skip this try-catch block
+                    // If the `restart` flag is `true` then skip this try-catch block
                     if (restart)
                       throw 0
 
@@ -848,7 +848,7 @@
                       setTimeout(() => autoPlayStopLottieElement($(this).find('lottie-player')))
                     }
 
-                    // Handle when type something inside the query tracing's search input field
+                    // Handle when typing something inside the query tracing's search input field
                     {
                       setTimeout(() => {
                         $(`input#_${queryTracingSearchInputID}`).on('input', function() {
@@ -866,7 +866,7 @@
                             // Get its text in overall
                             let queryContent = minifyText($(this).text())
 
-                            // Show/hide it based on the result of whether or not it contains the serach text
+                            // Show/hide it based on the result of whether or not it contains the search text
                             $(this).toggle(queryContent.search(searchValue))
                           })
                         })
@@ -1101,7 +1101,7 @@
                          */
                         terminal.loadAddon(readLine)
 
-                        // Load the `Fit` addons
+                        // Load the `Fit` addon
                         terminal.loadAddon(fitAddon)
 
                         /**
@@ -1410,7 +1410,7 @@
 
                           // Check if `CQLSH-STARTED` has been received
                           try {
-                            // If the keywords hasn't been received yet or cqlsh has already been loaded then skip this try-catch block
+                            // If the keywords haven't been received yet or cqlsh has already been loaded then skip this try-catch block
                             if (!minifyText(data).search('cqlsh-started') || cqlshLoaded)
                               throw 0
 
@@ -1433,7 +1433,7 @@
                               // Start reading the user input
                               readActiveLine(prefix)
 
-                              // For Windows, there's a need to send a newline in order to start the cqlsh session
+                              // For Windows, there's a need to send a newline to start the cqlsh session
                               if (OS.platform() == 'win32')
                                 setTimeout(() => {
                                   IPCRenderer.send('pty:command', {
@@ -1484,7 +1484,7 @@
                           } catch (e) {}
 
                           /**
-                           * Inner function to check if metadata has been fetched or not
+                           * Inner function to check if the metadata has been fetched or not
                            * The declaration was at the very beginning of this code block
                            */
                           checkMetadata = (refresh = false) => {
@@ -1567,14 +1567,14 @@
                                           $(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
                                         } catch (e) {}
 
-                                        // Create editor for the old metadata content
+                                        // Create an editor for the old metadata content
                                         metadataDiffEditors.old.object = createEditor('old', toBeLoadedMetadata)
 
                                         // Detect differentiation between old and new content
                                         detectDifferentiationShow(toBeLoadedMetadata, metadata)
                                       })
 
-                                      // Create editor for the new metadata content
+                                      // Create an editor for the new metadata content
                                       metadataDiffEditors.new.object = createEditor('new', metadata)
                                     })
                                   } catch (e) {}
@@ -1608,17 +1608,17 @@
                            *
                            * Get cqlsh current prompt - for instance; `cqlsh>` -
                            */
-                          let prompt = data.match(/^(.*?cqlsh>)/gm),
+                          let prompt = data.match(/^(.*?cqlsh.*?>)/gm),
                             // Update the active prefix to be used
                             activePrefix = prefix
 
                           // Remove the prompt from the output before printing it in the terminal; because that prompt will be prepended, and the ability to remove it or interact with it will be disabled
                           if (minifyText(data).search('cqlsh>'))
-                            data = data.replace(/^(.*?cqlsh>)/gm, '')
+                            data = data.replace(/^(.*?cqlsh.*?>)/gm, '')
 
                           // Determine whether to print the given data or not
                           try {
-                            // If an empty data has been received then ignore it
+                            // If empty data has been received then ignore it
                             if (data.trim().length <= 0)
                               throw 0
 
@@ -1649,7 +1649,7 @@
                             fitAddon.fit()
                           } catch (e) {}
 
-                          // Set the prompt which have been got from cqlsh tool
+                          // Set the prompt which has been got from cqlsh tool
                           activePrefix = ''
 
                           try {
@@ -1784,11 +1784,11 @@
                         /**
                          * Listen to `keydown` event in the terminal's container
                          * The main reason is to provide the ability to increase/decrease and reset the terminal's font size
-                         * Custom event `changefont` has been added, it will be triggered when the app's zooming level is being changed
+                         * Custom event `changefont` has been added, it will be triggered when the app's zooming level is changing
                          */
                         setTimeout(() => {
                           workareaElement.find('div.terminal.xterm').on('keydown changefont', function(e, keyCode = null) {
-                            // If `CTRL` key is not pressed or `CTRL` and `SHIFT` are being pressed together then skip this try-catch block
+                            // If the `CTRL` key is not pressed or `CTRL` and `SHIFT` are being pressed together then skip this try-catch block
                             if ((!e.ctrlKey && e.type != 'changefont') || e.shiftKey)
                               return true
 
@@ -1796,7 +1796,7 @@
                             if (e.type == 'changefont')
                               e.keyCode = keyCode
 
-                            // Switch between the `keyCode` vlaues
+                            // Switch between the `keyCode` values
                             switch (e.keyCode) {
                               // `+` Increase the font size
                               case 187: {
@@ -1823,7 +1823,7 @@
                     } catch (e) {}
                     // End of handling the app's terminal
 
-                    // Handle the bash session only if the cluster is actually a sandbox project
+                    // Handle the bash session only if the cluster is a sandbox project
                     try {
                       if (!isSandbox)
                         throw 0
@@ -1833,10 +1833,10 @@
                         // Define global variables to be used in this code block
                         let terminalBash, // The XTermJS object for Bash
                           readLineBash, // Will handle the prompt, printing messages, and data
-                          fitAddonBash, // Used for resizing the terminal and make it responsive
-                          bashLoaded = false, // Whether or not pty instance has been loaded - for easier reference it's called as Bash instance -
+                          fitAddonBash, // Used for resizing the terminal and making it responsive
+                          bashLoaded = false, // Whether or not the pty instance has been loaded - for easier reference it's called a Bash instance -
                           printData = false, // Whether or not the data coming from the pty instances should be printed or not
-                          latestCommand = '', // Store the user's input in order to create a command
+                          latestCommand = '', // Store the user's input to create a command
                           sessionID = getRandomID(5) // Get a random ID as a suffix to the sandbox project's ID
 
                         // Create the terminal instance from the XtermJS constructor
@@ -1871,14 +1871,14 @@
                           /**
                            * Load XtermJS addons
                            *
-                           * Load the `Fit` addons
+                           * Load the `Fit` addon
                            */
                           terminalBash.loadAddon(fitAddonBash)
 
                           // The terminal now will be shown in the UI
                           terminalBash.open($(`div.terminal-container[data-id="${terminalBashContainerID}"]`)[0])
 
-                          // Load the `Canvas` addons
+                          // Load the `Canvas` addon
                           terminalBash.loadAddon(new CanvasAddon())
 
                           // Load the `Webfont` addon
@@ -1900,36 +1900,22 @@
                           /**
                            * Decide what to print to the user after initializing the pty instance
                            *
-                           * Define the info message and regex syntax for Linux and macOS
+                           * Define the regex syntax in which the terminal is ready to be used once it's matched
                            */
-                          let infoMessage = 'Please input the sudo privileges in order to execute bash inside the docker project.',
-                            regex = new RegExp('.*password.*\:', 'gm')
-
-                          // Handle the info message and regex syntax for Windows
-                          try {
-                            // If the OS is not Windows then skip this try-catch block
-                            if (OS.platform() != 'win32')
-                              throw 0
-
-                            // Update the regex syntax
-                            regex = new RegExp('root.+\:\/\#', 'gm')
-                          } catch (e) {
-                            // Print the info message to user if the OS is not Windows
-                            terminalPrintMessage(terminalBash, 'info', infoMessage)
-                          }
+                          let regex = new RegExp('root.+\:\/\#', 'gm')
 
                           // Remove all previous listeners to the channel between the main and renderer threads
                           IPCRenderer.removeAllListeners(`pty:${clusterID}-bash-${sessionID}:data:bash-session`)
 
                           /**
                            * Get the terminal's active buffer
-                           * This process for detect any attempt to execute `exit` command
+                           * This process detects any attempt to execute the `exit` command
                            */
                           let activeBuffer = terminalBash.buffer.active
 
                           // Listen to data sent from the pty instance
                           IPCRenderer.on(`pty:${clusterID}-bash-${sessionID}:data:bash-session`, (_, data) => {
-                            // Update the printing status if the regex execution has returned a posivite result
+                            // Update the printing status if the regex execution has returned a positive result
                             if (regex.exec(minifyText(data)) != null && !printData)
                               printData = true
 
@@ -1944,7 +1930,7 @@
                             setTimeout(() => {
                               // Get the active's line content
                               let activeLine = activeBuffer.getLine(activeBuffer.cursorY).translateToString(),
-                                // Manipulate the entire line, get only the command and get rid of the prompt
+                                // Manipulate the entire line, get only the command, and get rid of the prompt
                                 minifiedActiveLine = minifyText(activeLine).slice(activeLine.indexOf(':/#') + 3),
                                 // Whether or not the `exit` is in the line
                                 isExitFound = ['exit', 'exit&', 'exit;'].some((exit) => minifiedActiveLine.endsWith(exit) || minifiedActiveLine.startsWith(exit))
@@ -1955,12 +1941,12 @@
                             })
                           })
 
-                          // As the user typing and inputing data to the terminal
+                          // As the user typing and providing data to the terminal
                           terminalBash.onData((data) => {
                             // Add the data to the `latestCommand` variable
                             latestCommand += data
 
-                            // If the command has `exit` character then remove it
+                            // If the command has an `exit` character then remove it
                             {
                               // Define the exit character
                               let exitChar = '\x04',
@@ -1975,7 +1961,7 @@
                             IPCRenderer.send(`pty:${clusterID}-bash-${sessionID}:command:bash-session`, data)
                           })
 
-                          // Point at the terminal view port - main container -
+                          // Point at the terminal viewport - main container -
                           let terminalViewport = $(`div.terminal-container[data-id="${terminalBashContainerID}"]`).find('div.xterm-viewport')[0]
 
                           /**
@@ -2037,7 +2023,7 @@
                           showToast(I18next.capitalize(I18next.t('copy metadata')), I18next.capitalizeFirstLetter(I18next.replaceData('metadata for the cluster [b]$data[/b] has been copied to the clipboard, the size is $data', [getAttributes(clusterElement, 'data-name'), metadataSize])) + '.', 'success')
                         })
 
-                        // Refersh the tree view
+                        // Refresh the tree view
                         $(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(function() {
                           // If the `checkMetadata` function is not yet implemented then skip the upcoming code
                           if (checkMetadata == null)
@@ -2064,7 +2050,7 @@
 
                         /**
                          * Clicks the `VISUALIZE METADATA` button; to create a visualized version of the metadata
-                         * The event listener can take a metadata to be used, if not, the latest fetched metadata will be used instead
+                         * The event listener can take metadata to be used, if not, the latest fetched metadata will be used instead
                          */
                         $(`button#_${visualizedMetadataBtnID}`).on('click', function(e, metadata) {
                           // Determine which metadata to use
@@ -2087,7 +2073,7 @@
                             // Pause the lottie element animation
                             lottiePlayer[0].pause()
 
-                            // Remove the loading class from the metad diff tab's content
+                            // Remove the loading class from the metadata diff tab's content
                             visualizedMetadataTabContent.removeClass('loading')
                           })
                         })
@@ -2097,7 +2083,7 @@
                           // Disable the button
                           $(this).addClass('disabled')
 
-                          // Get latest metadata of the cluster
+                          // Get the latest metadata of the cluster
                           Modules.Clusters.getMetadata(clusterID, (metadata) => {
                             try {
                               // Parse the received metadata from JSON string to object
@@ -2125,7 +2111,7 @@
                           // Set the screenshot's name
                           downloadElement.download = `${formatTimestamp(new Date().getTime())}.jpeg`
 
-                          // Set the content - cavnas content -
+                          // Set the content - canvas content -
                           downloadElement.href = $(`div.visualized-metadata-container[data-id="${visualizedMetadataContainerID}"]`).find('canvas')[0].toDataURL('image/jpeg')
 
                           // Click the element to let the user save the screenshot
@@ -2157,7 +2143,7 @@
                       setTimeout(() => {
                         // Point at the snapshot's suffix name container
                         let suffixContainer = $(`div.save-snapshot-suffix[data-id="${saveSnapshotSuffixContainerID}"]`),
-                          // Point at the time element; where snapshot's time will be printed to the user
+                          // Point at the time element; where the snapshot's time will be printed to the user
                           timeElement = suffixContainer.children('div.time'),
                           // Point at the save snapshot button
                           saveSnapshotBtn = suffixContainer.children('button'),
@@ -2210,14 +2196,14 @@
                           })
                         })
 
-                        // Clicks the button to open the save snapshot pop up container
+                        // Clicks the button to open the save snapshot pop-up container
                         $(`span.btn[data-id="${saveSnapshotBtnID}"]`).click(function() {
                           // Reset the suffix value
                           suffixInput.val('')
                           suffixInputObject.update()
                           suffixInputObject._deactivate()
 
-                          // Get the current date and time, format it and show it to the user
+                          // Get the current date and time, format it, and show it to the user
                           let time = new Date().getTime()
                           timeFormatted = formatTimestamp(time, true).replace(/\:/gm, '_')
                           timeElement.text(`${timeFormatted}`)
@@ -2285,7 +2271,7 @@
                         $(`span.btn[data-id="${loadSnapshotBtnID}"]`).click(function() {
                           // Get all saved snapshots of the cluster
                           Modules.Clusters.getSnapshots(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(clusterElement, 'data-folder')), (snapshots) => {
-                            // If there're no saved snapshots then show feedback to the user and skip the upcoming code
+                            // If there are no saved snapshots then show feedback to the user and skip the upcoming code
                             if (snapshots.length <= 0)
                               return showToast(I18next.capitalize(I18next.t('load snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('there are no saved snapshots for the cluster [b]$data[/b], attempt first to save one', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
 
@@ -2297,7 +2283,7 @@
                               // Hide the actions for multiple snapshots' container
                               actionsMultiple.removeClass('show')
 
-                              // Reset the `check` attribute; so next time its clicked the snapshots will be checked
+                              // Reset the `check` attribute; so the next time it clicks the snapshots will be checked
                               actionsMultiple.find('a[action="select"]').attr('check', 'true')
                             } catch (e) {}
 
@@ -2443,7 +2429,7 @@
                         })
                       })
 
-                      // Clicks either the restart or the close buttons for cluster's work area
+                      // Clicks either the restart or the close buttons for the cluster's work area
                       setTimeout(() => {
                         $(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).click(function() {
                           // Add log for this action
@@ -2513,7 +2499,7 @@
                               clusterElement.children('div.status').removeClass('show success')
                             })
 
-                            // Show the inital feedback to the user which
+                            // Show the initial feedback to the user which
                             showToast(I18next.capitalize(I18next.t('close docker project work area')), I18next.capitalizeFirstLetter(I18next.replaceData('the work area of the docker project [b]$data[/b] has been successfully closed, attempting to stop the docker containers', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                             // Reset the button's text
@@ -2608,7 +2594,7 @@
                                 if (scripts.post.length <= 0)
                                   throw 0
 
-                                // Show feedback to the usre about starting the execution process
+                                // Show feedback to the user about starting the execution process
                                 setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection with cluster [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
 
                                 // Execute the post-connection scripts in order
@@ -2661,7 +2647,7 @@
                               // Handle the first switcher's margin
                               handleClusterSwitcherMargin()
 
-                              // If there's no more active clusters then hide the switcher's container
+                              // If there are no more active clusters then hide the switcher's container
                               if (clusterSwitcher.children('div.cluster').length <= 0)
                                 clusterSwitcher.removeClass('show')
                             }, 10)
@@ -2695,7 +2681,7 @@
                           // Define the new maximum allowed height
                           newHeightAllowed = calcSwitchersAllowedHeight()
 
-                        // Divide the new height by two - as there're two switchers' containers
+                        // Divide the new height by two - as there are two switchers' containers
                         newHeightAllowed = newHeightAllowed / 2
 
                         // Determine if there's a need to handle an overflow
@@ -2796,7 +2782,7 @@
                                 // Activate the cluster's switcher
                                 $(this).parent().attr('active', '')
 
-                                // Hide the switcher's tooltip once its clicked
+                                // Hide the switcher's tooltip once it's clicked
                                 tooltip.hide()
 
                                 // Click the `CONNECT` button of the cluster
@@ -2836,7 +2822,7 @@
                               'transition': `all 0s`
                             })
 
-                            // Get the minimum width allowed to be reached for the right side before hiding's the tabs' titles
+                            // Get the minimum width allowed to be reached for the right side before hiding the tabs' titles
                             let minimumAllowedWidth = !isSandbox ? 867 : 1215,
                               // Decide whether or not the tabs' titles should be shown
                               showTabsTitles = rightSide.outerWidth() > minimumAllowedWidth,
@@ -2845,7 +2831,7 @@
                               // Get tooltips' objects of the tabs' tooltips
                               workareaTooltipObjects = allMDBObjects.filter((mdbObject) => workareaTooltipElements.some((elem) => mdbObject.element.is(elem)))
 
-                            // Inside the workareas, find all tabs' titles and toggle its display based on the window width
+                            // Inside the workareas, find all tabs' titles and toggle their display based on the window width
                             workareaElement
                               .find('div.cluster-tabs ul a.nav-link span.title')
                               .toggleClass('ignore-resize', !showTabsTitles)
@@ -2854,7 +2840,7 @@
                             // Enable/disable the work area's tabs' tooltips
                             workareaTooltipObjects.forEach((mdbObject) => mdbObject.object[!showTabsTitles ? 'enable' : 'disable']())
                           },
-                          // Once the resizing prcoess stopped/finished
+                          // Once the resizing process stopped/finished
                           stop: function(_, __) {
                             // Return the original transition's value
                             rightSide.css('transition', rightSideTransition)
@@ -2883,7 +2869,7 @@
                   throw 0
 
                 /**
-                 * Handle the `click` event on the `START` button - which shown only for the sandbox projects -
+                 * Handle the `click` event on the `START` button - which is shown only for the sandbox projects -
                  * The handler takes two parameters:
                  * One is `restart` which tells if the process is restarting the project's work area
                  * Other is `instant` which tells if the animation and transitions should not be applied
@@ -2911,7 +2897,7 @@
                     // Manipulate the maximum number, set it to the default value `1` if needed
                     maximumRunningSandbox = isNaN(maximumRunningSandbox) || maximumRunningSandbox < 1 ? 1 : maximumRunningSandbox
 
-                    // If the currently running projects are more than or equals to the maximum allowed number then end the process and show feedback to the user
+                    // If the currently running projects are more than or equal to the maximum allowed number then end the process and show feedback to the user
                     if (([numRunningSandbox, numAttemptingSandbox]).some((num) => num >= maximumRunningSandbox))
                       return showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of sandbox projects which allowed to be started simultaneously is [b]$data[/b]', [maximumRunningSandbox])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limitation can be changed from the app\'s settings in the limitation section')) + `.`, 'failure')
 
@@ -2942,7 +2928,7 @@
 
                     // Get the ports of the project
                     Modules.Docker.getPortsFromYAMLFile(getAttributes(clusterElement, 'data-folder')).then(async (ports) => {
-                      // Update attributes that holds the project's ports
+                      // Update attributes that hold the project's ports
                       clusterElement.attr({
                         'data-port-cassandra': ports.cassandra,
                         'data-port-axonops': ports.axonops
@@ -2959,8 +2945,8 @@
                         clusterElement.attr('data-cassandra-version', currentProject[0].cassandraVersion)
                       } catch (e) {}
 
-                      // A time out function which triggers if Docker is seems to be downloading files related to the project
-                      let installationInfo = setTimeout(() => showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.t('docker is seems to be downloading necessary images and related files, this is a once time process and might take up to 10 minutes depending on the internet connection')) + '.'), 90000) // After 1 mintue and 30 seconds
+                      // A time out function which triggers if Docker seems to be downloading files related to the project
+                      let installationInfo = setTimeout(() => showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.t('docker is seems to be downloading necessary images and related files, this is a once time process and might take up to 10 minutes depending on the internet connection')) + '.'), 90000) // After 1 minute and 30 seconds
 
                       /**
                        * Create a pinned toast to show the output of the process
@@ -2976,14 +2962,14 @@
                       Modules.Docker.checkDockerCompose((dockerExists, userGroup) => {
                         // If Docker doesn't exist then show feedback to the user and skip the upcoming code
                         if (!dockerExists) {
-                          showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure its installed and accessible before attempting to create a docker project')) + '.', 'failure')
+                          showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure it\'s installed and accessible before attempting to create a docker project')) + '.', 'failure')
 
                           startPostProcess()
 
                           return
                         }
 
-                        // If the current user in not in the `docker` group
+                        // If the current user is not in the `docker` group
                         if (!userGroup) {
                           showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again')) + '.', 'failure')
 
@@ -3160,7 +3146,7 @@
 
                 /**
                  * Change the value of the editor to the cluster's `cqlsh.rc` file's content
-                 * There's a `change` listener that will perform all needed changes; as we're already handled that in the listener
+                 * There's a `change` listener that will perform all needed changes; as we've already handled that in the listener
                  */
                 editor.setValue(currentCluster.cqlshrc)
 
@@ -3411,7 +3397,7 @@
                       $(document).trigger('refreshClusters', workspaceID)
                     })
 
-                    // Skip the upcoming code - no need to execute it if the workspace is actually the sandbox -
+                    // Skip the upcoming code - no need to execute it if the workspace is the sandbox -
                     return
                   } catch (e) {}
 
@@ -3461,7 +3447,7 @@
 
               // Clicks the folder button
               $(`div.btn[button-id="${folderBtnID}"]`).click(() => {
-                // Define the inital element's path variable
+                // Define the initial element's path variable
                 let elementPath = ''
 
                 try {
@@ -3506,7 +3492,7 @@
 
                 /**
                  * Check some options in the `cqlsh.rc` file
-                 * If we weren't able to do this the code flow will continue and no need to notify the user about that
+                 * If we aren't able to do this the code flow will continue and no need to notify the user about that
                  */
                 try {
                   // Read the `cqlsh.rc` file
@@ -3612,12 +3598,12 @@
                   }
                 } catch (e) {}
 
-                // Check if the current cluster is actually a sandbox project
+                // Check if the current cluster is a sandbox project
                 try {
                   if (!isSandbox)
                     throw 0
 
-                  // Update the creation data in order to adopt the sandbox project without the need to do heavy changes
+                  // Update the creation data to adopt the sandbox project without the need to do heavy changes
                   creationData = {
                     ...creationData,
                     cqlshrc: null,
@@ -3643,7 +3629,7 @@
     // End of getting all saved clusters/projects
 
     /**
-     * Define different inner functions which are used in this events file
+     * Define different inner functions that are used in this events file
      *
      * Inner function to perform the test connection's process with cluster
      *
@@ -3675,7 +3661,7 @@
         clusterObject = allClusters.find((_cluster) => _cluster.info.id == clusterID),
         // Check if any sensitive data was added to the `cqlsh.rc` file
         foundSensitiveData = false,
-        // Check if there are scripts to run in pre or post connection
+        // Check if there are scripts to run in pre or post-connection
         scripts = {
           pre: [],
           post: []
@@ -3703,7 +3689,7 @@
       } catch (e) {}
 
       /**
-       * Check pre and post connect scripts
+       * Check pre and post-connect scripts
        * Get all scripts associated with the cluster
        */
       let check = await getPrePostConnectionScripts(workspaceID, clusterID)
@@ -3746,7 +3732,7 @@
         if ([username, password].some((secret) => secret == undefined || secret.trim().length <= 0))
           throw 0
 
-        // Add the username and the password in the `secrets` sub object
+        // Add the username and the password in the `secrets` sub-object
         testData.secrets = {
           username: username,
           password: password
@@ -3820,7 +3806,7 @@
               // Get the credentials attributes
               let [credentialsAuth, credentialsSSH] = getAttributes(clusterElement, ['data-credentials-auth', 'data-credentials-ssh'])
 
-              // If there's no DB authentication credentials for the cluster then remove all associated attributes
+              // If there are no DB authentication credentials for the cluster then remove all associated attributes
               try {
                 if (credentialsAuth == undefined)
                   throw 0
@@ -3848,7 +3834,7 @@
                 if (scripts.post.length <= 0)
                   throw 0
 
-                // Show feedback to the usre about starting the execution process
+                // Show feedback to the user about starting the execution process
                 setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection with cluster [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
 
                 // Execute the post-connection scripts in order
@@ -3946,7 +3932,7 @@
           // Add the loading/processing class to the cluster UI element
           clusterElement.addClass('test-connection')
 
-          // Show feedback to the usre about starting the execution process
+          // Show feedback to the user about starting the execution process
           setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('pre-connection scripts are being executed before starting the connection with cluster [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
 
           // Execute the pre-connection scripts with order
@@ -3989,7 +3975,7 @@
         startTestConnection(sshCreation)
       }
 
-      // Inner function that do the changes in cluster element when an error occurred
+      // Inner function that do the changes in cluster element when an error occurs
       let errorVisualFeedback = () => {
         // Remove the test connection class
         clusterElement.removeClass('test-connection')
@@ -4004,7 +3990,7 @@
         let [credentialsAuth, credentialsSSH] = getAttributes(clusterElement, ['data-credentials-auth', 'data-credentials-ssh'])
 
         try {
-          // If there're no DB authentication credentials then skip this try-catch block
+          // If there are no DB authentication credentials then skip this try-catch block
           if (credentialsAuth == undefined)
             throw 0
 
@@ -4013,7 +3999,7 @@
         } catch (e) {}
 
         try {
-          // If there're no SSH credentials then skip this try-catch block
+          // If there are no SSH credentials then skip this try-catch block
           if (credentialsSSH == undefined)
             throw 0
 
@@ -4607,7 +4593,7 @@
                 sshTunnel = ssh.username.trim().length != 0 && ([ssh.password, ssh.privateKey].some((secret) => secret.trim().length != 0))
               } catch (e) {}
 
-              // The dialog is testing connection with the cluster
+              // The dialog is testing the connection with the cluster
               dialogElement.addClass('test-connection')
 
               // Disable all the buttons in the footer
@@ -4748,7 +4734,7 @@
                         // Failed to connect with the cluster
                         if (notConnected) {
                           // Define the error message
-                          let error = result.error.trim().length != 0 ? `  ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
+                          let error = result.error.trim().length != 0 ? ` ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
 
                           // Show feedback to the user
                           showToast(I18next.capitalize(I18next.t('test connection with cluster')), `${I18next.capitalizeFirstLetter(I18next.t('failed to connect with cluster'))}${error}${executionFeedback}.`, 'failure')
@@ -4786,7 +4772,7 @@
 
                       // Check if there are post-connection scripts to be executed after the connection attempt
                       if (scripts.post.length != 0) {
-                        // Show feedback to the usre about starting the execution process
+                        // Show feedback to the user about starting the execution process
                         setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.t('post-connection scripts are being executed after closing the connection with the cluster, you\'ll be notified once the process is finished')) + '.'), 50)
 
                         // Request to execute the post-connection scripts
@@ -4912,7 +4898,7 @@
                 if (scripts.pre.length <= 0)
                   throw 0
 
-                // Show feedback to the usre about starting the execution process
+                // Show feedback to the user about starting the execution process
                 setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.t('pre-connection scripts are being executed before starting the connection with the cluster, you\'ll be notified once the process is finished')) + '.'), 50)
 
                 // Request to execute the pre-connection script(s)
@@ -5350,7 +5336,7 @@
                     }
                   }
 
-                  // If there're no saved secrets then delete the `secrets` attribute
+                  // If there are no saved secrets then delete the `secrets` attribute
                   if (Object.keys(savedSecrets).length <= 0) {
                     delete finalCluster.info.secrets
                   } else {
@@ -5358,7 +5344,7 @@
                     finalCluster.info.secrets = savedSecrets
                   }
 
-                  // If ther're no required credentials then delete the `credentials` attribute
+                  // If ther are no required credentials then delete the `credentials` attribute
                   if (Object.keys(finalCluster.info.credentials).length <= 0)
                     delete finalCluster.info.credentials
 
@@ -5429,11 +5415,11 @@
           })
 
           /**
-           * This input related to select files regards SSH, SSL and Cassandra authentication
+           * This input is related to select files regards SSH, SSL, and Cassandra authentication
            * Listeners are `click` and `keypress` - ENTER -
            */
           $('div.form-outline[role="file-selector"] input').on('click keypress', function(e) {
-            // If the events is key pressing and the key is not ENTER then end this process
+            // If the event is key pressing and the key is not ENTER then end this process
             if (e.type == 'keypress' && e.keyCode != 13)
               return
 
@@ -5574,7 +5560,7 @@
 
             // Loop through each snapshot
             $(`${dialog} div.snapshots div.snapshot`).each(function() {
-              // Check if the checkbox of it is actually checked
+              // Check if the checkbox of it is checked
               let checked = $(this).find('input[type="checkbox"]').prop('checked')
 
               // If so, then delete that snapshot
@@ -5599,7 +5585,7 @@
 
       /**
        * Initial state is used to print the saved value of the input field
-       * It should be remove once an event is triggered
+       * It should be removed once an event is triggered
        *
        * Remove the initial indicator's attribute
        */
@@ -5671,17 +5657,17 @@
   {
     // Define a portion of the common CSS selector
     let selector = `div.body div.right div.content div[content="clusters"] div.section-actions div.action`,
-      // Inner function to click the parent button - which show/hide actions buttons
+      // Inner function to click the parent button - which shows/hides actions buttons
       clickParentButton = (button) => {
         $(button).parent().parent().find('button.btn.btn-lg').click()
       }
 
     // Clicks the add button
     $(`${selector}[action="add"] button`).click(function() {
-      // Point at the button to be clicked - which is `ADD CLUSTER` button -
+      // Point at the button to be clicked - which is the `ADD CLUSTER` button -
       let buttonToBeClicked = $(`button#addClusterProcess`)
 
-      // If the current workspace is the sandbox then point at `ADD PROJECT` button
+      // If the current workspace is the sandbox then point at the `ADD PROJECT` button
       if (getActiveWorkspaceID() == 'workspace-sandbox')
         buttonToBeClicked = $(`button#createSandboxProjectProcess`)
 
@@ -5697,7 +5683,7 @@
 
     // Clicks the refresh button
     $(`${selector}[action="refresh"] button`).click(function() {
-      // Refersh clusters' list
+      // Refresh clusters' list
       $(document).trigger('refreshClusters', getActiveWorkspaceID())
 
       // Call the inner function
@@ -5718,7 +5704,7 @@
         // Get all currently visible switchers
         visibleSwitchers = switchersContainer.children('div.cluster[_cluster-id]').filter(':visible')
 
-      // Remove `hidden` attribute from all switchers; as they'll be shown or hidden as needed
+      // Remove the `hidden` attribute from all switchers; as they'll be shown or hidden as needed
       switchersContainer.children('div.cluster[_cluster-id]').removeAttr('hidden')
 
       // Handle the down arrow
@@ -5740,7 +5726,7 @@
         // Show the selected switcher to be shown
         switcherToBeShown.show()
 
-        // Call the maring handler function
+        // Call the margin handler function
         handleClusterSwitcherMargin()
 
         // Skip the upcoming code

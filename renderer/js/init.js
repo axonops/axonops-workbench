@@ -10,7 +10,7 @@ const $ = require('jquery'),
   jQuery = $,
   /**
    * Node.js path module
-   * Working with file and directory paths, and provide useful utilities
+   * Working with file and directory paths, and providing useful utilities
    */
   Path = require('path')
 
@@ -49,13 +49,13 @@ $(document).ready(() => {
       // Chosen language is `English` if the saved one is invalid
       let chosenLanguage = config.get('ui', 'language') || 'en'
 
-      // Load all saved languages and make sure the chosen language exists and loaded as well
+      // Load all saved languages and make sure the chosen language exists and is loaded as well
       Modules.Localization.loadLocalization((languages) => {
         try {
           // Attempt to get the language's object
           let languageObject = languages.list.filter((language) => language.key == chosenLanguage)
 
-          // Make sure the loaded language's key is actually exists
+          // Make sure the loaded language's key exists
           chosenLanguage = languageObject.length <= 0 ? 'en' : chosenLanguage
 
           // Whether or not the language needs right to left shift of the UI
@@ -108,8 +108,8 @@ $(document).ready(() => {
           }
 
           /**
-           * Update the built-in `t` function for `I18next` module
-           * The update is detecting if the key's value has an accepted HTML tag and replace it in order to make it valid for renderering
+           * Update the built-in `t` function for the `I18next` module
+           * The update detects if the key's value has an accepted HTML tag and replaces it to make it valid for rendering
            *
            * Have a copy from the original implementation of the function
            */
@@ -166,8 +166,8 @@ $(document).ready(() => {
             let localizedPhrase = I18next.t(key)
 
             /**
-             * Loop throuh the given data array
-             * Reversing the array will lead to correct order of finding `$data` placeholder
+             * Loop through the given data array
+             * Reversing the array will lead to the correct order of finding the `$data` placeholder
              */
             dataArray.reverse().forEach((data) => {
               // Define the regular expression to find the first `$data` placeholder
@@ -245,7 +245,7 @@ $(document).ready(() => {
 
 /**
  * Import `s-ago` module
- * Used to convert timestamp to a human readable string `now, a minute ago...`
+ * Used to convert timestamp to a human-readable string `now, a minute ago...`
  * Define the variable which will hold the module
  */
 let ReadableTime
@@ -262,7 +262,7 @@ $(document).ready(() => {
         // Get its timestamp
         let time = parseInt($(this).attr('s-ago-time'))
 
-        // Convert it to human readable format
+        // Convert it to human-readable format
         $(this).text(ReadableTime(new Date(time)))
       } catch (e) {}
     })
@@ -297,7 +297,7 @@ $(document).ready(() => {
 
   /**
    * Material Design for Bootstrap (MDB)
-   * This framework reduces the ugliness of Material Design API calls, and provides a better control over colors
+   * This framework reduces the ugliness of Material Design API calls and provides better control over colors
    */
   {
     let materialPath = Path.join(__dirname, '..', 'js', 'mdb5')
@@ -533,7 +533,7 @@ $(document).ready(() => {
                     input.val(optionValue)
                   } catch (e) {}
 
-                  // Add values to the chekbox inputs
+                  // Add values to the checkbox inputs
                   try {
                     // If the input's type is not `checkbox` then skip this try-catch block
                     if (input.attr('type') != 'checkbox')
@@ -743,7 +743,7 @@ $(document).ready(() => {
       // Get the current tooltip's MDB object
       let tooltip = getElementMDBObject($(this), 'Tooltip')
 
-      // If this tooltip created for showing the path of selected files in dialogs then disable it by default
+      // If this tooltip is created for showing the path of selected files in dialogs then disable it by default
       if ($(this).parent().attr('role') == 'file-selector')
         tooltip.disable()
 
@@ -753,7 +753,7 @@ $(document).ready(() => {
   }, 1000)
 })
 
-// To imporve performance, make sure the non-visible lottie element is not playing in the background
+// To improve performance, make sure the non-visible lottie element is not playing in the background
 $(document).ready(() => setTimeout(() => autoPlayStopLottieElement($('lottie-player')), 1500))
 
 // Initialize the logging system
@@ -764,7 +764,7 @@ $(document).ready(() => {
       // Check the status of either enabling or disabling the logging feature
       isLoggingEnabled = config.get('security', 'loggingEnabled') || isLoggingEnabled
 
-      // Convert the flag to boolean instead of string
+      // Convert the flag to a boolean instead of a string
       isLoggingEnabled = isLoggingEnabled == 'false' ? false : true
 
       // If the logging feature is not enabled then skip the upcoming code
@@ -780,7 +780,7 @@ $(document).ready(() => {
       // Add the first logs
       setTimeout(() => {
         addLog(`AxonOps Developer Workbench has loaded all its components and it's ready to be used.`)
-        addLog(`The unqiue ID of this machine is: ${machineID}.`, 'env')
+        addLog(`The unique ID of this machine is: ${machineID}.`, 'env')
       }, 1000)
     })
   })

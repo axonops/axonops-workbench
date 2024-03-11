@@ -1,4 +1,4 @@
-// Handle the sandbox project's creation's dialog
+// Handle the sandbox project's creation dialog
 {
   // Define the dialog path's CSS selector
   let dialog = 'div.modal#createSandboxProjectDialog',
@@ -19,7 +19,7 @@
 
   // Clicks the `CREATE PROJECT` button
   $(`button#createDockerProject`).click(function() {
-    // Disable the button - to let the user knows that there's a background process
+    // Disable the button - to let the user know that there's a background process
     $(this).attr('disabled', '')
 
     // Add log about this request
@@ -34,7 +34,7 @@
       if (!dockerExists)
         return showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure its installed and accessible before attempting to create a docker project')) + '.', 'failure')
 
-      // If the current user in not in the `docker` group
+      // If the current user is not in the `docker` group
       if (!userGroup)
         return showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again')) + '.', 'failure')
 
@@ -75,7 +75,7 @@
         // Set Cassandra's version
         project.cassandraVersion = cassandraVersion
 
-        // Set the number of Cassandra's node in the project
+        // Set the number of Cassandra's nodes in the project
         project.nodes = numOfNodes
 
         // Save the Docker project

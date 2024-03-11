@@ -1,7 +1,7 @@
 {
   let variables = [], // All adopted/approved variables
     removedVariables = null, // Removed variables to be replaced with their values
-    changedVariables = null, // Changed variables which some or all their attributes would be changed - name, value and scope -
+    changedVariables = null, // Changed variables in which some or all their attributes would be changed - name, value, and scope -
     savedWorkspaces = [], // All saved workspaces - synced and up to date -
     variablesList = $('div.variables-list'), // Point at the variables' container in the settings dialog
     content = variablesList.children('div.content'), // Point at the variables' content inside the container
@@ -43,7 +43,7 @@
 
   // Clicks the bulk deletion of selected variables
   $(`#deleteSelectedVariables`).click(function() {
-    // Get all variables which their deletion chekbox is checked
+    // Get all variables which their deletion checkbox is checked
     let checkboxes = variablesList.find('input[type="checkbox"]:checked')
 
     // Loop through each one of them
@@ -155,7 +155,7 @@
 
       // Point at the delete button of row/variable
       let deleteBtn = row.find(`a[action="delete"]`),
-        // Sort the selected workspaces - scope - array; for comparison and changes detection
+        // Sort the selected workspaces - scope - array; for comparison and change detection
         selectedWorkspacesIDs = selectedWorkspaces.sort(),
         // Do the same thing with the original scope array
         originalselectedWorkspacesIDs = getAttributes(deleteBtn, 'variable-scope').split(',').sort()
@@ -620,7 +620,7 @@
     changedVariables = null
   }
 
-  // When request from the main thread to open the define variables dialog is received
+  // When a request from the main thread to open the define variables dialog is received
   {
     let selector = `div.body div.left div.content div.navigation div.group div.item`
     $(`${selector}[action="settings"]`).click(() => retrieveVariables())

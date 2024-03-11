@@ -1,4 +1,6 @@
 /**
+ * The `intro` JS file - the only `.js` file imported by the intro view -
+ *
  * Node.js path module
  * Working with file and directory paths
  */

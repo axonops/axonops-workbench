@@ -34,16 +34,16 @@ const Electron = require('electron'),
  * Import Node.js modules
  *
  * Node.js file system module - improved version which has methods that aren't included in the native `fs` module -
- * Used for working with file system, it provides related utilities
+ * Used for working with files system, it provides related utilities
  */
 const FS = require('fs-extra'),
   /**
    * Node.js path module
-   * Working with file and directory paths, and provide useful utilities
+   * Working with file and directory paths, and providing useful utilities
    */
   Path = require('path'),
   /**
-   * Node.js url module
+   * Node.js URL module
    * For URL resolution and parsing
    */
   URL = require('url')
@@ -56,7 +56,7 @@ const FS = require('fs-extra'),
 const Terminal = require('node-cmd'),
   // Enable the right-click context menu
   ContextMenu = require('electron-context-menu'),
-  // Helps positioning the app's windows
+  // Helps to position the app's windows
   Positioner = require('electron-positioner')
 
 /**
@@ -108,7 +108,7 @@ let mainView = null,
   // A view for the app's offline documentation
   documentationView = null
 
-// An array which will save all cqlsh instances with their ID given by the renderer thread
+// An array that will save all cqlsh instances with their ID given by the renderer thread
 let CQLSHInstances = [],
   // Whether or not the user wants to entirely quit the app - this happens when all renderer threads are terminated/closed -
   macOSForceClose = false,
@@ -283,7 +283,7 @@ App.on('ready', () => {
 
     /**
      * Only hide the documentation view
-     * In this way we prevent unnecessary loading and creating time for the view each time it's called
+     * In this way we prevent unnecessary loading and create time for the view each time it's called
      */
     documentationView.hide()
   })
@@ -345,13 +345,13 @@ App.on('ready', () => {
       return
     } catch (e) {}
 
-    // The way we handle this event is by preventing its default behaviour only once, then, we do what we need to do before the termination and after all processes are finished the `close` event is triggered again but it won't be prevented this time
+    // The way we handle this event is by preventing its default behavior only once, then, we do what we need to do before the termination and after all processes are finished the `close` event is triggered again but it won't be prevented this time
     try {
-      // If we don't need to prevent the `close` default behaviour then we may skip this try-catch block
+      // If we don't need to prevent the `close` default behavior then we may skip this try-catch block
       if (!mainViewPreventClose)
         throw 0
 
-      // Prevent the default behaviour for this event
+      // Prevent the default behavior for this event
       event.preventDefault()
 
       // Set to `false`; to skip this try-catch block on the next call of event `close`
@@ -376,7 +376,7 @@ App.on('ready', () => {
 
         // Close the documentation view
         try {
-          // Set it to `true`; in order to close the documentation view and destroy it as well
+          // Set it to `true`; to close the documentation view and destroy it as well
           documentationViewPreventClose = false
 
           // Close the documentation view
@@ -603,7 +603,7 @@ App.on('window-all-closed', () => App.quit())
     // If the host is Windows
     binCall = (process.platform == 'win32') ? `keys_generator.exe` : binCall
 
-    // Execute the command, get the public key and send it to the renderer thread
+    // Execute the command, get the public key, and send it to the renderer thread
     Terminal.run(`cd "${binFolder}" && ${binCall}`, (err, publicKey, stderr) => mainView.webContents.send(`public-key:${id}`, (err || stderr) ? '' : publicKey))
   })
 

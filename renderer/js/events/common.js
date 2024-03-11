@@ -41,12 +41,12 @@
 
       /**
        * Check if there's at least one visible opened sandbox project
-       * This process is done because the sandbox project has extra tabs - AxonOps -; so th app's window's width should be wider
+       * This process is done because the sandbox project has extra tabs - AxonOps -; so the app's window's width should be wider
        */
       let existsAxonOpsTab = $('div.cluster-tabs ul.nav.nav-tabs li.axonops-tab').filter(':visible').length > 0
 
       try {
-        // If there's no opened sandbox projects then skip this try-catch block
+        // If there are no opened sandbox projects then skip this try-catch block
         if (!existsAxonOpsTab)
           throw 0
 
@@ -58,7 +58,7 @@
           showTabsTitles = windowWidth >= 1720 && !$('div.body').hasClass('show-hidden')
       } catch (e) {}
 
-      // Inside the cluster's workareas, find all tabs' titles and toggle its display based on the window width
+      // Inside the cluster's workareas, find all tabs' titles and toggle their display based on the window width
       $('div.body div.right div.content div[content="workarea"]')
         .find('div.cluster-tabs ul a.nav-link span.title:not(.ignore-resize)')
         .toggle(showTabsTitles)
@@ -121,7 +121,7 @@
 
       assistantContent.addClass('_loading')
 
-      // Load some of the saved questionsd
+      // Load some of the saved questions
       $(document).trigger('loadQuestions')
 
       // Set a random time to remove the initialization process
@@ -131,7 +131,7 @@
     // Trigger the resize event for the window; to hide the tabs' titles if needed
     $(window.visualViewport).trigger('resize')
 
-    // Point at the answering indicator besides the AI's icon
+    // Point at the answering indicator beside the AI's icon
     let answeringLoader = $(`div.body div.left div.content div.navigation div.group div.item[action="ai"] div.answering`)
 
     try {
@@ -146,7 +146,7 @@
        */
       let answeringQuestion = $(`div.hidden-area div.content div.questions-and-answers div.block._right div.answer div.answering:not([style*="display: none"])`).length > 0
 
-      // If the AI assistant is answering a question then show the answering indicator besides the AI's icon
+      // If the AI assistant is answering a question then show the answering indicator beside the AI's icon
       if (answeringQuestion)
         answeringLoader.addClass('show')
 
@@ -229,7 +229,7 @@
       btn.removeClass('active')
     } catch (e) {}
 
-    // Point at the AI answering indicator besides the AI's icon
+    // Point at the AI answering indicator beside the AI's icon
     let answeringLoader = $(`div.body div.left div.content div.navigation div.group div.item[action="ai"] div.answering`),
       assistantContainer = $('div.body div.hidden-area div.content.ai-assistant')
 
@@ -245,7 +245,7 @@
        */
       let answeringQuestion = $(`div.hidden-area div.content div.questions-and-answers div.block._right div.answer div.answering:not([style*="display: none"])`).length > 0
 
-      // If the AI assistant is answering a question then show the answering indicator besides the AI's icon
+      // If the AI assistant is answering a question then show the answering indicator beside the AI's icon
       if (answeringQuestion && !assistantContainer.is(':visible'))
         answeringLoader.addClass('show')
 
@@ -301,7 +301,7 @@
 
       /**
        * Check the chosen display language - whether it's valid or not -
-       * Point at the language's option in the UI - if it's exists then it means the app has loaded it successfully at the initialization process -
+       * Point at the language's option in the UI - if it exists then it means the app has loaded it successfully at the initialization process -
        */
       let chosenDisplayLanguageElement = $('div.dropdown[for-select="languageUI"] ul li a').filter(`[hidden-value="${displayLanguage}"]`)
 
@@ -413,7 +413,7 @@
       }
     })
 
-    // Listen to keys presses in relation of the more options/settings shortcuts
+    // Listen to key presses in relation to the more options/settings shortcuts
     $(document).on('keypress', function(e) {
       // `CTRL` and `SHIFT` keys should be pressed
       if (!e.ctrlKey || !e.shiftKey)
@@ -451,7 +451,7 @@
   // Define the common element CSS selector
   let dialog = `div.modal#appSettings div.modal-body div.side`
 
-  // Clicks one of left side buttons
+  // Clicks one of the left side buttons
   $(`${dialog}-left div.sections div.section div.btn`).click(function() {
     // Get the section's name
     let section = $(this).attr('section')
@@ -528,14 +528,14 @@
     // Define the app's settings model selector path
     let dialog = 'div.modal#appSettings'
 
-    // Loop through dropdown element of each select element
+    // Loop through the dropdown element of each select element
     $(`${dialog}`).find('div.dropdown[for-select]').each(function() {
       // Get the MDB object of the current dropdown element
       let selectDropdown = getElementMDBObject($(this), 'Dropdown'),
         // Point at the associated input field
         input = $(`${dialog}`).find(`input#${$(this).attr('for-select')}`)
 
-      // Once the associated select element is being focused then show the dropdown element and vise versa
+      // Once the associated select element is being focused then show the dropdown element and vice versa
       input.on('focus', () => selectDropdown.show()).on('focusout', () => setTimeout(() => selectDropdown.hide(), 100))
 
       // Once the parent `form-outline` is clicked trigger the `focus` event
@@ -549,7 +549,7 @@
   // Define the common element CSS selector
   let dialog = `div.modal#clusterCredentials div.modal-body div.side`
 
-  // Clicks one of top side buttons
+  // Clicks one of the top side buttons
   $(`${dialog}-left div.sections div.section div.btn`).click(function() {
     // Get the section's name
     let section = $(this).attr('section')
@@ -574,7 +574,7 @@
       // Get the UI element of the cluster
       clusterElement = $(`div.clusters[workspace-id="${getActiveWorkspaceID()}"] div.cluster[data-id="${clusterID}"]`)
 
-    // Get all saved cluster in the currently active workspace
+    // Get all saved clusters in the currently active workspace
     Modules.Clusters.getClusters(getActiveWorkspaceID()).then((clusters) => {
       try {
         // Get the associated cluster's object
@@ -585,13 +585,13 @@
 
         /*
          * Get rid of the cluster's credentials
-         * By doing this the app won't ask the user about entering the credentials again
+         * By doing this the app won't ask the user to enter the credentials again
          */
         delete cluster.info.credentials
 
         // Attempt to update the cluster
         Modules.Clusters.updateCluster(getActiveWorkspaceID(), cluster).then((status) => {
-          // If the updating prcoess failed then throw an error and skip the upcoming code
+          // If the updating process failed then throw an error and skip the upcoming code
           if (!status)
             throw 0
 
@@ -605,7 +605,7 @@
           setTimeout(() => clusterElement.find('div.button button.test-connection').click())
         })
       } catch (e) {
-        // The updating prcoess failed, show feedback to the user
+        // The updating process failed, show feedback to the user
         return showToast(I18next.capitalize(I18next.t('ignore cluster credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
       }
     })
@@ -629,11 +629,11 @@
     credentialsInputs.forEach((input) => {
       // Define the input's name
       let name = input,
-        // Is it a confirm checkbox or an text input field?
+        // Is it a confirm checkbox or a text input field?
         confirm = !name.search('confirm')
 
       // Point at the checkbox/text field
-      input = $(`input#${confirm ?  'realtimeCredentials' : ''}${name}`)
+      input = $(`input#${confirm ? 'realtimeCredentials' : ''}${name}`)
 
       // Get the input's value
       input = confirm ? input.val() : input.prop('checked')
@@ -680,7 +680,7 @@
     // Disable the proceed button
     $(this).attr('disabled', '')
 
-    // Get the public key; to be ysed for the credentials encryption process
+    // Get the public key; to be used for the credentials encryption process
     getKey('public', (key) => {
       try {
         // If the `DB authentication` section is not required then skip this try-catch block
@@ -778,7 +778,7 @@
 
             // Attempt to update the cluster
             Modules.Clusters.updateCluster(getActiveWorkspaceID(), cluster).then((status) => {
-              // If the updating prcoess failed then throw an error and skip the upcoming code
+              // If the updating process failed then throw an error and skip the upcoming code
               if (!status)
                 throw 0
 
@@ -786,7 +786,7 @@
               clusterElement.removeAttr(`${saveAuthCredentialsConfirmed ? 'data-credentials-auth' : ''} ${saveSSHCredentialsConfirmed ? 'data-credentials-ssh' : ''}`)
             })
           } catch (e) {
-            // The updating prcoess failed, show feedback to the user
+            // The updating process failed, show feedback to the user
             showToast(I18next.capitalize(I18next.t('save cluster credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
             // Enable the proceed button again

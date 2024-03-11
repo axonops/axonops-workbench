@@ -214,7 +214,7 @@
       "the new cluster has been saved successfully": "Le nouveau cluster a été enregistré avec succès",
       "select workspace folder path": "Sélectionner le chemin du dossier de l'espace de travail",
       "do you want to delete the selected snapshots? once you confirm, there is no undo": "Souhaitez-vous supprimer les instantanés sélectionnés ? Une fois confirmé, l'opération est irréversible",
-      "sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed. Please make sure they are installed and accessible before attempting to create a docker project": "La fonctionnalité de bac à sable nécessite l'installation de [code]docker[/code] et de son outil [code]docker-compose[/code]. Assurez-vous qu'ils sont installés et accessibles avant de tenter de créer un projet docker",
+      "sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure it's installed and accessible before attempting to create a docker project": "La fonctionnalité de bac à sable nécessite l'installation de [code]docker[/code] et de son outil [code]docker-compose[/code]. Assurez-vous qu'ils sont installés et accessibles avant de tenter de créer un projet docker",
       "something went wrong, failed to save the docker project": "Quelque chose s'est mal passé. Échec de l'enregistrement du projet docker",
       "the project with Apache Cassandra ® v$data has been successfully created and saved": "Le projet avec Apache Cassandra ® v$data a été créé et enregistré avec succès",
       "refresh variables": "Actualiser les variables",

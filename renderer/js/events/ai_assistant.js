@@ -1,7 +1,7 @@
 {
   // Point at the questions and answers container
   let questionsAnswersContainer = $('div.body div.hidden-area div.content.ai-assistant div.questions-and-answers'),
-    // Whether or not it's allowed to force scrolling to bottom if a question is being answerd
+    // Whether or not it's allowed to force scrolling to the bottom if a question is being answered
     allowScrollBottom = false
 
   /**
@@ -32,7 +32,7 @@
     // Add log for this action
     addLog(`Asking the AI Assistant a question: ${questionValue}`, 'action')
 
-    // Manipulate it again by replacing new line symbol with break line html tag
+    // Manipulate it again by replacing the new line symbol with the break line html tag
     questionValue = questionValue.replace(/\n/gm, '<br>')
 
     // The question's UI element structure
@@ -140,7 +140,7 @@
               /**
                * Reaching here means a valid answer has been received
                *
-               * Set the trade mark symbol `™` after Cassandra
+               * Set the trade-mark symbol `™` after Cassandra
                */
               answer = setApacheCassandraTMSymbol(answer)
 
@@ -151,7 +151,7 @@
               answer = answer.replace(/\|\|(.+)\|\|/gm, '<code>$1</code>')
                 .replace(/\[ANSWER\]\s*/gm, '')
 
-              // Type the answer with set of properties
+              // Type the answer with a set of properties
               new Typed(answerElement.children('div.text').children('span')[0], {
                 strings: [answer.replace(/\n/gm, '<br>')],
                 typeSpeed: 48,
@@ -164,7 +164,7 @@
                   // Remove the answering indicator from the AI assistant icon in the left side
                   $(`div.group div.item[action="ai"] div.answering`).removeClass('show')
 
-                  // Allow to force scolling to bottom
+                  // Allow to force scrolling to the bottom
                   allowScrollBottom = true
 
                   // Scroll the container to the bottom
@@ -219,12 +219,12 @@
                   // Remove the `answering` status
                   $('div.body.show-hidden div.hidden-area div.content.ai-assistant').removeClass('answering')
 
-                  // Disallow to force scolling to bottom
+                  // Disallow to force scrolling to the bottom
                   allowScrollBottom = false
                 }
               })
             })
-            // If error has been occurred
+            // If an error has occurred
             .catch((error) => {
               setTimeout(() => {
                 // Set a default answer
@@ -233,7 +233,7 @@
                 // Log the failure of the process
                 addLog(`The AI Assistant failed to answer the question. Error details: ${error}.`, 'error')
 
-                // Set back the asked quesiton
+                // Set back the asked question
                 question.val(originalQuestion)
 
                 // Set the response date and time
@@ -242,7 +242,7 @@
                 // Add `busy` class to the answer's UI element
                 answerElement.addClass('busy')
 
-                // Type the answer with set of properties
+                // Type the answer with a set of properties
                 new Typed(answerElement.children('div.text').children('span')[0], {
                   strings: [answer],
                   typeSpeed: 48,
@@ -255,7 +255,7 @@
                     // Remove the answering indicator from the AI assistant icon in the left side
                     $(`div.group div.item[action="ai"] div.answering`).removeClass('show')
 
-                    // Allow to force scolling to bottom
+                    // Allow to force scrolling to the bottom
                     allowScrollBottom = true
 
                     // Scroll the container to the bottom
@@ -295,7 +295,7 @@
                     // Remove the `answering` status
                     $('div.body.show-hidden div.hidden-area div.content.ai-assistant').removeClass('answering')
 
-                    // Disallow to force scolling to bottom
+                    // Disallow to force scrolling to the bottom
                     allowScrollBottom = false
                   }
                 })
@@ -331,7 +331,7 @@
 
     // If the pressed key is `ENTER` alongside holding the `SHIFT` key
     if (e.shiftKey) {
-      // Prevent the default behaviour
+      // Prevent the default behavior
       e.preventDefault()
 
       // Click the `ASK` button
@@ -350,7 +350,7 @@
   /**
    * This custom event for loading questions `smartly`...
    * On the first loading process it keeps loading questions till an overflow is occurred
-   * After that it loads question based on a defined limitation value
+   * After that it loads questions based on a defined limitation value
    */
   $(document).on('loadQuestions', () => {
     // Get the app's config
@@ -399,11 +399,11 @@
         counter = 0,
         // Maximum number of questions to be loaded
         limit = parseInt(config.get('limit', 'assistantQuestions')),
-        // Whether or not the container is over flowed
+        // Whether or not the container overflowed
         overflowTriggered = questionsAnswersContainer[0].offsetHeight < questionsAnswersContainer[0].scrollHeight
 
       // Add log for this process
-      addLog(`Loading previous answerd questions from the AI Assistant.`, 'process')
+      addLog(`Loading previous answered questions from the AI Assistant.`, 'process')
 
       /**
        * Inner function to create an element - question and its answer -
@@ -430,14 +430,14 @@
           return createElement(questions, index + 1)
 
         try {
-          // If the container has an over flow then skip this try-catch block
+          // If the container has an overflow then skip this try-catch block
           if (overflowTriggered)
             throw 0
 
           // Update the related flag's state
           overflowTriggered = questionsAnswersContainer[0].offsetHeight < questionsAnswersContainer[0].scrollHeight
 
-          // After the update, if there's an over flow
+          // After the update, if there's an overflow
           if (overflowTriggered) {
             // Reset the loading counter
             counter = 0
@@ -478,7 +478,7 @@
           // Manipulate the question's value/content by stripping any HTML tag
           let questionValue = StripTags(question.question)
 
-          // Manipulate it again by replacing new line symbol with break line html tag
+          // Manipulate it again by replacing the new line symbol with the break line html tag
           questionValue = questionValue.replace(/\n/gm, '<br>')
 
           // Add the question's value/content

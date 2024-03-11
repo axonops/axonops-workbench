@@ -214,7 +214,7 @@
       "the new cluster has been saved successfully": "the new cluster has been saved successfully",
       "select workspace folder path": "select workspace folder path",
       "do you want to delete the selected snapshots? Once you confirm, there is no undo": "do you want to delete the selected snapshots? Once you confirm, there is no undo",
-      "sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure its installed and accessible before attempting to create a docker project": "sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure its installed and accessible before attempting to create a docker project",
+      "sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure it's installed and accessible before attempting to create a docker project": "sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure it's installed and accessible before attempting to create a docker project",
       "something went wrong, failed to save the docker project": "something went wrong, failed to save the docker project",
       "the project with Apache Cassandra ® v$data has been successfully created and saved": "the project with Apache Cassandra ® v$data has been successfully created and saved",
       "refresh variables": "refresh variables",

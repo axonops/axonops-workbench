@@ -1,6 +1,6 @@
 /**
  * Handle all background processes in this secondary hidden view
- * This view is completely separated from the main - renderer - view, and only the modules and JS files that are needed are being imported
+ * This view is completely separated from the main - renderer - view and only the modules and JS files that are needed are being imported
  *
  * Import needed modules
  *
@@ -10,7 +10,7 @@
 const FS = require('fs-extra'),
   /**
    * Node.js path module
-   * Working with file and directory paths, and provide useful utilities
+   * Working with file and directory paths, and providing useful utilities
    */
   Path = require('path'),
   // JQuery library
@@ -58,14 +58,14 @@ let sshTunnels = [],
   isLoggingEnabled = true
 
 /**
- * Check status of either enabling or disabling the logging feature
+ * Check the status of either enabling or disabling the logging feature
  * Get the app's config
  */
 Config.getConfig(async (config) => {
   // Check the status of either enabling or disabling the logging feature
   isLoggingEnabled = config.get('security', 'loggingEnabled') || isLoggingEnabled
 
-  // Convert the flag to boolean instead of string
+  // Convert the flag to a boolean instead of a string
   isLoggingEnabled = isLoggingEnabled == 'false' ? false : true
 })
 
@@ -118,18 +118,18 @@ Config.getConfig(async (config) => {
           } catch (e) {}
 
           try {
-            // If a pass pharse for the private key file has been passed
+            // If a pass phrase for the private key file has been passed
             if (data.passphrase == undefined || data.passphrase.trim().length <= 0)
               throw 0
 
-            // Parse the key file's content using `parseKey` function
+            // Parse the key file's content using the `parseKey` function
             let prasedKey = SSH2Utils.parseKey(authentication.privateKey, data.passphrase)
 
             // Update the key's content
             authentication.privateKey = prasedKey.getPrivatePEM()
           } catch (e) {}
 
-          // Make sure there's no key with `undefined` value
+          // Make sure there's no key with an `undefined` value
           try {
             // Loop through the `data` JSON object
             Object.keys(data).forEach((key) => {
@@ -219,8 +219,8 @@ Config.getConfig(async (config) => {
     // Request to close an SSH tunnel based on the cluster's ID
     IPCRenderer.on('ssh-tunnel:close', (_, clusterID) => {
       /**
-       * Check if the given `clusterID` is actually the port
-       * This occurs when a request came from a connection test to a cluster that is about to be added or updated.
+       * Check if the given `clusterID` is the port
+       * This occurs when a request comes from a connection test to a cluster that is about to be added or updated.
        */
       let isPort = !isNaN(parseInt(clusterID))
 
@@ -283,7 +283,7 @@ Config.getConfig(async (config) => {
 
   // Detect differentiation between two texts (metadata in specific)
   {
-    // Request from the main thread to detecct differentiation
+    // Request from the main thread to detect differentiation
     IPCRenderer.on('detect-differentiation', async (_, data) => {
       // Define the response tag to be called
       let responseTag = `detect-differentiation:result:${data.requestID}`,

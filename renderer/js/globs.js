@@ -1,4 +1,4 @@
-// The main editor which is being used for browsing and editing the `cqlsh.rc` file's content in add/edit cluster's dialog
+// The main editor which is being used for browsing and editing the `cqlsh.rc` file's content in the add/edit cluster's dialog
 let editor,
   // Boolean value used to prevent collisions while updating `cqlsh.rc` content in the editor
   isUpdatingEditor = false,
@@ -17,7 +17,7 @@ let activeWorkspaceID = '',
 
 /**
  * Boolean value used to tell if the info toast has been shown to the user or not
- * This flag is defined in order to show the toast only once
+ * This flag is defined to show the toast only once
  */
 let isSandboxDockerInfoShown = false,
   // Boolean value used to tell if the logging system should be enabled in the current session or not
@@ -31,7 +31,7 @@ let cqlshValues = []
 
 /**
  * All `fit terminal` addon objects for the app's terminals
- * This addon is used to make terminals dimensions responsive
+ * This addon is used to make terminal's dimensions responsive
  */
 let terminalFitAddonObjects = []
 
@@ -57,7 +57,7 @@ let sshTunnels = []
 
 /**
  * Save all created MDB objects during the app's runtime
- * This array associated with the singleton pattern implementation in the function `getElementMDBObject(element, ?type)`
+ * This array is associated with the singleton pattern implementation in the function `getElementMDBObject(element, ?type)`
  */
 let allMDBObjects = [],
   // The MDB object of the `add` and `refresh` clusters floating buttons' tooltips

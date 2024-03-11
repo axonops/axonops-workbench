@@ -64,11 +64,11 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
       if (event == 'refreshWorkspaces')
         append = $(`div.workspace[data-id="${workspaceID}"]`).length != 0 ? false : append
 
-      // Determine if the current workspace is the docker - sandbox - one
+      // Determine if the current workspace is the docker/sandbox - one
       let isSandbox = workspace.id == 'workspace-sandbox',
         /**
          * Determine if the workspace folder is accessible or not by checking the `clusters` object
-         * The value will be `undefined` if the app wasn't able to access the workspace folder and it's not the docker - sandbox workspace
+         * The value will be `undefined` if the app wasn't able to access the workspace folder and it's not the docker/sandbox workspace
          */
         inAccessible = workspace.clusters == undefined && !isSandbox,
         // Get the workspace's color in `R G B` format
@@ -76,7 +76,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         // Set the background color for the `ENTER` button
         backgroundColor = TinyColor(workspace.color).isValid() ? `style="background: rgb(${color} / 70%); ` : ''
 
-      // Determine if the color of the button needs to be black based on the lighten of the color
+      // Determine if the color of the button needs to be black based on the lightening of the color
       backgroundColor += TinyColor(workspace.color).isLight() ? `color: #252525;"` : `"`
 
       // Workspace UI element structure
@@ -117,7 +117,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
       try {
         /**
          * Update the inaccessibility status of the workspace
-         * This line will update the inaccessibility status of the already added workspace
+         * This line will update the inaccessibility status of the already-added workspace
          */
         $(`div.workspace[data-id="${workspaceID}"]`).toggleClass('inaccessible', inAccessible)
 
@@ -161,9 +161,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   clustersList.append($(element).show(function() {
                     setTimeout(() => getElementMDBObject($(this), 'Tooltip'))
 
-                    // Once the user clicks this mini cluster element
+                    // Once the user clicks this mini-cluster element
                     $(this).click(function() {
-                      // Make sure its clickable - active and has workarea -
+                      // Make sure it's clickable - active and has workarea -
                       if (!$(this).hasClass('clickable'))
                         return
 
@@ -301,7 +301,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                     if (workspaceSwitcher.is(':visible'))
                       throw 0
 
-                    // Reposition the switchers and make the workspace's one the first one
+                    // Reposition the switchers and make the workspace's one is the first one
                     workspaceSwitcher.insertAfter($(`div.switch-workspaces div.workspace[home]`))
 
                     // Make sure it's shown
@@ -390,7 +390,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   // Set the height in {n}px style; to make sure the animation applied on height will be smooth
                   workspaceSwitcher.css('height', `${switcherCurrentHeight}px`)
 
-                  // By default there's no delay before applying new height to the switcher
+                  // By default there's no delay before applying a new height to the switcher
                   let delay = false
 
                   // If the workspaces' switchers' container is not shown yet
@@ -435,7 +435,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                       }
 
                       try {
-                        // If the container hidden then skip this try-catch block
+                        // If the container is hidden then skip this try-catch block
                         if (!hideSwitcher)
                           throw 0
 
@@ -452,7 +452,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                         let tooltip = null
 
                         try {
-                          // If the container hidden then skip this try-catch block
+                          // If the container is hidden then skip this try-catch block
                           if (!hideSwitcher)
                             throw 0
 
@@ -463,7 +463,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                           workspaceSwitcher.children('div.workspace:not([home])').filter(':visible').last().hide()
                         } catch (e) {}
 
-                        // Add the docker icon if the workspace is actually the sandbox
+                        // Add the docker icon if the workspace is the sandbox
                         try {
                           // If the workspace is not the sandbox then skip this try-catch block
                           if (workspaceID != 'workspace-sandbox')
@@ -534,7 +534,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
               // Clicks the folder button
               $(`div.btn[button-id="${folderBtnID}"]`).click(() => {
-                // Set the path to opened based on whether or not the workspace is actually the docker - sandbox -
+                // Set the path to open based on whether or not the workspace is the docker/sandbox
                 let path = !isSandbox ? getWorkspaceFolderPath(workspaceID) : Path.join(__dirname, '..', '..', 'data', 'docker')
 
                 // Open the set path
@@ -792,7 +792,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         } catch (e) {}
 
         try {
-          // If current mode is not `edit` then skip this try-catch block
+          // If the current mode is not `edit` then skip this try-catch block
           if (!editingMode)
             throw 0
 
@@ -869,7 +869,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             let colorRGB = HEXToRGB(color.val()).join(' '),
               // Set the background color for the `ENTER` button
               backgroundColor = TinyColor(color.val()).isValid() ? `rgb(${colorRGB} / 70%)` : '',
-              // Determine if the color of the button needs to be black based on the lighten of the color
+              // Determine if the color of the button needs to be black based on the lightening of the color
               textColor = TinyColor(color.val()).isLight() ? `#252525` : ''
 
             // Update the box-shadow of the workspace element

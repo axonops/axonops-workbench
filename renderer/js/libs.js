@@ -1,4 +1,6 @@
 /**
+ * Import all essential libraries and modules
+ *
  * Node.js file system module - improved version which has methods that aren't included in the native `fs` module -
  * Used for working with files system, it provides related utilities
  */
@@ -10,7 +12,7 @@ const FS = require('fs-extra'),
   OS = require('os'),
   /**
    * Electron renderer communication with the main thread
-   * Used for sendsing requests from the renderer threads to the main thread and listening to the responses
+   * Used for sending requests from the renderer threads to the main thread and listening to the responses
    */
   IPCRenderer = require('electron').ipcRenderer,
   /**
@@ -20,7 +22,7 @@ const FS = require('fs-extra'),
    */
   Clipboard = require('electron').clipboard,
   /**
-   * Convert a bytes value to a human-readable string (9 KB, 2 MB, and so on)
+   * Convert a byte value to a human-readable string (9 KB, 2 MB, and so on)
    * Mainly used for showing metadata size
    */
   ByteSize = require('byte-size'),
@@ -47,7 +49,7 @@ const FS = require('fs-extra'),
   RandomFlatColors = require('random-flat-colors'),
   /**
    * Small, fast library for color manipulation and conversion
-   * Used almost everywhere in the app, adopted for applying a run-time color changing
+   * Used almost everywhere in the app, adopted for applying a run-time color-changing
    */
   TinyColor = require('tinycolor2'),
   // Convert a color's value from HEX to RGB
@@ -65,7 +67,7 @@ const FS = require('fs-extra'),
    */
   BeautifyJSON = require('json-beautify'),
   /**
-   * This module takes a JSON content and returns a copy of the same content, but with the sorted keys
+   * This module takes JSON content and returns a copy of the same content but with the sorted keys
    * It has been implemented within the function `applyJSONBeautify(object, ?sort)`
    */
   SortJSON = require('sort-json'),

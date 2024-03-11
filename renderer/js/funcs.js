@@ -24,7 +24,7 @@ let getElementMDBObject = (element, type = 'Input') => {
   /**
    * Check if the type is a tooltip
    * Tooltips are handled by `TippyJS` instead of MDB tooltip; because `Tippy` adds a trackable ID to the created tooltip element; so we can change its position as needed
-   * This feature available by many libraries besides `TippyJS`, it's not available in MDB or `Bootstrap` though
+   * This feature is available by many libraries besides `TippyJS`, it's not available in MDB or `Bootstrap` though
    */
   try {
     // If the type is not a tooltip then skip this try-catch block
@@ -70,7 +70,7 @@ let getElementMDBObject = (element, type = 'Input') => {
 
           /**
            * Switch between the different placements
-           * Each placement has its own equation to be executed
+           * Each placement has its equation to be executed
            */
           setTimeout(() => {
             switch (instance.props.placement) {
@@ -120,7 +120,7 @@ let getElementMDBObject = (element, type = 'Input') => {
   try {
     object = new mdb[type](element[0])
   } catch (e) {
-    // If the element itself is invalid for MDB class then pass the element's parent
+    // If the element itself is invalid for the MDB class then pass the element's parent
     try {
       object = new mdb[type](element.parent()[0])
     } catch (e) {}
@@ -165,7 +165,7 @@ let loadStyleSheet = (path) => $('head').prepend(`<link rel="stylesheet" href="$
 
 /**
  * Show toast at the bottom center of the app
- * The toast - strcuture, style, code, etc... - has been created especially for the app
+ * The toast - structure, style, code, etc... - has been created especially for the app
  *
  * @Parameters:
  * {string} `title` the title of the toast
@@ -176,8 +176,8 @@ let loadStyleSheet = (path) => $('head').prepend(`<link rel="stylesheet" href="$
  */
 let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = null) => {
   /**
-   * Set the proper time out
-   * This is performed either by just setting it to 5.5s, or based on the text's length with maximum time of 15s
+   * Set the proper time-out
+   * This is performed either by just setting it to 5.5s or based on the text's length with a maximum time of 15s
    */
   let minTimeout = 5500,
     maxTimeout = 15000,
@@ -232,7 +232,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
         </div>
       </div>`
 
-  // Append the toast to the main toasts container
+  // Append the toast to the main toasts' container
   $('body div.toast-container').append($(element).show(function() {
     // Point at the toast element
     let toast = $(this),
@@ -243,7 +243,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
       // Point at the navigation button
       navigationBtn = toast.find('button.navigation')
 
-    // Animate the toast initial shown
+    // Animate the toast's shown
     toast.addClass('animate')
 
     try {
@@ -276,7 +276,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
       if (clickCallback == null)
         throw 0
 
-      // Clicking the navigation button will lead to call the callback function
+      // Clicking the navigation button will lead to calling the callback function
       navigationBtn.click(() => clickCallback())
     } catch (e) {}
   }))
@@ -340,7 +340,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
  * Shorthand the function `showToast(title, text, ?type, ?toastID, ?clickCallback)` in case the toast will be pinned and its content will be updated
  *
  * @Parameters:
- * {string} `pinnedToastID` The ID of the toast which will be created
+ * {string} `pinnedToastID` The ID of the toast that will be created
  * {string} `title` the title of the toast
  * {string} `text` the text to be shown in the toast
  */
@@ -394,7 +394,7 @@ let updatePinnedToast = (pinnedToastID, text, destroy = false) => {
       toastBody.html(text)
     } catch (e) {}
 
-    // Always scroll to the very bottom fo the toast's body
+    // Always scroll to the very bottom of the toast's body
     toastBody.animate({
       scrollTop: toastBody.get(0).scrollHeight
     }, 1)
@@ -423,9 +423,9 @@ let updatePinnedToast = (pinnedToastID, text, destroy = false) => {
  *
  * @Parameters:
  * {integer} `timestamp` the timestamp value to be formatted
- * {boolean} `?isSecondFormat` return the second format `Year-Month-Day Hours:Mintues:Seconds`
+ * {boolean} `?isSecondFormat` return the second format `Year-Month-Day Hours:Minutes:Seconds`
  *
- * @Return: {string} formatted timestamp `Day-Month-Year Hours:Mintues:Seconds`
+ * @Return: {string} formatted timestamp `Day-Month-Year Hours:Minutes:Seconds`
  */
 let formatTimestamp = (timestamp, isSecondFormat = false) => {
   // Define the final result to be returned
@@ -445,20 +445,20 @@ let formatTimestamp = (timestamp, isSecondFormat = false) => {
 
     // Get left hours, minutes, and seconds in the given timestamp
     let hours = date.getHours(),
-      mintues = date.getMinutes(),
+      minutes = date.getMinutes(),
       seconds = date.getSeconds()
 
     // Manipulate hours, minutes, and seconds values; by adding `0` to what is less than `10`
     hours = hours < 10 ? `0${hours}` : hours
-    mintues = mintues < 10 ? `0${mintues}` : mintues
+    minutes = minutes < 10 ? `0${minutes}` : minutes
     seconds = seconds < 10 ? `0${seconds}` : seconds
 
     // Define the default format
-    format = `${day}-${month}-${year} ${hours}:${mintues}:${seconds}`
+    format = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`
 
     // If it's required to adopt the second format
     if (isSecondFormat)
-      format = `${year}-${month}-${day} ${hours}:${mintues}:${seconds}`
+      format = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
   } catch (e) {}
 
   // Return the human-readable result
@@ -468,7 +468,7 @@ let formatTimestamp = (timestamp, isSecondFormat = false) => {
 /**
  * Repair a given JSON in string format
  * Unwanted chars and symbols will be removed
- * The purpose of this prcoess is to fix JSON string; so it'll be able to be parsed into an object
+ * The purpose of this process is to fix the passed JSON string; so it'll be able to be parsed into an object
  *
  * @Parameters:
  * {string} `json` the JSON string to be repaired
@@ -486,6 +486,8 @@ let repairJSON = (json) => {
       .replace(/u\'/gm, "'")
       // Remove an added bracket to `keyspace_name` attribute that can lead to an error
       .replace(/\'\:\[\'keyspace_name\'/g, "':'keyspace_name'")
+      // Get rid of the `OrderedMapSerializedKey` object - cause the repairing process to fall apart -
+      .replace(/OrderedMapSerializedKey\(\[.*?\]\)/g, "''")
 
     // Attempt to match the JSON block `{...JSON content...}`
     try {
@@ -536,6 +538,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         'check_while_dragging': false
       },
       'core': {
+        'strings': {
+          'Loading ...': ' '
+        },
         'themes': {
           'responsive': true,
           'name': 'default-dark'
@@ -584,7 +589,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
    * {string} `text` the text to be shown in the leaf/node
    * {object} `object` the child's object
    * {string} `?icon` the name of the icon to be used with the leaf
-   * {string} `?parentType` the child's parent type - partition, clustering etc... -
+   * {string} `?parentType` the child's parent type - partition, clustering, etc... -
    */
   let buildTreeViewForChild = (parentID, childID, text, object, icon = null, parentType = '') => {
     // Define the set parent type
@@ -599,7 +604,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       parentType: setParentType
     }
 
-    // If the title needs to be added then do this addition as prefix
+    // If the title needs to be added then do this addition as a prefix
     if (!ignoreTitles)
       structure.text = `${text}: ${structure.text}`
 
@@ -639,11 +644,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         if (attribute == 'virtual')
           structure.virtualValue = object[attribute] ? true : false
 
-        // Display `is_static` attribute only if it's `true`
+        // Display the `is_static` attribute only if it's `true`
         if (attribute == 'is_static' && !object[attribute])
           return
 
-        // Append that attribute to child
+        // Append that attribute to the child
         treeStructure.core.data.push(structure)
       })
     } catch (e) {}
@@ -662,7 +667,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         type: 'default',
       }
 
-      // Append that attribute to child
+      // Append that attribute to the child
       treeStructure.core.data.push(cqlType)
     } catch (e) {}
   }
@@ -692,7 +697,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
     // Loop through every table in the keyspace
     keyspace.tables.forEach((table) => {
-      // Get random IDs for all upcoming child
+      // Get random IDs for all upcoming children
       let [
         tableID,
         clusteringKeysID,
@@ -789,15 +794,229 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Get a random ID for the column
         let columnID = getRandomID(30)
 
-        // Build tree view for the column
+        // Build a tree view for the column
         buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
       })
+
+      // Show a `Views` node/leaf if the current table has at least one view
+      try {
+        // If the current table doesn't have any materialized view then skip this try-catch block
+        if (table.views.length <= 0)
+          throw 0
+
+        /**
+         * Views' container that will be under the table container
+         * Get a random ID for the views' parent node
+         */
+        let viewsID = getRandomID(30),
+          // Define the node/leaf structure
+          viewsStructure = {
+            id: viewsID,
+            parent: tableID, // Under the current table
+            text: `Views (<span>${table.views.length}</span>)`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'table.png'))
+          }
+
+        // Append the views' container to the tree structure
+        treeStructure.core.data.push(viewsStructure)
+
+        // Loop through every view in the table
+        table.views.forEach((view) => {
+          // Get random IDs for all upcoming children
+          let [
+            viewID,
+            clusteringKeysID,
+            partitionKeysID,
+            columnsID
+          ] = getRandomID(30, 4)
+
+          // Build a tree view for the current view
+          buildTreeViewForChild(viewsID, viewID, `View`, view, 'table')
+
+          // Loop through the view's children, starting from the clustering keys
+          let clusteringKeysStructure = {
+            id: clusteringKeysID,
+            parent: viewID,
+            text: `Clustering Keys (<span>${view.clustering_key.length}</span>)`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+          }
+
+          treeStructure.core.data.push(clusteringKeysStructure)
+
+          // Loop through clustering keys
+          view.clustering_key.forEach((clusteringKey) => {
+            // Get a random ID for the key
+            let clusteringKeyID = getRandomID(30)
+
+            // Build tree view for the key
+            buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'key')
+          })
+          // End of view's clustering keys
+
+          // View's partition keys
+          let partitionKeysStructure = {
+            id: partitionKeysID,
+            parent: viewID,
+            text: `Partition Keys (<span>${view.partition_key.length}</span>)`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+          }
+
+          treeStructure.core.data.push(partitionKeysStructure)
+
+          // Loop through keys
+          view.partition_key.forEach((partitionKey) => {
+            // Get a random ID for the key
+            let partitionKeyID = getRandomID(30)
+
+            // Build tree view for the key
+            buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'key', 'partitionKeys')
+          })
+          // End of view's partition keys
+
+          // View's columns
+          let columnsStructure = {
+            id: columnsID,
+            parent: viewID,
+            text: `Columns (<span>${view.columns.length}</span>)`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'column.png'))
+          }
+
+          treeStructure.core.data.push(columnsStructure)
+
+          // Loop through columns
+          view.columns.forEach((column) => {
+            // Get rid of `is_reversed` attribute
+            delete column.is_reversed
+
+            // Get a random ID for the column
+            let columnID = getRandomID(30)
+
+            // Build a tree view for the column
+            buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
+          })
+        })
+      } catch (e) {}
     })
+
+    // Show a `Views` node/leaf if the current keyspace has at least one view
+    try {
+      // If the current keyspace doesn't have any materialized view then skip this try-catch block
+      if (keyspace.views.length <= 0)
+        throw 0
+
+      /**
+       * Views' container that will be under the keyspace container
+       * Get a random ID for the views' parent node
+       */
+      let viewsID = getRandomID(30),
+        // Define the node/leaf structure
+        viewsStructure = {
+          id: viewsID,
+          parent: keyspaceID, // Under the current keyspace
+          text: `Views (<span>${keyspace.views.length}</span>)`,
+          type: 'default',
+          icon: normalizePath(Path.join(extraIconsPath, 'table.png'))
+        }
+
+      // Append the views' container to the tree structure
+      treeStructure.core.data.push(viewsStructure)
+
+      // Loop through every view in the keyspace
+      keyspace.views.forEach((view) => {
+        // Get random IDs for all upcoming children
+        let [
+          viewID,
+          clusteringKeysID,
+          partitionKeysID,
+          columnsID
+        ] = getRandomID(30, 4)
+
+        // Build a tree view for the current view
+        buildTreeViewForChild(viewsID, viewID, `View`, view, 'table')
+
+        // Add a node/leaf about the view's base table's name
+        treeStructure.core.data.push({
+          id: getRandomID(30),
+          parent: viewID,
+          text: `Base Table: <span>${view.base_table_name}</span>`,
+          type: 'default'
+        })
+
+        // Loop through the view's children, starting from the clustering keys
+        let clusteringKeysStructure = {
+          id: clusteringKeysID,
+          parent: viewID,
+          text: `Clustering Keys (<span>${view.clustering_key.length}</span>)`,
+          type: 'default',
+          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+        }
+
+        treeStructure.core.data.push(clusteringKeysStructure)
+
+        // Loop through clustering keys
+        view.clustering_key.forEach((clusteringKey) => {
+          // Get a random ID for the key
+          let clusteringKeyID = getRandomID(30)
+
+          // Build tree view for the key
+          buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'key')
+        })
+        // End of view's clustering keys
+
+        // View's partition keys
+        let partitionKeysStructure = {
+          id: partitionKeysID,
+          parent: viewID,
+          text: `Partition Keys (<span>${view.partition_key.length}</span>)`,
+          type: 'default',
+          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+        }
+
+        treeStructure.core.data.push(partitionKeysStructure)
+
+        // Loop through keys
+        view.partition_key.forEach((partitionKey) => {
+          // Get a random ID for the key
+          let partitionKeyID = getRandomID(30)
+
+          // Build tree view for the key
+          buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'key', 'partitionKeys')
+        })
+        // End of view's partition keys
+
+        // View's columns
+        let columnsStructure = {
+          id: columnsID,
+          parent: viewID,
+          text: `Columns (<span>${view.columns.length}</span>)`,
+          type: 'default',
+          icon: normalizePath(Path.join(extraIconsPath, 'column.png'))
+        }
+
+        treeStructure.core.data.push(columnsStructure)
+
+        // Loop through columns
+        view.columns.forEach((column) => {
+          // Get rid of `is_reversed` attribute
+          delete column.is_reversed
+
+          // Get a random ID for the column
+          let columnID = getRandomID(30)
+
+          // Build a tree view for the column
+          buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
+        })
+      })
+    } catch (e) {}
   })
 
   /**
    * Create a `Virtual Keyspaces` if needed and push the related nodes under it
-   * Get all nodes that flagged as `virtual`
+   * Get all nodes that are flagged as `virtual`
    */
   let virtualNodes = treeStructure.core.data.filter((node) => node.virtualValue)
 
@@ -811,7 +1030,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
   })
 
   try {
-    // If there're no virtual keyspaces then skip this try-catch block
+    // If there are no virtual keyspaces then skip this try-catch block
     if (virtualNodes.length <= 0)
       throw 0
 
@@ -867,7 +1086,7 @@ let buildTreeviewVisualized = (treeStructure, container) => {
 
   /**
    * Filter the given tree object
-   * Get rid of all leaves which are not keyspace, table, key or column
+   * Get rid of all leaves that are not keyspace, table, key, or column
    */
   treeStructure = treeStructure.core.data.filter(
     (node) => ['Keyspaces ', 'Keyspace: ', 'Tables ', 'Table: ', ' Keys ', 'Columns '].some((keyword) => StripTags(node.text).search(keyword))
@@ -910,7 +1129,7 @@ let buildTreeviewVisualized = (treeStructure, container) => {
       image: Path.join(iconsPath, `${image}.png`)
     }
 
-    // If the current leaf/node is a super parent and its text contain `keyspaces` then skip the upcoming code; as this leaf will be the root node in the visualized view
+    // If the current leaf/node is a super parent and its text contains `keyspaces` then skip the upcoming code; as this leaf will be the root node in the visualized view
     if (node.parent == '#' && !(node.text.toLowerCase()).search('keyspaces'))
       return
 
@@ -964,7 +1183,7 @@ let buildTreeviewVisualized = (treeStructure, container) => {
     }
   }
 
-  // Build the visualized version with the given UI container, set options, final nodes and edges
+  // Build the visualized version with the given UI container, set options, final nodes, and edges
   let tree = new vis.Network(container, {
     nodes,
     edges
@@ -1074,7 +1293,7 @@ let openDialog = (text, callback, noBackdrop = false) => {
  * Print a custom message in the app's terminals
  *
  * @Parameters:
- * {object} `terminal` the terminal object in which the message will be printed in it - the `readLine` object can be passed too -
+ * {object} `terminal` the terminal object in which the message will be printed - the `readLine` object can be passed too -
  * {string} `type` the type of the message, the value could be: [`warning`, `info`, and `error`]
  * {string} `message` the message's content that will be printed
  * {boolean} `?hideIcon` print the message without a prefix icon that indicates its type
@@ -1112,7 +1331,7 @@ let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
 
   /**
    * Define the `message`
-   * Start with the prefix icon - or empty string -, and make the message's text style is bold
+   * Start with the prefix icon - or empty string -, and make the message's text style bold
    */
   message = `${format.icon}` + '\033[1m' + `${message}` + '\033[0m'
 
@@ -1141,12 +1360,12 @@ let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
 
   /**
    * Print the message in the given terminal
-   * Try with `println` which is used with `Readline` addon
+   * Try with `println` which is used with the `Readline` addon
    */
   try {
     terminal.println(messageFormatted)
   } catch (e) {
-    // As `println` didn't work use `writeln` which used with Xterm object
+    // As `println` didn't work use `writeln` which is used with the Xterm object
     terminal.writeln(messageFormatted)
   }
 }
@@ -1157,7 +1376,7 @@ let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
  * @Parameters:
  * {string} `type` the key's type, the value could be: [`public` or `private`]
  * {object} `callback` function that will be triggered with passing the final result
- * {boolean} `?called` whether or not the function has already been called and this is the second attempt to get key
+ * {boolean} `?called` whether or not the function has already been called and this is the second attempt to get the key
  *
  * @Return: {string} the public/private key, or an empty string
  */
@@ -1177,7 +1396,7 @@ let getKey = async (type, callback, called = false) => {
     Keytar.findPassword(service).then(async (key) => {
       /**
        * It happens - especially on Windows - that a `\x00` hex value might be added,
-       * this value leads to corrupt the private key format, so it should be removed
+       * this value leads to corruption in the private key format, so it should be removed
        */
       key = key.replace(/\x00/gm, '')
 
@@ -1240,7 +1459,7 @@ let getKey = async (type, callback, called = false) => {
  *
  * @Parameters:
  * {string} `publicKey` the public key that will be used for encryption
- * {string} `text` the text which will be encrypted
+ * {string} `text` the text that will be encrypted
  *
  * @Return: {string} either the encrypted text or an empty text if something went wrong
  */
@@ -1266,7 +1485,7 @@ let encrypt = (publicKey, text) => {
  *
  * @Parameters:
  * {string} `privateKey` the private key that will be used for decryption
- * {string} `text` the encrypted text which will be decrypted
+ * {string} `text` the encrypted text that will be decrypted
  *
  * @Return: {string} either the decrypted text or an empty text if something went wrong
  */
@@ -1355,7 +1574,7 @@ let executeScript = (scriptID, scripts, callback) => {
 }
 
 /**
- * Get all pre and post connection scripts of a given cluster
+ * Get all pre and post-connection scripts of a given cluster
  *
  * @Parameters:
  * {string} `workspaceID` the ID of the target workspace
@@ -1370,20 +1589,20 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
       post: [] // Post-connection scripts' paths
     },
     /**
-     * Flag which tells if a sensitive data has been found in the cluster's cqlsh.rc content
+     * Flag which tells if sensitive data has been found in the cluster's `cqlsh.rc` content
      * This is an extra attribute
      */
     foundSensitiveData = false,
     // An object which holds the content of the cluster's cqlsh.rc file
     cqlshContent = null
 
-  // Check pre and post connection scripts
+  // Check pre and post-connection scripts
   try {
     // Set cluster to be null by default
     let cluster = null
 
     try {
-      // If there's no cluster ID has been passed then skip this try catch-block
+      // If there's no cluster ID has been passed then skip this try-catch block
       if (clusterID == null)
         throw 0
 
@@ -1525,7 +1744,7 @@ let invertColor = (hex) => {
   if (hex.indexOf('#') === 0)
     hex = hex.slice(1)
 
-  // If the given color is in short form `#fff` then expand it `#ffffff`
+  // If the given color is in the short form `#fff` then expand it to `#ffffff`
   if (hex.length === 3)
     hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]
 
@@ -1688,7 +1907,7 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
       try {
         /**
          * If the `value` type is an `object`, this means that the `value` is an array of other sub-values, and another loop through that array is needed
-         * It's assured that the given object won't exceed two levels of depth
+         * It's guaranteed that the given object won't exceed two levels of depth
          */
         if (typeof value != 'object')
           throw 0
@@ -1696,7 +1915,7 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
         // Get the sub-values' keys
         let subValues = Object.keys(value)
 
-        // Loop through the sub-values, and do changes to them as needed
+        // Loop through the sub-values, and make changes to them as needed
         subValues.forEach((_subValue) => {
           // Get the current object's value
           let subValue = value[_subValue],
@@ -1766,7 +1985,7 @@ let getProperVariables = async (workspaceID) => await variablesManipulation(work
  *
  * @Parameters:
  * {object} `object` the JSON object whose values will be manipulated
- * {object} `variables` the variables which will be checked in the object's values
+ * {object} `variables` the variables that will be checked in the object's values
  *
  * @Return: {object} the passed object after manipulation
  */
@@ -1806,7 +2025,7 @@ let variablesToValues = (object, variables) => {
  * Convert a JSON object to a beautified JSON string
  *
  * @Parameters:
- * {object} `object` the JSON object which will be manipulated
+ * {object} `object` the JSON object that will be manipulated
  * {boolean} `?sort` sort the given JSON object alphabetically (a -> z)
  *
  * @Return: {string} the passed object in string format after manipulation
@@ -1828,17 +2047,17 @@ let applyJSONBeautify = (object, sort = false) => {
  * Manipulate a given text; by getting rid of all spaces, and lowering the case of all chars
  *
  * @Parameters:
- * {string} `text` the text which will be manipulated
+ * {string} `text` the text that will be manipulated
  *
  * @Return: {string} the passed text after manipulation
  */
 let manipulateText = (text) => text.replace(/\s+/gm, '').toLowerCase()
 
 /**
- * Minify a given text by manipulate it, plus getting rid of new lines
+ * Minify a given text by manipulating it, plus getting rid of new lines
  *
  * @Parameters:
- * {string} `text` the text which will be manipulated
+ * {string} `text` the text that will be manipulated
  *
  * @Return: {string} the passed text after manipulation
  */
@@ -1973,7 +2192,7 @@ let getMachineID = async () => {
    */
   try {
     machineID = await MachineID({
-      original: true // Set to `true`; to return original ID value of the machine rather than a hashed value (SHA-256)
+      original: true // Set to `true`; to return the original ID value of the machine rather than a hashed value (SHA-256)
     })
   } catch (e) {}
 
@@ -2028,7 +2247,7 @@ let clearTemp = () => {
  * The function will escape the special characters (; . , | etc...) in the text; so it's guaranteed that the regex will be safe from unwanted behaviors
  *
  * @Parameters:
- * {string} `text` the text which will be added as a regex
+ * {string} `text` the text that will be added as a regex
  * {string} `flags` the regex's different flags [s u y i g m]
  *
  * @Return: {object} a regular expression object
@@ -2126,7 +2345,7 @@ let setUIColor = (workspaceColor) => {
       default: tinyColor.isValid() ? `rgb(${color} / 70%)` : '',
       hover: tinyColor.isValid() ? `rgb(${HEXToRGB(tinyColor.darken(10).toString()).join(' ')} / 70%)` : ''
     },
-    // Determine if the color of the element needs to be black based on the lighten of the given color
+    // Determine if the color of the element needs to be black based on the lightening of the given color
     textColor = tinyColor.isLight() ? `#252525` : ''
 
   // Remove the old UI color
@@ -2136,7 +2355,7 @@ let setUIColor = (workspaceColor) => {
   if (workspaceColor.trim().length <= 0)
     return
 
-  // Define the stylesheet which will be applied
+  // Define the stylesheet that will be applied
   let stylesheet = `
       <style id="uicolor">
         .changed-bg {background: ${backgroundColor.default} !important}
@@ -2157,7 +2376,7 @@ let setUIColor = (workspaceColor) => {
 }
 
 /**
- * Update height and navigation state of a given left-side switchers' container
+ * Update the height and navigation state of a given left-side switchers' container
  *
  * @Parameters:
  * {string} `?type` the switchers' container type, values are [`workspace` or `cluster`]
@@ -2175,10 +2394,10 @@ let updateSwitcherView = (type = 'workspaces') => {
   // Decide the allowed new height for the container
   let newHeightAllowed = calcSwitchersAllowedHeight()
 
-  // Divide the new allowed height by 2; as there're two switchers' containers
+  // Divide the new allowed height by 2; as there are two switchers' containers
   newHeightAllowed = newHeightAllowed / 2
 
-  // Define a variable which its value will be incremented while looping through switchers
+  // Define a variable whose value will be incremented while looping through switchers
   let incrementedHeight = 35,
     // Whether or not all switchers after the current one will be shown or not
     showThisSwitcher = true
@@ -2225,7 +2444,7 @@ let updateSwitcherView = (type = 'workspaces') => {
 }
 
 /**
- * Set the trade mark symbol `™` to "Apache Cassandra"
+ * Set the trademark symbol `™` to "Apache Cassandra"
  *
  * @Parameters:
  * {string} `text` the text which the `™` symbol will be added to where Cassandra is located

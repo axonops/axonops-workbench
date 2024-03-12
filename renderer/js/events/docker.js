@@ -100,12 +100,58 @@
           if (!immediateProjectRun)
             return
 
-          setTimeout(() => {
-            // Click the `START` button of the project once its element created
-            try {
-              $(`div.clusters[workspace-id="workspace-sandbox"] div.cluster[data-folder="${project.folder}"]`).find('div.footer div.button button:not(.connect)').click()
-            } catch (e) {}
-          }, 2000)
+          // Inner function that will run the created docker project once it's visible
+          let runProject = () => {
+            /**
+             * Make sure this process has a time frame
+             * Get the start time of the process
+             */
+            let startTime = new Date().getTime(),
+              // Set the maximum time allowed for this process to retry
+              maximumAllowedTime = 10000
+
+            // Define an interval object
+            let intervalObject = setInterval(() => {
+              // Get the current time of retying the process
+              let currentTime = new Date().getTime()
+
+              // If the process has exceeded the maximum allowed time then end it
+              if (currentTime - startTime >= maximumAllowedTime)
+                return clearInterval(intervalObject)
+
+              try {
+                // Point at the created docker project's element in the UI
+                let dockerProjectElement = $(`div.clusters[workspace-id="workspace-sandbox"] div.cluster[data-folder="${project.folder}"]`)
+
+                // If the element is yet not visible in the UI then skip this try-catch block
+                if (!dockerProjectElement.is(':visible'))
+                  throw 0
+
+                /**
+                 * Reaching here means the element is visible in the UI
+                 * Clear the interval process
+                 */
+                if (intervalObject != undefined)
+                  clearInterval(intervalObject)
+
+                // Click the `START` button of the project
+                dockerProjectElement.find('div.footer div.button button:not(.connect)').click()
+              } catch (e) {}
+            }, 100)
+          }
+
+          // If the user is in the docker/sandbox projects container then start/run the created docker project immediately
+          if (getActiveWorkspaceID() == 'workspace-sandbox')
+            return runProject()
+
+          /**
+           * Reaching here means the user is not in the docker projects container so the app should enter it first
+           * Click the `ENTER` button of the container
+           */
+          $('div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.workspace[data-id="workspace-sandbox"]').find('div.button button').click()
+
+          // Now attempt to start/run the created docker project
+          setTimeout(() => runProject(), 250)
         })
       })
     })

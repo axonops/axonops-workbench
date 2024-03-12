@@ -636,7 +636,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         let structure = {
           id: getRandomID(30),
           parent: childID,
-          text: `${I18next.capitalizeFirstLetter(attribute)}: <span class="material-icons for-treeview">${object[attribute] ? 'check' : 'close'}</span>`,
+          text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: <span class="material-icons for-treeview">${object[attribute] ? 'check' : 'close'}</span>`,
           type: 'default'
         }
 
@@ -1012,6 +1012,69 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         })
       })
     } catch (e) {}
+
+    // Show a `User Defined Types` node/leaf if the current keyspace has at least one UDT
+    try {
+      // If the current keyspace doesn't have any UDT then skip this try-catch block
+      if (keyspace.user_types.length <= 0)
+        throw 0
+
+      /**
+       * UDTs' container that will be under the keyspace container
+       * Get a random ID for the UDTs' parent node
+       */
+      let userTypesID = getRandomID(30),
+        // Define the node/leaf structure
+        userTypesStructure = {
+          id: userTypesID,
+          parent: keyspaceID, // Under the current keyspace
+          text: `User Defined Types (<span>${keyspace.user_types.length}</span>)`,
+          type: 'default',
+          icon: normalizePath(Path.join(extraIconsPath, 'udt.png'))
+        }
+
+      // Append the UDTs' container to the tree structure
+      treeStructure.core.data.push(userTypesStructure)
+
+      // Loop through every user defined type in the keyspace
+      keyspace.user_types.forEach((userType) => {
+        // Get random IDs for the current user type and its fields
+        let [
+          userTypeID,
+          fieldsID
+        ] = getRandomID(30, 2)
+
+        // Build a tree view for the current UDT
+        buildTreeViewForChild(userTypesID, userTypeID, `User Type`, userType, 'udt')
+
+        // Loop through each field of the current UDT
+        userType.field_names.forEach((field, index) => {
+          // Get random IDs for the current field and its type
+          let [
+            fieldID, fieldTypeID
+          ] = getRandomID(30, 2),
+            // Get the field's type
+            type = userType.field_types[index]
+
+          // Push the field's tree view
+          treeStructure.core.data.push({
+            id: fieldID,
+            parent: userTypeID,
+            text: `<span>${field}</span>`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'column.png'))
+          })
+
+          // Push the field's type tree view
+          treeStructure.core.data.push({
+            id: fieldTypeID,
+            parent: fieldID,
+            text: `Field Type: <span>${type}</span>`,
+            type: 'default'
+          })
+        })
+      })
+    } catch (e) {}
   })
 
   /**
@@ -1043,7 +1106,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       parent: keyspacesID,
       text: `Virtual Keyspaces (<span>${virtualNodes.length}</span>)`,
       type: 'default',
-      icon: normalizePath(Path.join(extraIconsPath, 'keyspaces.png')),
+      icon: normalizePath(Path.join(extraIconsPath, 'keyspaces.png'))
     }
 
     // Push the `Virtual Keyspaces` node

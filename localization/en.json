@@ -305,7 +305,10 @@
       "log info, actions, processes and related": "log info, actions, processes and related",
       "this update needs an app restart": "this update needs an app restart",
       "sandbox feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again": "sandbox feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again",
-      "the work area of docker project [b]$data[/b] is being terminated": "the work area of docker project [b]$data[/b] is being terminated"
+      "the work area of docker project [b]$data[/b] is being terminated": "the work area of docker project [b]$data[/b] is being terminated",
+      "CQL description": "CQL description",
+      "search for CQL description": "search for CQL description",
+      "right click on the cluster, keyspace or table and get its CQL description": "right click on the cluster, keyspace or table and get its CQL description"
     }
   }
 }

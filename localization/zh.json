@@ -305,7 +305,10 @@
       "log info, actions, processes and related": "记录信息、操作、流程和相关信息",
       "this update needs an app restart": "此更新需要重新启动应用程序",
       "sandbox feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again": "沙箱功能要求当前用户属于[b]Linux[/b]中的[code]docker[/code]组，请确保满足此要求然后重试",
-      "the work area of docker project [b]$data[/b] is being terminated": "docker 项目 [b]$data[/b] 的工作区正在终止"
+      "the work area of docker project [b]$data[/b] is being terminated": "docker 项目 [b]$data[/b] 的工作区正在终止",
+      "CQL description": "CQL描述",
+      "search for CQL description": "搜索 CQL 描述",
+      "right click on the cluster, keyspace or table and get its CQL description": "右键单击集群、键空间或表并获取其 CQL 描述"
     }
   }
 }

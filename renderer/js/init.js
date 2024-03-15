@@ -407,13 +407,6 @@ $(document).ready(() => {
     loadScript(lottiePlayerPath)
   }
 
-  // Vis Network Visualizer
-  {
-    let visPath = Path.join(__dirname, '..', '..', 'node_modules', 'vis-network', 'dist')
-
-    loadScript(Path.join(visPath, 'vis-network.min.js'))
-  }
-
   // Monaco editor
   {
     let monacoPath = Path.join(__dirname, '..', '..', 'node_modules', 'monaco-editor', 'min'),

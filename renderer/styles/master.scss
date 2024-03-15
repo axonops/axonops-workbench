@@ -1318,7 +1318,6 @@ div.body {
                             ion-icon {
                               font-size: 130%;
 
-                              &[name="visualized"],
                               &[name="query-tracing"],
                               &[name="differentiation"] {
                                 @include position();
@@ -1326,9 +1325,11 @@ div.body {
                                 margin-left: -8px;
                               }
 
-                              &[name="visualized"] {
-                                transform: scale(0.5411);
-                                margin-bottom: -7px;
+                              &[name="cql-description"] {
+                                font-size: 160%;
+                                position: relative;
+                                right: 1px;
+                                top: -1px;
                               }
 
                               &[name="query-tracing"],
@@ -2304,171 +2305,19 @@ div.tab-content {
       }
     }
 
-    &[tab="visualized-metadata"] {
-      div.visualized-metadata-container {
-        @include position();
-        width: calc(100% - 20px);
-        height: calc(100% - 20px);
-      }
-
-      div.actions {
-        @include position(absolute, auto, 0, 0, auto);
-        margin: 20px;
-        text-align: -webkit-center;
-        display: flex;
-        flex: {
-          direction: row;
-          wrap: nowrap;
-        }
-        align-items: center;
-        justify-content: space-evenly;
-        background: rgba(44, 44, 44, 0.8);
-        backdrop-filter: blur(2px);
-        border-radius: 8px;
-        height: 35px;
-        padding: 0 3px;
-
-        div.action {
-          position: relative;
-          height: 30px;
-          width: 30px;
-          border-radius: 50%;
-          overflow: hidden;
-          display: flex;
-          flex: {
-            direction: column;
-            wrap: nowrap;
-          }
-          align: {
-            content: center;
-            items: center;
-          }
-          justify-content: center;
-
-          div.btn {
-            @include position();
-            transition: opacity 0.2s ease-in-out;
-            opacity: 0.6;
-
-            &:hover {
-              opacity: 0.8;
-            }
-
-            ion-icon {
-              position: relative;
-              bottom: 4px;
-              left: -1px;
-              color: #e3e3e3;
-              font-size: 130%;
-            }
-
-            &.disabled {
-              pointer-events: none;
-              opacity: 0.6;
-
-              ion-icon {
-                color: #6c6c6c;
-              }
-            }
-          }
-
-          &[action="destroy"] {
-            div.btn {
-              transform: translateY(-2px) translateX(0px);
-
-              ion-icon {
-                font-size: 180%;
-              }
-            }
-          }
-        }
-      }
-
-      div.loading {
-        @include position();
-        background: #17181a;
-        transition: opacity 0.2s ease-in-out;
-        transition-delay: 0.5s;
-        opacity: 0;
-        pointer-events: none;
-        display: flex;
-        flex: {
-          direction: column;
-          wrap: nowrap;
-        }
-        align: {
-          items: center;
-          content: center;
-        }
-        justify-content: center;
-
-        div.lottie-container {
-          height: 20%;
-          opacity: 0.7;
-        }
-
-        div.btn-container {
-          position: relative;
-          margin-top: 10px;
-          height: 29px;
-          width: 450px;
-          text-align: center;
-
-          button {
-            opacity: 1;
-            transition: opacity 0.1s ease-in-out;
-          }
-
-          div.progress {
-            @include position();
-            width: 400px;
-            height: 5px;
-            border-bottom: 50px;
-            opacity: 0;
-            transition: opacity 0.1s ease-in-out;
-            transition-delay: 0.05s;
-            pointer-events: none;
-            border-radius: 20px;
-            overflow: hidden;
-          }
-
-          &.show-progress {
-            button {
-              opacity: 0;
-              pointer-events: none;
-            }
-
-            div.progress {
-              opacity: 1;
-            }
-          }
-        }
-      }
-
-      &.loading {
-        div.loading {
-          opacity: 1;
-          pointer-events: all;
-          transition-delay: 0s;
-
-          div.sub-content {
-            lottie-player {
-              opacity: 1;
-            }
-          }
-        }
-      }
-    }
-
-    &[tab="query-tracing"] {
+    &[tab="query-tracing"],
+    &[tab="cql-description"] {
+      div.descriptions-container,
       div.queries-container {
         padding: 15px 10px 10px;
 
+        div.descriptions,
         div.queries {
           height: calc(100% - 90px);
           overflow-y: scroll;
           padding-right: 15px;
 
+          div.description,
           div.query {
             position: relative;
             background: #252525;
@@ -2492,6 +2341,17 @@ div.tab-content {
               user-select: none;
               -webkit-user-drag: none;
               z-index: 1;
+
+              span.dot {
+                display: inline-block;
+                background: rgba(54, 57, 64, 0.8);
+                width: 5px;
+                height: 5px;
+                margin: 0 3px 0 5px;
+                border-radius: 50%;
+                position: relative;
+                bottom: 1px;
+              }
             }
 
             div.info-left,
@@ -2526,6 +2386,7 @@ div.tab-content {
 
                 canvas {
                   filter: invert(1);
+                  max-height: 350px;
                 }
               }
             }
@@ -2567,6 +2428,72 @@ div.tab-content {
             transition: opacity 0.5s ease-in-out;
             transition-delay: 0.25s;
             text-align: center;
+          }
+        }
+      }
+
+      &[tab="cql-description"] {
+        div.descriptions-container {
+          div.descriptions {
+            div.description {
+              margin-bottom: 30px !important;
+
+              &:last-of-type {
+                margin-bottom: 10px !important;
+              }
+
+              div.inner-content {
+                width: 100%;
+                min-height: 400px;
+                position: relative;
+                transition: min-height 0.2s ease-out;
+                margin-top: -19px;
+
+                div.editor {
+                  position: absolute;
+                  inset: 0;
+                  margin: auto;
+                }
+
+                div.expand-shrink {
+                  position: absolute;
+                  bottom: -15px;
+                  left: 0;
+                  margin: auto;
+                  background: #1e1e1e;
+                  color: #363940;
+                  height: 30px;
+                  width: 30px;
+                  border-radius: 50%;
+                  display: flex;
+                  flex-direction: column;
+                  flex-wrap: nowrap;
+                  align-items: center;
+                  justify-content: center;
+                  box-shadow: 0 0 0 4px #17181a;
+                  overflow: hidden;
+
+                  button {
+                    position: absolute;
+                    inset: 0;
+                    color: #e3e3e3;
+
+                    ion-icon {
+                      font-size: 130%;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        div.empty {
+          div.lottie-container {
+            lottie-player {
+              filter: opacity(0.4);
+              transform: scale(1.5);
+            }
           }
         }
       }

@@ -305,7 +305,10 @@
       "log info, actions, processes and related": "enregistrer les informations, les actions, les processus et les informations associées",
       "this update needs an app restart": "cette mise à jour nécessite un redémarrage de l'application",
       "sandbox feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again": "La fonctionnalité sandbox nécessite que l'utilisateur actuel soit dans le groupe [code]docker[/code] dans [b]Linux[/b], veuillez vous assurer que cette condition est remplie, puis réessayez",
-      "the work area of docker project [b]$data[/b] is being terminated": "la zone de travail du projet docker [b]$data[/b] est en cours de fermeture"
+      "the work area of docker project [b]$data[/b] is being terminated": "la zone de travail du projet docker [b]$data[/b] est en cours de fermeture",
+      "CQL description": "description du CQL",
+      "search for CQL description": "rechercher la description CQL",
+      "right click on the cluster, keyspace or table and get its CQL description": "faites un clic droit sur le cluster, l'espace de clés ou la table et obtenez sa description CQL"
     }
   }
 }

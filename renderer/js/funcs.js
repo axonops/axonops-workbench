@@ -552,6 +552,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             parent: '#',
             text: `Cluster: <span>${metadata.cluster_name}</span>`,
             type: 'default',
+            a_attr: {
+              'allow-right-context': 'true',
+              'name': metadata.cluster_name,
+              'type': 'cluster'
+            }
           },
           // Partitioner
           {
@@ -577,7 +582,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           }
         ]
       },
-      'plugins': ['types']
+      'plugins': ['types', 'contextmenu'],
+      'contextmenu': {
+        'select_node': false
+      }
     }
 
   /**
@@ -611,6 +619,27 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
     // If an icon has been passed then add it to the leaf's structure
     if (icon != null)
       structure.icon = normalizePath(Path.join(extraIconsPath, `${icon}.png`))
+
+    try {
+      // Check if the child is not any of the defined types then skip this try-catch block
+      if (['Keyspace', 'Table', 'View'].every((type) => text != type))
+        throw 0
+
+      // Set an `a_attr` attribute with important sub-attributes
+      structure.a_attr = {
+        'allow-right-context': 'true',
+        'name': object.name,
+        'type': `${text}`.toLowerCase(),
+        'keyspace': parentType
+      }
+    } catch (e) {}
+
+    /**
+     * If the child is a table or view then make sure to set the `parentType` to empty
+     * Not doing this would lead to incorrect structure
+     */
+    if (['Table', 'View'].some((type) => type == text))
+      parentType = ''
 
     // Push the structure into the overall tree structure
     treeStructure.core.data.push(structure)
@@ -709,8 +738,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         indexesID
       ] = getRandomID(30, 8)
 
-      // Build a tree view for the table
-      buildTreeViewForChild(tablesID, tableID, `Table`, table, 'table')
+      /**
+       * Build a tree view for the table
+       * For the `parentType` parameter set it to be the table's keyspace's name; to set a correct scope for getting a CQL description
+       */
+      buildTreeViewForChild(tablesID, tableID, `Table`, table, 'table', keyspace.name)
 
       // Loop through the table's children, starting from the clustering keys
       let clusteringKeysStructure = {
@@ -831,8 +863,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             columnsID
           ] = getRandomID(30, 4)
 
-          // Build a tree view for the current view
-          buildTreeViewForChild(viewsID, viewID, `View`, view, 'table')
+          /**
+           * Build a tree view for the current view
+           * For the `parentType` parameter set it to be the view's keyspace's name; to set a correct scope for getting a CQL description
+           */
+          buildTreeViewForChild(viewsID, viewID, `View`, view, 'table', keyspace.name)
 
           // Loop through the view's children, starting from the clustering keys
           let clusteringKeysStructure = {
@@ -935,8 +970,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           columnsID
         ] = getRandomID(30, 4)
 
-        // Build a tree view for the current view
-        buildTreeViewForChild(viewsID, viewID, `View`, view, 'table')
+        /**
+         * Build a tree view for the current view
+         * For the `parentType` parameter set it to be the view's keyspace's name; to set a correct scope for getting a CQL description
+         */
+        buildTreeViewForChild(viewsID, viewID, `View`, view, 'table', keyspace.name)
 
         // Add a node/leaf about the view's base table's name
         treeStructure.core.data.push({
@@ -1132,128 +1170,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
   // Return the final tree structure
   return treeStructure
-}
-
-/**
- * Build the visualized version of the tree view model
- *
- * @Parameters:
- * {object} `treeStructure` the returned object from `buildTreeview(metadata)` function
- * {object} `container` the HTML element in which the visualized version will be rendered in
- *
- * @Return: {object} the visualized view object
- */
-let buildTreeviewVisualized = (treeStructure, container) => {
-  // Define the path of extra icons to be used with each node
-  let iconsPath = Path.join(__dirname, '..', 'js', 'jstree', 'theme', 'extra')
-
-  /**
-   * Filter the given tree object
-   * Get rid of all leaves that are not keyspace, table, key, or column
-   */
-  treeStructure = treeStructure.core.data.filter(
-    (node) => ['Keyspaces ', 'Keyspace: ', 'Tables ', 'Table: ', ' Keys ', 'Columns '].some((keyword) => StripTags(node.text).search(keyword))
-  )
-
-  // Define nodes and edges arrays
-  let nodes = [],
-    edges = []
-
-  // Loop through the passed tree object and do manipulations as needed
-  treeStructure.forEach((node) => {
-    // Define the final image to be adopted for the node
-    let image = '',
-      // Manipulate the node text by stripping the HTML tags
-      nodeText = StripTags(node.text)
-
-    /**
-     * This array contains a text to search for, and the node image name to be adopted if the text has been found
-     * The pattern is [ [{TextToSearchFor}, {NodeImageName}] ]
-     */
-    let applyNodeImage = [
-      ['Keyspaces (', 'keyspaces'],
-      ['Keyspace: ', 'keyspace'],
-      ['Table: ', 'table'],
-      ['Tables (', 'table'],
-      [' Keys ', 'key'],
-      ['Columns ', 'column']
-    ]
-
-    // Loop through each item in the array and check its text
-    for (let nodeImage of applyNodeImage)
-      if (nodeText.search(nodeImage[0]))
-        image = nodeImage[1]
-
-    // The node strucutre
-    let temp = {
-      id: node.id,
-      label: StripTags(node.text),
-      shape: 'image',
-      image: Path.join(iconsPath, `${image}.png`)
-    }
-
-    // If the current leaf/node is a super parent and its text contains `keyspaces` then skip the upcoming code; as this leaf will be the root node in the visualized view
-    if (node.parent == '#' && !(node.text.toLowerCase()).search('keyspaces'))
-      return
-
-    // If this leaf/node is not a super parent then associate it with its parent
-    try {
-      if (node.parent == '#')
-        throw 0
-
-      edges.push({
-        from: node.id,
-        to: node.parent
-      })
-    } catch (e) {}
-
-    // Push the `temp` object as the final manipulated `node`
-    nodes.push(temp)
-  })
-
-  /**
-   * Define the visualized view options
-   * https://visjs.github.io/vis-network/docs/network/
-   */
-  let options = {
-    clickToUse: true,
-    layout: {
-      improvedLayout: false
-    },
-    physics: {
-      adaptiveTimestep: false
-    },
-    nodes: {
-      physics: true,
-      borderWidth: 1,
-      size: 25,
-      margin: 50,
-      color: {
-        border: '#17181a',
-        background: '#17181a'
-      },
-      font: {
-        color: '#e3e3e3',
-        face: 'Main'
-      },
-    },
-    edges: {
-      color: '#616161',
-      smooth: {
-        enabled: false,
-        type: 'continuous'
-      }
-    }
-  }
-
-  // Build the visualized version with the given UI container, set options, final nodes, and edges
-  let tree = new vis.Network(container, {
-    nodes,
-    edges
-  }, options)
-
-  // Return the visualized view object
-  return tree
 }
 
 /**

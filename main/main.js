@@ -25,6 +25,11 @@ const Electron = require('electron'),
    */
   Menu = Electron.Menu,
   /**
+   * `MenuItem`
+   * For adding items to native application menus and context menus
+   */
+  MenuItem = Electron.MenuItem,
+  /**
    * `ipcMain`
    * For communicating asynchronously from the main thread to the renderer thread(s)
    */
@@ -440,6 +445,13 @@ App.on('window-all-closed', () => App.quit())
       } catch (e) {}
     })
 
+    // Get the CQL description of a cluster, keyspace in it, or table
+    IPCMain.on('pty:cql-desc', (_, data) => {
+      try {
+        CQLSHInstances[data.id].getCQLDescription(data.cqlDescSendID, data.scope)
+      } catch (e) {}
+    })
+
     // Get the result of the query tracing process
     IPCMain.on('pty:query-tracing', (_, data) => {
       try {
@@ -618,6 +630,50 @@ App.on('window-all-closed', () => App.quit())
 
   // Request to change the content protection state
   IPCMain.on('content-protection', (_, apply) => mainView.setContentProtection(apply))
+
+  /**
+   * Show a pop-up context menu with passed items
+   * Mainly used for getting CQL descriptions of right-clicked elements in the metadata tree view
+   */
+  {
+    // Define a variable to hold the last request's timestamp
+    let lastRequestTimestamp = 0
+
+    // Received a request to show a right-click context-menu
+    IPCMain.on('show-context-menu', (_, items) => {
+      // Get the timestamp of receiving the request
+      let requestTimestamp = new Date().getTime()
+
+      // Make sure there's a 0.5s between each request
+      if (requestTimestamp - lastRequestTimestamp <= 500)
+        return
+
+      // Update the last accepted request's timestamp
+      lastRequestTimestamp = requestTimestamp
+
+      // Create a menu object that will be a pop-up menu
+      let popUpMenu = new Menu()
+
+      // Parse the passed items from string format to JSON object
+      items = JSON.parse(items)
+
+      // Loop through each menu item
+      for (let item of items) {
+        try {
+          // Use `eval` to convert the click's content from string format to actual function
+          try {
+            item.click = eval(item.click)
+          } catch (e) {}
+
+          // Append the menu item as a `MenuItem` object
+          popUpMenu.append(new MenuItem(item))
+        } catch (e) {}
+      }
+
+      // Pop-up/show the created menu
+      popUpMenu.popup(mainView)
+    })
+  }
 }
 
 /**

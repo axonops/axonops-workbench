@@ -505,20 +505,23 @@
 
                   // Get random IDs for different elements in the cluster's work area
                   let [
+                    // The cluster's metadata functions
                     copyMetadataBtnID,
                     refreshMetadataBtnID,
+                    // CQLSH and Bash sessions, and their related elements
                     cqlshSessionContentID,
                     bashSessionContentID,
                     terminalContainerID,
                     terminalBashContainerID,
-                    visualizedMetadataContentID,
-                    visualizedMetadataContainerID,
-                    visualizedMetadataBtnID,
+                    // CQL description
+                    cqlDescriptionContentID,
+                    cqlDescriptionSearchInputID,
+                    // Query tracing
                     queryTracingContentID,
                     queryTracingSearchInputID,
+                    // Cluster's metadata differentiation
                     metadataContentID,
                     metadataDifferentiationContentID,
-                    // axonOpsContentID - already defined -
                     refreshDifferentiationBtnID,
                     showDifferentiationBtnID,
                     saveSnapshotBtnID,
@@ -528,9 +531,10 @@
                     changesLinesContainerID,
                     oldSnapshotNameID,
                     newMetadataTimeID,
+                    // Restart and close the work area
                     restartWorkareaBtnID,
                     closeWorkareaBtnID
-                  ] = getRandomID(20, 24)
+                  ] = getRandomID(20, 23)
 
                   /**
                    * Define tabs that shown only to sandbox projects
@@ -643,13 +647,13 @@
                                   </a>
                                 </li>
                                 ${bashSessionTab}
-                                <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="visualized metadata" capitalize data-title="Visualized Metadata">
-                                  <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${visualizedMetadataContentID}" role="tab" aria-selected="true">
+                                <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL description" capitalize data-title="CQL Description">
+                                  <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlDescriptionContentID}" role="tab" aria-selected="true">
                                     <span class="icon">
-                                      <ion-icon name="visualized"></ion-icon>
+                                      <ion-icon name="cql-description"></ion-icon>
                                     </span>
                                     <span class="title">
-                                      <span mulang="visualized metadata" capitalize></span>
+                                      <span mulang="CQL description" capitalize></span>
                                     </span>
                                   </a>
                                 </li>
@@ -702,35 +706,22 @@
                                 </div>
                               </div>
                             </div>
-                            <div class="tab-pane fade loading" tab="visualized-metadata" id="_${visualizedMetadataContentID}" role="tabpanel">
-                              <div class="visualized-metadata-container" data-id="${visualizedMetadataContainerID}"></div>
-                              <div class="actions">
-                                <div class="action" action="refresh" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh the view" data-mulang="refresh the view" capitalize-first>
-                                  <div class="btn btn-tertiary" data-mdb-ripple-color="dark">
-                                    <ion-icon name="refresh"></ion-icon>
-                                  </div>
+                            <div class="tab-pane fade _empty" tab="cql-description" id="_${cqlDescriptionContentID}" role="tabpanel">
+                              <div class="descriptions-container">
+                                <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
+                                  <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                                  <input type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlDescriptionSearchInputID}">
+                                  <label class="form-label">
+                                    <span mulang="search for CQL description" capitalize-first></span>
+                                  </label>
                                 </div>
-                                <div class="action" action="screenshot" data-tippy="tooltip" data-mdb-placement="top" data-title="Take screenshot" data-mulang="take screenshot" capitalize-first>
-                                  <div class="btn btn-tertiary" data-mdb-ripple-color="dark">
-                                    <ion-icon name="camera"></ion-icon>
-                                  </div>
-                                </div>
-                                <div class="action" action="destroy" data-tippy="tooltip" data-mdb-placement="top" data-title="Destroy the view" data-mulang="destroy the view" capitalize-first>
-                                  <div class="btn btn-tertiary" data-mdb-ripple-color="dark">
-                                    <ion-icon name="close"></ion-icon>
-                                  </div>
+                                <div class="descriptions">
                                 </div>
                               </div>
-                              <div class="loading">
+                              <div class="empty">
                                 <div class="lottie-container">
-                                  <lottie-player src="../assets/lottie/loading-visualized-metadata.json" background="transparent" loop speed="1.2"></lottie-player>
-                                </div>
-                                <div class="btn-container">
-                                  <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" id="_${visualizedMetadataBtnID}">
-                                    <span mulang="visualize metadata"></span>
-                                  </button>
-                                  <div class="progress">
-                                    <div class="progress-bar changed-bg" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                  <lottie-player src="../assets/lottie/empty-cql-description.json" background="transparent" loop autoplay speed="0.75" direction="1"></lottie-player>
+                                  <div class="message"><span mulang="right click on the cluster, keyspace or table and get its CQL description" capitalize-first></span>.
                                   </div>
                                 </div>
                               </div>
@@ -749,7 +740,7 @@
                               </div>
                               <div class="empty">
                                 <div class="lottie-container">
-                                  <lottie-player src="../assets/lottie/empty-query-tracing.json" background="transparent" loop autoplay speed="0.75" direction="1" mode"bounce></lottie-player>
+                                  <lottie-player src="../assets/lottie/empty-query-tracing.json" background="transparent" loop autoplay speed="0.75" direction="1" mode"bounce"></lottie-player>
                                   <div class="message"><span mulang="no query has been traced yet" capitalize-first></span>.<hint> <span mulang="it can be enabled by running" capitalize-first></span> <code>tracing on</code></hint>
                                   </div>
                                 </div>
@@ -873,6 +864,37 @@
                       })
                     }
 
+                    // Handle when typing something inside the cql description's search input field
+                    {
+                      setTimeout(() => {
+                        $(`input#_${cqlDescriptionSearchInputID}`).on('input', function() {
+                          // Get the search text, minify/manipulate it
+                          let searchValue = minifyText($(this).val()),
+                            // Point at the descriptions' container
+                            descriptionsContainer = $(`div.tab-pane[tab="cql-description"]#_${cqlDescriptionContentID}`).find('div.descriptions')
+
+                          // Update the input field by calling its object's `update` function
+                          getElementMDBObject($(this)).update()
+
+                          // Trigger the `resize` event to make sure editors' dimensions are correct
+                          setTimeout(() => $(window.visualViewport).trigger('resize'))
+
+                          // The search text must be more than 3 characters
+                          if (searchValue.length <= 3)
+                            return descriptionsContainer.children('div.description').show()
+
+                          // Loop through each description
+                          descriptionsContainer.children('div.description').each(function() {
+                            // Get its text in overall
+                            let descriptionContent = minifyText($(this).text())
+
+                            // Show/hide it based on the result of whether or not it contains the search text
+                            $(this).toggle(descriptionContent.search(searchValue))
+                          })
+                        })
+                      })
+                    }
+
                     /**
                      * Define variables which will be available for all sub-scopes
                      *
@@ -907,8 +929,6 @@
                       },
                       // Hold the object of the metadata's tree view
                       jsTreeObject = null,
-                      // Hold the object of the visualized metadata version
-                      visualizedMetadataObject = null,
                       // Save the latest executed command
                       latestCommand = null
 
@@ -1496,7 +1516,7 @@
                               let createEditor = (type, metadata) => {
                                 // Create the editor
                                 let editor = monaco.editor.create($(`div.tab-pane[tab="metadata-differentiation"]#_${metadataDifferentiationContentID}`).find(`div.editor-container-${type}`)[0], {
-                                  value: applyJSONBeautify(metadata, true), // This is the default content of the `cqlsh.rc` file
+                                  value: applyJSONBeautify(metadata, true),
                                   language: 'json', // Set the content's language
                                   minimap: {
                                     enabled: true
@@ -1514,6 +1534,18 @@
 
                                 // Update its layout
                                 setTimeout(() => editor.layout(), 200)
+
+                                /**
+                                 * Create a resize observer for the work area body element
+                                 * By doing this the editor's dimensions will always fit with the dialog's dimensions
+                                 */
+                                setTimeout(() => {
+                                  (new ResizeObserver(() => {
+                                    try {
+                                      editor.layout()
+                                    } catch (e) {}
+                                  })).observe(workareaElement[0])
+                                })
 
                                 // Return the editor's object
                                 return editor
@@ -1539,6 +1571,67 @@
 
                                   // Create the tree view of the metadata and hold the returned object
                                   jsTreeObject = metadataContent.jstree(treeview)
+
+                                  jsTreeObject.disableSelection()
+
+                                  /**
+                                   * Create a listener to the event `contextmenu`
+                                   * This event `contextmenu` is customized for the JSTree plugin
+                                   */
+                                  jsTreeObject.on('contextmenu', function(event) {
+                                    // Remove the default contextmenu created by the plugin
+                                    $('.vakata-context').remove()
+
+                                    // Point at the right-clicked node
+                                    let clickedNode = $(event.target)
+
+                                    // If the node is not one of the specified types then skip this process
+                                    if (['a', 'i', 'span'].every((type) => !clickedNode.is(clickedNode)))
+                                      return
+
+                                    /**
+                                     * The main element in the node is the anchor `a`
+                                     * If the clicked element is not `a` but `i` or `span` then the `a` is actually their parent
+                                     */
+                                    try {
+                                      // If the right-clicked node is an anchor already then skip this try-catch block
+                                      if (clickedNode.is('a'))
+                                        throw 0
+
+                                      // Point at the clicked element's parent `a`
+                                      clickedNode = clickedNode.parent()
+                                    } catch (e) {}
+
+                                    // If after the manipulation the final element is not an anchor or doesn't have a required attribute then skip the process
+                                    if (!clickedNode.is('a') || clickedNode.attr('allow-right-context') != 'true')
+                                      return
+
+                                    let [
+                                      // Get the target's node name in Cassandra
+                                      targetName,
+                                      // Get the target's keyspace's name - if it's a table -
+                                      keyspaceName,
+                                      // Get the target's type - cluster, keyspace or table -
+                                      nodeType
+                                    ] = getAttributes(clickedNode, ['name', 'keyspace', 'type'])
+
+                                    // Define the scope to be passed with the request
+                                    scope = `keyspace>${nodeType == 'keyspace' ? targetName : keyspaceName}${nodeType != 'keyspace' ? 'table>' + targetName : ''}`
+
+                                    // If the node type is cluster then only `cluster` is needed as a scope
+                                    if (nodeType == 'cluster')
+                                      scope = 'cluster'
+
+                                    // Send a request to the main thread regards pop-up a menu
+                                    IPCRenderer.send('show-context-menu', JSON.stringify([{
+                                      label: 'Get CQL Description',
+                                      click: `() => mainView.webContents.send('cql-desc:get', {
+                                        clusterID: '${getAttributes(clusterElement, 'data-id')}',
+                                        scope: '${scope}',
+                                        tabID: '${cqlDescriptionContentID}'
+                                      })`
+                                    }]))
+                                  })
 
                                   // This try-catch block is for initializing the metadata differentiation after getting the metadata
                                   try {
@@ -1996,17 +2089,8 @@
 
                     // Handle different events for many elements in the work area
                     {
-                      // Metadata tree view side and the visualized version of it
+                      // Metadata tree view side
                       setTimeout(() => {
-                        // Point at the visualized metadata's container of the cluster
-                        let visualizedMetadataTabContent = $(`div[tab="visualized-metadata"]#_${visualizedMetadataContentID}`),
-                          // Point at the `VISUALIZE METADATA` button's container - to show the progress bar -
-                          containerBtn = visualizedMetadataTabContent.children('div.loading').children('div.btn-container'),
-                          // Point at the progress bar
-                          progressBar = containerBtn.children('div.progress').children('div.progress-bar'),
-                          // Point at the lottie element
-                          lottiePlayer = visualizedMetadataTabContent.children('div.loading').find('lottie-player')
-
                         // Clicks the copy button; to copy metadata in JSON string format
                         $(`div.btn[data-id="${copyMetadataBtnID}"]`).click(function() {
                           // Get the beautified version of the metadata
@@ -2046,96 +2130,6 @@
 
                           // Check metadata with `refresh` = `true`
                           checkMetadata(true)
-                        })
-
-                        /**
-                         * Clicks the `VISUALIZE METADATA` button; to create a visualized version of the metadata
-                         * The event listener can take metadata to be used, if not, the latest fetched metadata will be used instead
-                         */
-                        $(`button#_${visualizedMetadataBtnID}`).on('click', function(e, metadata) {
-                          // Determine which metadata to use
-                          let metadataToVisualized = metadata || latestMetadata
-
-                          // Create the visualized version of the metadata
-                          visualizedMetadataObject = buildTreeviewVisualized(buildTreeview(JSON.parse(JSON.stringify(metadataToVisualized))), $(`div.visualized-metadata-container[data-id="${visualizedMetadataContainerID}"]`)[0])
-
-                          // Show the progress bar
-                          containerBtn.addClass('show-progress')
-
-                          // Animate the lottie element
-                          lottiePlayer[0].play()
-
-                          // As the visualized version is being created
-                          visualizedMetadataObject.on('stabilizationProgress', (params) => progressBar.css('width', `${(params.iterations / params.total) * 100}%`))
-
-                          // Once the visualized version created
-                          visualizedMetadataObject.once('stabilizationIterationsDone', () => {
-                            // Pause the lottie element animation
-                            lottiePlayer[0].pause()
-
-                            // Remove the loading class from the metadata diff tab's content
-                            visualizedMetadataTabContent.removeClass('loading')
-                          })
-                        })
-
-                        // Clicks the refresh button in the visualized metadata container
-                        visualizedMetadataTabContent.find('div.action[action="refresh"] div.btn').click(function() {
-                          // Disable the button
-                          $(this).addClass('disabled')
-
-                          // Get the latest metadata of the cluster
-                          Modules.Clusters.getMetadata(clusterID, (metadata) => {
-                            try {
-                              // Parse the received metadata from JSON string to object
-                              metadata = JSON.parse(metadata)
-
-                              // Click the `destroy` button of the visualized metadata - implemented right after this listener -
-                              visualizedMetadataTabContent.find('div.action[action="destroy"] div.btn').trigger('click', true)
-
-                              setTimeout(() => {
-                                // Trigger the visualization version creation button
-                                $(`button#_${visualizedMetadataBtnID}`).trigger('click', metadata)
-
-                                // Enable the button again
-                                $(this).removeClass('disabled')
-                              }, 1000)
-                            } catch (e) {}
-                          })
-                        })
-
-                        // Take a screenshot of the visualized version
-                        visualizedMetadataTabContent.find('div.action[action="screenshot"] div.btn').click(function() {
-                          // Create an `anchor` element
-                          let downloadElement = document.createElement('a')
-
-                          // Set the screenshot's name
-                          downloadElement.download = `${formatTimestamp(new Date().getTime())}.jpeg`
-
-                          // Set the content - canvas content -
-                          downloadElement.href = $(`div.visualized-metadata-container[data-id="${visualizedMetadataContainerID}"]`).find('canvas')[0].toDataURL('image/jpeg')
-
-                          // Click the element to let the user save the screenshot
-                          downloadElement.click()
-                        })
-
-                        // Destory the entire visualized version
-                        visualizedMetadataTabContent.find('div.action[action="destroy"] div.btn').on('click', function(e, instant = false) {
-                          // Back to the initial state of the visualized metadata section
-                          containerBtn.toggleClass('show-progress', instant)
-
-                          // Reset the progress bar
-                          progressBar.css('width', `0%`)
-
-                          setTimeout(() => {
-                            // Reset the loading state
-                            visualizedMetadataTabContent.addClass('loading')
-
-                            // Stop the lottie animation
-                            lottiePlayer[0].stop()
-
-                            // Destory the visualized version's object
-                            setTimeout(() => visualizedMetadataObject.destroy(), instant ? 10 : 200)
-                          }, 50)
                         })
                       })
 
@@ -2417,10 +2411,10 @@
                         $(`span.btn[data-id="${openSnapshotsFolderBtnID}"]`).click(() => Open(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(clusterElement, 'data-folder'), 'snapshots')))
                       })
 
-                      // The `click` event for different tabs
+                      // The `click` event for all tabs in the work area
                       setTimeout(() => {
-                        // With every `click` event of different tabs
-                        $(`a[href="#_${metadataDifferentiationContentID}"]`).add(`a[href="#_${cqlshSessionContentID}"]`).add(`a[href="#_${bashSessionContentID}"]`).add(`a[href="#_${queryTracingContentID}"]`).click(() => {
+                        // With every `click` event of one of the tabs
+                        workareaElement.find('a[href*="#_"]').click(() => {
                           /**
                            * Trigger the `resize` event for the entire window
                            * This will resize editors and terminals
@@ -2527,11 +2521,6 @@
                           } catch (e) {}
 
                           setTimeout(() => {
-                            // Destory the visualized version of the metadata
-                            try {
-                              visualizedMetadataObject.destroy()
-                            } catch (e) {}
-
                             // Remove both editors in the metadata differentiation section
                             (['old', 'new']).forEach((type) => {
                               try {
@@ -5751,6 +5740,155 @@
 
       // Call the margin handler function
       handleClusterSwitcherMargin()
+    })
+  }
+
+  // Handle the request of getting a CQL description of the cluster, keyspace in it, or a table
+  {
+    IPCRenderer.on('cql-desc:get', (_, data) => {
+      // Define a portion of the common CSS selector
+      let selector = `div.body div.right div.content div[content]`,
+        // Point at the associated cluster's UI element
+        clusterElement = $(`${selector}[content="clusters"] div.clusters-container div.cluster[data-id="${data.clusterID}"]`),
+        // Point at the associated cluster's work area UI element
+        workareaElement = $(`${selector}[content="workarea"] div.workarea[cluster-id="${data.clusterID}"]`),
+        // Point at the CQL description's tab's content - main container -
+        cqlDescriptionsTabContent = workareaElement.find('div.sub-sides div.tab-content div.tab-pane[tab="cql-description"]'),
+        // Point at the CQL descriptions' elements container
+        cqlDescriptionsContainer = cqlDescriptionsTabContent.find('div.descriptions-container div.descriptions'),
+        // Point at the CQL description tab - navigation tab -
+        cqlDescriptionTab = $(`a.nav-link.btn[href="#_${data.tabID}"]`),
+        // Get the cql descriptions' tab MDB object
+        cqlDescriptionTabObject = getElementMDBObject(cqlDescriptionTab, 'Tab'),
+        // Flag to tell if the description has been fetched already or not
+        isDescriptionFetched = false
+
+      // Get the CQL description based on the passed scope
+      Modules.Clusters.getCQLDescription(data.clusterID, data.scope, (description) => {
+        // If the description has been fetched already then skip this process
+        if (isDescriptionFetched)
+          return
+
+        // Update the flag
+        isDescriptionFetched = true
+
+        // The CQL description's tab's container is not empty now, and make sure to clear the empty the search input field
+        cqlDescriptionsTabContent.removeClass('_empty').find('input').val('')
+
+        // Show the tab's content automatically
+        setTimeout(() => cqlDescriptionTabObject.show(), 250)
+
+        /**
+         * Trigger the `resize` event for the entire window
+         * This will resize all editors
+         */
+        setTimeout(() => $(window.visualViewport).trigger('resize'), 260)
+
+        // Check if there's an associated CQL description
+        let associatedDescription = cqlDescriptionsContainer.find(`div.description[data-scope="${data.scope}"]`),
+          // Manipulate the scope to be set in the badge
+          scope = data.scope == 'cluster' ? `Cluster: ${getAttributes(clusterElement, 'data-name')}` : ''
+
+        try {
+          // If the scope's length after the manipulation is not `0` then it's a `cluster` scope and this try-catch block may be skipped
+          if (scope.length != 0)
+            throw 0
+
+          // Manipulate the scope
+          scope = data.scope.replace(/\s*\>\s*/gm, ': ')
+            .replace(/keyspace:/gm, 'Keyspace: ')
+            .replace(/table:/gm, '<span class="dot"></span> Table: ')
+            .replace(/\s+/gm, ' ')
+        } catch (e) {}
+
+        try {
+          // If there's no associated description then skip this try-catch block
+          if (associatedDescription.length <= 0)
+            throw 0
+
+          setTimeout(() => {
+            // Add the scope in the search input field and trigger the `input` event
+            cqlDescriptionsTabContent.find('input').val(StripTags(scope)).trigger('input')
+
+            // Get the description's editor's object
+            let editorObject = monaco.editor.getEditors().find((editor) => associatedDescription.find('div.editor').is(editor._domElement))
+
+            // Update the editor's content with the latest fetched description
+            editorObject.setValue('\n\n' + `${description}`)
+          })
+
+          // Skip the upcoming code
+          return
+        } catch (e) {}
+
+        // Get a random ID for the description's editor's container
+        let editorContainerID = getRandomID(10)
+
+        // Description's UI element structure
+        let element = `
+            <div class="description" data-scope="${data.scope}">
+              <span class="badge rounded-pill badge-secondary">${scope}</span>
+              <div class="inner-content">
+                <div class="editor" id="_${editorContainerID}">
+                </div>
+              </div>
+            </div>`
+
+        // Prepend the description's UI element to the container
+        cqlDescriptionsContainer.prepend($(element).show(function() {
+          setTimeout(() => {
+            // Create an editor for the description
+            let descriptionEditor = monaco.editor.create($(`#_${editorContainerID}`)[0], {
+              value: '\n\n' + `${description}`,
+              language: 'sql', // Set the content's language
+              minimap: {
+                enabled: true
+              },
+              readOnly: true,
+              glyphMargin: false,
+              suggest: {
+                showFields: false,
+                showFunctions: false
+              },
+              theme: 'vs-dark',
+              scrollBeyondLastLine: true,
+              fontSize: 11
+            })
+
+            /**
+             * Make sure the editor's dimensions are correct
+             * Set a counter with an initial value
+             */
+            let count = 0,
+              // Create an interval that will be cleared after 5 executes
+              updateEditorLayout = setInterval(() => {
+                // After 5 executes
+                if (count >= 5) {
+                  /**
+                   * Create a resize observer for the work area body element
+                   * By doing this the editor's dimensions will always fit with the dialog's dimensions
+                   */
+                  setTimeout(() => {
+                    (new ResizeObserver(() => {
+                      try {
+                        descriptionEditor.layout()
+                      } catch (e) {}
+                    })).observe(workareaElement[0])
+                  })
+
+                  // Clear the interval
+                  clearInterval(updateEditorLayout)
+                }
+
+                // Update the editor's layout/dimensions
+                descriptionEditor.layout(); // This semicolon is critical here
+
+                // Increase the counter
+                ++count
+              }, 100)
+          })
+        }))
+      })
     })
   }
 }

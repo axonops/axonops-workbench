@@ -305,7 +305,10 @@
       "log info, actions, processes and related": "מידע יומן, פעולות, תהליכים ודברים קשורים",
       "this update needs an app restart": "עדכון זה דורש הפעלה מחדש של האפליקציה",
       "sandbox feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again": "תכונת ארגז החול מחייבת את המשתמש הנוכחי להיות בקבוצת [code]docker[/code] ב-[b]Linux[/b], אנא ודא שדרישה זו מתקיימת ולאחר מכן נסה שוב",
-      "the work area of docker project [b]$data[/b] is being terminated": "אזור העבודה של פרויקט docker [b]$data[/b] מסתיים"
+      "the work area of docker project [b]$data[/b] is being terminated": "אזור העבודה של פרויקט docker [b]$data[/b] מסתיים",
+      "CQL description": "תיאור CQL",
+      "search for CQL description": "חפש תיאור CQL",
+      "right click on the cluster, keyspace or table and get its CQL description": "לחץ לחיצה ימנית על האשכול, מרווח המקשים או הטבלה וקבל את תיאור ה-CQL שלו"
     }
   }
 }

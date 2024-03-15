@@ -65,7 +65,6 @@
     "typed.js": "^2.0.16",
     "v8-compile-cache": "^2.3.0",
     "value-size": "^1.0.1",
-    "vis-network": "^9.1.6",
     "xterm": "^5.2.1",
     "xterm-addon-canvas": "^0.5.0",
     "xterm-addon-fit": "^0.7.0",

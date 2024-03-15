@@ -305,7 +305,10 @@
       "log info, actions, processes and related": "تسجيل المعلومات، العمليات وما شابه",
       "this update needs an app restart": "هذا التحديث يحتاج إعادة تشغيل البرنامج",
       "sandbox feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again": "تتطلب ميزة المشاريع الرملية أن يكون المستخدم الحالي في مجموعة [code]docker[/code] في [b]Linux[/b]، يرجى التأكد من استيفاء هذا المطلب ثم حاول مرة أخرى",
-      "the work area of docker project [b]$data[/b] is being terminated": "يتم إنهاء منطقة عمل مشروع docker [b]$data[/b]"
+      "the work area of docker project [b]$data[/b] is being terminated": "يتم إنهاء منطقة عمل مشروع docker [b]$data[/b]",
+      "CQL description": "وصف CQL",
+      "search for CQL description": "ابحث عن وصف CQL",
+      "right click on the cluster, keyspace or table and get its CQL description": "انقر بزر الماوس الأيمن على المجموعة أو مساحة المفاتيح أو الجدول واحصل على وصف CQL الخاص بها"
     }
   }
 }

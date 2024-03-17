@@ -1,11 +1,11 @@
 /**
- * The main - single - thread for the app overall
+ * The main - single only - thread for the app overall
  *
  * Import the compilation cache optimizer
  */
 require('v8-compile-cache')
 
-// Import Electron module
+// Import Electron module and its sub-modules
 const Electron = require('electron'),
   /**
    * Import different sub-modules from the Electron module
@@ -54,12 +54,12 @@ const FS = require('fs-extra'),
   URL = require('url')
 
 /**
- * Import extra modules to be used in the main thread
+ * Import extra modules needed in the main thread
  *
  * Execute commands across all platforms
  */
 const Terminal = require('node-cmd'),
-  // Enable the right-click context menu
+  // Enable - ready to be used - right-click context menu
   ContextMenu = require('electron-context-menu'),
   // Helps to position the app's windows
   Positioner = require('electron-positioner')
@@ -83,7 +83,7 @@ try {
    */
   modulesFiles.forEach((moduleFile) => {
     try {
-      // Make sure the module file name is in lowercase
+      // Make sure the module file name is lowered case
       moduleFile = moduleFile.toLowerCase()
 
       // Ignore any file which is not JS
@@ -105,13 +105,16 @@ try {
 /**
  * Define global variables that will be used in different scopes in the main thread
  *
- * The main view/window object
+ * Object that will hold all views/windows of the app
  */
-let mainView = null,
-  // A view for all background processes
-  backgroundProcessesView = null,
-  // A view for the app's offline documentation
-  documentationView = null
+let views = {
+  // The main view/window object
+  main: null,
+  // A view/window for all background processes
+  backgroundProcesses: null,
+  // A view/window for the app's offline documentation
+  documentation: null
+}
 
 // An array that will save all cqlsh instances with their ID given by the renderer thread
 let CQLSHInstances = [],
@@ -180,16 +183,17 @@ let createWindow = (properties, viewPath, extraProperties = {}) => {
   return windowObject
 }
 
-/**
- * Some app's properties
- *
- * The app's default icon path
- */
-const AppIconPath = Path.join(__dirname, '..', 'renderer', 'assets', 'images', 'icon.ico'),
-  // The app's main view - HTML file - path
-  AppMainViewPath = Path.join(__dirname, '..', 'renderer', 'views', 'index.html'),
+// Define some app's properties
+const AppProps = {
+  Paths: {
+    // The app's default icon path
+    Icon: Path.join(__dirname, '..', 'renderer', 'assets', 'images', 'icon.ico'),
+    // The app's main view/window - HTML file - path
+    MainView: Path.join(__dirname, '..', 'renderer', 'views', 'index.html')
+  },
   // Get the app's info
-  AppInfo = require(Path.join(__dirname, '..', 'package.json'))
+  Info: require(Path.join(__dirname, '..', 'package.json'))
+}
 
 /**
  * When the main thread is ready
@@ -200,8 +204,8 @@ let properties = {
     minWidth: 1266,
     minHeight: 668,
     center: true,
-    icon: AppIconPath,
-    title: AppInfo.title,
+    icon: AppProps.Paths.Icon,
+    title: AppProps.Info.title,
     backgroundColor: '#f5f5f5',
     show: false,
     webPreferences: {
@@ -237,23 +241,26 @@ Modules.Reports.startCrashingHandler()
 // When the app is ready a renderer thread should be created and started
 App.on('ready', () => {
   // Create the main view, and pass the properties
-  mainView = createWindow(properties, AppMainViewPath, extraProperties)
+  views.main = createWindow(properties, AppProps.Paths.MainView, extraProperties)
 
-  // Create the background processes' view and make it hidden; as there's no need for a window or GUI for it
-  backgroundProcessesView = createWindow(properties, Path.join(AppMainViewPath, '..', 'background.html'), {
+  // Create the background processes' view/window and make it hidden; as there's no need for a window or GUI for it
+  views.backgroundProcesses = createWindow(properties, Path.join(AppProps.Paths.MainView, '..', 'background.html'), {
     show: false,
-    parent: mainView
+    parent: views.main
   })
 
   // Create the documentation view
-  documentationView = createWindow(properties, Path.join(AppMainViewPath, '..', 'documentation', 'index.html'), {
+  views.documentation = createWindow({
+    ...properties,
+    title: `${properties.title} Documentation`
+  }, Path.join(AppProps.Paths.MainView, '..', 'documentation', 'index.html'), {
     show: false,
-    parent: mainView
+    parent: views.main
   })
 
   /**
    * Create the intro view/window with custom properties
-   * This window will be destroyed once the main view and its children loaded
+   * This window will be destroyed once the main view/window and its children loaded
    */
   let introView = createWindow({
     ...properties,
@@ -271,33 +278,33 @@ App.on('ready', () => {
     alwaysOnTop: true,
     thickFrame: false,
     show: true
-  }, Path.join(AppMainViewPath, '..', 'intro.html'), {
+  }, Path.join(AppProps.Paths.MainView, '..', 'intro.html'), {
     show: true,
     center: true,
-    parent: mainView
+    parent: views.main
   })
 
   // When the `close` event is triggered for the documentation view
-  documentationView.on('close', (event) => {
+  views.documentation.on('close', (event) => {
     // This will be set to `true` if the entire app is about to be closed
     if (!documentationViewPreventClose)
       return
 
-    // Prevent the default behavior - terminate the view -
+    // Prevent the default behavior - terminate the view/window -
     event.preventDefault()
 
     /**
      * Only hide the documentation view
-     * In this way we prevent unnecessary loading and create time for the view each time it's called
+     * In this way we prevent unnecessary loading and create time for the view/window each time it's called
      */
-    documentationView.hide()
+    views.documentation.hide()
   })
 
   /**
    * When the `close` event is triggered for the background processes view
    * This event is only triggered at the back-end and not by the user
    */
-  backgroundProcessesView.on('close', () => {
+  views.backgroundProcesses.on('close', () => {
     // Update `macOSForceClose` flag if needed
     try {
       // If the value is already `true` then skip this try-catch block
@@ -307,8 +314,8 @@ App.on('ready', () => {
       // Update the value
       macOSForceClose = true
 
-      // Call the `close` event for the `mainView` but this time with forcing the close of all windows
-      mainView.close()
+      // Call the `close` event for the `views.main` but this time with forcing the close of all windows
+      views.main.close()
     } catch (e) {}
   })
 
@@ -316,12 +323,12 @@ App.on('ready', () => {
   IPCMain.on('loaded', () => {
     // Trigger after 1s of loading the main view
     setTimeout(() => {
-      // Destroy the intro view entirely
+      // Destroy the intro view/window entirely
       introView.destroy()
 
-      // Show the main view and maximize it
-      mainView.show()
-      mainView.maximize()
+      // Show the main view/window and maximize it
+      views.main.show()
+      views.main.maximize()
     }, 500)
   })
 
@@ -333,7 +340,7 @@ App.on('ready', () => {
     documentationViewPreventClose = true
 
   // Once the `close` event is triggered
-  mainView.on('close', (event) => {
+  views.main.on('close', (event) => {
     // Special process for macOS only
     try {
       // If the current OS is not macOS or there's a force to close the windows then skip this try-catch block
@@ -341,7 +348,7 @@ App.on('ready', () => {
         throw 0
 
       // On macOS, just minimize the main window when the user clicks the `X` button
-      mainView.minimize()
+      views.main.minimize()
 
       // Prevent the default behavior
       event.preventDefault()
@@ -365,27 +372,27 @@ App.on('ready', () => {
 
     // Close all active work areas - clusters and sandbox projects -
     try {
-      mainView.webContents.send(`app-terminating`)
+      views.main.webContents.send(`app-terminating`)
     } catch (e) {} finally {
       // Once the pre-close processes finished we may trigger the `close` event again for all windows
       setTimeout(() => {
         // Close the main view
         try {
-          mainView.close()
+          views.main.close()
         } catch (e) {}
 
         // Close the background-processes view
         try {
-          backgroundProcessesView.close()
+          views.backgroundProcesses.close()
         } catch (e) {}
 
         // Close the documentation view
         try {
-          // Set it to `true`; to close the documentation view and destroy it as well
+          // Set it to `true`; to close the documentation view/window and destroy it as well
           documentationViewPreventClose = false
 
           // Close the documentation view
-          documentationView.close()
+          views.documentation.close()
         } catch (e) {}
       }, 250)
     }
@@ -395,12 +402,12 @@ App.on('ready', () => {
 // When there's an `activate` trigger for the app
 App.on('activate', () => {
   // If the app is active but no window has been created for any reason then create the main one
-  if (mainView === null)
-    mainView = createWindow(properties, AppMainViewPath, extraProperties)
+  if (views.main === null)
+    views.main = createWindow(properties, AppProps.Paths.MainView, extraProperties)
 
   // If the current OS is macOS then restore the state of the main window
   if (process.platform === 'darwin')
-    mainView.restore()
+    views.main.restore()
 })
 
 // Quit the app when all windows are closed
@@ -422,7 +429,7 @@ App.on('window-all-closed', () => App.quit())
 
       // Create a pty instance
       try {
-        CQLSHInstances[data.id] = new Modules.Pty.Pty(mainView, data)
+        CQLSHInstances[data.id] = new Modules.Pty.Pty(views.main, data)
       } catch (e) {}
 
       // Call that instance to create a cqlsh instance
@@ -483,12 +490,12 @@ App.on('window-all-closed', () => App.quit())
     // Test connection with a cluster
     IPCMain.on('pty:test-connection', (_, data) => {
       // Call this function from `pty.js` file
-      Modules.Pty.testConnectionWithCluster(mainView, data)
+      Modules.Pty.testConnectionWithCluster(views.main, data)
     })
 
     // Create a Bash session
     IPCMain.on(`pty:create:bash-session`, (_, data) => {
-      Modules.Pty.bashSession(mainView, {
+      Modules.Pty.bashSession(views.main, {
         ...data,
         IPCMain
       })
@@ -516,7 +523,7 @@ App.on('window-all-closed', () => App.quit())
 
   /**
    * Requests to perform processes in the background
-   * Processes will be executed in the `backgroundProcessesView` view
+   * Processes will be executed in the `views.backgroundProcesses` view
    */
   {
     // SSH tunnel creation and related processes
@@ -524,19 +531,19 @@ App.on('window-all-closed', () => App.quit())
       // Create an SSH tunnel
       IPCMain.on('ssh-tunnel:create', (_, data) => {
         // Send the request to the background processes' renderer thread
-        backgroundProcessesView.webContents.send('ssh-tunnel:create', data)
+        views.backgroundProcesses.webContents.send('ssh-tunnel:create', data)
 
         // Once we received a response
         IPCMain.on(`ssh-tunnel:create:result:${data.requestID}`, (_, data) => {
           // Send the response to the main renderer thread
-          mainView.webContents.send(`ssh-tunnel:create:result:${data.requestID}`, data)
+          views.main.webContents.send(`ssh-tunnel:create:result:${data.requestID}`, data)
         })
       })
 
       // Close an SSH tunnel based on the given cluster's ID - or the port -
       IPCMain.on(`ssh-tunnel:close`, (_, clusterID) => {
         // Send the request to the background processes' renderer thread
-        backgroundProcessesView.webContents.send('ssh-tunnel:close', clusterID)
+        views.backgroundProcesses.webContents.send('ssh-tunnel:close', clusterID)
       })
 
       /**
@@ -545,7 +552,7 @@ App.on('window-all-closed', () => App.quit())
        */
       IPCMain.on(`ssh-tunnel:update`, (_, data) => {
         // Send the request to the background processes' renderer thread
-        backgroundProcessesView.webContents.send('ssh-tunnel:update', data)
+        views.backgroundProcesses.webContents.send('ssh-tunnel:update', data)
       })
     }
 
@@ -553,12 +560,12 @@ App.on('window-all-closed', () => App.quit())
     {
       IPCMain.on('detect-differentiation', (_, data) => {
         // Send the request to the background processes' renderer thread
-        backgroundProcessesView.webContents.send('detect-differentiation', data)
+        views.backgroundProcesses.webContents.send('detect-differentiation', data)
 
         // Once we received a response
         IPCMain.on(`detect-differentiation:result:${data.requestID}`, (_, data) => {
           // Send the response to the main renderer thread
-          mainView.webContents.send(`detect-differentiation:result:${data.requestID}`, data)
+          views.main.webContents.send(`detect-differentiation:result:${data.requestID}`, data)
         })
       })
     }
@@ -570,12 +577,12 @@ App.on('window-all-closed', () => App.quit())
    */
   {
     // Toggle the fullscreen mode
-    IPCMain.on('options:view:toggle-fullscreen', () => mainView.setFullScreen(!mainView.isFullScreen()))
+    IPCMain.on('options:view:toggle-fullscreen', () => views.main.setFullScreen(!views.main.isFullScreen()))
 
     // Restart the entire app
     IPCMain.on('options:actions:restart', () => {
       // Close the main window
-      mainView.close()
+      views.main.close()
 
       // Relaunch the app
       App.relaunch()
@@ -587,7 +594,7 @@ App.on('window-all-closed', () => App.quit())
       macOSForceClose = true
 
       // Close the main window
-      mainView.close()
+      views.main.close()
     })
   }
 
@@ -595,10 +602,10 @@ App.on('window-all-closed', () => App.quit())
    * Different requests that aren't related
    * Request to create a dialog
    */
-  IPCMain.on('dialog:create', (_, data) => Modules.Dialogs.createDialog(mainView, data))
+  IPCMain.on('dialog:create', (_, data) => Modules.Dialogs.createDialog(views.main, data))
 
   // Request to know if the main window is currently being focused on or not
-  IPCMain.on('window:focused', (_, data) => mainView.webContents.send('window:focused', mainView.isFocused()))
+  IPCMain.on('window:focused', (_, data) => views.main.webContents.send('window:focused', views.main.isFocused()))
 
   // Request to get the public key from the keys generator tool
   IPCMain.on('public-key:get', (_, id) => {
@@ -616,20 +623,20 @@ App.on('window-all-closed', () => App.quit())
     binCall = (process.platform == 'win32') ? `keys_generator.exe` : binCall
 
     // Execute the command, get the public key, and send it to the renderer thread
-    Terminal.run(`cd "${binFolder}" && ${binCall}`, (err, publicKey, stderr) => mainView.webContents.send(`public-key:${id}`, (err || stderr) ? '' : publicKey))
+    Terminal.run(`cd "${binFolder}" && ${binCall}`, (err, publicKey, stderr) => views.main.webContents.send(`public-key:${id}`, (err || stderr) ? '' : publicKey))
   })
 
   /**
    * Request to run a script
    * Given data: {id, scriptPath}
    */
-  IPCMain.on('script:run', (_, data) => Modules.Scripts.executeScript(mainView, Terminal, data))
+  IPCMain.on('script:run', (_, data) => Modules.Scripts.executeScript(views.main, Terminal, data))
 
   // Show the documentation view
-  IPCMain.on('documentation-view:show', () => documentationView.show())
+  IPCMain.on('documentation-view:show', () => views.documentation.show())
 
   // Request to change the content protection state
-  IPCMain.on('content-protection', (_, apply) => mainView.setContentProtection(apply))
+  IPCMain.on('content-protection', (_, apply) => views.main.setContentProtection(apply))
 
   /**
    * Show a pop-up context menu with passed items
@@ -671,7 +678,7 @@ App.on('window-all-closed', () => App.quit())
       }
 
       // Pop-up/show the created menu
-      popUpMenu.popup(mainView)
+      popUpMenu.popup(views.main)
     })
   }
 }

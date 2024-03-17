@@ -1625,7 +1625,7 @@
                                     // Send a request to the main thread regards pop-up a menu
                                     IPCRenderer.send('show-context-menu', JSON.stringify([{
                                       label: 'Get CQL Description',
-                                      click: `() => mainView.webContents.send('cql-desc:get', {
+                                      click: `() => views.main.webContents.send('cql-desc:get', {
                                         clusterID: '${getAttributes(clusterElement, 'data-id')}',
                                         scope: '${scope}',
                                         tabID: '${cqlDescriptionContentID}'
@@ -2810,6 +2810,12 @@
                               'width': `calc(100% - ${leftSide.outerWidth()}px)`,
                               'transition': `all 0s`
                             })
+
+                            /**
+                             * Trigger the `resize` event for the entire window
+                             * This will resize editors and terminals
+                             */
+                            $(window.visualViewport).trigger('resize')
 
                             // Get the minimum width allowed to be reached for the right side before hiding the tabs' titles
                             let minimumAllowedWidth = !isSandbox ? 867 : 1215,

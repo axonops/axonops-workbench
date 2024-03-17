@@ -480,14 +480,17 @@ let repairJSON = (json) => {
 
   try {
     // Replace non-ascii chars except the ones which are used to build a valid JSON
-    json = json.replace(/[^\x20-\x7E{}[\]:,"']/g, '')
+    json = `${json}`.replace(/[^\x20-\x7E{}[\]:,"']/g, '')
       // Remove some added chars from the cqlsh tool and terminal
       .replace(/1C/g, '')
-      .replace(/u\'/gm, "'")
-      // Remove an added bracket to `keyspace_name` attribute that can lead to an error
+      .replace(/u\'/g, "'")
+      .replace(/\(\)/g, "''")
+      // Remove an added bracket to the `keyspace_name` attribute that can lead to an error
       .replace(/\'\:\[\'keyspace_name\'/g, "':'keyspace_name'")
       // Get rid of the `OrderedMapSerializedKey` object - cause the repairing process to fall apart -
-      .replace(/OrderedMapSerializedKey\(\[.*?\]\)/g, "''")
+      .replace(/OrderedMapSerializedKey\(\s*\[(.*?)\]\s*\)/g, "''")
+      // Get rid of the function's body - which is code -; as this causes the parsing process to fall apart
+      .replace(/'body':\s*'([\s\S]*?)',/g, `'body': '',`)
 
     // Attempt to match the JSON block `{...JSON content...}`
     try {
@@ -1051,67 +1054,270 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       })
     } catch (e) {}
 
-    // Show a `User Defined Types` node/leaf if the current keyspace has at least one UDT
+    // Check if the current keyspace has any user-defined element
     try {
-      // If the current keyspace doesn't have any UDT then skip this try-catch block
-      if (keyspace.user_types.length <= 0)
+      // Get the length of selected user-defined elements
+      let lengths = {
+          userTypes: keyspace.user_types.length,
+          functions: keyspace.functions.length,
+          aggregates: keyspace.aggregates.length
+        },
+        // Get random ID for the main node/leaf
+        userDefinedElementsID = getRandomID(30)
+
+      // If there's no user-defined element then skip this try-catch block
+      if (Object.keys(lengths).every((length) => lengths[length] <= 0))
         throw 0
 
-      /**
-       * UDTs' container that will be under the keyspace container
-       * Get a random ID for the UDTs' parent node
-       */
-      let userTypesID = getRandomID(30),
-        // Define the node/leaf structure
-        userTypesStructure = {
-          id: userTypesID,
-          parent: keyspaceID, // Under the current keyspace
-          text: `User Defined Types (<span>${keyspace.user_types.length}</span>)`,
-          type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'udt.png'))
-        }
+      // Define the main node's structure
+      let userDefinedElementsStructure = {
+        id: userDefinedElementsID,
+        parent: keyspaceID,
+        text: `User Definitions`,
+        type: 'default',
+        icon: normalizePath(Path.join(extraIconsPath, 'user_definitions.png'))
+      }
 
-      // Append the UDTs' container to the tree structure
-      treeStructure.core.data.push(userTypesStructure)
+      treeStructure.core.data.push(userDefinedElementsStructure)
 
-      // Loop through every user defined type in the keyspace
-      keyspace.user_types.forEach((userType) => {
-        // Get random IDs for the current user type and its fields
-        let [
-          userTypeID,
-          fieldsID
-        ] = getRandomID(30, 2)
+      // Handle `User Defined Types (UDT)`
+      try {
+        // If the current keyspace doesn't have any UDT then skip this try-catch block
+        if (lengths.userTypes <= 0)
+          throw 0
 
-        // Build a tree view for the current UDT
-        buildTreeViewForChild(userTypesID, userTypeID, `User Type`, userType, 'udt')
-
-        // Loop through each field of the current UDT
-        userType.field_names.forEach((field, index) => {
-          // Get random IDs for the current field and its type
-          let [
-            fieldID, fieldTypeID
-          ] = getRandomID(30, 2),
-            // Get the field's type
-            type = userType.field_types[index]
-
-          // Push the field's tree view
-          treeStructure.core.data.push({
-            id: fieldID,
-            parent: userTypeID,
-            text: `<span>${field}</span>`,
+        /**
+         * UDTs' parent node that will be under the main node
+         * Get a random ID for the UDTs' parent node
+         */
+        let userTypesID = getRandomID(30),
+          // Define the node/leaf structure
+          userTypesStructure = {
+            id: userTypesID,
+            parent: userDefinedElementsID,
+            text: `Types - UDT (<span>${lengths.userTypes}</span>)`,
             type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'column.png'))
-          })
+            icon: normalizePath(Path.join(extraIconsPath, 'udt.png'))
+          }
 
-          // Push the field's type tree view
-          treeStructure.core.data.push({
-            id: fieldTypeID,
-            parent: fieldID,
-            text: `Field Type: <span>${type}</span>`,
-            type: 'default'
+        // Append the UDTs' container to the tree structure
+        treeStructure.core.data.push(userTypesStructure)
+
+        // Loop through every UDT in the keyspace
+        keyspace.user_types.forEach((userType) => {
+          // Get random IDs for the current UDT and its fields
+          let [
+            userTypeID,
+            fieldsID
+          ] = getRandomID(30, 2)
+
+          // Build a tree view for the current UDT
+          buildTreeViewForChild(userTypesID, userTypeID, `User Type`, userType, 'udt')
+
+          // Loop through each field of the current UDT
+          userType.field_names.forEach((field, index) => {
+            // Get random IDs for the current field and its type
+            let [
+              fieldID, fieldTypeID
+            ] = getRandomID(30, 2),
+              // Get the field's type
+              type = userType.field_types[index]
+
+            // Push the field's tree view's node structure
+            treeStructure.core.data.push({
+              id: fieldID,
+              parent: userTypeID,
+              text: `<span>${field}</span>`,
+              type: 'default'
+            })
+
+            // Push the field's type tree view's node structure
+            treeStructure.core.data.push({
+              id: fieldTypeID,
+              parent: fieldID,
+              text: `Field Type: <span>${type}</span>`,
+              type: 'default'
+            })
           })
         })
-      })
+      } catch (e) {}
+
+      // Handle `User Defined Functions (UDF)`
+      try {
+        // If the current keyspace doesn't have any UDF then skip this try-catch block
+        if (lengths.functions <= 0)
+          throw 0
+
+        /**
+         * UDFs' parent node that will be under the main node
+         * Get a random ID for the UDFs' parent node
+         */
+        let userFuncsID = getRandomID(30),
+          // Define the node/leaf structure
+          userFuncsStructure = {
+            id: userFuncsID,
+            parent: userDefinedElementsID,
+            text: `Functions - UDF (<span>${lengths.functions}</span>)`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'udf.png'))
+          }
+
+        // Push the UDFs' node to the tree structure
+        treeStructure.core.data.push(userFuncsStructure)
+
+        // Loop through every UDF in the keyspace
+        keyspace.functions.forEach((func) => {
+          // Get random IDs for the current UDF and its arguments
+          let [
+            funcID,
+            argumentsID
+          ] = getRandomID(30, 2)
+
+          // Build a tree view for the current UDF
+          buildTreeViewForChild(userFuncsID, funcID, `User Function`, func, 'udf')
+
+          // Add different attributes to the current UDF
+          {
+            // Define the attributes' text
+            let attributes = [
+              `Deterministic: <span class="material-icons for-treeview">${func.deterministic ? 'check' : 'close'}</span>`,
+              `Monotonic: <span class="material-icons for-treeview">${func.monotonic ? 'check' : 'close'}</span>`,
+              `Called On null Input: <span class="material-icons for-treeview">${func.called_on_null_input ? 'check' : 'close'}</span>`,
+              `Language: <span>${func.language.toUpperCase()}</span>`,
+              `Return Type: <span>${func.return_type.replace(/\>/g, '&gt;').replace(/\</g,'&lt;')}</span>`
+            ]
+
+            // Loop through each attribute's text
+            attributes.forEach((attribute) => {
+              // Push the attribute within a tree view's node structure
+              treeStructure.core.data.push({
+                id: getRandomID(30),
+                parent: funcID,
+                text: attribute,
+                type: 'default'
+              })
+            })
+          }
+
+          // Push the current UDF's arguments' tree view's node structure
+          treeStructure.core.data.push({
+            id: argumentsID,
+            parent: funcID,
+            text: `Arguments (<span>${func.argument_names.length}</span>)`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'argument.png'))
+          })
+
+          // Loop through each argument
+          func.argument_names.forEach((argument, index) => {
+            // Get random IDs for the current argument and its type
+            let [
+              argumentID, argumentTypeID
+            ] = getRandomID(30, 2),
+              // Get the argument's type
+              type = func.argument_types[index]
+
+            // Push the argument's tree tree view's node structure
+            treeStructure.core.data.push({
+              id: argumentID,
+              parent: argumentsID,
+              text: `<span>${argument}</span>`,
+              type: 'default'
+            })
+
+            // Push the argument's type tree tree view's node structure
+            treeStructure.core.data.push({
+              id: argumentTypeID,
+              parent: argumentID,
+              text: `Argument Type: <span>${type.replace(/\>/g, '&gt;').replace(/\</g,'&lt;')}</span>`,
+              type: 'default'
+            })
+          })
+        })
+      } catch (e) {}
+
+      // Handle `User Defined Aggregates (UDA)`
+      try {
+        // If the current keyspace doesn't have any UDA then skip this try-catch block
+        if (lengths.aggregates <= 0)
+          throw 0
+
+        /**
+         * UDA's parent node that will be under the main node
+         * Get a random ID for the UDTs' parent node
+         */
+        let userAggregatesID = getRandomID(30),
+          // Define the node/leaf structure
+          userAggregatesStructure = {
+            id: userAggregatesID,
+            parent: userDefinedElementsID, // Under the current keyspace
+            text: `Aggregates - UDA (<span>${lengths.aggregates}</span>)`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'aggregate.png'))
+          }
+
+        // Push the UDA's main node to the tree structure
+        treeStructure.core.data.push(userAggregatesStructure)
+
+        // Loop through every UDA in the keyspace
+        keyspace.aggregates.forEach((aggregate) => {
+          // Get random IDs for the current UDA and its arguments
+          let [
+            aggregateID,
+            argumentsID
+          ] = getRandomID(30, 2)
+
+          // Build a tree view for the current UDA
+          buildTreeViewForChild(userAggregatesID, aggregateID, `User Function`, aggregate, 'aggregate')
+
+          // Add different attributes to the current UDA
+          {
+            // Define the attributes' text
+            let attributes = [
+              `Deterministic: <span class="material-icons for-treeview">${aggregate.deterministic ? 'check' : 'close'}</span>`,
+              `Final Function: <span>${aggregate.final_func}</span>`,
+              `Initial Condition: <span>${aggregate.initial_condition}</span>`,
+              `Return Type: <span>${aggregate.return_type.replace(/\>/g, '&gt;').replace(/\</g,'&lt;')}</span>`,
+              `State Function: <span>${aggregate.state_func}</span>`,
+              `State Type: <span>${aggregate.state_type.replace(/\>/g, '&gt;').replace(/\</g,'&lt;')}</span>`
+            ]
+
+            // Loop through each attribute's text
+            attributes.forEach((attribute) => {
+              // Push the attribute within a tree view's node structure
+              treeStructure.core.data.push({
+                id: getRandomID(30),
+                parent: aggregateID,
+                text: attribute,
+                type: 'default'
+              })
+            })
+          }
+
+          // Push the current UDA's arguments types' tree view's node structure
+          treeStructure.core.data.push({
+            id: argumentsID,
+            parent: aggregateID,
+            text: `Arguments Types (<span>${aggregate.argument_types.length}</span>)`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'argument.png'))
+          })
+
+          // Loop through each argument type of the current UDA
+          aggregate.argument_types.forEach((argumentType, index) => {
+            // Get random IDs for the current argument type
+            let argumentTypeID = getRandomID(30)
+
+            // Push the argument type's tree view's node structure
+            treeStructure.core.data.push({
+              id: argumentTypeID,
+              parent: argumentsID,
+              text: `<span>${argumentType}</span>`,
+              type: 'default'
+            })
+          })
+        })
+      } catch (e) {}
     } catch (e) {}
   })
 

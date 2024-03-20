@@ -1054,6 +1054,51 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       })
     } catch (e) {}
 
+
+    // Show an `Indexes` node/leaf if the current keyspace has at least one index
+    try {
+      // If the current keyspace doesn't have any index then skip this try-catch block
+      if (keyspace.indexes.length <= 0)
+        throw 0
+
+      /**
+       * Indexes' container that will be under the keyspace container
+       * Get a random ID for the indexes' parent node
+       */
+      let indexesID = getRandomID(30),
+        // Define the node/leaf structure
+        indexesStructure = {
+          id: indexesID,
+          parent: keyspaceID, // Under the current keyspace
+          text: `Indexes (<span>${keyspace.indexes.length}</span>)`,
+          type: 'default',
+          icon: normalizePath(Path.join(extraIconsPath, 'index.png'))
+        }
+
+      // Append the indexes' container to the tree structure
+      treeStructure.core.data.push(indexesStructure)
+
+      // Loop through every index in the keyspace
+      keyspace.indexes.forEach((index) => {
+        // Get random IDs for the current index and its kind/type
+        let [
+          indexID,
+          kindID
+        ] = getRandomID(30, 2)
+
+        // Build a tree view for the current UDT
+        buildTreeViewForChild(indexesID, indexID, `Index`, index, 'index')
+
+        // Push the index's kind's tree view's node structure
+        treeStructure.core.data.push({
+          id: kindID,
+          parent: indexID,
+          text: `Kind: <span>${I18next.capitalizeFirstLetter(index.kind.toLowerCase())}</span>`,
+          type: 'default'
+        })
+      })
+    } catch (e) {}
+
     // Check if the current keyspace has any user-defined element
     try {
       // Get the length of selected user-defined elements

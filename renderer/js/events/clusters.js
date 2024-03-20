@@ -1469,7 +1469,7 @@
                            * Or the command is empty and the OS is Windows
                            * Based on the check, the received data won't be printed
                            */
-                          if (minifyText(data).search('cqlsh-started') || ['cqlsh-', 'cqlsh.py', 'main/bin', 'main\bin', 'code page:', '--var', '--test', '--workspace', '--username', '--password', 'cqlshrc location', 'print metadata', 'instead.'].some((str) => minifyText(data).search(str) || pause) || (`${latestCommand}`.trim().length <= 0 && OS.platform() == 'win32')) {
+                          if (minifyText(data).search('cqlsh-started') || ['cqlsh-', 'cqlsh.py', 'main/bin', 'main\bin', 'code page:', '--var', '--test', '--workspace', '--username', '--password', 'cqlshrc location', 'print metadata', 'instead.', 'tput', '/tmp'].some((str) => minifyText(data).search(str) || pause) || (`${latestCommand}`.trim().length <= 0 && OS.platform() == 'win32')) {
                             /**
                              * If `pause` is set to `true` and the cqlsh's prompt is got in the received data...
                              * then the cause of the pause has ended, thus, end the pause and start to print data again
@@ -2815,7 +2815,15 @@
                              * Trigger the `resize` event for the entire window
                              * This will resize editors and terminals
                              */
-                            $(window.visualViewport).trigger('resize')
+                            {
+                              // Attempt to clear the timeout if it has already been created
+                              try {
+                                clearTimeout(global.resizeTriggerOnResize)
+                              } catch (e) {}
+
+                              // Set a global timeout object
+                              global.resizeTriggerOnResize = setTimeout(() => $(window.visualViewport).trigger('resize'))
+                            }
 
                             // Get the minimum width allowed to be reached for the right side before hiding the tabs' titles
                             let minimumAllowedWidth = !isSandbox ? 867 : 1215,

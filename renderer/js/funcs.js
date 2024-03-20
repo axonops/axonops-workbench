@@ -518,6 +518,7 @@ let repairJSON = (json) => {
  * @Return: {object} a valid tree structure to be rendered
  */
 let buildTreeview = (metadata, ignoreTitles = false) => {
+  console.log(metadata);
   /**
    * Due to the way JSTree is coded, there's an issue with the paths in Windows
    * To solve this issue, this function replaces the backward slashes
@@ -955,6 +956,50 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
             // Build a tree view for the column
             buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
+          })
+        })
+      } catch (e) {}
+
+      // Show an `Indexes` node/leaf if the current table has at least one index
+      try {
+        // If the current table doesn't have any index then skip this try-catch block
+        if (table.indexes.length <= 0)
+          throw 0
+
+        /**
+         * Indexes' container that will be under the table container
+         * Get a random ID for the indexes' parent node
+         */
+        let indexesID = getRandomID(30),
+          // Define the node/leaf structure
+          indexesStructure = {
+            id: indexesID,
+            parent: tableID, // Under the current table
+            text: `Indexes (<span>${table.indexes.length}</span>)`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'index.png'))
+          }
+
+        // Append the indexes' container to the tree structure
+        treeStructure.core.data.push(indexesStructure)
+
+        // Loop through every index in the table
+        table.indexes.forEach((index) => {
+          // Get random IDs for the current index and its kind/type
+          let [
+            indexID,
+            kindID
+          ] = getRandomID(30, 2)
+
+          // Build a tree view for the current UDT
+          buildTreeViewForChild(indexesID, indexID, `Index`, index, 'index')
+
+          // Push the index's kind's tree view's node structure
+          treeStructure.core.data.push({
+            id: kindID,
+            parent: indexID,
+            text: `Kind: <span>${I18next.capitalizeFirstLetter(index.kind.toLowerCase())}</span>`,
+            type: 'default'
           })
         })
       } catch (e) {}

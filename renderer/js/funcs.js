@@ -810,6 +810,26 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       })
       // End of table's partition keys
 
+      // Table's triggers
+      let triggersStructure = {
+        id: triggersID,
+        parent: tableID,
+        text: `Triggers (<span>${table.triggers.length}</span>)`,
+        type: 'default',
+        icon: normalizePath(Path.join(extraIconsPath, 'trigger.png'))
+      }
+
+      treeStructure.core.data.push(triggersStructure)
+
+      // Loop through triggers
+      table.triggers.forEach((trigger) => {
+        // Get a random ID for the trigger
+        let triggerID = getRandomID(30)
+
+        // Build a tree view for the trigger
+        buildTreeViewForChild(triggersID, triggerID, `Trigger`, trigger, 'trigger')
+      })
+
       // Table's columns
       let columnsStructure = {
         id: columnsID,

@@ -51,7 +51,12 @@ const FS = require('fs-extra'),
    * Node.js URL module
    * For URL resolution and parsing
    */
-  URL = require('url')
+  URL = require('url'),
+  /**
+   * Node.js events module
+   * Used for creating and handling custom events
+   */
+  EventEmitter = require('events')
 
 /**
  * Import extra modules needed in the main thread
@@ -63,6 +68,9 @@ const Terminal = require('node-cmd'),
   ContextMenu = require('electron-context-menu'),
   // Helps to position the app's windows
   Positioner = require('electron-positioner')
+
+// Import the set customized logging addition function and make it global across the entire thread
+global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
 
 /**
  * Import the custom node modules for the main thread
@@ -101,6 +109,9 @@ try {
     } catch (e) {}
   })
 } catch (e) {}
+
+// Create an event emitter object from the `events` class
+let eventEmitter = new EventEmitter()
 
 /**
  * Define global variables that will be used in different scopes in the main thread
@@ -513,12 +524,23 @@ App.on('window-all-closed', () => App.quit())
       logging = new Modules.Logging.Logging(data)
     })
 
-    // Add a new log text
-    IPCMain.on('logging:add', (_, data) => {
-      try {
-        logging.addLog(data)
-      } catch (e) {}
-    })
+    /**
+     * Add a new log text
+     *
+     * To allow to the main modules and aspects to use the `logging` feature the `add` function can be triggered via `ipcMain` and a custom event
+     */
+    {
+      let event = {
+        name: 'logging:add',
+        func: (_, data) => {
+          try {
+            logging.addLog(data)
+          } catch (e) {}
+        }
+      }
+      eventEmitter.addListener(event.name, event.func)
+      IPCMain.on(event.name, event.func)
+    }
   }
 
   /**

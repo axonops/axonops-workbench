@@ -59,7 +59,9 @@
           cluster.info.secrets = undefined
           cluster.name = cluster.name || cluster.folder
           cluster.host = `127.0.0.1:${cluster.ports.cassandra}`
-        } catch (e) {}
+        } catch (e) {
+          errorLog(e, 'clusters')
+        }
 
         // Define the cluster's ID
         let clusterID = cluster.info.id,
@@ -76,7 +78,7 @@
            * The AxonOps sectin ID
            * It's defined here as it's being used in different parts of the event
            */
-          axonOpsContentID = getRandomID(15),
+          axonopsContentID = getRandomID(15),
           // Flag to tell if this cluster is going to be added/appended to the UI as a new element or if it already exists, by default it's `true`
           append = true
 
@@ -120,7 +122,9 @@
           // Check the SSH passphrase
           if (secretsInfo.sshPassphrase != undefined)
             secrets += `data-ssh-passphrase="${secretsInfo.sshPassphrase}" `
-        } catch (e) {}
+        } catch (e) {
+          errorLog(e, 'clusters')
+        }
 
         // This variable will contain the requirement of DB auth and SSH credentials in UI attributes if needed
         let credentials = ''
@@ -137,7 +141,9 @@
           // Check the SSH credentials
           if (cluster.info.credentials.ssh != undefined)
             credentials += ` data-credentials-ssh="true"`
-        } catch (e) {}
+        } catch (e) {
+          errorLog(e, 'clusters')
+        }
 
         /**
          * Define the footer of the cluster's UI based on the workspace's type
@@ -289,7 +295,7 @@
                 let [connected, hasWorkarea] = getAttributes(clusterElement, ['data-connected', 'data-workarea'])
 
                 // Add log for this request
-                addLog(`Request to test connection with cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])}.`, 'action')
+                addLog(`Request to test connection with the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
@@ -423,7 +429,7 @@
                   maximumRunningClusters = isNaN(maximumRunningClusters) || maximumRunningClusters < 1 ? 10 : maximumRunningClusters
 
                   // Add log for this request
-                  addLog(`Request to connect with cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])}.`, 'action')
+                  addLog(`Request to connect with the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
                   // If the currently running clusters are more than or equal to the maximum allowed number and this is not the sandbox workspace then end the process and show feedback to the user
                   if (([numRunningClusters, numAttemptingClusters]).some((num) => num >= maximumRunningClusters) && !isSandbox)
@@ -553,7 +559,7 @@
                     // Define the content of the AxonOps tab to be added
                     axonopsTab = `
                     <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title="AxonOps">
-                      <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${axonOpsContentID}" role="tab" aria-selected="true">
+                      <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${axonopsContentID}" role="tab" aria-selected="true">
                         <span class="icon">
                           <ion-icon name="axonops"></ion-icon>
                         </span>
@@ -789,7 +795,7 @@
                                 </div>
                               </div>
                             </div>
-                            <div class="tab-pane fade" id="_${axonOpsContentID}" role="tabpanel"></div>
+                            <div class="tab-pane fade" id="_${axonopsContentID}" role="tabpanel"></div>
                             <div class="tab-pane fade" tab="bash-session" id="_${bashSessionContentID}" role="tabpanel">
                               <div class="terminal-container" data-id="${terminalBashContainerID}"></div>
                             </div>
@@ -1071,11 +1077,12 @@
                         // Remove brackets from the beginning and the end
                         array = array.slice(1, -1)
 
-                        // Remove all double quotes
+                        /**
+                         * Remove all double quotes
+                         * Replace commas with spaces
+                         */
                         array = array.replace(/\"/g, '')
-
-                        // Replace commas with spaces
-                        array = array.replace(/,/g, ' ')
+                          .replace(/,/g, ' ')
                       } catch (e) {} finally {
                         // Return the `array` after manipulation
                         return array
@@ -1088,7 +1095,7 @@
                     })
 
                     // Add log
-                    addLog(`Created a CQLSH session for cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])}.`)
+                    addLog(`CQLSH session created for the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
 
                     /**
                      * Custom terminal options
@@ -1303,7 +1310,9 @@
                                   let val = JSON.parse(activity.formattedValue)
                                   return `${(val[1] - val[0]).toFixed(2)}ms`
                                 }
-                              } catch (e) {}
+                              } catch (e) {
+                                errorLog(e, 'clusters')
+                              }
 
                               /**
                                * Set the pie/doughnut chart configuration
@@ -1322,7 +1331,9 @@
                                 pieChartConfig.options.plugins.tooltip.callbacks.label = (activity) => {
                                   return `${parseFloat(activity.formattedValue).toFixed(2)}ms`
                                 }
-                              } catch (e) {}
+                              } catch (e) {
+                                errorLog(e, 'clusters')
+                              }
 
                               /**
                                * Create the charts by calling the `Chart` constructor
@@ -1624,12 +1635,12 @@
 
                                     // Send a request to the main thread regards pop-up a menu
                                     IPCRenderer.send('show-context-menu', JSON.stringify([{
-                                      label: 'Get CQL Description',
+                                      label: I18next.capitalize(I18next.t('get CQL description')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
-                                        clusterID: '${getAttributes(clusterElement, 'data-id')}',
-                                        scope: '${scope}',
-                                        tabID: '${cqlDescriptionContentID}'
-                                      })`
+                                         clusterID: '${getAttributes(clusterElement, 'data-id')}',
+                                         scope: '${scope}',
+                                         tabID: '${cqlDescriptionContentID}'
+                                       })`
                                     }]))
                                   })
 
@@ -1670,13 +1681,19 @@
                                       // Create an editor for the new metadata content
                                       metadataDiffEditors.new.object = createEditor('new', metadata)
                                     })
-                                  } catch (e) {}
+                                  } catch (e) {
+                                    errorLog(e, 'clusters')
+                                  }
 
                                   // Hide the loading indicator in the tree view section
                                   setTimeout(() => metadataContent.parent().removeClass('loading'), 150)
-                                } catch (e) {}
+                                } catch (e) {
+                                  errorLog(e, 'clusters')
+                                }
                               })
-                            } catch (e) {}
+                            } catch (e) {
+                              errorLog(e, 'clusters')
+                            }
                           }
                           // End of the check metadata function
 
@@ -1740,7 +1757,9 @@
 
                             // Resize the terminal
                             fitAddon.fit()
-                          } catch (e) {}
+                          } catch (e) {
+                            errorLog(e, 'clusters')
+                          }
 
                           // Set the prompt which has been got from cqlsh tool
                           activePrefix = ''
@@ -1913,7 +1932,9 @@
                           })
                         }, 1000)
                       })
-                    } catch (e) {}
+                    } catch (e) {
+                      errorLog(e, 'clusters')
+                    }
                     // End of handling the app's terminal
 
                     // Handle the bash session only if the cluster is a sandbox project
@@ -1938,7 +1959,7 @@
                         })
 
                         // Add log
-                        addLog(`Created a bash session for sandbox project ${getAttributes(clusterElement, ['data-id'])}.`)
+                        addLog(`Created a bash session for sandbox project ${getAttributes(clusterElement, ['data-id'])}`)
 
                         /**
                          * Custom terminal options
@@ -2085,7 +2106,9 @@
                         })
                         // End of handling the app's terminal
                       }
-                    } catch (e) {}
+                    } catch (e) {
+                      errorLog(e, 'clusters')
+                    }
 
                     // Handle different events for many elements in the work area
                     {
@@ -2101,7 +2124,9 @@
                           // Copy metadata to the clipboard
                           try {
                             Clipboard.writeText(metadataBeautified)
-                          } catch (e) {}
+                          } catch (e) {
+                            errorLog(e, 'clusters')
+                          }
 
                           // Give feedback to the user
                           showToast(I18next.capitalize(I18next.t('copy metadata')), I18next.capitalizeFirstLetter(I18next.replaceData('metadata for the cluster [b]$data[/b] has been copied to the clipboard, the size is $data', [getAttributes(clusterElement, 'data-name'), metadataSize])) + '.', 'success')
@@ -2120,7 +2145,7 @@
                             } catch (e) {}
 
                           // Add log about this refreshing process
-                          addLog(`Request to refresh metadata of cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])}.`, 'action')
+                          addLog(`Request to refresh the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
                           // Reset the metadata trigger
                           gotMetadata = false
@@ -2186,7 +2211,9 @@
 
                               // Enable the button again
                               $(this).removeAttr('disabled').removeClass('disabled refreshing')
-                            } catch (e) {}
+                            } catch (e) {
+                              errorLog(e, 'clusters')
+                            }
                           })
                         })
 
@@ -2233,7 +2260,7 @@
                             snapshotName = `${timeFormatted}`
 
                           // Add log a about the request
-                          addLog(`Request to save a snapshot of metadata of cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])}.`, 'action')
+                          addLog(`Request to save a snapshot of the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
                           // Minimize the size of the metadata by compression
                           try {
@@ -2323,7 +2350,7 @@
                                 $(this).find('a[action="load"]').click(async function() {
                                   try {
                                     // Add log about this loading process
-                                    addLog(`Request to load a snapshot in path ${snapshotPath} of metadata of cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])}.`, 'action')
+                                    addLog(`Request to load a snapshot in path '${snapshotPath}' related to the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
                                     // Read the snapshot's content
                                     let snapshotContent = await FS.readFileSync(snapshotPath, 'utf8')
@@ -2346,6 +2373,8 @@
                                     // Close the modal/dialog
                                     $('div.modal#loadSnapshot').find('button.btn-close').click()
                                   } catch (e) {
+                                    errorLog(e, 'clusters')
+
                                     // If any error has occurred then show feedback to the user about the failure
                                     showToast(I18next.capitalize(I18next.t('load snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]', [snapshot.attr('data-name')])) + '.', 'failure')
                                   }
@@ -2358,8 +2387,16 @@
                                     // Remove the snapshot file
                                     FS.remove(snapshotPath, (err) => {
                                       // If any error has occurred then show feedback to the user and skip the upcoming code
-                                      if (err)
-                                        return showToast(I18next.capitalize(I18next.t('delete snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it', [snapshotName])) + '.', 'failure')
+                                      if (err) {
+                                        // Add error log
+                                        errorLog(e, 'clusters')
+
+                                        // Show feedback to the user
+                                        showToast(I18next.capitalize(I18next.t('delete snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it', [snapshotName])) + '.', 'failure')
+
+                                        // Skip the upcoming code
+                                        return
+                                      }
 
                                       // Show success feedback to the user
                                       showToast(I18next.capitalize(I18next.t('delete snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot [b]$data[/b] has been successfully deleted', [snapshotName])) + '.', 'success')
@@ -2374,7 +2411,7 @@
                                   }
 
                                   // Add log about this deletion process
-                                  addLog(`Request to delete a snapshot in path ${snapshotPath} of metadata of cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])}.`, 'action')
+                                  addLog(`Request to delete a snapshot in path '${snapshotPath}' related to the metadata of cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
                                   // If no need for confirmation then call the deletion function and skip the upcoming code
                                   if (noConfirm)
@@ -2427,7 +2464,7 @@
                       setTimeout(() => {
                         $(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).click(function() {
                           // Add log for this action
-                          addLog(`Request to close/refresh workarea of cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])}.`, 'action')
+                          addLog(`Request to close/refresh the work area of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
                           // Ask the user for credentials again if they're required
                           try {
@@ -2498,7 +2535,9 @@
 
                             // Reset the button's text
                             setTimeout(() => $(`button[button-id="${startProjectBtnID}"]`).children('span').attr('mulang', 'start').text(I18next.t('start')))
-                          } catch (e) {}
+                          } catch (e) {
+                            errorLog(e, 'clusters')
+                          }
 
                           // Point at the current active work aree
                           let workarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`)
@@ -2547,10 +2586,37 @@
                               // Click the button to connect with the cluster again
                               $(`button[button-id="${connectBtnID}"]`).trigger('click', true)
 
+                              // Add an AxonOps webview if needed
                               setTimeout(() => {
                                 try {
-                                  let axonopsURL = `http://localhost:${getAttributes(clusterElement, 'data-port-axonops')}`
-                                  $(`div.tab-pane#_${axonOpsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration></webview>`))
+                                  // Get the chosen port and the final URL
+                                  let axonopsPort = getAttributes(clusterElement, 'data-port-axonops'),
+                                    axonopsURL = `http://localhost:${axonopsPort}`
+
+                                  // If the provided port is not actually a number then skip this try-catch block
+                                  if (isNaN(axonopsPort))
+                                    throw 0
+
+                                  // Append the `webview` ElectronJS custom element
+                                  $(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops_webview.js')}"></webview>`).show(function() {
+                                    // Point at the webview element
+                                    let webView = $(this)[0]
+
+                                    // Reload it after 1s of creation
+                                    try {
+                                      setTimeout(() => webView.reloadIgnoringCache(), 1000)
+                                    } catch (e) {}
+
+                                    // Once the content inside the webview is ready/loaded
+                                    webView.addEventListener('dom-ready', () => {
+                                      // Once a message from the IPC is received
+                                      webView.addEventListener(`ipc-message`, (event) => {
+                                        // If it's a request to reload the webview then reload it
+                                        if (event.channel == 'reload-webview')
+                                          webView.reloadIgnoringCache()
+                                      })
+                                    })
+                                  }))
 
                                   // Clicks the globe icon in the cluster's info
                                   $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
@@ -2718,7 +2784,9 @@
                               element: clusterSwitcher.children('div.more-clusters'),
                               method: 'after'
                             }
-                          } catch (e) {}
+                          } catch (e) {
+                            errorLog(e, 'clusters')
+                          }
 
                           // Append the switcher to the container
                           addingFunction.element[addingFunction.method]($(element).show(function() {
@@ -2760,7 +2828,7 @@
                                   clusterElement = $(`div[content="clusters"] div.clusters-container div.clusters[workspace-id="${workspaceID}"] div.cluster[data-id="${clusterID}"]`)
 
                                 // Add log about this action
-                                addLog(`Switch to the cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])} work area.`, 'action')
+                                addLog(`Switch to the work area of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
                                 // Set the workspace's color on the UI
                                 setUIColor(getAttributes(workspaceElement, 'data-color'))
@@ -2784,7 +2852,9 @@
                           }))
                         }, 200)
                       })
-                    } catch (e) {}
+                    } catch (e) {
+                      errorLog(e, 'clusters')
+                    }
 
                     // Allow for resizing the left side of the work area taking into account all affected elements
                     {
@@ -2895,7 +2965,7 @@
                       numAttemptingSandbox = $(`div[content="clusters"] div.clusters-container div.cluster[data-is-sandbox="true"].test-connection`).length
 
                     // Add log for this request
-                    addLog(`Request to start a sandbox project ${getAttributes(clusterElement, ['data-id'])}.`, 'action')
+                    addLog(`Request to start a sandbox project '${getAttributes(clusterElement, ['data-id'])}'`, 'action')
 
                     // Manipulate the maximum number, set it to the default value `1` if needed
                     maximumRunningSandbox = isNaN(maximumRunningSandbox) || maximumRunningSandbox < 1 ? 1 : maximumRunningSandbox
@@ -2946,7 +3016,9 @@
 
                         // Set Cassandra's version
                         clusterElement.attr('data-cassandra-version', currentProject[0].cassandraVersion)
-                      } catch (e) {}
+                      } catch (e) {
+                        errorLog(e, 'clusters')
+                      }
 
                       // A time out function which triggers if Docker seems to be downloading files related to the project
                       let installationInfo = setTimeout(() => showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.t('docker is seems to be downloading necessary images and related files, this is a once time process and might take up to 10 minutes depending on the internet connection')) + '.'), 90000) // After 1 minute and 30 seconds
@@ -2999,7 +3071,7 @@
                           }
 
                           // Show success feedback to the user
-                          showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra ® to be up, you\'ll be automatically navigated to the project work area once it\'s up', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                          showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra ™ to be up, you\'ll be automatically navigated to the project work area once it\'s up', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                           // Remove all previous states
                           clusterElement.children('div.status').removeClass('success failure').addClass('show')
@@ -3010,7 +3082,7 @@
                               // Failed to connect with the node
                               if (!status.connected) {
                                 // Show a failure feedback to the user
-                                showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the Apache Cassandra ® nodes of the docker project [b]$data[/b] didn\'t start as expected, automatic stop of the docker project will be started in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                                showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the Apache Cassandra ™ nodes of the docker project [b]$data[/b] didn\'t start as expected, automatic stop of the docker project will be started in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                                 /**
                                  * Create a pinned toast to show the output of the process
@@ -3048,7 +3120,7 @@
                                * Successfully started the project and Cassandra's one node at least is up
                                * Show feedback to the user
                                */
-                              showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra ® nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                              showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra ™ nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                               // Request to destroy the associated pinned toast
                               updatePinnedToast(pinnedToastID, true, true)
@@ -3068,11 +3140,34 @@
                                   startPostProcess(true)
 
                                   try {
-                                    // Define the AxonOps localhost URL
-                                    let axonopsURL = `http://localhost:${getAttributes(clusterElement, 'data-port-axonops')}`
+                                    // Get the chosen port and the final URL
+                                    let axonopsPort = getAttributes(clusterElement, 'data-port-axonops'),
+                                      axonopsURL = `http://localhost:${axonopsPort}`
 
-                                    // Append a `webview` tag to the AxonOps tab
-                                    $(`div.tab-pane#_${axonOpsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration></webview>`))
+                                    // If the provided port is not actually a number then skip this try-catch block
+                                    if (isNaN(axonopsPort))
+                                      throw 0
+
+                                    // Append the `webview`
+                                    $(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops_webview.js')}"></webview>`).show(function() {
+                                      // Point at the webview element
+                                      let webView = $(this)[0]
+
+                                      // Reload it after 1s of creation
+                                      try {
+                                        setTimeout(() => webView.reloadIgnoringCache(), 1000)
+                                      } catch (e) {}
+
+                                      // Once the content inside the webview is ready/loaded
+                                      webView.addEventListener('dom-ready', () => {
+                                        // Once a message from the IPC is received
+                                        webView.addEventListener(`ipc-message`, (event) => {
+                                          // If it's a request to reload the webview then reload it
+                                          if (event.channel == 'reload-webview')
+                                            webView.reloadIgnoringCache()
+                                        })
+                                      })
+                                    }))
 
                                     // Clicks the globe icon in the cluster's info
                                     $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
@@ -3086,7 +3181,9 @@
                     })
                   })
                 })
-              } catch (e) {}
+              } catch (e) {
+                errorLog(e, 'clusters')
+              }
 
               // Clicks the settings button
               $(`div.btn[button-id="${settingsBtnID}"]`).click(async function() {
@@ -3104,7 +3201,7 @@
                   hasWorkarea = getAttributes(clusterElement, 'data-workarea')
 
                 // Add log about edit cluster
-                addLog(`Attempt to edit cluster/sandbox ${getAttributes(clusterElement, ['data-name', 'data-id'])}.`)
+                addLog(`Attempt to edit cluster/sandbox '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
@@ -3211,7 +3308,9 @@
                         val: currentCluster.ssh.port
                       })
                     }
-                  } catch (e) {}
+                  } catch (e) {
+                    errorLog(e, 'clusters')
+                  }
 
                   // Loop through all inputs in the `inputs` array and set their proper values
                   inputs.forEach((input) => {
@@ -3273,7 +3372,9 @@
                             key: 'ssh-username',
                             val: sshUsername
                           })
-                        } catch (e) {}
+                        } catch (e) {
+                          errorLog(e, 'clusters')
+                        }
 
                         // Check if SSH password is provided
                         try {
@@ -3289,7 +3390,9 @@
                             key: 'ssh-password',
                             val: sshPassword
                           })
-                        } catch (e) {}
+                        } catch (e) {
+                          errorLog(e, 'clusters')
+                        }
 
                         // Loop through secrets' inputs and set their value
                         inputs.forEach((input) => {
@@ -3304,7 +3407,9 @@
                           object._deactivate()
                         })
                       })
-                    } catch (e) {}
+                    } catch (e) {
+                      errorLog(e, 'clusters')
+                    }
                   } else {
                     /**
                      * There are no saved secrets for the cluster
@@ -3357,7 +3462,7 @@
                 let confirmText = I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the cluster [b]$data[/b] in the workspace [b]$data[/b]?', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]))
 
                 // Add log
-                addLog(`Request to delete cluster/sandbox ${getAttributes(clusterElement, ['data-name', 'data-id'])}.`, 'action')
+                addLog(`Request to delete cluster/sandbox ${getAttributes(clusterElement, ['data-name', 'data-id'])}`, 'action')
 
                 // If the current workspace is sandbox then change the text
                 if (isSandbox)
@@ -3491,7 +3596,7 @@
 
                 // Print the host and Apache Cassandra's version in the terminal
                 terminalPrintMessage(readLine, 'info', `Connecting with host ${getAttributes(clusterElement, 'data-host')}`)
-                terminalPrintMessage(readLine, 'info', `Detected Apache Cassandra ® version is ${version}`)
+                terminalPrintMessage(readLine, 'info', `Detected Apache Cassandra ™ version is ${version}`)
 
                 /**
                  * Check some options in the `cqlsh.rc` file
@@ -3502,7 +3607,7 @@
                   FS.readFile(cqlshrcPath, 'utf8', (err, content) => {
                     // With an error occurs stop the checking process
                     if (err)
-                      return
+                      return errorLog(err, 'clusters')
 
                     // Convert content to UTF-8 string
                     content = content.toString()
@@ -3533,7 +3638,9 @@
                       updateSSLLockpadStatus(clusterElement)
                     })
                   })
-                } catch (e) {}
+                } catch (e) {
+                  errorLog(e, 'clusters')
+                }
 
                 // Show feedback to the user when the connection is established through the SSH tunnel
                 if (sshTunnels[clusterID] != null)
@@ -3578,7 +3685,9 @@
                     if (usernameDecrypted == 'cassandra')
                       terminalPrintMessage(readLine, 'warn', 'Connection is using default `cassandra` user')
                   })
-                } catch (e) {}
+                } catch (e) {
+                  errorLog(e, 'clusters')
+                }
 
                 // Check if there is SSH tunnel creation info
                 try {
@@ -3622,11 +3731,15 @@
                   ...creationData,
                   workspaceID: getActiveWorkspaceID()
                 })
-              } catch (e) {}
+              } catch (e) {
+                errorLog(e, 'clusters')
+              }
             }
           }))
           // End of the process when appending a cluster in the container
-        } catch (e) {}
+        } catch (e) {
+          errorLog(e, 'clusters')
+        }
       })
     })
     // End of getting all saved clusters/projects
@@ -3903,7 +4016,7 @@
                 throw 0
 
               // Just warn the user about that unsupported version
-              setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra ® is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
+              setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra ™ is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
             } catch (e) {}
 
             // Show success feedback to the user
@@ -4498,7 +4611,7 @@
                 dialogElement = $('div.modal#addEditClusterDialog')
 
               // Add log about this request
-              addLog(`Request to test connection with cluster which about to be added/updated.`, 'action')
+              addLog(`Request to test connection with cluster that could be added/updated`, 'action')
 
               // Attempt to close the created SSH tunnel - if exists -
               try {
@@ -4651,7 +4764,9 @@
                         // Delete the temp file which contains the `cqlsh.rc` config file's content
                         try {
                           await FS.unlinkSync(tempConfigFile)
-                        } catch (e) {}
+                        } catch (e) {
+                          errorLog(e, 'clusters')
+                        }
 
                         // Remove the test connection class
                         dialogElement.removeClass('test-connection')
@@ -4709,7 +4824,9 @@
                       // Delete the temp file which contains the `cqlsh.rc` config file's content
                       try {
                         await FS.unlinkSync(tempConfigFile)
-                      } catch (e) {}
+                      } catch (e) {
+                        errorLog(e, 'clusters')
+                      }
 
                       /**
                        * If there's a post-connection script(s) to be executed
@@ -4763,7 +4880,7 @@
                             throw 0
 
                           // Just warn the user about that unsupported version
-                          setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra ® is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
+                          setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra ™ is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
                         } catch (e) {}
 
                         // Show feedback to the user
@@ -4985,7 +5102,7 @@
                 editingMode = getAttributes($(`div.modal#addEditClusterDialog`), 'data-edit-cluster-id') != undefined
 
               // Add log about this request
-              addLog(`Request to add/edit cluster.`, 'action')
+              addLog(`Request to add/edit new cluster after successful connection test`, 'action')
 
               try {
                 // If the provided cluster's name is valid then skip this try-catch block
@@ -5137,7 +5254,9 @@
                       'data-credentials-auth': secrets.auth != undefined || (!saveAuthCredentials && (secrets != null && secrets.username != null && secrets.password != null)) ? 'true' : null,
                       'data-credentials-ssh': secrets.ssh != undefined || !saveSSHCredentials && (secrets != null && secrets.sshUsername != null && secrets.sshPassword != null) ? 'true' : null,
                     })
-                  } catch (e) {}
+                  } catch (e) {
+                    errorLog(e, 'clusters')
+                  }
 
                   // Remove all test connection status classes
                   clusterUI.find('div.status').removeClass('show success failure')
@@ -5240,7 +5359,9 @@
                   waitForEncryption = true
                   sshTunnel = true
                 }
-              } catch (e) {}
+              } catch (e) {
+                errorLog(e, 'clusters')
+              }
 
               try {
                 // If there's no SSH tunnel creation info to be handled then skip this try-catch block
@@ -5263,7 +5384,9 @@
                 finalCluster.ssh.port = $('[info-section="none"][info-key="ssh-port"]').val() || 22
                 finalCluster.ssh.dstAddr = $('[info-section="none"][info-key="ssh-dest-addr"]').val() || '127.0.0.1'
                 finalCluster.ssh.dstPort = $('[info-section="none"][info-key="ssh-dest-port"]').val() || $('[info-section="connection"][info-key="port"]').val()
-              } catch (e) {}
+              } catch (e) {
+                errorLog(e, 'clusters')
+              }
 
               // Determine the proper function to be called based on whether the current mode is `edit` or not
               let clustersCallFunction = editingMode ? Modules.Clusters.updateCluster : Modules.Clusters.saveCluster

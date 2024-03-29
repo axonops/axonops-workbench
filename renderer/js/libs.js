@@ -23,12 +23,12 @@ const FS = require('fs-extra'),
   Clipboard = require('electron').clipboard,
   /**
    * Convert a byte value to a human-readable string (9 KB, 2 MB, and so on)
-   * Mainly used for showing metadata size
+   * Mainly used for showing the metadata size
    */
   ByteSize = require('byte-size'),
   /**
    * Get the size of an array, object or string
-   * Mainly used for getting the size of metadata JSON string
+   * Mainly used for getting the size of a metadata JSON string
    */
   ValueSize = require('value-size'),
   /**

@@ -24,10 +24,83 @@ $(document).ready(() => {
     async: false,
     url: Path.join(__dirname, '..', 'js', 'funcs.js'),
     dataType: 'script'
-  }); // This semicolon is critical here
+  })
+
+  /**
+   * Essential modification for the `console` function
+   * Now console triggers - log, debug, error, etc... - are logged as part of the logging feature
+   */
+  {
+    try {
+      // Copy the original `console` function
+      let originalConsole = {
+        ...console
+      }; // This semicolon is critical here
+
+      // Loop through a set of console types
+      (['debug', 'error', 'info', 'log']).forEach((type) => {
+        // Initial log type
+        let logType = type
+
+        // Switch and manipulate the type to be suitable
+        switch (logType) {
+          case 'log':
+          case 'debug': {
+            logType = 'info'
+            break
+          }
+          default: {
+            logType = 'info'
+          }
+        }
+
+        // Manipulate the original `console` by adding any upcoming text as a log
+        global.console[type] = (text) => {
+          try {
+            addLog(`${text}`, logType)
+          } catch (e) {}
+
+          // Call the original `console`
+          originalConsole[type](text)
+        }
+      })
+    } catch (e) {
+      errorLog(e, 'initialization')
+    }
+  }
 
   // Load the rest bootstrap JS files
   (['libs', 'globs']).forEach((file) => loadScript(Path.join(__dirname, '..', 'js', `${file}.js`)))
+})
+
+// Initialize the logging system
+$(document).ready(() => {
+  // Get the app's config
+  Modules.Config.getConfig((config) => {
+    // Check the status of either enabling or disabling the logging feature
+    isLoggingEnabled = config.get('security', 'loggingEnabled') || isLoggingEnabled
+
+    // Convert the flag to a boolean instead of a string
+    isLoggingEnabled = isLoggingEnabled == 'false' ? false : true
+
+    // If the logging feature is not enabled then skip the upcoming code
+    if (!isLoggingEnabled)
+      return
+
+    // Send the initialization request to the main thread
+    IPCRenderer.send('logging:init', {
+      date: new Date().getTime(),
+      id: getRandomID(5)
+    })
+
+    // Add the first logs
+    setTimeout(() => {
+      try {
+        addLog(`AxonOps Developer Workbench has loaded all its components and it's ready to be used`)
+        addLog(`The unique ID of this machine is: '${machineID}'`, 'env')
+      } catch (e) {}
+    }, 1000)
+  })
 })
 
 /**
@@ -48,6 +121,9 @@ $(document).ready(() => {
     setTimeout(() => {
       // Chosen language is `English` if the saved one is invalid
       let chosenLanguage = config.get('ui', 'language') || 'en'
+
+      // Add a log about the chosen language
+      addLog(`Config file loaded, language to be rendered is '${chosenLanguage.toUpperCase()}'`)
 
       // Load all saved languages and make sure the chosen language exists and is loaded as well
       Modules.Localization.loadLocalization((languages) => {
@@ -146,7 +222,9 @@ $(document).ready(() => {
                 // Update the close
                 text = text.replace(close, `</${tag}>`)
               })
-            } catch (e) {}
+            } catch (e) {
+              errorLog(e, 'initialization')
+            }
 
             // Return the final result
             return text
@@ -181,7 +259,7 @@ $(document).ready(() => {
             return localizedPhrase
           }
 
-          // Set the maximum allowed loading time for the language
+          // Set the maximum allowed loading time for the chosen language
           const MaxLoadingTime = 5000
 
           // Wait for the loading of the language and check if it has exceeded the maximum loading time
@@ -204,7 +282,9 @@ $(document).ready(() => {
             if ((new Date()).getTime() - startLoadingTime > MaxLoadingTime)
               clearLoadInterval()
           })
-        } catch (e) {}
+        } catch (e) {
+          errorLog(e, 'initialization')
+        }
 
         // Update the list of languages to select in the settings dialog
         setTimeout(() => {
@@ -245,7 +325,7 @@ $(document).ready(() => {
 
 /**
  * Import `s-ago` module
- * Used to convert timestamp to a human-readable string `now, a minute ago...`
+ * Used to convert timestamp to a human-readable string `now, minute ago...`
  * Define the variable which will hold the module
  */
 let ReadableTime
@@ -287,11 +367,8 @@ $(document).ready(() => {
 
     // Material Icons
     {
-      // Define the path to the CSS file of the library
-      let materialIconsPath = Path.join(__dirname, '..', '..', 'node_modules', 'material-icons', 'iconfont', 'material-icons.css')
-
       // Load the CSS file
-      loadStyleSheet(Path.join(materialIconsPath))
+      loadStyleSheet(Path.join(__dirname, '..', '..', 'node_modules', 'material-icons', 'iconfont', 'material-icons.css'))
     }
   }
 
@@ -323,9 +400,7 @@ $(document).ready(() => {
 
   // Ion Icons
   {
-    let ionIconsPath = Path.join(__dirname, '..', 'js', 'ionicons')
-
-    loadScript(Path.join(ionIconsPath, 'main.js'))
+    loadScript(Path.join(__dirname, '..', 'js', 'ionicons', 'main.js'))
   }
 
   // XtermJS and its add-ons
@@ -381,30 +456,24 @@ $(document).ready(() => {
         clearButton: true,
         clearLabel: I18next.capitalize(I18next.t('clear')),
         themeMode: 'dark',
-        swatches: ['#E53935', '#D81B60', '#8E24AA', '#5E35B1', '#3949AB', '#1E88E5', '#039BE5', '#00ACC1', '#00897B', '#43A047', '#7CB342', '#C0CA33', '#FDD835', '#FFB300', '#FB8C00', '#F4511E', '#6D4C41', '#546E7A']
+        swatches: ['#E53935', '#F4511E', '#FF8A80', '#FB8C00', '#FFB300', '#FFD180', '#FDD835', '#FFFF8D', '#C0CA33', '#43A047', '#7CB342', '#B9F6CA', '#00897B', '#1E88E5', '#039BE5', '#00ACC1', '#84FFFF', '#80D8FF', '#3949AB', '#5E35B1', '#8E24AA', '#B388FF', '#6D4C41', '#546E7A']
       })
     })
   }
 
   // Mutate.js
   {
-    let mutatePath = Path.join(__dirname, '..', 'js', 'mutate.js')
-
-    loadScript(mutatePath)
+    loadScript(Path.join(__dirname, '..', 'js', 'mutate.js'))
   }
 
   // Chart.js
   {
-    let chartJSPath = Path.join(__dirname, '..', '..', 'node_modules', 'chart.js', 'dist')
-
-    loadScript(Path.join(chartJSPath, 'chart.umd.js'))
+    loadScript(Path.join(__dirname, '..', '..', 'node_modules', 'chart.js', 'dist', 'chart.umd.js'))
   }
 
   // Lottie Files Player
   {
-    let lottiePlayerPath = Path.join(__dirname, '..', 'js', 'lottie-player.js')
-
-    loadScript(lottiePlayerPath)
+    loadScript(Path.join(__dirname, '..', 'js', 'lottie-player.js'))
   }
 
   // Monaco editor
@@ -673,7 +742,9 @@ $(document).ready(() => {
             editorDecorations = editor.deltaDecorations([], alerts)
           })
         })
-      } catch (e) {}
+      } catch (e) {
+        errorLog(e, 'initialization')
+      }
     })
   }
 
@@ -707,7 +778,9 @@ $(document).ready(() => {
         loadScript(Path.join(eventsFilesPath, eventFile))
       } catch (e) {}
     })
-  } catch (e) {}
+  } catch (e) {
+    errorLog(e, 'initialization')
+  }
 })
 
 // Once the UI is ready, get all workspaces
@@ -748,33 +821,3 @@ $(document).ready(() => {
 
 // To improve performance, make sure the non-visible lottie element is not playing in the background
 $(document).ready(() => setTimeout(() => autoPlayStopLottieElement($('lottie-player')), 1500))
-
-// Initialize the logging system
-$(document).ready(() => {
-  // Get the app's config
-  Modules.Config.getConfig((config) => {
-    setTimeout(() => {
-      // Check the status of either enabling or disabling the logging feature
-      isLoggingEnabled = config.get('security', 'loggingEnabled') || isLoggingEnabled
-
-      // Convert the flag to a boolean instead of a string
-      isLoggingEnabled = isLoggingEnabled == 'false' ? false : true
-
-      // If the logging feature is not enabled then skip the upcoming code
-      if (!isLoggingEnabled)
-        return
-
-      // Send the initialization request to the main thread
-      IPCRenderer.send('logging:init', {
-        date: new Date().getTime(),
-        id: getRandomID(5)
-      })
-
-      // Add the first logs
-      setTimeout(() => {
-        addLog(`AxonOps Developer Workbench has loaded all its components and it's ready to be used.`)
-        addLog(`The unique ID of this machine is: ${machineID}.`, 'env')
-      }, 1000)
-    })
-  })
-})

@@ -76,7 +76,7 @@ Config.getConfig(async (config) => {
     // Request from the main thread to create an SSH tunnel
     IPCRenderer.on(`ssh-tunnel:create`, async (_, data) => {
       // Add log for this request
-      addLog(`Request to create an SSH tunnel.`, 'network')
+      addLog(`Create an SSH tunnel to connect with cluster`, 'network')
 
       // Get the app's config
       Config.getConfig(async (config) => {
@@ -115,7 +115,9 @@ Config.getConfig(async (config) => {
             // If private key file path has been passed
             if (![undefined, null, ''].includes(data.privateKey))
               authentication.privateKey = await FS.readFileSync(data.privateKey, 'utf8')
-          } catch (e) {}
+          } catch (e) {
+            errorLog(e, 'SSH tunnel')
+          }
 
           try {
             // If a pass phrase for the private key file has been passed
@@ -127,7 +129,9 @@ Config.getConfig(async (config) => {
 
             // Update the key's content
             authentication.privateKey = prasedKey.getPrivatePEM()
-          } catch (e) {}
+          } catch (e) {
+            errorLog(e, 'SSH tunnel')
+          }
 
           // Make sure there's no key with an `undefined` value
           try {
@@ -142,7 +146,9 @@ Config.getConfig(async (config) => {
               if (`${authentication[key]}` == 'undefined')
                 delete authentication[key]
             })
-          } catch (e) {}
+          } catch (e) {
+            errorLog(e, 'SSH tunnel')
+          }
 
           // Define the final SSH tunnel's attributes
           let sshTunnelAttributes = {
@@ -183,7 +189,7 @@ Config.getConfig(async (config) => {
             })
 
             // Add log about the final attributes
-            addLog(`Final attributes of the SSH tunnel are ${JSON.stringify(sshTunnelAttributesCopy)}`)
+            addLog(`Final attributes of the SSH tunnel are '${JSON.stringify(sshTunnelAttributesCopy)}'`)
           }
 
           // Create the tunnel
@@ -204,6 +210,8 @@ Config.getConfig(async (config) => {
           // Update the `port` attribute of the result
           result.port = localPort
         } catch (e) {
+          errorLog(e, 'SSH tunnel')
+
           // Catch any occurred error
           result.error = e.toString()
         } finally {
@@ -225,7 +233,7 @@ Config.getConfig(async (config) => {
       let isPort = !isNaN(parseInt(clusterID))
 
       // Add log for this process
-      addLog(`Request to close an SSH tunnel, associated cluster ID/port is ${clusterID}.`, 'network')
+      addLog(`Close an SSH tunnel that associated with the cluster of ID/defined-port '${clusterID}'`, 'network')
 
       try {
         // If what has been given is not a port then skip this try-catch block
@@ -246,26 +254,26 @@ Config.getConfig(async (config) => {
             sshTunnel.object.close()
 
             // Add log for this process
-            addLog(`The SSH tunnel which associated with cluster ID/port ${clusterID} has been closed.`)
+            addLog(`The SSH tunnel which associated with cluster of ID/defined-port '${clusterID}' has been closed`)
           } catch (e) {
-            // Add log for this process
-            addLog(`Failed to close SSH tunnel which associated with cluster ID/port ${clusterID}. Error details ${e}.`, 'error')
+            errorLog(e, 'SSH tunnel')
           }
         })
 
         // Skip the upcoming code
         return
-      } catch (e) {}
+      } catch (e) {
+        errorLog(e, 'SSH tunnel')
+      }
 
       // Close that SSH tunnel
       try {
         sshTunnels[clusterID].object.close()
 
         // Add log for this process
-        addLog(`The SSH tunnel which associated with cluster ID/port ${clusterID} has been closed.`)
+        addLog(`The SSH tunnel which associated with cluster of ID/defined-port '${clusterID}' has been closed.`)
       } catch (e) {
-        // Add log for this process
-        addLog(`Failed to close SSH tunnel which associated with cluster ID/port ${clusterID}. Error details ${e}.`, 'error')
+        errorLog(e, 'SSH tunnel')
       }
     })
 
@@ -330,7 +338,9 @@ Config.getConfig(async (config) => {
               number: i,
               content: oldLine
             })
-        } catch (e) {}
+        } catch (e) {
+          errorLog(e, 'SSH tunnel')
+        }
       }
 
       // Concatenate the two arrays as a final result

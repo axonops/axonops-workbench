@@ -23,7 +23,7 @@
     $(this).attr('disabled', '')
 
     // Add log about this request
-    addLog(`Request to create docker/sandbox project.`, 'action')
+    addLog(`Request has been triggered, create a docker/sandbox project`, 'action')
 
     // Check the existence of Docker in the machine
     Modules.Docker.checkDockerCompose((dockerExists, userGroup) => {
@@ -61,7 +61,7 @@
       numOfNodes = (numOfNodes < minNumOfNodes) ? minNumOfNodes : ((numOfNodes > maxNumOfNodes) ? maxNumOfNodes : numOfNodes)
 
       // Add log about the project's attributes
-      addLog(`The docker/sandbox project's attributes are: [Cassandra version: ${cassandraVersion}, Number of nodes: ${numOfNodes}].`)
+      addLog(`The docker/sandbox project's attributes are: [Cassandra ™ version: ${cassandraVersion}, Number of nodes: ${numOfNodes}]`)
 
       // Create a Docker instance/object
       let dockerObject = new Modules.Docker.DockerCompose()
@@ -85,7 +85,7 @@
             return showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to save the docker project')) + '.', 'failure')
 
           // Successfully saved the project
-          showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the project with Apache Cassandra ® v$data has been successfully created and saved', [cassandraVersion])) + '.', 'success')
+          showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the project with Apache Cassandra ™ v$data has been successfully created and saved', [cassandraVersion])) + '.', 'success')
 
           // Either `refresh` or `get` workspaces based on the state of the process
           $(document).trigger(getAttributes($(this), 'data-refresh') == 'false' ? 'getWorkspaces' : 'refreshWorkspaces')

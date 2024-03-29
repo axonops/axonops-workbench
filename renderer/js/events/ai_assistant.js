@@ -30,7 +30,7 @@
     let questionValue = StripTags(question.val())
 
     // Add log for this action
-    addLog(`Asking the AI Assistant a question: ${questionValue}`, 'action')
+    addLog(`Asked the AI Assistant a question: '${questionValue}'`, 'action')
 
     // Manipulate it again by replacing the new line symbol with the break line html tag
     questionValue = questionValue.replace(/\n/gm, '<br>')
@@ -117,7 +117,7 @@
           }
 
           // Add log for this network request
-          addLog(`Request the AI Assistant to answer the question.`, 'network')
+          addLog(`Request the AI Assistant to answer the question '${questionValue.slice(0, 20)}...'`, 'network')
 
           // Send a `POST` request to the AI assistant host server
           Axios.post(Modules.Consts.AIAssistantServer, {
@@ -133,7 +133,10 @@
               // Set the response date and time
               answerElement.attr('date', formatTimestamp(answerDate))
 
-              // If the answer is empty or the server is busy then skip the upcoming code
+              /**
+               * If the answer is empty or the server is busy then skip the upcoming code
+               * This `throw` is for `Axios`
+               */
               if (answer.trim().length <= 0 || answer == 'busy')
                 throw 0
 
@@ -145,7 +148,7 @@
               answer = setApacheCassandraTMSymbol(answer)
 
               // Log the AI Assistant's answer
-              addLog(`The AI Assistant has provided an answer: ${answer}`)
+              addLog(`The AI Assistant has provided an answer: '${answer}'`)
 
               // Wrap any given code with `code` tag
               answer = answer.replace(/\|\|(.+)\|\|/gm, '<code>$1</code>')
@@ -231,7 +234,7 @@
                 let answer = I18next.capitalizeFirstLetter(I18next.t('right now there are many questions to answer, give it another try after a while')) + '.'
 
                 // Log the failure of the process
-                addLog(`The AI Assistant failed to answer the question. Error details: ${error}.`, 'error')
+                addLog(`The AI Assistant failed to answer the question. Error details: '${error}'`, 'error')
 
                 // Set back the asked question
                 question.val(originalQuestion)
@@ -403,7 +406,7 @@
         overflowTriggered = questionsAnswersContainer[0].offsetHeight < questionsAnswersContainer[0].scrollHeight
 
       // Add log for this process
-      addLog(`Loading previous answered questions from the AI Assistant.`, 'process')
+      addLog(`Loading previous answered questions from the AI Assistant, set limit is '${limit}'`, 'process')
 
       /**
        * Inner function to create an element - question and its answer -
@@ -645,7 +648,7 @@
     let questionID = getAttributes(questionElement, 'question-id')
 
     // Add log about this deletion process
-    addLog(`Request to delete the AI Assistant question #${questionID}.`, 'action')
+    addLog(`Request to delete an AI Assistant question '${questionID}'`, 'action')
 
     // Confirm the deletion process
     openDialog(I18next.capitalizeFirstLetter(I18next.t('deleting a question will also delete its answer, are you sure?')), (confirmed) => {
@@ -656,7 +659,7 @@
       // Delete the question
       Modules.Aiassistant.deleteQuestion(questionID, (deleted) => {
         // Add log about the process' status
-        addLog(`The deletion process of the AI Assistant question #${questionID} has completed with ${deleted ? 'success' : 'failure'}.`, deleted ? 'info' : 'error')
+        addLog(`The deletion process of the AI Assistant question '${questionID}' has completed with ${deleted ? 'success' : 'failure'}`, deleted ? 'info' : 'error')
 
         // If something went wrong then show feedback to the user and skip the upcoming code
         if (!deleted)

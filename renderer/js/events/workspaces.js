@@ -444,7 +444,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                           element: workspaceSwitcher.children('div.workspace[home]'),
                           method: 'after'
                         }
-                      } catch (e) {}
+                      } catch (e) {
+                        errorLog(e, 'workspaces')
+                      }
 
                       // Append the workspace switcher to the switch container
                       addingFunction.element[addingFunction.method]($(element).show(function() {
@@ -502,7 +504,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                             let workspaceElement = $(`div[content="workspaces"] div.workspaces-container div.workspace[data-id="${workspaceID}"]`)
 
                             // Add log about this action
-                            addLog(`Switch to the workspace ${getAttributes(workspaceElement, ['data-name', 'data-id'])} work area.`, 'action')
+                            addLog(`Switch to the work area of workspace '${getAttributes(workspaceElement, ['data-name', 'data-id'])}'`, 'action')
 
                             // Deactivate all workspaces and clusters inside the switchers
                             $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
@@ -604,7 +606,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               // Clicks the delete button
               $(`div.btn[button-id="${deleteBtnID}"]`).click(() => {
                 // Add log about this deletion request
-                addLog(`Request to delete workspace ${getAttributes(workspaceElement, ['data-name', 'data-id'])} work area.`, 'action')
+                addLog(`Request to delete the workspace '${getAttributes(workspaceElement, ['data-name', 'data-id'])}'`, 'action')
 
                 // Open the confirmation dialog and wait for the response
                 openDialog(I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the workspace [b]$data[/b]? once you confirm, there is no undo', [getAttributes(workspaceElement, 'data-name')])) + '.', (response) => {
@@ -667,7 +669,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           // Apply the chosen language to different span elements in the created workspace clusters container
           setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
         }))
-      } catch (e) {}
+      } catch (e) {
+        errorLog(e, 'workspaces')
+      }
     })
   })
 })

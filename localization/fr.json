@@ -165,12 +165,12 @@
       "the maximum number of sandbox projects which allowed to be started simultaneously is [b]$data[/b]": "Le nombre maximum de projets sandbox autorisés à être démarrés simultanément est de [b]$data[/b]",
       "docker is seems to be downloading necessary images and related files, this is a once time process and might take up to 10 minutes depending on the internet connection": "docker semble télécharger les images nécessaires et les fichiers associés, c'est un processus ponctuel et cela peut prendre jusqu'à 10 minutes en fonction de la connexion Internet",
       "something went wrong, it seems the docker project [b]$data[/b] didn't run as expected": "Quelque chose s'est mal passé, il semble que le projet docker dans le dossier [b]$data[/b] ne s'est pas exécuté comme prévu",
-      "docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra ® to be up, you'll be automatically navigated to the project work area once it's up": "Le projet docker dans le dossier [b]$data[/b] a été démarré avec succès, en attente d'Apache Cassandra ® pour être opérationnel, vous serez automatiquement redirigé vers la zone de travail du projet une fois qu'il sera opérationnel",
-      "something went wrong, it seems the Apache Cassandra ® nodes of the docker project [b]$data[/b] didn't start as expected, automatic stop of the docker project will be started in seconds": "Quelque chose s'est mal passé, il semble que les nœuds Apache Cassandra ® du projet docker dans le dossier [b]$data[/b] ne se sont pas démarrés comme prévu, l'arrêt automatique du projet docker sera lancé dans quelques secondes",
+      "docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra ™ to be up, you'll be automatically navigated to the project work area once it's up": "Le projet docker dans le dossier [b]$data[/b] a été démarré avec succès, en attente d'Apache Cassandra ™ pour être opérationnel, vous serez automatiquement redirigé vers la zone de travail du projet une fois qu'il sera opérationnel",
+      "something went wrong, it seems the Apache Cassandra ™ nodes of the docker project [b]$data[/b] didn't start as expected, automatic stop of the docker project will be started in seconds": "Quelque chose s'est mal passé, il semble que les nœuds Apache Cassandra ™ du projet docker dans le dossier [b]$data[/b] ne se sont pas démarrés comme prévu, l'arrêt automatique du projet docker sera lancé dans quelques secondes",
       "stop docker project": "Arrêter le projet docker",
       "something went wrong, failed to stop the docker project [b]$data[/b], please consider to do it manually by stopping the project [b]cassandra_$data[/b]": "Quelque chose s'est mal passé, l'arrêt du projet docker dans le dossier [b]$data[/b] a échoué, veuillez envisager de le faire manuellement en arrêtant le projet [b]cassandra_$data[/b]",
       "the docker project [b]$data[/b] has been successfully stopped": "Le projet docker dans le dossier [b]$data[/b] a été arrêté avec succès",
-      "apache Cassandra ® nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds": "Les nœuds Apache Cassandra ® du projet docker dans le dossier [b]$data[/b] ont été démarrés avec succès et sont prêts à être connectés. Une zone de travail sera créée et vous y serez dirigé dans quelques secondes",
+      "apache Cassandra ™ nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds": "Les nœuds Apache Cassandra ™ du projet docker dans le dossier [b]$data[/b] ont été démarrés avec succès et sont prêts à être connectés. Une zone de travail sera créée et vous y serez dirigé dans quelques secondes",
       "edit cluster": "Modifier le cluster",
       "this cluster [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit it": "Ce cluster [b]$data[/b] a une zone de travail active. Assurez-vous de fermer sa zone de travail avant de tenter de le modifier",
       "unable to locate cluster [b]$data[/b] workspace folder": "Impossible de localiser le dossier de la zone de travail du cluster [b]$data[/b]",
@@ -187,7 +187,7 @@
       "something went wrong while attempt to test connection with cluster [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file": "Quelque chose s'est mal passé lors de la tentative de test de connexion avec le cluster [b]$data[/b] dans l'espace de travail [b]$data[/b], il s'agit principalement d'un problème avec le fichier <code>cqlsh.rc</code>",
       "content for this connection contains a sensitive data (username, password and alike), please consider to remove them before attempting to connect again": "Le contenu de cette connexion contient des données sensibles (nom d'utilisateur, mot de passe, etc.). Veuillez envisager de les supprimer avant de tenter de vous connecter à nouveau",
       "unsupported version": "Version non prise en charge",
-      "the detected version of Apache Cassandra ® is [b]$data[/b], unwanted behavior and compatibility issues may be encountered": "La version détectée d'Apache Cassandra ® est [b]$data[/b]. Des comportements indésirables et des problèmes de compatibilité peuvent survenir",
+      "the detected version of Apache Cassandra ™ is [b]$data[/b], unwanted behavior and compatibility issues may be encountered": "La version détectée d'Apache Cassandra ™ est [b]$data[/b]. Des comportements indésirables et des problèmes de compatibilité peuvent survenir",
       "failed to connect with cluster [b]$data[/b] in workspace [b]$data[/b]": "Échec de la connexion au cluster [b]$data[/b] dans l'espace de travail [b]$data[/b]",
       "script \"$data\" didn't return the success code <code>0</code>, but": "Le script \"$data\" n'a pas renvoyé le code de réussite <code>0</code>, mais",
       "script \"$data\" seems not to exist, please check its path and make sure it has no errors": "Le script \"$data\" semble ne pas exister, veuillez vérifier son chemin et assurez-vous qu'il ne contient pas d'erreurs",
@@ -216,7 +216,7 @@
       "do you want to delete the selected snapshots? once you confirm, there is no undo": "Souhaitez-vous supprimer les instantanés sélectionnés ? Une fois confirmé, l'opération est irréversible",
       "sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure it's installed and accessible before attempting to create a docker project": "La fonctionnalité de bac à sable nécessite l'installation de [code]docker[/code] et de son outil [code]docker-compose[/code]. Assurez-vous qu'ils sont installés et accessibles avant de tenter de créer un projet docker",
       "something went wrong, failed to save the docker project": "Quelque chose s'est mal passé. Échec de l'enregistrement du projet docker",
-      "the project with Apache Cassandra ® v$data has been successfully created and saved": "Le projet avec Apache Cassandra ® v$data a été créé et enregistré avec succès",
+      "the project with Apache Cassandra ™ v$data has been successfully created and saved": "Le projet avec Apache Cassandra ™ v$data a été créé et enregistré avec succès",
       "refresh variables": "Actualiser les variables",
       "variables have been refreshed": "Les variables ont été actualisées",
       "variable or more are not having invalid name or value, make sure unique names and values are provided for each variable": "Une ou plusieurs variables ont des noms ou des valeurs invalides. Assurez-vous de fournir des noms et des valeurs uniques pour chaque variable",
@@ -308,7 +308,8 @@
       "the work area of docker project [b]$data[/b] is being terminated": "la zone de travail du projet docker [b]$data[/b] est en cours de fermeture",
       "CQL description": "description du CQL",
       "search for CQL description": "rechercher la description CQL",
-      "right click on the cluster, keyspace or table and get its CQL description": "faites un clic droit sur le cluster, l'espace de clés ou la table et obtenez sa description CQL"
+      "right click on the cluster, keyspace or table and get its CQL description": "faites un clic droit sur le cluster, l'espace de clés ou la table et obtenez sa description CQL",
+      "get CQL description": "obtenir la description CQL"
     }
   }
 }

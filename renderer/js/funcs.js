@@ -1,9 +1,12 @@
 /**
+ * Define all global functions
+ *
  * Get the Material Design's object related to a passed UI element
  *
  * @Parameters:
  * {object} `element` the HTML element in the UI
- * {string} `?type` the type of the element to be fetched, all possible types are: [`Button`, `Dropdown`, `Input`, `Modal`, `Range`, `Ripple`, `Tab`, `Tooltip`]
+ * {string} `?type` the type of the element, all possible types are:
+ * [`Button`, `Dropdown`, `Input`, `Modal`, `Range`, `Ripple`, `Tab`, `Tooltip`]
  *
  * @Return: {object} the Material Design's object
  */
@@ -22,9 +25,9 @@ let getElementMDBObject = (element, type = 'Input') => {
   } catch (e) {}
 
   /**
-   * Check if the type is a tooltip
+   * Check if the type is a `tooltip`
    * Tooltips are handled by `TippyJS` instead of MDB tooltip; because `Tippy` adds a trackable ID to the created tooltip element; so we can change its position as needed
-   * This feature is available by many libraries besides `TippyJS`, it's not available in MDB or `Bootstrap` though
+   * This feature is available by many libraries besides `TippyJS`, it's not available in MDB nor `Bootstrap` though
    */
   try {
     // If the type is not a tooltip then skip this try-catch block
@@ -36,8 +39,8 @@ let getElementMDBObject = (element, type = 'Input') => {
       content: getAttributes(element, 'data-title'),
       arrow: false,
       theme: 'material',
-      placement: getAttributes(element, 'data-mdb-placement'), // Placement is based on the attribute
-      allowHTML: getAttributes(element, 'data-mdb-html') == 'true', // Allowance is also based on the attribute
+      placement: getAttributes(element, 'data-mdb-placement'),
+      allowHTML: getAttributes(element, 'data-mdb-html') == 'true',
       // Once the tooltip is about to be shown
       onShow(instance) {
         // Get the current zoom level of the app
@@ -73,28 +76,37 @@ let getElementMDBObject = (element, type = 'Input') => {
            * Each placement has its equation to be executed
            */
           setTimeout(() => {
+            // Get the popper and reference outer width and height
+            let pWidth = popper.outerWidth(),
+              pHeight = popper.outerHeight(),
+              rWidth = reference.outerWidth(),
+              rHeight = reference.outerHeight()
+
+            // Switch between the tooltip's placement
             switch (instance.props.placement) {
               case 'left': {
-                translate.x -= popper.outerWidth() + 10
-                translate.y -= reference.outerHeight() / 2 - popper.outerHeight() / 2
+                translate.x -= pWidth + 10
+                translate.y -= rHeight / 2 - pHeight / 2
                 break
               }
               case 'right': {
-                translate.x += reference.outerWidth() + 10
-                translate.y += reference.outerHeight() / 2 - popper.outerHeight() / 2
+                translate.x += rWidth + 10
+                translate.y += rHeight / 2 - pHeight / 2
                 break
               }
               case 'top': {
-                translate.y -= reference.outerHeight() + 10
-                translate.x += reference.outerWidth() / 2 - popper.outerWidth() / 2
+                translate.y -= rHeight + 10
+                translate.x += rWidth / 2 - pWidth / 2
                 break
               }
               case 'bottom': {
-                translate.y += reference.outerHeight() + 10
-                translate.x += reference.outerWidth() / 2 - popper.outerWidth() / 2
+                translate.y += rHeight + 10
+                translate.x += rWidth / 2 - pWidth / 2
                 break
               }
             }
+
+            // Set the new offset of the tooltip
             setOffset(translate)
           })
         } catch (e) {}
@@ -130,7 +142,7 @@ let getElementMDBObject = (element, type = 'Input') => {
   allMDBObjects.push({
     element,
     object,
-    type,
+    type
   })
 
   // Return the final object
@@ -144,15 +156,24 @@ let getElementMDBObject = (element, type = 'Input') => {
  * {string} `path` the path to the JS file in the project
  */
 let loadScript = (path) => {
+  // Add log about this loading process
+  try {
+    addLog(`Loaded '${Path.basename(path).replace(Path.extname(path), '')}' as part of the initialization process`)
+  } catch (e) {}
+
   /**
    * Call the JQuery's HTTP request function
-   * Set `async attribute` to `false`; to be sure the script was loaded before executing the upcoming code
+   * Set `async attribute` to `false`; to be sure the script is loaded before executing the upcoming code
    */
-  $.ajax({
-    url: path,
-    async: false,
-    dataType: 'script'
-  })
+  try {
+    $.ajax({
+      url: path,
+      async: false,
+      dataType: 'script'
+    })
+  } catch (e) {
+    errorLog(e, 'functions')
+  }
 }
 
 /**
@@ -161,7 +182,19 @@ let loadScript = (path) => {
  * @Parameters:
  * {string} `path` the path to the CSS file in the project
  */
-let loadStyleSheet = (path) => $('head').prepend(`<link rel="stylesheet" href="${path}">`)
+let loadStyleSheet = (path) => {
+  // Add log about this loading process
+  try {
+    addLog(`Loaded '${Path.basename(path).replace(Path.extname(path), '')}' as part of the initialization process`)
+  } catch (e) {}
+
+  // Prepend the stylesheet file
+  try {
+    $('head').prepend(`<link rel="stylesheet" href="${path}">`)
+  } catch (e) {
+    errorLog(e, 'functions')
+  }
+}
 
 /**
  * Show toast at the bottom center of the app
@@ -170,8 +203,9 @@ let loadStyleSheet = (path) => $('head').prepend(`<link rel="stylesheet" href="$
  * @Parameters:
  * {string} `title` the title of the toast
  * {string} `text` the text to be shown in the toast
- * {string} `?type` the toast's type, the value could be: [`success`, `failure`, `warning`, and `neutral`]
- * {string} `?toastID` if an ID has been passed then the toast will be pinned for a while
+ * {string} `?type` the toast's type, the value could be:
+ * [`success`, `failure`, `warning`, and `neutral`]
+ * {string} `?toastID` if an ID has been passed then the toast will be pinned tell it's called to be destroyed
  * {object} `?clickCallback` a function to be called once the navigation icon is clicked - will be shown only if a callback function has been passed -
  */
 let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = null) => {
@@ -184,7 +218,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
     timeout = minTimeout
 
   /**
-   *  Calculate the showing time
+   * Calculate the showing time
    * Every character in the text is adding 50ms to the time
    */
   timeout = text.length * 50
@@ -208,18 +242,18 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
 
   // Whether or not the `toast-id` attribute will be added
   let addToastID = toastID.length != 0 ? `toast-id="${toastID}"` : '',
-    // Whether or not specified elements will be hidden
+    // Whether or not a specified elements will be hidden
     hideElement = toastID.length != 0 ? 'hidden' : ''
 
   // Toast UI element strucutre
   let element = `
-      <div class="toast ${toastID.length <= 0 ? 'show' : ''}" ${addToastID}>
+      <div style="text-align: initial;" class="toast ${toastID.length <= 0 ? 'show' : ''}" ${addToastID}>
         <div class="toast-header">
           <span class="toast-type ${type}">
             <lottie-player src="../assets/lottie/${type}.json" background="transparent" autoplay ${toastID.length != 0 ? 'loop speed="0.9"' : ''}></lottie-player>
           </span>
           <strong class="me-auto">${title}</strong>
-          <button type="button" class="navigation" ${clickCallback == null ? 'hidden' : '' }>
+          <button type="button" class="navigation" ${clickCallback == null ? 'hidden' : ''}>
             <ion-icon name="navigation"></ion-icon>
           </button>
           <button type="button" class="btn-close" ${hideElement}></button>
@@ -251,14 +285,14 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
       if (toastID.length != 0)
         throw 0
 
-      // Start to animate the decreasing of the progress bar after 100ms of creation
+      /**
+       * Start to animate the decreasing of the progress bar after 100ms of creation
+       * Once the animation is done click the close button
+       */
       setTimeout(() => {
         progressBar.animate({
           width: '0%'
-        }, timeout - 200).promise().done(() => {
-          // Once the animation is done click the close button
-          closeBtn.click()
-        })
+        }, timeout - 200).promise().done(() => closeBtn.click())
       }, 150)
     } catch (e) {}
 
@@ -374,7 +408,7 @@ let updatePinnedToast = (pinnedToastID, text, destroy = false) => {
       toast.addClass('show')
 
     try {
-      // If the passed `text` is not set to `true` then skip this try-catch block and keep the body's content
+      // If the passed `text` is set to `true` then skip this try-catch block and keep the body's content
       if (text == true)
         throw 0
 
@@ -386,11 +420,15 @@ let updatePinnedToast = (pinnedToastID, text, destroy = false) => {
         // Append the given text
         toastBody.html(`${content}<code>${text.slice(2)}</code><br>`)
 
-        // Skip the upcoming code in the try-catch block
+        // Skip the upcoming code in this try-catch block
         throw 0
       }
 
-      // Update the toast's body content
+      /**
+       * Reaching here means the entire content needs to be updated
+       *
+       * Update the toast's body content
+       */
       toastBody.html(text)
     } catch (e) {}
 
@@ -399,21 +437,21 @@ let updatePinnedToast = (pinnedToastID, text, destroy = false) => {
       scrollTop: toastBody.get(0).scrollHeight
     }, 1)
 
-    // If the toast needs to be destroyed
+    // If the toast doesn't need to be destroyed then end this process
     if (!destroy)
       return
 
     // Show the close button
     closeBtn.add(hideProgressBar).removeAttr('hidden')
 
-    // Start to animate the decreasing of the progress bar after 100ms
+    /**
+     * Start to animate the decreasing of the progress bar after 100ms
+     * Once the animation is done click the close button
+     */
     setTimeout(() => {
       progressBar.animate({
         width: '0%'
-      }, 10000).promise().done(() => {
-        // Once the animation is done click the close button
-        closeBtn.click()
-      })
+      }, 10000).promise().done(() => closeBtn.click())
     }, 150)
   } catch (e) {}
 }
@@ -432,7 +470,7 @@ let formatTimestamp = (timestamp, isSecondFormat = false) => {
   let format = ''
 
   try {
-    // Get the date object based on the given timestamp, and get the year, month, and day of that timestamp
+    // Get the date object based on the given timestamp, then get the year, month, and day of that timestamp
     let date = new Date(timestamp),
       year = date.getUTCFullYear(),
       month = date.getUTCMonth(),
@@ -461,6 +499,9 @@ let formatTimestamp = (timestamp, isSecondFormat = false) => {
       format = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
   } catch (e) {}
 
+  // Add log for this process
+  addLog(`Format the timestamp '${timestamp}' to human-readable format '${format}'`, 'process')
+
   // Return the human-readable result
   return format
 }
@@ -477,6 +518,9 @@ let formatTimestamp = (timestamp, isSecondFormat = false) => {
  */
 let repairJSON = (json) => {
   let result = json // Final result which be returned
+
+  // Add a log about this process -  without logging the result afterward -
+  addLog(`Repair a string-format JSON '${json.slice(0, 20)}...'`, 'process')
 
   try {
     // Replace non-ascii chars except the ones which are used to build a valid JSON
@@ -502,7 +546,9 @@ let repairJSON = (json) => {
 
     // Update the result with the new repaired JSON string
     result = json
-  } catch (e) {} finally {
+  } catch (e) {
+    errorLog(e, 'functions')
+  } finally {
     // Return the final result
     return result
   }
@@ -518,10 +564,9 @@ let repairJSON = (json) => {
  * @Return: {object} a valid tree structure to be rendered
  */
 let buildTreeview = (metadata, ignoreTitles = false) => {
-  console.log(metadata);
   /**
    * Due to the way JSTree is coded, there's an issue with the paths in Windows
-   * To solve this issue, this function replaces the backward slashes
+   * To solve this issue, this inner function replaces the backward slashes
    * If the OS is not Windows it'll simply return the path without any manipulation
    */
   let normalizePath = (path) => OS.platform == 'win32' ? path.replace(/\\/gm, '/') : path
@@ -549,40 +594,29 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           'responsive': true,
           'name': 'default-dark'
         },
-        'data': [
-          // Cluster's name
-          {
-            id: getRandomID(30),
-            parent: '#',
-            text: `Cluster: <span>${metadata.cluster_name}</span>`,
-            type: 'default',
-            a_attr: {
+        'data': [{
+            'id': getRandomID(30),
+            'parent': '#',
+            'text': `Cluster: <span>${metadata.cluster_name}</span>`,
+            'type': 'default',
+            'a_attr': {
               'allow-right-context': 'true',
               'name': metadata.cluster_name,
               'type': 'cluster'
             }
           },
-          // Partitioner
           {
-            id: getRandomID(30),
-            parent: '#',
-            text: `Partitioner: <span>${metadata.partitioner}</span>`,
-            type: 'default',
+            'id': getRandomID(30),
+            'parent': '#',
+            'text': `Partitioner: <span>${metadata.partitioner}</span>`,
+            'type': 'default',
           },
-          // Is it a database as a service?
-          // {
-          //   id: getRandomID(30),
-          //   parent: '#',
-          //   text: `DBaaS: <span class="material-icons for-treeview">${metadata.dbaas ? 'check': 'close'}</span>`,
-          //   type: 'default',
-          // },
-          // The keyspaces' container
           {
-            id: keyspacesID,
-            parent: '#',
-            text: `Keyspaces (<span>${metadata.keyspaces.length}</span>)`,
-            type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'keyspaces.png')),
+            'id': keyspacesID,
+            'parent': '#',
+            'text': `Keyspaces (<span>${metadata.keyspaces.length}</span>)`,
+            'type': 'default',
+            'icon': normalizePath(Path.join(extraIconsPath, 'keyspaces.png')),
           }
         ]
       },
@@ -604,7 +638,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
    * {string} `?parentType` the child's parent type - partition, clustering, etc... -
    */
   let buildTreeViewForChild = (parentID, childID, text, object, icon = null, parentType = '') => {
-    // Define the set parent type
+    // Define the parent's type
     let setParentType = icon || parentType
 
     // Define the child's structure
@@ -625,7 +659,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       structure.icon = normalizePath(Path.join(extraIconsPath, `${icon}.png`))
 
     try {
-      // Check if the child is not any of the defined types then skip this try-catch block
+      // If the child is not any of the defined types then skip this try-catch block
       if (['Keyspace', 'Table', 'View'].every((type) => text != type))
         throw 0
 
@@ -1119,7 +1153,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       })
     } catch (e) {}
 
-
     // Show an `Indexes` node/leaf if the current keyspace has at least one index
     try {
       // If the current keyspace doesn't have any index then skip this try-catch block
@@ -1188,6 +1221,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         icon: normalizePath(Path.join(extraIconsPath, 'user_definitions.png'))
       }
 
+      // Append the UDEs' container to the tree structure
       treeStructure.core.data.push(userDefinedElementsStructure)
 
       // Handle `User Defined Types (UDT)`
@@ -1529,7 +1563,6 @@ String.prototype.search = function(needle) {
   return FSS.indexOf(`${this}`, `${needle}`).length != 0
 }
 
-
 /**
  * Open a confirmation dialog
  * The dialog has `confirm` and `cancel` buttons to choose from
@@ -1555,7 +1588,7 @@ let openDialog = (text, callback, noBackdrop = false) => {
   dialogContent.html(text)
 
   // Add log for this confirmation dialog - its text -
-  addLog(`Confirmation dialog, text: ${text}`, 'action')
+  addLog(`Confirmation dialog, text: '${text}'`, 'action')
 
   // Point at the confirm and cancel buttons in the dialog
   let confirm = dialog.find('button.btn-primary'),
@@ -1570,7 +1603,7 @@ let openDialog = (text, callback, noBackdrop = false) => {
     callback($(this).is(confirm))
 
     // Add log for the confirmation's status
-    addLog(`Confirmation dialog status: ${$(this).is(confirm)}.`)
+    addLog(`Confirmation dialog status: '${$(this).is(confirm) ? 'confirmed' : 'canceled'}'`)
 
     // Hide the dialog
     dialogObject.hide()
@@ -1589,7 +1622,8 @@ let openDialog = (text, callback, noBackdrop = false) => {
  *
  * @Parameters:
  * {object} `terminal` the terminal object in which the message will be printed - the `readLine` object can be passed too -
- * {string} `type` the type of the message, the value could be: [`warning`, `info`, and `error`]
+ * {string} `type` the type of the message, the value could be:
+ * [`warning`, `info`, and `error`]
  * {string} `message` the message's content that will be printed
  * {boolean} `?hideIcon` print the message without a prefix icon that indicates its type
  */
@@ -1598,17 +1632,17 @@ let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
   let box = CLIBoxes.round,
     // Get the message's length
     length = message.length + 4,
-    // Set the default format (warning)
+    // Set the default format (info)
     format = {
-      icon: ' ⚠️ ',
-      color: '234;255;18'
+      icon: ' ℹ️ ',
+      color: '15;168;255'
     }
 
   // Switch between other types
   switch (type) {
-    case 'info': {
-      format.icon = ' ℹ️ '
-      format.color = '15;168;255'
+    case 'warning': {
+      format.icon = ' ⚠️ '
+      format.color = '234;255;18'
       break
     }
     case 'error': {
@@ -1669,26 +1703,30 @@ let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
  * Get the public/private key to be used for encryption/decryption
  *
  * @Parameters:
- * {string} `type` the key's type, the value could be: [`public` or `private`]
+ * {string} `type` the key's type, the value could be:
+ * [`public` or `private`]
  * {object} `callback` function that will be triggered with passing the final result
  * {boolean} `?called` whether or not the function has already been called and this is the second attempt to get the key
  *
  * @Return: {string} the public/private key, or an empty string
  */
 let getKey = async (type, callback, called = false) => {
+  // Add log for this process
+  addLog(`Obtain the ${type} key for either encryption or decryption`, 'process')
+
   try {
     // If the key's type is not `private` then skip this try-catch block
     if (type != 'private')
       throw 0
 
     // Define our private key service
-    let service = 'cassandraWorkbenchPrivateKey'
+    const Service = 'AxonOpsDeveloperWorkbenchPrivateKey'
 
     /**
      * Use `keytar` to get the private key on the fly
      * The private key will be removed automatically from memory after being used
      */
-    Keytar.findPassword(service).then(async (key) => {
+    Keytar.findPassword(Service).then(async (key) => {
       /**
        * It happens - especially on Windows - that a `\x00` hex value might be added,
        * this value leads to corruption in the private key format, so it should be removed
@@ -1706,8 +1744,8 @@ let getKey = async (type, callback, called = false) => {
        * If the key is not valid then add a custom key and then delete it,
        * then call the `getKey` again, and it should return the key this time
        */
-      await Keytar.setPassword(service, 'key', ' ')
-      await Keytar.deletePassword(service, 'key')
+      await Keytar.setPassword(Service, 'key', ' ')
+      await Keytar.deletePassword(Service, 'key')
 
       /**
        * Ask for the actual key again
@@ -1718,7 +1756,9 @@ let getKey = async (type, callback, called = false) => {
 
     // Skip the upcoming code - since it's about obtaining a public key -
     return
-  } catch (e) {}
+  } catch (e) {
+    errorLog(e, 'functions')
+  }
 
   /**
    * Reaching here means the key's type is `public`
@@ -1761,6 +1801,9 @@ let getKey = async (type, callback, called = false) => {
 let encrypt = (publicKey, text) => {
   let encryptedText = '' // The final encrypted text which be returned
 
+  // Add log for this process
+  addLog(`Encrypt a given text with RSA cryptosystem`, 'process')
+
   try {
     // Create a public RSA object
     let public = new NodeRSA(publicKey, 'public', {
@@ -1769,7 +1812,9 @@ let encrypt = (publicKey, text) => {
 
     // Encrypt the given text
     encryptedText = public.encrypt(text).toString('base64')
-  } catch (e) {} finally {
+  } catch (e) {
+    errorLog(e, 'functions')
+  } finally {
     // Return the final encrypted text
     return encryptedText
   }
@@ -1787,6 +1832,9 @@ let encrypt = (publicKey, text) => {
 let decrypt = (privateKey, text) => {
   let decryptedText = '' // The final decrypted text
 
+  // Add log for this process
+  addLog(`Decrypt a given text with RSA cryptosystem`, 'process')
+
   try {
     // Create a private RSA object
     let private = new NodeRSA(privateKey, 'private', {
@@ -1795,7 +1843,9 @@ let decrypt = (privateKey, text) => {
 
     // Decrypt the given text
     decryptedText = private.decrypt(text).toString('utf8')
-  } catch (e) {} finally {
+  } catch (e) {
+    errorLog(e, 'functions')
+  } finally {
     // Return the final decrypted text
     return decryptedText
   }
@@ -1818,7 +1868,7 @@ let executeScript = (scriptID, scripts, callback) => {
   let requestID = getRandomID(20)
 
   // Add log about executing the current script
-  addLog(`Executing the script ${scripts[scriptID]}.`, 'process')
+  addLog(`Executing the script '${scripts[scriptID]}' within a connection with cluster`, 'process')
 
   // Send the execution request
   IPCRenderer.send('script:run', {
@@ -1838,7 +1888,7 @@ let executeScript = (scriptID, scripts, callback) => {
     status = parseInt(status)
 
     // Add log for the execution's status
-    addLog(`Execution status of the script ${scripts[scriptID]} is ${isNaN(status) ? originalStatus : status}.`)
+    addLog(`Execution status of the script '${scripts[scriptID]}' is '${isNaN(status) ? originalStatus : status}'`)
 
     try {
       // If the status/returned value is not `0` then it is considered an error
@@ -1855,6 +1905,8 @@ let executeScript = (scriptID, scripts, callback) => {
       // Call the execution function again in a recursive way
       executeScript(scriptID, scripts, callback)
     } catch (e) {
+      errorLog(e, 'functions')
+
       /**
        * Call the callback function
        * Pass the last executed script ID, all scripts array, and the last execution status
@@ -1891,6 +1943,12 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
     // An object which holds the content of the cluster's cqlsh.rc file
     cqlshContent = null
 
+  // Define the text to be added to the log regards the workspace
+  let workspace = `workspace #${workspaceID}`
+
+  // Add log about this process
+  addLog(`Get all pre and post-connection scripts of ${clusterID != null ? 'cluster #' + clusterID + ' in ' : ' a cluster about to be added/updated in '}${workspace}`, 'process')
+
   // Check pre and post-connection scripts
   try {
     // Set cluster to be null by default
@@ -1906,7 +1964,9 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
 
       // Get the target cluster's object
       cluster = clusters.filter((cluster) => cluster.info.id == clusterID)[0]
-    } catch (e) {}
+    } catch (e) {
+      errorLog(e, 'functions')
+    }
 
     // Get the cluster's `cqlsh.rc` file's content
     cqlshContent = cluster != null ? await Modules.Clusters.getCQLSHRCContent(workspaceID, cluster.cqlshrc) : await Modules.Clusters.getCQLSHRCContent(workspaceID, null, editor),
@@ -1940,7 +2000,13 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
           scripts[section == 'preconnect' ? 'pre' : 'post'].push(script)
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    errorLog(e, 'functions')
+  }
+
+  // Add log if scripts have been found
+  if (scripts.length != 0)
+    addLog(`Pre and post-connection scripts of ${clusterID != null ? 'cluster #' + clusterID + ' in ' : ' a cluster about to be added/updated in '}${workspace} are (${JSON.stringify(scripts)})`, 'process')
 
   // Return the final result
   return {
@@ -1967,10 +2033,14 @@ let getRandomPort = async (amount = 1) => {
    * Push every `port` to the `ports` array
    */
   for (let i = 0; i < amount; i++)
-    ports.push(await PortGet())
+    try {
+      ports.push(await PortGet())
+    } catch (e) {
+      errorLog(e, 'functions')
+    }
 
   // Add log about the free-to-use ports
-  addLog(`Request to get ${amount} free-to-use port(s), returned ${amount == 1 ? ports[0] : JSON.stringify(ports)}.`, 'network')
+  addLog(`Get ${amount} free-to-use port(s), returned '${amount == 1 ? ports[0] : JSON.stringify(ports)}'`, 'network')
 
   // Return one `port` if only one is needed, or the entire array otherwise
   return amount == 1 ? ports[0] : ports
@@ -2035,34 +2105,41 @@ let getRandomColor = (amount = 1) => {
  * @Return {string} the inverted color in HEX format
  */
 let invertColor = (hex) => {
-  // Check if the color starts with `#` and remove it if so
-  if (hex.indexOf('#') === 0)
-    hex = hex.slice(1)
+  // Final result to be returned
+  let [r, g, b] = ['', '', '']
 
-  // If the given color is in the short form `#fff` then expand it to `#ffffff`
-  if (hex.length === 3)
-    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]
+  try {
+    // Check if the color starts with `#` and remove it if so
+    if (hex.indexOf('#') === 0)
+      hex = hex.slice(1)
 
-  // If the given color is invalid then return it and skip the upcoming code
-  if (hex.length !== 6)
-    return hex
+    // If the given color is in the short form `#fff` then expand it to `#ffffff`
+    if (hex.length === 3)
+      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]
 
-  // Inner function to add leading zeros to a given string; to ensure it has a specified length
-  let padZero = (str, len) => {
-    len = len || 2
-    let zeros = new Array(len).join('0')
-    return (zeros + str).slice(-len)
-  }
+    // If the given color is invalid then return it and skip the upcoming code
+    if (hex.length !== 6)
+      return hex
 
-  /**
-   * Calculate the inverted RGB values by the following steps:
-   * Subrtact each channel value from 255.
-   * Convert the result to HEXA (16).
-   * Then add leading zeros if needed.
-   */
-  let r = padZero((255 - parseInt(hex.slice(0, 2), 16)).toString(16)),
-    g = padZero((255 - parseInt(hex.slice(2, 4), 16)).toString(16)),
+    // Inner function to add leading zeros to a given string; to ensure it has a specified length
+    let padZero = (str, len) => {
+      len = len || 2
+      let zeros = new Array(len).join('0')
+      return (zeros + str).slice(-len)
+    }
+
+    /**
+     * Calculate the inverted RGB values by the following steps:
+     * Subrtact each channel value from 255.
+     * Convert the result to HEXA (16).
+     * Then add leading zeros if needed.
+     */
+    r = padZero((255 - parseInt(hex.slice(0, 2), 16)).toString(16))
+    g = padZero((255 - parseInt(hex.slice(2, 4), 16)).toString(16))
     b = padZero((255 - parseInt(hex.slice(4, 6), 16)).toString(16))
+  } catch (e) {
+    errorLog(e, 'functions')
+  }
 
   // Return the final result
   return `#${r}${g}${b}`
@@ -2078,17 +2155,18 @@ let invertColor = (hex) => {
  * @Return: {boolean} the host machine has an SSH client or not
  */
 let checkSSH = (callback) => {
-  // Add log for this process
-  addLog(`Checking SSH client exists or not.`, 'process')
+  try {
+    // Run the command to check SSH
+    Terminal.run('ssh -V', (err, stderr, data) => {
+      // Add log for the process' result
+      addLog(`Check SSH client existence and accessibility, status: '${!(err || stderr) ? 'exists and accessible' : 'not exists or inaccessible. Details: ' + err || stderr}'`, 'process')
 
-  // Run the command to check SSH
-  Terminal.run('ssh -V', (err, stderr, data) => {
-    // Add log for the process' result
-    addLog(`Checking SSH client status: ${!(err || stderr)}.`)
-
-    // Call the callback function with the result
-    callback(!(err || stderr))
-  })
+      // Call the callback function with the result
+      callback(!(err || stderr))
+    })
+  } catch (e) {
+    errorLog(e, 'functions')
+  }
 }
 
 /**
@@ -2150,12 +2228,16 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
     // Get the variables' manifest content
     try {
       variablesManifest = await FS.readFileSync(variablesFilePath.manifest, 'utf8')
-    } catch (e) {}
+    } catch (e) {
+      errorLog(e, 'functions')
+    }
 
     // Get the saved variables' values in the host config/app data folder
     try {
       variablesValues = await FS.readFileSync(variablesFilePath.values, 'utf8')
-    } catch (e) {}
+    } catch (e) {
+      errorLog(e, 'functions')
+    }
 
     // Define the final variables object
     let variables = [],
@@ -2185,7 +2267,9 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
         // If it exists, push and adopt it
         if (exists != undefined)
           variables.push(exists)
-      } catch (e) {}
+      } catch (e) {
+        errorLog(e, 'functions')
+      }
     })
 
     // If the call is about getting the available variables for the workspace then return `variables` and skip the upcoming code
@@ -2236,7 +2320,9 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
 
         // Skip the upcoming code
         return
-      } catch (e) {}
+      } catch (e) {
+        errorLog(e, 'functions')
+      }
 
       /**
        * Reaching here means the current `value` is not an `object` but a `string`
@@ -2258,7 +2344,9 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
       // Update the object's value with the manipulated one
       result[objectValue] = value
     })
-  } catch (e) {} finally {
+  } catch (e) {
+    errorLog(e, 'functions')
+  } finally {
     // Return the final result in case more than raw data is wanted
     if (!rawData)
       return result
@@ -2285,32 +2373,36 @@ let getProperVariables = async (workspaceID) => await variablesManipulation(work
  * @Return: {object} the passed object after manipulation
  */
 let variablesToValues = (object, variables) => {
-  // Get keys of the given object
-  let keys = Object.keys(object)
+  try {
+    // Get keys of the given object
+    let keys = Object.keys(object)
 
-  // Loop through all keys
-  keys.forEach((key) => {
-    // Get the value of the current key
-    let value = object[key],
-      // Check if there is a variable or more in the value
-      exists = variables.filter((variable) => value.search('${' + variable.name + '}'))
+    // Loop through all keys
+    keys.forEach((key) => {
+      // Get the value of the current key
+      let value = object[key],
+        // Check if there is a variable or more in the value
+        exists = variables.filter((variable) => value.search('${' + variable.name + '}'))
 
-    // If no variable has been found in the key's value then skip it and move to the next key
-    if (exists.length <= 0)
-      return
+      // If no variable has been found in the key's value then skip it and move to the next key
+      if (exists.length <= 0)
+        return
 
-    // Loop through existing variables
-    exists.forEach((variable) => {
-      // Create a regular expression to match the variable anywhere in the object's value
-      let regex = createRegex('${' + variable.name + '}', 'gm')
+      // Loop through existing variables
+      exists.forEach((variable) => {
+        // Create a regular expression to match the variable anywhere in the object's value
+        let regex = createRegex('${' + variable.name + '}', 'gm')
 
-      // Replace the object's value with the variable's value
-      value = value.replace(regex, variable.value)
+        // Replace the object's value with the variable's value
+        value = value.replace(regex, variable.value)
+      })
+
+      // Update the object's value with the manipulated one
+      object[key] = value
     })
-
-    // Update the object's value with the manipulated one
-    object[key] = value
-  })
+  } catch (e) {
+    errorLog(e, 'functions')
+  }
 
   // Return the object after manipulation
   return object
@@ -2326,16 +2418,26 @@ let variablesToValues = (object, variables) => {
  * @Return: {string} the passed object in string format after manipulation
  */
 let applyJSONBeautify = (object, sort = false) => {
-  // The given JSON object needs to be sorted
-  if (sort)
-    object = SortJSON(object, {
-      ignoreCase: true,
-      reverse: false,
-      depth: 5
-    })
+  // Final result to be returned
+  let beautifiedJSON = ''
+
+  try {
+    // The given JSON object needs to be sorted
+    if (sort)
+      object = SortJSON(object, {
+        ignoreCase: true,
+        reverse: false,
+        depth: 5
+      })
+
+    // Attempt to beautify the passed JSON object
+    beautifiedJSON = BeautifyJSON(object, null, 2, 80)
+  } catch (e) {
+    errorLog(e, 'functions')
+  }
 
   // Return the beautified version of the JSON
-  return BeautifyJSON(object, null, 2, 80)
+  return beautifiedJSON
 }
 
 /**
@@ -2346,7 +2448,7 @@ let applyJSONBeautify = (object, sort = false) => {
  *
  * @Return: {string} the passed text after manipulation
  */
-let manipulateText = (text) => text.replace(/\s+/gm, '').toLowerCase()
+let manipulateText = (text) => `${text}`.replace(/\s+/gm, '').toLowerCase()
 
 /**
  * Minify a given text by manipulating it, plus getting rid of new lines
@@ -2417,6 +2519,8 @@ let getWorkspaceFolderPath = (workspaceID, replaceDefault = true) => {
     // Return the result
     return Path.join(folderPath, folderName)
   } catch (e) {
+    errorLog(e, 'functions')
+
     // Return an empty value if an error has occurred
     return ''
   }
@@ -2465,7 +2569,12 @@ let pathIsAccessible = (path) => {
 
     // Reaching here means the test has successfully passed
     accessible = true
-  } catch (e) {}
+  } catch (e) {
+    errorLog(e, 'functions')
+  }
+
+  // Add log for this process
+  addLog(`Check the path '${path}' is accessible and the user has privileges to manipulate it, result is '${accessible ? '' : 'in'}accessible'`, 'process')
 
   // Return the test result
   return accessible
@@ -2489,7 +2598,9 @@ let getMachineID = async () => {
     machineID = await MachineID({
       original: true // Set to `true`; to return the original ID value of the machine rather than a hashed value (SHA-256)
     })
-  } catch (e) {}
+  } catch (e) {
+    errorLog(e, 'functions')
+  }
 
   // Return the machine ID
   return machineID
@@ -2503,11 +2614,14 @@ let clearTemp = () => {
   // Define the OS temp folder
   let tempFolder = OS.tmpdir()
 
+  // Add log about this process
+  addLog(`Clear temporary files from the last session`, 'process')
+
   // Read the temp folder and get all items (files and folders) in it
   FS.readdir(tempFolder, (err, items) => {
     // If any error has occurred then end this process
     if (err)
-      return
+      return errorLog(err, 'functions')
 
     // Loop through detected items in the temp folder
     for (let item of items) {
@@ -2549,7 +2663,7 @@ let clearTemp = () => {
  */
 let createRegex = (text, flags) => {
   // Escape special characters
-  text = text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+  text = `${text}`.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 
   // Return a regular expression object
   return new RegExp(text, flags)
@@ -2568,7 +2682,7 @@ let createRegex = (text, flags) => {
  */
 let extractChars = (clusterName) => {
   // Remove all white spaces from the given name
-  clusterName = clusterName.replace(/\s+/gm, ''),
+  clusterName = `${clusterName}`.replace(/\s+/gm, ''),
     // Get all characters in array
     allChars = clusterName.split(''),
     // Final result which be returned
@@ -2631,43 +2745,47 @@ let detectDifferentiation = (oldText, newText, callback) => {
  * {string} `workspaceColor` the workspace's color in HEX format
  */
 let setUIColor = (workspaceColor) => {
-  // Convert the given color from HEX to RGB format `R G B`
-  let color = HEXToRGB(workspaceColor).join(' '),
-    // Create a Tiny Color object from the given color
-    tinyColor = TinyColor(workspaceColor),
-    // Define the default and hover state of the background color
-    backgroundColor = {
-      default: tinyColor.isValid() ? `rgb(${color} / 70%)` : '',
-      hover: tinyColor.isValid() ? `rgb(${HEXToRGB(tinyColor.darken(10).toString()).join(' ')} / 70%)` : ''
-    },
-    // Determine if the color of the element needs to be black based on the lightening of the given color
-    textColor = tinyColor.isLight() ? `#252525` : ''
+  try {
+    // Convert the given color from HEX to RGB format `R G B`
+    let color = HEXToRGB(workspaceColor).join(' '),
+      // Create a Tiny Color object from the given color
+      tinyColor = TinyColor(workspaceColor),
+      // Define the default and hover state of the background color
+      backgroundColor = {
+        default: tinyColor.isValid() ? `rgb(${color} / 70%)` : '',
+        hover: tinyColor.isValid() ? `rgb(${HEXToRGB(tinyColor.darken(10).toString()).join(' ')} / 70%)` : ''
+      },
+      // Determine if the color of the element needs to be black based on the lightening of the given color
+      textColor = tinyColor.isLight() ? `#252525` : ''
 
-  // Remove the old UI color
-  $('style#uicolor').remove()
+    // Remove the old UI color
+    $('style#uicolor').remove()
 
-  // If the given color is not valid then stop the entire process
-  if (workspaceColor.trim().length <= 0)
-    return
+    // If the given color is not valid then stop the entire process
+    if (workspaceColor.trim().length <= 0)
+      return
 
-  // Define the stylesheet that will be applied
-  let stylesheet = `
-      <style id="uicolor">
-        .changed-bg {background: ${backgroundColor.default} !important}
-        .changed-bg:hover {background: ${backgroundColor.hover} !important}
-        .checkbox-checked:checked, .form-check-input:not([no-color])[type=checkbox]:checked, .form-check-input:not([no-color]):checked {background: ${backgroundColor.default} !important}
-        .checkbox-checked:checked:after {background: ${backgroundColor.hover.replace('70%', '100%')} !important}
-        .ui-resizable-handle {background: ${backgroundColor.hover.replace('70%', '0%')}}
-        .ui-resizable-handle:hover {background: ${backgroundColor.hover.replace('70%', '40%')}}
-        .checkbox-checked:checked:focus:before {box-shadow: 3px -1px 0 13px ${backgroundColor.hover.replace('70%', '100%')} !important;}
-        .form-check-input:not([no-color]):checked:focus:before {box-shadow: 0 0 0 13px ${backgroundColor.hover.replace('70%', '100%')} !important;}
-        .changed-color {color: ${textColor} !important}
-        .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active, form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus, .form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus {border-color: ${backgroundColor.default} !important}
-        ion-icon[name="lock-closed"] {color: ${backgroundColor.default} !important}
-      </style>`
+    // Define the stylesheet that will be applied
+    let stylesheet = `
+        <style id="uicolor">
+          .changed-bg {background: ${backgroundColor.default} !important}
+          .changed-bg:hover {background: ${backgroundColor.hover} !important}
+          .checkbox-checked:checked, .form-check-input:not([no-color])[type=checkbox]:checked, .form-check-input:not([no-color]):checked {background: ${backgroundColor.default} !important}
+          .checkbox-checked:checked:after {background: ${backgroundColor.hover.replace('70%', '100%')} !important}
+          .ui-resizable-handle {background: ${backgroundColor.hover.replace('70%', '0%')}}
+          .ui-resizable-handle:hover {background: ${backgroundColor.hover.replace('70%', '40%')}}
+          .checkbox-checked:checked:focus:before {box-shadow: 3px -1px 0 13px ${backgroundColor.hover.replace('70%', '100%')} !important;}
+          .form-check-input:not([no-color]):checked:focus:before {box-shadow: 0 0 0 13px ${backgroundColor.hover.replace('70%', '100%')} !important;}
+          .changed-color {color: ${textColor} !important}
+          .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active, form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus, .form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus {border-color: ${backgroundColor.default} !important}
+          ion-icon[name="lock-closed"] {color: ${backgroundColor.default} !important}
+        </style>`
 
-  // Append the stylesheet
-  $('body').append($(stylesheet))
+    // Append the stylesheet
+    $('body').append($(stylesheet))
+  } catch (e) {
+    errorLog(e, 'functions')
+  }
 }
 
 /**
@@ -2828,25 +2946,11 @@ let addLog = (log, type = 'info') => {
   if (!isLoggingEnabled)
     return
 
-  // Define the log's type's icons
-  let icons = {
-      error: '❌',
-      warning: '⚠️',
-      info: 'ℹ️',
-      action: '👤',
-      process: '⚙️',
-      network: '🌐',
-      security: '🔒',
-      env: '🖥️'
-    },
-    // Decide the suitable icon
-    icon = icons[type] || icons.info
-
   // Send the log text to the main thread
   IPCRenderer.send('logging:add', {
     date: new Date().getTime(),
     log,
-    icon
+    type
   })
 }
 
@@ -2879,6 +2983,9 @@ let errorLog = (error, process) => {
 let closeAllWorkareas = () => {
   // Point at all work areas
   let workareas = $('div.body div.right div.content div[content="workarea"] div.workarea[cluster-id]')
+
+  // Add log for this  process
+  addLog(`Close all active work areas, count is '${workareas.length}' work area(s)`, 'process')
 
   // Loop through all work areas
   workareas.each(function() {

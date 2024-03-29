@@ -165,12 +165,12 @@
       "the maximum number of sandbox projects which allowed to be started simultaneously is [b]$data[/b]": "允许同时启动的沙盒项目的最大数量为 [b]$data[/b]",
       "docker is seems to be downloading necessary images and related files, this is a once time process and might take up to 10 minutes depending on the internet connection": "docker 似乎正在下载必要的映像和相关文件，这是一个一次性过程，根据互联网连接速度可能需要高达 10 分钟",
       "something went wrong, it seems the docker project [b]$data[/b] didn't run as expected": "出现问题，似乎文件夹 [b]$data[/b] 中的 docker 项目未按预期运行",
-      "docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra ® to be up, you'll be automatically navigated to the project work area once it's up": "文件夹 [b]$data[/b] 中的 docker 项目已成功启动，等待 Apache Cassandra ® 启动，一旦启动，您将自动导航到项目工作区",
-      "something went wrong, it seems the Apache Cassandra ® nodes of the docker project [b]$data[/b] didn't start as expected, automatic stop of the docker project will be started in seconds": "出现问题，似乎文件夹 [b]$data[/b] 中的 Apache Cassandra ® 节点未按预期启动，将在几秒钟内自动停止 docker 项目",
+      "docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra ™ to be up, you'll be automatically navigated to the project work area once it's up": "文件夹 [b]$data[/b] 中的 docker 项目已成功启动，等待 Apache Cassandra ™ 启动，一旦启动，您将自动导航到项目工作区",
+      "something went wrong, it seems the Apache Cassandra ™ nodes of the docker project [b]$data[/b] didn't start as expected, automatic stop of the docker project will be started in seconds": "出现问题，似乎文件夹 [b]$data[/b] 中的 Apache Cassandra ™ 节点未按预期启动，将在几秒钟内自动停止 docker 项目",
       "stop docker project": "停止 docker 项目",
       "something went wrong, failed to stop the docker project [b]$data[/b], please consider to do it manually by stopping the project [b]cassandra_$data[/b]": "出现问题，无法停止文件夹 [b]$data[/b] 中的 docker 项目，请考虑手动停止项目 [b]cassandra_$data[/b]",
       "the docker project [b]$data[/b] has been successfully stopped": "文件夹 [b]$data[/b] 中的 docker 项目已成功停止",
-      "apache Cassandra ® nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds": "文件夹 [b]$data[/b] 中的 Apache Cassandra ® 节点已成功启动，已准备好进行连接，工作区将在几秒钟内创建并导航到",
+      "apache Cassandra ™ nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds": "文件夹 [b]$data[/b] 中的 Apache Cassandra ™ 节点已成功启动，已准备好进行连接，工作区将在几秒钟内创建并导航到",
       "edit cluster": "edit cluster",
       "this cluster [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit it": "此集群 [b]$data[/b] 有一个活动工作区，请确保在尝试编辑之前关闭其工作区",
       "unable to locate cluster [b]$data[/b] workspace folder": "无法找到集群 [b]$data[/b] 工作区文件夹",
@@ -187,7 +187,7 @@
       "something went wrong while attempting to test connection with cluster [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file": "尝试测试与工作区 [b]$data[/b] 中集群 [b]$data[/b] 的连接时出现问题，主要是 <code>cqlsh.rc</code> 文件的问题",
       "content for this connection contains sensitive data (username, password, and alike), please consider removing them before attempting to connect again": "此连接的内容包含敏感数据（用户名、密码等），请在尝试重新连接之前考虑删除它们",
       "unsupported version": "不支持的版本",
-      "the detected version of Apache Cassandra ® is [b]$data[/b], unwanted behavior and compatibility issues may be encountered": "检测到的 Apache Cassandra ® 版本为 [b]$data[/b]，可能会遇到不希望的行为和兼容性问题",
+      "the detected version of Apache Cassandra ™ is [b]$data[/b], unwanted behavior and compatibility issues may be encountered": "检测到的 Apache Cassandra ™ 版本为 [b]$data[/b]，可能会遇到不希望的行为和兼容性问题",
       "failed to connect with cluster [b]$data[/b] in workspace [b]$data[/b]": "无法连接到工作区 [b]$data[/b] 中的集群 [b]$data[/b]",
       "script \"$data\" didn't return the success code <code>0</code>, but": "脚本 \"$data\" 未返回成功代码 <code>0</code>，但",
       "script \"$data\" seems not to exist, please check its path and make sure it has no errors": "脚本 \"$data\" 似乎不存在，请检查其路径并确保没有错误",
@@ -216,7 +216,7 @@
       "do you want to delete the selected snapshots? once you confirm, there is no undo": "您是否要删除所选的快照？一旦确认，将无法撤消",
       "sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure it's installed and accessible before attempting to create a docker project": "沙箱功能需要安装 [code]docker[/code] 及其 [code]docker-compose[/code] 工具，请确保在尝试创建 docker 项目之前已安装并可访问",
       "something went wrong, failed to save the docker project": "出现问题，无法保存 docker 项目",
-      "the project with Apache Cassandra ® v$data has been successfully created and saved": "已成功创建并保存具有 Apache Cassandra ® v$data 的项目",
+      "the project with Apache Cassandra ™ v$data has been successfully created and saved": "已成功创建并保存具有 Apache Cassandra ™ v$data 的项目",
       "refresh variables": "刷新变量",
       "variables have been refreshed": "变量已刷新",
       "variable or more are not having invalid name or value, make sure unique names and values are provided for each variable": "一个或多个变量的名称或值无效，请确保为每个变量提供唯一的名称和值",
@@ -308,7 +308,8 @@
       "the work area of docker project [b]$data[/b] is being terminated": "docker 项目 [b]$data[/b] 的工作区正在终止",
       "CQL description": "CQL描述",
       "search for CQL description": "搜索 CQL 描述",
-      "right click on the cluster, keyspace or table and get its CQL description": "右键单击集群、键空间或表并获取其 CQL 描述"
+      "right click on the cluster, keyspace or table and get its CQL description": "右键单击集群、键空间或表并获取其 CQL 描述",
+      "get CQL description": "获取CQL描述"
     }
   }
 }

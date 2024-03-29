@@ -245,7 +245,9 @@
 
       // Update the process' status
       status = true
-    } catch (e) {}
+    } catch (e) {
+      errorLog(e, 'variables')
+    }
 
     // Call the callback function
     callback({
@@ -264,12 +266,16 @@
       // Get the variables manifest file's content
       try {
         variablesManifest = await FS.readFileSync(variablesFilePath.manifest, 'utf8')
-      } catch (e) {}
+      } catch (e) {
+        errorLog(e, 'variables')
+      }
 
       // Get the saved variables values file's content
       try {
         variablesValues = await FS.readFileSync(variablesFilePath.values, 'utf8')
-      } catch (e) {}
+      } catch (e) {
+        errorLog(e, 'variables')
+      }
 
       // Define the final variables object,
       let variables = [],
@@ -316,7 +322,9 @@
 
       // Update saved workspaces array
       savedWorkspaces = await Modules.Workspaces.getWorkspaces()
-    } catch (e) {}
+    } catch (e) {
+      errorLog(e, 'variables')
+    }
   }
 
   /**
@@ -564,7 +572,9 @@
 
             // Show/hide the bulk deletion button based on the final state of the flag
             $(`#deleteSelectedVariables`).toggleClass('show', foundChecked)
-          } catch (e) {}
+          } catch (e) {
+            errorLog(e, 'variables')
+          }
         })
       })
 

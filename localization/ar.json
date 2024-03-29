@@ -165,12 +165,12 @@
       "the maximum number of sandbox projects which allowed to be started simultaneously is [b]$data[/b]": "الحد الأقصى لعدد مشاريع الرملية المسموح بها للبدء في وقت واحد هو [b]$data[/b]",
       "docker is seems to be downloading necessary images and related files, this is a once time process and might take up to 10 minutes depending on the internet connection": "يبدو أن docker يقوم بتنزيل الصور والملفات ذات الصلة الضرورية، وهذه عملية مرة واحدة وقد تستغرق حتى 10 دقائق تبعًا لاتصال الإنترنت",
       "something went wrong, it seems the docker project [b]$data[/b] didn't run as expected": "حدث خطأ ما، يبدو أن مشروع docker في المجلد [b]$data[/b] لم يعمل كما هو متوقع",
-      "docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra ® to be up, you'll be automatically navigated to the project work area once it's up": "تم بدء مشروع docker في المجلد [b]$data[/b] بنجاح، في انتظار تشغيل Apache Cassandra ®، سيتم توجيهك تلقائيًا إلى منطقة العمل للمشروع بمجرد تشغيله",
-      "something went wrong, it seems the Apache Cassandra ® nodes of the docker project [b]$data[/b] didn't start as expected, automatic stop of the docker project will be started in seconds": "حدث خطأ ما، يبدو أن أجهزة Apache Cassandra ® في مشروع docker في المجلد [b]$data[/b] لم تبدأ كما هو متوقع، سيتم بدء إيقاف تشغيل مشروع docker تلقائيًا خلال ثوانٍ",
+      "docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra ™ to be up, you'll be automatically navigated to the project work area once it's up": "تم بدء مشروع docker في المجلد [b]$data[/b] بنجاح، في انتظار تشغيل Apache Cassandra ™، سيتم توجيهك تلقائيًا إلى منطقة العمل للمشروع بمجرد تشغيله",
+      "something went wrong, it seems the Apache Cassandra ™ nodes of the docker project [b]$data[/b] didn't start as expected, automatic stop of the docker project will be started in seconds": "حدث خطأ ما، يبدو أن أجهزة Apache Cassandra ™ في مشروع docker في المجلد [b]$data[/b] لم تبدأ كما هو متوقع، سيتم بدء إيقاف تشغيل مشروع docker تلقائيًا خلال ثوانٍ",
       "stop docker project": "إيقاف مشروع docker",
       "something went wrong, failed to stop the docker project [b]$data[/b], please consider to do it manually by stopping the project [b]cassandra_$data[/b]": "حدث خطأ ما، فشل في إيقاف مشروع docker في المجلد [b]$data[/b]، يرجى النظر في القيام بذلك يدويًا عن طريق إيقاف مشروع [b]cassandra_$data[/b]",
       "the docker project [b]$data[/b] has been successfully stopped": "تم إيقاف مشروع docker في المجلد [b]$data[/b] بنجاح",
-      "apache Cassandra ® nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds": "تم بدء أجهزة Apache Cassandra ® في مشروع docker في المجلد [b]$data[/b] بنجاح وجاهزة للاتصال بها، سيتم إنشاء منطقة العمل والتنقل إليها في ثوانٍ",
+      "apache Cassandra ™ nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds": "تم بدء أجهزة Apache Cassandra ™ في مشروع docker في المجلد [b]$data[/b] بنجاح وجاهزة للاتصال بها، سيتم إنشاء منطقة العمل والتنقل إليها في ثوانٍ",
       "edit cluster": "تحرير المجموعة",
       "this cluster [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit it": "هذه المجموعة [b]$data[/b] لديها منطقة عمل نشطة، تأكد من إغلاق منطقتها قبل محاولة التحرير",
       "unable to locate cluster [b]$data[/b] workspace folder": "غير قادر على تحديد موقع مجلد مساحة العمل للمجموعة [b]$data[/b]",
@@ -187,7 +187,7 @@
       "something went wrong while attempting to test connection with cluster [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file": "حدث خطأ أثناء محاولة اختبار الاتصال بالمجموعة [b]$data[/b] في مساحة العمل [b]$data[/b]، وغالبًا ما يكون المشكلة في ملف <code>cqlsh.rc</code>",
       "content for this connection contains sensitive data (username, password, and alike), please consider removing them before attempting to connect again": "محتوى هذا الاتصال يحتوي على بيانات حساسة (اسم المستخدم، كلمة المرور، وما شابه ذلك)، يرجى التفكير في إزالتها قبل محاولة الاتصال مرة أخرى",
       "unsupported version": "الإصدار غير مدعوم",
-      "the detected version of Apache Cassandra ® is [b]$data[/b], unwanted behavior and compatibility issues may be encountered": "تم اكتشاف الإصدار المستخدم لـ Apache Cassandra ® بأنه [b]$data[/b]، قد تواجه مشكلات في الأداء غير المرغوب فيها وقضايا توافق",
+      "the detected version of Apache Cassandra ™ is [b]$data[/b], unwanted behavior and compatibility issues may be encountered": "تم اكتشاف الإصدار المستخدم لـ Apache Cassandra ™ بأنه [b]$data[/b]، قد تواجه مشكلات في الأداء غير المرغوب فيها وقضايا توافق",
       "failed to connect with cluster [b]$data[/b] in workspace [b]$data[/b]": "فشل الاتصال بالمجموعة [b]$data[/b] في مساحة العمل [b]$data[/b]",
       "script \"$data\" didn't return the success code <code>0</code>, but": "لم يعُد البرنامج النصي \"$data\" برمز النجاح <code>0</code>، ولكن",
       "script \"$data\" seems not to exist, please check its path and make sure it has no errors": "يبدو أن البرنامج النصي \"$data\" غير موجود، يرجى التحقق من مساره والتأكد من عدم وجود أخطاء فيه",
@@ -216,7 +216,7 @@
       "do you want to delete the selected snapshots? once you confirm, there is no undo": "هل تريد حذف اللقطات المحددة؟ بمجرد تأكيدك، لا يمكن التراجع",
       "sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure it's installed and accessible before attempting to create a docker project": "ميزة الرمل تتطلب تثبيت [code]docker[/code] وأداة [code]docker-compose[/code] الخاصة به، يرجى التأكد من تثبيتها وإتاحتها قبل محاولة إنشاء مشروع docker",
       "something went wrong, failed to save the docker project": "حدث خطأ ما، فشل في حفظ مشروع docker",
-      "the project with Apache Cassandra ® v$data has been successfully created and saved": "تم إنشاء المشروع بـ Apache Cassandra ® v$data بنجاح وتم حفظه",
+      "the project with Apache Cassandra ™ v$data has been successfully created and saved": "تم إنشاء المشروع بـ Apache Cassandra ™ v$data بنجاح وتم حفظه",
       "refresh variables": "تحديث المتغيرات",
       "variables have been refreshed": "تم تحديث المتغيرات",
       "variable or more are not having invalid name or value, make sure unique names and values are provided for each variable": "متغير واحد أو أكثر ليس لديهم اسم أو قيمة غير صالحة، تأكد من توفير أسماء وقيم فريدة لكل متغير",
@@ -308,7 +308,8 @@
       "the work area of docker project [b]$data[/b] is being terminated": "يتم إنهاء منطقة عمل مشروع docker [b]$data[/b]",
       "CQL description": "وصف CQL",
       "search for CQL description": "ابحث عن وصف CQL",
-      "right click on the cluster, keyspace or table and get its CQL description": "انقر بزر الماوس الأيمن على المجموعة أو مساحة المفاتيح أو الجدول واحصل على وصف CQL الخاص بها"
+      "right click on the cluster, keyspace or table and get its CQL description": "انقر بزر الماوس الأيمن على المجموعة أو مساحة المفاتيح أو الجدول واحصل على وصف CQL الخاص بها",
+      "get CQL description": "الحصول على وصف CQL"
     }
   }
 }

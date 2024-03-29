@@ -5,9 +5,11 @@ body.rtl {
   direction: rtl;
 
   div.body div.left div.content div.navigation div.group div.item ul.dropdown-menu {
-    margin-left: auto !important;
-    margin-right: 10px !important;
-    margin-top: -9px !important;
+    margin: {
+      left: auto !important;
+      right: 10px !important;
+      top: -9px !important;
+    }
     top: -307px !important;
     left: auto !important;
     right: 54px !important;
@@ -86,13 +88,17 @@ body.rtl {
   }
 
   *[class^='col-'].left-padding {
-    padding-left: 0;
-    padding-right: 3px;
+    padding: {
+      left: 0;
+      right: 3px;
+    }
   }
 
   *[class^='col-'].right-padding {
-    padding-right: 0;
-    padding-left: 3px;
+    padding: {
+      right: 0;
+      left: 3px;
+    }
   }
 
   div.form-check label {
@@ -156,21 +162,27 @@ body.rtl {
 
   div.content.notifications-center div.notifications-container div.toast div.toast-header span.toast-type,
   div.toast-container div.toast div.toast-header span.toast-type {
-    margin-right: 0;
-    margin-left: 5px;
+    margin: {
+      right: 0;
+      left: 5px;
+    }
   }
 
   div.content.notifications-center div.notifications-container div.toast .me-auto,
   div.toast-container div.toast .me-auto {
     left: 0;
     right: 4px;
-    margin-right: unset !important;
-    margin-left: auto !important;
+    margin: {
+      right: unset !important;
+      left: auto !important;
+    }
   }
 
   .toast-header .btn-close {
-    margin-right: var(--mdb-toast-btn-close-ml);
-    margin-left: var(--mdb-toast-btn-close-mr);
+    margin: {
+      right: var(--mdb-toast-btn-close-ml);
+      left: var(--mdb-toast-btn-close-mr);
+    }
   }
 
   div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.left div.cluster-info div.additional {
@@ -203,8 +215,10 @@ body.rtl {
   }
 
   div.tab-content div.tab-pane[tab="metadata-differentiation"] div.metadata-content-container div.save-snapshot-suffix div.time {
-    margin-left: 0;
-    margin-right: 3px;
+    margin: {
+      left: 0;
+      right: 3px;
+    }
     direction: ltr;
   }
 
@@ -223,8 +237,10 @@ body.rtl {
 
   div.tab-content div.tab-pane[tab="query-tracing"] div.queries-container div.queries div.query span.color {
     float: right;
-    margin-right: 0;
-    margin-left: 3px;
+    margin: {
+      right: 0;
+      left: 3px;
+    }
     bottom: -2px;
   }
 
@@ -249,15 +265,19 @@ body.rtl {
   }
 
   div.modal .btn ion-icon {
-    margin-left: 5px;
-    margin-right: 0;
+    margin: {
+      left: 5px;
+      right: 0;
+    }
   }
 
   div.modal#addEditClusterDialog div.modal-body div.side-left,
   div.modal#appSettings div.modal-body div.side-left,
   div.modal#clusterCredentials div.modal-body div.side-left {
-    margin-right: 0;
-    margin-left: 20px;
+    margin: {
+      right: 0;
+      left: 20px;
+    }
   }
 
   div.modal#addEditClusterDialog div.modal-body div.side-right div.modal-section[section="variables"] div.sub-header a,
@@ -269,22 +289,28 @@ body.rtl {
   div.modal#addEditClusterDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.right-margin,
   div.modal#appSettings div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.right-margin,
   div.modal#clusterCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.right-margin {
-    margin-right: 0;
-    margin-left: 4px;
+    margin: {
+      right: 0;
+      left: 4px;
+    }
   }
 
   div.modal#addEditClusterDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.left-margin,
   div.modal#appSettings div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.left-margin,
   div.modal#clusterCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.left-margin {
-    margin-right: 4px;
-    margin-left: 0;
+    margin: {
+      right: 4px;
+      left: 0;
+    }
   }
 
   div.modal#addEditClusterDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions,
   div.modal#appSettings div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions,
   div.modal#clusterCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions {
-    margin-left: auto;
-    margin-right: 9px;
+    margin: {
+      left: auto;
+      right: 9px;
+    }
   }
 
   div.modal#addEditClusterDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions a[action] ion-icon[name="trash"],

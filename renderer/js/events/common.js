@@ -43,11 +43,11 @@
        * Check if there's at least one visible opened sandbox project
        * This process is done because the sandbox project has extra tabs - AxonOps -; so the app's window's width should be wider
        */
-      let existsAxonOpsTab = $('div.cluster-tabs ul.nav.nav-tabs li.axonops-tab').filter(':visible').length > 0
+      let existsAxonopsTab = $('div.cluster-tabs ul.nav.nav-tabs li.axonops-tab').filter(':visible').length > 0
 
       try {
         // If there are no opened sandbox projects then skip this try-catch block
-        if (!existsAxonOpsTab)
+        if (!existsAxonopsTab)
           throw 0
 
         // Check if the window is less than the minimum possible value
@@ -89,7 +89,7 @@
     let assistantContent = $('div.body div.hidden-area div.content.ai-assistant')
 
     // Add log for this action
-    addLog(`Opened the AI Assistant side.`, 'action')
+    addLog(`The navigation side, opened the AI Assistant section`, 'action')
 
     try {
       // If the content is already shown/visible
@@ -167,7 +167,7 @@
     IPCRenderer.send('documentation-view:show')
 
     // Add log for this action
-    addLog(`Opened the help/documentation side.`, 'action')
+    addLog(`The navigation side, opened the help/documentation section`, 'action')
   })
 
   // Clicks the AI assistant button
@@ -184,7 +184,7 @@
       btn = $(this).find('div.sub-content.btn')
 
     // Add log for this action
-    addLog(`Opened the notifications center side.`, 'action')
+    addLog(`The navigation side, opened the notifications center section`, 'action')
 
     try {
       // If the content is already shown/visible
@@ -279,7 +279,7 @@
         displayLanguage = config.get('ui', 'language')
 
       // Add log for this action
-      addLog(`Opened the settings dialog.`, 'action')
+      addLog(`The navigation side, opened the settings dialog`, 'action')
 
       // Check the maximum number of allowed CQLSH sessions at once
       $('input#maxNumCQLSHSessions').val(!isNaN(maxNumCQLSHSessions) && maxNumCQLSHSessions > 0 ? maxNumCQLSHSessions : 10)
@@ -347,7 +347,7 @@
           $('div.terminal-container div.terminal.xterm').trigger('changefont', 187)
 
           // Add log for this action
-          addLog(`Zoom in the UI by ${zoomLevel}%.`, 'action')
+          addLog(`Zoom in the UI by '${zoomLevel}%'`, 'action')
           break
         }
         case 'zoomOut': {
@@ -356,7 +356,7 @@
           $('div.terminal-container div.terminal.xterm').trigger('changefont', 189)
 
           // Add log for this action
-          addLog(`Zoom out the UI by ${zoomLevel}%.`, 'action')
+          addLog(`Zoom out the UI by '${zoomLevel}%'`, 'action')
           break
         }
         case 'zoomReset': {
@@ -365,33 +365,33 @@
           $('div.terminal-container div.terminal.xterm').trigger('changefont', 48)
 
           // Add log for this action
-          addLog(`Rest the zoom of the UI to ${zoomLevel}%.`, 'action')
+          addLog(`Rest the zoom of the UI to '${zoomLevel}%'`, 'action')
           break
         }
         case 'toggleFullscreen': {
           IPCRenderer.send('options:view:toggle-fullscreen')
 
           // Add log for this action
-          addLog(`Toggle the fullscreen mode.`, 'action')
+          addLog(`Toggle the fullscreen mode`, 'action')
           break
         }
         case 'restartApp': {
           // Add log for this action
-          addLog(`Restart the app.`, 'action')
+          addLog(`Restart the app`, 'action')
 
           IPCRenderer.send('options:actions:restart')
           break
         }
         case 'quitApp': {
           // Add log for this action
-          addLog(`Quit the app.`, 'action')
+          addLog(`Quit the app`, 'action')
 
           IPCRenderer.send('options:actions:quit')
           break
         }
         case 'closeWorkareas': {
           // Add log for this action
-          addLog(`Request to close all active work areas.`, 'action')
+          addLog(`Request to close all active work areas`, 'action')
 
           // Confirm the close of all work areas
           openDialog(I18next.capitalizeFirstLetter(I18next.t('are you sure about closing all active work areas - including sandbox projects - ?')), (confirm) => {
@@ -472,7 +472,7 @@
   // Clicks the `SAVE SETTINGS` button in the footer in the dialog
   $(`button#saveSettings`).click(function() {
     // Add log about this action
-    addLog(`Request to save the updated app's seetings.`, 'action')
+    addLog(`Request to save the updated app's settings`, 'action')
 
     // Update variables and get the result
     $('button#updateVariables').trigger('click', (result) => {
@@ -497,29 +497,33 @@
       // Apply the new content protection state
       IPCRenderer.send('content-protection', contentProtection)
 
-      // Get the current app's config/settings
-      Modules.Config.getConfig((config) => {
-        // Update settings
-        config.set('security', 'contentProtection', contentProtection)
-        config.set('security', 'loggingEnabled', loggingEnabled)
-        config.set('limit', 'cqlsh', maxNumCQLSHSessions)
-        config.set('limit', 'sandbox', maxNumSandboxProjects)
-        config.set('limit', 'assistantQuestions', maxNumAIAssistantAnswers)
-        config.set('ui', 'language', chosenDisplayLanguage)
+      try {
+        // Get the current app's config/settings
+        Modules.Config.getConfig((config) => {
+          // Update settings
+          config.set('security', 'contentProtection', contentProtection)
+          config.set('security', 'loggingEnabled', loggingEnabled)
+          config.set('limit', 'cqlsh', maxNumCQLSHSessions)
+          config.set('limit', 'sandbox', maxNumSandboxProjects)
+          config.set('limit', 'assistantQuestions', maxNumAIAssistantAnswers)
+          config.set('ui', 'language', chosenDisplayLanguage)
 
-        // Set the updated settings
-        Modules.Config.setConfig(config)
+          // Set the updated settings
+          Modules.Config.setConfig(config)
 
-        // Show feedback to the user
-        setTimeout(() => {
-          // Success feedback
-          if (result.status)
-            return showToast(I18next.capitalize(I18next.t('app settings')), `${I18next.capitalizeFirstLetter(I18next.t('settings have been successfully saved'))}.`, 'success')
+          // Show feedback to the user
+          setTimeout(() => {
+            // Success feedback
+            if (result.status)
+              return showToast(I18next.capitalize(I18next.t('app settings')), `${I18next.capitalizeFirstLetter(I18next.t('settings have been successfully saved'))}.`, 'success')
 
-          // Failure feedback
-          showToast(I18next.capitalize(I18next.t('app settings')), I18next.capitalizeFirstLetter(I18next.replaceData('some settings have been successfully saved, however, an error has occurred with variables, $data', [result.failureMessage])) + '.', 'warning')
-        }, 100)
-      })
+            // Failure feedback
+            showToast(I18next.capitalize(I18next.t('app settings')), I18next.capitalizeFirstLetter(I18next.replaceData('some settings have been successfully saved, however, an error has occurred with variables, $data', [result.failureMessage])) + '.', 'warning')
+          }, 100)
+        })
+      } catch (e) {
+        errorLog(e, 'common')
+      }
     })
   })
 
@@ -605,6 +609,8 @@
           setTimeout(() => clusterElement.find('div.button button.test-connection').click())
         })
       } catch (e) {
+        errorLog(e, 'common')
+
         // The updating process failed, show feedback to the user
         return showToast(I18next.capitalize(I18next.t('ignore cluster credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
       }
@@ -756,7 +762,9 @@
               // Save `password`
               if (credentialsArray.authpassword.trim().length != 0)
                 cluster.info.secrets.password = encrypt(key, credentialsArray.authpassword)
-            } catch (e) {}
+            } catch (e) {
+              errorLog(e, 'common')
+            }
 
             try {
               // If the user didn't confirm the saving of SSH credentials then skip this try-catch block
@@ -774,7 +782,9 @@
               // Save the SSH `passphrase`
               if (credentialsArray.sshpassphrase.trim().length != 0)
                 cluster.info.secrets.sshPassphrase = encrypt(key, credentialsArray.sshpassphrase)
-            } catch (e) {}
+            } catch (e) {
+              errorLog(e, 'common')
+            }
 
             // Attempt to update the cluster
             Modules.Clusters.updateCluster(getActiveWorkspaceID(), cluster).then((status) => {
@@ -786,6 +796,8 @@
               clusterElement.removeAttr(`${saveAuthCredentialsConfirmed ? 'data-credentials-auth' : ''} ${saveSSHCredentialsConfirmed ? 'data-credentials-ssh' : ''}`)
             })
           } catch (e) {
+            errorLog(e, 'common')
+
             // The updating process failed, show feedback to the user
             showToast(I18next.capitalize(I18next.t('save cluster credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
@@ -796,7 +808,9 @@
             return
           }
         })
-      } catch (e) {}
+      } catch (e) {
+        errorLog(e, 'common')
+      }
 
       // Enable the proceed button again
       $(this).removeAttr('disabled')

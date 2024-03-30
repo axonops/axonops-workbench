@@ -1,133 +1,146 @@
-const DockerYAML = `version: "3"
+const DockerYAML = `version: "3.8"
 
 services:
   elasticsearch:
-    container_name: elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.12
     environment:
       - discovery.type=single-node
       - 'ES_JAVA_OPTS=-Xms256m -Xmx256m'
+    volumes:
+      - elasticsearch:/var/lib/elasticsearch
+    healthcheck:
+      test: ["CMD", "curl", "-sSf", "127.0.0.1:9200"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
   axon-server:
-    container_name: axon-server
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
     image: registry.axonops.com/axonops-public/axonops-docker/axon-server:latest
     environment:
       - ELASTIC_HOSTS=http://elasticsearch:9200
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "127.0.0.1:8080"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
   axon-dash:
-    container_name: axon-dash
+    depends_on:
+      axon-server:
+        condition: service_healthy
     image: registry.axonops.com/axonops-public/axonops-docker/axon-dash:latest
     command: >
       /bin/sh -c "sed -i 's|private_endpoints.*|private_endpoints: http://axon-server:8080|' /etc/axonops/axon-dash.yml && /usr/share/axonops/axon-dash --appimage-extract-and-run"
     ports:
       - {axonopsPort}:3000
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "127.0.0.1:3000"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
 
-  axon-agent-0:
-    container_name: axon-agent-0
-    image: registry.axonops.com/axonops-public/axonops-docker/axon-agent:latest
-    restart: always
-    environment:
-       - AXON_AGENT_SERVER_HOST=axon-server
-       - AXON_AGENT_SERVER_PORT=1888
-       - AXON_AGENT_ORG=demo
-       - AXON_AGENT_TLS_MODE=none
-    volumes:
-      - cassandra-0:/var/lib/cassandra
-      - axonops-0:/var/lib/axonops
-      - cassandra-logs-0:/opt/cassandra/logs
-    command: >
-      /bin/sh -c "touch /var/log/axonops/axon-agent.log && /entrypoint.sh"
   cassandra-0:
-    container_name: cassandra-0
-    image: cassandra:{version}
-    ports:
-      - {cassandraPort}:9042
+    image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
+    hostname: cassandra-0
     restart: always
     volumes:
       - cassandra-0:/var/lib/cassandra
-      - axonops-0:/var/lib/axonops
-      - cassandra-logs-0:/opt/cassandra/logs
     environment:
-      - JVM_EXTRA_OPTS=-javaagent:/var/lib/axonops/axon-cassandra{version}-agent.jar=/etc/axonops/axon-agent.yml
       - CASSANDRA_CLUSTER_NAME=demo-cluster
       - CASSANDRA_SEEDS=cassandra-0
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_DC=dc1
+      - CASSANDRA_RACK=rack0
+      - CASSANDRA_BROADCAST_RPC_ADDRESS=127.0.0.1
+      - CASSANDRA_NATIVE_TRANSPORT_PORT=9042
       - MAX_HEAP_SIZE=256m
       - HEAP_NEWSIZE=50m
-    command: >
-      /bin/sh -c "mkdir -p /etc/axonops && echo 'axon-agent:' > /etc/axonops/axon-agent.yml && mkdir -p /var/log/axonops && chown cassandra.cassandra /var/log/axonops && /usr/local/bin/docker-entrypoint.sh cassandra -f"
+      - AXON_AGENT_SERVER_HOST=axon-server
+      - AXON_AGENT_SERVER_PORT=1888
+      - AXON_AGENT_ORG=demo
+      - AXON_AGENT_TLS_MODE=none
+      - AXON_AGENT_LOG_OUTPUT=file
+    ports:
+      - "{cassandraPort}:9042"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "9042"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
-  axon-agent-1:
-    container_name: axon-agent-1
-    image: registry.axonops.com/axonops-public/axonops-docker/axon-agent:latest
-    restart: always
-    environment:
-       - AXON_AGENT_SERVER_HOST=axon-server
-       - AXON_AGENT_SERVER_PORT=1888
-       - AXON_AGENT_ORG=demo
-       - AXON_AGENT_TLS_MODE=none
-    volumes:
-      - cassandra-1:/var/lib/cassandra
-      - axonops-1:/var/lib/axonops
-      - cassandra-logs-1:/opt/cassandra/logs
-    command: >
-      /bin/sh -c "touch /var/log/axonops/axon-agent.log && /entrypoint.sh"
   cassandra-1:
-    container_name: cassandra-1
-    image: cassandra:{version}
+    depends_on:
+      cassandra-0:
+        condition: service_healthy
+    image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
+    hostname: cassandra-1
     restart: always
     volumes:
       - cassandra-1:/var/lib/cassandra
-      - axonops-1:/var/lib/axonops
-      - cassandra-logs-1:/opt/cassandra/logs
     environment:
-      - JVM_EXTRA_OPTS=-javaagent:/var/lib/axonops/axon-cassandra{version}-agent.jar=/etc/axonops/axon-agent.yml
       - CASSANDRA_CLUSTER_NAME=demo-cluster
       - CASSANDRA_SEEDS=cassandra-0
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_DC=dc1
+      - CASSANDRA_RACK=rack1
+      - CASSANDRA_BROADCAST_RPC_ADDRESS=127.0.0.1
+      - CASSANDRA_NATIVE_TRANSPORT_PORT=9043
       - MAX_HEAP_SIZE=256m
       - HEAP_NEWSIZE=50m
-    command: >
-      /bin/sh -c "mkdir -p /etc/axonops && echo 'axon-agent:' > /etc/axonops/axon-agent.yml && mkdir -p /var/log/axonops && chown cassandra.cassandra /var/log/axonops && /usr/local/bin/docker-entrypoint.sh cassandra -f"
+      - AXON_AGENT_SERVER_HOST=axon-server
+      - AXON_AGENT_SERVER_PORT=1888
+      - AXON_AGENT_ORG=demo
+      - AXON_AGENT_TLS_MODE=none
+      - AXON_AGENT_LOG_OUTPUT=file
+    ports:
+      - "9043:9043"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "9043"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
-  axon-agent-2:
-    container_name: axon-agent-2
-    image: registry.axonops.com/axonops-public/axonops-docker/axon-agent:latest
-    restart: always
-    environment:
-       - AXON_AGENT_SERVER_HOST=axon-server
-       - AXON_AGENT_SERVER_PORT=1888
-       - AXON_AGENT_ORG=demo
-       - AXON_AGENT_TLS_MODE=none
-    volumes:
-      - cassandra-2:/var/lib/cassandra
-      - axonops-2:/var/lib/axonops
-      - cassandra-logs-2:/opt/cassandra/logs
-    command: >
-      /bin/sh -c "touch /var/log/axonops/axon-agent.log && /entrypoint.sh"
   cassandra-2:
-    container_name: cassandra-2
-    image: cassandra:{version}
+    depends_on:
+      cassandra-1:
+        condition: service_healthy
+    image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
+    hostname: cassandra-2
     restart: always
     volumes:
       - cassandra-2:/var/lib/cassandra
-      - axonops-2:/var/lib/axonops
-      - cassandra-logs-2:/opt/cassandra/logs
     environment:
-      - JVM_EXTRA_OPTS=-javaagent:/var/lib/axonops/axon-cassandra{version}-agent.jar=/etc/axonops/axon-agent.yml
       - CASSANDRA_CLUSTER_NAME=demo-cluster
       - CASSANDRA_SEEDS=cassandra-0
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_DC=dc1
+      - CASSANDRA_RACK=rack2
+      - CASSANDRA_BROADCAST_RPC_ADDRESS=127.0.0.1
+      - CASSANDRA_NATIVE_TRANSPORT_PORT=9044
       - MAX_HEAP_SIZE=256m
       - HEAP_NEWSIZE=50m
-    command: >
-      /bin/sh -c "mkdir -p /etc/axonops && echo 'axon-agent:' > /etc/axonops/axon-agent.yml && mkdir -p /var/log/axonops && chown cassandra.cassandra /var/log/axonops && /usr/local/bin/docker-entrypoint.sh cassandra -f"
+      - AXON_AGENT_SERVER_HOST=axon-server
+      - AXON_AGENT_SERVER_PORT=1888
+      - AXON_AGENT_ORG=demo
+      - AXON_AGENT_TLS_MODE=none
+      - AXON_AGENT_LOG_OUTPUT=file
+    ports:
+      - "9044:9044"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "9044"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
 volumes:
+  elasticsearch:
   cassandra-0:
-  axonops-0:
   cassandra-1:
-  axonops-1:
-  cassandra-2:
-  axonops-2:
-  cassandra-logs-0:
-  cassandra-logs-1:
-  cassandra-logs-2:`
+  cassandra-2:`
 
 module.exports = {
   DockerYAML

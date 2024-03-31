@@ -1088,3 +1088,26 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     switcherToBeShown.show()
   })
 }
+
+// Observe addition/removal of workspaces' switchers
+{
+  // Point at the workspaces' switchers' container
+  let switchersContainer = $(`div.body div.left div.content div.switch-workspaces`),
+    // Create observer object
+    observer = new MutationObserver(function(mutations) {
+      // Loop through each detected mutation
+      mutations.forEach(function(mutation) {
+        /**
+         * If the mutation is an appended/removed child
+         * Update the switchers' container's view
+         */
+        if (mutation.type === 'childList')
+          setTimeout(() => updateSwitcherView('workspaces'), 100)
+      })
+    })
+
+  // Start the observation process
+  observer.observe(switchersContainer[0], {
+    childList: true
+  })
+}

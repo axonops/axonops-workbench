@@ -2986,8 +2986,23 @@
                       clusterElement.children('div.status').removeClass('show success failure')
 
                       // If the start process failed then skip the upcoming code
-                      if (!success)
+                      if (!success) {
+                        /**
+                         * Create a pinned toast to show the output of the stopping process
+                         *
+                         * Get a random ID for the toast
+                         */
+                        let pinnedToastID = getRandomID(10)
+
+                        // Show/create that toast
+                        showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+
+                        // Stop the docker/sandbox project as an error has been occurred
+                        Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, () => {})
+
+                        // Skip the upcoming code
                         return
+                      }
 
                       // Add success state
                       clusterElement.children('div.status').addClass('show success')
@@ -5696,6 +5711,32 @@
           }, true)
         })
       }
+    }
+
+    // Observe addition/removal of clusters' switchers
+    {
+      // Point at the clusters' switchers' container
+      let switchersContainer = $(`div.body div.left div.content div.switch-clusters`),
+        // Create observer object
+        observer = new MutationObserver(function(mutations) {
+          // Loop through each detected mutation
+          mutations.forEach(function(mutation) {
+            // If the mutation is an appended/removed child
+            if (mutation.type === 'childList')
+              setTimeout(() => {
+                // Update the switchers' container's view
+                updateSwitcherView('clusters')
+
+                // Handle the first switcher's margin
+                handleClusterSwitcherMargin()
+              }, 100)
+          })
+        })
+
+      // Start the observation process
+      observer.observe(switchersContainer[0], {
+        childList: true
+      })
     }
   }
 

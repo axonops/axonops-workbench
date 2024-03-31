@@ -2857,16 +2857,6 @@ let updateSwitcherView = (type = 'workspaces') => {
 }
 
 /**
- * Set the trademark symbol `™` to "Apache Cassandra"
- *
- * @Parameters:
- * {string} `text` the text which the `™` symbol will be added to where Cassandra is located
- *
- * @Return: {string} final manipulated text
- */
-let setApacheCassandraTMSymbol = (text) => text.replace(/Cassandra/gm, 'Cassandra ™')
-
-/**
  * Set the clusters' switchers' margin
  * In some cases, the top margin of the first switcher might not be applied as desired so it's handled by this function
  */
@@ -2912,6 +2902,16 @@ let calcSwitchersAllowedHeight = () => {
    */
   return leftSideContent.outerHeight() - (logoHeight + navigationHeight + 95)
 }
+
+/**
+ * Set the trademark symbol `™` to "Apache Cassandra"
+ *
+ * @Parameters:
+ * {string} `text` the text which the `™` symbol will be added to where Cassandra is located
+ *
+ * @Return: {string} final manipulated text
+ */
+let setApacheCassandraTMSymbol = (text) => text.replace(/Cassandra/gm, 'Cassandra ™')
 
 /**
  * Improve performance by play/stop lottie elements on show/hide

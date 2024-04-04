@@ -1,0 +1,22 @@
+[{
+    "id": "fae7ed967c",
+    "question": "I want to select all columns in table users in keyspace called major, what cql statement should I use?",
+    "questionDate": 1703349819903,
+    "answer": " [ANSWER] To retrieve all columns in the table users in the keyspace called major, you would need to use the following CQL statement:\n\nSELECT * FROM major.users;",
+    "answerDate": 1703349965388
+  },
+  {
+    "id": "1ea3407051",
+    "question": "Who are you and what is your purpose?",
+    "questionDate": 1706808327705,
+    "answer": " I am here to help you learn more about Apache Cassandra ™ and provide assistance when needed. Please feel free to ask me any questions or concerns you may have regarding the topic.",
+    "answerDate": 1706808479970
+  },
+  {
+    "id": "a71999c4c6",
+    "question": "What are you? and who created you? and what is your purpose?",
+    "questionDate": 1706982695844,
+    "answer": " I am a tool used to manage Apache Cassandra ™ clusters. My creators were the developers behind Apache Cassandra ™ project. My main purpose is to help administrators monitor and maintain their Cassandra ™ clusters efficiently.",
+    "answerDate": 1706982852167
+  }
+]

@@ -69,9 +69,6 @@ const Terminal = require('node-cmd'),
   // Helps to position the app's windows
   Positioner = require('electron-positioner')
 
-// Import the set customized logging addition function and make it global across the entire thread
-global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
-
 /**
  * Import the custom node modules for the main thread
  *

@@ -309,7 +309,10 @@
       "CQL description": "CQL描述",
       "search for CQL description": "搜索 CQL 描述",
       "right click on the cluster, keyspace or table and get its CQL description": "右键单击集群、键空间或表并获取其 CQL 描述",
-      "get CQL description": "获取CQL描述"
+      "get CQL description": "获取CQL描述",
+      "data center": "数据中心",
+      "the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank": "无法识别设置的数据中心 [code]$data[/code]，但可以识别以下数据中心：[code]$data[/code]。 请考虑更新数据中心输入字段或将其留空",
+      "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]": "指定的数据中心[code]$data[/code]不是与[code]$data[/code]连接的数据中心"
     }
   }
 }

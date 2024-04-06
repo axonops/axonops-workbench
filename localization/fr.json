@@ -309,7 +309,10 @@
       "CQL description": "description du CQL",
       "search for CQL description": "rechercher la description CQL",
       "right click on the cluster, keyspace or table and get its CQL description": "faites un clic droit sur le cluster, l'espace de clés ou la table et obtenez sa description CQL",
-      "get CQL description": "obtenir la description CQL"
+      "get CQL description": "obtenir la description CQL",
+      "data center": "centre de données",
+      "the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank": "le centre de données défini [code]$data[/code] n'est pas reconnu mais le(s) centre(s) de données suivant(s) : [code]$data[/code]. Veuillez envisager de mettre à jour le champ de saisie du centre de données ou de le laisser vide",
+      "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]": "le centre de données spécifié [code]$data[/code] n'est pas celui connecté à [code]$data[/code]"
     }
   }
 }

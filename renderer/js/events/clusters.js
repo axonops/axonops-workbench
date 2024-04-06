@@ -220,7 +220,7 @@
 
         // Cluster UI element structure
         let element = `
-            <div class="cluster" data-name="${cluster.name}" data-folder="${cluster.folder}" data-id="${clusterID}" data-workspace-id="${workspaceID}" data-host="${cluster.host}" data-connected="false" data-is-sandbox="${isSandbox}" data-workarea="false"
+            <div class="cluster" data-name="${cluster.name}" data-folder="${cluster.folder}" data-id="${clusterID}" data-workspace-id="${workspaceID}" data-host="${cluster.host}" data-datacenter="${cluster.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-workarea="false"
               ${secrets} ${credentials}>
               <div class="header">
                 <div class="title">${cluster.name}</div>
@@ -2844,6 +2844,12 @@
 
                                 // Click the `CONNECT` button of the cluster
                                 clusterElement.find('div.button button.connect').click()
+
+                                /**
+                                 * Trigger the `resize` function of the window
+                                 * This will fit and resize related elements in the work area - especially the terminal -
+                                 */
+                                $(window.visualViewport).trigger('resize')
                               })
                             })
 
@@ -3271,6 +3277,10 @@
                     section: 'none',
                     key: 'clusterName',
                     val: currentCluster.name
+                  }, {
+                    section: 'none',
+                    key: 'datacenter',
+                    val: currentCluster.info.datacenter
                   }]
 
                   // Check if there's a need to create an SSH tunnel
@@ -3771,7 +3781,7 @@
       // Point at the Apache Cassandra's version UI element
       let cassandraVersion = clusterElement.find('div[info="cassandra"]'),
         // Point at the data center element
-        dataCenter = clusterElement.find('div[info="data-center"]'),
+        dataCenterElement = clusterElement.find('div[info="data-center"]'),
         // Point at the `CONNECT` button
         connectBtn = clusterElement.children('div.footer').children('div.button').children('button.connect'),
         // Point at the `TEST CONNECTION` button
@@ -3897,11 +3907,50 @@
         // Once a response from the main thread has been received
         IPCRenderer.on(`pty:test-connection:${requestID}`, (_, result) => {
           setTimeout(() => {
+            /**
+             * Implement a data center(s) check
+             * By default, no data center is set unless the user provides one
+             */
+            let dataCenter = getAttributes(clusterElement, 'data-datacenter'),
+              // Define a flag to tell if the provided data center - if provided - exists and is seen by the app or not
+              isDataCenterExists = true,
+              // Hold all detected/seen data centers' names in array
+              allDataCenters
+
+            try {
+              // If there's no provided data center by the user then skip this try-catch block
+              if (dataCenter.trim().length <= 0)
+                throw 0
+
+              // Determine if the provided data center exists
+              isDataCenterExists = result.datacenters.filter((_dataCenter) => _dataCenter.datacenter == dataCenter).length != 0
+
+              // Hold all detected/seen data centers
+              allDataCenters = [...new Set(result.datacenters.map((_dataCenter) => _dataCenter.datacenter))]
+            } catch (e) {}
+
             // Failed to connect with the cluster
             try {
               // If the `connected` attribute in the result is `true`, and the Apache Cassandra's version has been identified then skip this try-catch block
               if (result.connected && ![undefined, null].includes(result.version))
                 throw 0
+
+              // If the provided data center doesn't exist
+              if (!isDataCenterExists) {
+                let allDataCentersStr = JSON.stringify(allDataCenters)
+
+                // Format the string format of the data centers array for the toast
+                allDataCentersStr = allDataCentersStr.slice(1, allDataCentersStr.length - 1).replace(/\"/g, '').split(",").join('[/code], [code]')
+
+                // Show feedback to the user
+                showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
+
+                // Enable or disable the save button based on the test's result
+                $('#addCluster').attr('disabled', 'disabled')
+
+                // Skip the upcoming code
+                throw 0
+              }
 
               /**
                * Update cluster UI element
@@ -4009,16 +4058,27 @@
             cassandraVersion.children('div._placeholder').hide()
             cassandraVersion.children('div.text').text(`v${result.version}`)
 
+            try {
+              // If there's no provided data center by the user then skip this try-catch block
+              if (dataCenter.trim().length <= 0 || `${dataCenter}` == 'undefined')
+                throw 0
+
+              // If the provided data center is not the same as the one connected with then show feedback to the user
+              if (dataCenter != result.datacenter)
+                showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData(`the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]`, [dataCenter, result.datacenter]) + '.'), 'warning')
+            } catch (e) {}
+
             // Show data center
             if (result.datacenter != undefined) {
-              dataCenter.children('div._placeholder').hide()
-              dataCenter.children('div.text').text(`${result.datacenter}`)
+              dataCenterElement.children('div._placeholder').hide()
+              dataCenterElement.children('div.text').text(`${result.datacenter}`)
             }
 
             // Update some attributes for the cluster UI element alongside some classes
             clusterElement.attr({
               'data-cassandra-version': result.version,
               'data-datacenter': result.datacenter,
+              'data-datacenters': result.datacenters ? JSON.stringify(result.datacenters) : null,
               'data-connected': 'true'
             })
 
@@ -4607,6 +4667,7 @@
             $('#testConnectionCluster').click(async function() {
               let hostname = '', // The given hostname
                 port = 9042, // Default port to connect with Apache Cassandra
+                dataCenter = $('[info-section="none"][info-key="datacenter"]').val(), // By default, no data center is set unless the user provides one
                 // Apache Cassandra's authentication username and password
                 username = '',
                 password = '',
@@ -4853,6 +4914,26 @@
                       // Hold the tested cluster's object
                       testedClusterObject = result
 
+                      /**
+                       * Implement a data center(s) check
+                       * Define a flag to tell if the provided data center - if provided - exists and is seen by the app or not
+                       */
+                      let isDataCenterExists = true,
+                        // Hold all detected/seen data centers' names in array
+                        allDataCenters
+
+                      try {
+                        // If there's no provided data center by the user then skip this try-catch block
+                        if (dataCenter.trim().length <= 0)
+                          throw 0
+
+                        // Determine if the provided data center exists
+                        isDataCenterExists = result.datacenters.filter((_dataCenter) => _dataCenter.datacenter == dataCenter).length != 0
+
+                        // Hold all detected/seen data centers
+                        allDataCenters = [...new Set(result.datacenters.map((_dataCenter) => _dataCenter.datacenter))]
+                      } catch (e) {}
+
                       try {
                         // Remove the test connection class
                         dialogElement.removeClass('test-connection')
@@ -4866,6 +4947,23 @@
                         // Enable or disable the save button based on the test's result
                         $('#addCluster').attr('disabled', !notConnected ? null : 'disabled')
 
+                        // If the provided data center doesn't exist
+                        if (!isDataCenterExists) {
+                          let allDataCentersStr = JSON.stringify(allDataCenters)
+
+                          // Format the string format of the data centers array for the toast
+                          allDataCentersStr = allDataCentersStr.slice(1, allDataCentersStr.length - 1).replace(/\"/g, '').split(",").join('[/code], [code]')
+
+                          // Show feedback to the user
+                          showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
+
+                          // Enable or disable the save button based on the test's result
+                          $('#addCluster').attr('disabled', 'disabled')
+
+                          // Skip the upcoming code
+                          throw 0
+                        }
+
                         // Failed to connect with the cluster
                         if (notConnected) {
                           // Define the error message
@@ -4877,6 +4975,16 @@
                           // Skip the upcoming code
                           throw 0
                         }
+
+                        try {
+                          // If there's no provided data center by the user then skip this try-catch block
+                          if (dataCenter.trim().length <= 0 || `${dataCenter}` == 'undefined')
+                            throw 0
+
+                          // If the provided data center is not the same as the one connected with then show feedback to the user
+                          if (dataCenter != result.datacenter)
+                            showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData(`the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]`, [dataCenter, result.datacenter]) + '.'), 'warning')
+                        } catch (e) {}
 
                         /**
                          * Successfully connected with the cluster
@@ -5098,6 +5206,7 @@
           {
             $('#addCluster').click(async function() {
               let clusterName = $('[info-section="none"][info-key="clusterName"]').val(), // The cluster's unique name
+                dataCenter = $('[info-section="none"][info-key="datacenter"]').val(), // By default, no data center is set unless the user provides one
                 username = '', // Apache Cassandra's username
                 password = '', // Apache Cassandra's password
                 sshUsername = '', // SSH username - for creating a tunnel -
@@ -5179,7 +5288,7 @@
                 cqlshrc: editor.getValue(),
                 info: {
                   id: editingMode ? editedClusterObject.info.id : `cluster-${getRandomID(10)}`,
-                  datacenter: $('[info-section="none"][info-key="datacenter"]').val()
+                  datacenter: dataCenter.trim()
                 }
               }
 
@@ -5285,7 +5394,7 @@
                     let clusterElement = $(`div.clusters-container div.cluster[data-id="${finalCluster.info.id}"]`),
                       cassandraVersion = clusterElement.find('div[info="cassandra"]'),
                       // Point at the data center element
-                      dataCenter = clusterElement.find('div[info="data-center"]'),
+                      dataCenterElement = clusterElement.find('div[info="data-center"]'),
                       // Point at the `CONNECT` button
                       connectBtn = clusterElement.children('div.footer').children('div.button').children('button.connect'),
                       // Point at the `TEST CONNECTION` button
@@ -5316,14 +5425,15 @@
 
                     // Show data center
                     if (testedClusterObject.datacenter != undefined) {
-                      dataCenter.children('div._placeholder').hide()
-                      dataCenter.children('div.text').text(`${testedClusterObject.datacenter}`)
+                      dataCenterElement.children('div._placeholder').hide()
+                      dataCenterElement.children('div.text').text(`${testedClusterObject.datacenter}`)
                     }
 
                     // Update some attributes for the cluster UI element alongside some classes
                     clusterElement.attr({
                       'data-cassandra-version': testedClusterObject.version,
                       'data-datacenter': testedClusterObject.datacenter,
+                      'data-datacenters': JSON.stringify(testedClusterObject.datacenters),
                       'data-connected': 'true'
                     })
 

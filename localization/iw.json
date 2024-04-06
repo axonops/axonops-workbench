@@ -309,7 +309,10 @@
       "CQL description": "תיאור CQL",
       "search for CQL description": "חפש תיאור CQL",
       "right click on the cluster, keyspace or table and get its CQL description": "לחץ לחיצה ימנית על האשכול, מרווח המקשים או הטבלה וקבל את תיאור ה-CQL שלו",
-      "get CQL description": "קבל תיאור CQL"
+      "get CQL description": "קבל תיאור CQL",
+      "data center": "מרכז הנתונים",
+      "the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank": "מרכז הנתונים המוגדר [code]$data[/code] אינו מזוהה אך מרכזי הנתונים הבאים: [code]$data[/code]. אנא שקול לעדכן את שדה הקלט של מרכז הנתונים או להשאירו ריק",
+      "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]": "מרכז הנתונים שצוין [code]$data[/code] אינו זה המחובר ל-[code]$data[/code]"
     }
   }
 }

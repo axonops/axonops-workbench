@@ -340,4 +340,44 @@ body.rtl {
   div.editor {
     direction: ltr;
   }
+
+  div.modal#addEditClusterDialog {
+    div.modal-dialog {
+      div.modal-body {
+        div.terminate-process {
+          right: 100px;
+          left: inherit !important;
+        }
+      }
+    }
+
+    &.enable-terminate-process {
+      div.modal-dialog {
+        div.modal-body {
+          div.terminate-process {
+            right: 120px;
+            left: inherit !important;
+          }
+        }
+      }
+    }
+  }
+
+  div[content="clusters"] {
+    div.clusters-container {
+      div.cluster {
+        div.terminate-process {
+          right: 100px;
+          left: inherit !important;
+        }
+
+        &.enable-terminate-process {
+          div.terminate-process {
+            right: 120px;
+            left: inherit !important;
+          }
+        }
+      }
+    }
+  }
 }

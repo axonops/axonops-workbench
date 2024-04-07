@@ -72,8 +72,9 @@
             startProjectBtnID,
             folderBtnID,
             settingsBtnID,
-            deleteBtnID
-          ] = getRandomID(15, 6),
+            deleteBtnID,
+            terminateProcessBtnID
+          ] = getRandomID(15, 7),
           /**
            * The AxonOps sectin ID
            * It's defined here as it's being used in different parts of the event
@@ -220,8 +221,7 @@
 
         // Cluster UI element structure
         let element = `
-            <div class="cluster" data-name="${cluster.name}" data-folder="${cluster.folder}" data-id="${clusterID}" data-workspace-id="${workspaceID}" data-host="${cluster.host}" data-datacenter="${cluster.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-workarea="false"
-              ${secrets} ${credentials}>
+            <div class="cluster" data-name="${cluster.name}" data-folder="${cluster.folder}" data-id="${clusterID}" data-workspace-id="${workspaceID}" data-host="${cluster.host}" data-datacenter="${cluster.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-workarea="false" ${secrets} ${credentials}>
               <div class="header">
                 <div class="title">${cluster.name}</div>
                 <div class="cluster-info">
@@ -256,6 +256,12 @@
               <div class="test-connection">
                 <div class="sub-content">
                   <lottie-player src="../assets/lottie/test-connection.json" background="transparent" autoplay loop speed="1.2"></lottie-player>
+                </div>
+                <div class="terminate-process">
+                  <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" reference-id="${clusterID}" button-id="${terminateProcessBtnID}" data-tippy="tooltip" data-mdb-placement="right" data-title="Terminate the process" data-mulang="terminate the process"
+                    capitalize-first>
+                    <ion-icon name="close"></ion-icon>
+                  </div>
                 </div>
               </div>
             </div>`
@@ -398,6 +404,9 @@
 
                 // The app is now testing the connection with the cluster
                 clusterElement.addClass('test-connection')
+
+                // Show the termination process' button
+                setTimeout(() => clusterElement.addClass('enable-terminate-process'), 2000)
 
                 // Disable the button
                 $(this).attr('disabled', 'disabled')
@@ -2496,6 +2505,9 @@
                             // Show the test connection state - it's used here to indicate the closing process of a sandbox project -
                             clusterElement.addClass('test-connection')
 
+                            // Show the termination process' button
+                            setTimeout(() => clusterElement.addClass('enable-terminate-process'), 2000)
+
                             // Disable all buttons inside the sandbox project's element in the clusters/sandbox projects container
                             clusterElement.find('button').attr('disabled', '')
 
@@ -2525,7 +2537,7 @@
                               showToast(I18next.capitalize(I18next.t('stop docker containers')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the docker project [b]$data[/b] have been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                               // Reset the sandbox project's element in the clusters/sandbox projects container
-                              clusterElement.removeClass('test-connection')
+                              clusterElement.removeClass('test-connection enable-terminate-process')
                               clusterElement.find('button').removeAttr('disabled')
                               clusterElement.children('div.status').removeClass('show success')
                             })
@@ -2986,7 +2998,7 @@
                       $(this).removeAttr('disabled')
 
                       // Remove the starting - test connection - state
-                      clusterElement.removeClass('test-connection')
+                      clusterElement.removeClass('test-connection enable-terminate-process')
 
                       // Remove any indicators about the state of start/connecting
                       clusterElement.children('div.status').removeClass('show success failure')
@@ -3019,6 +3031,9 @@
 
                     // Add a starting class
                     clusterElement.addClass('test-connection')
+
+                    // Show the termination process' button
+                    setTimeout(() => clusterElement.addClass('enable-terminate-process'), 2000)
 
                     // Get the ports of the project
                     Modules.Docker.getPortsFromYAMLFile(getAttributes(clusterElement, 'data-folder')).then(async (ports) => {
@@ -3598,6 +3613,9 @@
                 // Open the final path
                 Open(elementPath)
               })
+
+              // TODO: To be implemented
+              $(`div.btn[button-id="${terminateProcessBtnID}"]`).click(() => {})
             })
             // End of handling the `click` events for actions buttons
 
@@ -3822,7 +3840,7 @@
           testConnectionBtn.removeAttr('disabled')
 
           // Remove multiple classes for the cluster and its status elements
-          clusterElement.add(statusElement).removeClass('test-connection show failure success')
+          clusterElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
         })
 
         // Skip the upcoming code
@@ -3852,7 +3870,7 @@
         testConnectionBtn.removeAttr('disabled')
 
         // Remove multiple classes for the cluster and its status elements
-        clusterElement.add(statusElement).removeClass('test-connection show failure success')
+        clusterElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
 
         // Skip the upcoming code
         return
@@ -3974,7 +3992,7 @@
 
               setTimeout(() => {
                 // Test process has finished
-                clusterElement.removeClass('test-connection')
+                clusterElement.removeClass('test-connection enable-terminate-process')
 
                 // Show failure feedback
                 statusElement.removeClass('success').addClass('show failure')
@@ -4102,7 +4120,7 @@
               connectBtn.add(testConnectionBtn).removeAttr('disabled')
 
               // Remove the test connection state
-              clusterElement.removeClass('test-connection')
+              clusterElement.removeClass('test-connection enable-terminate-process')
             })
           })
         })
@@ -4122,6 +4140,9 @@
 
           // Add the loading/processing class to the cluster UI element
           clusterElement.addClass('test-connection')
+
+          // Show the termination process' button
+          setTimeout(() => clusterElement.addClass('enable-terminate-process'), 2000)
 
           // Show feedback to the user about starting the execution process
           setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('pre-connection scripts are being executed before starting the connection with cluster [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
@@ -4169,7 +4190,7 @@
       // Inner function that do the changes in cluster element when an error occurs
       let errorVisualFeedback = () => {
         // Remove the test connection class
-        clusterElement.removeClass('test-connection')
+        clusterElement.removeClass('test-connection enable-terminate-process')
 
         // Add a failure class
         statusElement.addClass('show failure')
@@ -4764,7 +4785,7 @@
                 button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
                 // Remove the test connection class
-                dialogElement.removeClass('test-connection')
+                dialogElement.removeClass('test-connection enable-terminate-process')
 
                 // Skip the upcoming code
                 return
@@ -4787,6 +4808,9 @@
 
               // The dialog is testing the connection with the cluster
               dialogElement.addClass('test-connection')
+
+              // Show the termination process' button
+              setTimeout(() => dialogElement.addClass('enable-terminate-process'), 2000)
 
               // Disable all the buttons in the footer
               button.add('#addCluster').add('#switchEditor').attr('disabled', 'disabled')
@@ -4845,7 +4869,7 @@
                         }
 
                         // Remove the test connection class
-                        dialogElement.removeClass('test-connection')
+                        dialogElement.removeClass('test-connection enable-terminate-process')
 
                         // Enable some buttons in the footer
                         button.add('#switchEditor').removeAttr('disabled', 'disabled')
@@ -4936,7 +4960,7 @@
 
                       try {
                         // Remove the test connection class
-                        dialogElement.removeClass('test-connection')
+                        dialogElement.removeClass('test-connection enable-terminate-process')
 
                         // Enable the `TEST CONNECTION` button
                         button.add('#switchEditor').removeAttr('disabled', 'disabled')
@@ -5124,7 +5148,7 @@
                     }
 
                     // Remove the test connection class
-                    dialogElement.removeClass('test-connection')
+                    dialogElement.removeClass('test-connection enable-terminate-process')
 
                     // Enable the `TEST CONNECTION` button
                     button.add('#switchEditor').removeAttr('disabled', 'disabled')
@@ -5180,7 +5204,7 @@
                   setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts with the cluster', [I18next.t('pre')]))}. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}`, 'failure'), 50)
 
                   // Remove the test connection class
-                  dialogElement.removeClass('test-connection')
+                  dialogElement.removeClass('test-connection enable-terminate-process')
 
                   // Enable the `TEST CONNECTION` button
                   button.add('#switchEditor').removeAttr('disabled', 'disabled')
@@ -5445,7 +5469,7 @@
                       connectBtn.add(testConnectionBtn).removeAttr('disabled')
 
                       // Remove the test connection state
-                      clusterElement.removeClass('test-connection')
+                      clusterElement.removeClass('test-connection enable-terminate-process')
                     })
                   }, 1000)
                 }

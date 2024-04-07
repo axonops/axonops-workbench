@@ -312,7 +312,8 @@
       "get CQL description": "الحصول على وصف CQL",
       "data center": "مركز البيانات",
       "the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank": "لم يتم التعرف على مركز البيانات المحدد [code]$data[/code] ولكن مركز (مراكز) البيانات التالية: [code]$data[/code]. يرجى مراعاة تحديث حقل إدخال مركز البيانات أو تركه فارغًا",
-      "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]": "مركز البيانات المحدد [code]$data[/code] ليس هو المركز المتصل [code]$data[/code]"
+      "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]": "مركز البيانات المحدد [code]$data[/code] ليس هو المركز المتصل [code]$data[/code]",
+      "terminate the process": "إنهاء العملية"
     }
   }
 }

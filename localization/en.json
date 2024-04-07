@@ -312,7 +312,8 @@
       "get CQL description": "get CQL description",
       "data center": "data center",
       "the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank": "the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank",
-      "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]": "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]"
+      "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]": "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]",
+      "terminate the process": "terminate the process"
     }
   }
 }

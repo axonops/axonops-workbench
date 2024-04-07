@@ -1669,10 +1669,27 @@ div.body {
                 background: rgba(0, 0, 0, 0.4);
               }
 
+              div.terminate-process {
+                left: 100px;
+                opacity: 0;
+                pointer-events: none;
+                transition: left 0.4s ease-in-out, opacity 0.2s ease-in-out 0s;
+              }
+
               &.test-connection {
                 div.test-connection {
                   opacity: 0.65;
                   pointer-events: all;
+                }
+              }
+
+              &.enable-terminate-process {
+                div.terminate-process {
+                  left: 120px;
+                  // Will be changed
+                  opacity: 0;
+                  pointer-events: none;
+                  transition: left 0.4s ease-in-out, opacity 0.6s ease-in-out 0.1s;
                 }
               }
             }
@@ -2760,6 +2777,33 @@ div.hidden-area {
           &:before {
             height: 50px;
           }
+        }
+      }
+    }
+  }
+}
+
+div.modal#addEditClusterDialog {
+  div.modal-dialog {
+    div.modal-body {
+      div.terminate-process {
+        left: 100px;
+        opacity: 0;
+        pointer-events: none;
+        transition: left 0.4s ease-in-out, opacity 0.2s ease-in-out 0s;
+      }
+    }
+  }
+
+  &.enable-terminate-process {
+    div.modal-dialog {
+      div.modal-body {
+        div.terminate-process {
+          left: 120px;
+          // Will be changed
+          opacity: 0;
+          pointer-events: none;
+          transition: left 0.4s ease-in-out, opacity 0.6s ease-in-out 0.1s;
         }
       }
     }

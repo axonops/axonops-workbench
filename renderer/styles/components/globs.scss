@@ -362,3 +362,36 @@ div.toast[toast-id] {
     }
   }
 }
+
+div.terminate-process {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: fit-content;
+  height: fit-content;
+  left: 125px;
+  top: 10px;
+  z-index: 10;
+
+  div.btn {
+    width: 30px;
+    height: 30px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: background 0.15s ease-in-out;
+    margin-left: 3px;
+
+    ion-icon {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      font-size: 175%;
+      color: #e3e3e3;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+}

@@ -2779,6 +2779,7 @@ let setUIColor = (workspaceColor) => {
           .changed-color {color: ${textColor} !important}
           .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active, form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus, .form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus {border-color: ${backgroundColor.default} !important}
           ion-icon[name="lock-closed"] {color: ${backgroundColor.default} !important}
+          :root {--workspace-background-color:${backgroundColor.default};}
         </style>`
 
     // Append the stylesheet

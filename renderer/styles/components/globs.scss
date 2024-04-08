@@ -378,7 +378,7 @@ div.terminate-process {
     height: 30px;
     overflow: hidden;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
+    background: #505050;
     transition: background 0.15s ease-in-out;
     margin-left: 3px;
 
@@ -391,7 +391,11 @@ div.terminate-process {
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: var(--workspace-background-color);
+
+      ion-icon {
+        color: #fff;
+      }
     }
   }
 }

@@ -313,7 +313,10 @@
       "data center": "centre de données",
       "the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank": "le centre de données défini [code]$data[/code] n'est pas reconnu mais le(s) centre(s) de données suivant(s) : [code]$data[/code]. Veuillez envisager de mettre à jour le champ de saisie du centre de données ou de le laisser vide",
       "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]": "le centre de données spécifié [code]$data[/code] n'est pas celui connecté à [code]$data[/code]",
-      "terminate the process": "terminer le processus"
+      "terminate the process": "terminer le processus",
+      "the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success": "le test de connexion avec le cluster [b]$data[/b] dans l'espace de travail [b]$data[/b] s'est terminé avec succès",
+      "something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]": "quelque chose s'est mal passé, n'a pas réussi à terminer le processus de test de connexion avec le cluster [b]$data[/b] dans l'espace de travail [b]$data[/b]",
+      "terminate docker containers": "terminer les conteneurs Docker"
     }
   }
 }

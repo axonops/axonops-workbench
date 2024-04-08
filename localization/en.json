@@ -313,7 +313,10 @@
       "data center": "data center",
       "the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank": "the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank",
       "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]": "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]",
-      "terminate the process": "terminate the process"
+      "terminate the process": "terminate the process",
+      "the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success": "the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success",
+      "something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]": "something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]",
+      "terminate docker containers": "terminate docker containers"
     }
   }
 }

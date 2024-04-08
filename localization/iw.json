@@ -313,7 +313,10 @@
       "data center": "מרכז הנתונים",
       "the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank": "מרכז הנתונים המוגדר [code]$data[/code] אינו מזוהה אך מרכזי הנתונים הבאים: [code]$data[/code]. אנא שקול לעדכן את שדה הקלט של מרכז הנתונים או להשאירו ריק",
       "the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]": "מרכז הנתונים שצוין [code]$data[/code] אינו זה המחובר ל-[code]$data[/code]",
-      "terminate the process": "להפסיק את התהליך"
+      "terminate the process": "להפסיק את התהליך",
+      "the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success": "בדיקת החיבור עם אשכול [b]$data[/b] בסביבת העבודה [b]$data[/b] הופסקה בהצלחה",
+      "something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]": "משהו השתבש, לא הצליח לסיים את תהליך בדיקת החיבור עם אשכול [b]$data[/b] בסביבת העבודה [b]$data[/b]",
+      "terminate docker containers": "לסיים מכולות דוקר"
     }
   }
 }

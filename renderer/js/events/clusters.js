@@ -76,6 +76,11 @@
             terminateProcessBtnID
           ] = getRandomID(15, 7),
           /**
+           * Define an initial ID for the connection test process of the cluster
+           * The value will be updated with every test connection process
+           */
+          testConnectionProcessID,
+          /**
            * The AxonOps sectin ID
            * It's defined here as it's being used in different parts of the event
            */
@@ -300,6 +305,9 @@
                 // Determine if the app is already connected with that cluster, and if it has an active work area
                 let [connected, hasWorkarea] = getAttributes(clusterElement, ['data-connected', 'data-workarea'])
 
+                // Get a random ID for this connection test process
+                testConnectionProcessID = getRandomID(30)
+
                 // Add log for this request
                 addLog(`Request to test connection with the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
@@ -406,13 +414,13 @@
                 clusterElement.addClass('test-connection')
 
                 // Show the termination process' button
-                setTimeout(() => clusterElement.addClass('enable-terminate-process'), 2000)
+                setTimeout(() => clusterElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
                 // Disable the button
                 $(this).attr('disabled', 'disabled')
 
                 // Test the connection with the cluster; by calling the inner test connection function at the very end of this code block
-                testConnection(clusterElement)
+                testConnection(clusterElement, testConnectionProcessID)
               })
 
               /**
@@ -1592,6 +1600,7 @@
                                   // Create the tree view of the metadata and hold the returned object
                                   jsTreeObject = metadataContent.jstree(treeview)
 
+                                  // Disable the selection feature of a tree node
                                   jsTreeObject.disableSelection()
 
                                   /**
@@ -2506,7 +2515,7 @@
                             clusterElement.addClass('test-connection')
 
                             // Show the termination process' button
-                            setTimeout(() => clusterElement.addClass('enable-terminate-process'), 2000)
+                            setTimeout(() => clusterElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
                             // Disable all buttons inside the sandbox project's element in the clusters/sandbox projects container
                             clusterElement.find('button').attr('disabled', '')
@@ -2953,6 +2962,9 @@
               })
               // End the process when we attempt to connect with a cluster by clicking the `CONNECT` button
 
+              // Flag to tell if the starting process of docker/sandbox project ha been terminated or not
+              let isStartingProcessTerminated = false
+
               // This try-catch block is only for the sandbox/docker projects
               try {
                 // If the current workspace is not the sandbox/docker then skip this try-catch block
@@ -3003,8 +3015,8 @@
                       // Remove any indicators about the state of start/connecting
                       clusterElement.children('div.status').removeClass('show success failure')
 
-                      // If the start process failed then skip the upcoming code
-                      if (!success) {
+                      // If the start process failed and the process hasn't been terminated then skip the upcoming code
+                      if (!success && !isStartingProcessTerminated) {
                         /**
                          * Create a pinned toast to show the output of the stopping process
                          *
@@ -3033,7 +3045,7 @@
                     clusterElement.addClass('test-connection')
 
                     // Show the termination process' button
-                    setTimeout(() => clusterElement.addClass('enable-terminate-process'), 2000)
+                    setTimeout(() => clusterElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
                     // Get the ports of the project
                     Modules.Docker.getPortsFromYAMLFile(getAttributes(clusterElement, 'data-folder')).then(async (ports) => {
@@ -3089,15 +3101,19 @@
                           return
                         }
 
+                        // Set the flag to be `false`
+                        isStartingProcessTerminated = false
+
                         // Start the project
                         Modules.Docker.getDockerInstance(clusterElement).startDockerCompose(pinnedToastID, (feedback) => {
                           // Don't trigger the time out function
                           clearTimeout(installationInfo)
 
-                          // The project didn't run as expected
-                          if (!feedback.status) {
-                            // Show failure feedback to the user
-                            showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the docker project [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                          // The project didn't run as expected or the starting process has been terminated
+                          if (!feedback.status || isStartingProcessTerminated) {
+                            // Show failure feedback to the user if the process hasn't been terminated
+                            if (!isStartingProcessTerminated)
+                              showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the docker project [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
 
                             // Call the post function
                             startPostProcess()
@@ -3614,8 +3630,57 @@
                 Open(elementPath)
               })
 
-              // TODO: To be implemented
-              $(`div.btn[button-id="${terminateProcessBtnID}"]`).click(() => {})
+              // Clicks the process termination button
+              $(`div.btn[button-id="${terminateProcessBtnID}"]`).click(() => {
+                try {
+                  // If the current cluster is not actually a docker/sandbox project then skip this try-catch block
+                  if (!isSandbox)
+                    throw 0
+
+                  // Set the flag to be `true`
+                  isStartingProcessTerminated = true
+
+                  /**
+                   * Create a pinned toast to show the output of the process
+                   *
+                   * Get a random ID for the toast
+                   */
+                  let pinnedToastID = getRandomID(10)
+
+                  // Show/create that toast
+                  showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('terminate docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+
+                  // Attempt to close/stop the docker project
+                  Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, (feedback) => {
+                    /**
+                     * Failed to close/stop the project
+                     * Show feedback to the user and skip the upcoming code
+                     */
+                    if (!feedback.status)
+                      return showToast(I18next.capitalize(I18next.t('terminate docker containers')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the docker project [b]$data[/b] were not successfully stopped', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+
+                    /**
+                     * Successfully closed/stopped
+                     * Show feedback to the user
+                     */
+                    showToast(I18next.capitalize(I18next.t('terminate docker containers')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the docker project [b]$data[/b] have been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+
+                    // Reset the sandbox project's element in the clusters/sandbox projects container
+                    clusterElement.removeClass('test-connection enable-terminate-process')
+                    clusterElement.find('button').removeAttr('disabled')
+                    clusterElement.children('div.status').removeClass('show success')
+                  })
+
+                  return
+                } catch (e) {}
+
+
+                // Send request to the main thread to terminate the current ongoing connection test process
+                IPCRenderer.send(`process:terminate:${testConnectionProcessID}`)
+
+                // Once the termination status is received
+                IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), status ? 'success' : 'failure'))
+              })
             })
             // End of handling the `click` events for actions buttons
 
@@ -3794,8 +3859,9 @@
      *
      * @Parameters:
      * {object} `clusterElement` the cluster's UI element in the workspace clusters' list
+     * {string} `?testConnectionProcessID` the ID of the connection test process of the cluster
      */
-    let testConnection = async (clusterElement) => {
+    let testConnection = async (clusterElement, testConnectionProcessID = '') => {
       // Point at the Apache Cassandra's version UI element
       let cassandraVersion = clusterElement.find('div[info="cassandra"]'),
         // Point at the data center element
@@ -3917,9 +3983,10 @@
         // Send test request to the main thread and pass the final `testData`
         IPCRenderer.send('pty:test-connection', {
           workspaceID: getActiveWorkspaceID(),
+          processID: testConnectionProcessID,
+          requestID,
           ...testData,
-          ...sshPort,
-          requestID
+          ...sshPort
         })
 
         // Once a response from the main thread has been received
@@ -3949,8 +4016,8 @@
 
             // Failed to connect with the cluster
             try {
-              // If the `connected` attribute in the result is `true`, and the Apache Cassandra's version has been identified then skip this try-catch block
-              if (result.connected && ![undefined, null].includes(result.version))
+              // If the `connected` attribute in the result is `true`, and the Apache Cassandra's version has been identified, or the testing process hasn't been terminated then skip this try-catch block
+              if (result.connected && ![undefined, null].includes(result.version) && result.terminated == undefined)
                 throw 0
 
               // If the provided data center doesn't exist
@@ -3978,6 +4045,10 @@
               clusterElement.attr('data-connected', 'false')
 
               try {
+                // If the testing process has been terminated then skip this try-catch block - as ther's no need to show an error feedback to the user -
+                if (result.terminated)
+                  throw 0
+
                 // Whether or not the error details will be shown
                 let error = result.error.trim().length != 0 ? `, ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
 
@@ -3994,8 +4065,8 @@
                 // Test process has finished
                 clusterElement.removeClass('test-connection enable-terminate-process')
 
-                // Show failure feedback
-                statusElement.removeClass('success').addClass('show failure')
+                // Show failure feedback if the testing process hasn't been terminated
+                statusElement.removeClass('success').toggleClass('show failure', result.terminated == undefined)
 
                 // Enable the test connection button again
                 testConnectionBtn.removeAttr('disabled')
@@ -4142,7 +4213,7 @@
           clusterElement.addClass('test-connection')
 
           // Show the termination process' button
-          setTimeout(() => clusterElement.addClass('enable-terminate-process'), 2000)
+          setTimeout(() => clusterElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
           // Show feedback to the user about starting the execution process
           setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('pre-connection scripts are being executed before starting the connection with cluster [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
@@ -4155,7 +4226,7 @@
               setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts with cluster [b]$data[/b] have been successfully executed', [I18next.t('pre'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
 
               // Start the connection test process
-              startTestConnection(sshCreation)
+              startTestConnection(sshCreation, testConnectionProcessID)
 
               // Skip the upcoming code
               return
@@ -4184,7 +4255,7 @@
         } catch (e) {}
 
         // If there's no pre-connection script to execute then call the test connection function immediately
-        startTestConnection(sshCreation)
+        startTestConnection(sshCreation, testConnectionProcessID)
       }
 
       // Inner function that do the changes in cluster element when an error occurs
@@ -4683,8 +4754,15 @@
             // Hold the test cluster's created SSH tunnel - if one has been created -
             testedSSHTunnelObject = null
 
-          // Clicks the `TEST CONNECTION` button to do a connection test with the cluster before saving/updating it
+          // The testing connection process with the to be added/updated cluster
           {
+            /**
+             * Define an initial ID for the connection test process of the to be added/updated cluster
+             * The value will be updated with every test connection process
+             */
+            let testConnectionProcessID
+
+            // Clicks the `TEST CONNECTION` button to do a connection test with the cluster before saving/updating it
             $('#testConnectionCluster').click(async function() {
               let hostname = '', // The given hostname
                 port = 9042, // Default port to connect with Apache Cassandra
@@ -4706,6 +4784,9 @@
                 button = $(this),
                 // Point at the add/edit cluster's dialog
                 dialogElement = $('div.modal#addEditClusterDialog')
+
+              // Get a random ID for this connection test process
+              testConnectionProcessID = getRandomID(30)
 
               // Add log about this request
               addLog(`Request to test connection with cluster that could be added/updated`, 'action')
@@ -4810,7 +4891,7 @@
               dialogElement.addClass('test-connection')
 
               // Show the termination process' button
-              setTimeout(() => dialogElement.addClass('enable-terminate-process'), 2000)
+              setTimeout(() => dialogElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
               // Disable all the buttons in the footer
               button.add('#addCluster').add('#switchEditor').attr('disabled', 'disabled')
@@ -4895,6 +4976,7 @@
                       // Request to test connection based on the provided data
                       IPCRenderer.send('pty:test-connection', {
                         requestID: cqlshrc.name,
+                        processID: testConnectionProcessID,
                         secrets: {
                           username: encryptedUsername,
                           password: encryptedPassword
@@ -4912,6 +4994,7 @@
                      */
                     IPCRenderer.send('pty:test-connection', {
                       requestID: cqlshrc.name,
+                      processID: testConnectionProcessID,
                       ...override,
                       workspaceID: getActiveWorkspaceID(),
                       cqlshrcPath: tempConfigFile
@@ -4965,8 +5048,8 @@
                         // Enable the `TEST CONNECTION` button
                         button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
-                        // Determine if the connection test has succeeded or not
-                        let notConnected = !result.connected || [undefined, null].includes(result.version)
+                        // Determine if the connection test has succeeded or not, or terminated
+                        let notConnected = !result.connected || [undefined, null].includes(result.version) || result.terminated != undefined
 
                         // Enable or disable the save button based on the test's result
                         $('#addCluster').attr('disabled', !notConnected ? null : 'disabled')
@@ -4988,8 +5071,8 @@
                           throw 0
                         }
 
-                        // Failed to connect with the cluster
-                        if (notConnected) {
+                        // Failed to connect with the cluster - process hasn't been terminated -
+                        if (notConnected && result.terminated == undefined) {
                           // Define the error message
                           let error = result.error.trim().length != 0 ? ` ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
 
@@ -4999,6 +5082,10 @@
                           // Skip the upcoming code
                           throw 0
                         }
+
+                        // If the process has been terminated then skip this try-catch block
+                        if (result.terminated != undefined)
+                          throw 0
 
                         try {
                           // If there's no provided data center by the user then skip this try-catch block
@@ -5223,6 +5310,15 @@
 
               // Call the `checkAndCreateSSHTunnel` function as there's a need to create an SSH tunnel
               checkAndCreateSSHTunnel()
+            })
+
+            // Clicks the process termination button
+            $('#terminateConnectionTestProcess').click(() => {
+              // Send request to the main thread to terminate the current ongoing connection test process
+              IPCRenderer.send(`process:terminate:${testConnectionProcessID}`)
+
+              // Once the termination status is received
+              IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with the cluster to be added/edited in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with the cluster to be added/edited in workspace [b]$data[/b]', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), status ? 'success' : 'failure'))
             })
           }
 
@@ -6203,4 +6299,7 @@
       })
     })
   }
+
+  // Set the time which after it the termination of the connection test process is allowed
+  const ConnectionTestProcessTerminationTimeout = 1000
 }

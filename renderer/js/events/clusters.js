@@ -928,10 +928,10 @@
                       readLine, // Will handle the prompt, printing messages, and data
                       prefix = '', // Dynamic prefix/prompt; `cqlsh>`, `cqlsh:system>`, etc...
                       readLineTimeout = null, // For the delay before reading the user's inputs
-                      pause = false, // To determine if there's a need to pause the print of received data temporarily
-                      gotTracingSession = false, // To determine if there was a query tracing result that has been printed previously
-                      cqlshLoaded = false, // To determine if the cqlsh tool has been loaded and ready to be used
-                      gotMetadata = false, // To determine if the metadata will be fetched or not
+                      isSessionPaused = false, // To determine if there's a need to pause the print of received data temporarily
+                      isTracingSessionPrinted = false, // To determine if there was a query tracing result that has been printed previously
+                      isCQLSHLoaded = false, // To determine if the cqlsh tool has been loaded and ready to be used
+                      isMetadataFetched = false, // To determine if the metadata will be fetched or not
                       latestMetadata = null, // Save the latest fetched metadata in JSON format
                       metadataChanges = 0, // Hold the latest detected number of changes/diffs in metadata
                       // An inner function to check/fetch metadata which will be implemented next and be available out of the implementation scope
@@ -1405,7 +1405,7 @@
                               terminalPrintMessage(readLine, 'info', `Work area for the cluster ${getAttributes(clusterElement, 'data-name')} will be closed in few seconds`)
 
                               // Pause the print of output from the Pty instance
-                              pause = true
+                              isSessionPaused = true
 
                               // Dispose the readline addon
                               prefix = ''
@@ -1445,10 +1445,10 @@
                             setTimeout(() => readLine.println('\x1b[38;2;' + `234;255;18` + 'm' + `Tracing session: session://${sessionID}` + '\033[0m'), 50)
 
                             // Pause printing data
-                            pause = true
+                            isSessionPaused = true
 
                             // Update the associated flag
-                            gotTracingSession = true
+                            isTracingSessionPrinted = true
 
                             // Skip the upcoming code
                             return
@@ -1459,11 +1459,11 @@
                           // Check if `CQLSH-STARTED` has been received
                           try {
                             // If the keywords haven't been received yet or cqlsh has already been loaded then skip this try-catch block
-                            if (!minifyText(data).search('cqlsh-started') || cqlshLoaded)
+                            if (!minifyText(data).search('cqlsh-started') || isCQLSHLoaded)
                               throw 0
 
                             // The CQLSH tool has been loaded
-                            cqlshLoaded = true
+                            isCQLSHLoaded = true
 
                             /**
                              * Attempt to recall the process again
@@ -1495,24 +1495,25 @@
                           /**
                            * Check if the received data contains one or more of the strings in the array, or if `pause` is set to `true`
                            * Or the command is empty and the OS is Windows
+                           * Or the cqlsh session hasn't been loaded yet
                            * Based on the check, the received data won't be printed
                            */
-                          if (minifyText(data).search('cqlsh-started') || ['cqlsh-', 'cqlsh.py', 'main/bin', 'main\bin', 'code page:', '--var', '--test', '--workspace', '--username', '--password', 'cqlshrc location', 'print metadata', 'instead.', 'tput', '/tmp'].some((str) => minifyText(data).search(str) || pause) || (`${latestCommand}`.trim().length <= 0 && OS.platform() == 'win32')) {
+                          if (minifyText(data).search('cqlsh-started') || ['cqlsh-', 'cqlsh.py', 'main/bin', 'main\bin', 'code page:', '--var', '--test', '--workspace', '--username', '--password', 'cqlshrc location', 'print metadata', 'instead.', 'tput', '/tmp'].some((str) => minifyText(data).search(str) || isSessionPaused) || (`${latestCommand}`.trim().length <= 0 && OS.platform() == 'win32') || !isCQLSHLoaded) {
                             /**
-                             * If `pause` is set to `true` and the cqlsh's prompt is got in the received data...
+                             * If `isSessionPaused` is set to `true` and the cqlsh's prompt is got in the received data...
                              * then the cause of the pause has ended, thus, end the pause and start to print data again
                              */
-                            if (((new RegExp('cqlsh\s*(\:|\s*)(.+|\s*)\>')).exec(data) != null && pause) || cqlshLoaded || minifyText(data).search('cqlsh-started')) {
+                            if (((new RegExp('cqlsh\s*(\:|\s*)(.+|\s*)\>')).exec(data) != null && isSessionPaused) || isCQLSHLoaded || minifyText(data).search('cqlsh-started')) {
                               // Reset the pause state
-                              pause = false
+                              isSessionPaused = false
 
                               setTimeout(() => {
                                 // Update readline addon
                                 readActiveLine(prefix)
 
                                 // Update the query tracing flag to be false in all cases
-                                gotTracingSession = false
-                              }, gotTracingSession ? 250 : 4)
+                                isTracingSessionPrinted = false
+                              }, isTracingSessionPrinted ? 250 : 4)
                             }
 
                             // Skip the upcoming code
@@ -1537,8 +1538,8 @@
                            */
                           checkMetadata = (refresh = false) => {
                             try {
-                              // Update `gotMetadata` to `true`; so no need to get it again till the user asks to
-                              gotMetadata = true
+                              // Update `isMetadataFetched` to `true`; so no need to get it again till the user asks to
+                              isMetadataFetched = true
 
                               // Inner function to create either the old or new editor
                               let createEditor = (type, metadata) => {
@@ -1718,11 +1719,11 @@
                           // Determine whether or not the metadata function will be called
                           try {
                             // If the cqlsh prompt hasn't been found in the received data or cqlsh is not loaded yet then the work area isn't ready to get metadata
-                            if ((new RegExp('cqlsh\s*(\:|\s*)(.+|\s*)\>')).exec(data) == null || !cqlshLoaded)
+                            if ((new RegExp('cqlsh\s*(\:|\s*)(.+|\s*)\>')).exec(data) == null || !isCQLSHLoaded)
                               throw 0
 
                             // If metadata hasn't been got yet
-                            if (!gotMetadata) {
+                            if (!isMetadataFetched) {
                               // Call the metadata function
                               checkMetadata()
 
@@ -2166,7 +2167,7 @@
                           addLog(`Request to refresh the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
                           // Reset the metadata trigger
-                          gotMetadata = false
+                          isMetadataFetched = false
 
                           // Show the loading of the tree view
                           $(this).parent().parent().parent().addClass('loading')

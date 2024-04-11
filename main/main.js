@@ -1,5 +1,5 @@
 /**
- * The main - single only - thread for the app overall
+ * The main - singular - thread for the app overall
  *
  * Import the compilation cache optimizer
  */
@@ -38,7 +38,7 @@ const Electron = require('electron'),
 /**
  * Import Node.js modules
  *
- * Node.js file system module - improved version which has methods that aren't included in the native `fs` module -
+ * Node.js file system module - improved version that has methods that aren't included in the native fs module -
  * Used for working with files system, it provides related utilities
  */
 const FS = require('fs-extra'),
@@ -72,18 +72,18 @@ const Terminal = require('node-cmd'),
 /**
  * Import the custom node modules for the main thread
  *
- * Define the `Modules` constant that will contain all custom modules
+ * Define the `Modules` constant that will contain all the custom modules
  */
 const Modules = []
 
 try {
-  // Define the folder path of the custom node modules
+  // Define the folder's path of the custom node modules
   let modulesFilesPath = Path.join(__dirname, '..', 'custom_node_modules', 'main'),
-    // Read the files inside the folder
+    // Read all files inside the folder
     modulesFiles = FS.readdirSync(modulesFilesPath)
 
   /**
-   * Loop through modules files
+   * Loop through each module file
    * Main modules are `pty`, `dialogs`, and `scripts`
    */
   modulesFiles.forEach((moduleFile) => {
@@ -91,7 +91,7 @@ try {
       // Make sure the module file name is lowered case
       moduleFile = moduleFile.toLowerCase()
 
-      // Ignore any file which is not JS
+      // Ignore any file which is not `JS`
       if (!moduleFile.endsWith('.js'))
         return
 
@@ -108,7 +108,10 @@ try {
 } catch (e) {}
 
 // Create an event emitter object from the `events` class
-let eventEmitter = new EventEmitter()
+global.eventEmitter = new EventEmitter()
+
+// Import the set customized logging addition function and make it global across the entire thread
+global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
 
 /**
  * Define global variables that will be used in different scopes in the main thread
@@ -127,17 +130,18 @@ let views = {
 // An array that will save all cqlsh instances with their ID given by the renderer thread
 let CQLSHInstances = [],
   // Whether or not the user wants to entirely quit the app - this happens when all renderer threads are terminated/closed -
-  macOSForceClose = false,
+  isMacOSForceClose = false,
   // A `logging` object which will be created once the app is ready
   logging = null
 
 /**
- * Create a window with different set properties
+ * Create a window with different passed properties
  *
  * @Parameters:
  * {object} `properties` the main properties of the window
  * {string} `viewPath` the path of the HTML file - which will be loaded as a renderer thread
  * {object} `?extraProperties` the extra properties of the window
+ * Possible extra properties are: [`center`, `maximize`, `show`, `openDevTools`]
  *
  * @Return: {object} the created window's object
  */
@@ -204,7 +208,7 @@ const AppProps = {
 }
 
 /**
- * When the main thread is ready
+ * When the main thread is ready creates the main window/view
  *
  * Define the main view/window properties and extra properties, plus the right-click context menu properties
  */
@@ -295,7 +299,7 @@ App.on('ready', () => {
   // When the `close` event is triggered for the documentation view
   views.documentation.on('close', (event) => {
     // This will be set to `true` if the entire app is about to be closed
-    if (!documentationViewPreventClose)
+    if (!isDocumentationViewPreventClose)
       return
 
     // Prevent the default behavior - terminate the view/window -
@@ -313,14 +317,14 @@ App.on('ready', () => {
    * This event is only triggered at the back-end and not by the user
    */
   views.backgroundProcesses.on('close', () => {
-    // Update `macOSForceClose` flag if needed
+    // Update `isMacOSForceClose` flag if needed
     try {
       // If the value is already `true` then skip this try-catch block
-      if (macOSForceClose)
+      if (isMacOSForceClose)
         throw 0
 
       // Update the value
-      macOSForceClose = true
+      isMacOSForceClose = true
 
       // Call the `close` event for the `views.main` but this time with forcing the close of all windows
       views.main.close()
@@ -344,15 +348,15 @@ App.on('ready', () => {
   Menu.setApplicationMenu(null)
 
   // Variable to prevent the immediate closure of the main view; so we have time to save the logs and terminate cqlsh sessions
-  let mainViewPreventClose = true,
-    documentationViewPreventClose = true
+  let isMainViewPreventClose = true,
+    isDocumentationViewPreventClose = true
 
   // Once the `close` event is triggered
   views.main.on('close', (event) => {
     // Special process for macOS only
     try {
       // If the current OS is not macOS or there's a force to close the windows then skip this try-catch block
-      if (process.platform != 'darwin' || macOSForceClose)
+      if (process.platform != 'darwin' || isMacOSForceClose)
         throw 0
 
       // On macOS, just minimize the main window when the user clicks the `X` button
@@ -368,14 +372,14 @@ App.on('ready', () => {
     // The way we handle this event is by preventing its default behavior only once, then, we do what we need to do before the termination and after all processes are finished the `close` event is triggered again but it won't be prevented this time
     try {
       // If we don't need to prevent the `close` default behavior then we may skip this try-catch block
-      if (!mainViewPreventClose)
+      if (!isMainViewPreventClose)
         throw 0
 
       // Prevent the default behavior for this event
       event.preventDefault()
 
       // Set to `false`; to skip this try-catch block on the next call of event `close`
-      mainViewPreventClose = false
+      isMainViewPreventClose = false
     } catch (e) {}
 
     // Close all active work areas - clusters and sandbox projects -
@@ -397,7 +401,7 @@ App.on('ready', () => {
         // Close the documentation view
         try {
           // Set it to `true`; to close the documentation view/window and destroy it as well
-          documentationViewPreventClose = false
+          isDocumentationViewPreventClose = false
 
           // Close the documentation view
           views.documentation.close()
@@ -524,9 +528,12 @@ App.on('window-all-closed', () => App.quit())
     /**
      * Add a new log text
      *
-     * To allow to the main modules and aspects to use the `logging` feature the `add` function can be triggered via `ipcMain` and a custom event
+     * Adding a new log can be processed via two methods:
+     * First is using the `ipcMain` module, this method is used by the renderer threads
+     * Second is by triggering a custom event using the `eventEmitter` module, this method is used inside the main thread
      */
     {
+      // Define the event's name and its function/method
       let event = {
         name: 'logging:add',
         func: (_, data) => {
@@ -535,7 +542,11 @@ App.on('window-all-closed', () => App.quit())
           } catch (e) {}
         }
       }
+
+      // Add a custom event to be triggered inside the main thread
       eventEmitter.addListener(event.name, event.func)
+
+      // Listen to `add` log request from the renderer thread
       IPCMain.on(event.name, event.func)
     }
   }
@@ -552,9 +563,9 @@ App.on('window-all-closed', () => App.quit())
         // Send the request to the background processes' renderer thread
         views.backgroundProcesses.webContents.send('ssh-tunnel:create', data)
 
-        // Once we received a response
+        // Once a response is received
         IPCMain.on(`ssh-tunnel:create:result:${data.requestID}`, (_, data) => {
-          // Send the response to the main renderer thread
+          // Send the response to the renderer thread
           views.main.webContents.send(`ssh-tunnel:create:result:${data.requestID}`, data)
         })
       })
@@ -583,7 +594,7 @@ App.on('window-all-closed', () => App.quit())
 
         // Once we received a response
         IPCMain.on(`detect-differentiation:result:${data.requestID}`, (_, data) => {
-          // Send the response to the main renderer thread
+          // Send the response to the renderer thread
           views.main.webContents.send(`detect-differentiation:result:${data.requestID}`, data)
         })
       })
@@ -610,7 +621,7 @@ App.on('window-all-closed', () => App.quit())
     // Entirely quit from the app
     IPCMain.on('options:actions:quit', () => {
       // Make sure the quit action will be performed well on macOS
-      macOSForceClose = true
+      isMacOSForceClose = true
 
       // Close the main window
       views.main.close()
@@ -623,7 +634,7 @@ App.on('window-all-closed', () => App.quit())
    */
   IPCMain.on('dialog:create', (_, data) => Modules.Dialogs.createDialog(views.main, data))
 
-  // Request to know if the main window is currently being focused on or not
+  // Request to know whether the main window is currently being focused on or not
   IPCMain.on('window:focused', (_, data) => views.main.webContents.send('window:focused', views.main.isFocused()))
 
   // Request to get the public key from the keys generator tool
@@ -670,7 +681,7 @@ App.on('window-all-closed', () => App.quit())
       // Get the timestamp of receiving the request
       let requestTimestamp = new Date().getTime()
 
-      // Make sure there's a 0.5s between each request
+      // Make sure there's a 0.5s delay between each request
       if (requestTimestamp - lastRequestTimestamp <= 500)
         return
 

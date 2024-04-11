@@ -316,7 +316,9 @@
       "terminate the process": "إنهاء العملية",
       "the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success": "تم إنهاء اختبار الاتصال مع المجموعة [b]$data[/b] في مساحة العمل [b]$data[/b] بنجاح",
       "something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]": "حدث خطأ ما، فشل في إنهاء عملية اختبار الاتصال مع المجموعة [b]$data[/b] في مساحة العمل [b]$data[/b]",
-      "terminate docker containers": "إنهاء حاويات عامل الإرساء"
+      "terminate docker containers": "إنهاء حاويات عامل الإرساء",
+      "it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app": "يبدو أن بعض أو كل الثنائيات التي يتم شحنها مع التطبيق تالفة أو مفقودة، وستتسبب هذه الحالة في حدوث مشكلات حرجة للعديد من العمليات. يرجى التأكد من حصولك على النسخة الرسمية الكاملة من التطبيق",
+      "binaries check": "فحص الثنائيات"
     }
   }
 }

@@ -316,7 +316,9 @@
       "terminate the process": "terminer le processus",
       "the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success": "le test de connexion avec le cluster [b]$data[/b] dans l'espace de travail [b]$data[/b] s'est terminé avec succès",
       "something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]": "quelque chose s'est mal passé, n'a pas réussi à terminer le processus de test de connexion avec le cluster [b]$data[/b] dans l'espace de travail [b]$data[/b]",
-      "terminate docker containers": "terminer les conteneurs Docker"
+      "terminate docker containers": "terminer les conteneurs Docker",
+      "it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app": "il semble que certains ou tous les fichiers binaires fournis avec l'application soient corrompus ou manquants, cet état entraînera des problèmes critiques pour de nombreux processus. Veuillez vous assurer d'avoir la version officielle complète de l'application",
+      "binaries check": "vérification des binaires"
     }
   }
 }

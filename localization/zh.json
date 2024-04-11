@@ -316,7 +316,9 @@
       "terminate the process": "终止进程",
       "the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success": "工作区 [b]$data[/b] 中集群 [b]$data[/b] 的连接测试已成功终止",
       "something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]": "出了点问题，无法终止与工作区 [b]$data[/b] 中的集群 [b]$data[/b] 的连接测试进程",
-      "terminate docker containers": "终止 docker 容器"
+      "terminate docker containers": "终止 docker 容器",
+      "it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app": "似乎应用程序附带的部分或所有二进制文件已损坏或丢失，这种状态将导致许多进程出现严重问题。 请确保拥有官方完整版本的应用程序",
+      "binaries check": "二进制文件检查"
     }
   }
 }

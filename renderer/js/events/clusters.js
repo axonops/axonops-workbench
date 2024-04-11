@@ -2550,6 +2550,9 @@
                               clusterElement.removeClass('test-connection enable-terminate-process')
                               clusterElement.find('button').removeAttr('disabled')
                               clusterElement.children('div.status').removeClass('show success')
+
+                              // Hide the termination process' button after a set time out
+                              setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
                             })
 
                             // Show the initial feedback to the user which
@@ -3012,6 +3015,9 @@
 
                       // Remove the starting - test connection - state
                       clusterElement.removeClass('test-connection enable-terminate-process')
+
+                      // Hide the termination process' button after a set time out
+                      setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
                       // Remove any indicators about the state of start/connecting
                       clusterElement.children('div.status').removeClass('show success failure')
@@ -3670,6 +3676,9 @@
                     clusterElement.removeClass('test-connection enable-terminate-process')
                     clusterElement.find('button').removeAttr('disabled')
                     clusterElement.children('div.status').removeClass('show success')
+
+                    // Hide the termination process' button after a set time out
+                    setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
                   })
 
                   return
@@ -3908,6 +3917,9 @@
 
           // Remove multiple classes for the cluster and its status elements
           clusterElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
+
+          // Hide the termination process' button after a set time out
+          setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
         })
 
         // Skip the upcoming code
@@ -3938,6 +3950,9 @@
 
         // Remove multiple classes for the cluster and its status elements
         clusterElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
+
+        // Hide the termination process' button after a set time out
+        setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
         // Skip the upcoming code
         return
@@ -4066,6 +4081,9 @@
                 // Test process has finished
                 clusterElement.removeClass('test-connection enable-terminate-process')
 
+                // Hide the termination process' button after a set time out
+                setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
                 // Show failure feedback if the testing process hasn't been terminated
                 statusElement.removeClass('success').toggleClass('show failure', result.terminated == undefined)
 
@@ -4193,6 +4211,9 @@
 
               // Remove the test connection state
               clusterElement.removeClass('test-connection enable-terminate-process')
+
+              // Hide the termination process' button after a set time out
+              setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
             })
           })
         })
@@ -4263,6 +4284,9 @@
       let errorVisualFeedback = () => {
         // Remove the test connection class
         clusterElement.removeClass('test-connection enable-terminate-process')
+
+        // Hide the termination process' button after a set time out
+        setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
         // Add a failure class
         statusElement.addClass('show failure')
@@ -4869,6 +4893,9 @@
                 // Remove the test connection class
                 dialogElement.removeClass('test-connection enable-terminate-process')
 
+                // Hide the termination process' button after a set time out
+                setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
                 // Skip the upcoming code
                 return
               } catch (e) {}
@@ -4952,6 +4979,9 @@
 
                         // Remove the test connection class
                         dialogElement.removeClass('test-connection enable-terminate-process')
+
+                        // Hide the termination process' button after a set time out
+                        setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
                         // Enable some buttons in the footer
                         button.add('#switchEditor').removeAttr('disabled', 'disabled')
@@ -5045,6 +5075,9 @@
                       try {
                         // Remove the test connection class
                         dialogElement.removeClass('test-connection enable-terminate-process')
+
+                        // Hide the termination process' button after a set time out
+                        setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
                         // Enable the `TEST CONNECTION` button
                         button.add('#switchEditor').removeAttr('disabled', 'disabled')
@@ -5238,6 +5271,9 @@
                     // Remove the test connection class
                     dialogElement.removeClass('test-connection enable-terminate-process')
 
+                    // Hide the termination process' button after a set time out
+                    setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
                     // Enable the `TEST CONNECTION` button
                     button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
@@ -5293,6 +5329,9 @@
 
                   // Remove the test connection class
                   dialogElement.removeClass('test-connection enable-terminate-process')
+
+                  // Hide the termination process' button after a set time out
+                  setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
                   // Enable the `TEST CONNECTION` button
                   button.add('#switchEditor').removeAttr('disabled', 'disabled')
@@ -5567,6 +5606,9 @@
 
                       // Remove the test connection state
                       clusterElement.removeClass('test-connection enable-terminate-process')
+
+                      // Hide the termination process' button after a set time out
+                      setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
                     })
                   }, 1000)
                 }

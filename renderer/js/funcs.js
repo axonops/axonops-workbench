@@ -211,10 +211,10 @@ let loadStyleSheet = (path) => {
 let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = null) => {
   /**
    * Set the proper time-out
-   * This is performed either by just setting it to 5.5s or based on the text's length with a maximum time of 15s
+   * This is performed either by just setting it to 5.5s or based on the text's length with a maximum time of 20s
    */
   let minTimeout = 5500,
-    maxTimeout = 15000,
+    maxTimeout = 20000,
     timeout = minTimeout
 
   /**
@@ -224,8 +224,8 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
   timeout = text.length * 50
 
   /**
-   * Maximum acceptable time is 15s, minimum is 5.5s
-   * Timeout more than `15s`? `true` then `= 15s`,
+   * Maximum acceptable time is 20s, minimum is 5.5s
+   * Timeout more than `20s`? `true` then `= 20s`,
    * `false` then timeout is less than `5.5s`? `true` then `= 5.5s`,
    * `false` then adopt the calculated time
    */

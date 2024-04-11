@@ -821,3 +821,26 @@ $(document).ready(() => {
 
 // To improve performance, make sure the non-visible lottie element is not playing in the background
 $(document).ready(() => setTimeout(() => autoPlayStopLottieElement($('lottie-player')), 1500))
+
+// Check whether or not binaries exist
+$(document).ready(() => {
+  setTimeout(() => {
+    try {
+      // Define the path to all binaries
+      let binariesPath = Path.join(__dirname, '..', '..', 'main', 'bin')
+
+      // Check their existence
+      Terminal.run(`cd "${binariesPath}" && ${OS.platform() == 'win32' ? 'dir' : 'ls'}`, (err, data, stderr) => {
+        // Make sure all of them are exist
+        let areBinariesExist = ['cqlsh-407', 'cqlsh-410', 'keys_generator'].every((binary) => `${data}`.search(binary))
+
+        // Skip the upcoming code if all of them exist
+        if (areBinariesExist)
+          return
+
+        // Show feedback to the user if one of the binaries is missing
+        showToast(I18next.capitalize(I18next.t(`binaries check`)), I18next.capitalizeFirstLetter(I18next.t(`it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app`)) + '.', 'failure')
+      })
+    } catch (e) {}
+  }, 3000)
+})

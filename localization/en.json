@@ -316,7 +316,9 @@
       "terminate the process": "terminate the process",
       "the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success": "the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success",
       "something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]": "something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]",
-      "terminate docker containers": "terminate docker containers"
+      "terminate docker containers": "terminate docker containers",
+      "it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app": "it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app",
+      "binaries check": "binaries check"
     }
   }
 }

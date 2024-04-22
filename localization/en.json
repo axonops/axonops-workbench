@@ -318,7 +318,11 @@
       "something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]": "something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]",
       "terminate docker containers": "terminate docker containers",
       "it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app": "it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app",
-      "binaries check": "binaries check"
+      "binaries check": "binaries check",
+      "connection with cluster $data lost": "connection with cluster $data lost",
+      "connection with cluster [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional": "connection with cluster [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional",
+      "connection with cluster $data restored": "connection with cluster $data restored",
+      "connection with cluster [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional": "connection with cluster [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional"
     }
   }
 }

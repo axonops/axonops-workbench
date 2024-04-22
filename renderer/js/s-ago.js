@@ -6,6 +6,15 @@
 let format = (diff, divisor, unit, past, future, isInTheFuture) => {
   let val = Math.round(Math.abs(diff) / divisor)
 
+  // Format the text for right-to-left languages
+  try {
+    if (I18next.dir() != 'rtl')
+      throw 0
+
+    if (!isInTheFuture)
+      return (val <= 1) ? I18next.t(past) : I18next.t('ago') + ' ' + val + ' ' + I18next.t(unit)
+  } catch (e) {}
+
   if (isInTheFuture)
     return (val <= 1) ? I18next.t(future) : I18next.t('in') + ' ' + val + ' ' + I18next.t(unit)
 

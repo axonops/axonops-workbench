@@ -28,30 +28,36 @@ const Electron = require('electron'),
    * `MenuItem`
    * For adding items to native application menus and context menus
    */
-  MenuItem = Electron.MenuItem,
-  /**
-   * `ipcMain`
-   * For communicating asynchronously from the main thread to the renderer thread(s)
-   */
-  IPCMain = Electron.ipcMain
+  MenuItem = Electron.MenuItem
 
+/**
+ * Import modules globally
+ * Those modules can be reached from all main's sub-modules like `pty` and `config`
+ *
+ * `ipcMain`
+ * For communicating asynchronously from the main thread to the renderer thread(s)
+ */
+global.IPCMain = Electron.ipcMain
+// Execute commands across all platforms
+global.Terminal = require('node-cmd')
 /**
  * Import Node.js modules
  *
  * Node.js file system module - improved version that has methods that aren't included in the native fs module -
  * Used for working with files system, it provides related utilities
  */
-const FS = require('fs-extra'),
-  /**
-   * Node.js path module
-   * Working with file and directory paths, and providing useful utilities
-   */
-  Path = require('path'),
-  /**
-   * Node.js URL module
-   * For URL resolution and parsing
-   */
-  URL = require('url'),
+global.FS = require('fs-extra')
+/**
+ * Node.js path module
+ * Working with file and directory paths, and providing useful utilities
+ */
+global.Path = require('path')
+
+/**
+ * Node.js URL module
+ * For URL resolution and parsing
+ */
+const URL = require('url'),
   /**
    * Node.js events module
    * Used for creating and handling custom events
@@ -61,11 +67,9 @@ const FS = require('fs-extra'),
 /**
  * Import extra modules needed in the main thread
  *
- * Execute commands across all platforms
+ * Enable - ready to be used - right-click context menu
  */
-const Terminal = require('node-cmd'),
-  // Enable - ready to be used - right-click context menu
-  ContextMenu = require('electron-context-menu'),
+const ContextMenu = require('electron-context-menu'),
   // Helps to position the app's windows
   Positioner = require('electron-positioner')
 
@@ -468,6 +472,13 @@ App.on('window-all-closed', () => App.quit())
     IPCMain.on('pty:cql-desc', (_, data) => {
       try {
         CQLSHInstances[data.id].getCQLDescription(data.cqlDescSendID, data.scope)
+      } catch (e) {}
+    })
+
+    // Check the connectivity with a cluster
+    IPCMain.on('pty:check-connection', (_, data) => {
+      try {
+        CQLSHInstances[data.id].checkConnectivity(data.checkConnectivityRequestID)
       } catch (e) {}
     })
 

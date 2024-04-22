@@ -1007,7 +1007,12 @@ div.body {
                     justify-content: space-between;
 
                     div.name {
+                      text-align: start;
                       font-weight: 500;
+                      width: 70%;
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
                     }
 
                     div.status {
@@ -1045,6 +1050,26 @@ div.body {
 
                       &:hover {
                         opacity: 1 !important;
+                      }
+                    }
+
+                    div.connection-status {
+                      @include position(absolute, auto, auto, 50px, auto);
+                      height: 20px;
+                      opacity: 0;
+                      transition: opacity 0.2s ease-in-out, filter 0.3s ease-out;
+                      filter: grayscale(1) hue-rotate(0deg);
+
+                      &.show {
+                        opacity: 0.8;
+                      }
+
+                      &.not-connected {
+                        filter: hue-rotate(330deg) grayscale(0);
+                      }
+
+                      &.connected {
+                        filter: hue-rotate(-255deg) grayscale(0);
                       }
                     }
 

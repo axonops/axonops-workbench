@@ -380,4 +380,9 @@ body.rtl {
       }
     }
   }
+
+  div[content="workarea"] div.workarea div.sub-sides.left div.cluster-info div.name-ssl div.connection-status {
+    right: auto;
+    left: 50px;
+  }
 }

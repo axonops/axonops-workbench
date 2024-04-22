@@ -611,6 +611,9 @@
                               <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps in browser" capitalize-first data-title="Open AxonOps in browser">
                                 <ion-icon name="globe"></ion-icon>
                               </div>
+                              <div class="connection-status">
+                                <lottie-player src="../assets/lottie/connection-status.json" background="transparent" autoplay loop speed="0.25"></lottie-player>
+                              </div>
                             </div>
                             <div class="additional">
                               <div class="info" info="host">
@@ -1431,6 +1434,10 @@
                         // Call the fit addon for the terminal
                         setTimeout(() => fitAddon.fit(), 1200)
 
+                        try {
+                          IPCRenderer.removeAllListeners(`pty:data:${clusterID}`)
+                        } catch (e) {}
+
                         // Listen to data sent from the pty instance which are fetched from the cqlsh tool
                         IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
                           /**
@@ -1471,7 +1478,7 @@
                              */
                             setTimeout(() => IPCRenderer.send('pty:command', {
                               id: clusterID,
-                              cmd: '\n'
+                              cmd: OS.EOL
                             }), 500)
 
                             // Remove the loading class
@@ -1486,7 +1493,7 @@
                                 setTimeout(() => {
                                   IPCRenderer.send('pty:command', {
                                     id: clusterID,
-                                    cmd: '\n'
+                                    cmd: OS.EOL
                                   })
                                 }, 500)
                             }, 1000)
@@ -1498,7 +1505,7 @@
                            * Or the cqlsh session hasn't been loaded yet
                            * Based on the check, the received data won't be printed
                            */
-                          if (minifyText(data).search('cqlsh-started') || ['cqlsh-', 'cqlsh.py', 'main/bin', 'main\bin', 'code page:', '--var', '--test', '--workspace', '--username', '--password', 'cqlshrc location', 'print metadata', 'instead.', 'tput', '/tmp'].some((str) => minifyText(data).search(str) || isSessionPaused) || (`${latestCommand}`.trim().length <= 0 && OS.platform() == 'win32') || !isCQLSHLoaded) {
+                          if (minifyText(data).search('cqlsh-started') || ['cqlsh-', 'cqlsh.py', 'main/bin', 'main\bin', 'code page:', '--var', '--test', '--workspace', '--username', '--password', 'cqlshrc location', 'print metadata', 'instead.', 'tput', '/tmp', 'check connection', 'print cql_desc'].some((str) => minifyText(data).search(str) || isSessionPaused) || (`${latestCommand}`.trim().length <= 0 && OS.platform() == 'win32') || !isCQLSHLoaded) {
                             /**
                              * If `isSessionPaused` is set to `true` and the cqlsh's prompt is got in the received data...
                              * then the cause of the pause has ended, thus, end the pause and start to print data again
@@ -1839,7 +1846,7 @@
                                 let currentLine = readLine.state.line.buf
 
                                 // Make a new line in the terminal
-                                readLine.print('\n')
+                                readLine.print(OS.EOL)
 
                                 // Print suggestions in an info box
                                 terminalPrintMessage(readLine, 'info', arrayToString(suggestions), true)
@@ -2961,6 +2968,74 @@
 
                     // Update the button's text to be `ENTER`
                     setTimeout(() => $(`button[button-id="${connectBtnID}"]`).children('span').attr('mulang', 'enter').text(I18next.t('enter')), 1000)
+
+
+                    // Check the connectivity with the current cluster
+                    {
+                      // By default, the flag to show a toast regards lost connection is set to `false`
+                      let isLostConnectionToastShown = false
+
+                      setTimeout(() => {
+                        // Point at the connection status element in the UI
+                        let connectionStatusElement = workareaElement.find('div.connection-status')
+
+                        // Inner function to check the connectivity status
+                        let checkConnectivity = () => {
+                          // Call the connectivity check function from the clusters' module
+                          Modules.Clusters.checkConnectivity(getAttributes(clusterElement, 'data-id'), (connected) => {
+                            // If the connection status UI element is not exists then the work area has been closed, end the check process
+                            if (connectionStatusElement.length <= 0 || connectionStatusElement == null)
+                              return
+
+                            // Show a `not-connected` class if the app is not connected with the cluster
+                            connectionStatusElement.removeClass('show connected not-connected').toggleClass('show not-connected', !connected)
+
+                            // Perform a check process every 1 minute
+                            setTimeout(() => checkConnectivity(), 60000)
+
+                            try {
+                              /**
+                               * In case the app is not connected with the cluster
+                               * If the app is connected then skip this try-catch block
+                               */
+                              if (connected)
+                                throw 0
+
+                              // If the toast/feedback regards lost connection has been shown then skip the upcoming code
+                              if (isLostConnectionToastShown)
+                                return
+
+                              // Show feedback to the user
+                              showToast(I18next.capitalize(I18next.replaceData(`connection with cluster $data lost`, [getAttributes(clusterElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection with cluster [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'warning')
+
+                              // Update the associated flag in order to not show that feedback in this checking cycle
+                              isLostConnectionToastShown = true
+
+                              // Skip the upcoming code
+                              return
+                            } catch (e) {}
+
+                            try {
+                              /**
+                               * Reaching here means the app is connected with the cluster
+                               * If the toast/feedback regards lost connection hasn't been shown already then there's no need to show the restore connection feedback, skip this try-catch block
+                               */
+                              if (!isLostConnectionToastShown)
+                                throw 0
+
+                              // Update the associated flag
+                              isLostConnectionToastShown = false
+
+                              // Show feedback to the user
+                              showToast(I18next.capitalize(I18next.replaceData(`connection with cluster $data restored`, [getAttributes(clusterElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection with cluster [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
+                            } catch (e) {}
+                          })
+                        }
+
+                        // Start the checking process after 30 seoncds of creating the work area
+                        setTimeout(() => checkConnectivity(), 30000)
+                      })
+                    }
                   }))
                 })
               })
@@ -4041,7 +4116,7 @@
                 let allDataCentersStr = JSON.stringify(allDataCenters)
 
                 // Format the string format of the data centers array for the toast
-                allDataCentersStr = allDataCentersStr.slice(1, allDataCentersStr.length - 1).replace(/\"/g, '').split(",").join('[/code], [code]')
+                allDataCentersStr = allDataCentersStr.slice(1, allDataCentersStr.length - 1).replace(/\"/g, '').split(',').join('[/code], [code]')
 
                 // Show feedback to the user
                 showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
@@ -5093,7 +5168,7 @@
                           let allDataCentersStr = JSON.stringify(allDataCenters)
 
                           // Format the string format of the data centers array for the toast
-                          allDataCentersStr = allDataCentersStr.slice(1, allDataCentersStr.length - 1).replace(/\"/g, '').split(",").join('[/code], [code]')
+                          allDataCentersStr = allDataCentersStr.slice(1, allDataCentersStr.length - 1).replace(/\"/g, '').split(',').join('[/code], [code]')
 
                           // Show feedback to the user
                           showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
@@ -6265,7 +6340,7 @@
             let editorObject = monaco.editor.getEditors().find((editor) => associatedDescription.find('div.editor').is(editor._domElement))
 
             // Update the editor's content with the latest fetched description
-            editorObject.setValue('\n\n' + `${description}`)
+            editorObject.setValue(OS.EOL + OS.EOL + `${description}`)
           })
 
           // Skip the upcoming code
@@ -6290,7 +6365,7 @@
           setTimeout(() => {
             // Create an editor for the description
             let descriptionEditor = monaco.editor.create($(`#_${editorContainerID}`)[0], {
-              value: '\n\n' + `${description}`,
+              value: OS.EOL + OS.EOL + `${description}`,
               language: 'sql', // Set the content's language
               minimap: {
                 enabled: true

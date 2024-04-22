@@ -318,7 +318,11 @@
       "something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]": "משהו השתבש, לא הצליח לסיים את תהליך בדיקת החיבור עם אשכול [b]$data[/b] בסביבת העבודה [b]$data[/b]",
       "terminate docker containers": "לסיים מכולות דוקר",
       "it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app": "נראה שחלק או כל הקבצים הבינאריים שנשלחו עם האפליקציה פגומים או חסרים, מצב זה יגרום לבעיות קריטיות עבור תהליכים רבים. אנא ודא שיש לך את הגרסה המלאה הרשמית של האפליקציה",
-      "binaries check": "בדיקת בינאריים"
+      "binaries check": "בדיקת בינאריים",
+      "connection with cluster $data lost": "אבד הקשר עם אשכול $data",
+      "connection with cluster [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional": "החיבור עם אשכול [b]$data[/b] בסביבת העבודה [b]$data[/b] אבד. טוסט יוצג כאשר החיבור ישוחזר. רוב תהליכי אזור העבודה אינם פונקציונליים כעת",
+      "connection with cluster $data restored": "החיבור לאשכול $data שוחזר",
+      "connection with cluster [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional": "החיבור עם אשכול [b]$data[/b] בסביבת העבודה [b]$data[/b] שוחזר. כל תהליכי אזור העבודה פונקציונליים כעת"
     }
   }
 }

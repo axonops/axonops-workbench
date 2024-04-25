@@ -620,7 +620,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           }
         ]
       },
-      'plugins': ['types', 'contextmenu'],
+      'plugins': ['types', 'contextmenu', 'search'],
       'contextmenu': {
         'select_node': false
       }
@@ -707,9 +707,24 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           type: 'default'
         }
 
-        // If the attribute is `virtual` then add its value as sub attribute
-        if (attribute == 'virtual')
+        // Some changes would be applied if the current attribute is `virtual`
+        try {
+          // If the attribute is not `virtual` then skip this try-catch block
+          if (attribute != 'virtual')
+            throw 0
+
+          // Add the `virtual` attribute value as sub attribute in the structure
           structure.virtualValue = object[attribute] ? true : false
+
+          // If the `virtual` value is `true` then it should be shown to the user
+          if (structure.virtualValue)
+            throw 0
+
+          // Otherwise, hide the node which indicate's the node `virtual` value as it's `false` by default
+          structure.state = {
+            hidden: true
+          }
+        } catch (e) {}
 
         // Display the `is_static` attribute only if it's `true`
         if (attribute == 'is_static' && !object[attribute])
@@ -726,16 +741,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       if (object.cql_type == undefined)
         throw 0
 
-      // Otherwise, define that attribute's structure
-      let cqlType = {
-        id: getRandomID(30),
-        parent: childID,
-        text: `CQL Type: <span>${object.cql_type}</span>`,
-        type: 'default',
-      }
-
-      // Append that attribute to the child
-      treeStructure.core.data.push(cqlType)
+      // Otherwise, add the type to the node's text
+      structure.text = `${structure.text}: <span>${EscapeHTML(object.cql_type)}</span>`
     } catch (e) {}
   }
 
@@ -1271,15 +1278,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             treeStructure.core.data.push({
               id: fieldID,
               parent: userTypeID,
-              text: `<span>${field}</span>`,
-              type: 'default'
-            })
-
-            // Push the field's type tree view's node structure
-            treeStructure.core.data.push({
-              id: fieldTypeID,
-              parent: fieldID,
-              text: `Field Type: <span>${type}</span>`,
+              text: `<span>${field}</span>: <span>${type}</span>`,
               type: 'default'
             })
           })
@@ -1328,7 +1327,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               `Monotonic: <span class="material-icons for-treeview">${func.monotonic ? 'check' : 'close'}</span>`,
               `Called On null Input: <span class="material-icons for-treeview">${func.called_on_null_input ? 'check' : 'close'}</span>`,
               `Language: <span>${func.language.toUpperCase()}</span>`,
-              `Return Type: <span>${func.return_type.replace(/\>/g, '&gt;').replace(/\</g,'&lt;')}</span>`
+              `Return Type: <span>${EscapeHTML(func.return_type)}</span>`
             ]
 
             // Loop through each attribute's text
@@ -1365,15 +1364,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             treeStructure.core.data.push({
               id: argumentID,
               parent: argumentsID,
-              text: `<span>${argument}</span>`,
-              type: 'default'
-            })
-
-            // Push the argument's type tree tree view's node structure
-            treeStructure.core.data.push({
-              id: argumentTypeID,
-              parent: argumentID,
-              text: `Argument Type: <span>${type.replace(/\>/g, '&gt;').replace(/\</g,'&lt;')}</span>`,
+              text: `<span>${argument}</span>: <span>${EscapeHTML(type)}</span>`,
               type: 'default'
             })
           })
@@ -1421,9 +1412,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               `Deterministic: <span class="material-icons for-treeview">${aggregate.deterministic ? 'check' : 'close'}</span>`,
               `Final Function: <span>${aggregate.final_func}</span>`,
               `Initial Condition: <span>${aggregate.initial_condition}</span>`,
-              `Return Type: <span>${aggregate.return_type.replace(/\>/g, '&gt;').replace(/\</g,'&lt;')}</span>`,
+              `Return Type: <span>${EscapeHTML(aggregate.return_type)}</span>`,
               `State Function: <span>${aggregate.state_func}</span>`,
-              `State Type: <span>${aggregate.state_type.replace(/\>/g, '&gt;').replace(/\</g,'&lt;')}</span>`
+              `State Type: <span>${EscapeHTML(aggregate.state_type)}</span>`
             ]
 
             // Loop through each attribute's text
@@ -2779,6 +2770,7 @@ let setUIColor = (workspaceColor) => {
           .changed-color {color: ${textColor} !important}
           .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active, form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus, .form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus {border-color: ${backgroundColor.default} !important}
           ion-icon[name="lock-closed"] {color: ${backgroundColor.default} !important}
+          .jstree-default-dark .jstree-search {background: ${backgroundColor.hover.replace('70%', '15%')} !important;}
           :root {--workspace-background-color:${backgroundColor.default};}
         </style>`
 

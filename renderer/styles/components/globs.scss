@@ -399,3 +399,53 @@ div.terminate-process {
     }
   }
 }
+
+.jstree-default-dark .jstree-search {
+  font-style: normal !important;
+  color: #dfdfdf !important;
+  font-weight: 400 !important;
+  text-shadow: 0 0 !important;
+  border-radius: 5px;
+
+  * {
+    font-weight: 400 !important;
+  }
+}
+
+div.search-in-metadata {
+  background: #2c2c2c;
+  border-radius: 8px;
+  padding: 13px 6px 6px;
+  height: 0;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  div.form-outline {
+    opacity: 0;
+    transition: all 0.05s ease-in-out;
+
+    label.form-label {
+      top: -4px;
+    }
+
+    input {
+      font-size: 90% !important;
+    }
+  }
+
+  &.show {
+    height: 50px;
+    padding: 13px 6px 6px;
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+
+    div.form-outline {
+      transition: all 0.35s ease-out;
+      transition-delay: 0.2s;
+      opacity: 1;
+    }
+  }
+}

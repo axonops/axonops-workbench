@@ -1190,7 +1190,7 @@ div.body {
 
                   div.metadata-actions {
                     @include position(absolute, -13px, auto, 15px, auto);
-                    width: 70px;
+                    width: 90px;
                     height: 30px;
                     display: flex;
                     flex: {
@@ -1239,6 +1239,12 @@ div.body {
                     overflow: scroll;
                     background: transparent;
                     @include scrollbar(#2c2c2c, #17181a);
+                    transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+                    &.show-search-input {
+                      top: 50px;
+                      max-height: calc(100% - 55px);
+                    }
                   }
 
                   div.loading {

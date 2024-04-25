@@ -85,6 +85,8 @@ const FS = require('fs-extra'),
   StripTags = require('@ramumb/strip-tags'),
   // Replacing/stripping special characters, alphabets, and numerics in a given string
   StripChar = require('stripchar').StripChar,
+  // Escape string for use in HTML
+  EscapeHTML = require('escape-html'),
   /**
    * Pure Node.js RSA library implemented
    * It has been implemented within the functions `encrypt(publicKey, text)` and `decrypt(privateKey, text)`

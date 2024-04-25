@@ -528,9 +528,11 @@
 
                   // Get random IDs for different elements in the cluster's work area
                   let [
-                    // The cluster's metadata functions
+                    // The cluster's metadata functions, and their related elements
                     copyMetadataBtnID,
                     refreshMetadataBtnID,
+                    searchInMetadataBtnID,
+                    searchInMetadataInputID,
                     // CQLSH and Bash sessions, and their related elements
                     cqlshSessionContentID,
                     bashSessionContentID,
@@ -557,7 +559,7 @@
                     // Restart and close the work area
                     restartWorkareaBtnID,
                     closeWorkareaBtnID
-                  ] = getRandomID(20, 23)
+                  ] = getRandomID(20, 25)
 
                   /**
                    * Define tabs that shown only to sandbox projects
@@ -637,6 +639,14 @@
                             </div>
                           </div>
                           <div class="cluster-metadata loading">
+                            <div class="search-in-metadata">
+                              <div class="form-outline form-white margin-bottom">
+                                <input type="text" class="form-control form-icon-trailing form-control-sm" id="_${searchInMetadataInputID}">
+                                <label class="form-label">
+                                  <span mulang="search in metadata" capitalize-first></span>
+                                </label>
+                              </div>
+                            </div>
                             <div class="metadata-content" data-id="${metadataContentID}">
                             </div>
                             <div class="loading">
@@ -653,6 +663,11 @@
                               <div class="action" action="refresh">
                                 <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first data-id="${refreshMetadataBtnID}">
                                   <ion-icon name="refresh"></ion-icon>
+                                </div>
+                              </div>
+                              <div class="action" action="search">
+                                <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Search in metadata" data-mulang="search in metadata" capitalize-first data-id="${searchInMetadataBtnID}">
+                                  <ion-icon name="search" style="font-size: 135%;"></ion-icon>
                                 </div>
                               </div>
                             </div>
@@ -785,25 +800,25 @@
                                   <span class="badge badge-primary btn btn-secondary btn-dark btn-sm changes" data-mdb-ripple-color="dark" data-changes="0" data-id="${showDifferentiationBtnID}"><span mulang="changes" capitalize></span>: <span>0</span></span>
                                   <div class="actions">
                                     <span class="refresh btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
-                                      data-id="${refreshDifferentiationBtnID}" ${isSandbox ? 'style=\"bottom:0px\"' : ''}>
+                                      data-id="${refreshDifferentiationBtnID}" ${isSandbox ? 'style=\"bottom:0px\"' : '' }>
                                       <ion-icon name="refresh"></ion-icon>
                                     </span>
                                     <span class="save-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Save a snapshot" data-mulang="save a snapshot" capitalize-first
-                                      data-id="${saveSnapshotBtnID}" ${isSandbox ? 'hidden' : ''}>
+                                      data-id="${saveSnapshotBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="save-floppy"></ion-icon>
                                     </span>
                                     <span class="load-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Load a snapshot" data-mulang="load a snapshot" capitalize-first
-                                      data-id="${loadSnapshotBtnID}" ${isSandbox ? 'hidden' : ''}>
+                                      data-id="${loadSnapshotBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="upload"></ion-icon>
                                     </span>
                                     <span class="snapshots-floder btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Open the snapshots folder" data-mulang="open the snapshots folder" capitalize-first
-                                      data-id="${openSnapshotsFolderBtnID}" ${isSandbox ? 'hidden' : ''}>
+                                      data-id="${openSnapshotsFolderBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="folder-open-outline"></ion-icon>
                                     </span>
                                   </div>
                                 </div>
                                 <span class="badge badge-secondary new"><span mulang="new" capitalize></span><span class="new-metadata-time" data-id="${newMetadataTimeID}"></span></span>
-                                <div class="save-snapshot-suffix" data-id="${saveSnapshotSuffixContainerID}" ${isSandbox ? 'hidden' : ''}>
+                                <div class="save-snapshot-suffix" data-id="${saveSnapshotSuffixContainerID}" ${isSandbox ? 'hidden' : '' }>
                                   <div class="time"></div>
                                   <div class="form-outline form-white margin-bottom">
                                     <input type="text" class="form-control form-icon-trailing form-control-lg">
@@ -1170,7 +1185,25 @@
                          */
                         let clickEvent = (_, link) => {
                           // Get the session ID from the link - by slicing the protocol `session://`
-                          let sessionID = link.slice(10)
+                          let sessionID = link.slice(10),
+                            // Point at the queries' container
+                            queriesContainer = $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`).find('div.queries'),
+                            // Point at the queries' tab
+                            queryTracingTab = $(`a.nav-link.btn[href="#_${queryTracingContentID}"]`),
+                            // Get the queries' tab MDB object
+                            queryTracingTabObject = getElementMDBObject(queryTracingTab, 'Tab')
+
+                          // If the clicked session exists in the query tracing's container
+                          if (queriesContainer.children(`div.query[data-session-id="${sessionID}"]`).length != 0) {
+                            // Just add the session ID in the search input and it'll handle the rest
+                            $(`input#_${queryTracingSearchInputID}`).val(sessionID)
+
+                            // Go to the query tracing's tab
+                            queryTracingTabObject.show()
+
+                            // Skip the upcoming code
+                            return
+                          }
 
                           // Request to get query tracing result by passing the cluster's and the session's IDs
                           Modules.Clusters.getQueryTracingResult(clusterID, sessionID, (result) => {
@@ -1178,35 +1211,17 @@
                             if (result == null)
                               return showToast(I18next.capitalize(I18next.t('query tracing')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to get the query tracing result for the session [b]$data[/b]', [sessionID])) + '.', 'failure')
 
-                            // Point at the queries' container
-                            let queriesContainer = $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`).find('div.queries'),
-                              // Point at the queries' tab
-                              queryTracingTab = $(`a.nav-link.btn[href="#_${queryTracingContentID}"]`),
-                              // Get the queries' tab MDB object
-                              queryTracingTabObject = getElementMDBObject(queryTracingTab, 'Tab'),
-                              // Get random IDs for the different elements of the query tracing section
-                              [
-                                canvasTimelineID,
-                                canvasPieChartID,
-                                tableBodyID
-                              ] = getRandomID(20, 3),
+                            // Get random IDs for the different elements of the query tracing section
+                            let [
+                              canvasTimelineID,
+                              canvasPieChartID,
+                              tableBodyID
+                            ] = getRandomID(20, 3),
                               // Generate random color for each activity in the query tracing's result
                               colors = getRandomColor(result.length).map((color) => invertColor(color))
 
                             // Remove the `empty` class; in order to show the query tracing's content
                             $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`).removeClass('_empty')
-
-                            // If the clicked session exists in the query tracing's container
-                            if (queriesContainer.children(`div.query[data-session-id="${sessionID}"]`).length != 0) {
-                              // Just add the session ID in the search input and it'll handle the rest
-                              $(`input#_${queryTracingSearchInputID}`).val(sessionID)
-
-                              // Go to the query tracing's tab
-                              queryTracingTabObject.show()
-
-                              // Skip the upcoming code
-                              return
-                            }
 
                             // The query tracing's result UI structure
                             let element = `
@@ -2182,6 +2197,49 @@
                           // Check metadata with `refresh` = `true`
                           checkMetadata(true)
                         })
+
+                        // Handle the search feature inside the metadata tree view
+                        {
+                          // Point at the search container
+                          let searchContainer = workareaElement.find('div.search-in-metadata'),
+                            // Point at the metadata tree view container
+                            metadataContent = $(`div.metadata-content[data-id="${metadataContentID}"]`),
+                            // Flag to tell if the search container is shown already
+                            isSearchShown = false,
+                            // The timeout function to be defined for the starting the search process
+                            searchTimeout
+
+                          // Clicks the search button/icon
+                          $(`div.btn[data-id="${searchInMetadataBtnID}"]`).click(function() {
+                            // Apply a special effect for the tree view based on the current showing status
+                            metadataContent.toggleClass('show-search-input', !isSearchShown)
+
+                            setTimeout(() => {
+                              // Show or hide the search input based on the current showing status
+                              searchContainer.toggleClass('show', !isSearchShown)
+
+                              // Toggle the flag
+                              isSearchShown = !isSearchShown
+
+                              // If the new status is to hide the search input then empty the search value - if there's any -
+                              if (!isSearchShown)
+                                searchContainer.find('input').val('').trigger('input')
+                            })
+                          })
+
+                          // When the user types in the search input
+                          searchContainer.find('input').on('input', function() {
+                            // Make sure to clear any ongoing timeout processes
+                            if (searchTimeout != null)
+                              clearTimeout(searchTimeout)
+
+                            /**
+                             * Perform a search process after 0.5s of finish typing
+                             * This delay will avoid any potential performance issues
+                             */
+                            searchTimeout = setTimeout(() => $(metadataContent).jstree(true).search($(this).val()), 500)
+                          })
+                        }
                       })
 
                       // Metadata differentiation section
@@ -2976,17 +3034,17 @@
                       let isLostConnectionToastShown = false
 
                       setTimeout(() => {
-                        // Point at the connection status element in the UI
-                        let connectionStatusElement = workareaElement.find('div.connection-status')
-
                         // Inner function to check the connectivity status
                         let checkConnectivity = () => {
+                          // Point at the connection status element in the UI
+                          let connectionStatusElement = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-id')}"]`).find('div.connection-status')
+
+                          // If the connection status UI element is not exists then the work area has been closed and the check process should be terminated
+                          if (connectionStatusElement.length <= 0 || connectionStatusElement == null)
+                            return
+
                           // Call the connectivity check function from the clusters' module
                           Modules.Clusters.checkConnectivity(getAttributes(clusterElement, 'data-id'), (connected) => {
-                            // If the connection status UI element is not exists then the work area has been closed, end the check process
-                            if (connectionStatusElement.length <= 0 || connectionStatusElement == null)
-                              return
-
                             // Show a `not-connected` class if the app is not connected with the cluster
                             connectionStatusElement.removeClass('show connected not-connected').toggleClass('show not-connected', !connected)
 

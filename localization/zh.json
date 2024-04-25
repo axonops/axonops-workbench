@@ -322,7 +322,8 @@
       "connection with cluster $data lost": "与集群 $data 的连接丢失",
       "connection with cluster [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional": "与工作区 [b]$data[/b] 中的集群 [b]$data[/b] 的连接丢失。 当连接恢复时，将会显示一个 toast。 大多数工作区进程现在不起作用",
       "connection with cluster $data restored": "与集群 $data 的连接已恢复",
-      "connection with cluster [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional": "与工作区 [b]$data[/b] 中的集群 [b]$data[/b] 的连接已恢复。 所有工作区流程现已正常运行"
+      "connection with cluster [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional": "与工作区 [b]$data[/b] 中的集群 [b]$data[/b] 的连接已恢复。 所有工作区流程现已正常运行",
+      "search in metadata": "在元数据中搜索"
     }
   }
 }

@@ -30,6 +30,7 @@
     "diff": "^5.1.0",
     "electron-context-menu": "^3.6.1",
     "electron-positioner": "^4.1.0",
+    "escape-html": "^1.0.3",
     "escape-quotes": "^1.0.2",
     "extract-string": "^1.0.2",
     "fast-string-search": "^1.4.3",

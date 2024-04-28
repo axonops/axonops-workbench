@@ -556,10 +556,12 @@
                     changesLinesContainerID,
                     oldSnapshotNameID,
                     newMetadataTimeID,
+                    // Set a work area ID as a reference to check its existance
+                    workareaID,
                     // Restart and close the work area
                     restartWorkareaBtnID,
                     closeWorkareaBtnID
-                  ] = getRandomID(20, 25)
+                  ] = getRandomID(20, 26)
 
                   /**
                    * Define tabs that shown only to sandbox projects
@@ -602,7 +604,7 @@
 
                   // Cluster work area's UI element structure
                   let element = `
-                      <div class="workarea" cluster-id="${clusterID}">
+                      <div class="workarea" cluster-id="${clusterID}" workarea-id="${workareaID}">
                         <div class="sub-sides left">
                           <div class="cluster-info">
                             <div class="name-ssl ${isSandbox ? 'is-sandbox' : ''}">
@@ -3037,7 +3039,7 @@
                         // Inner function to check the connectivity status
                         let checkConnectivity = () => {
                           // Point at the connection status element in the UI
-                          let connectionStatusElement = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-id')}"]`).find('div.connection-status')
+                          let connectionStatusElement = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-id')}"][workarea-id="${workareaID}"]`).find('div.connection-status')
 
                           // If the connection status UI element is not exists then the work area has been closed and the check process should be terminated
                           if (connectionStatusElement.length <= 0 || connectionStatusElement == null)
@@ -3048,8 +3050,8 @@
                             // Show a `not-connected` class if the app is not connected with the cluster
                             connectionStatusElement.removeClass('show connected not-connected').toggleClass('show not-connected', !connected)
 
-                            // Perform a check process every 1 minute
-                            setTimeout(() => checkConnectivity(), 60000)
+                            // Perform a check process every 2 minute
+                            setTimeout(() => checkConnectivity(), 120000)
 
                             try {
                               /**

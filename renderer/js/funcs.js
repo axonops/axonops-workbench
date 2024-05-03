@@ -531,8 +531,6 @@ let repairJSON = (json) => {
       .replace(/\(\)/g, "''")
       // Remove an added bracket to the `keyspace_name` attribute that can lead to an error
       .replace(/\'\:\[\'keyspace_name\'/g, "':'keyspace_name'")
-      // Get rid of the `OrderedMapSerializedKey` object - cause the repairing process to fall apart -
-      .replace(/OrderedMapSerializedKey\(\s*\[(.*?)\]\s*\)/g, "''")
       // Get rid of the function's body - which is code -; as this causes the parsing process to fall apart
       .replace(/'body':\s*'([\s\S]*?)',/g, `'body': '',`)
 

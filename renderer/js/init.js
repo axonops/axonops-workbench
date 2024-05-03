@@ -615,7 +615,7 @@ $(document).ready(() => {
                      * Update the tooltip's content and state
                      * Get the object
                      */
-                    let tooltipObject = allMDBObjects.filter((object) => object.type == 'Tooltip' && object.element.is(input))
+                    let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is(input))
 
                     // If the path to the file is invalid or inaccessible then don't adopt it
                     if (!pathIsAccessible(optionValue)) {

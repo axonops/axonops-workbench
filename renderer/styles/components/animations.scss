@@ -163,3 +163,19 @@
     transform: rotate(360deg);
   }
 }
+/**
+* Special animation for the results of searching in the metadata tree view
+*/
+@keyframes animate-click {
+  0% {
+    filter: grayscale(0) brightness(1);
+  }
+
+  50% {
+    filter: grayscale(1) brightness(10);
+  }
+
+  100% {
+    filter: grayscale(0) brightness(1);
+  }
+}

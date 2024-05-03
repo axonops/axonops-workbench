@@ -64,7 +64,7 @@
         .toggle(showTabsTitles)
 
       // Enable/disable the work area's tabs' tooltips
-      allMDBObjects.filter((mdbObject) => mdbObject.element.attr('tab-tooltip') != undefined && mdbObject.element.find('span.title.ignore-resize').length <= 0).forEach((mdbObject) => mdbObject.object[!showTabsTitles ? 'enable' : 'disable']())
+      mdbObjects.filter((mdbObject) => mdbObject.element.attr('tab-tooltip') != undefined && mdbObject.element.find('span.title.ignore-resize').length <= 0).forEach((mdbObject) => mdbObject.object[!showTabsTitles ? 'enable' : 'disable']())
     } catch (e) {}
 
     // Update the switchers' container's status

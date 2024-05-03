@@ -63,7 +63,7 @@ let sshTunnels = []
  * Save all created MDB objects during the app's runtime
  * This array is associated with the singleton pattern implementation in the function `getElementMDBObject(element, ?type)`
  */
-let allMDBObjects = [],
+let mdbObjects = [],
   // The MDB object of the `add` and `refresh` clusters floating buttons' tooltips
   tooltips = {
     addClusterActionButton: null,

@@ -532,7 +532,6 @@
                     copyMetadataBtnID,
                     refreshMetadataBtnID,
                     searchInMetadataBtnID,
-                    searchInMetadataInputID,
                     // CQLSH and Bash sessions, and their related elements
                     cqlshSessionContentID,
                     bashSessionContentID,
@@ -561,7 +560,7 @@
                     // Restart and close the work area
                     restartWorkareaBtnID,
                     closeWorkareaBtnID
-                  ] = getRandomID(20, 26)
+                  ] = getRandomID(20, 25)
 
                   /**
                    * Define tabs that shown only to sandbox projects
@@ -643,10 +642,23 @@
                           <div class="cluster-metadata loading">
                             <div class="search-in-metadata">
                               <div class="form-outline form-white margin-bottom">
-                                <input type="text" class="form-control form-icon-trailing form-control-sm" id="_${searchInMetadataInputID}">
+                                <input type="text" class="form-control form-icon-trailing form-control-sm">
                                 <label class="form-label">
                                   <span mulang="search in metadata" capitalize-first></span>
                                 </label>
+                                <div class="right-elements">
+                                  <div class="result-count">
+                                    <span class="current"></span>/<span class="total"></span>
+                                  </div>
+                                  <div class="arrows">
+                                    <div class="next btn btn-tertiary" data-mdb-ripple-color="light">
+                                      <ion-icon name="arrow-down"></ion-icon>
+                                    </div>
+                                    <div class="previous btn btn-tertiary" data-mdb-ripple-color="light">
+                                      <ion-icon name="arrow-up"></ion-icon>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div class="metadata-content" data-id="${metadataContentID}">
@@ -1687,6 +1699,73 @@
                                     }]))
                                   })
 
+                                  // Handle the search feature in the metadata tree view
+                                  {
+                                    // Define the current index of the search results
+                                    let currentIndex = 0,
+                                      // Hold the last search results in an array
+                                      lastSearchResults = []
+
+                                    // Once a search process is completed
+                                    jsTreeObject.on('search.jstree', function(event, data) {
+                                      try {
+                                        // Reset the current index to be the first result
+                                        currentIndex = 0
+
+                                        // Hold the search results
+                                        lastSearchResults = metadataContent.find('a.jstree-search')
+
+                                        // Remove the click animation class from all results; to be able to execute the animation again
+                                        lastSearchResults.removeClass('animate-click')
+
+                                        // Whether or not the search container should be shown
+                                        workareaElement.find('div.right-elements').toggleClass('show', data.nodes.length > 0)
+
+                                        // Reset the current result where the pointer has reached
+                                        workareaElement.find('div.result-count span.current').text(`1`)
+
+                                        // Set the new number of results
+                                        workareaElement.find('div.result-count span.total').text(`${lastSearchResults.length}`)
+
+                                        // If there's at least one result for this search then attempt to click the first result
+                                        try {
+                                          if (data.nodes.length <= 0)
+                                            throw 0
+
+                                          lastSearchResults[0].click()
+                                        } catch (e) {}
+                                      } catch (e) {}
+                                    })
+
+                                    // Clicks either the previous or the next buttons/arrows
+                                    workareaElement.find('div.right-elements div.arrows div.btn').click(function() {
+                                      try {
+                                        // Increase the index if the clicked button is `next`, otherwise decrease it
+                                        currentIndex += $(this).hasClass('next') ? 1 : -1
+
+                                        // If the pointer has reached the first result already then move to the last one
+                                        if (currentIndex < 0)
+                                          currentIndex = lastSearchResults.length - 1
+
+                                        // If the pointer has reached the last result then move to the first one
+                                        if (currentIndex > lastSearchResults.length - 1)
+                                          currentIndex = 0
+
+                                        // Update the current index text
+                                        workareaElement.find('div.result-count span.current').text(`${currentIndex + 1}`)
+
+                                        // Attempt to click the reached result
+                                        lastSearchResults[currentIndex].click()
+
+                                        // Remove the click animation class from the reached result
+                                        $(lastSearchResults[currentIndex]).removeClass('animate-click')
+
+                                        // Add the click animation class to the reached result
+                                        setTimeout(() => $(lastSearchResults[currentIndex]).addClass('animate-click'), 50)
+                                      } catch (e) {}
+                                    })
+                                  }
+
                                   // This try-catch block is for initializing the metadata differentiation after getting the metadata
                                   try {
                                     // If this is a refresh then skip this try-catch block
@@ -2187,6 +2266,9 @@
                               $.jstree.destroy(jsTreeObject)
                             } catch (e) {}
 
+                          // Trigger the `click` event for the search in metadata tree view button; to make sure it's reset
+                          $(`div.btn[data-id="${searchInMetadataBtnID}"]`).trigger('click', true)
+
                           // Add log about this refreshing process
                           addLog(`Request to refresh the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
@@ -2212,7 +2294,11 @@
                             searchTimeout
 
                           // Clicks the search button/icon
-                          $(`div.btn[data-id="${searchInMetadataBtnID}"]`).click(function() {
+                          $(`div.btn[data-id="${searchInMetadataBtnID}"]`).on('click', function(e, overrideFlag = null) {
+                            // If an override flag has been passed - true/false for showing the search container - then adopt this flag
+                            if (overrideFlag != null)
+                              isSearchShown = overrideFlag
+
                             // Apply a special effect for the tree view based on the current showing status
                             metadataContent.toggleClass('show-search-input', !isSearchShown)
 
@@ -2223,9 +2309,15 @@
                               // Toggle the flag
                               isSearchShown = !isSearchShown
 
-                              // If the new status is to hide the search input then empty the search value - if there's any -
-                              if (!isSearchShown)
-                                searchContainer.find('input').val('').trigger('input')
+                              // If the new status is to show the search input then skip the upcoming code
+                              if (isSearchShown)
+                                return
+
+                              // Empty the search value - if there's one -
+                              searchContainer.find('input').val('').trigger('input')
+
+                              // Hide the navigation arrows
+                              workareaElement.find('div.right-elements').removeClass('show')
                             })
                           })
 
@@ -2236,10 +2328,14 @@
                               clearTimeout(searchTimeout)
 
                             /**
-                             * Perform a search process after 0.5s of finish typing
+                             * Perform a search process after a set time of finish typing
                              * This delay will avoid any potential performance issues
                              */
-                            searchTimeout = setTimeout(() => $(metadataContent).jstree(true).search($(this).val()), 500)
+                            searchTimeout = setTimeout(() => {
+                              try {
+                                $(metadataContent).jstree(true).search($(this).val(), true, false)
+                              } catch (e) {}
+                            }, 500)
                           })
                         }
                       })
@@ -3000,7 +3096,7 @@
                               // Get all tabs' tooltips in the work area
                               workareaTooltipElements = [...workareaElement.find('[tab-tooltip]')],
                               // Get tooltips' objects of the tabs' tooltips
-                              workareaTooltipObjects = allMDBObjects.filter((mdbObject) => workareaTooltipElements.some((elem) => mdbObject.element.is(elem)))
+                              workareaTooltipObjects = mdbObjects.filter((mdbObject) => workareaTooltipElements.some((elem) => mdbObject.element.is(elem)))
 
                             // Inside the workareas, find all tabs' titles and toggle their display based on the window width
                             workareaElement
@@ -6023,7 +6119,7 @@
                * Update the tooltip's content and state
                * Get the object
                */
-              let tooltipObject = allMDBObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
+              let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
 
               // If the path to the file is invalid or inaccessible then don't adopt it
               if (!pathIsAccessible(selected[0])) {

@@ -17,7 +17,7 @@ let getElementMDBObject = (element, type = 'Input') => {
   // Check if the MDB object has already been created
   try {
     // Get the MDB object by filtering all created objects
-    let foundObject = allMDBObjects.filter((object) => object.element.is(element) && object.type == type)
+    let foundObject = mdbObjects.filter((object) => object.element.is(element) && object.type == type)
 
     // If it has already been found then return it
     if (foundObject.length != 0)
@@ -26,7 +26,7 @@ let getElementMDBObject = (element, type = 'Input') => {
 
   /**
    * Check if the type is a `tooltip`
-   * Tooltips are handled by `TippyJS` instead of MDB tooltip; because `Tippy` adds a trackable ID to the created tooltip element; so we can change its position as needed
+   * Tooltips are handled by `TippyJS` instead of MDB tooltip; because `Tippy` adds a trackable ID to the created tooltip element; so its position can be changed as needed
    * This feature is available by many libraries besides `TippyJS`, it's not available in MDB nor `Bootstrap` though
    */
   try {
@@ -114,7 +114,7 @@ let getElementMDBObject = (element, type = 'Input') => {
     })
 
     // Push the created object to be returned later once it's called
-    allMDBObjects.push({
+    mdbObjects.push({
       element,
       object,
       type: 'Tooltip'
@@ -139,7 +139,7 @@ let getElementMDBObject = (element, type = 'Input') => {
   }
 
   // Push the created object to be returned later once it's called
-  allMDBObjects.push({
+  mdbObjects.push({
     element,
     object,
     type
@@ -203,15 +203,15 @@ let loadStyleSheet = (path) => {
  * @Parameters:
  * {string} `title` the title of the toast
  * {string} `text` the text to be shown in the toast
- * {string} `?type` the toast's type, the value could be:
+ * {string} `?type` the toast's type, all possible values are:
  * [`success`, `failure`, `warning`, and `neutral`]
- * {string} `?toastID` if an ID has been passed then the toast will be pinned tell it's called to be destroyed
+ * {string} `?toastID` if an ID has been passed then the toast will be pinned till it's called to be destroyed
  * {object} `?clickCallback` a function to be called once the navigation icon is clicked - will be shown only if a callback function has been passed -
  */
 let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = null) => {
   /**
    * Set the proper time-out
-   * This is performed either by just setting it to 5.5s or based on the text's length with a maximum time of 20s
+   * This is performed either by just setting it to a fixed value, or based on the text's length with a maximum time of 20s
    */
   let minTimeout = 5500,
     maxTimeout = 20000,
@@ -268,7 +268,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
 
   // Append the toast to the main toasts' container
   $('body div.toast-container').append($(element).show(function() {
-    // Point at the toast element
+    // Point at the just-created toast element
     let toast = $(this),
       // Point at the progress bar
       progressBar = toast.find('div.bar'),
@@ -281,12 +281,12 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
     toast.addClass('animate')
 
     try {
-      // If the toast is pinned then there's no need to progress bar
+      // If the toast is pinned then there's no need to show nor animate the progress bar, skip this try-catch block
       if (toastID.length != 0)
         throw 0
 
       /**
-       * Start to animate the decreasing of the progress bar after 100ms of creation
+       * Start to animate the decreasing of the progress bar after a set period of time of creation
        * Once the animation is done click the close button
        */
       setTimeout(() => {
@@ -296,7 +296,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
       }, 150)
     } catch (e) {}
 
-    // Clicking the close button
+    // Clicks the close button
     closeBtn.click(() => {
       // Hide the toast with fading animation
       toast.addClass('animate-hide')
@@ -315,7 +315,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
     } catch (e) {}
   }))
 
-  // If the toast is pinned then there's no need to add it in the notifications center
+  // If the toast is pinned then there's no need to add it in the notifications center, skip the upcoming code
   if (toastID.length != 0)
     return
 
@@ -331,9 +331,9 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
     IPCRenderer.removeAllListeners('window:focused')
 
     // Got a response from the main thread
-    IPCRenderer.on('window:focused', (_, focused) => {
+    IPCRenderer.on('window:focused', (_, isFocused) => {
       // If the main window is being focused then skip this entire process - no need to push the toast -
-      if (focused)
+      if (isFocused)
         return
 
       // Point at the notifications' container
@@ -463,7 +463,7 @@ let updatePinnedToast = (pinnedToastID, text, destroy = false) => {
  * {integer} `timestamp` the timestamp value to be formatted
  * {boolean} `?isSecondFormat` return the second format `Year-Month-Day Hours:Minutes:Seconds`
  *
- * @Return: {string} formatted timestamp `Day-Month-Year Hours:Minutes:Seconds`
+ * @Return: {string} formatted timestamp with the chosen format
  */
 let formatTimestamp = (timestamp, isSecondFormat = false) => {
   // Define the final result to be returned

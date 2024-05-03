@@ -421,6 +421,9 @@ div.search-in-metadata {
   opacity: 0;
   pointer-events: none;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 15px 0 #17181a;
+  position: relative;
+  z-index: 1;
 
   div.form-outline {
     opacity: 0;
@@ -447,5 +450,98 @@ div.search-in-metadata {
       transition-delay: 0.2s;
       opacity: 1;
     }
+  }
+
+  div.right-elements {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    margin-right: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease-in-out;
+
+    div.result-count {
+      font-size: 70%;
+      opacity: 0;
+      transition: opacity 0.15s ease-in-out;
+    }
+
+    div.arrows {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      width: 40px;
+      margin-left: 10px;
+
+      div.btn {
+        color: inherit;
+        font-size: 100%;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.15s ease-in-out;
+
+        ion-icon {
+          position: absolute;
+          inset: 0;
+          margin: auto;
+          top: 3px;
+        }
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+
+    &.show {
+      opacity: 1;
+      pointer-events: all;
+      transition: opacity 0.15s ease-in-out;
+
+      div.arrows {
+        div.btn {
+          opacity: 1;
+
+          &.previous {
+            transition-delay: 0.05s;
+          }
+
+          &.next {
+            transition-delay: 0.1s;
+          }
+        }
+      }
+
+      div.result-count {
+        opacity: 1;
+        transition-delay: 0.15s;
+      }
+    }
+  }
+}
+
+a.jstree-anchor.animate-click {
+  animation: {
+    name: animate-click;
+    duration: 0.5s;
+    timing-function: ease-in-out;
+    iteration-count: 1;
   }
 }

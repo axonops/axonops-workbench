@@ -6,7 +6,10 @@
 let format = (diff, divisor, unit, past, future, isInTheFuture) => {
   let val = Math.round(Math.abs(diff) / divisor)
 
-  // Format the text for right-to-left languages
+  /**
+   * Add support for right-to-left languages
+   * This will help with showing the text in the correct way if the language (like Arabic and Hebrew) are read from the right to the left
+   */
   try {
     if (I18next.dir() != 'rtl')
       throw 0

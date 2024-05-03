@@ -94,12 +94,12 @@ jobs:
       
       - name: Pack Axonops Developer Workbench for macOS
         run: |
-          npm run pack:macos
-          tar -cvzf pack-macos.tar pack-macos
+          npm run pack:macos:arm
+          tar -cvzf pack-macos-arm.tar pack-macos-arm
         
       - name: Upload macOS packed version as artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Axonops.Developer.Workbench-macOS
-          path: pack-macos.tar
+          path: pack-macos-arm.tar
           

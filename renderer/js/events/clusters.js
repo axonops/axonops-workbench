@@ -1729,9 +1729,6 @@
 
                                         // If there's at least one result for this search then attempt to click the first result
                                         try {
-                                          if (data.nodes.length <= 0)
-                                            throw 0
-
                                           lastSearchResults[0].click()
                                         } catch (e) {}
                                       } catch (e) {}

@@ -1511,7 +1511,7 @@ div.body {
                     name: animate-click;
                     duration: 0.6s;
                     timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-                    iteration-count: 1;
+                    fill-mode: forwards;
                   }
                 }
               }

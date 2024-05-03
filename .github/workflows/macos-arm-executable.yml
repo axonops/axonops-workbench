@@ -100,6 +100,6 @@ jobs:
       - name: Upload macOS packed version as artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: Axonops.Developer.Workbench-macOS
+          name: Axonops.Developer.Workbench-macOS-ARM
           path: pack-macos-arm.tar
           

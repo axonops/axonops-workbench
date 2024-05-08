@@ -507,6 +507,23 @@
                     } catch (e) {}
                   } catch (e) {}
 
+                  // Handle when connection is lost with the cluster
+                  try {
+                    // If the work area exists then skip this try-catch block
+                    if (contentCluster.length > 0)
+                      throw 0
+
+                    // If the `data-connected` attribute is anything rather than `false` then skip this try-catch block
+                    if (getAttributes(clusterElement, 'data-connected') != 'false')
+                      throw 0
+
+                    // Show feedback to the user
+                    showToast(I18next.capitalize(I18next.t('unable to create workarea')), I18next.capitalizeFirstLetter(I18next.replaceData('connection with cluster [b]$data[/b] seems not pre-established or has been lost. please attempt to test connection with it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+
+                    // Skip the upcoming code
+                    return
+                  } catch (e) {}
+
                   try {
                     // If the `restart` flag is `true` then skip this try-catch block
                     if (restart)
@@ -675,7 +692,7 @@
                                 </div>
                               </div>
                               <div class="action" action="refresh">
-                                <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first data-id="${refreshMetadataBtnID}">
+                                <div class="btn btn-tertiary disableable" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first data-id="${refreshMetadataBtnID}">
                                   <ion-icon name="refresh"></ion-icon>
                                 </div>
                               </div>
@@ -813,7 +830,7 @@
                                 <div class="centered-badges">
                                   <span class="badge badge-primary btn btn-secondary btn-dark btn-sm changes" data-mdb-ripple-color="dark" data-changes="0" data-id="${showDifferentiationBtnID}"><span mulang="changes" capitalize></span>: <span>0</span></span>
                                   <div class="actions">
-                                    <span class="refresh btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
+                                    <span class="refresh btn btn-secondary btn-dark btn-sm disableable" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
                                       data-id="${refreshDifferentiationBtnID}" ${isSandbox ? 'style=\"bottom:0px\"' : '' }>
                                       <ion-icon name="refresh"></ion-icon>
                                     </span>
@@ -1647,6 +1664,10 @@
                                   jsTreeObject.on('contextmenu', function(event) {
                                     // Remove the default contextmenu created by the plugin
                                     $('.vakata-context').remove()
+
+                                    // If connection is lost with the cluster then no context-menu would be shown
+                                    if (isConnectionLost)
+                                      return
 
                                     // Point at the right-clicked node
                                     let clickedNode = $(event.target)
@@ -3123,7 +3144,12 @@
                     setTimeout(() => $(`button[button-id="${connectBtnID}"]`).children('span').attr('mulang', 'enter').text(I18next.t('enter')), 1000)
 
 
-                    // Check the connectivity with the current cluster
+                    /*
+                     * Check the connectivity with the current cluster
+                     * Define a flag to be used in wider scope - especially for the right-click context-menu of the tree view items -
+                     */
+                    let isConnectionLost = false
+
                     {
                       // By default, the flag to show a toast regards lost connection is set to `false`
                       let isLostConnectionToastShown = false
@@ -3143,8 +3169,21 @@
                             // Show a `not-connected` class if the app is not connected with the cluster
                             connectionStatusElement.removeClass('show connected not-connected').toggleClass('show not-connected', !connected)
 
-                            // Perform a check process every 2 minute
-                            setTimeout(() => checkConnectivity(), 120000)
+                            // Perform a check process every 1 minute
+                            setTimeout(() => checkConnectivity(), 60000)
+
+                            // Update the associated flag
+                            isConnectionLost = !connected
+
+                            /**
+                             * Apply different effects on the work area UI
+                             * Update the cluster's element in the clusters' list
+                             */
+                            clusterElement.attr('data-connected', connected ? 'true' : 'false')
+                              .children('div.status').addClass(connected ? 'success' : 'failure').removeClass(connected ? 'failure' : 'success')
+
+                            // Disable selected buttons
+                            workareaElement.find('.disableable').toggleClass('disabled', !connected)
 
                             try {
                               /**

@@ -728,6 +728,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     $(`${selector}[action="add"] button`).click(() => {
       // It'll click the `ADD WORKSPACE` button
       $(`button#addWorkspaceProcess`).click()
+
+      // Remove the `show` class of the actions section; to hide the actions buttons
+      $(`${selector}`).parent().removeClass('show')
     })
 
     // Clicks the refresh button

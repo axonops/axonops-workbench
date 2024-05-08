@@ -381,7 +381,7 @@
             </div>
             <div class="row">
               <div class="col-md-11">
-                <div class="form-outline form-white margin-bottom">
+                <div class="form-outline form-white margin-bottom notch-no-radius">
                   <ion-icon name class="trailing"></ion-icon>
                   <input type="text" class="form-control form-icon-trailing form-control-lg" id="workspaceColor">
                   <label class="form-label">
@@ -392,16 +392,16 @@
                 </div>
                 <input type="text" class="coloris" id="workspaceColorHidden" data-coloris>
               </div>
-              <div class="col-md-1 flex">
+              <div class="col-md-1 flex col-add-border">
                 <div class="preview-color">
                 </div>
               </div>
             </div>
             <div class="row">
               <div class="col-md-11">
-                <div class="form-outline form-white margin-bottom sm">
+                <div class="form-outline form-white margin-bottom sm notch-no-radius">
                   <ion-icon name class="trailing"></ion-icon>
-                  <input type="text" class="form-control form-icon-trailing form-control-lg" tabindex="-1" id="workspacePath">
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" tabindex="-1" id="workspacePath" style="overflow: hidden; text-overflow: ellipsis;">
                   <label class="form-label">
                     <span mulang="workspace path" capitalize></span>
                   </label>
@@ -410,8 +410,8 @@
                   <div class="clickable" for-input="workspacePath"></div>
                 </div>
               </div>
-              <div class="col-md-1 flex">
-                <div class="icon-button">
+              <div class="col-md-1 flex col-add-border">
+                <div class="icon-button" style="top: auto; left: 3px;">
                   <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-mulang="set default path" capitalize-first data-title="Set default path" data-action="defaultPath"
                     data-reference="workspace">
                     <ion-icon name="folder-open"></ion-icon>

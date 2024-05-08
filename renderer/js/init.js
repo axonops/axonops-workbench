@@ -789,9 +789,6 @@ $(document).ready(() => $(document).trigger('getWorkspaces'))
 // Clear the temporary files and folders created by the app and its binaries
 $(document).ready(() => clearTemp())
 
-// Once the main window/view is fully loaded send the `loaded` event to the main thread
-$(document).ready(() => setTimeout(() => IPCRenderer.send('loaded'), 1000))
-
 // Get the view content's ID from the main thread
 $(document).ready(() => IPCRenderer.on('view-content-id', (_, contentID) => viewContentID = contentID))
 
@@ -844,3 +841,6 @@ $(document).ready(() => {
     } catch (e) {}
   }, 3000)
 })
+
+// Once the main window/view is fully loaded send the `loaded` event to the main thread
+$(document).ready(() => setTimeout(() => IPCRenderer.send('loaded'), 1000))

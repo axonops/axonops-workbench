@@ -1228,6 +1228,14 @@ div.body {
                         &:hover {
                           opacity: 0.8;
                         }
+
+                        &.disabled {
+                          pointer-events: none;
+
+                          ion-icon {
+                            color: #6c6c6c;
+                          }
+                        }
                       }
                     }
                   }

@@ -323,7 +323,10 @@
       "connection with cluster [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional": "la connexion avec le cluster [b]$data[/b] dans l'espace de travail [b]$data[/b] est perdue. Un toast sera affiché lorsque la connexion sera rétablie. La plupart des processus de la zone de travail sont désormais non fonctionnels",
       "connection with cluster $data restored": "connexion avec le cluster $data restaurée",
       "connection with cluster [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional": "la connexion avec le cluster [b]$data[/b] dans l'espace de travail [b]$data[/b] a été restaurée. Tous les processus de la zone de travail sont désormais fonctionnels",
-      "search in metadata": "recherche dans les métadonnées"
+      "search in metadata": "recherche dans les métadonnées",
+      "unable to create workarea": "impossible de créer une zone de travail",
+      "connection with cluster [b]$data[/b] seems not pre-established or has been lost. please attempt to test connection with it": "connection with cluster [b]$data[/b] seems not pre-established or has been lost. please attempt to test connection with it",
+      "connection with cluster [b]$data[/b] seems not pre-established or has been lost. please attempt to test connection with it": "la connexion avec le cluster [b]$data[/b] ne semble pas pré-établie ou a été perdue. veuillez essayer de tester la connexion avec celui-ci"
     }
   }
 }

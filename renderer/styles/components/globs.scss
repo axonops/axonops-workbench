@@ -545,3 +545,24 @@ a.jstree-anchor.animate-click {
     iteration-count: 1;
   }
 }
+
+div.form-outline.notch-no-radius {
+  div.form-notch {
+    div.form-notch-trailing {
+      border-radius: 0 !important;
+    }
+  }
+}
+
+div.col-add-border {
+  height: 44.61px;
+  position: relative;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid rgba(189, 189, 189, 0.30);
+  border-left: 0;
+  border-radius: 0 0.25rem 0.25rem 0;
+}

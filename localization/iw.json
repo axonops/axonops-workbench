@@ -323,7 +323,9 @@
       "connection with cluster [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional": "החיבור עם אשכול [b]$data[/b] בסביבת העבודה [b]$data[/b] אבד. טוסט יוצג כאשר החיבור ישוחזר. רוב תהליכי אזור העבודה אינם פונקציונליים כעת",
       "connection with cluster $data restored": "החיבור לאשכול $data שוחזר",
       "connection with cluster [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional": "החיבור עם אשכול [b]$data[/b] בסביבת העבודה [b]$data[/b] שוחזר. כל תהליכי אזור העבודה פונקציונליים כעת",
-      "search in metadata": "חפש במטא נתונים"
+      "search in metadata": "חפש במטא נתונים",
+      "unable to create workarea": "לא מצליח ליצור אזור עבודה",
+      "connection with cluster [b]$data[/b] seems not pre-established or has been lost. please attempt to test connection with it": "נראה שהחיבור עם אשכול [b]$data[/b] לא הוקם מראש או שאבד. אנא נסה לבדוק את החיבור אליו"
     }
   }
 }

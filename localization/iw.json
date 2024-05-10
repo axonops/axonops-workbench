@@ -325,7 +325,9 @@
       "connection with cluster [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional": "החיבור עם אשכול [b]$data[/b] בסביבת העבודה [b]$data[/b] שוחזר. כל תהליכי אזור העבודה פונקציונליים כעת",
       "search in metadata": "חפש במטא נתונים",
       "unable to create workarea": "לא מצליח ליצור אזור עבודה",
-      "connection with cluster [b]$data[/b] seems not pre-established or has been lost. please attempt to test connection with it": "נראה שהחיבור עם אשכול [b]$data[/b] לא הוקם מראש או שאבד. אנא נסה לבדוק את החיבור אליו"
+      "connection with cluster [b]$data[/b] seems not pre-established or has been lost. please attempt to test connection with it": "נראה שהחיבור עם אשכול [b]$data[/b] לא הוקם מראש או שאבד. אנא נסה לבדוק את החיבור אליו",
+      "copy query tracing result": "תוצאת מעקב אחר שאילתה העתקה",
+      "query tracing result with session ID of [b]$data[/b] has been copied to the clipboard, the size is $data": "תוצאת מעקב שאילתה עם מזהה הפעלה של [b]$data[/b] הועתקה ללוח, הגודל הוא $data"
     }
   }
 }

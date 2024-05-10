@@ -1263,6 +1263,11 @@
                                     <div class="right-chart"><canvas data-canvas-id="${canvasPieChartID}" width="100%"></canvas></div>
                                   </div>
                                   <div class="info-right">
+                                    <div class="copy-tracing">
+                                      <div class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-title="Copy the tracing result" data-mulang="copy the tracing result" capitalize-first>
+                                        <ion-icon name="copy-solid"></ion-icon>
+                                      </div>
+                                    </div>
                                     <table class="table table-bordered">
                                       <thead>
                                         <tr>
@@ -1315,6 +1320,26 @@
                                   })
                                 })
                               }
+
+                              // Clicks the copy button
+                              setTimeout(() => {
+                                $(this).find('div.copy-tracing div.btn').click(function() {
+                                  // Get the beautified version of the result
+                                  let resultBeautified = applyJSONBeautify(result),
+                                    // Get the result size
+                                    resultSize = ByteSize(ValueSize(resultBeautified))
+
+                                  // Copy the result to the clipboard
+                                  try {
+                                    Clipboard.writeText(resultBeautified)
+                                  } catch (e) {
+                                    errorLog(e, 'clusters')
+                                  }
+
+                                  // Give feedback to the user
+                                  showToast(I18next.capitalize(I18next.t('copy query tracing result')), I18next.capitalizeFirstLetter(I18next.replaceData('query tracing result with session ID of [b]$data[/b] has been copied to the clipboard, the size is $data', [sessionID, resultSize])) + '.', 'success')
+                                })
+                              })
 
                               // Set the common configuration between the two charts - timeline and doughnut -
                               let chartConfiguration = {
@@ -1693,6 +1718,10 @@
                                     if (!clickedNode.is('a') || clickedNode.attr('allow-right-context') != 'true')
                                       return
 
+                                    // If there's no processing element in the anchor then append one
+                                    if (clickedNode.find('div.processing').length <= 0)
+                                      clickedNode.append($(`<div class="processing"></div>`))
+
                                     let [
                                       // Get the target's node name in Cassandra
                                       targetName,
@@ -1715,7 +1744,8 @@
                                       click: `() => views.main.webContents.send('cql-desc:get', {
                                          clusterID: '${getAttributes(clusterElement, 'data-id')}',
                                          scope: '${scope}',
-                                         tabID: '${cqlDescriptionContentID}'
+                                         tabID: '${cqlDescriptionContentID}',
+                                         nodeID: '${getAttributes(clickedNode, 'id')}'
                                        })`
                                     }]))
                                   })
@@ -6478,11 +6508,19 @@
         cqlDescriptionTab = $(`a.nav-link.btn[href="#_${data.tabID}"]`),
         // Get the cql descriptions' tab MDB object
         cqlDescriptionTabObject = getElementMDBObject(cqlDescriptionTab, 'Tab'),
-        // Flag to tell if the description has been fetched already or not
-        isDescriptionFetched = false
+        // Flag to tell if the description has been fetched already or not - no need to perform the same actions for the same request -
+        isDescriptionFetched = false,
+        // Point at the clicked node
+        clickedNode = $(`#${data.nodeID}`)
+
+      // Add the processing class
+      clickedNode.addClass('perform-process')
 
       // Get the CQL description based on the passed scope
       Modules.Clusters.getCQLDescription(data.clusterID, data.scope, (description) => {
+        // As the description has been received remove the processing class
+        clickedNode.removeClass('perform-process')
+
         // If the description has been fetched already then skip this process
         if (isDescriptionFetched)
           return
@@ -6545,15 +6583,81 @@
         // Description's UI element structure
         let element = `
             <div class="description" data-scope="${data.scope}">
-              <span class="badge rounded-pill badge-secondary">${scope}</span>
+              <span class="badge rounded-pill badge-secondary">
+                <a href="#_${editorContainerID}">${scope}</a>
+              </span>
               <div class="inner-content">
-                <div class="editor" id="_${editorContainerID}">
-                </div>
+                <div class="editor" id="_${editorContainerID}"></div>
+              </div>
+              <div class="expand-editor">
+                <button type="button" class="btn btn-sm btn-tertiary expand-editor" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="right" data-mulang="expand editor" capitalize data-title="Expand editor">
+                  <ion-icon name="arrow-left"></ion-icon>
+                </button>
               </div>
             </div>`
 
         // Prepend the description's UI element to the container
         cqlDescriptionsContainer.prepend($(element).show(function() {
+          // Handle the expandation/shrinking button's different actions and events listeners
+          setTimeout(() => {
+            // Point at the description UI element
+            let main = $(this),
+              // Hold the original height of the description before any manipulation
+              originalHeight = main.height(),
+              // Point at the expandation/shrinking button
+              expandBtnElement = $(this).find('button[data-tippy="tooltip"]'); // This semicolon is critical here
+
+            // Create a tooltip object for the button
+            getElementMDBObject(expandBtnElement, 'Tooltip')
+
+            // Once the button is clicked
+            expandBtnElement.click(function() {
+              // Whether or not the description's UI element has already been expanded
+              let isAlreadyExpanded = $(this).hasClass('shrink')
+
+              // Toggle the `shrink` class for the button based on the flag
+              $(this).toggleClass('shrink', !isAlreadyExpanded)
+
+              // If the original height hasn't been fetched then fetch it now
+              if (originalHeight <= 0)
+                originalHeight = main.height()
+
+              try {
+                // If the description's UI element is not expanded already then skip this try-catch block
+                if (!isAlreadyExpanded)
+                  throw 0
+
+                // Set the original height
+                main.css('height', `${originalHeight}px`)
+
+                /**
+                 * After a set period of time set `height` to be `auto`
+                 * This is useful in case the app's main window has been resized
+                 */
+                setTimeout(() => main.css('height', `auto`), 210)
+
+                // Skip the upcoming code
+                return
+              } catch (e) {}
+
+              // Set the original height
+              main.css('height', `${originalHeight}px`)
+
+              /**
+               * Reaching here means the description's UI element has to be expanded
+               *
+               * Get the descriptions' container's height
+               */
+              let descriptionsContainerHeight = main.parent().height()
+
+              // Set the new height of the description's UI element
+              main.css('height', `${descriptionsContainerHeight - 38}px`)
+
+              // Click the attached anchor in the description's UI element
+              setTimeout(() => $(main).find('a')[0].click(), 210)
+            })
+          })
+
           setTimeout(() => {
             // Create an editor for the description
             let descriptionEditor = monaco.editor.create($(`#_${editorContainerID}`)[0], {
@@ -6569,7 +6673,7 @@
                 showFunctions: false
               },
               theme: 'vs-dark',
-              scrollBeyondLastLine: true,
+              scrollBeyondLastLine: false,
               fontSize: 11
             })
 
@@ -6583,15 +6687,24 @@
                 // After 5 executes
                 if (count >= 5) {
                   /**
-                   * Create a resize observer for the work area body element
-                   * By doing this the editor's dimensions will always fit with the dialog's dimensions
+                   * Create a multiple resize observers for the work area body element
+                   * By doing this the editor's dimensions will always fit with its parent container
+                   *
+                   * Create observer for the work area overall
                    */
                   setTimeout(() => {
                     (new ResizeObserver(() => {
                       try {
                         descriptionEditor.layout()
                       } catch (e) {}
-                    })).observe(workareaElement[0])
+                    })).observe(workareaElement[0]); // This semicolon is critical here
+
+                    // Create observer for the description's UI element
+                    (new ResizeObserver(() => {
+                      try {
+                        descriptionEditor.layout()
+                      } catch (e) {}
+                    })).observe($(this)[0])
                   })
 
                   // Clear the interval

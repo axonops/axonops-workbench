@@ -1,0 +1,9 @@
+[
+  {
+    "id": "09ce1a2ac9",
+    "question": "I want to select all columns in table users, in keyspace school, what cql statement should I use?",
+    "questionDate": 1715365631335,
+    "answer": " <code>SELECT * FROM users</code>",
+    "answerDate": 1715365749875
+  }
+]

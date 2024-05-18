@@ -5,23 +5,27 @@
  */
 require('v8-compile-cache')
 
-// Import Electron module and its sub-modules
+/**
+ * Import Electron module and its sub-modules
+ *
+ * Import the main module
+ */
 const Electron = require('electron'),
   /**
    * Import different sub-modules from the Electron module
    *
    * `app`
-   * For controlling the app's event lifecycle
+   * For controlling the app's event life cycle
    */
   App = Electron.app,
   /**
    * `BrowserWindow`
-   * For creating and controlling the app's windows
+   * Used to create and manage windows within the app
    */
   Window = Electron.BrowserWindow,
   /**
    * `Menu`
-   * For creating native application menus and context menus
+   * Creating native application menus and context menus
    */
   Menu = Electron.Menu,
   /**
@@ -32,7 +36,7 @@ const Electron = require('electron'),
 
 /**
  * Import modules globally
- * Those modules can be reached from all main's sub-modules like `pty` and `config`
+ * Those modules can be reached from all sub-modules of the main module, such as `pty` and `config`
  *
  * `ipcMain`
  * For communicating asynchronously from the main thread to the renderer thread(s)
@@ -70,7 +74,7 @@ const URL = require('url'),
  * Enable - ready to be used - right-click context menu
  */
 const ContextMenu = require('electron-context-menu'),
-  // Helps to position the app's windows
+  // Used to position the windows of the application.
   Positioner = require('electron-positioner')
 
 /**
@@ -133,8 +137,8 @@ let views = {
 
 // An array that will save all cqlsh instances with their ID given by the renderer thread
 let CQLSHInstances = [],
-  // Whether or not the user wants to entirely quit the app - this happens when all renderer threads are terminated/closed -
-  isMacOSForceClose = false,
+  // Whether or not the user wants to completely quit the application. This occurs when all renderer threads are terminated or closed
+  isMacOSForcedClose = false,
   // A `logging` object which will be created once the app is ready
   logging = null
 
@@ -164,7 +168,9 @@ let createWindow = (properties, viewPath, extraProperties = {}) => {
 
   // Whether or not the window should be at the center of the screen
   if (extraProperties.center)
-    (new Positioner(windowObject)).move('center')
+    try {
+      (new Positioner(windowObject)).move('center')
+    } catch (e) {}
 
   // When the window has loaded
   windowObject.webContents.on('did-finish-load', () => {
@@ -174,15 +180,22 @@ let createWindow = (properties, viewPath, extraProperties = {}) => {
      * Maximizing the window size
      */
     if (extraProperties.maximize)
-      windowObject.maximize()
+      try {
+        windowObject.maximize()
+      } catch (e) {}
+
 
     // Whether or not the window should be shown
     if (extraProperties.show)
-      windowObject.show()
+      try {
+        windowObject.show()
+      } catch (e) {}
 
     // Whether or not developer tools should be opened
     if (extraProperties.openDevTools)
-      windowObject.webContents.openDevTools()
+      try {
+        windowObject.webContents.openDevTools()
+      } catch (e) {}
 
     // Send the window's content's ID
     try {
@@ -190,7 +203,7 @@ let createWindow = (properties, viewPath, extraProperties = {}) => {
     } catch (e) {}
   })
 
-  // When the window is closed - event has finished -, set the window object reference to `null`; as it should be neglected after being closed
+  // When the window is closed, the event has finished; set the window object reference to `null`
   windowObject.on('closed', () => {
     windowObject = null
   })
@@ -321,14 +334,14 @@ App.on('ready', () => {
    * This event is only triggered at the back-end and not by the user
    */
   views.backgroundProcesses.on('close', () => {
-    // Update `isMacOSForceClose` flag if needed
+    // Update `isMacOSForcedClose` flag if needed
     try {
       // If the value is already `true` then skip this try-catch block
-      if (isMacOSForceClose)
+      if (isMacOSForcedClose)
         throw 0
 
       // Update the value
-      isMacOSForceClose = true
+      isMacOSForcedClose = true
 
       // Call the `close` event for the `views.main` but this time with forcing the close of all windows
       views.main.close()
@@ -360,7 +373,7 @@ App.on('ready', () => {
     // Special process for macOS only
     try {
       // If the current OS is not macOS or there's a force to close the windows then skip this try-catch block
-      if (process.platform != 'darwin' || isMacOSForceClose)
+      if (process.platform != 'darwin' || isMacOSForcedClose)
         throw 0
 
       // On macOS, just minimize the main window when the user clicks the `X` button
@@ -588,7 +601,7 @@ App.on('window-all-closed', () => App.quit())
       })
 
       /**
-       * Update an SSH tunnel's key/ID in the `sshTunnels` array with another new one
+       * Update an SSH tunnel's key/ID in the `sshTunnelsObjects` array with another new one
        * The process is mainly for changing the old temporary tunnel ID with the associated cluster's ID
        */
       IPCMain.on(`ssh-tunnel:update`, (_, data) => {
@@ -632,7 +645,7 @@ App.on('window-all-closed', () => App.quit())
     // Entirely quit from the app
     IPCMain.on('options:actions:quit', () => {
       // Make sure the quit action will be performed well on macOS
-      isMacOSForceClose = true
+      isMacOSForcedClose = true
 
       // Close the main window
       views.main.close()

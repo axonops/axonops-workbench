@@ -53,7 +53,7 @@ $(document).ready(() => {
 })
 
 // An array to hold all created SSH tunnels
-let sshTunnels = [],
+let sshTunnelsObjects = [],
   // Boolean value used to tell if the logging system should be enabled in the current session or not
   isLoggingEnabled = true
 
@@ -202,7 +202,7 @@ Config.getConfig(async (config) => {
           let key = data.clusterID == 'port' ? `_${localPort}` : data.clusterID
 
           // Add the SSH tunnel to the array
-          sshTunnels[key] = {
+          sshTunnelsObjects[key] = {
             object: tunnel,
             port: localPort
           }
@@ -241,9 +241,9 @@ Config.getConfig(async (config) => {
           throw 0
 
         // Loop through the active SSH tunnels
-        Object.keys(sshTunnels).forEach((tunnel) => {
+        Object.keys(sshTunnelsObjects).forEach((tunnel) => {
           // Define the current SSH tunnel
-          let sshTunnel = sshTunnels[tunnel]
+          let sshTunnel = sshTunnelsObjects[tunnel]
 
           // If the current SSH tunnel's port is not the given one then skip it and move to the next tunnel
           if (sshTunnel.port != clusterID)
@@ -268,7 +268,7 @@ Config.getConfig(async (config) => {
 
       // Close that SSH tunnel
       try {
-        sshTunnels[clusterID].object.close()
+        sshTunnelsObjects[clusterID].object.close()
 
         // Add log for this process
         addLog(`The SSH tunnel which associated with cluster of ID/defined-port '${clusterID}' has been closed.`)
@@ -280,11 +280,11 @@ Config.getConfig(async (config) => {
     // Request to update the key/ID of a created SSH tunnel
     IPCRenderer.on('ssh-tunnel:update', (_, data) => {
       try {
-        if (sshTunnels[data.newID] != undefined)
+        if (sshTunnelsObjects[data.newID] != undefined)
           throw 0
 
-        // Set the new ID in the `sshTunnels` array and make sure to put the SSH tunnel's object in it
-        sshTunnels[data.newID] = sshTunnels[data.oldID]
+        // Set the new ID in the `sshTunnelsObjects` array and make sure to put the SSH tunnel's object in it
+        sshTunnelsObjects[data.newID] = sshTunnelsObjects[data.oldID]
       } catch (e) {}
     })
   }

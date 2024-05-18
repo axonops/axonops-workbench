@@ -15,7 +15,7 @@
       // Point at the cluster's container
       clustersContainer = parentClusterContainer.children(`div.clusters-container`).children(`div.clusters[workspace-id="${workspaceID}"]`)
 
-    // Determine if the associated workspace is the Docker-sandbox
+    // Determine if the associated workspace is the docker/sandbox projects
     let isSandbox = workspaceID == 'workspace-sandbox',
       // Set the suitable function to get clusters/projects based on the type of the workspace
       getModuleFunction = !isSandbox ? Modules.Clusters.getClusters : Modules.Docker.getProjects
@@ -32,27 +32,23 @@
       // Toggle the `empty` class
       setTimeout(() => parentClusterContainer.toggleClass('empty', isNoClusters), isNoClusters ? 200 : 10)
 
-      /**
-       * Click the cog actions button; to hide the actions sub-buttons
-       *
-       * Point at the cog actions button in the UI
-       */
+      // Point at the cog actions button in the UI
       let clusterActions = parentClusterContainer.find('div.section-actions')
 
-      // If sub-buttons are shown then hide them
+      // If sub-buttons of the cog actions are shown then hide them
       if (clusterActions.hasClass('show'))
         clusterActions.children('div.main').children('button').click()
 
-      // Loop through all clusters
+      // Loop through all fetched clusters
       clusters.forEach((cluster, currentIndex) => {
         try {
-          // If the current workspace is not the sandbox then skip this try-catch block
+          // If the current workspace is not the docker/sandbox then skip this try-catch block
           if (!isSandbox)
             throw 0
 
           /**
            * Set different attributes for the current cluster's object
-           * By doing this resusing and adopting the the same code of clusters for the sandbox projects is possible without the need to do heavy edits and changes
+           * By doing this, resusing and adopting the the same code of clusters for the sandbox projects is possible without the need to do heavy edits and changes
            */
           cluster.info = {}
           cluster.info.id = cluster.folder
@@ -69,14 +65,14 @@
           [
             testConnectionBtnID,
             connectBtnID,
+            terminateProcessBtnID,
             startProjectBtnID,
             folderBtnID,
             settingsBtnID,
-            deleteBtnID,
-            terminateProcessBtnID
+            deleteBtnID
           ] = getRandomID(15, 7),
           /**
-           * Define an initial ID for the connection test process of the cluster
+           * Define the variable which holds the ID for the connection test process of the cluster
            * The value will be updated with every test connection process
            */
           testConnectionProcessID,
@@ -86,23 +82,20 @@
            */
           axonopsContentID = getRandomID(15),
           // Flag to tell if this cluster is going to be added/appended to the UI as a new element or if it already exists, by default it's `true`
-          append = true
+          isAppendAllowed = true
 
         /**
          * Look for the cluster in the UI
          * If it exists then no need to append it
          */
         if (event == 'refreshClusters')
-          append = $(`div.cluster[data-id="${clusterID}"][data-workspace-id="${workspaceID}"]`).length != 0 ? false : append
+          isAppendAllowed = $(`div.cluster[data-id="${clusterID}"][data-workspace-id="${workspaceID}"]`).length != 0 ? false : isAppendAllowed
 
-        // This variable will contain the username and password of DB and SSH in UI attributes if needed
+        // This variable will hold the username and password of DB and SSH in UI attributes if needed
         let secrets = ''
 
         try {
-          /**
-           * If the current cluster doesn't have secrets:
-           * `username` and `password` for Apache Cassandra DB, and SSH `username` and `password` then skip this try-catch block
-           */
+          // If the current cluster doesn't have secrets - `username` and `password` for Apache Cassandra DB, and SSH `username` and `password` - then skip this try-catch block
           if (cluster.info.secrets == undefined)
             throw 0
 
@@ -110,29 +103,24 @@
           let secretsInfo = cluster.info.secrets
 
           // Check the DB authentication's username
-          if (secretsInfo.username != undefined)
-            secrets += `data-username="${secretsInfo.username}" `
+          secrets += secretsInfo.username != undefined ? `data-username="${secretsInfo.username}" ` : ''
 
           // Check the DB authentication's password
-          if (secretsInfo.password != undefined)
-            secrets += `data-password="${secretsInfo.password}" `
+          secrets += secretsInfo.password != undefined ? `data-password="${secretsInfo.password}" ` : ''
 
           // Check the SSH username
-          if (secretsInfo.sshUsername != undefined)
-            secrets += `data-ssh-username="${secretsInfo.sshUsername}" `
+          secrets += secretsInfo.sshUsername != undefined ? `data-ssh-username="${secretsInfo.sshUsername}" ` : ''
 
           // Check the SSH password
-          if (secretsInfo.sshPassword != undefined)
-            secrets += `data-ssh-password="${secretsInfo.sshPassword}" `
+          secrets += secretsInfo.sshPassword != undefined ? `data-ssh-password="${secretsInfo.sshPassword}" ` : ''
 
           // Check the SSH passphrase
-          if (secretsInfo.sshPassphrase != undefined)
-            secrets += `data-ssh-passphrase="${secretsInfo.sshPassphrase}" `
+          secrets += secretsInfo.sshPassphrase != undefined ? `data-ssh-passphrase="${secretsInfo.sshPassphrase}" ` : ''
         } catch (e) {
           errorLog(e, 'clusters')
         }
 
-        // This variable will contain the requirement of DB auth and SSH credentials in UI attributes if needed
+        // This variable will hold the requirement of DB auth and SSH credentials in UI attributes if needed
         let credentials = ''
 
         try {
@@ -141,19 +129,17 @@
             throw 0
 
           // Check the DB authentication credentials
-          if (cluster.info.credentials.auth != undefined)
-            credentials += ` data-credentials-auth="true"`
+          credentials += cluster.info.credentials.auth != undefined ? ` data-credentials-auth="true"` : ''
 
           // Check the SSH credentials
-          if (cluster.info.credentials.ssh != undefined)
-            credentials += ` data-credentials-ssh="true"`
+          credentials += cluster.info.credentials.ssh != undefined ? ` data-credentials-ssh="true"` : ''
         } catch (e) {
           errorLog(e, 'clusters')
         }
 
         /**
          * Define the footer of the cluster's UI based on the workspace's type
-         * It can be a normal cluster or a sandbox project
+         * It can be a cluster or a docker/sandbox project
          */
         let footerStructure = {
           nonSandbox: `
@@ -203,20 +189,20 @@
         }
 
         /**
-         * Define the info's UI structure of the number of chosen nodes in the Docker project
+         * For docker/sandbox projects, an additional info is added `number of nodes`
          * By default, it's empty
          */
         let numOfNodesInfo = ''
 
         try {
-          // If the current cluster is not a docker project then skip this try-catch block
+          // If the current cluster is not a docker/sandbox project then skip this try-catch block
           if (!isSandbox)
             throw 0
 
           // The number of chosen nodes' info UI structure
           numOfNodesInfo = `
           <div class="info" info="nodes">
-            <div class="title">nodes
+            <div class="title"><span mulang="nodes" capitalize></span>
               <ion-icon name="right-arrow-filled"></ion-icon>
             </div>
             <div class="text">${cluster.nodes}</div>
@@ -231,7 +217,7 @@
                 <div class="title">${cluster.name}</div>
                 <div class="cluster-info">
                   <div class="info" info="host">
-                    <div class="title">host
+                    <div class="title"><span mulang="host" capitalize></span>
                       <ion-icon name="right-arrow-filled"></ion-icon>
                     </div>
                     <div class="text">${cluster.host}</div>
@@ -245,7 +231,7 @@
                     <div class="_placeholder" ${isSandbox ? 'hidden' : '' }></div>
                   </div>
                   <div class="info" info="data-center">
-                    <div class="title">data center
+                    <div class="title"><span mulang="data center" capitalize></span>
                       <ion-icon name="right-arrow-filled"></ion-icon>
                     </div>
                     <div class="text">${isSandbox ? 'datacenter1' : ''}</div>
@@ -272,8 +258,8 @@
             </div>`
 
         try {
-          // If the current cluster won't be appended then skip this entire try-catch block
-          if (!append)
+          // If the current cluster won't be appended then skip this try-catch block
+          if (!isAppendAllowed)
             throw 0
 
           // Append the cluster to the associated container
@@ -624,7 +610,7 @@
                         <div class="sub-sides left">
                           <div class="cluster-info">
                             <div class="name-ssl ${isSandbox ? 'is-sandbox' : ''}">
-                              <div class="name">${getAttributes(clusterElement, 'data-name')}</div>
+                              <div class="name no-select-reverse">${getAttributes(clusterElement, 'data-name')}</div>
                               <div class="status" data-tippy="tooltip" data-mdb-placement="left" data-mulang="analyzing status" capitalize-first data-title="Analyzing status">
                                 <ion-icon name="unknown"></ion-icon>
                               </div>
@@ -640,19 +626,19 @@
                                 <div class="title">host
                                   <ion-icon name="right-arrow-filled"></ion-icon>
                                 </div>
-                                <div class="text">${getAttributes(clusterElement, 'data-host')}</div>
+                                <div class="text no-select-reverse">${getAttributes(clusterElement, 'data-host')}</div>
                               </div>
                               <div class="info" info="cassandra">
                                 <div class="title">cassandra
                                   <ion-icon name="right-arrow-filled"></ion-icon>
                                 </div>
-                                <div class="text">v${getAttributes(clusterElement, 'data-cassandra-version')}</div>
+                                <div class="text no-select-reverse">v${getAttributes(clusterElement, 'data-cassandra-version')}</div>
                               </div>
                               <div class="info" info="data-center">
                                 <div class="title">data center
                                   <ion-icon name="right-arrow-filled"></ion-icon>
                                 </div>
-                                <div class="text">${getAttributes(clusterElement, 'data-datacenter')}</div>
+                                <div class="text no-select-reverse">${getAttributes(clusterElement, 'data-datacenter')}</div>
                               </div>
                             </div>
                           </div>
@@ -3993,6 +3979,7 @@
 
             /**
              * Inner function to request a pty instance creation from the main thread
+             * It has been defined inside the clusters' loop as it needs a lot of real-time created elements
              *
              * @Parameters:
              * {object} `readLine` is the read line object that has been created for the terminal, the terminal object itself can be passed too
@@ -4058,7 +4045,7 @@
                 }
 
                 // Show feedback to the user when the connection is established through the SSH tunnel
-                if (sshTunnels[clusterID] != null)
+                if (sshTunnelsObjects[clusterID] != null)
                   terminalPrintMessage(readLine, 'info', 'This connection is established through SSH tunnel')
 
                 /**
@@ -4107,11 +4094,11 @@
                 // Check if there is SSH tunnel creation info
                 try {
                   // If there is no SSH tunnel info then stop this sub-process
-                  if (sshTunnels[clusterID] == null)
+                  if (sshTunnelsObjects[clusterID] == null)
                     throw 0
 
                   // Create an object to handle the creation info
-                  let tunnelInfo = sshTunnels[clusterID],
+                  let tunnelInfo = sshTunnelsObjects[clusterID],
                     sshTunnel = {
                       port: tunnelInfo.port,
                       host: tunnelInfo.host,
@@ -4160,9 +4147,9 @@
     // End of getting all saved clusters/projects
 
     /**
-     * Define different inner functions that are used in this events file
+     * Define different inner functions that are used only in this event file, and in the current events handler
      *
-     * Inner function to perform the test connection's process with cluster
+     * Inner function to perform the test connection's process with an already added cluster
      *
      * @Parameters:
      * {object} `clusterElement` the cluster's UI element in the workspace clusters' list
@@ -4315,6 +4302,19 @@
               // Hold all detected/seen data centers' names in array
               allDataCenters
 
+            // Handle when the process has been terminated
+            try {
+              // If the process hasn't been terminated then skip this try-catch block
+              if (result.terminated != true)
+                throw 0
+
+              /**
+               * Make sure to remove all listeners to the process' result
+               * This will prevent showing success/failure of the process after being terminated
+               */
+              IPCRenderer.removeAllListeners(`pty:test-connection:${requestID}`)
+            } catch (e) {}
+
             try {
               // If there's no provided data center by the user then skip this try-catch block
               if (dataCenter.trim().length <= 0)
@@ -4455,9 +4455,9 @@
             /**
              * Successfully connected with the cluster
              *
-             * Add the created SSH tunnel object to the `sshTunnels` array; to have the ability to identify if the cluster has an SSH tunnel associated with it
+             * Add the created SSH tunnel object to the `sshTunnelsObjects` array; to have the ability to identify if the cluster has an SSH tunnel associated with it
              */
-            sshTunnels[clusterObject.info.id] = sshCreation
+            sshTunnelsObjects[clusterObject.info.id] = sshCreation
 
             // Show Apache Cassandra version
             cassandraVersion.children('div._placeholder').hide()
@@ -4832,6 +4832,9 @@
    * The full definition is applied at the very bottom of 'getClusters refreshClusters' events listener
    */
   let updateMiniCluster
+
+  // Set the time which after it the termination of the connection test process is allowed
+  const ConnectionTestProcessTerminationTimeout = 1000
 
   // Handle different events for elements related to clusters - especially the add/edit cluster dialog -
   {
@@ -5864,9 +5867,9 @@
                         throw 0
 
                       /**
-                       * Add the created SSH tunnel object to the `sshTunnels` array; to have the ability to identify if the cluster has an SSH tunnel associated with it
+                       * Add the created SSH tunnel object to the `sshTunnelsObjects` array; to have the ability to identify if the cluster has an SSH tunnel associated with it
                        */
-                      sshTunnels[finalCluster.info.id] = testedSSHTunnelObject
+                      sshTunnelsObjects[finalCluster.info.id] = testedSSHTunnelObject
 
                       try {
                         IPCRenderer.send('ssh-tunnel:update', {
@@ -6722,7 +6725,4 @@
       })
     })
   }
-
-  // Set the time which after it the termination of the connection test process is allowed
-  const ConnectionTestProcessTerminationTimeout = 1000
 }

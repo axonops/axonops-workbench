@@ -12,7 +12,7 @@
   The body is separated into left and right sides, a hidden area to show extra features like the AI assistant, and different modals/dialogs -->
   <div class="body">
     <!-- The left side -->
-    <div class="left">
+    <div class="main left">
       <div class="content">
         <!-- The app's logo (AxonOps for now) -->
         <div class="logo">
@@ -156,7 +156,7 @@
 
     <!-- The hidden area
     Some of the features are set in this container like AI Assistant and Notifications Center -->
-    <div class="hidden-area">
+    <div class="main hidden-area">
       <!-- The AI assistant container where the user can benefit from this feature
       The content is separated into three parts:
       First is the questions and their answers' container
@@ -165,10 +165,10 @@
       <div class="content ai-assistant not-initialized">
         <!-- Questions and answers container
         All requests and replies will be shown here -->
-        <div class="questions-and-answers animate-hide"></div>
+        <div class="questions-and-answers animate-hide" hidden></div>
 
         <!-- The question container where users can type questions and send them -->
-        <div class="question-container animate-hide">
+        <div class="question-container animate-hide" hidden>
           <!-- The text area where the question is typed -->
           <div class="textarea">
             <div class="form-outline form-white">
@@ -189,6 +189,9 @@
             </button>
           </div>
         </div>
+
+        <!-- Integrate the AxonOps AI using `webview` tag -->
+        <webview src="https://ai.axonops.cloud/chat" nodeIntegrationInSubFrames nodeintegration allowpopups></webview>
 
         <!-- The loading container of the AI Assistant
         The app waits for authentication from the server in which AI assistant has been deployed in -->
@@ -229,7 +232,7 @@
     </div>
 
     <!-- The right side -->
-    <div class="right">
+    <div class="main right">
       <!-- The content is separated into:
       Workspaces section
       Clusters section
@@ -412,7 +415,7 @@
               </div>
               <div class="col-md-1 flex col-add-border">
                 <div class="icon-button" style="top: auto; left: 3px;">
-                  <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-mulang="set default path" capitalize-first data-title="Set default path" data-action="defaultPath"
+                  <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="set default path" capitalize-first data-title="Set default path" data-action="defaultPath"
                     data-reference="workspace">
                     <ion-icon name="folder-open"></ion-icon>
                   </div>
@@ -863,7 +866,7 @@
                   <div class="empty">
                     <div class="sub-content">
                       <lottie-player src="../assets/lottie/empty-variables.json" background="transparent" autoplay loop speed="0.5"></lottie-player>
-                      <div class="message">
+                      <div class="message no-select">
                         <span mulang="no added variables, yet" capitalize-first></span>
                       </div>
                     </div>
@@ -899,7 +902,7 @@
                         <span mulang="log info, actions, processes and related" capitalize-first></span>.
                       </label>
                     </div>
-                    <div class="small-hint">
+                    <div class="small-hint no-select">
                       <small>
                         <span mulang="this update needs an app restart" capitalize-first></span>.
                       </small>

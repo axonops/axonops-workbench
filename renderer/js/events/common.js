@@ -36,8 +36,9 @@
     try {
       // Get the overall width of the app's main window
       let windowWidth = window.outerWidth,
+        rightSideWidth = $('div.body div.main.right').outerWidth(),
         // Whether or not titles in the work areas tabs would be shown
-        showTabsTitles = windowWidth >= 1630 || (windowWidth < 1630 && !$('div.body').hasClass('show-hidden'))
+        showTabsTitles = (windowWidth >= 1630 && rightSideWidth >= 1190) || (windowWidth < 1630 && !$('div.body').hasClass('show-hidden'))
 
       /**
        * Check if there's at least one visible opened sandbox project
@@ -51,11 +52,11 @@
           throw 0
 
         // Check if the window is less than the minimum possible value
-        showTabsTitles = windowWidth >= 1420
+        showTabsTitles = windowWidth >= 1420 && rightSideWidth >= 980
 
         // Check if the hidden section is shown and the window is less than the minimum possible value - in this case -
         if (showTabsTitles)
-          showTabsTitles = windowWidth >= 1720 && !$('div.body').hasClass('show-hidden')
+          showTabsTitles = windowWidth >= 1720 && rightSideWidth >= 1280 && !$('div.body').hasClass('show-hidden')
       } catch (e) {}
 
       // Inside the cluster's workareas, find all tabs' titles and toggle their display based on the window width
@@ -77,7 +78,12 @@
 // Handle clicking on different sections buttons in the left side
 {
   // Define the common element CSS selector
-  let selector = `div.body div.left div.content div.navigation div.group div.item`
+  let selector = `div.body div.left div.content div.navigation div.group div.item`,
+    isHiddenAreaResizable = false,
+    latestWidth = 400,
+    triggerStopTimeout,
+    hiddenAreaElement = $('div.body div.main.hidden-area'),
+    rightSideElement = $('div.body div.main.right')
 
   // Clicks the AI assistant button
   $(`${selector}[action="ai"]`).click(() => {
@@ -97,6 +103,9 @@
         // Hide the hidden area
         $('div.body').removeClass('show-hidden')
 
+        // Reset the width of each sides - hidden area and the right side -
+        setTimeout(() => hiddenAreaElement.add(rightSideElement).css('width', ''))
+
         // Skip this try-catch block
         throw 0
       }
@@ -109,6 +118,67 @@
 
       // Show the hidden area if it's not already shown
       $('div.body').addClass('show-hidden')
+
+      setTimeout(() => {
+        // Set the latest saved width for the hidden area
+        hiddenAreaElement.css('width', `${latestWidth}px`)
+
+        // Same thing with the right side
+        rightSideElement.css('width', `calc(100% - 80px - ${latestWidth}px)`)
+      })
+    } catch (e) {}
+
+    try {
+      /**
+       * Make the hidden area resizable
+       *
+       * If the flag is already set to `true` then skip this try-catch block
+       */
+      if (isHiddenAreaResizable)
+        throw 0
+
+      // Update the flag
+      isHiddenAreaResizable = true
+
+      // Make the hidden area resizable
+      hiddenAreaElement.resizable({
+        handles: 'e', // [E]ast
+        minWidth: 300, // Minimum width allowed to be reached
+        maxWidth: 900
+        // While the resizing process is active
+      }).on('resize',
+        function(_, __) {
+          // Make sure there's no transition effects while the resizing process is being performed
+          hiddenAreaElement.add(rightSideElement).addClass('no-transition')
+
+          // Applying this rule will prevent the sudden stop while the area is being resized
+          hiddenAreaElement.find('webview').css('pointer-events', 'none')
+
+          // Update the `latestWidth` value
+          latestWidth = hiddenAreaElement.outerWidth()
+
+          // Update the right side width based on the hidden area's new width
+          rightSideElement.css('width', `calc(100% - 80px - ${latestWidth}px)`)
+
+          // Set a timeout to trigger the `resizestop` event after set period of time
+          {
+            if (triggerStopTimeout != undefined)
+              clearTimeout(triggerStopTimeout)
+
+            setTimeout(() => hiddenAreaElement.trigger('resizestop'), 100)
+          }
+
+          // When the resizing process stop
+        }).on('resizestop', function(_, __) {
+        // Restore the transition effects
+        hiddenAreaElement.add(rightSideElement).removeClass('no-transition')
+
+        // Make the hidden area interactive again
+        hiddenAreaElement.find('webview').css('pointer-events', 'all')
+
+        // Trigger the resize event for the window; to hide the tabs' titles if needed
+        $(window.visualViewport).trigger('resize')
+      })
     } catch (e) {}
 
     /**
@@ -129,7 +199,7 @@
     } catch (e) {}
 
     // Trigger the resize event for the window; to hide the tabs' titles if needed
-    $(window.visualViewport).trigger('resize')
+    setTimeout(() => $(window.visualViewport).trigger('resize'), 400)
 
     // Point at the answering indicator beside the AI's icon
     let answeringLoader = $(`div.body div.left div.content div.navigation div.group div.item[action="ai"] div.answering`)

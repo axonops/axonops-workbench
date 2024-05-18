@@ -41,12 +41,15 @@ div.theme-toggle {
   }
 }
 
-a,
-a:active,
-a:focus,
-a:hover,
-a:visited {
+a {
   color: var(--gray800);
+
+  &:active,
+  &:focus,
+  &:hover,
+  &:visited {
+    color: var(--gray800);
+  }
 }
 
 .toc details summary {

@@ -158,7 +158,7 @@ let getElementMDBObject = (element, type = 'Input') => {
 let loadScript = (path) => {
   // Add log about this loading process
   try {
-    addLog(`Loaded '${Path.basename(path).replace(Path.extname(path), '')}' as part of the initialization process`)
+    addLog(`The initialization process loaded '${Path.basename(path).replace(Path.extname(path), '')}'`)
   } catch (e) {}
 
   /**
@@ -185,7 +185,7 @@ let loadScript = (path) => {
 let loadStyleSheet = (path) => {
   // Add log about this loading process
   try {
-    addLog(`Loaded '${Path.basename(path).replace(Path.extname(path), '')}' as part of the initialization process`)
+    addLog(`The initialization process loaded  '${Path.basename(path).replace(Path.extname(path), '')}'`)
   } catch (e) {}
 
   // Prepend the stylesheet file
@@ -248,7 +248,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
   // Toast UI element strucutre
   let element = `
       <div style="text-align: initial;" class="toast ${toastID.length <= 0 ? 'show' : ''}" ${addToastID}>
-        <div class="toast-header">
+        <div class="toast-header no-select">
           <span class="toast-type ${type}">
             <lottie-player src="../assets/lottie/${type}.json" background="transparent" autoplay ${toastID.length != 0 ? 'loop speed="0.9"' : ''}></lottie-player>
           </span>
@@ -500,7 +500,7 @@ let formatTimestamp = (timestamp, isSecondFormat = false) => {
   } catch (e) {}
 
   // Add log for this process
-  addLog(`Format the timestamp '${timestamp}' to human-readable format '${format}'`, 'process')
+  addLog(`Format the timestamp '${timestamp}' to a human-readable format '${format}'`, 'process')
 
   // Return the human-readable result
   return format
@@ -1041,6 +1041,90 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             type: 'default'
           })
         })
+      } catch (e) {}
+
+      // Display the `Options` node/leaf if there is at least one option available for the current table
+      try {
+        // If the current table does not have an `options` attribute, then skip this try-catch block
+        if (table.options == undefined || Object.keys(table.options).length <= 0)
+          throw 0
+
+        /**
+         * Options' container that will be under the table overall container
+         * Get a random ID for the options' parent/container node
+         */
+        let optionsID = getRandomID(30),
+          // Define the node/leaf structure
+          optionsStructure = {
+            id: optionsID,
+            parent: tableID, // Under the current table
+            text: `Options`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'options.png'))
+          }
+
+        // Append the options' parent/container to the tree structure
+        treeStructure.core.data.push(optionsStructure)
+
+        // Define an inner function to handle the appending process of options to the tree structure
+        let appendOptions = (options, parentID) => {
+          // Loop through the passed `options`
+          Object.keys(options).forEach((option) => {
+            // Manipulate the option's key/text
+            let text = I18next.capitalize(`${option}`.replace(/\_/g, ' ')),
+              // Get the option's value
+              value = options[option]
+
+            // If the value is one of the defined values in the array, then set the value to `NULL`
+            value = [undefined, null].includes(value) ? 'NULL' : value
+
+            try {
+              /**
+               * Handle if the option's value is actually a JSON object that has other sub-options
+               * If the option's value is not an object, then skip this try-catch block
+               */
+              if (typeof value != 'object')
+                throw 0
+
+              // Get a random ID for the current parent's options node
+              let parentOptionsID = getRandomID(30),
+                // Define the node/leaf structure
+                parentOptionsStructure = {
+                  id: parentOptionsID,
+                  parent: parentID, // Under the options' container node
+                  text: `${text}`,
+                  type: 'default',
+                  icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
+                }
+
+              // Push the node
+              treeStructure.core.data.push(parentOptionsStructure)
+
+              // Make a recursive call to the same function
+              return appendOptions(value, parentOptionsID)
+            } catch (e) {}
+
+            /**
+             * Reaching here means the current option's value is not an object
+             * Get a random ID for the option's node
+             */
+            let optionID = getRandomID(30),
+              // Define the node/leaf structure
+              optionStructure = {
+                id: optionID,
+                parent: parentID, // Under the options' node
+                text: `${text}: <span>${value}</span>`,
+                type: 'default',
+                icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
+              }
+
+            // Push the node
+            treeStructure.core.data.push(optionStructure)
+          })
+        }
+
+        // Initial call to the inner function
+        appendOptions(table.options, optionsID)
       } catch (e) {}
     })
 
@@ -1701,7 +1785,7 @@ let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
  */
 let getKey = async (type, callback, called = false) => {
   // Add log for this process
-  addLog(`Obtain the ${type} key for either encryption or decryption`, 'process')
+  addLog(`Obtain the ${type} key for encryption or decryption`, 'process')
 
   try {
     // If the key's type is not `private` then skip this try-catch block
@@ -1791,7 +1875,7 @@ let encrypt = (publicKey, text) => {
   let encryptedText = '' // The final encrypted text which be returned
 
   // Add log for this process
-  addLog(`Encrypt a given text with RSA cryptosystem`, 'process')
+  addLog(`Use the RSA cryptosystem to encrypt a text`, 'process')
 
   try {
     // Create a public RSA object
@@ -1822,7 +1906,7 @@ let decrypt = (privateKey, text) => {
   let decryptedText = '' // The final decrypted text
 
   // Add log for this process
-  addLog(`Decrypt a given text with RSA cryptosystem`, 'process')
+  addLog(`Use the RSA cryptosystem to decrypt a text`, 'process')
 
   try {
     // Create a private RSA object
@@ -1857,7 +1941,7 @@ let executeScript = (scriptID, scripts, callback) => {
   let requestID = getRandomID(20)
 
   // Add log about executing the current script
-  addLog(`Executing the script '${scripts[scriptID]}' within a connection with cluster`, 'process')
+  addLog(`Executing the script '${scripts[scriptID]}' within a connection process with cluster`, 'process')
 
   // Send the execution request
   IPCRenderer.send('script:run', {
@@ -2618,9 +2702,11 @@ let clearTemp = () => {
        * Check if the item ends with the `.cwb` or `.metadata` extensions
        * The `.cwb` item is a `cqlsh.rc` config file created for test connection and it should be removed
        */
-      if (['cwb', 'metadata'].some((extension) => item.endsWith(extension))) {
+      if (['cwb', 'metadata', 'tmp', 'cqldesc', 'checkconn'].some((extension) => item.endsWith(`.${extension}`))) {
         // Remove that temporary config file
-        FS.remove(Path.join(tempFolder, item))
+        try {
+          FS.remove(Path.join(tempFolder, item))
+        } catch (e) {}
 
         // Skip the upcoming code and move to the next item
         continue
@@ -2634,7 +2720,9 @@ let clearTemp = () => {
 
         // If the current folder contains any of the defined names then remove that folder and all its content
         if (items.some((item) => ['cassandra', 'secretstorage', 'pytz'].some((name) => item.toLowerCase().indexOf(name) != -1)))
-          FS.remove(Path.join(tempFolder, item))
+          try {
+            FS.remove(Path.join(tempFolder, item))
+          } catch (e) {}
       })
     }
   })
@@ -2761,8 +2849,8 @@ let setUIColor = (workspaceColor) => {
           .changed-bg:hover {background: ${backgroundColor.hover} !important}
           .checkbox-checked:checked, .form-check-input:not([no-color])[type=checkbox]:checked, .form-check-input:not([no-color]):checked {background: ${backgroundColor.default} !important}
           .checkbox-checked:checked:after {background: ${backgroundColor.hover.replace('70%', '100%')} !important}
-          .ui-resizable-handle {background: ${backgroundColor.hover.replace('70%', '0%')}}
-          .ui-resizable-handle:hover {background: ${backgroundColor.hover.replace('70%', '40%')}}
+          .ui-resizable-handle {background: ${backgroundColor.hover.replace('70%', '0%')} !important}
+          .ui-resizable-handle:hover {background: ${backgroundColor.hover.replace('70%', '40%')} !important}
           .checkbox-checked:checked:focus:before {box-shadow: 3px -1px 0 13px ${backgroundColor.hover.replace('70%', '100%')} !important;}
           .form-check-input:not([no-color]):checked:focus:before {box-shadow: 0 0 0 13px ${backgroundColor.hover.replace('70%', '100%')} !important;}
           .changed-color {color: ${textColor} !important}
@@ -2918,7 +3006,7 @@ let autoPlayStopLottieElement = (lottieElement) => {
     // When the lottie element is shown (visible)
     .mutate('show', (lottie) => {
       // If the lottie element is not set to be played automatically, and its current state is `stopped` or `loading` then don't play it automatically
-      if (!lottie.autoplay && ['loading', 'stopped'].some((state) => lottie.currentState == state))
+      if (!lottie.autoplay || ['loading', 'stopped', 'error', 'destroyed'].some((state) => lottie.currentState == state))
         return
 
       // Play the lottie element

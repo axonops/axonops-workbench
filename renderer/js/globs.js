@@ -1,5 +1,5 @@
 /**
- * Define all essential global variables and constants
+ * Define all essential global variables and constants that are being called throughout the entire app's renderer thread
  *
  * The main editor which is being used for browsing and editing the `cqlsh.rc` file's content in the add/edit cluster's dialog
  */
@@ -38,33 +38,37 @@ let publicKey = '',
  * This flag is defined to show the toast only once
  */
 let isSandboxDockerInfoShown = false
-// Boolean value used to tell if the logging system should be enabled in the current session or not
+// This flag determines whether or not the logging system should be enabled during the current session
 isLoggingEnabled = true
 
 /**
- * All `fit` terminal addon objects for the app's terminals
- * This addon is used to make terminal's dimensions responsive
+ * Retrieve the view/window content's ID from the main thread
+ * This is useful in case there's a need to use `ipcRenderer.sendTo`
  */
-let terminalFitAddonObjects = []
-
-/**
- * All query tracing charts' objects
- * By adding those objects to the array, they can be resized and destroyed as needed
- */
-let queryTracingChartsObjects = []
-
-// Get the view/window content's ID from the main thread
 let viewContentID = null
 
-// Hold all created SSH tunnels
-let sshTunnels = []
+/**
+ * All `fit` terminal addon objects for the app's terminals
+ * This addon is used to make the terminal's dimensions more responsive
+ */
+let terminalFitAddonObjects = [],
+  /**
+   * All query tracing charts' objects
+   * By adding those objects to the array, they can be resized and destroyed as needed
+   */
+  queryTracingChartsObjects = [],
+  // Hold all created SSH tunnels objects
+  sshTunnelsObjects = []
 
 /**
  * Save all created MDB objects during the app's runtime
- * This array is associated with the singleton pattern implementation in the function `getElementMDBObject(element, ?type)`
+ * This array is associated with a singleton pattern implementation in the function `getElementMDBObject(element, ?type)`
  */
 let mdbObjects = [],
-  // The MDB object of the `add` and `refresh` clusters floating buttons' tooltips
+  /**
+   * The MDB object of the `add` and `refresh` clusters floating buttons' tooltips
+   * Those two tooltips are defined in this way as they need to be referenced and updated many times during the active session
+   */
   tooltips = {
     addClusterActionButton: null,
     refreshClusterActionButton: null

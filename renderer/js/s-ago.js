@@ -7,8 +7,8 @@ let format = (diff, divisor, unit, past, future, isInTheFuture) => {
   let val = Math.round(Math.abs(diff) / divisor)
 
   /**
-   * Add support for right-to-left languages
-   * This will help with showing the text in the correct way if the language (like Arabic and Hebrew) are read from the right to the left
+   * Add support for the right-to-left languages
+   * This will help with showing the text correctly if the language is read from right to left
    */
   try {
     if (I18next.dir() != 'rtl')

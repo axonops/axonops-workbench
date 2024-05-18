@@ -327,7 +327,8 @@
       "unable to create workarea": "无法创建工作区",
       "connection with cluster [b]$data[/b] seems not pre-established or has been lost. please attempt to test connection with it": "与集群 [b]$data[/b] 的连接似乎没有预先建立或已丢失。 请尝试测试与其的连接",
       "copy query tracing result": "复制查询跟踪结果",
-      "query tracing result with session ID of [b]$data[/b] has been copied to the clipboard, the size is $data": "会话ID为[b]$data[/b]的查询跟踪结果已复制到剪贴板，大小为$data"
+      "query tracing result with session ID of [b]$data[/b] has been copied to the clipboard, the size is $data": "会话ID为[b]$data[/b]的查询跟踪结果已复制到剪贴板，大小为$data",
+      "nodes": "节点"
     }
   }
 }

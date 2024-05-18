@@ -18,7 +18,7 @@ const $ = require('jquery'),
 $(document).ready(() => {
   /**
    * Functions file
-   * It has global functions used in the entire app
+   * It has global functions that are used throughout the app
    */
   $.ajax({
     async: false,
@@ -27,8 +27,8 @@ $(document).ready(() => {
   })
 
   /**
-   * Essential modification for the `console` function
-   * Now console triggers - log, debug, error, etc... - are logged as part of the logging feature
+   * Essential modification for the `console` function after loading the `functions` file
+   * Now console triggers such as `log`, `debug`, `error`, and others are logged as part of the logging feature
    */
   {
     try {
@@ -77,7 +77,7 @@ $(document).ready(() => {
 $(document).ready(() => {
   // Get the app's config
   Modules.Config.getConfig((config) => {
-    // Check the status of either enabling or disabling the logging feature
+    // Check the status of whether or not the logging feature is enabled
     isLoggingEnabled = config.get('security', 'loggingEnabled') || isLoggingEnabled
 
     // Convert the flag to a boolean instead of a string
@@ -92,14 +92,6 @@ $(document).ready(() => {
       date: new Date().getTime(),
       id: getRandomID(5)
     })
-
-    // Add the first logs
-    setTimeout(() => {
-      try {
-        addLog(`AxonOps Developer Workbench has loaded all its components and it's ready to be used`)
-        addLog(`The unique ID of this machine is: '${machineID}'`, 'env')
-      } catch (e) {}
-    }, 1000)
   })
 })
 
@@ -112,214 +104,226 @@ $(document).ready(() => $(`div.body div.left div.content div.navigation div.grou
 // Get the unique machine's ID and set it to be used across the app
 $(document).ready(async () => getMachineID().then((id) => {
   machineID = id
+
+  // Add the first set of logs
+  setTimeout(() => {
+    try {
+      addLog(`AxonOps Developer Workbench has loaded all components and is ready to be used`)
+      addLog(`This machine has a unique ID of '${machineID}'`, 'env')
+    } catch (e) {}
+  }, 1000)
 }))
 
 // Initialize `I18next` module
 $(document).ready(() => {
   // Get the app's config
   Modules.Config.getConfig((config) => {
-    setTimeout(() => {
-      // Chosen language is `English` if the saved one is invalid
-      let chosenLanguage = config.get('ui', 'language') || 'en'
+    try {
+      setTimeout(() => {
+        // If the saved language is invalid, the chosen language will be `English`
+        let chosenLanguage = config.get('ui', 'language') || 'en'
 
-      // Add a log about the chosen language
-      addLog(`Config file loaded, language to be rendered is '${chosenLanguage.toUpperCase()}'`)
+        // Add a log about the chosen language
+        addLog(`The configuration file has been loaded, and the language to be rendered is '${chosenLanguage.toUpperCase()}'`)
 
-      // Load all saved languages and make sure the chosen language exists and is loaded as well
-      Modules.Localization.loadLocalization((languages) => {
-        try {
-          // Attempt to get the language's object
-          let languageObject = languages.list.filter((language) => language.key == chosenLanguage)
+        // Load all saved languages and make sure the chosen language exists and is loaded as well
+        Modules.Localization.loadLocalization((languages) => {
+          try {
+            // Attempt to get the language's object
+            let languageObject = languages.list.filter((language) => language.key == chosenLanguage)
 
-          // Make sure the loaded language's key exists
-          chosenLanguage = languageObject.length <= 0 ? 'en' : chosenLanguage
+            // Make sure the loaded language's key exists
+            chosenLanguage = languageObject.length <= 0 ? 'en' : chosenLanguage
 
-          // Whether or not the language needs right to left shift of the UI
-          languageRTL = languageObject.length != 0 ? languageObject[0].rtl : false
+            // Whether or not the language needs right to left shift of the UI
+            isLanguageRTL = languageObject.length != 0 ? languageObject[0].rtl : false
 
-          // Set RTL class if the language needs that
-          $('body').toggleClass('rtl', languageRTL)
-
-          /**
-           * Set a loading time for the default/selected language
-           *
-           * Get the start loading time
-           */
-          let startLoadingTime = new Date().getTime()
-
-          // Start the initialization process of loading the language
-          I18next.init({
-            lng: chosenLanguage,
-            resources: languages.content
-          })
-
-          /**
-           * Integrated function to capitalize the first letter of the first word in a given text
-           *
-           * @Parameters:
-           * {string} `text` the text to be manipulated
-           *
-           * @Return: {string} the passed text after the manipulation process
-           */
-          I18next.capitalizeFirstLetter = (text) => text.charAt(0).toUpperCase() + text.slice(1)
-
-          /**
-           * Integrated function to capitalize the first letter of each word in a given text
-           *
-           * @Parameters:
-           * {string} `text` the text to be manipulated
-           *
-           * @Return: {string} the passed text after the manipulation process
-           */
-          I18next.capitalize = (text) => {
-            // Split the given text by whitespaces
-            text = text.split(/\s+/)
-
-            // Loop through each word, and capitalize the first letter
-            for (let i = 0; i < text.length; i++)
-              text[i] = I18next.capitalizeFirstLetter(text[i])
-
-            // Join words and add a whitespace between them
-            return text.join(' ')
-          }
-
-          /**
-           * Update the built-in `t` function for the `I18next` module
-           * The update detects if the key's value has an accepted HTML tag and replaces it to make it valid for rendering
-           *
-           * Have a copy from the original implementation of the function
-           */
-          let originalI18nextFun = I18next.t
-
-          // Apply the update
-          I18next.t = (key) => {
-            // Call the original function's implementation
-            let text = originalI18nextFun(key),
-              // Whether or not an allowed HTML tag has been found
-              htmlFound = false
-
-            // Strip any HTML tag
-            text = StripTags(text)
-
-            try {
-              // Update the status of the flag
-              htmlFound = Modules.Consts.AllowedHTMLTags.some((tag) => text.indexOf(`[${tag}]`) != -1)
-
-              // If there's no allowed HTML has been found then skip this try-catch block
-              if (!htmlFound)
-                throw 0
-
-              // Loop through the allowed HTML tags
-              Modules.Consts.AllowedHTMLTags.forEach((tag) => {
-                // Define a regex for the tag's opening
-                let opening = createRegex(`[${tag}]`, 'gm'),
-                  // The same thing with the tag's close
-                  close = createRegex(`[/${tag}]`, 'gm')
-
-                // Update the opening
-                text = text.replace(opening, `<${tag}>`)
-
-                // Update the close
-                text = text.replace(close, `</${tag}>`)
-              })
-            } catch (e) {
-              errorLog(e, 'initialization')
-            }
-
-            // Return the final result
-            return text
-          }
-
-          /**
-           * Integrated function to replace - in order - `$data` placeholder in a given string with an actual data
-           *
-           * @Parameters:
-           * {string} `key` the key of the localized phrase
-           * {object} `dataArray` array of data to replace `$data` with them
-           *
-           * @Return: {string} the localized phrase with actual data
-           */
-          I18next.replaceData = (key, dataArray) => {
-            // Get the localized phrase
-            let localizedPhrase = I18next.t(key)
+            // Set RTL class if the language needs that
+            $('body').toggleClass('rtl', isLanguageRTL)
 
             /**
-             * Loop through the given data array
-             * Reversing the array will lead to the correct order of finding the `$data` placeholder
+             * Set a loading time for the default/selected language
+             *
+             * Get the start loading time
              */
-            dataArray.reverse().forEach((data) => {
-              // Define the regular expression to find the first `$data` placeholder
-              let regex = new RegExp('(.*)\\$data(.*)', 'gm')
+            let startLoadingTime = new Date().getTime()
 
-              // Replace the placeholder with the current data
-              localizedPhrase = localizedPhrase.replace(regex, '$1' + data + '$2')
+            // Start the initialization process of loading the language
+            I18next.init({
+              lng: chosenLanguage,
+              resources: languages.content
             })
 
-            // Return the final result
-            return localizedPhrase
-          }
+            /**
+             * Integrated function to capitalize the first letter of the first word in a given text
+             *
+             * @Parameters:
+             * {string} `text` the text to be manipulated
+             *
+             * @Return: {string} the passed text after the manipulation process
+             */
+            I18next.capitalizeFirstLetter = (text) => text.charAt(0).toUpperCase() + text.slice(1)
 
-          // Set the maximum allowed loading time for the chosen language
-          const MaxLoadingTime = 5000
+            /**
+             * Integrated function to capitalize the first letter of each word in a given text
+             *
+             * @Parameters:
+             * {string} `text` the text to be manipulated
+             *
+             * @Return: {string} the passed text after the manipulation process
+             */
+            I18next.capitalize = (text) => {
+              // Split the given text by whitespaces
+              text = text.split(/\s+/)
 
-          // Wait for the loading of the language and check if it has exceeded the maximum loading time
-          let waitForLoading,
-            // Inner function to clear the interval; as the loading process has finished
-            clearLoadInterval = () => clearInterval(waitForLoading)
+              // Loop through each word, and capitalize the first letter
+              for (let i = 0; i < text.length; i++)
+                text[i] = I18next.capitalizeFirstLetter(text[i])
 
-          // Set an interval function; to make sure that the language has been entirely loaded before exceeding the maximum loading time
-          waitForLoading = setInterval(() => {
-            // Check if those main keys have been loaded
-            if (['workspace home', 'settings'].some((key) => I18next.exists(key))) {
-              // If so, then call the `applyLanguage` function
-              Modules.Localization.applyLanguage(chosenLanguage)
-
-              // Clear the interval function
-              clearLoadInterval()
+              // Join words and add a whitespace between them
+              return text.join(' ')
             }
 
-            // If the loading time has exceeded the maximum set time then abort it; to avoid an endless check process
-            if ((new Date()).getTime() - startLoadingTime > MaxLoadingTime)
-              clearLoadInterval()
-          })
-        } catch (e) {
-          errorLog(e, 'initialization')
-        }
+            /**
+             * Update the built-in `t` function for the `I18next` module
+             * The update detects if the key's value has an accepted HTML tag and replaces it to make it valid for rendering
+             *
+             * Have a copy from the original implementation of the function
+             */
+            let originalI18nextFun = I18next.t
 
-        // Update the list of languages to select in the settings dialog
-        setTimeout(() => {
-          // Point at the list container
-          let languagesMenuContainer = $(`div.dropdown[for-select="languageUI"] ul.dropdown-menu`)
+            // Apply the update
+            I18next.t = (key) => {
+              // Call the original function's implementation
+              let text = originalI18nextFun(key),
+                // Whether or not an allowed HTML tag has been found
+                isHTMLFound = false
 
-          // Loop through loaded languages
-          languages.list.forEach((language) => {
-            // The list option's UI structure
-            let element = `
-                <li>
-                  <a class="dropdown-item" href="#" value="${language.name}" hidden-value="${language.key}" rtl="${language.rtl}">${language.name}</a>
-                </li>`
+              // Strip any HTML tag
+              text = StripTags(text)
 
-            // Append the language
-            languagesMenuContainer.append($(element).show(function() {
-              // Once a language/option is clicked
-              $(this).children('a').click(function() {
-                // Point at the input field related to the list
-                let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)
+              try {
+                // Update the status of the flag
+                isHTMLFound = Modules.Consts.AllowedHTMLTags.some((tag) => text.indexOf(`[${tag}]`) != -1)
 
-                // Update the input's value
-                selectElement.val($(this).attr('value'))
+                // If there's no allowed HTML has been found then skip this try-catch block
+                if (!isHTMLFound)
+                  throw 0
 
-                // Update the input's `hidden value` and `rtl` attributes
-                selectElement.attr({
-                  'hidden-value': $(this).attr('hidden-value'),
-                  'rtl': $(this).attr('rtl')
+                // Loop through the allowed HTML tags
+                Modules.Consts.AllowedHTMLTags.forEach((tag) => {
+                  // Define a regex for the tag's opening
+                  let opening = createRegex(`[${tag}]`, 'gm'),
+                    // The same thing with the tag's close
+                    close = createRegex(`[/${tag}]`, 'gm')
+
+                  // Update the opening
+                  text = text.replace(opening, `<${tag}>`)
+
+                  // Update the close
+                  text = text.replace(close, `</${tag}>`)
                 })
+              } catch (e) {
+                errorLog(e, 'initialization')
+              }
+
+              // Return the final result
+              return text
+            }
+
+            /**
+             * Integrated function to replace - in order - `$data` placeholder in a given string with an actual data
+             *
+             * @Parameters:
+             * {string} `key` the key of the localized phrase
+             * {object} `dataArray` array of data to replace `$data` with them
+             *
+             * @Return: {string} the localized phrase with actual data
+             */
+            I18next.replaceData = (key, dataArray) => {
+              // Get the localized phrase
+              let localizedPhrase = I18next.t(key)
+
+              /**
+               * Loop through the given data array
+               * Reversing the array will lead to the correct order of finding the `$data` placeholder
+               */
+              dataArray.reverse().forEach((data) => {
+                // Define the regular expression to find the first `$data` placeholder
+                let regex = new RegExp('(.*)\\$data(.*)', 'gm')
+
+                // Replace the placeholder with the current data
+                localizedPhrase = localizedPhrase.replace(regex, '$1' + data + '$2')
               })
-            }))
+
+              // Return the final result
+              return localizedPhrase
+            }
+
+            // Set the maximum allowed loading time for the chosen language
+            const MaxLoadingTime = 5000
+
+            // Wait for the loading of the language and check if it has exceeded the maximum loading time
+            let waitForLoading,
+              // Inner function to clear the interval; as the loading process has finished
+              clearLoadInterval = () => clearInterval(waitForLoading)
+
+            // Set an interval function; to make sure that the language has been entirely loaded before exceeding the maximum loading time
+            waitForLoading = setInterval(() => {
+              // Check if those main keys have been loaded
+              if (['workspace home', 'settings'].some((key) => I18next.exists(key))) {
+                // If so, then call the `applyLanguage` function
+                Modules.Localization.applyLanguage(chosenLanguage)
+
+                // Clear the interval function
+                clearLoadInterval()
+              }
+
+              // If the loading time has exceeded the maximum set time then abort it; to avoid an endless check process
+              if ((new Date()).getTime() - startLoadingTime > MaxLoadingTime)
+                clearLoadInterval()
+            })
+          } catch (e) {
+            errorLog(e, 'initialization')
+          }
+
+          // Update the list of languages to select in the settings dialog
+          setTimeout(() => {
+            // Point at the list container
+            let languagesMenuContainer = $(`div.dropdown[for-select="languageUI"] ul.dropdown-menu`)
+
+            // Loop through loaded languages
+            languages.list.forEach((language) => {
+              // The list option's UI structure
+              let element = `
+                  <li>
+                    <a class="dropdown-item" href="#" value="${language.name}" hidden-value="${language.key}" rtl="${language.rtl}">${language.name}</a>
+                  </li>`
+
+              // Append the language
+              languagesMenuContainer.append($(element).show(function() {
+                // Once a language/option is clicked
+                $(this).children('a').click(function() {
+                  // Point at the input field related to the list
+                  let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)
+
+                  // Update the input's value
+                  selectElement.val($(this).attr('value'))
+
+                  // Update the input's `hidden value` and `rtl` attributes
+                  selectElement.attr({
+                    'hidden-value': $(this).attr('hidden-value'),
+                    'rtl': $(this).attr('rtl')
+                  })
+                })
+              }))
+            })
           })
         })
       })
-    })
+    } catch (e) {
+      errorLog(e, 'initialization')
+    }
   })
 })
 
@@ -817,7 +821,7 @@ $(document).ready(() => {
 })
 
 // To improve performance, make sure the non-visible lottie element is not playing in the background
-$(document).ready(() => setTimeout(() => autoPlayStopLottieElement($('lottie-player')), 1500))
+$(document).ready(() => setTimeout(() => autoPlayStopLottieElement($('lottie-player')), 2000))
 
 // Check whether or not binaries exist
 $(document).ready(() => {

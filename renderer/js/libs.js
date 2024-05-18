@@ -1,4 +1,6 @@
 /**
+ * Libraries, packages and custom modules importing file
+ *
  * Import all essential libraries and modules
  *
  * Node.js file system module - improved version which has methods that aren't included in the native `fs` module -
@@ -151,6 +153,7 @@ const FS = require('fs-extra'),
  * Import the custom node modules for the renderer thread
  *
  * Define the `Modules` constant that will contain all custom modules
+ * The modules can be accessed by calling the path `Modules.{ModuleName}.{Function}`
  */
 const Modules = []
 
@@ -160,9 +163,10 @@ try {
    *
    * `Path` module has been imported in the initialization file `init.js`
    */
-  let modulesFilesPath = Path.join(__dirname, '..', '..', 'custom_node_modules', 'renderer'),
-    // Read files inside the folder
-    modulesFiles = FS.readdirSync(modulesFilesPath)
+  const modulesFilesPath = Path.join(__dirname, '..', '..', 'custom_node_modules', 'renderer')
+
+  // Read files inside the folder
+  let modulesFiles = FS.readdirSync(modulesFilesPath)
 
   /**
    * Reverse the order of the array; to make sure the `clusters` module will be loaded after the `workspaces` module; due to calls of functions from the `workspaces` in the `clusters` modules

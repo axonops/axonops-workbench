@@ -1,5 +1,5 @@
 /**
- * The `intro` JS file - the only `.js` file imported by the `intro` view -
+ * The `intro` JS file - the only file that is imported by the `intro` view -
  *
  * Import the Node.js path module
  * Working with file and directory paths

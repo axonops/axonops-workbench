@@ -59,6 +59,21 @@
   left: $left;
   margin: auto;
 }
+// Prevent selection
+
+.no-select {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+// Reverse selection prevention
+
+.no-select-reverse {
+  -webkit-touch-callout: all;
+  -webkit-user-select: all;
+  user-select: all;
+}
 /**
 * Styling applied on a wide range of elements
 * Localization sub-processes for elements - capitalize and uppercase characters -
@@ -213,7 +228,7 @@ webview {
 
 .ui-resizable-handle {
   z-index: 0 !important;
-  transition: background 0.2s ease-in-out;
+  transition: background 0.2s ease-out;
 }
 
 div.row {
@@ -427,7 +442,7 @@ div.search-in-metadata {
 
   div.form-outline {
     opacity: 0;
-    transition: all 0.05s ease-in-out;
+    transition: all 0.1s ease-in-out;
 
     label.form-label {
       top: -4px;
@@ -540,7 +555,7 @@ div.search-in-metadata {
 a.jstree-anchor.animate-click {
   animation: {
     name: animate-click;
-    duration: 0.5s;
+    duration: 0.45s;
     timing-function: ease-in-out;
     iteration-count: 1;
   }
@@ -583,7 +598,7 @@ a.jstree-anchor {
     border: 2px transparent solid;
     border-top: 2px #818181 solid;
     border-right: 2px #818181 solid;
-    animation: rotate 0.5s linear infinite;
+    animation: rotate 0.7s linear infinite;
     transition: all 0.15s ease-in-out;
     opacity: 0;
   }
@@ -611,4 +626,27 @@ thead {
       background: #2c2c2c;
     }
   }
+}
+
+.badge,
+.form-check-label,
+.form-label,
+.modal-footer,
+.modal-title,
+div[data-tippy-root] {
+  @extend .no-select;
+}
+
+div.hidden-area {
+  .ui-resizable-handle:hover {
+    background: rgba(58,112,201,.4);
+  }
+}
+
+.no-transition {
+  transition: none !important;
+}
+
+.message {
+  @extend .no-select;
 }

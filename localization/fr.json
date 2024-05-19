@@ -329,7 +329,8 @@
       "connection with cluster [b]$data[/b] seems not pre-established or has been lost. please attempt to test connection with it": "la connexion avec le cluster [b]$data[/b] ne semble pas pré-établie ou a été perdue. veuillez essayer de tester la connexion avec celui-ci",
       "copy query tracing result": "copier le résultat du suivi de la requête",
       "query tracing result with session ID of [b]$data[/b] has been copied to the clipboard, the size is $data": "le résultat du suivi de la requête avec l'ID de session [b]$data[/b] a été copié dans le presse-papiers, la taille est $data",
-      "nodes": "nœuds"
+      "nodes": "nœuds",
+      "change the editors view": "changer la vue des éditeurs"
     }
   }
 }

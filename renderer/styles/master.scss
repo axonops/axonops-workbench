@@ -2201,6 +2201,19 @@ div.tab-content {
                   animation: rotate 0.5s linear infinite;
                 }
               }
+
+              &.refresh {
+                ion-icon {
+                  opacity: 0.7;
+                }
+              }
+
+              &.change-view {
+                ion-icon {
+                  font-size: 130%;
+                  opacity: 0.8;
+                }
+              }
             }
           }
         }
@@ -2319,6 +2332,44 @@ div.tab-content {
               span.number {
                 background: rgba(255,255,255,0.2);
               }
+            }
+          }
+        }
+
+        &.view-horizontal {
+          display: flex;
+          flex-direction: column;
+          flex-wrap: nowrap;
+          justify-content: center;
+          align-items: stretch;
+          align-content: center;
+
+          div.metadata-content {
+            &.old {
+              height: calc(50% - 15px);
+              width: calc(100% - 20px);
+              margin-right: 10px;
+              margin-bottom: 5px;
+            }
+
+            &.new {
+              height: calc(50% - 15px);
+              width: calc(100% - 20px);
+              margin-left: 10px;
+              margin-top: 5px;
+            }
+          }
+
+          span.badge {
+            &.old {
+              bottom: auto;
+              top: 0;
+            }
+
+            &.new {
+              bottom: 0;
+              right: auto;
+              left: 15px;
             }
           }
         }

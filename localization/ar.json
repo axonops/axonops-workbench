@@ -328,7 +328,8 @@
       "connection with cluster [b]$data[/b] seems not pre-established or has been lost. please attempt to test connection with it": "يبدو أن الاتصال بالمجموعة [b]$data[/b] لم يتم إنشاؤه مسبقًا أو أنه مفقود. يرجى محاولة اختبار الاتصال به",
       "copy query tracing result": "نسخ نتيجة تتبع الاستعلام",
       "query tracing result with session ID of [b]$data[/b] has been copied to the clipboard, the size is $data": "تم نسخ نتيجة تتبع الاستعلام بمعرف الجلسة [b]$data[/b] إلى الحافظة، والحجم هو $data",
-      "nodes": "العقد"
+      "nodes": "العقد",
+      "change the editors view": "تغيير طريقة عرض المحررين"
     }
   }
 }

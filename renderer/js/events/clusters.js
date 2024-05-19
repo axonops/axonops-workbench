@@ -554,6 +554,7 @@
                     saveSnapshotBtnID,
                     loadSnapshotBtnID,
                     openSnapshotsFolderBtnID,
+                    changeViewBtnID,
                     saveSnapshotSuffixContainerID,
                     changesLinesContainerID,
                     oldSnapshotNameID,
@@ -563,7 +564,7 @@
                     // Restart and close the work area
                     restartWorkareaBtnID,
                     closeWorkareaBtnID
-                  ] = getRandomID(20, 25)
+                  ] = getRandomID(20, 26)
 
                   /**
                    * Define tabs that shown only to sandbox projects
@@ -706,7 +707,7 @@
                                 </li>
                                 ${bashSessionTab}
                                 <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL description" capitalize data-title="CQL Description">
-                                  <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlDescriptionContentID}" role="tab" aria-selected="true">
+                                  <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlDescriptionContentID}" role="tab" aria-selected="true">
                                     <span class="icon">
                                       <ion-icon name="cql-description"></ion-icon>
                                     </span>
@@ -716,7 +717,7 @@
                                   </a>
                                 </li>
                                 <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="query tracing" capitalize data-title="Query Tracing">
-                                  <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${queryTracingContentID}" role="tab" aria-selected="true">
+                                  <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${queryTracingContentID}" role="tab" aria-selected="true">
                                     <span class="icon">
                                       <ion-icon name="query-tracing"></ion-icon>
                                     </span>
@@ -726,7 +727,7 @@
                                   </a>
                                 </li>
                                 <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="cluster diff" capitalize data-title="Cluster Diff">
-                                  <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${metadataDifferentiationContentID}" role="tab" aria-selected="true">
+                                  <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${metadataDifferentiationContentID}" role="tab" aria-selected="true">
                                     <span class="icon">
                                       <ion-icon name="differentiation"></ion-icon>
                                     </span>
@@ -828,9 +829,13 @@
                                       data-id="${loadSnapshotBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="upload"></ion-icon>
                                     </span>
-                                    <span class="snapshots-floder btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Open the snapshots folder" data-mulang="open the snapshots folder" capitalize-first
+                                    <span class="snapshots-folder btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Open the snapshots folder" data-mulang="open the snapshots folder" capitalize-first
                                       data-id="${openSnapshotsFolderBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="folder-open-outline"></ion-icon>
+                                    </span>
+                                    <span class="change-view btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Change the editors view" data-mulang="change the editors view" capitalize-first
+                                      data-id="${changeViewBtnID}">
+                                      <ion-icon name="diff-vertical"></ion-icon>
                                     </span>
                                   </div>
                                 </div>
@@ -1540,6 +1545,9 @@
 
                             // Remove the loading class
                             $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).removeClass('loading')
+
+                            // Enable all tabs and their associated sections
+                            workareaElement.find('div.cluster-tabs').find('li a').removeClass('disabled')
 
                             setTimeout(() => {
                               // Start reading the user input
@@ -2662,6 +2670,23 @@
 
                         // Open the snapshots' folder
                         $(`span.btn[data-id="${openSnapshotsFolderBtnID}"]`).click(() => Open(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(clusterElement, 'data-folder'), 'snapshots')))
+
+                        // Change the editors view - vertical and horizontal -
+                        $(`span.btn[data-id="${changeViewBtnID}"]`).click(function() {
+                          // Point at the cluster's metadata differentiation content's container
+                          let metadataContentContainer = $(`div#_${metadataDifferentiationContentID} div.metadata-content-container`),
+                            // Whether or not a horizontal view is already applied
+                            isViewHorizontal = metadataContentContainer.hasClass('view-horizontal')
+
+                          // Toggle the horizontal class based on the checking result
+                          metadataContentContainer.toggleClass('view-horizontal', !isViewHorizontal)
+
+                          // Change the button's icon based on the checking result as well
+                          $(this).children('ion-icon').attr('name', `diff-${isViewHorizontal ? 'vertical' : 'horizontal'}`)
+
+                          // Trigger the `resize` event to adjust editors' dimensions
+                          $(window.visualViewport).trigger('resize')
+                        })
                       })
 
                       // The `click` event for all tabs in the work area

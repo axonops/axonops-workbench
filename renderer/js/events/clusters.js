@@ -496,7 +496,7 @@
                   // Handle when connection is lost with the cluster
                   try {
                     // If the work area exists then skip this try-catch block
-                    if (contentCluster.length > 0)
+                    if (contentCluster.length > 0 || isSandbox)
                       throw 0
 
                     // If the `data-connected` attribute is anything rather than `false` then skip this try-catch block

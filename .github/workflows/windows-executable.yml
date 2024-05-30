@@ -2,104 +2,104 @@ name: 'Windows: Build And Pack'
 
 'on':
   workflow_dispatch: null
-  
+
 jobs:
   Windows:
     runs-on: windows-2019
-    
+
     steps:
       - name: Switch To `cqlsh` Branch
         uses: actions/checkout@v2
         with:
           ref: cqlsh
-       
+
       - name: Setup Python v3.8
         uses: actions/setup-python@v3
         with:
           python-version: 3.8
-          
+
       - name: Build CQLSH v6.0.0
         run: |
           cd "v6.0.0-ACv4.0.7"
           dir
           pip install --upgrade pip
-          pip install virtualenv 
+          pip install virtualenv
           virtualenv venv
           venv\Scripts\activate.bat
           pip install -r requirements.txt
           pip install pypiwin32
           pyinstaller --noconfirm --clean --noupx --onefile cqlsh.py
-          
+
       - name: Build CQLSH v6.1.0
         run: |
           cd "v6.1.0-ACv4.1.0"
           dir
           pip install --upgrade pip
-          pip install virtualenv 
+          pip install virtualenv
           virtualenv venv
           venv\Scripts\activate.bat
           pip install -r requirements.txt
           pip install pypiwin32
           pyinstaller --noconfirm --clean --noupx --onefile cqlsh.py
-          
+
       - name: Rename Artifacts
         run: |
           md CQLSH_ALL
           move v6.0.0-ACv4.0.7\dist\cqlsh.exe CQLSH_ALL\cqlsh-407.exe
           move v6.1.0-ACv4.1.0\dist\cqlsh.exe CQLSH_ALL\cqlsh-410.exe
-          
+
       - name: Save Artifacts To Be Used Next
         run: |
           mkdir D:\CQLSH_ALL\
           move CQLSH_ALL\* D:\CQLSH_ALL\
-          
+
       - name: Switch To `keys_generator` Branch
         uses: actions/checkout@v2
         with:
           ref: keys_generator
-          
+
       - name: Build Keys Generator Tool
         run: |
           dir
           pip install --upgrade pip
-          pip install virtualenv 
+          pip install virtualenv
           virtualenv venv
           venv\Scripts\activate.bat
           pip install -r requirements.txt
           pyinstaller --noconfirm --clean --noupx --onefile keys_generator.py
-          
+
       - name: Save Artifacts To Be Used Next
         run: |
-          move dist/*keys_generator* D:\CQLSH_ALL\    
-          
+          move dist/*keys_generator* D:\CQLSH_ALL\
+
       - name: Start With AxonOps Developer Workbench
         run: echo ""
-        
+
       - name: Switch To `main` Branch
         uses: actions/checkout@v2
         with:
           ref: main
-          
+
       - name: Setup Node.js v16.13.2
         uses: actions/setup-node@v2
         with:
           node-version: 16.13.2
-          
+
       - name: Install AxonOps Developer Workbench Dependencies
         run: |
           npm cache clear --force
           npm i
           npm run rebuild
-          
+
       - name: Move CQLSH To `bin` Folder
         run: |
           move D:\CQLSH_ALL\* main\bin\
-          
+
       - name: Pack AxonOps Developer Workbench For Windows
         run: |
           npm run pack:win
           (cd release-builds && tar zcpf ../axonops-developer-workbench-win32-x86.tar.gz axonops-developer-workbench-win32-x86)
-          
+
       - name: Upload Windows Packed Version As Artifacts
         uses: actions/upload-artifact@v4
         with:

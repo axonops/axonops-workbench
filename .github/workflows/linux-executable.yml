@@ -75,10 +75,10 @@ jobs:
       - name: Start with AxonOps Developer Workbench
         run: echo ""
 
-      - name: Switch to $GITHUB_REF_NAME branch
+      - name: Switch to feature/Packaging branch
         uses: actions/checkout@v2
         with:
-          ref: $GITHUB_REF_NAME
+          ref: feature/Packaging
 
       - name: Setup Node.js v16.13.2
         uses: actions/setup-node@v2

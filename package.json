@@ -1,21 +1,31 @@
 {
-  "name": "axonops.developer.workbench",
+  "name": "axonops-developer-workbench",
   "title": "AxonOps Developer Workbench",
   "version": "0.1.0-1",
   "main": "main/main.js",
+  "license": "Apache-2.0",
+  "description": "AxonOps Developer Workbench",
+  "maintainers": [
+    "info@axonops.com"
+  ],
   "scripts": {
     "start": "electron .",
     "rebuild": "npx electron-rebuild -w -f",
-    "pack:macos": "npx electron-packager ./ axonops.developer.workbench --platform=darwin --arch=x64 --overwrite --out=pack-macos",
-    "pack:macos:arm": "npx electron-packager ./ axonops.developer.workbench --platform=darwin --arch=arm64 --overwrite --out=pack-macos-arm",
-    "pack:win": "npx electron-packager ./ axonops.developer.workbench --platform=win32 --arch=x64 --overwrite --out=pack-win",
-    "pack:win:arm": "npx electron-packager ./ axonops.developer.workbench --platform=win32 --arch=arm64 --overwrite --out=pack-win-arm",
-    "pack:linux": "npx electron-packager ./ axonops.developer.workbench --platform=linux --arch=x64 --overwrite --out=pack-linux",
-    "pack:linux:arm": "npx electron-packager ./ axonops.developer.workbench --platform=linux --arch=arm64 --overwrite --out=pack-linux-arm"
+    "pack:macos": "npx electron-packager ./ axonops-developer-workbench --platform=darwin --arch=x64 --overwrite --out=release-builds",
+    "pack:macos:arm": "npx electron-packager ./ axonops-developer-workbench --platform=darwin --arch=arm64 --overwrite --out=release-builds",
+    "pack:win": "npx electron-packager ./ axonops-developer-workbench --platform=win32 --arch=x64 --overwrite --out=release-builds",
+    "pack:win:arm": "npx electron-packager ./ axonops-developer-workbench --platform=win32 --arch=arm64 --overwrite --out=release-builds",
+    "pack:linux": "npx electron-packager ./ axonops-developer-workbench --platform=linux --arch=x64 --overwrite --out=release-builds",
+    "pack:linux:arm": "npx electron-packager ./ axonops-developer-workbench --platform=linux --arch=arm64 --overwrite --out=release-builds",
+    "deb:arm": "npx electron-installer-debian --src release-builds/axonops-developer-workbench-linux-arm64 --arch arm64 --config debian.json",
+    "deb:amd": "npx electron-installer-debian --src release-builds/axonops-developer-workbench-linux-x64 --arch amd64 --config debian.json",
+    "rpm:amd": "npx electron-installer-redhat --src release-builds/axonops-developer-workbench-linux-x64 --arch x86_64 --config redhat.json"
   },
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {
     "electron": "^22.0.0",
+    "electron-installer-debian": "^3.2.0",
+    "electron-installer-redhat": "^3.4.0",
     "electron-packager": "^17.1.1",
     "electron-rebuild": "^3.2.9"
   },
@@ -29,6 +39,7 @@
     "configparser": "^0.3.10",
     "diff": "^5.1.0",
     "electron-context-menu": "^3.6.1",
+    "electron-installer-debian": "^3.2.0",
     "electron-positioner": "^4.1.0",
     "escape-html": "^1.0.3",
     "escape-quotes": "^1.0.2",

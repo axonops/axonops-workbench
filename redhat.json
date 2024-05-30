@@ -1,0 +1,12 @@
+{
+    "dest": "release-builds/",
+    "icon": "./renderer/assets/images/icon-colored.png",
+    "categories": [
+      "Utility"
+    ],
+    "mantainer": "info@axonops.com",
+    "lintianOverrides": [
+      "changelog-file-missing-in-native-package"
+    ]
+  }
+  

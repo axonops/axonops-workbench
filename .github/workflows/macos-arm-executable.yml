@@ -95,11 +95,11 @@ jobs:
       - name: Pack Axonops Developer Workbench for macOS
         run: |
           npm run pack:macos:arm
-          tar -cvzf pack-macos-arm.tar pack-macos-arm
+          (cd release-builds && tar zcpf ../axonops-developer-workbench-darwin-arm64.tar.gz axonops-developer-workbench-darwin-arm64)
         
       - name: Upload macOS packed version as artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: Axonops.Developer.Workbench-macOS-ARM
-          path: pack-macos-arm.tar
+          name: AxonOps-Developer-Workbench-MacOS-arm64
+          path: release-builds/axonops-developer-workbench-darwin-arm64.tar.gz
           

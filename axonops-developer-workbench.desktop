@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=AxonOps Developer Workbench
+Comment=An amazing application
+Exec=axonops-developer-workbench
+Icon=/usr/share/icons/hicolor/32x32/axonops-developer-workbench.png
+Keywords=cassandra;axonops;developer;kafka
+StartupNotify=true
+Terminal=false

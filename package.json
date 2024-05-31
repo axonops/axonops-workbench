@@ -7,8 +7,6 @@
     "email": "info@axonops.com"
   },
   "icon": "./renderer/assets/images/icon-colored.png",
-  "category": "Utilities",
-  "desktop": "axonops-developer-workbench.desktop",
   "main": "main/main.js",
   "license": "Apache-2.0",
   "description": "AxonOps Developer Workbench",
@@ -16,6 +14,11 @@
     "info@axonops.com"
   ],
   "build": {
+    "linux": {
+      "category": "Development",
+      "desktop": "axonops-developer-workbench.desktop",
+      "description": "AxonOps Developer Workbench"
+    },
     "deb": {
       "depends": ["libnss3", "libsecret-1-0"]
     }

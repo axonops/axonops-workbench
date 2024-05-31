@@ -112,6 +112,8 @@ jobs:
           fi
 
           npm run deb rpm snap
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Linux packed version as artifacts (x86)
         uses: actions/upload-artifact@v4

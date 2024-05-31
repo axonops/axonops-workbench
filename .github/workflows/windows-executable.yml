@@ -80,16 +80,15 @@ jobs:
         with:
           ref: main
 
-      - name: Setup Node.js v16.13.2
+      - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v2
         with:
-          node-version: 16.13.2
+          node-version: 16.20.2
 
       - name: Install AxonOps Developer Workbench Dependencies
         run: |
           npm cache clear --force
           npm i
-          npm run rebuild
 
       - name: Move CQLSH To `bin` Folder
         run: |
@@ -97,11 +96,10 @@ jobs:
 
       - name: Pack AxonOps Developer Workbench For Windows
         run: |
-          npm run pack:win
-          (cd release-builds && tar zcpf ../axonops-developer-workbench-win32-x86.tar.gz axonops-developer-workbench-win32-x86)
+          npm run win
 
       - name: Upload Windows Packed Version As Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: AxonOps.Developer.Workbench-Windows
-          path: release-builds/axonops-developer-workbench-win32-x86.tar.gz
+          name: AxonOps.Developer.Workbench-Windows.zip
+          path: release-builds/axonops-developer-workbench-win32*

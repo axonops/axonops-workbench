@@ -85,15 +85,14 @@ jobs:
         with:
           ref: ${{ steps.extract_branch.outputs.branch }}
 
-      - name: Setup Node.js v16.13.2
+      - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v2
         with:
-          node-version: 16.13.2
+          node-version: 16.20.2
 
       - name: Install AxonOps Developer Workbench dependencies
         run: |
           npm i
-          npm run rebuild
 
       - name: Move CQLSH to bin folder
         run: |
@@ -105,24 +104,35 @@ jobs:
 
       - name: Pack AxonOps Developer Workbench for Linux
         run: |
-          npm run pack:linux
-          npm run deb:amd
-          npm run rpm:amd
+          if [ "$(uname -m)" == "aarch64" ]; then
+            sudo apt-get -y install ruby
+            gem install dotenv -v 2.8.1
+            gem instal fpm
+            export USE_SYSTEM_FPM=true
+          fi
+
+          npm run deb rpm tar snap
 
       - name: Upload Linux packed version as artifacts (x86)
         uses: actions/upload-artifact@v4
         with:
           name: axonops-developer-workbench-linux-x64.zip
-          path: release-builds/axonops-developer-workbench-linux-x64
+          path: dist/axonops-developer-workbench-linux-x64
 
       - name: Upload Debian packages
         uses: actions/upload-artifact@v4
         with:
           name: AxonOps-Developer-Workbench-Linux-x86_64.deb.zip
-          path: release-builds/axonops-developer-workbench*_amd64.deb
+          path: dist/axonops-developer-workbench*_amd64.deb
 
       - name: Upload RedHat packages
         uses: actions/upload-artifact@v4
         with:
           name: AxonOps-Developer-Workbench-Linux-x86_64.rpm.zip
-          path: release-builds/axonops-developer-workbench*x86_64.rpm
+          path: dist/axonops-developer-workbench*x86_64.rpm
+
+      - name: Upload Snap packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxonOps-Developer-Workbench-Linux-amd64.snap.zip
+          path: dist/axonops-developer-workbench*amd64.snap

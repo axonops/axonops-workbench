@@ -6,6 +6,9 @@
     "name": "AxonOps",
     "email": "info@axonops.com"
   },
+  "icon": "./renderer/assets/images/icon-colored.png",
+  "category": "Utilities",
+  "desktop": "axonops-developer-workbench.desktop",
   "main": "main/main.js",
   "license": "Apache-2.0",
   "description": "AxonOps Developer Workbench",
@@ -14,24 +17,17 @@
   ],
   "build": {
     "deb": {
-      "depends": ["gconf2", "libnss3", "libsecret-1-0", "libsecret-tools"]
+      "depends": ["libnss3", "libsecret-1-0"]
     }
   },
   "scripts": {
-    "start": "electron .",
-    "pack:macos": "npx electron-packager ./ axonops-developer-workbench --platform=darwin --arch=x64 --overwrite --out=release-builds",
-    "pack:macos:arm": "npx electron-packager ./ axonops-developer-workbench --platform=darwin --arch=arm64 --overwrite --out=release-builds",
-    "pack:win": "npx electron-packager ./ axonops-developer-workbench --platform=win32 --arch=x64 --overwrite --out=release-builds",
-    "pack:win:arm": "npx electron-packager ./ axonops-developer-workbench --platform=win32 --arch=arm64 --overwrite --out=release-builds",
-    "pack:linux": "npx electron-packager ./ axonops-developer-workbench --platform=linux --arch=x64 --overwrite --out=release-builds",
-    "pack:linux:arm": "npx electron-packager ./ axonops-developer-workbench --platform=linux --arch=arm64 --overwrite --out=release-builds",
-    "deb:arm": "npx electron-installer-debian --src release-builds/axonops-developer-workbench-linux-arm64 --arch arm64 --config debian.json",
-    "deb:amd": "npx electron-installer-debian --src release-builds/axonops-developer-workbench-linux-x64 --arch amd64 --config debian.json",
-    "rpm:amd": "npx electron-installer-redhat --src release-builds/axonops-developer-workbench-linux-x64 --arch x86_64 --config redhat.json",
-    "snap:amd": "npx electron-installer-snap --src release-builds/axonops-developer-workbench-linux-x64 --dest=release-builds",
-    "snap:arm": "npx electron-installer-snap --src release-builds/axonops-developer-workbench-linux-arm64 --dest=release-builds"
+    "start": "electron-builder start",
+    "win": "electron-builder --win",
+    "tar": "electron-builder --linux tar.gz",
+    "deb": "electron-builder --linux deb",
+    "rpm": "electron-builder --linux rpm",
+    "snap": "electron-builder --linux snap"
   },
-  "postinstall": "npx electron-builder install-app-deps",
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {
     "electron": "^30.0.9",

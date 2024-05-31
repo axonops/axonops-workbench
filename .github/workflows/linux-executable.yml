@@ -111,7 +111,7 @@ jobs:
             export USE_SYSTEM_FPM=true
           fi
 
-          npm run deb rpm tar snap
+          npm run deb rpm snap
 
       - name: Upload Linux packed version as artifacts (x86)
         uses: actions/upload-artifact@v4

@@ -2,15 +2,23 @@
   "name": "axonops-developer-workbench",
   "title": "AxonOps Developer Workbench",
   "version": "0.1.0-1",
+  "author": {
+    "name": "AxonOps",
+    "email": "info@axonops.com"
+  },
   "main": "main/main.js",
   "license": "Apache-2.0",
   "description": "AxonOps Developer Workbench",
   "maintainers": [
     "info@axonops.com"
   ],
+  "build": {
+    "deb": {
+      "depends": ["gconf2", "libnss3", "libsecret-1-0", "libsecret-tools"]
+    }
+  },
   "scripts": {
     "start": "electron .",
-    "rebuild": "npx electron-rebuild -w -f",
     "pack:macos": "npx electron-packager ./ axonops-developer-workbench --platform=darwin --arch=x64 --overwrite --out=release-builds",
     "pack:macos:arm": "npx electron-packager ./ axonops-developer-workbench --platform=darwin --arch=arm64 --overwrite --out=release-builds",
     "pack:win": "npx electron-packager ./ axonops-developer-workbench --platform=win32 --arch=x64 --overwrite --out=release-builds",
@@ -19,15 +27,15 @@
     "pack:linux:arm": "npx electron-packager ./ axonops-developer-workbench --platform=linux --arch=arm64 --overwrite --out=release-builds",
     "deb:arm": "npx electron-installer-debian --src release-builds/axonops-developer-workbench-linux-arm64 --arch arm64 --config debian.json",
     "deb:amd": "npx electron-installer-debian --src release-builds/axonops-developer-workbench-linux-x64 --arch amd64 --config debian.json",
-    "rpm:amd": "npx electron-installer-redhat --src release-builds/axonops-developer-workbench-linux-x64 --arch x86_64 --config redhat.json"
+    "rpm:amd": "npx electron-installer-redhat --src release-builds/axonops-developer-workbench-linux-x64 --arch x86_64 --config redhat.json",
+    "snap:amd": "npx electron-installer-snap --src release-builds/axonops-developer-workbench-linux-x64 --dest=release-builds",
+    "snap:arm": "npx electron-installer-snap --src release-builds/axonops-developer-workbench-linux-arm64 --dest=release-builds"
   },
+  "postinstall": "npx electron-builder install-app-deps",
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {
-    "electron": "^22.0.0",
-    "electron-installer-debian": "^3.2.0",
-    "electron-installer-redhat": "^3.4.0",
-    "electron-packager": "^17.1.1",
-    "electron-rebuild": "^3.2.9"
+    "electron": "^30.0.9",
+    "electron-builder": "^24.13.3"
   },
   "dependencies": {
     "@ramumb/strip-tags": "^0.1.3",

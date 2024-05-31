@@ -100,12 +100,14 @@ jobs:
           mkdir -p ${{ steps.extract_branch.outputs.branch }}/bin
           mv  -v ~/CQLSH_ALL/* ${{ steps.extract_branch.outputs.branch }}/bin
 
+      - name: Install Snapcraft
+        uses: samuelmeuli/action-snapcraft@v2
+
       - name: Pack AxonOps Developer Workbench for Linux
         run: |
           npm run pack:linux
           npm run deb:amd
           npm run rpm:amd
-          #(cd release-builds && tar zcpf ../axonops-developer-workbench-linux-x64.tar.gz axonops-developer-workbench-linux-x64)
 
       - name: Upload Linux packed version as artifacts (x86)
         uses: actions/upload-artifact@v4

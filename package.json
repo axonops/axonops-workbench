@@ -19,7 +19,7 @@
       }
     ],
     "linux": {
-      "icon": "./renderer/assets/images/icon-colored.ico",
+      "icon": "./renderer/assets/images/icon-colored-256.png",
       "category": "Development",
       "desktop": "AxonOps Developer Workbench",
       "description": "AxonOps Developer Workbench"
@@ -38,7 +38,7 @@
     "deb": "electron-builder --linux deb --publish never",
     "rpm": "electron-builder --linux rpm --publish never",
     "snap": "electron-builder --linux snap --publish never",
-    "mac": "electron-builder --mac --publish never"
+    "mac": "electron-builder --mac dmg --publish never"
   },
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {

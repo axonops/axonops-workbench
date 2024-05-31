@@ -99,6 +99,6 @@ jobs:
 
       - name: Pack Axonops Developer Workbench for macOS
         run: |
-          npm run pack
+          npm run mac
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -30,7 +30,7 @@
     "deb": "electron-builder --linux deb --publish always",
     "rpm": "electron-builder --linux rpm --publish always",
     "snap": "electron-builder --linux snap --publish always",
-    "mac": "electron-builder --linux mac --publish always"
+    "mac": "electron-builder --mac --publish always"
   },
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {

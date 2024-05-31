@@ -100,22 +100,22 @@ jobs:
           npm run pack:linux
           npm run deb:amd
           npm run rpm:amd
-          (cd release-builds && tar zcpf ../axonops-developer-workbench-linux-x64.tar.gz axonops-developer-workbench-linux-x64)
+          #(cd release-builds && tar zcpf ../axonops-developer-workbench-linux-x64.tar.gz axonops-developer-workbench-linux-x64)
 
       - name: Upload Linux packed version as artifacts (x86)
         uses: actions/upload-artifact@v4
         with:
-          name: AxonOps-Developer-Workbench-Linux-x64
-          path: axonops-developer-workbench-linux-x64.tar.gz
+          name: axonops-developer-workbench-linux-x64.zip
+          path: axonops-developer-workbench-linux-x64
 
       - name: Upload Debian packages
         uses: actions/upload-artifact@v4
         with:
-          name: AxonOps-Developer-Workbench-Linux-x86_64.deb
+          name: AxonOps-Developer-Workbench-Linux-x86_64.deb.zip
           path: release-builds/axonops-developer-workbench*_amd64.deb
 
       - name: Upload RedHat packages
         uses: actions/upload-artifact@v4
         with:
-          name: AxonOps-Developer-Workbench-Linux-x86_64.rpm
+          name: AxonOps-Developer-Workbench-Linux-x86_64.rpm.zip
           path: release-builds/axonops-developer-workbench*x86_64.rpm

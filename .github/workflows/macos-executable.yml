@@ -102,3 +102,9 @@ jobs:
           npm run mac
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxonOps-Developer-Workbench-Linux.zip
+          path: dist/axonops-developer-workbench*.dmg

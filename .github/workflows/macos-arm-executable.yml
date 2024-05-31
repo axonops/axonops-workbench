@@ -48,6 +48,7 @@ jobs:
 
       - name: Rename artifacts
         run: |
+          rm -rf CQLSH_ALL
           mkdir CQLSH_ALL
           mv v6.0.0-ACv4.0.7/dist/cqlsh CQLSH_ALL/cqlsh-407
           mv v6.1.0-ACv4.1.0/dist/cqlsh CQLSH_ALL/cqlsh-410

@@ -106,8 +106,8 @@ jobs:
         run: |
           if [ "$(uname -m)" == "aarch64" ]; then
             sudo apt-get -y install ruby
-            gem install dotenv -v 2.8.1
-            gem instal fpm
+            sudo gem install dotenv -v 2.8.1
+            sudo gem instal fpm
             export USE_SYSTEM_FPM=true
           fi
 

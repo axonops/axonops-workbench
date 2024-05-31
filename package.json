@@ -6,7 +6,6 @@
     "name": "AxonOps",
     "email": "info@axonops.com"
   },
-  "icon": "./renderer/assets/images/icon-colored.png",
   "main": "main/main.js",
   "license": "Apache-2.0",
   "description": "AxonOps Developer Workbench",
@@ -15,9 +14,13 @@
   ],
   "build": {
     "linux": {
+      "icon": "./renderer/assets/images/icon-colored.ico",
       "category": "Development",
-      "desktop": "axonops-developer-workbench.desktop",
+      "desktop": "AxonOps Developer Workbench",
       "description": "AxonOps Developer Workbench"
+    },
+    "mac": {
+      "icon": "./renderer/assets/images/icon-colored.icns"
     },
     "deb": {
       "depends": ["libnss3", "libsecret-1-0"]
@@ -26,11 +29,11 @@
   "scripts": {
     "start": "electron-builder start",
     "win": "electron-builder --win",
-    "tar": "electron-builder --linux tar.gz --publish always",
-    "deb": "electron-builder --linux deb --publish always",
-    "rpm": "electron-builder --linux rpm --publish always",
-    "snap": "electron-builder --linux snap --publish always",
-    "mac": "electron-builder --mac --publish always"
+    "tar": "electron-builder --linux tar.gz --publish onTag",
+    "deb": "electron-builder --linux deb --publish onTag",
+    "rpm": "electron-builder --linux rpm --publish onTag",
+    "snap": "electron-builder --linux snap --publish onTag",
+    "mac": "electron-builder --mac --publish onTag"
   },
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {

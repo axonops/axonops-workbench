@@ -34,11 +34,11 @@
   "scripts": {
     "start": "electron-builder start",
     "win": "electron-builder --win",
-    "tar": "electron-builder --linux tar.gz --publish always",
-    "deb": "electron-builder --linux deb --publish always",
-    "rpm": "electron-builder --linux rpm --publish always",
-    "snap": "electron-builder --linux snap --publish always",
-    "mac": "electron-builder --mac --publish always"
+    "tar": "electron-builder --linux tar.gz --publish never",
+    "deb": "electron-builder --linux deb --publish never",
+    "rpm": "electron-builder --linux rpm --publish never",
+    "snap": "electron-builder --linux snap --publish never",
+    "mac": "electron-builder --mac --publish never"
   },
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {

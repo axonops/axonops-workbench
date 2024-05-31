@@ -117,26 +117,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Upload Linux packed version as artifacts (x86)
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: axonops-developer-workbench-linux-x64.zip
-      #     path: dist/axonops-developer-workbench-linux-x64
+      - name: Upload Debian packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxonOps-Developer-Workbench-Linux-arm64.deb
+          path: dist/axonops-developer-workbench*.deb
 
-      # - name: Upload Debian packages
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: AxonOps-Developer-Workbench-Linux-x86_64.deb.zip
-      #     path: dist/axonops-developer-workbench*_amd64.deb
+      - name: Upload RedHat packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxonOps-Developer-Workbench-Linux-arm64.rpm
+          path: dist/axonops-developer-workbench*.rpm
 
-      # - name: Upload RedHat packages
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: AxonOps-Developer-Workbench-Linux-x86_64.rpm.zip
-      #     path: dist/axonops-developer-workbench*x86_64.rpm
+      - name: Upload Snap packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxonOps-Developer-Workbench-Linux-arm64.snap
+          path: dist/axonops-developer-workbench*.snap
 
-      # - name: Upload Snap packages
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: AxonOps-Developer-Workbench-Linux-amd64.snap.zip
-      #     path: dist/axonops-developer-workbench*amd64.snap
+      - name: Upload Tar packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxonOps-Developer-Workbench-Linux-arm64.tar.gz
+          path: dist/axonops-developer-workbench*.tar.gz

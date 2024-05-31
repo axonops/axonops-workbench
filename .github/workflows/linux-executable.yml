@@ -8,6 +8,11 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
       - name: Start with CQLSH tool
         run: echo ""
 
@@ -75,10 +80,10 @@ jobs:
       - name: Start with AxonOps Developer Workbench
         run: echo ""
 
-      - name: Switch to feature/Packaging branch
+      - name: Switch to ${{ steps.extract_branch.outputs.branch }} branch
         uses: actions/checkout@v2
         with:
-          ref: feature/Packaging
+          ref: ${{ steps.extract_branch.outputs.branch }}
 
       - name: Setup Node.js v16.13.2
         uses: actions/setup-node@v2
@@ -92,8 +97,8 @@ jobs:
 
       - name: Move CQLSH to bin folder
         run: |
-          mkdir -p feature/Packaging/bin
-          mv  -v ~/CQLSH_ALL/* feature/Packaging/bin
+          mkdir -p ${{ steps.extract_branch.outputs.branch }}/bin
+          mv  -v ~/CQLSH_ALL/* ${{ steps.extract_branch.outputs.branch }}/bin
 
       - name: Pack AxonOps Developer Workbench for Linux
         run: |

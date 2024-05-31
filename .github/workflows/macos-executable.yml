@@ -8,6 +8,11 @@ jobs:
     runs-on: macos-13
 
     steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
       - name: Start with CQLSH tool
         run: echo ""
 
@@ -75,12 +80,12 @@ jobs:
       - name: Switch to main branch
         uses: actions/checkout@v2
         with:
-          ref: main
+          ref: ${{ steps.extract_branch.outputs.branch }}
 
-      - name: Setup Node.js v16.13.2
+      - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v2
         with:
-          node-version: 16.13.2
+          node-version: 16.20.2
 
       - name: Install Axonops Developer Workbench dependencies
         run: |

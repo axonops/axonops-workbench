@@ -94,11 +94,6 @@ jobs:
 
       - name: Pack Axonops Developer Workbench for macOS
         run: |
-          npm run pack:macos
-          (cd release-builds && tar zcpf ../axonops-developer-workbench-darwin-amd64.tar.gz axonops-developer-workbench-darwin-amd64)
-
-      - name: Upload macOS packed version as artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: AxonOps-Developer-Workbench-MacOS-amd64
-          path: release-builds/axonops-developer-workbench-darwin-amd64.tar.gz
+          npm run pack
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

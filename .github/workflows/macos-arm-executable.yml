@@ -17,7 +17,7 @@ jobs:
         run: echo ""
 
       - name: Switch to cqlsh branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: cqlsh
 
@@ -58,7 +58,7 @@ jobs:
           mv CQLSH_ALL ~/
 
       - name: Switch to keys_generator branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: keys_generator
 
@@ -79,12 +79,12 @@ jobs:
         run: echo ""
 
       - name: Switch to main branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ steps.extract_branch.outputs.branch }}
 
       - name: Setup Node.js v16.20.2
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 16.20.2
 

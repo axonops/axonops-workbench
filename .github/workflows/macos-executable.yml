@@ -48,10 +48,10 @@ jobs:
 
       - name: Rename artifacts
         run: |
-          rm -rf CQLSH_ALL /tmp/CQLSH_ALL
-          mkdir CQLSH_ALL
-          mv v6.0.0-ACv4.0.7/dist/cqlsh CQLSH_ALL/cqlsh-407
-          mv v6.1.0-ACv4.1.0/dist/cqlsh CQLSH_ALL/cqlsh-410
+          rm -rf /tmp/CQLSH_ALL
+          mkdir -p /tmp/CQLSH_ALL
+          mv v6.0.0-ACv4.0.7/dist/cqlsh /tmp/CQLSH_ALL/cqlsh-407
+          mv v6.1.0-ACv4.1.0/dist/cqlsh /tmp/CQLSH_ALL/cqlsh-410
 
       - name: Save artifacts to be used next
         run: |
@@ -91,11 +91,6 @@ jobs:
       - name: Install Axonops Developer Workbench dependencies
         run: |
           npm i
-
-      - name: Move CQLSH to bin folder
-        run: |
-          mkdir -p main/bin
-          mv  -v /tmp/CQLSH_ALL/* main/bin
 
       - name: Pack Axonops Developer Workbench for macOS
         run: |

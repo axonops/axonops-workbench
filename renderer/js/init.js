@@ -4,6 +4,8 @@
  * Compilation cache optimizer
  */
 require('v8-compile-cache')
+const fs = require('fs');
+const path = require('path');
 
 // JQuery library
 const $ = require('jquery'),

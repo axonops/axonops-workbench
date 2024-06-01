@@ -17,7 +17,7 @@
     "extraFiles": [
       {
         "from": "/tmp/CQLSH_ALL",
-        "to": "./",
+        "to": "./main/bin",
         "filter": [
           "**/*"
         ]

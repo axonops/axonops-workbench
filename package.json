@@ -13,6 +13,16 @@
     "info@axonops.com"
   ],
   "build": {
+    "icon": "./renderer/assets/images/icon-colored-256.png",
+    "extraFiles": [
+      {
+        "from": "/tmp/CQLSH_ALL",
+        "to": "/",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "publish": [
       {
         "provider": "github"
@@ -34,11 +44,11 @@
   "scripts": {
     "start": "electron-builder start",
     "win": "electron-builder --win",
-    "tar": "electron-builder --linux tar.gz --publish never",
-    "deb": "electron-builder --linux deb --publish never",
-    "rpm": "electron-builder --linux rpm --publish never",
-    "snap": "electron-builder --linux snap --publish never",
-    "mac": "electron-builder --mac dmg --publish never"
+    "tar": "electron-builder --linux tar.gz --publish onTag",
+    "deb": "electron-builder --linux deb --publish onTag",
+    "rpm": "electron-builder --linux rpm --publish onTag",
+    "snap": "electron-builder --linux snap --publish onTag",
+    "mac": "electron-builder --mac dmg --publish onTag"
   },
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {

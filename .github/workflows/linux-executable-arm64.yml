@@ -75,7 +75,7 @@ jobs:
 
       - name: Save artifact to be used next
         run: |
-          mv dist/*keys_generator* ~/CQLSH_ALL
+          mv dist/*keys_generator* /tmp/CQLSH_ALL
 
       - name: Start with AxonOps Developer Workbench
         run: echo ""
@@ -97,7 +97,7 @@ jobs:
       - name: Move CQLSH to bin folder
         run: |
           mkdir -p main/bin
-          mv  -v ~/CQLSH_ALL/* main/bin
+          mv  -v /tmp/CQLSH_ALL/* main/bin
 
       - name: Install Snapcraft
         uses: samuelmeuli/action-snapcraft@v2

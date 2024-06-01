@@ -96,8 +96,8 @@ jobs:
 
       - name: Move CQLSH to bin folder
         run: |
-          mkdir -p ${{ steps.extract_branch.outputs.branch }}/bin
-          mv  -v ~/CQLSH_ALL/* ${{ steps.extract_branch.outputs.branch }}/bin
+          mkdir -p main/bin
+          mv  -v ~/CQLSH_ALL/* main/bin
 
       - name: Install Snapcraft
         uses: samuelmeuli/action-snapcraft@v2

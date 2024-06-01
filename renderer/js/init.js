@@ -828,7 +828,8 @@ $(document).ready(() => {
   setTimeout(() => {
     try {
       // Define the path to all binaries
-      let binariesPath = Path.join(__dirname, '..', '..', 'main', 'bin')
+      //let binariesPath = Path.join(__dirname, '..', '..', 'main', 'bin')
+      let binariesPath =__dirname
 
       // Check their existence
       Terminal.run(`cd "${binariesPath}" && ${OS.platform() == 'win32' ? 'dir' : 'ls'}`, (err, data, stderr) => {

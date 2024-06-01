@@ -56,7 +56,7 @@ jobs:
 
       - name: Save artifacts to be used next
         run: |
-          mv CQLSH_ALL ~/
+          mv CQLSH_ALL /tmp
 
       - name: Switch to keys_generator branch
         uses: actions/checkout@v4
@@ -96,8 +96,7 @@ jobs:
 
       - name: Move CQLSH to bin folder
         run: |
-          mkdir -p main/bin
-          mv  -v /tmp/CQLSH_ALL/* main/bin
+          mv  -v /tmp/CQLSH_ALL/* /tmp/CQLSH_ALL
 
       - name: Install Snapcraft
         uses: samuelmeuli/action-snapcraft@v2

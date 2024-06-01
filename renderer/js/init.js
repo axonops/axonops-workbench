@@ -827,9 +827,13 @@ $(document).ready(() => setTimeout(() => autoPlayStopLottieElement($('lottie-pla
 $(document).ready(() => {
   setTimeout(() => {
     try {
+      let binariesPath = "/opt/axonops-developer-workbench"
+      if (fileExists(Path.join(binariesPath, 'cqlsh-407'))) {
+        return
+      }
+
       // Define the path to all binaries
-      //let binariesPath = Path.join(__dirname, '..', '..', 'main', 'bin')
-      let binariesPath =__dirname
+      binariesPath = Path.join(__dirname, '..', '..', 'main', 'bin')
 
       // Check their existence
       Terminal.run(`cd "${binariesPath}" && ${OS.platform() == 'win32' ? 'dir' : 'ls'}`, (err, data, stderr) => {
@@ -841,7 +845,7 @@ $(document).ready(() => {
           return
 
         // Show feedback to the user if one of the binaries is missing
-        showToast(I18next.capitalize(I18next.t(`binaries check`)), I18next.capitalizeFirstLetter(I18next.t(`${areBinariesExist}/cqlsh-407 it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app`)) + '.', 'failure')
+        showToast(I18next.capitalize(I18next.t(`binaries check`)), I18next.capitalizeFirstLetter(I18next.t(`${areBinariesExist}/cqlsh-407 not found: it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app`)) + '.', 'failure')
       })
     } catch (e) {}
   }, 3000)
@@ -849,3 +853,26 @@ $(document).ready(() => {
 
 // Once the main window/view is fully loaded send the `loaded` event to the main thread
 $(document).ready(() => setTimeout(() => IPCRenderer.send('loaded'), 1000))
+
+/**
+ * Checks if a file exists at the given path.
+ *
+ * @param {string} filePath - The path to the file.
+ * @returns {Promise<boolean>} A promise that resolves to true if the file exists, false otherwise.
+ */
+function fileExists(filePath) {
+  return new Promise((resolve, reject) => {
+    try {
+      const resolvedPath = path.resolve(filePath);
+      fs.access(resolvedPath, fs.constants.F_OK, (err) => {
+        if (err) {
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+}

@@ -11,3 +11,4 @@ main/bin/*
 !main/bin/temp.txt
 
 release-builds/
+data/*

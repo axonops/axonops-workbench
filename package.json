@@ -14,6 +14,8 @@
   ],
   "build": {
     "icon": "./renderer/assets/images/icon-colored-256.png",
+    "copyright": "AxonOps 2024",
+    "appId": "com.axonops.workbench",
     "extraFiles": [
       {
         "from": "/tmp/CQLSH_ALL",
@@ -42,7 +44,7 @@
     }
   },
   "scripts": {
-    "start": "electron-builder start",
+    "start": "electron .",
     "win": "electron-builder --win",
     "tar": "electron-builder --linux tar.gz --publish onTag",
     "deb": "electron-builder --linux deb --publish onTag",

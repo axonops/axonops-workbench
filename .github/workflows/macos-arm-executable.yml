@@ -98,6 +98,8 @@ jobs:
           npm run mac
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
 
       - name: Upload packages
         uses: actions/upload-artifact@v4

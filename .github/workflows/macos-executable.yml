@@ -53,10 +53,6 @@ jobs:
           mv v6.0.0-ACv4.0.7/dist/cqlsh /tmp/CQLSH_ALL/cqlsh-407
           mv v6.1.0-ACv4.1.0/dist/cqlsh /tmp/CQLSH_ALL/cqlsh-410
 
-      - name: Save artifacts to be used next
-        run: |
-          mv CQLSH_ALL ~/
-
       - name: Switch to keys_generator branch
         uses: actions/checkout@v4
         with:
@@ -92,6 +88,11 @@ jobs:
         run: |
           npm i
 
+      - name: Move CQLSH to bin folder
+        run: |
+          mkdir -p main/bin
+          mv  -v /tmp/CQLSH_ALL/* main/bin
+
       - name: Pack Axonops Developer Workbench for macOS
         run: |
           npm run mac
@@ -99,7 +100,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
-
 
       - name: Upload packages
         uses: actions/upload-artifact@v4

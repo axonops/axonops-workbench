@@ -34,6 +34,7 @@ const Electron = require('electron'),
    */
   MenuItem = Electron.MenuItem
 
+
 /**
  * Import modules globally
  * Those modules can be reached from all sub-modules of the main module, such as `pty` and `config`
@@ -42,6 +43,7 @@ const Electron = require('electron'),
  * For communicating asynchronously from the main thread to the renderer thread(s)
  */
 global.IPCMain = Electron.ipcMain
+
 // Execute commands across all platforms
 global.Terminal = require('node-cmd')
 /**
@@ -57,6 +59,12 @@ global.FS = require('fs-extra')
  */
 global.Path = require('path')
 
+/**  
+ * Common directories - FIXME: Added by Sergio, it needs lots of work
+*/
+global.UserDataDir = App.getPath('userData')
+global.LogsDirectory = global.Path.join(global.UserDataDir, "logs")
+global.ConfigDirectory = global.Path.join(global.UserDataDir, "config")
 /**
  * Node.js URL module
  * For URL resolution and parsing
@@ -561,6 +569,9 @@ App.on('window-all-closed', () => App.quit())
       let event = {
         name: 'logging:add',
         func: (_, data) => {
+          if (!logging) {
+            logging = new Modules.Logging.Logging(data)
+          }
           try {
             logging.addLog(data)
           } catch (e) {}

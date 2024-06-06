@@ -37,7 +37,10 @@
       "description": "AxonOps Developer Workbench"
     },
     "mac": {
-      "icon": "./renderer/assets/images/icon-colored.icns"
+      "icon": "./renderer/assets/images/icon-colored.icns",
+      "extendInfo": {
+        "ElectronTeamID": "UJ776LUP23"
+      }
     },
     "deb": {
       "depends": ["libnss3", "libsecret-1-0"]
@@ -45,7 +48,7 @@
   },
   "scripts": {
     "start": "electron .",
-    "win": "electron-builder --win",
+    "win": "electron-builder --win --publish onTag",
     "tar": "electron-builder --linux tar.gz --publish onTag",
     "deb": "electron-builder --linux deb --publish onTag",
     "rpm": "electron-builder --linux rpm --publish onTag",

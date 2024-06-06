@@ -13,13 +13,10 @@ jobs:
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
 
-      - name: Start with CQLSH tool
-        run: echo ""
-
-      - name: Switch to cqlsh branch
+      - name: Switch to ${{ steps.extract_branch.outputs.branch }} branch
         uses: actions/checkout@v4
         with:
-          ref: cqlsh
+          ref: ${{ steps.extract_branch.outputs.branch }}
 
       - name: Setup Python v3.8
         uses: actions/setup-python@v3
@@ -28,7 +25,7 @@ jobs:
 
       - name: Build CQLSH v6.0.0
         run: |
-          cd "v6.0.0-ACv4.0.7"
+          cd "cqlsh/v6.0.0-ACv4.0.7"
           ls
           pip install --upgrade pip
           pip install virtualenv
@@ -39,7 +36,7 @@ jobs:
 
       - name: Build CQLSH v6.1.0
         run: |
-          cd "v6.1.0-ACv4.1.0"
+          cd "cqlsh/v6.1.0-ACv4.1.0"
           ls
           pip install --upgrade pip
           pip install virtualenv
@@ -51,16 +48,12 @@ jobs:
       - name: Rename artifacts
         run: |
           mkdir -p /tmp/CQLSH_ALL
-          mv v6.0.0-ACv4.0.7/dist/cqlsh /tmp/CQLSH_ALL/cqlsh-407
-          mv v6.1.0-ACv4.1.0/dist/cqlsh /tmp/CQLSH_ALL/cqlsh-410
-
-      - name: Switch to keys_generator branch
-        uses: actions/checkout@v4
-        with:
-          ref: keys_generator
+          mv cqlsh/v6.0.0-ACv4.0.7/dist/cqlsh /tmp/CQLSH_ALL/cqlsh-407
+          mv cqlsh/v6.1.0-ACv4.1.0/dist/cqlsh /tmp/CQLSH_ALL/cqlsh-410
 
       - name: Build Keys Generator Tool
         run: |
+          cd keys_generator
           ls
           pip install --upgrade pip
           pip install virtualenv
@@ -72,15 +65,10 @@ jobs:
       - name: Save artifact to be used next
         run: |
           mkdir -p /tmp/CQLSH_ALL
-          mv dist/*keys_generator* /tmp/CQLSH_ALL
+          mv keys_generator/dist/*keys_generator* /tmp/CQLSH_ALL
 
       - name: Start with AxonOps Developer Workbench
         run: echo ""
-
-      - name: Switch to ${{ steps.extract_branch.outputs.branch }} branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.extract_branch.outputs.branch }}
 
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4

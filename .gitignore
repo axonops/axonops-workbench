@@ -3,6 +3,13 @@ package-lock.json
 renderer/styles/*.css.map
 dev/*
 test*/*
+__pycache__/
+cqlsh/*/dist
+cqlsh/*/build
+dist
+*/build/
+*.spec
+*/dist/
 
 data/workspaces/*
 !data/workspaces/workspaces.json

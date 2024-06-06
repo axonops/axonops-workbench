@@ -40,7 +40,8 @@
       "icon": "./renderer/assets/images/icon-colored.icns",
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"
-      }
+      },
+      "type": "distribution"
     },
     "deb": {
       "depends": ["libnss3", "libsecret-1-0"]

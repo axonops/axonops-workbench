@@ -1,0 +1,142 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import os
+import sys
+import ssl
+import json
+import re
+
+from six.moves import configparser
+
+
+def ssl_settings(host, config_file, env=os.environ, varsManifest=None, varsValues=None, workspaceID=None):
+    """
+    Function which generates SSL setting for cassandra.Cluster
+
+    Params:
+    * host .........: hostname of Cassandra node.
+    * env ..........: environment variables. SSL factory will use, if passed,
+                      SSL_CERTFILE and SSL_VALIDATE variables.
+    * config_file ..: path to cqlsh config file (usually ~/.cqlshrc).
+                      SSL factory will use, if set, certfile and validate
+                      options in [ssl] section, as well as host to certfile
+                      mapping in [certfiles] section.
+
+    [certfiles] section is optional, 'validate' setting in [ssl] section is
+    optional too. If validation is enabled then SSL certfile must be provided
+    either in the config file or as an environment variable.
+    Environment variables override any options set in cqlsh config file.
+    """
+    configs = configparser.SafeConfigParser()
+    configs.read(config_file)
+
+    # For Cassandra Workbench Variables Feature
+    try:
+        if (varsManifest is not None) and (varsValues is not None):
+
+            # Get the variables from the given file path
+            vars_manifest = open(varsManifest)
+            vars_values = open(varsValues)
+            vars_manifest = json.load(vars_manifest)
+            vars_values = json.load(vars_values)
+
+            variables = []
+
+            vars_manifest = list(
+                filter(lambda variable: workspaceID in variable["scope"] or "workspace-all" in variable["scope"],
+                       vars_manifest))
+
+            for savedVariable in vars_manifest:
+                try:
+                    for variableValue in vars_values:
+                        if (variableValue["name"] == savedVariable["name"]) and (
+                                variableValue["scope"] == savedVariable["scope"]):
+                            variables.append(variableValue)
+                except:
+                    pass
+
+            if len(configs.sections()) != 0:
+                for section in configs.sections():
+                    options = configs.options(section)
+                    if len(options) <= 0:
+                        continue
+                    for option in options:
+                        for variable in variables:
+                            value = configs.get(section, option)
+                            matchedVars = re.findall("\$\{(" + variable["name"] + ")\}", value)
+                            for matchedVar in matchedVars:
+                                newValue = value.replace("${" + matchedVar + "}", variable["value"])
+                                configs.set(section, option, value=newValue)
+    except:
+        pass
+
+    def get_option(section, option):
+        try:
+            return configs.get(section, option)
+        except configparser.Error:
+            return None
+
+    def get_best_tls_protocol(ssl_ver_str):
+        # newer python versions suggest to use PROTOCOL_TLS to negotiate the highest TLS version.
+        # older protocol versions have been deprecated:
+        # https://docs.python.org/2/library/ssl.html#ssl.PROTOCOL_TLS
+        # https://docs.python.org/3/library/ssl.html#ssl.PROTOCOL_TLS
+        if ssl_ver_str:
+            return getattr(ssl, "PROTOCOL_%s" % ssl_ver_str, None)
+        for protocol in ['PROTOCOL_TLS', 'PROTOCOL_TLSv1_2', 'PROTOCOL_TLSv1_1', 'PROTOCOL_TLSv1']:
+            if hasattr(ssl, protocol):
+                return getattr(ssl, protocol)
+        return None
+
+    ssl_validate = env.get('SSL_VALIDATE')
+    if ssl_validate is None:
+        ssl_validate = get_option('ssl', 'validate')
+    ssl_validate = ssl_validate is None or ssl_validate.lower() != 'false'
+
+    ssl_version_str = env.get('SSL_VERSION')
+    if ssl_version_str is None:
+        ssl_version_str = get_option('ssl', 'version')
+
+    ssl_version = get_best_tls_protocol(ssl_version_str)
+    if ssl_version is None:
+        sys.exit("%s is not a valid SSL protocol, please use one of "
+                 "TLS, TLSv1_2, TLSv1_1, or TLSv1" % (ssl_version_str,))
+
+    ssl_certfile = env.get('SSL_CERTFILE')
+    if ssl_certfile is None:
+        ssl_certfile = get_option('certfiles', host)
+    if ssl_certfile is None:
+        ssl_certfile = get_option('ssl', 'certfile')
+    if ssl_validate and ssl_certfile is None:
+        sys.exit("Validation is enabled; SSL transport factory requires a valid certfile "
+                 "to be specified. Please provide path to the certfile in [ssl] section "
+                 "as 'certfile' option in %s (or use [certfiles] section) or set SSL_CERTFILE "
+                 "environment variable." % (config_file,))
+    if ssl_certfile is not None:
+        ssl_certfile = os.path.expanduser(ssl_certfile)
+
+    userkey = get_option('ssl', 'userkey')
+    if userkey:
+        userkey = os.path.expanduser(userkey)
+    usercert = get_option('ssl', 'usercert')
+    if usercert:
+        usercert = os.path.expanduser(usercert)
+
+    return dict(ca_certs=ssl_certfile,
+                cert_reqs=ssl.CERT_REQUIRED if ssl_validate else ssl.CERT_NONE,
+                ssl_version=ssl_version,
+                keyfile=userkey, certfile=usercert)

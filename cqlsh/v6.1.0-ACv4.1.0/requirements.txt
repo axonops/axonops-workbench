@@ -1,0 +1,9 @@
+cassandra-driver~=3.25.0
+pyinstaller~=5.7.0
+Cython~=0.29.33
+pytz~=2022.7.1
+SecretStorage~=3.3.3
+keyring~=21.5.0
+cryptography~=39.0.1
+keyrings.alt~=4.2.0
+pycryptodome~=3.17

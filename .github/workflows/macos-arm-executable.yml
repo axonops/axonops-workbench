@@ -95,5 +95,5 @@ jobs:
       - name: Upload packages
         uses: actions/upload-artifact@v4
         with:
-          name: AxonOps-Developer-Workbench-arm64.dmg.zip
-          path: dist/axonops-developer-workbench*.dmg
+          name: AxonOps-Developer-Workbench-arm64.dmg
+          path: dist/*.dmg

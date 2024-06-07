@@ -9,6 +9,7 @@
   "main": "main/main.js",
   "license": "Apache-2.0",
   "description": "AxonOps Developer Workbench",
+  "productName": "AxonOps Developer Workbench",
   "maintainers": [
     "info@axonops.com"
   ],
@@ -52,13 +53,21 @@
     },
     "mac": {
       "icon": "./renderer/assets/images/icon-colored.icns",
+      "category": "public.app-category.developer-tools",
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"
       },
-      "type": "distribution"
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "notarize": {
+        "teamId": "UJ776LUP23"
+      }
     },
     "deb": {
       "depends": ["libnss3", "libsecret-1-0"]
+    },
+    "dmg": {
+      "sign": false
     }
   },
   "scripts": {
@@ -73,7 +82,7 @@
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {
     "electron": "^30.0.9",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "24.12.0"
   },
   "dependencies": {
     "@ramumb/strip-tags": "^0.1.3",

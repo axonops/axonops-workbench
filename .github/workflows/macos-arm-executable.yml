@@ -45,12 +45,6 @@ jobs:
           export PATH="$PWD/venv/bin:$PATH"
           pyinstaller --noconfirm --clean --noupx --onefile cqlsh.py
 
-      - name: Rename artifacts
-        run: |
-          mkdir -p /tmp/CQLSH_ALL
-          mv cqlsh/v6.0.0-ACv4.0.7/dist/cqlsh /tmp/CQLSH_ALL/cqlsh-407
-          mv cqlsh/v6.1.0-ACv4.1.0/dist/cqlsh /tmp/CQLSH_ALL/cqlsh-410
-
       - name: Build Keys Generator Tool
         run: |
           cd keys_generator
@@ -78,11 +72,6 @@ jobs:
       - name: Install AxonOps Developer Workbench dependencies
         run: |
           npm i
-
-      - name: Move CQLSH to bin folder
-        run: |
-          mkdir -p main/bin
-          mv  -v /tmp/CQLSH_ALL/* main/bin
 
       - name: Pack Axonops Developer Workbench for macOS
         run: |

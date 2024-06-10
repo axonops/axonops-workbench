@@ -45,12 +45,6 @@ jobs:
           export PATH="$PWD/venv/bin:$PATH"
           pyinstaller --noconfirm --clean --noupx --onefile cqlsh.py
 
-      - name: Rename artifacts
-        run: |
-          mkdir -p /tmp/CQLSH_ALL
-          mv cqlsh/v6.0.0-ACv4.0.7/dist/cqlsh /tmp/CQLSH_ALL/cqlsh-407
-          mv cqlsh/v6.1.0-ACv4.1.0/dist/cqlsh /tmp/CQLSH_ALL/cqlsh-410
-
       - name: Build Keys Generator Tool
         run: |
           cd keys_generator
@@ -61,11 +55,6 @@ jobs:
           pip install -r requirements.txt
           export PATH="$PWD/venv/bin:$PATH"
           pyinstaller --noconfirm --clean --noupx --onefile keys_generator.py
-
-      - name: Save artifact to be used next
-        run: |
-          mkdir -p /tmp/CQLSH_ALL
-          mv keys_generator/dist/*keys_generator* /tmp/CQLSH_ALL
 
       - name: Start with AxonOps Developer Workbench
         run: echo ""

@@ -61,7 +61,8 @@
       "entitlements": "build/entitlements.mac.plist",
       "notarize": {
         "teamId": "UJ776LUP23"
-      }
+      },
+      "identity": "AXONOPS Limited (UJ776LUP23)"
     },
     "deb": {
       "depends": ["libnss3", "libsecret-1-0"]

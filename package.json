@@ -58,7 +58,9 @@
         "ElectronTeamID": "UJ776LUP23"
       },
       "hardenedRuntime": true,
-      "entitlements": "build/entitlements.mac.plist",
+      "gatekeeperAssess": false,
+      "entitlements": "build/resources/entitlements.mac.plist",
+      "entitlementsInherit": "./build/resources/entitlements.mac.plist",
       "notarize": {
         "teamId": "UJ776LUP23"
       },

@@ -13,6 +13,8 @@ dist
 
 data/workspaces/*
 !data/workspaces/workspaces.json
+codesign*
+pkg.list.txt
 
 main/bin/*
 !main/bin/temp.txt

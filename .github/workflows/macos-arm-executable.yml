@@ -23,43 +23,15 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Build CQLSH v6.0.0
+      - name: Build binaries for cqlsh and keys_generator
         run: |
-          cd "cqlsh/v6.0.0-ACv4.0.7"
-          ls
           pip install --upgrade pip
           pip install virtualenv
           virtualenv venv
-          pip install -r requirements.txt
-          export PATH="$PWD/venv/bin:$PATH"
-          pyinstaller --noconfirm --clean --noupx --onefile cqlsh.py
 
-      - name: Build CQLSH v6.1.0
-        run: |
-          cd "cqlsh/v6.1.0-ACv4.1.0"
-          ls
-          pip install --upgrade pip
-          pip install virtualenv
-          virtualenv venv
-          pip install -r requirements.txt
-          export PATH="$PWD/venv/bin:$PATH"
-          pyinstaller --noconfirm --clean --noupx --onefile cqlsh.py
-
-      - name: Build Keys Generator Tool
-        run: |
-          cd keys_generator
-          ls
-          pip install --upgrade pip
-          pip install virtualenv
-          virtualenv venv
-          pip install -r requirements.txt
-          export PATH="$PWD/venv/bin:$PATH"
-          pyinstaller --noconfirm --clean --noupx --onefile keys_generator.py
-
-      - name: Save artifact to be used next
-        run: |
-          mkdir -p /tmp/CQLSH_ALL
-          mv keys_generator/dist/*keys_generator* /tmp/CQLSH_ALL
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --onefile keys_generator/keys_generator.py
 
       - name: Start with AxonOps Developer Workbench
         run: echo ""

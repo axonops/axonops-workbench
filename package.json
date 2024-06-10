@@ -19,21 +19,21 @@
     "appId": "com.axonops.workbench",
     "extraFiles": [
       {
-        "from": "cqlsh/v6.0.0-ACv4.0.7/dist/cqlsh",
+        "from": "dist/cqlsh-407",
         "to": "./bin/cqlsh-407",
         "filter": [
           "**/*"
         ]
       },
       {
-        "from": "cqlsh/v6.1.0-ACv4.1.0/dist/cqlsh",
+        "from": "dist/cqlsh-410",
         "to": "./bin/cqlsh-410",
         "filter": [
           "**/*"
         ]
       },
       {
-        "from": "keys_generator/dist/keys_generator",
+        "from": "dist/keys_generator",
         "to": "./bin/keys_generator",
         "filter": [
           "**/*"

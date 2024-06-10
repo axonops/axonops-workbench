@@ -33,8 +33,8 @@
         ]
       },
       {
-        "from": "keys_generator/dist/",
-        "to": "./bin/",
+        "from": "keys_generator/dist/keys_generator",
+        "to": "./bin/keys_generator",
         "filter": [
           "**/*"
         ]
@@ -64,6 +64,11 @@
       "notarize": {
         "teamId": "UJ776LUP23"
       },
+      "binaries": [
+        "Contents/bin/cqlsh-407",
+        "Contents/bin/cqlsh-410",
+        "Contents/bin/keys_generator"
+      ],
       "identity": "AXONOPS Limited (UJ776LUP23)"
     },
     "deb": {

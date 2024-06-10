@@ -68,11 +68,6 @@ jobs:
         run: |
           npm i
 
-      - name: Move CQLSH to bin folder
-        run: |
-          mkdir -p main/bin
-          mv  -v /tmp/CQLSH_ALL/* main/bin
-
       - name: Pack Axonops Developer Workbench for macOS
         run: |
           npm run mac

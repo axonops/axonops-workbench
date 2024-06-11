@@ -65,14 +65,39 @@ global.Path = require('path')
 */
 global.UserDataDir = App.getPath('userData')
 global.LogsDirectory = App.getPath('logs')
-global.ConfigDirectory = global.Path.join(global.UserDataDir, "config")
 global.ExePath = App.getPath('exe')
 global.ExecParentPath = global.Path.dirname(global.ExePath)
 
-global.ModulesPath = Path.join(process.cwd(), 'custom_node_modules')
 global.RendererLibsPath = Path.join(process.cwd(), 'renderer', 'js')
 global.RendererPath = Path.join(process.cwd(), 'renderer')
-global.BinFolder = Path.join(process.cwd(), 'bin')
+
+/* figure out where the bins are installed to */
+if ((global.FS.existsSync('dist/keys_generator')) || (global.FS.existsSync('dist/keys_generator.exe'))) {
+  global.BinFolder = './dist'
+} else if ((global.FS.existsSync('bin/keys_generator')) || (global.FS.existsSync('bin/keys_generator.exe'))) {
+  global.BinFolder = './bin'
+} else if (global.FS.existsSync(Path.join(global.ExecParentPath, 'keys_generator'))) {
+  global.BinFolder = global.ExecParentPath
+} else if (global.FS.existsSync('/opt/AxonOps Developer Workbench/bin/keys_generator')) {
+  global.BinFolder = '/opt/AxonOps Developer Workbench/bin'
+} else {
+  global.BinFolder = '/usr/bin'
+}
+
+if (global.FS.existsSync('custom_node_modules/main/logging.js')) {
+  global.ModulesPath = Path.join(process.cwd(), 'custom_node_modules')
+} else if (global.FS.existsSync('/opt/AxonOps Developer Workbench/resources/custom_node_modules/main/logging.js')) {
+  global.ModulesPath = '/opt/AxonOps Developer Workbench/resources/custom_node_modules'
+} else if (global.FS.existsSync('Contents/Resources/custom_node_modules/main/logging.js')) {
+  global.ModulesPath = 'Contents/Resources/custom_node_modules'
+} else if (global.FS.existsSync(Path.join(global.ExecParentPath, 'Contents/Resources/custom_node_modules'))) {
+  global.ModulesPath = Path.join(global.ExecParentPath, 'Contents/Resources/custom_node_modules')
+} else if (global.FS.existsSync('/Applications/AxonOps Developer Workbench.app/Contents/Resources/custom_node_modules')) {
+  global.ModulesPath = '/Applications/AxonOps Developer Workbench.app/Contents/Resources/custom_node_modules'
+} else if (global.FS.existsSync(`${process.env.HOME}/Applications/AxonOps Developer Workbench.app/Contents/Resources/custom_node_modules`)) {
+  global.ModulesPath = `${process.env.HOME}/Applications/AxonOps Developer Workbench.app/Contents/Resources/custom_node_modules`
+}
+
 
 global.IPCMain.handle('get-user-data', (event) => {
   return global.UserDataDir
@@ -104,6 +129,18 @@ const ContextMenu = require('electron-context-menu'),
   // Used to position the windows of the application.
   Positioner = require('electron-positioner')
 const { fail } = require('assert')
+
+// Import the set customized logging addition function and make it global across the entire thread
+const loggingJs = Path.join(global.ModulesPath, 'main', 'logging')
+
+if (!global.FS.existsSync(loggingJs + '.js')) {
+  console.log(loggingJs)
+}
+
+global.addLog = require(loggingJs).addLog
+if (!global.addLog) {
+  console.log('Failed to init logging method')
+}
 
 /**
  * Import the custom node modules for the main thread
@@ -146,17 +183,6 @@ try {
 // Create an event emitter object from the `events` class
 global.eventEmitter = new EventEmitter()
 
-// Import the set customized logging addition function and make it global across the entire thread
-const loggingJs = Path.join(global.ModulesPath, 'main', 'logging')
-
-if (!global.FS.existsSync(loggingJs + '.js')) {
-  console.log(loggingJs)
-}
-
-global.addLog = require(loggingJs).addLog
-if (!global.addLog) {
-  console.log('Failed to init logging method')
-}
 /**
  * Define global variables that will be used in different scopes in the main thread
  *
@@ -278,7 +304,7 @@ let properties = {
       enableRemoteModule: true,
       contextIsolation: false,
       plugins: false,
-      enableRemoteModule: true
+      enableRemoteModule: false
     }
   },
   extraProperties = {

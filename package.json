@@ -77,7 +77,10 @@
       "identity": "AXONOPS Limited (UJ776LUP23)"
     },
     "deb": {
-      "depends": ["libnss3", "libsecret-1-0"]
+      "depends": [
+        "libnss3",
+        "libsecret-1-0"
+      ]
     },
     "dmg": {
       "sign": false

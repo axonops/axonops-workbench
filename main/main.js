@@ -10,6 +10,7 @@ require('v8-compile-cache')
  *
  * Import the main module
  */
+
 const Electron = require('electron'),
   /**
    * Import different sub-modules from the Electron module
@@ -63,11 +64,26 @@ global.Path = require('path')
  * Common directories - FIXME: Added by Sergio, it needs lots of work
 */
 global.UserDataDir = App.getPath('userData')
-global.LogsDirectory = global.Path.join(global.UserDataDir, "logs")
+global.LogsDirectory = App.getPath('logs')
 global.ConfigDirectory = global.Path.join(global.UserDataDir, "config")
+global.ExePath = App.getPath('exe')
+global.ExecParentPath = global.Path.dirname(global.ExePath)
+
 global.ModulesPath = Path.join(process.cwd(), 'custom_node_modules')
 global.RendererLibsPath = Path.join(process.cwd(), 'renderer', 'js')
 global.RendererPath = Path.join(process.cwd(), 'renderer')
+global.BinFolder = Path.join(process.cwd(), 'bin')
+
+global.IPCMain.handle('get-user-data', (event) => {
+  return global.UserDataDir
+})
+global.IPCMain.handle('get-logs-directory', (event) => {
+  return global.LogsDirectory
+})
+global.IPCMain.handle('get-bin-directory', (event) => {
+  return global.BinFolder
+})
+
 /**
  * Node.js URL module
  * For URL resolution and parsing
@@ -261,7 +277,8 @@ let properties = {
       webviewTag: true,
       enableRemoteModule: true,
       contextIsolation: false,
-      plugins: false
+      plugins: false,
+      enableRemoteModule: true
     }
   },
   extraProperties = {
@@ -684,21 +701,10 @@ App.on('window-all-closed', () => App.quit())
 
   // Request to get the public key from the keys generator tool
   IPCMain.on('public-key:get', (_, id) => {
-    // Define the bin folder path
-    let binFolder = Path.join(__dirname, 'bin')
-
-    // Make sure the tool is executable on Linux and macOS
-    if (process.platform !== 'win32')
-      Terminal.runSync(`cd '${binFolder}' && chmod +x keys_generator`)
-
-    // Run the keys generator tool
-    let binCall = `./keys_generator`
-
-    // If the host is Windows
-    binCall = (process.platform == 'win32') ? `keys_generator.exe` : binCall
+    let keysGeneratorExe = `./keys_generator/dist/keys_generator`
 
     // Execute the command, get the public key, and send it to the renderer thread
-    Terminal.run(`cd "${binFolder}" && ${binCall}`, (err, publicKey, stderr) => views.main.webContents.send(`public-key:${id}`, (err || stderr) ? '' : publicKey))
+    Terminal.run(`${keysGeneratorExe}`, (err, publicKey, stderr) => views.main.webContents.send(`public-key:${id}`, (err || stderr) ? '' : publicKey))
   })
 
   /**

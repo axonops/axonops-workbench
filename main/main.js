@@ -65,6 +65,9 @@ global.Path = require('path')
 global.UserDataDir = App.getPath('userData')
 global.LogsDirectory = global.Path.join(global.UserDataDir, "logs")
 global.ConfigDirectory = global.Path.join(global.UserDataDir, "config")
+global.ModulesPath = Path.join(process.cwd(), 'custom_node_modules')
+global.RendererLibsPath = Path.join(process.cwd(), 'renderer', 'js')
+global.RendererPath = Path.join(process.cwd(), 'renderer')
 /**
  * Node.js URL module
  * For URL resolution and parsing
@@ -84,6 +87,7 @@ const URL = require('url'),
 const ContextMenu = require('electron-context-menu'),
   // Used to position the windows of the application.
   Positioner = require('electron-positioner')
+const { fail } = require('assert')
 
 /**
  * Import the custom node modules for the main thread
@@ -94,7 +98,7 @@ const Modules = []
 
 try {
   // Define the folder's path of the custom node modules
-  let modulesFilesPath = Path.join(__dirname, '..', 'custom_node_modules', 'main'),
+  let modulesFilesPath = Path.join(global.ModulesPath, 'main'),
     // Read all files inside the folder
     modulesFiles = FS.readdirSync(modulesFilesPath)
 
@@ -127,8 +131,16 @@ try {
 global.eventEmitter = new EventEmitter()
 
 // Import the set customized logging addition function and make it global across the entire thread
-global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
+const loggingJs = Path.join(global.ModulesPath, 'main', 'logging')
 
+if (!global.FS.existsSync(loggingJs + '.js')) {
+  console.log(loggingJs)
+}
+
+global.addLog = require(loggingJs).addLog
+if (!global.addLog) {
+  console.log('Failed to init logging method')
+}
 /**
  * Define global variables that will be used in different scopes in the main thread
  *
@@ -224,12 +236,10 @@ let createWindow = (properties, viewPath, extraProperties = {}) => {
 const AppProps = {
   Paths: {
     // The app's default icon path
-    Icon: Path.join(__dirname, '..', 'renderer', 'assets', 'images', 'icon.ico'),
+    Icon: Path.join(global.RendererPath, 'assets', 'images', 'icon.ico'),
     // The app's main view/window - HTML file - path
-    MainView: Path.join(__dirname, '..', 'renderer', 'views', 'index.html')
-  },
-  // Get the app's info
-  Info: require(Path.join(__dirname, '..', 'package.json'))
+    MainView: Path.join(global.RendererPath, 'views', 'index.html')
+  }
 }
 
 /**
@@ -242,7 +252,7 @@ let properties = {
     minHeight: 668,
     center: true,
     icon: AppProps.Paths.Icon,
-    title: AppProps.Info.title,
+    title: 'AxonOps Developer Workbench',
     backgroundColor: '#f5f5f5',
     show: false,
     webPreferences: {

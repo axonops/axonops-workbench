@@ -40,6 +40,11 @@
         ]
       }
     ],
+    "extraResources": [
+      "custom_node_modules",
+      "renderer",
+      "config"
+    ],
     "publish": [
       {
         "provider": "github"

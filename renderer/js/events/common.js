@@ -80,7 +80,7 @@
   // Define the common element CSS selector
   let selector = `div.body div.left div.content div.navigation div.group div.item`,
     isHiddenAreaResizable = false,
-    latestWidth = 400,
+    latestWidth = 350,
     triggerStopTimeout,
     hiddenAreaElement = $('div.body div.main.hidden-area'),
     rightSideElement = $('div.body div.main.right')
@@ -143,7 +143,7 @@
       // Make the hidden area resizable
       hiddenAreaElement.resizable({
         handles: 'e', // [E]ast
-        minWidth: 300, // Minimum width allowed to be reached
+        minWidth: 350, // Minimum width allowed to be reached
         maxWidth: 900
         // While the resizing process is active
       }).on('resize',
@@ -181,51 +181,44 @@
       })
     } catch (e) {}
 
-    /**
-     * Show the initialization element if needed
-     * TODO: This is just a preview of the authentication process for using the AI assistant
-     */
+    // Show the initialization element if needed
     try {
+      // If the AI Assistant has already been initialized then skip this try-catch block
       if (!assistantContent.hasClass('not-initialized'))
         throw 0
 
+      // Add the `loading` class
       assistantContent.addClass('_loading')
 
-      // Load some of the saved questions
-      $(document).trigger('loadQuestions')
+      // Point at the AI Assistant web view element
+      let webviewAIAssistant = $('webview#ai_assistant_webview')[0],
+        // The interval object which will hold the loading checking process
+        checkLoadingInterval,
+        // Number of checks so far, maximum is 30 - 30 seconds -
+        count = 0
 
-      // Set a random time to remove the initialization process
-      setTimeout(() => assistantContent.removeClass('not-initialized _loading'), 1500 + (1500 * Math.random()))
+      checkLoadingInterval = setInterval(() => {
+        // If the 30 seconds have been exceeded then finish this process
+        if (count >= 30)
+          return clearInterval(checkLoadingInterval)
+
+        try {
+          if (webviewAIAssistant.isLoading())
+            throw 0
+
+          // Remove the initialization classess
+          assistantContent.removeClass('not-initialized _loading')
+
+          // Finish the checking process
+          clearInterval(checkLoadingInterval)
+        } catch (e) {}
+
+        ++count
+      }, 1000)
     } catch (e) {}
 
     // Trigger the resize event for the window; to hide the tabs' titles if needed
     setTimeout(() => $(window.visualViewport).trigger('resize'), 400)
-
-    // Point at the answering indicator beside the AI's icon
-    let answeringLoader = $(`div.body div.left div.content div.navigation div.group div.item[action="ai"] div.answering`)
-
-    try {
-      // If the AI assistant is already shown then skip this try-catch block
-      if ($('div.body').hasClass('show-hidden'))
-        throw 0
-
-      /**
-       * Reaching here means the AI assistant is hidden
-       *
-       * Check if the AI is answering a question
-       */
-      let answeringQuestion = $(`div.hidden-area div.content div.questions-and-answers div.block._right div.answer div.answering:not([style*="display: none"])`).length > 0
-
-      // If the AI assistant is answering a question then show the answering indicator beside the AI's icon
-      if (answeringQuestion)
-        answeringLoader.addClass('show')
-
-      // Skip the upcoming code
-      return
-    } catch (e) {}
-
-    // Remove the answering indicator as the AI assistant is opened/shown
-    answeringLoader.removeClass('show')
   })
 
   // Clicks the help/documentation button
@@ -299,33 +292,6 @@
       btn.removeClass('active')
     } catch (e) {}
 
-    // Point at the AI answering indicator beside the AI's icon
-    let answeringLoader = $(`div.body div.left div.content div.navigation div.group div.item[action="ai"] div.answering`),
-      assistantContainer = $('div.body div.hidden-area div.content.ai-assistant')
-
-    try {
-      // If the hidden area is already shown then skip this try-catch block
-      if ($('div.body').hasClass('show-hidden') && assistantContainer.is(':visible'))
-        throw 0
-
-      /**
-       * Reaching here means the AI assistant is hidden
-       *
-       * Check if the AI is answering a question
-       */
-      let answeringQuestion = $(`div.hidden-area div.content div.questions-and-answers div.block._right div.answer div.answering:not([style*="display: none"])`).length > 0
-
-      // If the AI assistant is answering a question then show the answering indicator beside the AI's icon
-      if (answeringQuestion && !assistantContainer.is(':visible'))
-        answeringLoader.addClass('show')
-
-      // Skip the upcoming code
-      return
-    } catch (e) {}
-
-    // Remove the answering indicator as the AI assistant is opened/shown
-    answeringLoader.removeClass('show')
-
     // Trigger the resize event for the window; to hide the tabs' titles if needed
     $(window.visualViewport).trigger('resize')
   })
@@ -333,8 +299,7 @@
   // Get the MDB objects for the settings modal, and different UI elements inside it
   let settingsModal = getElementMDBObject($('#appSettings'), 'Modal'),
     maxNumCQLSHSessionsObject = getElementMDBObject($('input#maxNumCQLSHSessions')),
-    maxNumSandboxProjectsObject = getElementMDBObject($('input#maxNumSandboxProjects')),
-    maxNumAIAssistantAnswersObject = getElementMDBObject($('input#maxNumAIAssistantAnswers'))
+    maxNumSandboxProjectsObject = getElementMDBObject($('input#maxNumSandboxProjects'))
 
   // Clicks the settings button
   $(`${selector}[action="settings"]`).click(() => {
@@ -343,7 +308,6 @@
       // Get different saved settings to be checked and applied on the UI
       let maxNumCQLSHSessions = config.get('limit', 'cqlsh'),
         maxNumSandboxProjects = config.get('limit', 'sandbox'),
-        maxNumAIAssistantAnswers = config.get('limit', 'assistantQuestions'),
         contentProtection = config.get('security', 'contentProtection'),
         loggingEnabled = config.get('security', 'loggingEnabled'),
         displayLanguage = config.get('ui', 'language')
@@ -357,11 +321,7 @@
 
       // Check the maximum number of allowed sandbox projects at once
       $('input#maxNumSandboxProjects').val(!isNaN(maxNumSandboxProjects) && maxNumSandboxProjects > 0 ? maxNumSandboxProjects : 1)
-      setTimeout(() => maxNumAIAssistantAnswersObject.update())
-
-      // Check the maximum number of answers to be loaded per time
-      $('input#maxNumAIAssistantAnswers').val(!isNaN(maxNumAIAssistantAnswers) && maxNumAIAssistantAnswers > 0 ? maxNumAIAssistantAnswers : 4)
-      setTimeout(() => maxNumAIAssistantAnswersObject.update())
+      setTimeout(() => maxNumSandboxProjectsObject.update())
 
       // Check the content protection status
       $('input#contentProtection[type="checkbox"]').prop('checked', contentProtection == 'true')
@@ -390,7 +350,7 @@
       }
 
       // Set the suitable width for the inputs' titles' notch
-      setTimeout(() => ([maxNumCQLSHSessionsObject, maxNumSandboxProjectsObject, maxNumAIAssistantAnswers]).forEach((object) => $(object._element).find('div.form-notch-middle').css('width', '111.2px')), 1000)
+      setTimeout(() => ([maxNumCQLSHSessionsObject, maxNumSandboxProjectsObject]).forEach((object) => $(object._element).find('div.form-notch-middle').css('width', '111.2px')), 1000)
 
       // Show the settings' modal
       settingsModal.show()
@@ -553,8 +513,6 @@
         // Get the maximum allowed running instances
         maxNumCQLSHSessions = $('input#maxNumCQLSHSessions').val(),
         maxNumSandboxProjects = $('input#maxNumSandboxProjects').val(),
-        // Get the maximum number of loaded answers per time
-        maxNumAIAssistantAnswers = $('input#maxNumAIAssistantAnswers').val(),
         // Get chosen display language and if it's from right to left
         [chosenDisplayLanguage, languageRTL] = getAttributes($('input#languageUI'), ['hidden-value', 'rtl'])
 
@@ -575,7 +533,6 @@
           config.set('security', 'loggingEnabled', loggingEnabled)
           config.set('limit', 'cqlsh', maxNumCQLSHSessions)
           config.set('limit', 'sandbox', maxNumSandboxProjects)
-          config.set('limit', 'assistantQuestions', maxNumAIAssistantAnswers)
           config.set('ui', 'language', chosenDisplayLanguage)
 
           // Set the updated settings

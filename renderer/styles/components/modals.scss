@@ -275,6 +275,7 @@ div.modal {
                       opacity: 0.4;
                       transition: opacity 0.2s ease-in-out;
                       margin: 0 1px;
+                      cursor: pointer;
 
                       &:first-child,
                       &:first-of-type {

@@ -95,11 +95,28 @@ $(document).ready(() => {
   })
 })
 
-/**
- * Whether or not the AI assistant feature should be available
- * This is determined by a constant in the `Consts` module
- */
-$(document).ready(() => $(`div.body div.left div.content div.navigation div.group div.item[action="ai"]`).add('div.ai-assistant-answers-limitation').toggle(Modules.Consts.EnableAIAssistant))
+// Handle the AI Assistant initialization process
+$(document).ready(() => {
+  /**
+   * Whether or not the AI assistant feature should be available
+   * This is determined by a constant in the `Consts` module
+   */
+  $(`div.body div.left div.content div.navigation div.group div.item[action="ai"]`).add('div.ai-assistant-answers-limitation').toggle(Modules.Consts.EnableAIAssistant)
+
+  /**
+   * Load the AI Assistant webview
+   *
+   * If there's no need to do this this skip this try-catch block
+   */
+  if (!Modules.Consts.EnableAIAssistant)
+    return
+
+  // Point at the web view element
+  let webviewAIAssistant = $('webview#ai_assistant_webview')
+
+  // Update its `src` with the AI Assistant's server URL
+  webviewAIAssistant.attr('src', Modules.Consts.AIAssistantServer)
+})
 
 // Get the unique machine's ID and set it to be used across the app
 $(document).ready(async () => getMachineID().then((id) => {
@@ -407,6 +424,18 @@ $(document).ready(() => {
     loadScript(Path.join(__dirname, '..', 'js', 'ionicons', 'main.js'))
   }
 
+  // jsPDF - for the Tabulator library -
+  {
+    loadScript(Path.join(__dirname, '..', 'js', 'jspdf', 'jspdf.js'))
+
+    loadScript(Path.join(__dirname, '..', 'js', 'jspdf', 'plugin.autotable.js'))
+  }
+
+  // Tabulator library theme
+  {
+    loadStyleSheet(Path.join(__dirname, '..', '..', 'node_modules', 'tabulator-tables', 'dist', 'css', 'tabulator_site_dark.min.css'))
+  }
+
   // XtermJS and its add-ons
   {
     // Define the path to the dist version
@@ -437,6 +466,20 @@ $(document).ready(() => {
       loadStyleSheet(Path.join(jsTreePath, 'theme', 'style.css'))
 
       loadScript(Path.join(jsTreePath, 'jstree.js'))
+    }
+
+    // JQuery JSON Viewer plugin
+    {
+      let jsonViewerPath = Path.join(__dirname, '..', '..', 'node_modules', 'jquery.json-viewer', 'json-viewer')
+
+      loadStyleSheet(Path.join(jsonViewerPath, 'jquery.json-viewer.css'))
+
+      loadScript(Path.join(jsonViewerPath, 'jquery.json-viewer.js'))
+    }
+
+    // JQuery Actual element's values plugin
+    {
+      loadScript(Path.join(__dirname, '..', 'js', 'actual.js'))
     }
   }
 
@@ -819,9 +862,6 @@ $(document).ready(() => {
     })
   }, 1000)
 })
-
-// To improve performance, make sure the non-visible lottie element is not playing in the background
-$(document).ready(() => setTimeout(() => autoPlayStopLottieElement($('lottie-player')), 2000))
 
 // Check whether or not binaries exist
 $(document).ready(() => {

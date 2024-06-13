@@ -650,3 +650,39 @@ div.hidden-area {
 .message {
   @extend .no-select;
 }
+
+.tabulator-row .tabulator-cell {
+  height: fit-content !important;
+}
+
+a:not(.sidenav-link):not(.btn):not(.dropdown-item):not(.nav-link):not(.navbar-brand):not(.page-link):not(.carousel-control-prev):not(.carousel-control-next) {
+  color: inherit !important;
+}
+
+a.json-placeholder {
+  padding: 0 0.5em !important;
+}
+
+a.json-toggle:before {
+  top: 1px;
+}
+
+div.switch-terminal {
+  position: absolute;
+  right: 0;
+  margin: 14px;
+  z-index: 5;
+  opacity: 0.9;
+  margin-right: 10px;
+}
+
+pre {
+  font-size: inherit !important;
+  margin: 0 !important;
+}
+
+.tabulator .tabulator-footer .tabulator-page,
+.tabulator .tabulator-footer .tabulator-page-size {
+  background: #666666;
+  opacity: 0.7;
+}

@@ -3,7 +3,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Those files are the bootstrap for the entire app -->
   <link rel="stylesheet" href="../styles/master.css">
-  <script src="../js/init.js" charset="utf-8"></script>
+  <script src="../js/init.js"></script>
 </head>
 
 <body>
@@ -163,35 +163,8 @@
       Second is the question text area and ask button container
       And finally, the loading container -->
       <div class="content ai-assistant not-initialized">
-        <!-- Questions and answers container
-        All requests and replies will be shown here -->
-        <div class="questions-and-answers animate-hide" hidden></div>
-
-        <!-- The question container where users can type questions and send them -->
-        <div class="question-container animate-hide" hidden>
-          <!-- The text area where the question is typed -->
-          <div class="textarea">
-            <div class="form-outline form-white">
-              <textarea class="form-control" id="question" data-mdb-showcounter="true" maxlength="1000"></textarea>
-              <label class="form-label"><span mulang="question" capitalize></span></label>
-              <div class="form-helper ai-assistant">
-                <span class="float-left">
-                  <span mulang="press [kbd]SHIFT[/kbd] [kbd]ENTER[/kbd] to ask" capitalize-first allow-html></span>
-                </span>
-              </div>
-              <div class="invalid-feedback"></div>
-            </div>
-          </div>
-          <!-- The button for sending a request to answer the question -->
-          <div class="send">
-            <button class="btn btn-tertiary" id="askQuestion" type="button" data-mdb-ripple-color="dark">
-              <ion-icon name="send"></ion-icon>
-            </button>
-          </div>
-        </div>
-
         <!-- Integrate the AxonOps AI using `webview` tag -->
-        <webview src="https://ai.axonops.cloud/chat" nodeIntegrationInSubFrames nodeintegration allowpopups></webview>
+        <webview class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups></webview>
 
         <!-- The loading container of the AI Assistant
         The app waits for authentication from the server in which AI assistant has been deployed in -->
@@ -993,24 +966,6 @@
                     <div class="form-outline form-white">
                       <input type="number" class="form-control form-control-lg" id="maxNumSandboxProjects">
                       <label for="maxNumSandboxProjects" class="form-label">
-                        <span mulang="maximum number" capitalize></span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div class="ai-assistant-answers-limitation" style="margin-bottom: 30px;margin-left: 10px;opacity: 0.7;">
-                  <span class="badge badge-secondary" style="opacity: 0.9;">
-                    <span mulang="instances in loading processes" capitalize></span>
-                  </span>
-                </div>
-                <div class="row flex margin-bottom ai-assistant-answers-limitation">
-                  <div class="col-md-4">
-                    <span mulang="AI assistant answers" capitalize></span>:
-                  </div>
-                  <div class="col-md-8">
-                    <div class="form-outline form-white">
-                      <input type="number" class="form-control form-control-lg" id="maxNumAIAssistantAnswers">
-                      <label for="maxNumAIAssistantAnswers" class="form-label">
                         <span mulang="maximum number" capitalize></span>
                       </label>
                     </div>

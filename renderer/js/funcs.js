@@ -553,6 +553,161 @@ let repairJSON = (json) => {
 }
 
 /**
+ * Convert JSON string to HTML table string
+ *
+ * @Parameters:
+ * {string} `json` the JSON string to be manipulated
+ * {boolean} `?isExpandOn` flag to tell if the expandation feature is enabled in cqlsh
+ *
+ * @Return: {string} the HTML table, or an empty string
+ */
+let convertJSONToTable = (json, isExpandOn = false) => {
+  // Attempt to repair the passed JSON string
+  json = repairJSON(json)
+
+  /**
+   * Split the JSON string by new line
+   * CQLSH return each record/row in seperated line
+   */
+  try {
+    json = JSON.parse(json)
+
+    if (json.length == undefined) {
+      json = JSON.stringify(json)
+      throw 0
+    }
+  } catch (e) {
+    json = `${json}`.split('\n')
+  }
+
+  try {
+    // Convert each record/row to JSON object inside array
+    let jsonObject = json.map((item) => {
+      let finalItem = item
+
+      try {
+        finalItem = JSON.parse(item)
+      } catch (e) {}
+
+      return finalItem
+    })
+
+    // Loop through each record
+    for (let record of jsonObject) {
+      // Loop through each column inside the current record
+      Object.keys(record).forEach((key) => {
+        // Get the value of the current column
+        let data = record[key]
+
+        // If the value type is not `object` then skip the upcoming code
+        if (typeof data != 'object')
+          return
+
+        // Convert the data of type `object` to be string
+        try {
+          record[key] = JSON.stringify(data)
+        } catch (e) {
+          record[key] = `${data}`
+        } finally {
+          // Add keyword to be recognized once the Tabulator object is created
+          record[key] += '-OBJECT-'
+        }
+      })
+    }
+
+    // Convert the final manipulated JSON object to HTML table string
+    let tableHTML = ConvertJSONTable(jsonObject)
+
+    // Remove any defined style and unwanted new lines
+    tableHTML = tableHTML.replace(/style="[^"]*"/g, '').replace(/\n\s*/g, '')
+
+    // Return final result
+    return tableHTML
+  } catch (e) {}
+
+  /**
+   * Reaching here means the conversion wasn't successful
+   * Return empty string
+   */
+  return ''
+}
+
+/**
+ * Convert HTML table to Tabulator table/object
+ *
+ * @Parameters:
+ * {string} `json` the JSON string to be manipulated
+ * {object} `container` the HTML table's container in the UI
+ * {object} `callback` function that will be triggered with passing the created object
+ *
+ * @Return: {object} the Tabulator table object
+ */
+let convertTableToTabulator = (json, container, callback) => {
+  // Convert the passed JSON string to HTML table
+  let tableHTML = convertJSONToTable(json),
+    // Get a random ID for the table
+    tableID = getRandomID(20),
+    // The variable which is going to hold the Tabulator object
+    tabulatorTable
+
+  // Append the HTML table to the passed container
+  container.append($(tableHTML.replace('<table', `<table id="_${tableID}"`)).show(function() {
+    try {
+      setTimeout(() => {
+        // Create a Tabulator object with set properties
+        tabulatorTable = new Tabulator(`table#_${tableID}`, {
+          layout: 'fitDataStretch',
+          autoColumns: true,
+          resizableColumnFit: true,
+          resizableRowGuide: true,
+          movableColumns: true,
+          pagination: 'local',
+          paginationSize: 10,
+          paginationSizeSelector: [5, 10, 20, 40, 60, 80, 100],
+          paginationCounter: 'rows',
+          rowFormatter: function(row) {
+            /**
+             * Format some data in the rows
+             *
+             * Get the row's HTML UI element
+             */
+            let element = row.getElement()
+
+            // Search for any field in the row that contain specific keyword for object
+            $(element).find('div:contains("-OBJECT-")').each(function() {
+              try {
+                // Add CSS properties
+                $(this).css({
+                  'padding-left': '25px'
+                })
+
+                // Manipulate the field's content
+                let content = $(this).text().replace(/\-OBJECT\-/g, '')
+
+                // Create a JSON/Object view for the content
+                $(this).text('').jsonViewer(JSON.parse(content), {
+                  collapsed: true,
+                  withLinks: false
+                })
+
+                // Make sure to redraw the table with each open/close of the object viewer
+                setTimeout(() => $(this).find('a').click(() => setTimeout(() => tabulatorTable.redraw())))
+              } catch (e) {}
+            })
+          }
+        })
+
+        // Return the created Tabulator object
+        callback(tabulatorTable)
+      })
+    } catch (e) {
+      // Return `null` as a critical error has occured
+      callback(null)
+    }
+  }))
+}
+
+/**
  * Build a full tree-view model from a given metadata
  *
  * @Parameters:
@@ -1612,10 +1767,10 @@ let suggestionSearch = (needle, haystack) => {
   needle = needle.toLowerCase()
 
   // Filter the `haystack` by keeping values that start with the `needle`
-  result = haystack.filter((val) => (val.toLowerCase()).startsWith(needle))
+  result = haystack.filter((val) => (`${val}`.toLowerCase()).startsWith(needle))
 
   // If this test passed, then there's a `haystack` value that exactly matches the `needle`
-  let test = result.find((val) => val.toLowerCase() == needle)
+  let test = result.find((val) => `${val}`.toLowerCase() == needle)
 
   // Either return the one matched value instead of an array, or return an array of matched values
   return test != undefined ? test : result
@@ -1635,6 +1790,69 @@ let suggestionSearch = (needle, haystack) => {
 String.prototype.search = function(needle) {
   return FSS.indexOf(`${this}`, `${needle}`).length != 0
 }
+
+/**
+ * Get the query selector for specific jQuery element
+ *
+ * @Inspired by this answer: https://stackoverflow.com/a/42184417
+ * Comments added after understanding the purpose of each line
+ *
+ * This function is can be called by any jQuery element
+ * @Example: $('body').getQuerySelector() // 'HTML > BODY'
+ *
+ * @Return: {string} the query selector of the jQuery element
+ */
+jQuery.fn.extend({
+  getQuerySelector: function() {
+    // Point at the DOM of the jQuery element
+    let element = $(this)[0],
+      /**
+       * Define the final which be returned
+       * The initial value is the element's `tag` name
+       */
+      selector = element.tagName
+
+    // If the `tag` name of the element is `html` then just return it
+    if (`${selector}`.toLowerCase() == 'html')
+      return 'HTML'
+
+    // If the element has an ID then add it to the final selector
+    selector += (element.id != '') ? '#' + element.id : ''
+
+    try {
+      // If the element doesn't have any classes then skip this try-catch block
+      if (!element.className)
+        throw 0
+
+      // Create an array that holds all the element's classes
+      let classes = element.className.split(/\s/)
+
+      // Loop through each class and add it to the final selector
+      classes.forEach((_class) => {
+        if (_class.trim().length != 0)
+          selector += '.' + _class
+      })
+    } catch (e) {}
+
+    try {
+      /**
+       * Improved the function by adding the current element's attributes to the selector
+       * If the element doesn't have any attributes then skip this try-catch block
+       */
+      if (element.attributes.length <= 0)
+        throw 0
+
+      // Loop through each attribute and add it to the final selector
+      for (let attribute of element.attributes) {
+        if (attribute.nodeValue.trim().length != 0)
+          selector += `[${attribute.nodeName}="${attribute.nodeValue}"]`
+      }
+    } catch (e) {}
+
+    // The function will keep calling itself till the `html` tag is reached
+    return $(element.parentNode).getQuerySelector() + ' > ' + selector
+  }
+})
 
 /**
  * Open a confirmation dialog
@@ -2552,6 +2770,43 @@ let minifyText = (text) => {
 }
 
 /**
+ * Manipulate a passed output by removing all possible ANSI escape sequences
+ *
+ * @Parameters:
+ * {string} `output` the output to be manipulated
+ *
+ * @Return: {string} the passed output after manipulation
+ */
+let manipulateOutput = (output) => {
+  try {
+    /**
+     * Manipulate the passed output
+     *
+     * Remove all possible ANSI escape sequences using a basic regex
+     */
+    let manipulatedOutput = `${output}`.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '')
+      /**
+       * Use an advanced regex as an extra step of the manipulation
+       * The regex has been retrieved from the `ansi-regex` module -
+       */
+      .replace(/[\u001B\u009B][[\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\d\/#&.:=?%@~_]+)*|[a-zA-Z\d]+(?:;[-a-zA-Z\d\/#&.:=?%@~_]*)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-nq-uy=><~]))/g, '')
+      /**
+       * Use another regex to cover all ANSI sequences as much as possible
+       * Reference: https://stackoverflow.com/a/29497680
+       */
+      .replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '')
+      // Remove some added chars from cqlsh tool
+      .replace(/u\'/gm, "'")
+
+    // Return the final manipulated output
+    return manipulatedOutput
+  } catch (e) {
+    // If any error has occured then return the passed output
+    return output
+  }
+}
+
+/**
  * Get the currently active workspace ID
  *
  * @Return: {string} the currently active workspace ID
@@ -2857,6 +3112,12 @@ let setUIColor = (workspaceColor) => {
           .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active, form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus, .form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus {border-color: ${backgroundColor.default} !important}
           ion-icon[name="lock-closed"] {color: ${backgroundColor.default} !important}
           .jstree-default-dark .jstree-search {background: ${backgroundColor.hover.replace('70%', '15%')} !important;}
+          .tabulator .tabulator-header{border-bottom-color:${backgroundColor.default} !important;}
+          .tabulator .tabulator-footer{border-top-color:${backgroundColor.default} !important;}
+          .tabulator .tabulator-header .tabulator-col.tabulator-sortable .tabulator-col-content .tabulator-col-sorter .tabulator-arrow {border-top-color: ${backgroundColor.default} !important; color: ${backgroundColor.default} !important;}
+          .tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort=ascending] .tabulator-col-content .tabulator-col-sorter .tabulator-arrow {border-bottom-color: ${backgroundColor.default} !important;}
+          .tabulator .tabulator-footer .tabulator-page-size, .tabulator .tabulator-footer .tabulator-page {border: 1px solid ${backgroundColor.default} !important;color: #f8f8f8 !important;}
+          .tabulator .tabulator-footer .tabulator-page.active{color: #f8f8f8 !important;}
           :root {--workspace-background-color:${backgroundColor.default};}
         </style>`
 
@@ -2991,28 +3252,6 @@ let calcSwitchersAllowedHeight = () => {
  * @Return: {string} final manipulated text
  */
 let setApacheCassandraTMSymbol = (text) => text.replace(/Cassandra/gm, 'Cassandra ™')
-
-/**
- * Improve performance by play/stop lottie elements on show/hide
- *
- * @Parameters:
- * {object} `lottieElement` the lottie UI element
- */
-let autoPlayStopLottieElement = (lottieElement) => {
-  // Unbind any previous `mutate` event
-  lottieElement.unbind('mutate')
-    // When the lottie element is hidden (not visible)
-    .mutate('hide', (lottie) => lottie.stop())
-    // When the lottie element is shown (visible)
-    .mutate('show', (lottie) => {
-      // If the lottie element is not set to be played automatically, and its current state is `stopped` or `loading` then don't play it automatically
-      if (!lottie.autoplay || ['loading', 'stopped', 'error', 'destroyed'].some((state) => lottie.currentState == state))
-        return
-
-      // Play the lottie element
-      lottie.play()
-    })
-}
 
 /**
  * Add a new log text in the current logging session

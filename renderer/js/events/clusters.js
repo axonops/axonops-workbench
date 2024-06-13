@@ -18,10 +18,10 @@
     // Determine if the associated workspace is the docker/sandbox projects
     let isSandbox = workspaceID == 'workspace-sandbox',
       // Set the suitable function to get clusters/projects based on the type of the workspace
-      getModuleFunction = !isSandbox ? Modules.Clusters.getClusters : Modules.Docker.getProjects
+      moduleGetFunction = !isSandbox ? Modules.Clusters.getClusters : Modules.Docker.getProjects
 
     // Get all clusters/projects saved in the workspace
-    getModuleFunction(workspaceID).then((clusters) => {
+    moduleGetFunction(workspaceID).then((clusters) => {
       // Clean the container if the event is `get` clusters
       if (event == 'getClusters')
         clustersContainer.html('')
@@ -276,9 +276,6 @@
 
               // Apply the chosen language on the UI element after being fully loaded
               setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
-
-              // Make sure the non-visible lottie element is not playing in the background
-              setTimeout(() => autoPlayStopLottieElement($(this).find('lottie-player')))
             }
 
             // Point at the cluster's UI element
@@ -376,11 +373,10 @@
                     throw 0
 
                   // Hide the Cassandra's version and the data center's name
-                  clusterElement.find('div[info="cassandra"]')
-                    .add(clusterElement.find('div[info="data-center"]')).each(function() {
-                      $(this).children('div.text').text('')
-                      $(this).children('div._placeholder').fadeIn('fast').removeAttr('hidden')
-                    })
+                  clusterElement.find('div[info="cassandra"], div[info="data-center"]').each(function() {
+                    $(this).children('div.text').text('')
+                    $(this).children('div._placeholder').fadeIn('fast').removeAttr('hidden')
+                  })
 
                   // Remove the connection status
                   clusterElement.attr('data-connected', 'false')
@@ -495,7 +491,7 @@
 
                   // Handle when connection is lost with the cluster
                   try {
-                    // If the work area exists then skip this try-catch block
+                    // If the work area exists or this is the sandbox/project workspace then skip this try-catch block
                     if (contentCluster.length > 0 || isSandbox)
                       throw 0
 
@@ -537,6 +533,8 @@
                     searchInMetadataBtnID,
                     // CQLSH and Bash sessions, and their related elements
                     cqlshSessionContentID,
+                    cqlshSessionSearchInputID,
+                    cqlshSessionStatementInputID,
                     bashSessionContentID,
                     terminalContainerID,
                     terminalBashContainerID,
@@ -564,7 +562,7 @@
                     // Restart and close the work area
                     restartWorkareaBtnID,
                     closeWorkareaBtnID
-                  ] = getRandomID(20, 26)
+                  ] = getRandomID(20, 28)
 
                   /**
                    * Define tabs that shown only to sandbox projects
@@ -758,7 +756,52 @@
                           </div>
                           <div class="tab-content">
                             <div class="tab-pane fade show active loading" tab="cqlsh-session" id="_${cqlshSessionContentID}" role="tabpanel">
-                              <div class="terminal-container" data-id="${terminalContainerID}"></div>
+                              <div class="switch-terminal">
+                                <button type="button" class="btn btn-primary btn-dark changed-bg changed-color">
+                                  <ion-icon name="switch"></ion-icon>
+                                  <span mulang="switch terminal"></span>
+                                </button>
+                              </div>
+                              <div class="terminal-container" data-id="${terminalContainerID}" style="display:none;"></div>
+                              <div class="interactive-terminal-container" data-id="${terminalContainerID}_interactive">
+                                <div class="container-header">
+                                  <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
+                                    <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                                    <input spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionSearchInputID}">
+                                    <label class="form-label">
+                                      <span mulang="search in the session" capitalize-first></span>
+                                    </label>
+                                  </div>
+                                </div>
+                                <div class="session-content" id="_${cqlshSessionContentID}_container"></div>
+                                <div class="empty-statements show">
+                                  <div class="container">
+                                    <div class="semi-colon">;</div>
+                                    <div class="message"><span mulang="start now by executing cql statement" capitalize-first></span></div>
+                                  </div>
+                                </div>
+                                <div class="container-footer">
+                                  <div class="top">
+                                    <div class="textarea">
+                                      <div class="form-outline form-white margin-bottom">
+                                        <div class="suggestion"></div>
+                                        <textarea spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionStatementInputID}"></textarea>
+                                        <label class="form-label">
+                                          <span mulang="execute cql statement" capitalize-first></span>
+                                        </label>
+                                      </div>
+                                    </div>
+                                    <div class="execute">
+                                      <button class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
+                                        <ion-icon name="send"></ion-icon>
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <div class="bottom">
+                                    <div class="suggestions-list"></div>
+                                  </div>
+                                </div>
+                              </div>
                               <div class="loading">
                                 <div class="sub-content">
                                   <lottie-player src="../assets/lottie/loading-cqlsh.json" background="transparent" autoplay loop speed="2"></lottie-player>
@@ -867,9 +910,9 @@
 
                     // Apply different actions once the UI element is created
                     {
-                      // Initialize the input fields
+                      // Initialize the input and textarea fields
                       setTimeout(() => {
-                        $(this).find('input[type="text"]').each(function() {
+                        $(this).find('input[type="text"], textarea').each(function() {
                           getElementMDBObject($(this), 'Input')
                         })
                       })
@@ -897,9 +940,6 @@
 
                       // Update the status of the cluster in the mini cluster's list
                       updateMiniCluster(workspaceID, clusterID)
-
-                      // Make sure the non-visible lottie element is not playing in the background
-                      setTimeout(() => autoPlayStopLottieElement($(this).find('lottie-player')))
                     }
 
                     // Handle when typing something inside the query tracing's search input field
@@ -922,6 +962,31 @@
 
                             // Show/hide it based on the result of whether or not it contains the search text
                             $(this).toggle(queryContent.search(searchValue))
+                          })
+                        })
+                      })
+                    }
+
+                    // Handle when typing something inside the interactive terminal's search input
+                    {
+                      setTimeout(() => {
+                        $(`input#_${cqlshSessionSearchInputID}`).on('input', function() {
+                          // Get the search text, minify/manipulate it
+                          let searchValue = minifyText($(this).val()),
+                            // Point at the sessions' container
+                            sessionContainer = $(`#_${cqlshSessionContentID}_container`)
+
+                          // The search text must be more than 3 characters
+                          if (searchValue.length <= 3)
+                            return sessionContainer.children('div.block').show()
+
+                          // Loop through each block
+                          sessionContainer.children('div.block').each(function() {
+                            // Get its text in overall
+                            let blockContent = minifyText($(this).text())
+
+                            // Show/hide it based on the result of whether or not it contains the search text
+                            $(this).toggle(blockContent.search(searchValue))
                           })
                         })
                       })
@@ -1088,6 +1153,97 @@
                     }
 
                     /**
+                     * Inner function to append block to the interactive terminal
+                     *
+                     * @Parameters:
+                     * {object} `sessionContainer` the terminal's session HTML container
+                     * {string} `blockID` the generated block ID
+                     * {string} `statement` the executed statement
+                     * {object} `callback` function that will be triggered with passing the final result
+                     * {boolean} `?isOnlyInfo` Whether or not this is an info block only
+                     * {string} `?type` the type of the message, the value could be:
+                     * [`warning`, `info`, and `error`], or empty
+                     *
+                     * @Return: {string} the passed object in string format after manipulation
+                     */
+                    global.addBlock = (sessionContainer, blockID, statement, callback = null, isOnlyInfo = false, type = '') => {
+                      // Hide the emptiness class as there's at least one block now
+                      sessionContainer.parent().find(`div.empty-statements`).removeClass('show')
+
+                      // The statement's block UI structure
+                      let element = `
+                          <div class="block" data-id="${blockID}">
+                            <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
+                              <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
+                                <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
+                              </span>
+                              <div class="text"><pre>${isOnlyInfo ? (type == 'neutral' ? 'info' : type) : statement}</pre></div>
+                              <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
+                            </div>
+                            <div class="output">
+                              <div class="processing" ${isOnlyInfo ? 'hidden' : ''}>
+                                <lottie-player src="../assets/lottie/executing-statement.json" background="transparent" autoplay loop speed="1.75"></lottie-player>
+                              </div>
+                              ${isOnlyInfo ? statement : ''}
+                            </div>
+                            <div class="actions" ${isOnlyInfo ? 'hidden' : ''}>
+                              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
+                                data-mulang="download the block" capitalize-first hidden>
+                                <ion-icon name="download"></ion-icon>
+                              </div>
+                              <div class="download-options">
+                                <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                  <ion-icon name="csv"></ion-icon>
+                                </div>
+                                <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                  <ion-icon name="pdf"></ion-icon>
+                                </div>
+                              </div>
+                              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
+                                data-mulang="copy the block" capitalize-first>
+                                <ion-icon name="copy-solid"></ion-icon>
+                              </div>
+                              <div class="action btn btn-tertiary disabled" data-mdb-ripple-color="dark" action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Trace the query"
+                                data-mulang="trace the query" capitalize-first>
+                                <ion-icon name="query-tracing"></ion-icon>
+                              </div>
+                              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
+                                data-mulang="delete the block" capitalize-first>
+                                <ion-icon name="trash"></ion-icon>
+                              </div>
+                            </div>
+                          </div>`
+
+                      // Append the block and hide it - till and output is received -
+                      sessionContainer.append($(element).hide(function() {
+                        // Enable tooltips
+                        setTimeout(() => $(this).find('[data-tippy="tooltip"]').each(function() {
+                          getElementMDBObject($(this), 'Tooltip')
+                        }))
+
+                        // Call the callback function with the created block
+                        if (callback != null)
+                          callback($(this))
+
+                        // Skip the upcoming code if the block is not an info
+                        if (!isOnlyInfo)
+                          return
+
+                        // Show the block if needed
+                        $(this).show().addClass('show')
+
+                        // Scroll to the very bottom of the session's container
+                        setTimeout(() => {
+                          try {
+                            $(this).parent().animate({
+                              scrollTop: $(this).parent().get(0).scrollHeight
+                            }, 100)
+                          } catch (e) {}
+                        }, 100)
+                      }))
+                    }
+
+                    /**
                      * Inner function to get the closest word to the cursor
                      * Used when the user presses the `TAB` key
                      *
@@ -1203,11 +1359,15 @@
                          * Inner function to handle the `click` event of a session's link in the terminal
                          *
                          * @Parameters:
+                         * {object || boolean} `_` this parameter can be the event object, or flag to tell about the seesion's ID
                          * {string} `link` the link's content
                          */
                         let clickEvent = (_, link) => {
-                          // Get the session ID from the link - by slicing the protocol `session://`
-                          let sessionID = link.slice(10),
+                          /**
+                           * Get the session ID from the link - by slicing the protocol `session://`
+                           * Other is passing `true` to `_` parameter; which tells that the function has been called from the interactive terminal
+                           */
+                          let sessionID = _ != true ? link.slice(10) : link,
                             // Point at the queries' container
                             queriesContainer = $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`).find('div.queries'),
                             // Point at the queries' tab
@@ -1231,7 +1391,7 @@
                           Modules.Clusters.getQueryTracingResult(clusterID, sessionID, (result) => {
                             // If the `result` value is `null` then the app wasn't able to get the query tracing result
                             if (result == null)
-                              return showToast(I18next.capitalize(I18next.t('query tracing')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to get the query tracing result for the session [b]$data[/b]', [sessionID])) + '.', 'failure')
+                              return
 
                             // Get random IDs for the different elements of the query tracing section
                             let [
@@ -1491,7 +1651,9 @@
                         }
 
                         // Call the inner function - at the very end of this code block -; to create a pty instance for that cluster
-                        requestPtyInstanceCreation(readLine)
+                        requestPtyInstanceCreation(readLine, {
+                          cqlshSessionContentID
+                        })
 
                         // Call the fit addon for the terminal
                         setTimeout(() => fitAddon.fit(), 1200)
@@ -1508,27 +1670,25 @@
                            */
                           try {
                             // Match the regular expression and get the session's ID
-                            sessionID = (new RegExp('tracing\\s*session\\s*:\\s*(.+)', 'gm')).exec(data.toLowerCase())[1]
-
-                            // Print the custom session's navigation link
-                            setTimeout(() => readLine.println('\x1b[38;2;' + `234;255;18` + 'm' + `Tracing session: session://${sessionID}` + '\033[0m'), 50)
-
-                            // Pause printing data
-                            isSessionPaused = true
+                            sessionID = (new RegExp('tracing\\s*session\\s*:\\s*(.+)', 'gm')).exec(data.output.toLowerCase())[1]
 
                             // Update the associated flag
                             isTracingSessionPrinted = true
 
-                            // Skip the upcoming code
-                            return
+                            try {
+                              // If the given `blockID` is empty then the execution hasn't executed from the interactive terminal, skip this try-catch block
+                              if (minifyText(`${data.blockID}`).length <= 0)
+                                throw 0
 
-                            // This try-catch block will throw an exception if it didn't find a `tracing session` keyword
+                              // Set the session's ID as attribute
+                              $(`div.session-content div.block[data-id="${data.blockID}"]`).find('div.btn[action="tracing"]').attr('data-session-id', manipulateOutput(sessionID))
+                            } catch (e) {}
                           } catch (e) {}
 
                           // Check if `CQLSH-STARTED` has been received
                           try {
                             // If the keywords haven't been received yet or cqlsh has already been loaded then skip this try-catch block
-                            if (!minifyText(data).search('cqlsh-started') || isCQLSHLoaded)
+                            if (!minifyText(data.output).search('keyword:cqlsh-started') || !minifyText(data.output).search('keyword:cqlsh-started') || isCQLSHLoaded)
                               throw 0
 
                             // The CQLSH tool has been loaded
@@ -1564,41 +1724,16 @@
                             }, 1000)
                           } catch (e) {}
 
-                          /**
-                           * Check if the received data contains one or more of the strings in the array, or if `pause` is set to `true`
-                           * Or the command is empty and the OS is Windows
-                           * Or the cqlsh session hasn't been loaded yet
-                           * Based on the check, the received data won't be printed
-                           */
-                          if (minifyText(data).search('cqlsh-started') || ['cqlsh-', 'cqlsh.py', 'main/bin', 'main\bin', 'code page:', '--var', '--test', '--workspace', '--username', '--password', 'cqlshrc location', 'print metadata', 'instead.', 'tput', '/tmp', 'check connection', 'print cql_desc'].some((str) => minifyText(data).search(str) || isSessionPaused) || (`${latestCommand}`.trim().length <= 0 && OS.platform() == 'win32') || !isCQLSHLoaded) {
-                            /**
-                             * If `isSessionPaused` is set to `true` and the cqlsh's prompt is got in the received data...
-                             * then the cause of the pause has ended, thus, end the pause and start to print data again
-                             */
-                            if (((new RegExp('cqlsh\s*(\:|\s*)(.+|\s*)\>')).exec(data) != null && isSessionPaused) || isCQLSHLoaded || minifyText(data).search('cqlsh-started')) {
-                              // Reset the pause state
-                              isSessionPaused = false
-
-                              setTimeout(() => {
-                                // Update readline addon
-                                readActiveLine(prefix)
-
-                                // Update the query tracing flag to be false in all cases
-                                isTracingSessionPrinted = false
-                              }, isTracingSessionPrinted ? 250 : 4)
-                            }
-
-                            // Skip the upcoming code
-                            return
-                          }
-
                           try {
                             // If the received data is `failed` then the connection attempt has failed and the user needs to retry
-                            if (data != 'failed')
+                            if (data.output != 'failed')
                               throw 0
 
                             // Show feedback to the user
                             terminalPrintMessage(readLine, 'error', 'The connection attempt failed, please check cqlsh.rc file and press the restart button')
+
+                            // Show it in the interactive terminal
+                            addBlock($(`#_${cqlshSessionContentID}_container`), getRandomID(10), 'The connection attempt failed, please check cqlsh.rc file and press the restart button', null, true, 'failure')
 
                             // Skip the upcoming code
                             return
@@ -1864,7 +1999,7 @@
                           // Determine whether or not the metadata function will be called
                           try {
                             // If the cqlsh prompt hasn't been found in the received data or cqlsh is not loaded yet then the work area isn't ready to get metadata
-                            if ((new RegExp('cqlsh\s*(\:|\s*)(.+|\s*)\>')).exec(data) == null || !isCQLSHLoaded)
+                            if ((new RegExp('cqlsh\s*(\:|\s*)(.+|\s*)\>')).exec(data.output) == null || !isCQLSHLoaded)
                               throw 0
 
                             // If metadata hasn't been got yet
@@ -1882,7 +2017,7 @@
                            *
                            * Get cqlsh current prompt - for instance; `cqlsh>` -
                            */
-                          let prompt = data.match(/^(.*?cqlsh.*?>)/gm),
+                          let prompt = data.output.match(/^(.*?cqlsh.*?>)/gm),
                             // Update the active prefix to be used
                             activePrefix = prefix
 
@@ -1890,10 +2025,290 @@
                           if (minifyText(data).search('cqlsh>'))
                             data = data.replace(/^(.*?cqlsh.*?>)/gm, '')
 
+                          /**
+                           * The upcoming block is about the interactive terminal
+                           *
+                           * Whether or not the output has been completed
+                           */
+                          let isOutputCompleted = data.output.indexOf('KEYWORD:OUTPUT-FINISHED') != -1,
+                            // Whether or not an error has been found in the output
+                            isErrorFound = data.output.indexOf('KEYWORD:ERROR') != -1
+
+                          // Handle if the execution was called from the interactive terminal, not the basic one
+                          try {
+                            // If the given `blockID` is empty - the execution has not been called from the interactive terminal - then skip this try-catch block
+                            if (minifyText(`${data.blockID}`).length <= 0)
+                              throw 0
+
+                            // Point at the associated block element in the interactive terminal
+                            let blockElement = $(`div.interactive-terminal-container div.session-content div.block[data-id="${data.blockID}"]`),
+                              // Get the block's statement/command
+                              blockStatement = blockElement.find('div.statement div.text').text(),
+                              // Define the content of the `no-output` element
+                              noOutputElement = '<no-output><span mulang="no output was received" capitalize-first></span>.</no-output>'
+
+                            // If the output has already been completed then skip this try-catch block
+                            if (blockElement.attr('data-output-completed') != undefined)
+                              throw 0
+
+                            // Get the block's current output
+                            let blockOutput = blockElement.children('div.output').text()
+
+                            // Update the block's content by adding the new chunks of output
+                            blockElement.children('div.output').text(`${blockOutput}${data.output}`)
+
+                            if (isOutputCompleted) {
+                              // Set attribute related with output complete state if needed
+                              blockElement.attr('data-output-completed', '')
+                            } else {
+                              // Or skip this try-catch block as the output is not yet completed
+                              throw 0
+                            }
+
+                            // Make sure the `processing` element is removed
+                            if (blockElement.attr('data-output-completed') != undefined)
+                              blockElement.find('div.processing').remove()
+
+                            // Get rid of all keywords
+                            data.output = data.output.replace(/KEYWORD\:[A-Z]+(\-[A-Z]+)?/g, '')
+
+                            // Define the final content to be manipulated and rendered
+                            let finalContent = `${blockOutput}${data.output}`
+
+                            // Refresh the latest metadata based on specific actions and only if no erorr has occurred
+                            if (['Alter', 'Create', 'Drop'].some((type) => blockStatement.match(Modules.Consts.CQLRegexPatterns[type].Basic) != null) && !isErrorFound)
+                              $(`div.btn[data-id="${refreshMetadataBtnID}"]`).click()
+
+                            try {
+                              // If the block's content is not empty then make sure to remove the `no-output` element
+                              if (minifyText(finalContent).length > 0)
+                                throw 0
+
+                              // Otherwise, set it
+                              finalContent = noOutputElement
+                            } catch (e) {
+                              /**
+                               * Reaching here means there's an output already
+                               * Remove the `no-output` element
+                               */
+                              blockElement.find('no-output').remove()
+                            }
+
+                            // Show the current active prefix/prompt
+                            setTimeout(() => blockElement.find('div.prompt').text(minifyText(prefix).slice(0, -1)).hide().fadeIn('fast'), 1000)
+
+                            /**
+                             * Manipulate the content
+                             * Remove any given prompts within the output
+                             */
+                            finalContent = finalContent.replace(/[\Ss]+(\@)?cqlsh.*\>/g, '')
+                              // Remove the statement from the output
+                              .replace(new RegExp(blockElement.children('div.statement').text(), 'g'), '')
+                              // Get rid of tracing results
+                              .replace(/Tracing\s*session\:[\S\s]+/gi, '')
+                              // Trim the output
+                              .trim()
+
+                            // Make sure to show the emptiness message if the output is empty
+                            if (minifyText(finalContent).replace(/nooutputreceived\./g, '').length <= 0)
+                              finalContent = noOutputElement
+
+                            // Define the JSON string which will be updated if the output has valid JSON block
+                            let jsonString = '',
+                              // Define the tabulator object if one is created
+                              tabulatorObject = null
+
+                            // Handle if the content has JSON string
+                            try {
+                              // If the statement is not `SELECT` then don't attempt to render a table
+                              if (blockStatement.match(Modules.Consts.CQLRegexPatterns.Select.Basic) == null)
+                                throw 0
+
+                              // Deal with the given output as JSON string by default
+                              jsonString = manipulateOutput(finalContent).match(/\{[\s\S]+\}/gm)[0]
+
+                              // Repair the JSON to make sure it can be converted to JSON object easily
+                              jsonString = JSONRepair(jsonString)
+
+                              // Clean the output's container
+                              blockElement.children('div.output').html('')
+
+                              // Convert the JSON string to HTML table related to a Tabulator object
+                              convertTableToTabulator(jsonString, blockElement.children('div.output'), (_tabulatorObject) => {
+                                // As a tabulator object has been created add the associated class
+                                blockElement.find('div.actions').addClass('tabulator-action')
+
+                                // Show the download button
+                                blockElement.find('div.action[action="download"]').attr('hidden', null)
+
+                                // Hold the created object
+                                tabulatorObject = _tabulatorObject
+                              })
+
+                              // Show the block
+                              blockElement.show().addClass('show')
+
+                              // Scroll at the bottom of the blocks' container after each new block
+                              setTimeout(() => {
+                                try {
+                                  blockElement.parent().animate({
+                                    scrollTop: blockElement.parent().get(0).scrollHeight
+                                  }, 100)
+                                } catch (e) {}
+                              }, 100)
+
+                              // Skip the upcoming code
+                              return
+                            } catch (e) {} finally {
+                              // Execute this code whatever the case is
+                              setTimeout(() => {
+                                // Unbind all events regards the actions' buttons of the block
+                                blockElement.find('div.btn[action]').unbind()
+
+                                // Clicks the copy button; to copy content in JSON string format
+                                blockElement.find('div.btn[action="copy"]').click(function() {
+                                  // Get the beautified version of the block's content
+                                  let contentBeautified = applyJSONBeautify({
+                                      statement: blockElement.find('div.statement div.text').text() || 'No statement',
+                                      output: jsonString.length != 0 ? jsonString : (blockElement.find('div.output').text() || 'No output')
+                                    }),
+                                    // Get the content's size
+                                    contentSize = ByteSize(ValueSize(contentBeautified))
+
+                                  // Copy content to the clipboard
+                                  try {
+                                    Clipboard.writeText(contentBeautified)
+                                  } catch (e) {
+                                    errorLog(e, 'clusters')
+                                  }
+
+                                  // Give feedback to the user
+                                  showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
+                                })
+
+                                // Clicks the download button; to download the tabulator object either as PDF or CSV
+                                blockElement.find('div.btn[action="download"]').click(function() {
+                                  // Point at the download options' container
+                                  let downloadOptionsElement = blockElement.find('div.download-options'),
+                                    // Whether or not the optionss' container is hidden
+                                    isOptionsHidden = downloadOptionsElement.css('display') == 'none'
+
+                                  // Show/hide the container
+                                  downloadOptionsElement.css('display', isOptionsHidden ? 'flex' : 'none')
+                                })
+
+                                // Handle the download options
+                                {
+                                  // Download the table as CSV
+                                  blockElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', 'statement_block.csv'))
+
+                                  // Download the table as PDF
+                                  blockElement.find('div.option[option="pdf"]').click(() => tabulatorObject.download('pdf', 'statement_block.pdf', {
+                                    orientation: 'portrait',
+                                    title: `${blockStatement}`,
+                                  }))
+                                }
+
+                                // Handle the clicks of the tracing button
+                                {
+                                  // Point at the tracing button
+                                  let tracingButton = blockElement.find('div.btn[action="tracing"]')
+
+                                  setTimeout(() => {
+                                    // Get the session's tracing ID
+                                    let sessionID = tracingButton.attr('data-session-id')
+
+                                    try {
+                                      // If there's no session ID exists then skip this try-catch block
+                                      if (sessionID == undefined)
+                                        throw 0
+
+                                      // Enable the tracing button
+                                      tracingButton.removeClass('disabled')
+
+                                      // Add listener to the `click` event
+                                      tracingButton.click(() => clickEvent(true, sessionID))
+                                    } catch (e) {}
+                                  }, 1500)
+
+                                  // Clicks the deletion button
+                                  blockElement.find('div.btn[action="delete"]').click(() => {
+                                    let queriesContainer = $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
+
+                                    setTimeout(function() {
+                                      // Remove related query tracing element if exists
+                                      $(`div.queries div.query[data-session-id="${tracingButton.attr('data-session-id')}"]`).remove()
+
+                                      // If there's still one query tracing result then skip this try-catch block
+                                      try {
+                                        if (queriesContainer.find('div.query').length > 0)
+                                          throw 0
+
+                                        // Show the emptiness class
+                                        queriesContainer.addClass('_empty')
+
+                                        // Plat the emptiness animation
+                                        queriesContainer.find('lottie-player')[0].play()
+                                      } catch (e) {}
+                                    }, 500)
+
+                                    // Remove the block from the session
+                                    blockElement.remove()
+
+                                    try {
+                                      // Point at the session's statements' container
+                                      let sessionContainer = $(`#_${cqlshSessionContentID}_container`)
+
+                                      // If there's still one block then skip this try-catch block
+                                      if (sessionContainer.find('div.block').length > 0)
+                                        throw 0
+
+                                      // Show the emptiness class
+                                      sessionContainer.parent().find(`div.empty-statements`).addClass('show')
+                                    } catch (e) {}
+                                  })
+                                }
+                              })
+                            }
+
+                            // Manipulate the content
+                            finalContent = finalContent.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
+                              .replace(createRegex(OS.EOL, 'g'), '<br>')
+                              .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>')
+                              .replace(/[\Ss]+(\@)?cqlsh.*\>/g, '')
+
+                            // Convert any ANSI characters to HTML characters - especially colors -
+                            finalContent = (new ANSIToHTML()).toHtml(finalContent)
+
+                            // Reaching here and has a `json` keyword in the output means there's no record/row to be shown
+                            if (finalContent.includes('[json]'))
+                              finalContent = noOutputElement
+
+                            // Set the final content and make sure the localization process is updated
+                            blockElement.children('div.output').html(`<pre>${finalContent}</pre>`).show(function() {
+                              $(this).children('pre').find('br').remove()
+
+                              // Apply the localization process on elements that support it
+                              setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+                            })
+
+                            // Show the block
+                            blockElement.show().addClass('show')
+
+                            // Make sure to scroll at the end of the blocks' container
+                            setTimeout(() => {
+                              try {
+                                blockElement.parent().animate({
+                                  scrollTop: blockElement.parent().get(0).scrollHeight
+                                }, 100)
+                              } catch (e) {}
+                            }, 100)
+                          } catch (e) {}
+
                           // Determine whether to print the given data or not
                           try {
                             // If empty data has been received then ignore it
-                            if (data.trim().length <= 0)
+                            if (data.output.trim().length <= 0)
                               throw 0
 
                             // Check if the query tracing feature has been enabled/disabled
@@ -1902,25 +2317,41 @@
                               let queryTracingHint = $(`div.tab-pane#_${queryTracingContentID}`).find('hint')
 
                               // If it has been enabled
-                              if (data.toLowerCase().indexOf('tracing is enabled') != -1) {
+                              if (data.output.toLowerCase().indexOf('tracing is enabled') != -1) {
                                 terminalPrintMessage(readLine, 'info', 'Query tracing feature is now enabled')
                                 queryTracingHint.hide()
+                                $(`div.tab-pane#_${queryTracingContentID}`).find('lottie-player')[0].play()
                                 throw 0
                               }
 
                               // If it has been disabled
-                              if (data.toLowerCase().indexOf('disabled tracing') != -1) {
+                              if (data.output.toLowerCase().indexOf('disabled tracing') != -1) {
                                 terminalPrintMessage(readLine, 'info', 'Query tracing feature has been disabled')
                                 queryTracingHint.show()
                                 throw 0
                               }
                             }
 
-                            // Print the data
-                            readLine.write(data)
+                            // Extra manipulation of the output
+                            data.output = data.output.replace(/KEYWORD\:[A-Z]+(\-[A-Z]+)?/ig, '')
 
-                            // Resize the terminal
-                            fitAddon.fit()
+                            // Flag to tell of the output is actually empty
+                            let isOutputEmpty = manipulateOutput(minifyText(data.output)).replace(/cqlsh\s*(\:|\s*)(.+|\s*)\>/ig, '').length <= 0
+
+                            try {
+                              // If the output is empty then no need to print it, skip this try-catch block
+                              if (isOutputEmpty)
+                                throw 0
+
+                              // Print the data
+                              readLine.write(data.output)
+                            } catch (e) {
+                              // Just update the readline object
+                              setTimeout(() => readActiveLine(activePrefix), 10)
+                            } finally {
+                              // Resize the terminal
+                              fitAddon.fit()
+                            }
                           } catch (e) {
                             errorLog(e, 'clusters')
                           }
@@ -2101,6 +2532,551 @@
                     }
                     // End of handling the app's terminal
 
+                    // This block of code for the interactive terminal
+                    {
+                      /**
+                       * Define variables and inner functions to be used in the current scope
+                       *
+                       * Point at the CQLSH session's overall container
+                       */
+                      let cqlshSessionTabContainer = $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`),
+                        // Point at the CQLSH interactive terminal's session's main container
+                        sessionContainer = $(`#_${cqlshSessionContentID}_container`),
+                        // Point at the statement's input field
+                        statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`),
+                        // Point at the interactive terminal's container
+                        interactiveTerminal = $(`div[data-id="${terminalContainerID}_interactive"]`),
+                        // Point at the basic terminal's container
+                        basicTerminal = $(`div[data-id="${terminalContainerID}"]`),
+                        // Point at the suggestions' list - at the very bottom of the statement's input field -
+                        suggestionsList = cqlshSessionTabContainer.find('div.bottom div.suggestions-list'),
+                        // Point at the realtime suggestion's element
+                        realtimeSuggestion = statementInputField.parent().find('div.suggestion'),
+                        /**
+                         * Point at different buttons related to the current scope
+                         *
+                         * Point at the terminal's switching button - at the top-right of the cqlsh session -
+                         */
+                        switchTerminalBtn = cqlshSessionTabContainer.find(`div.switch-terminal button`),
+                        // Point at the statement's execution button
+                        executeBtn = cqlshSessionTabContainer.find('div.execute button'),
+                        // Hold the last saved important data
+                        lastData = {
+                          cursorPosition: -1,
+                          closestWord: '',
+                          suggestion: '',
+                          history: -1
+                        }
+
+                      /**
+                       * Inner function to get the closest word to the cursor
+                       * Used while the user is updating the statement's input field
+                       *
+                       * @Parameters:
+                       * {object} `textarea` the textarea HTML element
+                       *
+                       * @Return: {string} the matched content, or an empty value if there's no string close to the cursor
+                       */
+                      let getClosestWord = (textarea) => {
+                        // Get the cursor's current position
+                        let cursorPosition = textarea.selectionStart
+
+                        /**
+                         * If the user is currently selecting something then return an empty value
+                         * The reason is by selecting something while the function is executing will lead to get incorrect values about the cursor's position
+                         */
+                        if (textarea.selectionEnd !== cursorPosition)
+                          return ''
+
+                        // Get the content of the textarea up to the cursor position
+                        let textBeforeCursor = textarea.value.slice(0, cursorPosition),
+                          // Do a matching process; which is getting the last string in the line that has a space right before it
+                          match = /\S+$/.exec(textBeforeCursor)
+
+                        // If there's a value from the matching process then return it, otherwise return an empty value
+                        return match ? match[0] : ''
+                      }
+
+                      /**
+                       * Inner function to get important info from the latest metadata
+                       *
+                       * @Return: {object} the fetched info from the latest metadata as JSON object
+                       */
+                      let getMetadataInfo = () => {
+                        // Define the final result to be returned
+                        let result = {}
+
+                        try {
+                          // Get the keyspaces names and their tables' names
+                          let keyspaces = latestMetadata.keyspaces.map((keyspace) => {
+                            return {
+                              name: keyspace.name,
+                              tables: keyspace.tables
+                            }
+                          })
+
+                          // Loop through each keyspace and set its tables' names in array
+                          for (let keyspace of keyspaces)
+                            result[keyspace.name] = keyspace.tables.map((table) => table.name)
+                        } catch (e) {}
+
+                        // Return the final result
+                        return result
+                      }
+
+                      /**
+                       * Apply the auto size feature for the statement's input field
+                       * This will simply increase and decrease the height based on the input's value
+                       */
+                      AutoSize(statementInputField[0])
+
+                      // Clicks the terminal's switching button
+                      switchTerminalBtn.click(function() {
+                        try {
+                          // If the basic terminal is already shown then skip this try-catch block
+                          if (basicTerminal.css('display') != 'none')
+                            throw 0
+
+                          // Show the basic terminal
+                          basicTerminal.show()
+
+                          // Reset the terminal
+                          terminal.clear()
+
+                          // Send new line char to the terminal
+                          setTimeout(() => {
+                            IPCRenderer.send('pty:command', {
+                              id: clusterID,
+                              cmd: OS.EOL
+                            })
+                          })
+
+                          // Hide the interactive terminal
+                          interactiveTerminal.hide()
+                        } catch (e) {
+                          /**
+                           * Reaching here means the basic terminal is already shown
+                           *
+                           * Show the interactive terminal
+                           */
+                          interactiveTerminal.show()
+
+                          // Hide the basic terminal
+                          basicTerminal.hide()
+                        } finally {
+                          // Trigger the `resize` event regardless the shown and hidden terminal
+                          setTimeout(() => $(window.visualViewport).trigger('resize'), 50)
+                        }
+                      })
+
+                      // Clicks the statement's execution button
+                      executeBtn.click(function() {
+                        // If the button is disabled then skip the upcoming code and end the process
+                        if ($(this).attr('disabled') != undefined)
+                          return
+
+                        // Get the statement
+                        let statement = statementInputField.val(),
+                          // Get a random ID for the block which will be created
+                          blockID = getRandomID(10)
+
+                        // Write it to the basic terminal
+                        terminal.writeln(statement)
+
+                        // Clear the statement's input field and make sure it's focused on it
+                        setTimeout(() => statementInputField.val('').trigger('input').focus().attr('style', null))
+
+                        try {
+                          if (!((['quit', 'exit']).some((command) => minifyText(statement).startsWith(minifyText(command)))))
+                            throw 0
+
+                          // Show it in the interactive terminal
+                          addBlock($(`#_${cqlshSessionContentID}_container`), getRandomID(10), `Work area for the cluster ${getAttributes(clusterElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral')
+
+                          // Pause the print of output from the Pty instance
+                          isSessionPaused = true
+
+                          // Dispose the readline addon
+                          prefix = ''
+
+                          // Click the close connection button after a while
+                          setTimeout(() => workareaElement.find('div.cluster-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
+
+                          // Skip the upcoming code in the execution button
+                          return
+                        } catch (e) {}
+
+                        // Add the block
+                        addBlock(sessionContainer, blockID, statement, (element) => {
+                          // Add the statement to the cluster's history space
+                          {
+                            // Get current saved statements
+                            let history = Store.get(clusterID) || [];
+
+                            /**
+                             * Maximum allowed statements to be saved are 30 for each cluster
+                             * When this value is exceeded the oldest statement should be removed
+                             */
+                            if (history.length >= 30)
+                              history.pop()
+
+                            // Add the statement at the very beginning of the array
+                            history.unshift(statement)
+
+                            // Remove any duplication
+                            Store.set(clusterID, [...new Set(history)])
+
+                            // Reset the history current index
+                            lastData.history = -1
+                          }
+
+                          // Handle when the statement is `SELECT` but there's no `JSON` after it
+                          try {
+                            // Regex pattern to match 'SELECT' not followed by 'JSON'
+                            let pattern = /\bselect\b(?!\s+json\b)/i;
+
+                            // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
+                            statement = statement.replace(pattern, 'SELECT JSON');
+                          } catch (e) {}
+
+                          // Send the command to the main thread to be executed
+                          IPCRenderer.send('pty:command', {
+                            id: clusterID,
+                            cmd: statement,
+                            blockID
+                          })
+                        })
+                      })
+
+                      // The statement's input field's value has been updated
+                      statementInputField.on('input', function() {
+                        // Get the statement's content
+                        let statement = $(this).val(),
+                          // Get the closest word to the cursor in the input field
+                          closestWord = getClosestWord($(this)[0]),
+                          /**
+                           * Whether or not the content has multiple lines
+                           * In case it has, the suggestions and autocomplete feature will be temporary disabled
+                           */
+                          isMultipleLines = $(this).val().match(new RegExp(OS.EOL, 'g')) != null
+
+                        // Enable and disable the execution button based set conditions
+                        {
+                          // Minify the statement
+                          let minifiedStatement = minifyText(statement),
+                            /**
+                             * Whether or not the statement is a CQLSH command
+                             * In this case, the statement doesn't need semi colon `;` at the end
+                             */
+                            isCQLSHCommand = Modules.Consts.CQLSHCommands.some((command) => minifiedStatement.startsWith(minifyText(command))),
+                            // Whether or not the statement is quitting the cqlsh session
+                            isQuitCommand = (['quit', 'exit']).some((command) => minifiedStatement.startsWith(minifyText(command))),
+                            // Decide whether or not the execution button should be disabled
+                            isExecutionButtonDisabled = minifiedStatement.length <= 0 || ((!isCQLSHCommand && !isQuitCommand) && !minifiedStatement.endsWith(';'))
+
+                          // Disable/enable the execution button
+                          executeBtn.attr('disabled', isExecutionButtonDisabled ? '' : null)
+                        }
+
+                        /**
+                         * Update some of the saved data
+                         *
+                         * Update the latest saved cursor's position
+                         */
+                        lastData.cursorPosition = $(this)[0].selectionEnd
+
+                        // The default array for suggestions is the CQL keywords
+                        let suggestionsArray = Modules.Consts.CQLKeywords,
+                          // Get the keyspaces and their tables from the last metadata
+                          metadataInfo = getMetadataInfo(),
+                          // Get keyspaces' names
+                          keyspaces = Object.keys(metadataInfo),
+                          // Flag to tell if keyspace has been found and it's time to suggest its tables
+                          isKeyspace = false,
+                          // Flag to tell if suggestions should be the keyspaces only
+                          isSuggestKeyspaces = false
+
+                        try {
+                          /**
+                           * Determine whether or not keyspaces and their tables should be shown as suggestions
+                           *
+                           * Get the content before the cursor's position
+                           */
+                          let contentBeforeCursor = statement.slice(0, lastData.cursorPosition)
+
+                          // Check the content against defined regex patterns
+                          isSuggestKeyspaces = Object.keys(Modules.Consts.CQLRegexPatterns).some((type) => Modules.Consts.CQLRegexPatterns[type].Patterns.some((regex) => $(this).val().slice(0, lastData.cursorPosition).match(regex) != null))
+
+                          // If the closest word to the cursor doesn't have `.` then skip this try-catch block
+                          if (!isSuggestKeyspaces || !closestWord.includes('.'))
+                            throw 0
+
+                          // Get the recognized keyspace name
+                          let keyspace = closestWord.slice(0, closestWord.indexOf('.')),
+                            // Attempt to get its tables
+                            tables = metadataInfo[keyspace]
+
+                          // If the attempt failed then skip this try-catch block
+                          if (tables == undefined)
+                            throw 0
+
+                          /**
+                           * Update associated variables
+                           *
+                           * Update the flag to be `true`
+                           */
+                          isKeyspace = true
+
+                          // Update the suggestions' array
+                          suggestionsArray = tables
+
+                          // Update the closest word to be what after `.`
+                          closestWord = closestWord.slice(closestWord.indexOf('.') + 1)
+                        } catch (e) {}
+
+                        // Update the latest saved closest word to the cursor
+                        lastData.closestWord = closestWord
+
+                        // Get the suggestions based on the closest word
+                        let suggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray)
+
+                        // Keep related suggestions and remove the rest
+                        try {
+                          // If there's no such a suggestion then skip this try-catch block
+                          if (typeof suggestions == 'string' || suggestions.length <= 0)
+                            throw 0
+
+                          // Remove all current suggestions
+                          suggestionsList.children('span.suggestion').each(function() {
+                            // Reset the selection attribute
+                            $(this).attr('data-selected', 'false')
+
+                            // If the suggestion is related then skip the upcoming code and move to the next suggestion
+                            if (suggestions.includes($(this).attr('data-suggestion')) || suggestions == $(this).attr('data-suggestion'))
+                              return
+
+                            // Suggestion is not related, remove it
+                            $(this).remove()
+                          })
+                        } catch (e) {
+                          suggestionsList.children('span.suggestion').remove()
+                        }
+
+                        // Reset the realtime suggestion's text
+                        realtimeSuggestion.text('')
+
+                        // If the statement has multiple lines, or there's no close word to the cursor and there's no keyspace name recognized then remove all related suggestions and stop this feature
+                        if (isMultipleLines || (minifyText(closestWord).length <= 0 && !isKeyspace && !isSuggestKeyspaces))
+                          return suggestionsList.children('span.suggestion').remove()
+
+                        // Manipulate the received suggestions
+                        {
+                          // Define index to be used with the appended suggestions
+                          let index = 0
+
+                          // Loop through each received suggestion
+                          for (let suggestion of suggestions) {
+                            // Whether or not the `suggestions` is actually one `string` suggestion not an array
+                            let isSuggestionString = typeof suggestions == 'string'
+
+                            // If there's only one suggestion then handle it
+                            if (isSuggestionString)
+                              suggestion = suggestions
+
+                            // If the suggestion already exist in the UI then skip the appending process and move to the next suggestion
+                            if (suggestionsList.children(`span.suggestion[data-suggestion="${suggestion}"]`).length != 0)
+                              continue
+
+                            // The suggestion UI structure
+                            let element = `
+                                <span class="btn suggestion badge rounded-pill ripple-surface-light" data-index="${index}" data-suggestion="${suggestion}" data-selected="false" data-mdb-ripple-color="light" style="display:none">${suggestion}</span>`
+
+                            // Append the suggestion and handle the `click` event
+                            suggestionsList.append($(element).delay(50 * index).fadeIn(100 * (index + 1)).click(function() {
+                              // Reset the selection state of all suggestions
+                              suggestionsList.children('span.suggestion').attr('data-selected', 'false')
+
+                              /**
+                               * If the clicked suggestion has a sibling before it then select it
+                               * As `TAB` key will autocomplete the subling right after the selected one
+                               */
+                              if ($(this).prev().length > 0)
+                                $(this).prev().attr('data-selected', 'true')
+
+                              // Trigger the `keydown` event with `isVirtual` set to `true`
+                              statementInputField.trigger('keydown', true)
+                            }))
+
+                            // If there's only one suggestion then end this loop
+                            if (isSuggestionString)
+                              break
+
+                            // Increment the index
+                            index += 1
+                          }
+                        }
+
+                        // If there's no suggestion received then skip the upcoming code and end the process
+                        if (suggestions.length <= 0)
+                          return
+
+                        // Define the final suggestion text which will be rendered in the realtime suggestion's UI element
+                        let suggestionText = '',
+                          // Get the textarea/statement value and split it to characters
+                          textareaValue = $(this).val().split('')
+
+                        // Loop through the characters, add them to the suggestion's text
+                        for (let i = 0; i < $(this)[0].selectionEnd; i++)
+                          suggestionText += `<span style="color:transparent;">${textareaValue[i]}</span>`
+
+                        // Define the selected suggestion to be adopted
+                        let selectedSuggestion = typeof suggestions == 'string' ? suggestions : suggestions[0]
+
+                        // Set the suggestion's text to be lower case if needed
+                        if (`${closestWord.at(-1)}` != `${closestWord.at(-1)}`.toUpperCase())
+                          selectedSuggestion = selectedSuggestion.toLowerCase()
+
+                        // Update the realtime suggestion's text
+                        realtimeSuggestion.html(`${suggestionText}${selectedSuggestion.slice(closestWord.length)}`)
+
+                        // Reset the suggestion's index
+                        currentSuggestionIndex = -1
+
+                        // Key is pressed while the textarea is focused
+                      }).keydown(function(event, isVirtual = false) {
+                        // Get the pressed key's code
+                        let keyCode = event.keyCode
+
+                        // If the pressed key is not `TAB` then trigger the `input` event for the textarea
+                        if (keyCode != 9)
+                          setTimeout(() => $(this).trigger('input', false))
+
+                        // `UP Arrow` and `DOWN Arrow` key press/down
+                        try {
+                          if (!(keyCode == 38 && event.ctrlKey) && !(keyCode == 40 && event.ctrlKey))
+                            throw 0
+
+                          // Flag to tell if the pressed key is the `UP Arrow` key
+                          let isUpArrow = keyCode == 38
+
+                          // Prevent the default behavior for this key pressing event
+                          event.preventDefault()
+
+                          // Get the saved statements
+                          let history = Store.get(clusterID) || []
+
+                          // If there's no saved history then simply skip this try-catch block
+                          if (history.length <= 0)
+                            throw 0
+
+                          // Increment/decrement the current history's index based on the pressed key
+                          lastData.history += isUpArrow ? 1 : -1
+
+                          // Get the selected statement
+                          let statement = history[lastData.history]
+
+                          // If the statement is `undefined` then the index is out of range
+                          if (statement == undefined) {
+                            // Normalize the index
+                            lastData.history = isUpArrow ? 0 : history.length - 1
+
+                            // Update the selected statement
+                            statement = history[lastData.history]
+                          }
+
+                          // Remove any realtime suggestions
+                          realtimeSuggestion.text('')
+
+                          // Update the textarea's content and focus
+                          $(this).val(statement).focus()
+
+                          // Update the size of the textarea
+                          AutoSize.update($(this)[0])
+                        } catch (e) {}
+
+                        // `ENTER` key press/down
+                        try {
+                          if (keyCode != 13 || event.shiftKey)
+                            throw 0
+
+                          // Prevent the default behavior for this key pressing event
+                          event.preventDefault()
+
+                          // Click the statement's execution button
+                          executeBtn.trigger('click')
+                        } catch (e) {}
+
+                        // `TAB` key press/down
+                        try {
+                          if (keyCode != 9 && !isVirtual)
+                            throw 0
+
+                          // Prevent the default behavior for this key pressing event
+                          event.preventDefault()
+
+                          // Reset the realtime suggestion's text
+                          realtimeSuggestion.text('')
+
+                          // Get the current selected suggestion's index
+                          let currentSelectedSuggestionIndex = suggestionsList.children('span.suggestion[data-selected="true"]').index()
+
+                          /**
+                           * Manipulate the selected suggestion's index
+                           * If the current selected suggestion's index is `-1` - no suggestion is selected -, or the current selected one is acutally the last one then adopt the first suggestion
+                           * Otherwise increase the current index by 1
+                           */
+                          currentSelectedSuggestionIndex = (currentSelectedSuggestionIndex <= -1 || (currentSelectedSuggestionIndex + 1) >= suggestionsList.children('span.suggestion').length) ? 0 : (currentSelectedSuggestionIndex + 1)
+
+                          // Get the final selected suggestion's UI element
+                          let selectedSuggestion = suggestionsList.children('span.suggestion').eq(currentSelectedSuggestionIndex)
+
+                          // Reset the selection state of all suggestions
+                          suggestionsList.children('span.suggestion').attr('data-selected', 'false')
+
+                          // The selected suggestion's attribute would be set to be `true`
+                          selectedSuggestion.attr('data-selected', 'true')
+
+                          // Get the selected suggestion's content/text
+                          let selectedSuggestionContent = selectedSuggestion.attr('data-suggestion'),
+                            // Get the statement/textarea's content/text
+                            currentStatementContent = $(this).val()
+
+                          // Set the suggestion's text to be lower case if needed
+                          if (lastData.closestWord.at(-1) != `${lastData.closestWord.at(-1) || ''}`.toUpperCase())
+                            selectedSuggestionContent = selectedSuggestionContent.toLowerCase()
+
+                          // Update the selected suggestion's content by slicing what already has been typed by the user
+                          selectedSuggestionContent = selectedSuggestionContent.slice(lastData.closestWord.length)
+
+                          // Define initially the suggestion's prefix content
+                          let suggestionPrefixContent = currentStatementContent.slice(lastData.cursorPosition)
+
+                          // Update the prefix content by remove the previous suggestion if it already has been added
+                          if (suggestionPrefixContent.indexOf(lastData.suggestion) != -1)
+                            suggestionPrefixContent = `${suggestionPrefixContent.slice(0, suggestionPrefixContent.indexOf(lastData.suggestion))}${suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(lastData.suggestion) + lastData.suggestion.length)}`
+
+                          // Update the statement's text/content
+                          currentStatementContent = `${currentStatementContent.slice(0, lastData.cursorPosition)}${selectedSuggestionContent}${suggestionPrefixContent}`
+
+                          // Update the last saved suggestion
+                          lastData.suggestion = `${selectedSuggestionContent}`
+
+                          // Set the final statement's text/content
+                          $(this).val(currentStatementContent).focus()
+
+                          // Update the cursor's position inside the textarea
+                          {
+                            // Define the updated cursor's position
+                            let cursorPosition = lastData.cursorPosition + selectedSuggestionContent.length
+
+                            // Set it inside the textarea
+                            $(this)[0].setSelectionRange(cursorPosition, cursorPosition)
+                          }
+                        } catch (e) {}
+                      })
+                    }
+                    // End of hanlding the interactive terminal
+
                     // Handle the bash session only if the cluster is a sandbox project
                     try {
                       if (!isSandbox)
@@ -2273,6 +3249,7 @@
                     } catch (e) {
                       errorLog(e, 'clusters')
                     }
+                    // End of handling the bash session's terminal
 
                     // Handle different events for many elements in the work area
                     {
@@ -4009,7 +4986,7 @@
              * @Parameters:
              * {object} `readLine` is the read line object that has been created for the terminal, the terminal object itself can be passed too
              */
-            let requestPtyInstanceCreation = (readLine) => {
+            let requestPtyInstanceCreation = (readLine, info) => {
               try {
                 // Get the workspace's folder path
                 let workspaceFolderPath = getWorkspaceFolderPath(workspaceID),
@@ -4024,6 +5001,10 @@
                 // Print the host and Apache Cassandra's version in the terminal
                 terminalPrintMessage(readLine, 'info', `Connecting with host ${getAttributes(clusterElement, 'data-host')}`)
                 terminalPrintMessage(readLine, 'info', `Detected Apache Cassandra ™ version is ${version}`)
+
+                // Show it in the interactive terminal
+                addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Connecting with host ${getAttributes(clusterElement, 'data-host')}.`, null, true, 'neutral')
+                addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Detected Apache Cassandra ™ version is ${version}.`, null, true, 'neutral')
 
                 /**
                  * Check some options in the `cqlsh.rc` file
@@ -4057,6 +5038,9 @@
                         // Print message in the terminal
                         terminalPrintMessage(readLine, 'warn', 'SSL is not enabled, the connection is not encrypted and is being transmitted in the clear')
 
+                        // Show it in the interactive terminal
+                        addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `SSL is not enabled, the connection is not encrypted and is being transmitted in the clear.`, null, true, 'warning')
+
                         // Update the SSL attribute
                         clusterElement.attr('ssl-enabled', 'false')
                       } catch (e) {}
@@ -4070,8 +5054,12 @@
                 }
 
                 // Show feedback to the user when the connection is established through the SSH tunnel
-                if (sshTunnelsObjects[clusterID] != null)
+                if (sshTunnelsObjects[clusterID] != null) {
                   terminalPrintMessage(readLine, 'info', 'This connection is established through SSH tunnel')
+
+                  // Show it in the interactive terminal
+                  addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `This connection is established through SSH tunnel.`, null, true, 'neutral')
+                }
 
                 /**
                  * The connection creation object
@@ -4109,8 +5097,12 @@
                     let usernameDecrypted = decrypt(key, username)
 
                     // If the username is `cassandra` then warn the user about that
-                    if (usernameDecrypted == 'cassandra')
+                    if (usernameDecrypted == 'cassandra') {
                       terminalPrintMessage(readLine, 'warn', 'Connection is using default `cassandra` user')
+
+                      // Show it in the interactive terminal
+                      addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), 'Connection is using default `cassandra` user.', null, true, 'warning')
+                    }
                   })
                 } catch (e) {
                   errorLog(e, 'clusters')
@@ -6631,9 +7623,9 @@
             // Point at the description UI element
             let main = $(this),
               // Hold the original height of the description before any manipulation
-              originalHeight = main.height(),
+              originalHeight = main.actual('height'),
               // Point at the expandation/shrinking button
-              expandBtnElement = $(this).find('button[data-tippy="tooltip"]'); // This semicolon is critical here
+              expandBtnElement = $(this).find('button.expand-editor'); // This semicolon is critical here
 
             // Create a tooltip object for the button
             getElementMDBObject(expandBtnElement, 'Tooltip')
@@ -6648,7 +7640,7 @@
 
               // If the original height hasn't been fetched then fetch it now
               if (originalHeight <= 0)
-                originalHeight = main.height()
+                originalHeight = main.actual('height')
 
               try {
                 // If the description's UI element is not expanded already then skip this try-catch block
@@ -6676,7 +7668,7 @@
                *
                * Get the descriptions' container's height
                */
-              let descriptionsContainerHeight = main.parent().height()
+              let descriptionsContainerHeight = main.parent().actual('height')
 
               // Set the new height of the description's UI element
               main.css('height', `${descriptionsContainerHeight - 38}px`)
@@ -6684,6 +7676,9 @@
               // Click the attached anchor in the description's UI element
               setTimeout(() => $(main).find('a')[0].click(), 210)
             })
+
+            // Click the expandation button
+            setTimeout(() => expandBtnElement.click(), 100)
           })
 
           setTimeout(() => {

@@ -132,9 +132,6 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             // Fade in the element based on the index
             setTimeout(() => $(this).addClass(`show-${currentIndex + 1}`))
 
-            // Make sure the non-visible lottie element is not playing in the background
-            setTimeout(() => autoPlayStopLottieElement($(this).find('lottie-player')))
-
             // Enable tooltip for the actions buttons
             setTimeout(() => {
               ([folderBtnID, settingsBtnID, deleteBtnID]).forEach((btn) => {

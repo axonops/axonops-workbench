@@ -115,7 +115,6 @@
       "the maximum number of clusters which allowed to be connected to simultaneously is [b]$data[/b]": "the maximum number of clusters which allowed to be connected to simultaneously is [b]$data[/b]",
       "this limitation can be changed from the app's settings in the limitation section": "this limitation can be changed from the app's settings in the limitation section",
       "query tracing": "query tracing",
-      "failed to get the query tracing result for the session [b]$data[/b]": "failed to get the query tracing result for the session [b]$data[/b]",
       "connect with cluster": "connect with cluster",
       "analyzing status": "analyzing status",
       "open AxonOps in browser": "open AxonOps in browser",
@@ -329,7 +328,13 @@
       "copy query tracing result": "copy query tracing result",
       "query tracing result with session ID of [b]$data[/b] has been copied to the clipboard, the size is $data": "query tracing result with session ID of [b]$data[/b] has been copied to the clipboard, the size is $data",
       "nodes": "nodes",
-      "change the editors view": "change the editors view"
+      "change the editors view": "change the editors view",
+      "switch terminal": "switch terminal",
+      "search in the session": "search in the session",
+      "execute cql statement": "execute cql statement",
+      "start now by executing cql statement": "start now by executing cql statement",
+      "no output was received": "no output was received",
+      "content has been copied to the clipboard, the size is $data": "content has been copied to the clipboard, the size is $data"
     }
   }
 }

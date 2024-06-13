@@ -87,15 +87,19 @@ if ((global.FS.existsSync('dist/keys_generator')) || (global.FS.existsSync('dist
 if (global.FS.existsSync('custom_node_modules/main/logging.js')) {
   global.ModulesPath = Path.join(process.cwd(), 'custom_node_modules')
 } else if (global.FS.existsSync('/opt/AxonOps Developer Workbench/resources/custom_node_modules/main/logging.js')) {
+  global.RendererPath = '/opt/AxonOps Developer Workbench/resources/renderer'
   global.ModulesPath = '/opt/AxonOps Developer Workbench/resources/custom_node_modules'
 } else if (global.FS.existsSync('Contents/Resources/custom_node_modules/main/logging.js')) {
   global.ModulesPath = 'Contents/Resources/custom_node_modules'
+  global.RendererPath = 'Contents/Resources/renderer'
 } else if (global.FS.existsSync(Path.join(global.ExecParentPath, 'Contents/Resources/custom_node_modules'))) {
   global.ModulesPath = Path.join(global.ExecParentPath, 'Contents/Resources/custom_node_modules')
 } else if (global.FS.existsSync('/Applications/AxonOps Developer Workbench.app/Contents/Resources/custom_node_modules')) {
   global.ModulesPath = '/Applications/AxonOps Developer Workbench.app/Contents/Resources/custom_node_modules'
+  global.RendererPath = '/Applications/AxonOps Developer Workbench.app/Contents/Resources/renderer'
 } else if (global.FS.existsSync(`${process.env.HOME}/Applications/AxonOps Developer Workbench.app/Contents/Resources/custom_node_modules`)) {
   global.ModulesPath = `${process.env.HOME}/Applications/AxonOps Developer Workbench.app/Contents/Resources/custom_node_modules`
+  global.RendererPath = `${process.env.HOME}/Applications/AxonOps Developer Workbench.app/Contents/Resources/renderer`
 }
 
 
@@ -336,7 +340,7 @@ App.on('ready', () => {
   views.main = createWindow(properties, AppProps.Paths.MainView, extraProperties)
 
   // Create the background processes' view/window and make it hidden; as there's no need for a window or GUI for it
-  views.backgroundProcesses = createWindow(properties, Path.join(AppProps.Paths.MainView, '..', 'background.html'), {
+  views.backgroundProcesses = createWindow(properties, global.RendererPath, 'background.html', {
     show: false,
     parent: views.main
   })
@@ -345,7 +349,7 @@ App.on('ready', () => {
   views.documentation = createWindow({
     ...properties,
     title: `${properties.title} Documentation`
-  }, Path.join(AppProps.Paths.MainView, '..', 'documentation', 'index.html'), {
+  }, Path.join(global.RendererPath, 'views', 'documentation', 'index.html'), {
     show: false,
     parent: views.main
   })
@@ -370,7 +374,7 @@ App.on('ready', () => {
     alwaysOnTop: true,
     thickFrame: false,
     show: true
-  }, Path.join(AppProps.Paths.MainView, '..', 'intro.html'), {
+  }, Path.join(global.RendererPath, 'views', 'intro.html'), {
     show: true,
     center: true,
     parent: views.main

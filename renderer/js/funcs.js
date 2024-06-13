@@ -10,6 +10,19 @@
  *
  * @Return: {object} the Material Design's object
  */
+var UserDataDir = process.cwd()
+const { ipcRenderer } = require('electron')
+if (ipcRenderer !== undefined) {
+  ipcRenderer.invoke('get-user-data').then((value) => {
+    UserDataDir = value
+  })
+} else if (typeof global.UserDataDir !== 'undefined') {
+  UserDataDir = global.UserDataDir
+} else {
+  const App = require('electron').app
+  UserDataDir = App.getPath('electron')
+}
+
 let getElementMDBObject = (element, type = 'Input') => {
   // Define the final object which be returned
   let object = null
@@ -2835,7 +2848,7 @@ let getWorkspaceName = (workspaceID) => getAttributes($(`div.workspace[data-id="
 let getWorkspaceFolderPath = (workspaceID, replaceDefault = true) => {
   try {
     // Define the default path
-    let defaultPath = Path.join(__dirname, '..', '..', 'data', 'workspaces'),
+    let defaultPath = Path.join(UserDataDir, 'workspaces'),
       // Point at the workspace element in the UI
       workspaceElement = $(`div.workspace[data-id="${workspaceID}"]`),
       // Get its folder name and its path

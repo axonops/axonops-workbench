@@ -491,7 +491,11 @@
 
                   // Handle when connection is lost with the cluster
                   try {
+<<<<<<< HEAD
                     // If the work area exists or this is the sandbox/project workspace then skip this try-catch block
+=======
+                    // If the work area exists then skip this try-catch block
+>>>>>>> 8c84b251ab592d8a558710198961ed36e6586da3
                     if (contentCluster.length > 0 || isSandbox)
                       throw 0
 

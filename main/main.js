@@ -273,7 +273,9 @@ let properties = {
 ContextMenu(contextMenuProperties)
 
 // Start the crash handler immediately before the app gets ready
-Modules.Reports.startCrashingHandler()
+try {
+  Modules.Reports.startCrashingHandler()
+} catch (e) {}
 
 // When the app is ready a renderer thread should be created and started
 App.on('ready', () => {
@@ -334,7 +336,9 @@ App.on('ready', () => {
      * Only hide the documentation view
      * In this way we prevent unnecessary loading and create time for the view/window each time it's called
      */
-    views.documentation.hide()
+    try {
+      views.documentation.hide()
+    } catch (e) {}
   })
 
   /**
@@ -352,7 +356,9 @@ App.on('ready', () => {
       isMacOSForcedClose = true
 
       // Call the `close` event for the `views.main` but this time with forcing the close of all windows
-      views.main.close()
+      try {
+        views.main.close()
+      } catch (e) {}
     } catch (e) {}
   })
 
@@ -361,11 +367,15 @@ App.on('ready', () => {
     // Trigger after 1s of loading the main view
     setTimeout(() => {
       // Destroy the intro view/window entirely
-      introView.destroy()
+      try {
+        introView.destroy()
+      } catch (e) {}
 
       // Show the main view/window and maximize it
-      views.main.show()
-      views.main.maximize()
+      try {
+        views.main.show()
+        views.main.maximize()
+      } catch (e) {}
     }, 500)
   })
 
@@ -385,7 +395,9 @@ App.on('ready', () => {
         throw 0
 
       // On macOS, just minimize the main window when the user clicks the `X` button
-      views.main.minimize()
+      try {
+        views.main.minimize()
+      } catch (e) {}
 
       // Prevent the default behavior
       event.preventDefault()
@@ -448,7 +460,11 @@ App.on('activate', () => {
 })
 
 // Quit the app when all windows are closed
-App.on('window-all-closed', () => App.quit())
+App.on('window-all-closed', () => {
+  try {
+    App.quit()
+  } catch (e) {}
+})
 
 // Handle all requests from the renderer thread
 {
@@ -478,7 +494,7 @@ App.on('window-all-closed', () => App.quit())
     // Send a command to the pty instance
     IPCMain.on('pty:command', (_, data) => {
       try {
-        CQLSHInstances[data.id].command(data.cmd)
+        CQLSHInstances[data.id].command(data.cmd, data.blockID)
       } catch (e) {}
     })
 

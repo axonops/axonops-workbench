@@ -56,6 +56,8 @@ const FS = require('fs-extra'),
   TinyColor = require('tinycolor2'),
   // Convert a color's value from HEX to RGB
   HEXToRGB = require('hex-to-rgb'),
+  // Convert ANSI escaped text streams to html
+  ANSIToHTML = require('ansi-to-html'),
   /**
    * Search for substrings in a string by using N-API and boyer-moore-magiclen
    * It has been implemented within the function `String.prototype.search(needle)`
@@ -73,11 +75,10 @@ const FS = require('fs-extra'),
    * It has been implemented within the function `applyJSONBeautify(object, ?sort)`
    */
   SortJSON = require('sort-json'),
-  /**
-   * A typing animation library
-   * Used with the AI assistant answers
-   */
-  Typed = require('typed.js'),
+  // Convert JSON data to HTML table
+  ConvertJSONTable = require('json-table-converter').jsonToTableHtmlString,
+  // Generate interactive HTML table
+  Tabulator = require('tabulator-tables'),
   // Sanitize a string to be safe for use as a file name; by removing directory paths and invalid characters
   Sanitize = require('sanitize-filename'),
   /**
@@ -104,6 +105,8 @@ const FS = require('fs-extra'),
    * It has been implemented within the function `getMachineID()`
    */
   MachineID = require('node-machine-id').machineIdSync,
+  // A small, stand-alone script to automatically adjust HTML textarea height
+  AutoSize = require('autosize'),
   /**
    * Open package
    * Used for opening paths, apps, files, links, and so on
@@ -126,6 +129,8 @@ const FS = require('fs-extra'),
   JSONRepair = require('jsonrepair').jsonrepair,
   // The adopted HTTP client in the app
   Axios = require('axios'),
+  // Cross-browser storage for all use cases
+  Store = require('store'),
   // Node.js CMD module to execute commands
   Terminal = require('node-cmd'),
   /**

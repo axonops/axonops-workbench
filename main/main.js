@@ -68,7 +68,6 @@ global.LogsDirectory = App.getPath('logs')
 global.ExePath = App.getPath('exe')
 global.ExecParentPath = global.Path.dirname(global.ExePath)
 
-global.RendererLibsPath = Path.join(process.cwd(), 'renderer', 'js')
 global.RendererPath = Path.join(process.cwd(), 'renderer')
 
 /* figure out where the bins are installed to */
@@ -78,31 +77,33 @@ if ((global.FS.existsSync('dist/keys_generator')) || (global.FS.existsSync('dist
   global.BinFolder = './bin'
 } else if (global.FS.existsSync(Path.join(global.ExecParentPath, 'keys_generator'))) {
   global.BinFolder = global.ExecParentPath
-} else if (global.FS.existsSync('/opt/AxonOps Developer Workbench/bin/keys_generator')) {
-  global.BinFolder = '/opt/AxonOps Developer Workbench/bin'
+} else if (global.FS.existsSync('/opt/AxonOps Developer Workbench/Contents/bin/keys_generator')) {
+  global.BinFolder = '/opt/AxonOps Developer Workbench/Contents/bin'
 } else {
-  global.BinFolder = '/usr/bin'
+  global.BinFolder = Path.join(__dirname, '..', 'bin')
 }
 
 if (global.FS.existsSync('custom_node_modules/main/logging.js')) {
   global.ModulesPath = Path.join(process.cwd(), 'custom_node_modules')
+  global.RendererPath = Path.join(process.cwd(), 'renderer')
 } else if (global.FS.existsSync('/opt/AxonOps Developer Workbench/resources/custom_node_modules/main/logging.js')) {
   global.RendererPath = '/opt/AxonOps Developer Workbench/resources/renderer'
   global.ModulesPath = '/opt/AxonOps Developer Workbench/resources/custom_node_modules'
 } else if (global.FS.existsSync('Contents/Resources/custom_node_modules/main/logging.js')) {
   global.ModulesPath = 'Contents/Resources/custom_node_modules'
   global.RendererPath = 'Contents/Resources/renderer'
-} else if (global.FS.existsSync(Path.join(global.ExecParentPath, 'Contents/Resources/custom_node_modules'))) {
-  global.ModulesPath = Path.join(global.ExecParentPath, 'Contents/Resources/custom_node_modules')
 } else if (global.FS.existsSync('/Applications/AxonOps Developer Workbench.app/Contents/Resources/custom_node_modules')) {
   global.ModulesPath = '/Applications/AxonOps Developer Workbench.app/Contents/Resources/custom_node_modules'
   global.RendererPath = '/Applications/AxonOps Developer Workbench.app/Contents/Resources/renderer'
 } else if (global.FS.existsSync(`${process.env.HOME}/Applications/AxonOps Developer Workbench.app/Contents/Resources/custom_node_modules`)) {
   global.ModulesPath = `${process.env.HOME}/Applications/AxonOps Developer Workbench.app/Contents/Resources/custom_node_modules`
   global.RendererPath = `${process.env.HOME}/Applications/AxonOps Developer Workbench.app/Contents/Resources/renderer`
+} else {
+  global.ModulesPath = Path.join(__dirname, '..', 'custom_node_modules')
+  global.RendererPath = Path.join(__dirname, '..', 'renderer')
 }
 
-
+console.log(`RendererPath ${global.RendererPath}`)
 global.IPCMain.handle('get-user-data', (event) => {
   return global.UserDataDir
 })
@@ -282,7 +283,7 @@ let createWindow = (properties, viewPath, extraProperties = {}) => {
 const AppProps = {
   Paths: {
     // The app's default icon path
-    Icon: Path.join(global.RendererPath, 'assets', 'images', 'icon.ico'),
+    Icon: Path.join(global.RendererPath, 'assets', 'images', 'icon-colored.ico'),
     // The app's main view/window - HTML file - path
     MainView: Path.join(global.RendererPath, 'views', 'index.html')
   }

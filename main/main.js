@@ -181,7 +181,9 @@ try {
 
       // Import the module
       Modules[moduleName] = require(Path.join(modulesFilesPath, moduleFile))
-    } catch (e) {}
+    } catch (e) {
+      console.log(e)
+    }
   })
 } catch (e) {}
 

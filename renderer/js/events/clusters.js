@@ -3148,7 +3148,7 @@
                           setTimeout(() => IPCRenderer.send('pty:create:bash-session', {
                             id: `${clusterID}-bash-${sessionID}`,
                             projectID: `cassandra_${clusterID}`,
-                            path: Path.join(__dirname, '..', '..', 'data', 'docker', clusterID)
+                            path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'docker', clusterID)
                           }), 500)
 
                           /**
@@ -4915,7 +4915,7 @@
                   elementPath = Path.join(getWorkspaceFolderPath(getAttributes(clusterElement, 'data-workspace-id')), getAttributes(clusterElement, 'data-folder'))
                 } catch (e) {
                   // Get the sandbox project's path
-                  elementPath = Path.join(__dirname, '..', '..', 'data', 'docker', getAttributes(clusterElement, 'data-folder'))
+                  elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'docker', getAttributes(clusterElement, 'data-folder'))
                 }
 
                 // Open the final path

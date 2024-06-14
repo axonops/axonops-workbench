@@ -3,20 +3,10 @@
  *
  * Import all essential libraries and modules
  *
- * Node.js file system module - improved version which has methods that aren't included in the native `fs` module -
- * Used for working with files system, it provides related utilities
+ * Node.js OS module
+ * Used for operating system-related utilities and properties
  */
-const FS = require('fs-extra'),
-  /**
-   * Node.js OS module
-   * Used for operating system-related utilities and properties
-   */
-  OS = require('os'),
-  /**
-   * Electron renderer communication with the main thread
-   * Used for sending requests from the renderer threads to the main thread and listening to the responses
-   */
-  IPCRenderer = require('electron').ipcRenderer,
+const OS = require('os'),
   /**
    * Electron clipboard module
    * Perform copy and paste operations on the system clipboard

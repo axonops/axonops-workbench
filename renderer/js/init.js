@@ -5,17 +5,98 @@
  */
 require('v8-compile-cache')
 
-// JQuery library
-const $ = require('jquery'),
+/**
+ * Node.js file system module - improved version which has methods that aren't included in the native `fs` module -
+ * Used for working with files system, it provides related utilities
+ */
+const FS = require('fs-extra'),
+  // JQuery library
+  $ = require('jquery'),
   jQuery = $,
   /**
    * Node.js path module
    * Working with file and directory paths, and providing useful utilities
    */
-  Path = require('path')
+  Path = require('path'),
+  /**
+   * Electron renderer communication with the main thread
+   * Used for sending requests from the renderer threads to the main thread and listening to the responses
+   */
+  IPCRenderer = require('electron').ipcRenderer
+
+/**
+ * Get the set extra resources path
+ * This value will be updated from the main thread
+ */
+let extraResourcesPath = null
+
+// Get the set extra resources path from the main thread
+$(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
+  // Adopt the set path
+  extraResourcesPath = path
+
+  // Make sure resources are in the correct place
+  try {
+    if (extraResourcesPath == null)
+      throw 0
+
+    // Get the app's path
+    let appPath = Path.join(__dirname, '..', '..', '..'),
+      // Define the resources' names
+      resourcesNames = ['config', 'data', 'main', 'localization']
+
+    // Make sure the set resources' path/directory exists, and if it's not then it'll be created
+    FS.ensureDir(extraResourcesPath, (_) => {
+      /**
+       * Check if resources are in the home directory of the current user
+       *
+       * Read the set path and get all possible items
+       */
+      FS.readdir(extraResourcesPath, async (err, items) => {
+        // Flag to tell if all resources exist or not
+        let areAllResourcesExist = resourcesNames.every((name) => items.includes(name))
+
+        try {
+          // If all resources exist then skip this try-catch block
+          if (areAllResourcesExist)
+            throw 0
+
+          // Loop through the resources
+          for (let resource of resourcesNames) {
+            // Flag to tell if the current resource exists
+            let isResourceExists = items.includes(resource)
+
+            // If the current resource exists then skip it and move to the next resource
+            if (isResourceExists)
+              continue
+
+            // Attempt to copy the resource from the app's path to the set resource's path
+            try {
+              await FS.copy(Path.join(appPath, resource), Path.join(extraResourcesPath, resource), {
+                overwrite: true
+              })
+            } catch (e) {}
+          }
+        } catch (e) {} finally {
+          /**
+           * Now call the `initialization` event for `document`
+           * This event will load and initialize the entire app after getting the path of the extra resources
+           */
+          setTimeout(() => $(document).trigger('initialize'), 100)
+        }
+      })
+    })
+  } catch (e) {
+    /**
+     * Now call the `initialization` event for `document`
+     * This event will load and initialize the entire app after getting the path of the extra resources
+     */
+    setTimeout(() => $(document).trigger('initialize'), 100)
+  }
+}))
 
 // Load bootstrap JS files
-$(document).ready(() => {
+$(document).on('initialize', () => {
   /**
    * Functions file
    * It has global functions that are used throughout the app
@@ -74,7 +155,7 @@ $(document).ready(() => {
 })
 
 // Initialize the logging system
-$(document).ready(() => {
+$(document).on('initialize', () => {
   // Get the app's config
   Modules.Config.getConfig((config) => {
     // Check the status of whether or not the logging feature is enabled
@@ -96,7 +177,7 @@ $(document).ready(() => {
 })
 
 // Handle the AI Assistant initialization process
-$(document).ready(() => {
+$(document).on('initialize', () => {
   /**
    * Whether or not the AI assistant feature should be available
    * This is determined by a constant in the `Consts` module
@@ -119,7 +200,7 @@ $(document).ready(() => {
 })
 
 // Get the unique machine's ID and set it to be used across the app
-$(document).ready(async () => getMachineID().then((id) => {
+$(document).on('initialize', async () => getMachineID().then((id) => {
   machineID = id
 
   // Add the first set of logs
@@ -132,7 +213,7 @@ $(document).ready(async () => getMachineID().then((id) => {
 }))
 
 // Initialize `I18next` module
-$(document).ready(() => {
+$(document).on('initialize', () => {
   // Get the app's config
   Modules.Config.getConfig((config) => {
     try {
@@ -351,7 +432,7 @@ $(document).ready(() => {
  */
 let ReadableTime
 
-$(document).ready(() => {
+$(document).on('initialize', () => {
   // Import the module
   ReadableTime = require(Path.join(__dirname, '..', 'js', 's-ago'))
 
@@ -371,7 +452,7 @@ $(document).ready(() => {
 })
 
 // Load UI/Renderer components
-$(document).ready(() => {
+$(document).on('initialize', () => {
   /*
    * Official Material Design from Google
    * https://m2.material.io
@@ -806,7 +887,7 @@ $(document).ready(() => {
 })
 
 // Load other JS files related to UI
-$(document).ready(() => {
+$(document).on('initialize', () => {
   // Load events files in the `events` folder
   try {
     // Define the events files folder path
@@ -831,19 +912,19 @@ $(document).ready(() => {
 })
 
 // Once the UI is ready, get all workspaces
-$(document).ready(() => $(document).trigger('getWorkspaces'))
+$(document).on('initialize', () => $(document).trigger('getWorkspaces'))
 
 // Clear the temporary files and folders created by the app and its binaries
-$(document).ready(() => clearTemp())
+$(document).on('initialize', () => clearTemp())
 
 // Get the view content's ID from the main thread
-$(document).ready(() => IPCRenderer.on('view-content-id', (_, contentID) => viewContentID = contentID))
+$(document).on('initialize', () => IPCRenderer.on('view-content-id', (_, contentID) => viewContentID = contentID))
 
 // The app is terminating and there's a need to close all active work areas
-$(document).ready(() => IPCRenderer.on('app-terminating', () => closeAllWorkareas()))
+$(document).on('initialize', () => IPCRenderer.on('app-terminating', () => closeAllWorkareas()))
 
 // Make sure to hide the tooltip when its parent element has been clicked
-$(document).ready(() => {
+$(document).on('initialize', () => {
   setTimeout(() => {
     // Get all created tooltips
     let tooltips = $('[data-tippy="tooltip"]')
@@ -864,12 +945,11 @@ $(document).ready(() => {
 })
 
 // Check whether or not binaries exist
-$(document).ready(() => {
+$(document).on('initialize', () => {
   setTimeout(() => {
     try {
       // Define the path to all binaries
-      let binariesPath = Path.join(__dirname, '..', '..', 'main', 'bin')
-
+      let binariesPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'main', 'bin')
       // Check their existence
       Terminal.run(`cd "${binariesPath}" && ${OS.platform() == 'win32' ? 'dir' : 'ls'}`, (err, data, stderr) => {
         // Make sure all of them are exist
@@ -887,4 +967,4 @@ $(document).ready(() => {
 })
 
 // Once the main window/view is fully loaded send the `loaded` event to the main thread
-$(document).ready(() => setTimeout(() => IPCRenderer.send('loaded'), 1000))
+$(document).on('initialize', () => setTimeout(() => IPCRenderer.send('loaded'), 1500))

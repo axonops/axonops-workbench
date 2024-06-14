@@ -534,7 +534,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               // Clicks the folder button
               $(`div.btn[button-id="${folderBtnID}"]`).click(() => {
                 // Set the path to open based on whether or not the workspace is the docker/sandbox
-                let path = !isSandbox ? getWorkspaceFolderPath(workspaceID) : Path.join(__dirname, '..', '..', 'data', 'docker')
+                let path = !isSandbox ? getWorkspaceFolderPath(workspaceID) : Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'docker')
 
                 // Open the set path
                 Open(path)

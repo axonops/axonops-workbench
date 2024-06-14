@@ -3,20 +3,101 @@
   "title": "AxonOps Developer Workbench",
   "version": "0.1.0-1",
   "main": "main/main.js",
+  "author": {
+    "name": "AxonOps",
+    "email": "info@axonops.com"
+  },
+  "license": "Apache-2.0",
+  "description": "AxonOps Developer Workbench",
+  "productName": "AxonOps Developer Workbench",
+  "maintainers": [
+    "info@axonops.com"
+  ],
   "scripts": {
     "start": "electron .",
-    "rebuild": "npx electron-rebuild -w -f",
-    "pack:macos": "npx electron-packager ./ axonops.developer.workbench --platform=darwin --arch=x64 --overwrite --out=pack-macos",
-    "pack:macos:arm": "npx electron-packager ./ axonops.developer.workbench --platform=darwin --arch=arm64 --overwrite --out=pack-macos-arm",
-    "pack:win": "npx electron-packager ./ axonops.developer.workbench --platform=win32 --arch=x64 --overwrite --out=pack-win",
-    "pack:win:arm": "npx electron-packager ./ axonops.developer.workbench --platform=win32 --arch=arm64 --overwrite --out=pack-win-arm",
-    "pack:linux": "npx electron-packager ./ axonops.developer.workbench --platform=linux --arch=x64 --overwrite --out=pack-linux",
-    "pack:linux:arm": "npx electron-packager ./ axonops.developer.workbench --platform=linux --arch=arm64 --overwrite --out=pack-linux-arm"
+    "rebuild": "electron-rebuild -w -f",
+    "win": "electron-builder --win --publish onTag",
+    "tar": "electron-builder --linux tar.gz --publish onTag",
+    "deb": "electron-builder --linux deb --publish onTag",
+    "rpm": "electron-builder --linux rpm --publish onTag",
+    "snap": "electron-builder --linux snap --publish onTag",
+    "mac": "electron-builder --mac dmg --publish onTag"
+  },
+  "build": {
+    "icon": "./renderer/assets/images/icon-colored-256.png",
+    "copyright": "AxonOps 2024",
+    "appId": "com.axonops.workbench",
+    "extraFiles": [{
+        "from": "dist/cqlsh-407",
+        "to": "./bin/cqlsh-407",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "dist/cqlsh-410",
+        "to": "./bin/cqlsh-410",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "dist/keys_generator",
+        "to": "./bin/keys_generator",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "extraResources": [
+      "main/bin",
+      "data",
+      "config",
+      "localization"
+    ],
+    "publish": [{
+      "provider": "github"
+    }],
+    "linux": {
+      "icon": "./renderer/assets/images/icon-colored-256.png",
+      "category": "Development",
+      "desktop": "AxonOps Developer Workbench",
+      "description": "AxonOps Developer Workbench"
+    },
+    "mac": {
+      "icon": "./renderer/assets/images/icon-colored.icns",
+      "category": "public.app-category.developer-tools",
+      "extendInfo": {
+        "ElectronTeamID": "UJ776LUP23"
+      },
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "./resources/entitlements.mac.plist",
+      "entitlementsInherit": "./resources/entitlements.mac.plist",
+      "notarize": {
+        "teamId": "UJ776LUP23"
+      },
+      "binaries": [
+        "Contents/bin/cqlsh-407",
+        "Contents/bin/cqlsh-410",
+        "Contents/bin/keys_generator"
+      ],
+      "identity": "AXONOPS Limited (UJ776LUP23)"
+    },
+    "deb": {
+      "depends": [
+        "libnss3",
+        "libsecret-1-0"
+      ]
+    },
+    "dmg": {
+      "sign": false
+    }
   },
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {
     "electron": "^22.0.0",
-    "electron-packager": "^17.1.1",
+    "electron-builder": "24.12.0",
     "electron-rebuild": "^3.2.9"
   },
   "dependencies": {
@@ -32,6 +113,7 @@
     "diff": "^5.1.0",
     "electron-context-menu": "^3.6.1",
     "electron-positioner": "^4.1.0",
+    "electron-installer-debian": "^3.2.0",
     "escape-html": "^1.0.3",
     "escape-quotes": "^1.0.2",
     "extract-string": "^1.0.2",

@@ -78,6 +78,16 @@ const ContextMenu = require('electron-context-menu'),
   Positioner = require('electron-positioner')
 
 /**
+ * Whether or not `app.asar` has been found in the app's path
+ * Based on that the app can determine where are the important files and folders are - like `config`, `data` and so on.. -
+ * The same process is in the renderer thread as well
+ */
+const IsAsarFound = __dirname.includes('app.asar')
+
+// Based on the `asar` checking process the extra resources path would be changed
+global.extraResourcesPath = IsAsarFound ? Path.join(App.getPath('home'), '.axonops-developer-workbench') : null
+
+/**
  * Import the custom node modules for the main thread
  *
  * Define the `Modules` constant that will contain all the custom modules
@@ -150,10 +160,11 @@ let CQLSHInstances = [],
  * {string} `viewPath` the path of the HTML file - which will be loaded as a renderer thread
  * {object} `?extraProperties` the extra properties of the window
  * Possible extra properties are: [`center`, `maximize`, `show`, `openDevTools`]
+ * {object} `?callback` callback function which triggered when the thread has been loaded
  *
  * @Return: {object} the created window's object
  */
-let createWindow = (properties, viewPath, extraProperties = {}) => {
+let createWindow = (properties, viewPath, extraProperties = {}, callback = null) => {
   let windowObject = null // Window object which be returned
 
   // Create a window with the given properties
@@ -200,6 +211,12 @@ let createWindow = (properties, viewPath, extraProperties = {}) => {
     // Send the window's content's ID
     try {
       windowObject.webContents.send(`view-content-id`, windowObject.webContents.id)
+    } catch (e) {}
+
+    // Attempt to call the callback function
+    try {
+      if (callback != null)
+        callback()
     } catch (e) {}
   })
 
@@ -272,7 +289,12 @@ try {
 // When the app is ready a renderer thread should be created and started
 App.on('ready', () => {
   // Create the main view, and pass the properties
-  views.main = createWindow(properties, AppProps.Paths.MainView, extraProperties)
+  views.main = createWindow(properties, AppProps.Paths.MainView, extraProperties, () => {
+    // Send the set extra resources path to the main renderer thread
+    try {
+      views.main.webContents.send(`extra-resources-path`, extraResourcesPath)
+    } catch (e) {}
+  })
 
   // Create the background processes' view/window and make it hidden; as there's no need for a window or GUI for it
   views.backgroundProcesses = createWindow(properties, Path.join(AppProps.Paths.MainView, '..', 'background.html'), {
@@ -370,6 +392,20 @@ App.on('ready', () => {
       } catch (e) {}
     }, 500)
   })
+
+  // Trigger after 1s of loading the main view
+  setTimeout(() => {
+    // Destroy the intro view/window entirely
+    try {
+      introView.destroy()
+    } catch (e) {}
+
+    // Show the main view/window and maximize it
+    try {
+      views.main.show()
+      views.main.maximize()
+    } catch (e) {}
+  }, 5000)
 
   // Set the menu bar to `null`; so it won't be created
   Menu.setApplicationMenu(null)
@@ -680,7 +716,7 @@ App.on('window-all-closed', () => {
   // Request to get the public key from the keys generator tool
   IPCMain.on('public-key:get', (_, id) => {
     // Define the bin folder path
-    let binFolder = Path.join(__dirname, 'bin')
+    let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
 
     // Make sure the tool is executable on Linux and macOS
     if (process.platform !== 'win32')

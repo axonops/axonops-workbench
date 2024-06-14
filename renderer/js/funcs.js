@@ -2504,7 +2504,7 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
     // Define variables files' path
     variablesFilePath = {
       // Path of the manifest file in the app's root folder
-      manifest: Path.join(__dirname, '..', '..', 'config', 'variables.json'),
+      manifest: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'config', 'variables.json'),
       // Path of the values of the actual variables stored in the os config/appdata folder
       values: AppData('cassandra_workbench.variables')
     }
@@ -2835,7 +2835,7 @@ let getWorkspaceName = (workspaceID) => getAttributes($(`div.workspace[data-id="
 let getWorkspaceFolderPath = (workspaceID, replaceDefault = true) => {
   try {
     // Define the default path
-    let defaultPath = Path.join(__dirname, '..', '..', 'data', 'workspaces'),
+    let defaultPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces'),
       // Point at the workspace element in the UI
       workspaceElement = $(`div.workspace[data-id="${workspaceID}"]`),
       // Get its folder name and its path

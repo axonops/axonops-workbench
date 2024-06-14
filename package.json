@@ -15,7 +15,7 @@
   ],
   "build": {
     "icon": "./renderer/assets/images/icon-colored-256.png",
-    "copyright": "AxonOps 2024",
+    "copyright": "AxonOps Limited 2024",
     "appId": "com.axonops.workbench",
     "extraFiles": [
       {
@@ -95,7 +95,8 @@
     "deb": "electron-builder --linux deb --publish onTag",
     "rpm": "electron-builder --linux rpm --publish onTag",
     "snap": "electron-builder --linux snap --publish onTag",
-    "mac": "electron-builder --mac dmg --publish onTag"
+    "mac": "electron-builder --mac dmg --publish onTag",
+    "mac:zip": "electron-builder --mac zip --publish onTag"
   },
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {

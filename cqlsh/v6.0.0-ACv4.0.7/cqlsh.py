@@ -26,7 +26,7 @@ original_exit = sys.exit
 def custom_exit(*args, **kwargs):
     # If it's a test process then make sure to print the keyword for the app
     if '--test' in sys.argv:
-        print("TEST-COMPLETED")
+        print("KEYWORD:TEST-COMPLETED")
     
     # Call the original sys.exit
     original_exit(*args, **kwargs)
@@ -535,7 +535,7 @@ class Shell(cmd.Cmd):
             global start_printed
             if start_printed is False:
                 start_printed = True
-                print("CQLSH-STARTED")
+                print("KEYWORD:CQLSH-STARTED")
         else:
             self.show_line_nums = True
         self.stdin = stdin
@@ -617,7 +617,7 @@ class Shell(cmd.Cmd):
             info.setdefault("datacenters", datacenters)
 
             print(info)
-            print("TEST-COMPLETED")
+            print("KEYWORD:TEST-COMPLETED")
             self.conn.shutdown()
             self.do_exit()
             sys.exit()
@@ -833,6 +833,7 @@ class Shell(cmd.Cmd):
         self.statement.truncate(0)
         self.statement.seek(0)
         self.empty_lines = 0
+        print("KEYWORD:OUTPUT-FINISHED")
 
     def reset_prompt(self):
         if self.current_keyspace is None:
@@ -943,7 +944,7 @@ class Shell(cmd.Cmd):
                         metadata_id = re.findall(r'\((.+)\)', line)
                         if len(metadata_id) <= 0:
                             print(axonOpsDeveloperWorkbench.printMetadata(self.session))
-                            print("PROCESS-COMPLETED")
+                            print("KEYWORD:PROCESS-COMPLETED")
                         else:
                             metadata_id = metadata_id[0]
                             printProcess = threading.Thread(target=axonOpsDeveloperWorkbench.printMetadataBackground, args=(metadata_id, self.session))
@@ -2084,6 +2085,7 @@ class Shell(cmd.Cmd):
         if shownum:
             text = '%s:%d:%s' % (self.stdin.name, self.lineno, text)
         self.writeresult(text, color, newline=newline, out=sys.stderr)
+        print("KEYWORD:ERROR")
 
     def stop_coverage(self):
         if self.coverage and self.cov is not None:
@@ -2465,15 +2467,15 @@ def main(options, hostname, port):
                       encoding=options.encoding)
     except KeyboardInterrupt:
         if hasattr(options, "test"):
-            print("TEST-COMPLETED")
+            print("KEYWORD:TEST-COMPLETED")
         sys.exit('Connection aborted.')
     except CQL_ERRORS as e:
         if hasattr(options, "test"):
-            print("TEST-COMPLETED")
+            print("KEYWORD:TEST-COMPLETED")
         sys.exit('Connection error: %s' % (e,))
     except VersionNotSupported as e:
         if hasattr(options, "test"):
-            print("TEST-COMPLETED")
+            print("KEYWORD:TEST-COMPLETED")
         sys.exit('Unsupported CQL version: %s' % (e,))
     if options.debug:
         shell.debug = True

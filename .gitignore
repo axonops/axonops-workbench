@@ -11,3 +11,11 @@ data/workspaces/*
 
 main/bin/*
 !main/bin/temp.txt
+
+*/.idea/*
+*/venv/*
+*/build/*
+*/dist/*
+*/*.spec
+*/*.pyc
+**/__pycache__

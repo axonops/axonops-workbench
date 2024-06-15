@@ -6,6 +6,7 @@ test*/*
 docker/*
 
 data/workspaces/*
+data
 !data/workspaces/workspaces.json
 
 data/docker/*

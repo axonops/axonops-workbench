@@ -17,6 +17,7 @@
     "icon": "./renderer/assets/images/icon-colored.png",
     "copyright": "AxonOps Limited 2024",
     "appId": "com.axonops.workbench",
+    "compression": "maximum",
     "extraFiles": [{
         "from": "dist/cqlsh-407",
         "to": "./bin/cqlsh-407",
@@ -53,7 +54,7 @@
       "description": "AxonOps Developer Workbench"
     },
     "mac": {
-      "icon": "./renderer/assets/images/icon-colored.png",
+      "icon": "./renderer/assets/images/icon-colored.icns",
       "category": "public.app-category.developer-tools",
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"

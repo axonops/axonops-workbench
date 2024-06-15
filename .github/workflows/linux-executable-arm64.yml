@@ -1,11 +1,11 @@
-name: "Linux: Build and Pack"
+name: "Linux: Build and Pack (ARM64)"
 
 on:
   workflow_dispatch:
 
 jobs:
   Linux:
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, linux, ARM64]
 
     steps:
       - name: Extract branch name
@@ -68,23 +68,23 @@ jobs:
       - name: Upload Debian packages
         uses: actions/upload-artifact@v4
         with:
-          name: AxonOps-Developer-Workbench-Linux-amd64.deb
+          name: AxonOps-Developer-Workbench-Linux-arm64.deb
           path: dist/axonops-developer-workbench*.deb
 
       - name: Upload RedHat packages
         uses: actions/upload-artifact@v4
         with:
-          name: AxonOps-Developer-Workbench-Linux-amd64.rpm
+          name: AxonOps-Developer-Workbench-Linux-arm64.rpm
           path: dist/axonops-developer-workbench*.rpm
 
       - name: Upload Snap packages
         uses: actions/upload-artifact@v4
         with:
-          name: AxonOps-Developer-Workbench-Linux-amd64.snap
+          name: AxonOps-Developer-Workbench-Linux-arm64.snap
           path: dist/axonops-developer-workbench*.snap
 
       - name: Upload Tar packages
         uses: actions/upload-artifact@v4
         with:
-          name: AxonOps-Developer-Workbench-Linux-amd64.tar.gz
+          name: AxonOps-Developer-Workbench-Linux-arm64.tar.gz
           path: dist/axonops-developer-workbench*.tar.gz

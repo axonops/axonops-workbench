@@ -14,7 +14,7 @@
     "info@axonops.com"
   ],
   "build": {
-    "icon": "./renderer/assets/images/icon-colored-256.png",
+    "icon": "./renderer/assets/images/icon-colored.png",
     "copyright": "AxonOps Limited 2024",
     "appId": "com.axonops.workbench",
     "extraFiles": [{
@@ -40,8 +40,6 @@
       }
     ],
     "extraResources": [
-      "config",
-      "data",
       "main/bin",
       "localization"
     ],
@@ -49,13 +47,13 @@
       "provider": "github"
     }],
     "linux": {
-      "icon": "./renderer/assets/images/icon-colored-256.png",
+      "icon": "./renderer/assets/images/icon-colored.png",
       "category": "Development",
       "desktop": "AxonOps Developer Workbench",
       "description": "AxonOps Developer Workbench"
     },
     "mac": {
-      "icon": "./renderer/assets/images/icon-colored.icns",
+      "icon": "./renderer/assets/images/icon-colored.png",
       "category": "public.app-category.developer-tools",
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"
@@ -87,7 +85,6 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron --trace-warnings --inspect .",
-    "rebuild": "electron-rebuild -w -f",
     "win": "electron-builder --win --publish onTag",
     "tar": "electron-builder --linux tar.gz --publish onTag",
     "deb": "electron-builder --linux deb --publish onTag",
@@ -99,8 +96,7 @@
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {
     "electron": "^30.0.9",
-    "electron-builder": "24.12.0",
-    "electron-rebuild": "^3.2.9"
+    "electron-builder": "24.12.0"
   },
   "dependencies": {
     "@ramumb/strip-tags": "^0.1.3",

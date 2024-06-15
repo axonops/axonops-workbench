@@ -40,9 +40,10 @@
       }
     ],
     "extraResources": [
-      "custom_node_modules",
-      "renderer",
-      "config"
+      "config",
+      "data",
+      "main/bin",
+      "localization"
     ],
     "publish": [{
       "provider": "github"

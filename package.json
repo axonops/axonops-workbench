@@ -17,8 +17,7 @@
     "icon": "./renderer/assets/images/icon-colored-256.png",
     "copyright": "AxonOps Limited 2024",
     "appId": "com.axonops.workbench",
-    "extraFiles": [
-      {
+    "extraFiles": [{
         "from": "dist/cqlsh-407",
         "to": "./bin/cqlsh-407",
         "filter": [
@@ -45,11 +44,9 @@
       "renderer",
       "config"
     ],
-    "publish": [
-      {
-        "provider": "github"
-      }
-    ],
+    "publish": [{
+      "provider": "github"
+    }],
     "linux": {
       "icon": "./renderer/assets/images/icon-colored-256.png",
       "category": "Development",

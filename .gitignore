@@ -3,11 +3,13 @@ package-lock.json
 renderer/styles/*.css.map
 dev/*
 test*/*
-data/*
 docker/*
 
 data/workspaces/*
 !data/workspaces/workspaces.json
+
+data/docker/*
+!data/docker/docker.json
 
 main/bin/*
 !main/bin/temp.txt

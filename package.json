@@ -18,28 +18,6 @@
     "copyright": "AxonOps Limited 2024",
     "appId": "com.axonops.workbench",
     "compression": "maximum",
-    "extraFiles": [{
-        "from": "dist/cqlsh-407",
-        "to": "./bin/cqlsh-407",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "dist/cqlsh-410",
-        "to": "./bin/cqlsh-410",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "dist/keys_generator",
-        "to": "./bin/keys_generator",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
     "extraResources": [
       "main/bin",
       "data",
@@ -68,11 +46,6 @@
       "notarize": {
         "teamId": "UJ776LUP23"
       },
-      "binaries": [
-        "Contents/bin/cqlsh-407",
-        "Contents/bin/cqlsh-410",
-        "Contents/bin/keys_generator"
-      ],
       "identity": "AXONOPS Limited (UJ776LUP23)"
     },
     "deb": {

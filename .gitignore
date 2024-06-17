@@ -5,19 +5,13 @@ dev/*
 test*/*
 docker/*
 
-data/workspaces/*
-!data/workspaces/workspaces.json
-
-data/docker/*
-!data/docker/docker.json
-
 main/bin/*
 !main/bin/temp.txt
 
 */.idea/*
 */venv/*
 */build/*
-*/dist/*
+**/dist/*
 */*.spec
 */*.pyc
 **/__pycache__

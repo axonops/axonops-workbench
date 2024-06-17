@@ -48,6 +48,7 @@
       "provider": "github"
     }],
     "linux": {
+      "icon": "./renderer/assets/images/icon-colored.icns",
       "category": "Development",
       "desktop": "AxonOps Developer Workbench",
       "description": "AxonOps Developer Workbench"

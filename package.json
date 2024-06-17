@@ -42,6 +42,8 @@
     ],
     "extraResources": [
       "main/bin",
+      "data",
+      "config",
       "localization"
     ],
     "publish": [{

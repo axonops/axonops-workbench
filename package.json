@@ -85,6 +85,7 @@
   },
   "scripts": {
     "start": "electron .",
+    "rebuild": "electron-rebuild -w -f",
     "dev": "electron --trace-warnings --inspect .",
     "win": "electron-builder --win --publish onTag",
     "tar": "electron-builder --linux tar.gz --publish onTag",
@@ -97,6 +98,7 @@
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {
     "electron": "^30.0.9",
+    "electron-rebuild": "^3.2.9",
     "electron-builder": "24.12.0"
   },
   "dependencies": {

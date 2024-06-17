@@ -8,10 +8,10 @@ docker/*
 main/bin/*
 !main/bin/temp.txt
 
-*/.idea/*
-*/venv/*
-*/build/*
+**/.idea/*
+**/venv/*
+**/build/*
 **/dist/*
-*/*.spec
+**/*.spec
 */*.pyc
 **/__pycache__

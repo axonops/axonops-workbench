@@ -18,28 +18,6 @@
     "copyright": "AxonOps Limited 2024",
     "appId": "com.axonops.workbench",
     "compression": "maximum",
-    "extraFiles": [{
-        "from": "cqlsh/v6.0.0-ACv4.0.7/dist/cqlsh-407",
-        "to": "./main/bin/cqlsh-407",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "cqlsh/v6.1.0-ACv4.1.0/dist/cqlsh-410",
-        "to": "./main/bin/cqlsh-410",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "keys_generator/dist/keys_generator",
-        "to": "./main/bin/keys_generator",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
     "extraResources": [
       "main/bin",
       "data",

@@ -74,7 +74,6 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
    * Get the app's config
    */
   Config.getConfig(async (config) => {
-    console.log(config.get('security', 'loggingEnabled'));
     // Check the status of either enabling or disabling the logging feature
     isLoggingEnabled = config.get('security', 'loggingEnabled') || isLoggingEnabled
 
@@ -156,7 +155,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
               // Loop through the `authentication` JSON object
               Object.keys(authentication).forEach((key) => {
-                if (`${authentication[key]}` == 'undefined')
+                if (`${authentication[key]}` == 'undefined' || minifyText(`${authentication[key]}`).length <= 0)
                   delete authentication[key]
               })
             } catch (e) {

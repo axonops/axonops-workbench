@@ -5,6 +5,9 @@ dev/*
 test*/*
 docker/*
 
+data/**
+!data/**/*.json
+
 main/bin/*
 !main/bin/temp.txt
 

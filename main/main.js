@@ -294,6 +294,11 @@ App.on('ready', () => {
     try {
       views.main.webContents.send(`extra-resources-path`, extraResourcesPath)
     } catch (e) {}
+
+    // Send the set extra resources path to the background processes renderer thread
+    try {
+      views.backgroundProcesses.webContents.send(`extra-resources-path`, extraResourcesPath)
+    } catch (e) {}
   })
 
   // Create the background processes' view/window and make it hidden; as there's no need for a window or GUI for it

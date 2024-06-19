@@ -3012,7 +3012,7 @@
                           realtimeSuggestion.text('')
 
                           // Update the textarea's content and focus
-                          $(this).val(statement).focus()
+                          $(this).val(statement).trigger('input').focus()
 
                           // Update the size of the textarea
                           AutoSize.update($(this)[0])
@@ -4330,7 +4330,10 @@
                                 statement = savedHistoryItems[statementIndex]
 
                               // Set the statement
-                              statementInputField.val(statement)
+                              statementInputField.val(statement).trigger('input').focus()
+
+                              // Update the size of the textarea
+                              AutoSize.update(statementInputField[0])
 
                               // Update the MDB object
                               try {

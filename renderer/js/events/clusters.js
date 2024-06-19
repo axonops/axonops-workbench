@@ -77,12 +77,19 @@
            */
           testConnectionProcessID,
           /**
+           * Define the variable which holds the latest generated ID for the SSH tunnel creation process
+           * The value will be updated with every test connection process
+           */
+          sshTunnelCreationRequestID,
+          /**
            * The AxonOps sectin ID
            * It's defined here as it's being used in different parts of the event
            */
           axonopsContentID = getRandomID(15),
           // Flag to tell if this cluster is going to be added/appended to the UI as a new element or if it already exists, by default it's `true`
-          isAppendAllowed = true
+          isAppendAllowed = true,
+          // Flag to tell if an SSH tunnel is needed before connecting with Cassandra cluster/node
+          isSSHTunnelNeeded = false
 
         /**
          * Look for the cluster in the UI
@@ -291,6 +298,12 @@
                 // Get a random ID for this connection test process
                 testConnectionProcessID = getRandomID(30)
 
+                // Get a random ID for the SSH tunnel creation process
+                sshTunnelCreationRequestID = getRandomID(30)
+
+                // Set the flag's value
+                isSSHTunnelNeeded = clusterElement.getAllAttributes('data-ssh')
+
                 // Add log for this request
                 addLog(`Request to test connection with the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
 
@@ -401,8 +414,10 @@
                 // Disable the button
                 $(this).attr('disabled', 'disabled')
 
+
+
                 // Test the connection with the cluster; by calling the inner test connection function at the very end of this code block
-                testConnection(clusterElement, testConnectionProcessID)
+                testConnection(clusterElement, testConnectionProcessID, sshTunnelCreationRequestID)
               })
 
               /**
@@ -782,6 +797,12 @@
                                 </div>
                                 <div class="container-footer">
                                   <div class="top">
+                                    <div class="history-items"></div>
+                                    <div class="history">
+                                      <button class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
+                                        <ion-icon name="history"></ion-icon>
+                                      </button>
+                                    </div>
                                     <div class="textarea">
                                       <div class="form-outline form-white margin-bottom">
                                         <div class="suggestion"></div>
@@ -2726,6 +2747,9 @@
                             // Remove any duplication
                             Store.set(clusterID, [...new Set(history)])
 
+                            // Enable the history button
+                            workareaElement.find('div.history').find('button.btn').attr('disabled', null)
+
                             // Reset the history current index
                             lastData.history = -1
                           }
@@ -4246,6 +4270,134 @@
                         setTimeout(() => checkConnectivity(), 30000)
                       })
                     }
+
+                    // Handle the history feature
+                    {
+                      // Point at the history items' container
+                      let historyItemsContainer = $(this).find('div.history-items'),
+                        // Point at the history show button
+                        historyBtn = $(this).find('div.history').find('button.btn'),
+                        // Get the current saved items
+                        savedHistoryItems = Store.get(clusterID) || []
+
+                      // Determine to disable/enable the history button based on the number of saved items
+                      historyBtn.attr('disabled', savedHistoryItems.length > 0 ? null : 'disabled')
+
+                      // Clicks the history button
+                      historyBtn.click(function() {
+                        // Remove all rendered items
+                        historyItemsContainer.html('')
+
+                        // Get the saved history items
+                        savedHistoryItems = Store.get(clusterID) || []
+
+                        // Reverse the array; to make the last saved item the first one in the list
+                        savedHistoryItems.reverse()
+
+                        // Define index to be set for each history item
+                        let index = 0
+
+                        // Loop through each saved history item
+                        for (let historyItem of savedHistoryItems) {
+                          // Decrement the index
+                          index += 1
+
+                          // The history item structure UI
+                          let element = `
+                              <div class="history-item" data-index="${index}">
+                                <div class="index">${index < 10 ? '0' : ''}${index}</div>
+                                <div class="inner-content">
+                                  <pre>${historyItem}</pre>
+                                </div>
+                                <div class="click-area"></div>
+                                <div class="action-delete">
+                                  <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                    <ion-icon name="trash"></ion-icon>
+                                  </span>
+                                </div>
+                              </div>`
+
+                          // Append the history item
+                          historyItemsContainer.append($(element).show(function() {
+                            // Point at the statement input field
+                            let statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`)
+
+                            // Clicks the item to be typed in the input field
+                            $(this).find('div.click-area').click(function() {
+                              // Get the index of the saved item in the array
+                              let statementIndex = parseInt($(this).parent().attr('data-index')) - 1,
+                                // Get the statement's content
+                                statement = savedHistoryItems[statementIndex]
+
+                              // Set the statement
+                              statementInputField.val(statement)
+
+                              // Update the MDB object
+                              try {
+                                getElementMDBObject(statementInputField).update()
+                              } catch (e) {}
+
+                              // Click the backdrop element to close the history items' container
+                              $(`div.backdrop:last`).click()
+                            })
+
+                            // Delete a history item
+                            $(this).find('span.btn').click(function() {
+                              // Get the index of the saved item in the array
+                              let statementIndex = parseInt($(this).parent().parent().attr('data-index')) - 1
+
+                              // Remove the history item from the array
+                              savedHistoryItems.splice(statementIndex, 1)
+
+                              // Reverse the array before save it
+                              savedHistoryItems.reverse()
+
+                              // Set the manipulated array
+                              Store.set(clusterID, [...new Set(savedHistoryItems)])
+
+                              try {
+                                if (savedHistoryItems.length > 0)
+                                  throw 0
+
+                                // Click the backdrop element to close the history items' container
+                                $(`div.backdrop:last`).click()
+
+                                // Disable the history button
+                                historyBtn.attr('disabled', 'disabled')
+
+                                // Skip the upcoming code
+                                return
+                              } catch (e) {}
+
+                              // Click the history button to update the items' list
+                              historyBtn.click()
+                            })
+                          }))
+                        }
+
+                        // Show the history items' container
+                        historyItemsContainer.addClass('show')
+
+                        // If a backdrop element already rendered then skip the upcoming code
+                        if ($('body').find('div.backdrop').length > 0)
+                          return
+
+                        // Add a backdrop element
+                        $('body').append($(`<div class="backdrop"></div>`).show(function() {
+                          // Show it with animation
+                          setTimeout(() => $(this).addClass('show'), 50)
+
+                          // Once it's clicked
+                          $(this).click(function() {
+                            // Remove it
+                            $(this).remove()
+
+                            // Hide the history items' container
+                            historyItemsContainer.removeClass('show')
+                          })
+                        }))
+                      })
+                    }
                   }))
                 })
               })
@@ -4969,9 +5121,27 @@
                   return
                 } catch (e) {}
 
+                try {
+                  if (!isSSHTunnelNeeded)
+                    throw 0
+
+                  // Attempt to close the SSH tunnel if it has already been created
+                  try {
+                    IPCRenderer.send('ssh-tunnel:close', clusterID)
+                  } catch (e) {}
+
+                  // Send a request to terminate the SSH tunnel creation process
+                  IPCRenderer.send(`ssh-tunnel:terminate`, sshTunnelCreationRequestID)
+
+                  // Show success feedback to the user
+                  showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData('the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), 'success')
+                } catch (e) {}
 
                 // Send request to the main thread to terminate the current ongoing connection test process
                 IPCRenderer.send(`process:terminate:${testConnectionProcessID}`)
+
+                // Make sure to remove all previous listeners to prevent duplication
+                IPCRenderer.removeAllListeners(`process:terminate:${testConnectionProcessID}:result`)
 
                 // Once the termination status is received
                 IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), status ? 'success' : 'failure'))
@@ -5171,8 +5341,9 @@
      * @Parameters:
      * {object} `clusterElement` the cluster's UI element in the workspace clusters' list
      * {string} `?testConnectionProcessID` the ID of the connection test process of the cluster
+     * {string} `?sshTunnelCreationRequestID` the ID of the SSH tunnel creation process - if needed -
      */
-    let testConnection = async (clusterElement, testConnectionProcessID = '') => {
+    let testConnection = async (clusterElement, testConnectionProcessID = '', sshTunnelCreationRequestID = '') => {
       // Point at the Apache Cassandra's version UI element
       let cassandraVersion = clusterElement.find('div[info="cassandra"]'),
         // Point at the data center element
@@ -5562,7 +5733,7 @@
               setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts with cluster [b]$data[/b] have been successfully executed', [I18next.t('pre'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
 
               // Start the connection test process
-              startTestConnection(sshCreation, testConnectionProcessID)
+              startTestConnection(sshCreation)
 
               // Skip the upcoming code
               return
@@ -5591,19 +5762,19 @@
         } catch (e) {}
 
         // If there's no pre-connection script to execute then call the test connection function immediately
-        startTestConnection(sshCreation, testConnectionProcessID)
+        startTestConnection(sshCreation)
       }
 
       // Inner function that do the changes in cluster element when an error occurs
-      let errorVisualFeedback = () => {
+      let errorVisualFeedback = (isProcessTerminated = false) => {
         // Remove the test connection class
         clusterElement.removeClass('test-connection enable-terminate-process')
 
         // Hide the termination process' button after a set time out
         setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
-        // Add a failure class
-        statusElement.addClass('show failure')
+        // Show failure feedback if the process hasn't been terminated
+        statusElement.removeClass('success')[isProcessTerminated ? 'removeClass' : 'addClass']('show failure')
 
         // Enable the `CONNECT` button
         testConnectionBtn.removeAttr('disabled')
@@ -5724,6 +5895,12 @@
             // Define the cluster's ID in the SSH tunneling info object
             sshTunnelingInfo.clusterID = getAttributes(clusterElement, 'data-id')
 
+            // Add the passed requestID
+            sshTunnelingInfo = {
+              ...sshTunnelingInfo,
+              requestID: sshTunnelCreationRequestID
+            }
+
             // Create an SSH tunnel based on the final `sshTunnelingInfo` object
             createSSHTunnel(sshTunnelingInfo, (creationResult) => {
               // If there's no error then call the `afterSSHTunnelingCheck` function
@@ -5740,10 +5917,11 @@
                *
                * Show feedback to the user
                */
-              showToast(I18next.capitalize(I18next.t('test connection with cluster')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to establish an SSH tunnel for cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')]))}</b>. ${creationResult.error}.`, 'failure')
+              if (!creationResult.terminated)
+                showToast(I18next.capitalize(I18next.t('test connection with cluster')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to establish an SSH tunnel for cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')]))}</b>. ${creationResult.error}.`, 'failure')
 
               // Call the error's visual feedback function
-              errorVisualFeedback()
+              errorVisualFeedback(creationResult.terminated)
 
               // End the testing process
               return
@@ -6102,7 +6280,11 @@
              * Define an initial ID for the connection test process of the to be added/updated cluster
              * The value will be updated with every test connection process
              */
-            let testConnectionProcessID
+            let testConnectionProcessID,
+              // Define an initial ID for the SSH tunnel creation process as well
+              sshTunnelCreationRequestID,
+              // Flag to tell if an SSH tunnel is needed before connecting with Cassandra cluster/node
+              isSSHTunnelNeeded = false
 
             // Clicks the `TEST CONNECTION` button to do a connection test with the cluster before saving/updating it
             $('#testConnectionCluster').click(async function() {
@@ -6129,6 +6311,9 @@
 
               // Get a random ID for this connection test process
               testConnectionProcessID = getRandomID(30)
+
+              // Get a random ID for the SSH tunnel creation process
+              sshTunnelCreationRequestID = getRandomID(30)
 
               // Add log about this request
               addLog(`Request to test connection with cluster that could be added/updated`, 'action')
@@ -6230,6 +6415,9 @@
 
                 // If both username and (password or private key) have been provided then an SSH tunnel should be created
                 sshTunnel = ssh.username.trim().length != 0 && ([ssh.password, ssh.privateKey].some((secret) => secret.trim().length != 0))
+
+                // Set the flag's value
+                isSSHTunnelNeeded = sshTunnel
               } catch (e) {}
 
               // The dialog is testing the connection with the cluster
@@ -6566,6 +6754,12 @@
                   ssh.dstPort = $('[info-section="none"][info-key="ssh-dest-port"]').val() || cqlshContent.connection.port
                   ssh.clusterID = tempClusterID
 
+                  // Add the generated requestID
+                  ssh = {
+                    ...ssh,
+                    requestID: sshTunnelCreationRequestID
+                  }
+
                   // Create an SSH tunnel
                   createSSHTunnel(ssh, (creationResult) => {
                     // If no error has occurred then perform the after SSH tunnel creation processes, and skip the upcoming code
@@ -6595,7 +6789,8 @@
                     button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
                     // Show feedback to the user
-                    showToast(I18next.capitalize(I18next.t('test connection with cluster')), `${I18next.capitalizeFirstLetter(I18next.t('failed to establish an SSH tunnel for the cluster'))}. ${creationResult.error}.`, 'failure')
+                    if (!creationResult.terminated)
+                      showToast(I18next.capitalize(I18next.t('test connection with cluster')), `${I18next.capitalizeFirstLetter(I18next.t('failed to establish an SSH tunnel for the cluster'))}. ${creationResult.error}.`, 'failure')
                   })
                 })
               }
@@ -6671,6 +6866,22 @@
 
             // Clicks the process termination button
             $('#terminateConnectionTestProcess').click(() => {
+              try {
+                if (!isSSHTunnelNeeded)
+                  throw 0
+
+                // Attempt to close the SSH tunnel if it has already been created
+                try {
+                  IPCRenderer.send('ssh-tunnel:close', tempClusterID)
+                } catch (e) {}
+
+                // Send a request to terminate the SSH tunnel creation process
+                IPCRenderer.send(`ssh-tunnel:terminate`, sshTunnelCreationRequestID)
+
+                // Show success feedback to the user
+                showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData('the connection test with the cluster to be added/edited in workspace [b]$data[/b] has been terminated with success', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), 'success')
+              } catch (e) {}
+
               // Send request to the main thread to terminate the current ongoing connection test process
               IPCRenderer.send(`process:terminate:${testConnectionProcessID}`)
 
@@ -6802,6 +7013,9 @@
                  * Show feedback to the user
                  */
                 showToast(I18next.capitalize(I18next.t('add cluster')), `${I18next.capitalizeFirstLetter(I18next.t(editingMode ? 'the cluster has been updated successfully' : 'the new cluster has been saved successfully'))}.`, 'success')
+
+                // Click the close button
+                $(`${dialog}-right`).parent().parent().find('button.btn-close').click()
 
                 try {
                   // If the current mode is not `edit` then skip this try-catch block

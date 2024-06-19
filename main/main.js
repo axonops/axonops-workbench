@@ -665,6 +665,18 @@ App.on('window-all-closed', () => {
         // Send the request to the background processes' renderer thread
         views.backgroundProcesses.webContents.send('ssh-tunnel:update', data)
       })
+
+      // Terminate an SSH tunnel creation process
+      IPCMain.on(`ssh-tunnel:terminate`, (_, requestID) => {
+        // Send the request to the background processes' renderer thread
+        views.main.webContents.send(`ssh-tunnel:create:result:${requestID}`, {
+          object: null,
+          port: 0,
+          error: 'Creation process has been terminated',
+          terminated: true,
+          requestID
+        })
+      })
     }
 
     // Detect differentiation between two texts

@@ -2666,8 +2666,128 @@ div.tab-content {
             align-items: flex-start;
             justify-content: flex-start;
 
+            div.history-items {
+              background: #262626;
+              position: absolute;
+              bottom: 110px;
+              background-color: #262626;
+              border: 0;
+              outline: 0;
+              font-family: 'Terminal', monospace;
+              width: 50%;
+              max-height: 320px;
+              overflow-y: scroll;
+              border-radius: 7px;
+              padding: 5px 0;
+              opacity: 0;
+              pointer-events: none;
+              transform: translateY(5px);
+              transition: all 0.4s ease-in-out;
+
+              &.show {
+                pointer-events: all;
+                animation: {
+                  name: animate-save-snapshot;
+                  duration: 0.5s;
+                  timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                  fill-mode: forwards;
+                }
+                z-index: 4;
+              }
+
+              div.history-item {
+                display: flex;
+                flex-direction: row;
+                align-content: flex-start;
+                align-items: center;
+                justify-content: space-between;
+                background: #1d1d1e;
+                height: 40px;
+                padding: 0 10px;
+                margin: 5px;
+                font-size: 95%;
+                border-radius: 5px;
+                flex-wrap: nowrap;
+                position: relative;
+
+                div.index {
+                  background: #333335;
+                  padding: 0 5px;
+                  border-radius: 3px;
+                  width: 30px;
+                  text-align: center;
+                  margin-right: 7px;
+                }
+
+                div.click-area {
+                  position: absolute;
+                  inset: 0;
+                  margin: auto;
+                  background: rgba(255, 255, 255, 0.7);
+                  opacity: 0;
+                  cursor: pointer;
+                  border-radius: 5px;
+                  transition: opacity 0.15s ease-in-out;
+
+                  &:hover {
+                    opacity: 0.15;
+                  }
+                }
+
+                div.inner-content {
+                  background: #333335;
+                  padding: 0 5px;
+                  border-radius: 3px;
+                  height: 25px;
+                  width: calc(100% - 70px);
+
+                  pre {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                  }
+                }
+
+                div.action-delete {
+                  width: 25px;
+                  height: 25px;
+                  margin-left: 7px;
+                  display: flex;
+                  flex-direction: column;
+                  flex-wrap: nowrap;
+                  align-content: center;
+                  align-items: center;
+                  justify-content: center;
+                  overflow: hidden;
+                  border-radius: 10px;
+                  position: relative;
+
+                  span.btn {
+                    position: absolute;
+                    inset: 0;
+                    margin: auto;
+                    color: inherit;
+                    opacity: 0.75;
+                    transition: opacity 0.2s ease-in-out;
+
+                    &:hover {
+                      opacity: 0.65;
+                    }
+
+                    ion-icon {
+                      font-size: 140%;
+                      position: absolute;
+                      inset: 0;
+                      margin: auto;
+                      transform: translateX(-4px);
+                    }
+                  }
+                }
+              }
+            }
+
             div.textarea {
-              width: calc(100% - 50px);
+              width: calc(100% - 100px);
 
               textarea {
                 height: 45px;
@@ -2702,7 +2822,7 @@ div.tab-content {
                   z-index: 3;
                   position: relative;
                   height: 40px;
-                  resize: vertical;
+                  resize: vertical !important;
                   font-size: 95%;
                   line-height: 35px;
                 }
@@ -2713,7 +2833,8 @@ div.tab-content {
               }
             }
 
-            div.execute {
+            div.execute,
+            div.history {
               width: 44px;
               height: 44px;
               margin-left: 5px;
@@ -2742,6 +2863,28 @@ div.tab-content {
               &:focus,
               &:hover {
                 background: rgba(68, 68, 68, 0.75);
+              }
+            }
+
+            div.history {
+              border-radius: 50%;
+              margin-left: 0;
+              margin-right: 5px;
+              background: transparent;
+
+              &:hover {
+                background: rgba(68, 68, 68, 0.5);
+              }
+
+              button {
+                background: transparent !important;
+                background-color: transparent !important;
+
+                &[disabled] {
+                  ion-icon {
+                    color: #858585 !important;
+                  }
+                }
               }
             }
           }

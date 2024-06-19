@@ -1791,18 +1791,19 @@ String.prototype.search = function(needle) {
   return FSS.indexOf(`${this}`, `${needle}`).length != 0
 }
 
-/**
- * Get the query selector for specific jQuery element
- *
- * @Inspired by this answer: https://stackoverflow.com/a/42184417
- * Comments added after understanding the purpose of each line
- *
- * This function is can be called by any jQuery element
- * @Example: $('body').getQuerySelector() // 'HTML > BODY'
- *
- * @Return: {string} the query selector of the jQuery element
- */
+// Extend the jQuery library capabilities by adding new functions to objects
 jQuery.fn.extend({
+  /**
+   * Get the query selector for specific jQuery element
+   *
+   * @Inspired by this answer: https://stackoverflow.com/a/42184417
+   * Comments added after understanding the purpose of each line
+   *
+   * This function is can be called by any jQuery element
+   * @Example: $('body').getQuerySelector() // 'HTML > BODY'
+   *
+   * @Return: {string} the query selector of the jQuery element
+   */
   getQuerySelector: function() {
     // Point at the DOM of the jQuery element
     let element = $(this)[0],
@@ -1851,6 +1852,31 @@ jQuery.fn.extend({
 
     // The function will keep calling itself till the `html` tag is reached
     return $(element.parentNode).getQuerySelector() + ' > ' + selector
+  },
+  /**
+   * Get object's all attributes as an array
+   * String can be passed to the function and will return boolean value if one of the attributes starts with that string
+   */
+  getAllAttributes: function(prefixStringSearch = '') {
+    // Get all attributes - as object -
+    let attributes = $(this)[0].attributes,
+      // Final result which be returned
+      names = []
+
+    // Loop throuh each object/attribute and get its name
+    for (let i = 0; i < attributes.length; i++)
+      names.push(attributes[i].localName)
+
+    try {
+      // If there's a prefix string to search for
+      if (prefixStringSearch.length <= 0)
+        throw 0
+
+      return names.some((name) => name.startsWith(prefixStringSearch))
+    } catch (e) {}
+
+    // Return all attributes' names
+    return names
   }
 })
 
@@ -2471,19 +2497,16 @@ let checkSSH = (callback) => {
  * @Return: {object} SSH tunnel object; to control the tunnel and get the active port
  */
 let createSSHTunnel = (data, callback) => {
-  // Get a random ID for the creation request
-  let requestID = getRandomID(10)
-
   // Send the request to the main thread
-  IPCRenderer.send('ssh-tunnel:create', {
-    ...data,
-    requestID
-  })
+  IPCRenderer.send('ssh-tunnel:create', data)
 
   // Once a response is received
-  IPCRenderer.on(`ssh-tunnel:create:result:${requestID}`, (_, data) => {
+  IPCRenderer.on(`ssh-tunnel:create:result:${data.requestID}`, (_, receivedData) => {
+    // Remove all listeners as a result has been received
+    IPCRenderer.removeAllListeners(`ssh-tunnel:create:result:${data.requestID}`)
+
     // Call the callback function with passing the result
-    callback(data)
+    callback(receivedData)
   })
 }
 

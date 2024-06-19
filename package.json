@@ -73,8 +73,8 @@
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {
     "electron": "^30.0.9",
-    "electron-rebuild": "^3.2.9",
-    "electron-builder": "24.12.0"
+    "electron-builder": "24.12.0",
+    "electron-rebuild": "^3.2.9"
   },
   "dependencies": {
     "@ramumb/strip-tags": "^0.1.3",

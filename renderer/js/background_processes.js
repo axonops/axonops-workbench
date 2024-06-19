@@ -205,28 +205,45 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
             }
 
             // Create the tunnel
-            let tunnel = await OpenSSHTunnel(sshTunnelAttributes)
+            OpenSSHTunnel(sshTunnelAttributes).then((tunnel) => {
+              /**
+               * Set the SSH tunnel's object key in the array
+               * The key is either the cluster's ID or the port
+               */
+              let key = data.clusterID == 'port' ? `_${localPort}` : data.clusterID
 
-            /**
-             * Set the SSH tunnel's object key in the array
-             * The key is either the cluster's ID or the port
-             */
-            let key = data.clusterID == 'port' ? `_${localPort}` : data.clusterID
+              // Add the SSH tunnel to the array
+              sshTunnelsObjects[key] = {
+                object: tunnel,
+                port: localPort
+              }
 
-            // Add the SSH tunnel to the array
-            sshTunnelsObjects[key] = {
-              object: tunnel,
-              port: localPort
-            }
+              // Update the `port` attribute of the result
+              result.port = localPort
 
-            // Update the `port` attribute of the result
-            result.port = localPort
+              // Send the creation result to the main thread
+              IPCRenderer.send(`ssh-tunnel:create:result:${data.requestID}`, {
+                ...result,
+                requestID: data.requestID
+              })
+            }).catch((e) => {
+              errorLog(e, 'SSH tunnel')
+
+              // Catch any occurred error
+              result.error = e.toString()
+
+              // Send the creation result to the main thread
+              IPCRenderer.send(`ssh-tunnel:create:result:${data.requestID}`, {
+                ...result,
+                requestID: data.requestID
+              })
+            })
           } catch (e) {
             errorLog(e, 'SSH tunnel')
 
             // Catch any occurred error
             result.error = e.toString()
-          } finally {
+
             // Send the creation result to the main thread
             IPCRenderer.send(`ssh-tunnel:create:result:${data.requestID}`, {
               ...result,

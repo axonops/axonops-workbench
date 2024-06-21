@@ -38,10 +38,10 @@ jobs:
       - name: Start with AxonOps Developer Workbench
         run: echo ""
 
-      - name: Setup Node.js v16.20.2
+      - name: Setup Node.js v20.15.0
         uses: actions/setup-node@v4
         with:
-          node-version: 16.20.2
+          node-version: 20.15.0
 
       - name: Install AxonOps Developer Workbench dependencies
         run: |

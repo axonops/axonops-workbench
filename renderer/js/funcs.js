@@ -292,9 +292,14 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
       setTimeout(() => {
         progressBar.animate({
           width: '0%'
-        }, timeout - 200).promise().done(() => closeBtn.click())
+        }, timeout - 200, () => closeBtn.click())
       }, 150)
     } catch (e) {}
+
+    // When double clicks the toast's body its content will be selected
+    toast.find('div.toast-body').dblclick(function() {
+      $(this).selectContent()
+    })
 
     // Clicks the close button
     closeBtn.click(() => {
@@ -304,6 +309,9 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
       // Remove the toast after it's hidden
       setTimeout(() => toast.remove(), 120)
     })
+
+    // When hovering on the toast's body the closing timer will be paused then resumed on hover out
+    toast.find('div.toast-body').hover(() => progressBar.pause(), () => progressBar.resume())
 
     try {
       // If there's no passed callback function then skip this try-catch block
@@ -1769,11 +1777,8 @@ let suggestionSearch = (needle, haystack) => {
   // Filter the `haystack` by keeping values that start with the `needle`
   result = haystack.filter((val) => (`${val}`.toLowerCase()).startsWith(needle))
 
-  // If this test passed, then there's a `haystack` value that exactly matches the `needle`
-  let test = result.find((val) => `${val}`.toLowerCase() == needle)
-
-  // Either return the one matched value instead of an array, or return an array of matched values
-  return test != undefined ? test : result
+  // Return an array of matched values
+  return result
 }
 
 /**
@@ -1799,7 +1804,7 @@ jQuery.fn.extend({
    * @Inspired by this answer: https://stackoverflow.com/a/42184417
    * Comments added after understanding the purpose of each line
    *
-   * This function is can be called by any jQuery element
+   * This function can be called by any jQuery element
    * @Example: $('body').getQuerySelector() // 'HTML > BODY'
    *
    * @Return: {string} the query selector of the jQuery element
@@ -1856,6 +1861,11 @@ jQuery.fn.extend({
   /**
    * Get object's all attributes as an array
    * String can be passed to the function and will return boolean value if one of the attributes starts with that string
+   *
+   * This function can be called by any jQuery element
+   * @Example: $('body').getAllAttributes('data-') // ['data-test', 'data-test2', ...]
+   *
+   * @Return: {object} array contains the names of all attributes
    */
   getAllAttributes: function(prefixStringSearch = '') {
     // Get all attributes - as object -
@@ -1877,6 +1887,42 @@ jQuery.fn.extend({
 
     // Return all attributes' names
     return names
+  },
+  /**
+   * Select the content of element - input, div, etc... -
+   *
+   * @Inspired by this answer: https://stackoverflow.com/a/1173319
+   *
+   * This function can be called by any jQuery element
+   * @Example: $('body').selectContent() // Will select the conent of the element
+   */
+  selectContent: function() {
+    /**
+     * Return a new Range object
+     * https://developer.mozilla.org/en-US/docs/Web/API/Document/createRange
+     */
+    let range = document.createRange()
+
+    /**
+     * Sets the Range to contain the node and its contents
+     * https://developer.mozilla.org/en-US/docs/Web/API/Range/selectNode
+     */
+    range.selectNode($(this)[0])
+
+    /**
+     * Rreturn a Selection object representing the range of text selected by the user or the current position of the caret
+     * https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection
+     *
+     * Remove all ranges from the selection, leaving the `anchorNode` and `focusNode` properties equal to null and nothing selected
+     * https://developer.mozilla.org/en-US/docs/Web/API/Selection/removeAllRanges
+     */
+    window.getSelection().removeAllRanges()
+
+    /**
+     * Add a Range to a Selection
+     * https://developer.mozilla.org/en-US/docs/Web/API/Selection/addRange
+     */
+    window.getSelection().addRange(range)
   }
 })
 
@@ -1945,10 +1991,8 @@ let openDialog = (text, callback, noBackdrop = false) => {
  * {boolean} `?hideIcon` print the message without a prefix icon that indicates its type
  */
 let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
-  // Get the message box's corners and pipes
-  let box = CLIBoxes.round,
-    // Get the message's length
-    length = message.length + 4,
+  // Get the message's length
+  let length = message.length + 4,
     // Set the default format (info)
     format = {
       icon: ' ℹ️ ',
@@ -1979,40 +2023,25 @@ let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
    * Define the `message`
    * Start with the prefix icon - or empty string -, and make the message's text style bold
    */
-  message = `${format.icon}` + '\033[1m' + `${message}` + '\033[0m'
+  message = '\x1b[38;2;' + `${format.color}` + 'm' + `${format.icon}` + '\033[1m' + `${message}` + '\033[0m'
 
-  /**
-   * Put the message inside a box
-   * Start by adding the top left corner `⌜` of the box
-   */
-  let messageFormatted = '\x1b[38;2;' + `${format.color}` + 'm' + `${box.topLeft}`
-
-  // Add a line that covers the message from the top
-  for (let i = 0; i < length; i++)
-    messageFormatted += box.top
-
-  // Add the top right corner `⌝`, then a left pipe, and the message
-  messageFormatted += `${box.topRight}` + '\r\n' + `${box.left}${message}`
-
-  // Add the right pipe, then the bottom left corner `⌞`
-  messageFormatted += '\x1b[38;2;' + `${format.color}` + 'm' + ` ${box.right}` + '\r\n' + `${box.bottomLeft}`
-
-  // Add a line that covers the message from the bottom
-  for (let i = 0; i < length; i++)
-    messageFormatted += `${box.bottom}`
-
-  // Add the bottom right corner `⌟`, now the message is entirely covered with a box
-  messageFormatted += `${box.bottomRight}` + '\033[0m'
+  // Attempt to print a new line
+  try {
+    terminal.println('')
+  } catch (e) {
+    // As `println` didn't work use `writeln` which is used with the Xterm object
+    terminal.writeln('')
+  }
 
   /**
    * Print the message in the given terminal
    * Try with `println` which is used with the `Readline` addon
    */
   try {
-    terminal.println(messageFormatted)
+    terminal.println(message)
   } catch (e) {
     // As `println` didn't work use `writeln` which is used with the Xterm object
-    terminal.writeln(messageFormatted)
+    terminal.writeln(message)
   }
 }
 

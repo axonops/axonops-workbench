@@ -133,10 +133,6 @@ const OS = require('os'),
    * Used to have a base to build the app's unique terminal
    */
   XTerm = require('xterm').Terminal,
-  // Readline addon for xterm
-  Readline = require('xterm-readline').Readline,
-  // Weblinks addon for XtermJS which enables web links
-  WebLinksAddon = require('xterm-addon-web-links').WebLinksAddon,
   // Canvas addon for rendering the terminal's content in canvas instead of regular DOMs
   CanvasAddon = require('xterm-addon-canvas').CanvasAddon,
   // XtermJS themes

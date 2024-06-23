@@ -301,6 +301,12 @@ div.body {
               }
             }
 
+            &[action="about"] {
+              ion-icon {
+                transform: scale(1.55);
+              }
+            }
+
             &[action="more"] {
               ion-icon {
                 font-size: 200% !important;

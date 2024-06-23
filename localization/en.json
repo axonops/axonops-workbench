@@ -334,6 +334,7 @@
       "execute cql statement": "execute cql statement",
       "start now by executing cql statement": "start now by executing cql statement",
       "no output was received": "no output was received",
+      "no data found": "no data found",
       "content has been copied to the clipboard, the size is $data": "content has been copied to the clipboard, the size is $data"
     }
   }

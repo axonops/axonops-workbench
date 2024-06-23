@@ -414,8 +414,6 @@
                 // Disable the button
                 $(this).attr('disabled', 'disabled')
 
-
-
                 // Test the connection with the cluster; by calling the inner test connection function at the very end of this code block
                 testConnection(clusterElement, testConnectionProcessID, sshTunnelCreationRequestID)
               })
@@ -1051,10 +1049,8 @@
                      */
                     let workareaElement = $(this),
                       terminal, // The XTermJS object
-                      readLine, // Will handle the prompt, printing messages, and data
                       prefix = '', // Dynamic prefix/prompt; `cqlsh>`, `cqlsh:system>`, etc...
-                      readLineTimeout = null, // For the delay before reading the user's inputs
-                      isSessionPaused = false, // To determine if there's a need to pause the print of received data temporarily
+                      isSessionPaused = false, // To determine if there's a need to pause the print of received data temporarily or permanently
                       isTracingSessionPrinted = false, // To determine if there was a query tracing result that has been printed previously
                       isCQLSHLoaded = false, // To determine if the cqlsh tool has been loaded and ready to be used
                       isMetadataFetched = false, // To determine if the metadata will be fetched or not
@@ -1349,32 +1345,16 @@
                         /**
                          * Define XtermJS addons
                          *
-                         * Read line addon; which handles the prompt and reads the user's inputs
+                         * Fit addon; to resize the terminal without distortion
                          */
-                        readLine = new Readline(),
-                          // Fit addon; to resize the terminal without distortion
-                          fitAddon = new FitAddon.FitAddon()
+                        fitAddon = new FitAddon.FitAddon()
 
                         /**
                          * Load XtermJS addons
                          *
-                         * Load the `Read line` addon
+                         * Load the `Fit` addon
                          */
-                        terminal.loadAddon(readLine)
-
-                        // Load the `Fit` addon
                         terminal.loadAddon(fitAddon)
-
-                        /**
-                         * Load the `Web links` addon; which helps to interact with links in the terminal
-                         * Clicking the link is handled within the inner function `clickEvent`
-                         * URL regex has changed to match `session://`; so user can open sessions tabs from terminal
-                         */
-                        setTimeout(() => {
-                          terminal.loadAddon(new WebLinksAddon(clickEvent, {
-                            urlRegex: /session?:[/]{2}[^\s"'!*(){}|\\\^<>`]*[^\s"':,.!?{}|\\\^~\[\]`()<>]/
-                          }))
-                        })
 
                         /**
                          * Inner function to handle the `click` event of a session's link in the terminal
@@ -1625,54 +1605,8 @@
                         // Push the fit addon object to the related array
                         terminalFitAddonObjects.push(fitAddon)
 
-                        // Work with read line addon
-                        readLine.setCheckHandler((text) => text.trimEnd().endsWith('&&') ? false : true)
-
-                        /**
-                         * Inner function to catch any new given line from the user
-                         *
-                         * @Parameters:
-                         * {string} `_prefix` the terminal's prefix - the prompt -
-                         */
-                        let readActiveLine = (_prefix) => {
-                          readLine.read(_prefix).then((text) => {
-                            // Check if some commands have been sent to be executed
-                            let foundQuit = (['quit', 'exit']).some((command) => text.toLowerCase().startsWith(command))
-
-                            try {
-                              /**
-                               * `quit` or `exit` command will close the connection
-                               * If none of them were found then skip this try-catch block
-                               */
-                              if (!foundQuit)
-                                throw 0
-
-                              // Show feedback to the user
-                              terminalPrintMessage(readLine, 'info', `Work area for the cluster ${getAttributes(clusterElement, 'data-name')} will be closed in few seconds`)
-
-                              // Pause the print of output from the Pty instance
-                              isSessionPaused = true
-
-                              // Dispose the readline addon
-                              prefix = ''
-
-                              // Click the close connection button after a while
-                              setTimeout(() => workareaElement.find('div.cluster-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
-                            } catch (e) {}
-
-                            // Send the command to the main thread to be executed
-                            IPCRenderer.send('pty:command', {
-                              id: clusterID,
-                              cmd: text
-                            })
-
-                            // Update the latest executed command
-                            latestCommand = text
-                          })
-                        }
-
                         // Call the inner function - at the very end of this code block -; to create a pty instance for that cluster
-                        requestPtyInstanceCreation(readLine, {
+                        requestPtyInstanceCreation(terminal, {
                           cqlshSessionContentID
                         })
 
@@ -1685,6 +1619,10 @@
 
                         // Listen to data sent from the pty instance which are fetched from the cqlsh tool
                         IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
+                          // If the session is paused then nothing would be printed
+                          if (isSessionPaused)
+                            return
+
                           /**
                            * Check if the received data contains the `tracing session` keyword
                            * Based on the check, pause printing data and print the custom session's navigation link
@@ -1731,9 +1669,6 @@
                             workareaElement.find('div.cluster-tabs').find('li a').removeClass('disabled')
 
                             setTimeout(() => {
-                              // Start reading the user input
-                              readActiveLine(prefix)
-
                               // For Windows, there's a need to send a newline to start the cqlsh session
                               if (OS.platform() == 'win32')
                                 setTimeout(() => {
@@ -1751,7 +1686,7 @@
                               throw 0
 
                             // Show feedback to the user
-                            terminalPrintMessage(readLine, 'error', 'The connection attempt failed, please check cqlsh.rc file and press the restart button')
+                            terminalPrintMessage(terminal, 'error', 'The connection attempt failed, please check cqlsh.rc file and press the restart button')
 
                             // Show it in the interactive terminal
                             addBlock($(`#_${cqlshSessionContentID}_container`), getRandomID(10), 'The connection attempt failed, please check cqlsh.rc file and press the restart button', null, true, 'failure')
@@ -1811,10 +1746,6 @@
                               // Get the cluster's metadata
                               Modules.Clusters.getMetadata(clusterID, (metadata) => {
                                 try {
-                                  // If this is not a refresh then update the terminal reading addon
-                                  if (!refresh)
-                                    readActiveLine(prefix)
-
                                   // Convert the metadata from JSON string to an object
                                   metadata = JSON.parse(metadata)
 
@@ -2042,10 +1973,6 @@
                             // Update the active prefix to be used
                             activePrefix = prefix
 
-                          // Remove the prompt from the output before printing it in the terminal; because that prompt will be prepended, and the ability to remove it or interact with it will be disabled
-                          if (minifyText(data).search('cqlsh>'))
-                            data = data.replace(/^(.*?cqlsh.*?>)/gm, '')
-
                           /**
                            * The upcoming block is about the interactive terminal
                            *
@@ -2091,7 +2018,7 @@
                               blockElement.find('div.processing').remove()
 
                             // Get rid of all keywords
-                            data.output = data.output.replace(/KEYWORD\:[A-Z]+(\-[A-Z]+)?/g, '')
+                            data.output = data.output.replace(new RegExp(`^${OS.EOL}*KEYWORD\:[A-Z]+(\-[A-Z]+)?${OS.EOL}*`, 'gm'), '')
 
                             // Define the final content to be manipulated and rendered
                             let finalContent = `${blockOutput}${data.output}`
@@ -2122,7 +2049,7 @@
                              * Manipulate the content
                              * Remove any given prompts within the output
                              */
-                            finalContent = finalContent.replace(/[\Ss]+(\@)?cqlsh.*\>/g, '')
+                            finalContent = finalContent.replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
                               // Remove the statement from the output
                               .replace(new RegExp(blockElement.children('div.statement').text(), 'g'), '')
                               // Get rid of tracing results
@@ -2296,14 +2223,14 @@
                             finalContent = finalContent.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
                               .replace(createRegex(OS.EOL, 'g'), '<br>')
                               .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>')
-                              .replace(/[\Ss]+(\@)?cqlsh.*\>/g, '')
+                              .replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
 
                             // Convert any ANSI characters to HTML characters - especially colors -
                             finalContent = (new ANSIToHTML()).toHtml(finalContent)
 
                             // Reaching here and has a `json` keyword in the output means there's no record/row to be shown
                             if (finalContent.includes('[json]'))
-                              finalContent = noOutputElement
+                              finalContent = '<no-output><span mulang="no data found" capitalize-first></span>.</no-output>'
 
                             // Set the final content and make sure the localization process is updated
                             blockElement.children('div.output').html(`<pre>${finalContent}</pre>`).show(function() {
@@ -2328,8 +2255,8 @@
 
                           // Determine whether to print the given data or not
                           try {
-                            // If empty data has been received then ignore it
-                            if (data.output.trim().length <= 0)
+                            // If empty data has been received and the length of the output is more than one character then ignore it
+                            if (manipulateOutput(minifyText(data.output).replace(new RegExp(OS.EOL, 'gi'), '')).length <= 0 && data.output.includes(OS.EOL) && data.output.length > 1)
                               throw 0
 
                             // Check if the query tracing feature has been enabled/disabled
@@ -2339,7 +2266,7 @@
 
                               // If it has been enabled
                               if (data.output.toLowerCase().indexOf('tracing is enabled') != -1) {
-                                terminalPrintMessage(readLine, 'info', 'Query tracing feature is now enabled')
+                                terminalPrintMessage(terminal, 'info', 'Query tracing feature is now enabled')
                                 queryTracingHint.hide()
                                 $(`div.tab-pane#_${queryTracingContentID}`).find('lottie-player')[0].play()
                                 throw 0
@@ -2347,29 +2274,30 @@
 
                               // If it has been disabled
                               if (data.output.toLowerCase().indexOf('disabled tracing') != -1) {
-                                terminalPrintMessage(readLine, 'info', 'Query tracing feature has been disabled')
+                                terminalPrintMessage(terminal, 'info', 'Query tracing feature has been disabled')
                                 queryTracingHint.show()
                                 throw 0
                               }
                             }
 
+                            let isKeywordFound = data.output.match(new RegExp(`^${OS.EOL}*KEYWORD\:[A-Z]+(\-[A-Z]+)?${OS.EOL}*`, 'gm')) != null
+
                             // Extra manipulation of the output
-                            data.output = data.output.replace(/KEYWORD\:[A-Z]+(\-[A-Z]+)?/ig, '')
+                            data.output = data.output.replace(new RegExp(`^${OS.EOL}*KEYWORD\:[A-Z]+(\-[A-Z]+)?${OS.EOL}*`, 'gm'), '')
 
-                            // Flag to tell of the output is actually empty
-                            let isOutputEmpty = manipulateOutput(minifyText(data.output)).replace(/cqlsh\s*(\:|\s*)(.+|\s*)\>/ig, '').length <= 0
-
+                            // If there's a need to add a new line character as prefix
                             try {
-                              // If the output is empty then no need to print it, skip this try-catch block
-                              if (isOutputEmpty)
+                              // Make sure the output is not actually one character or a whitespace
+                              if (!(manipulateOutput(minifyText(data.output).replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')).length > 5 && isKeywordFound))
                                 throw 0
 
+                              terminal.writeln('')
+                            } catch (e) {}
+
+                            try {
                               // Print the data
-                              readLine.write(data.output)
-                            } catch (e) {
-                              // Just update the readline object
-                              setTimeout(() => readActiveLine(activePrefix), 10)
-                            } finally {
+                              terminal.write(data.output)
+                            } catch (e) {} finally {
                               // Resize the terminal
                               fitAddon.fit()
                             }
@@ -2389,114 +2317,61 @@
                             activePrefix = `${prompt[0]} `
                             prefix = activePrefix
                           } catch (e) {}
-
-                          try {
-                            // If it is `null` then skip this try-catch block
-                            if (readLineTimeout == null)
-                              throw 0
-
-                            // Clear the read line function timeout call
-                            clearTimeout(readLineTimeout)
-                          } catch (e) {}
-
-                          // Set the read line timeout again
-                          readLineTimeout = setTimeout(() => readActiveLine(activePrefix), 10)
                         })
                         // The listener to data sent from the pty instance has been finished
 
                         /**
-                         * Listen to data from the user - input to the terminal -
-                         * What is being listened to is mainly the keypresses like `TAB`
+                         * Listen to the user's input to the terminal's buffer
+                         * This listener will send the character to the pty instance to be handled in realtime
+                         *
+                         * Point at the terminal's viewport in the UI
                          */
-                        let terminalViewport = $(`div.terminal-container[data-id="${terminalContainerID}"]`).find('div.xterm-viewport')[0]
+                        let terminalViewport = $(`div.terminal-container[data-id="${terminalContainerID}"]`).find('div.xterm-viewport')[0],
+                          // Get the terminal's active buffer; to get the entire written statement if needed
+                          terminalBuffer = terminal.buffer.active
+
+                        // Listen to data from the user - input to the terminal -
                         terminal.onData((char) => {
-                          // Get the key code
-                          let keyCode = char.charCodeAt(0)
+                          // Get the entire written statement
+                          let statement = terminalBuffer.getLine(terminalBuffer.baseY + terminalBuffer.cursorY).translateToString(true)
+
+                          // Remove any prefixes
+                          statement = statement.replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
+
+                          // Check if the command is terminating the cqlsh session
+                          let isQuitFound = (['quit', 'exit']).some((command) => statement.toLowerCase().startsWith(command)),
+                            // Get the key code
+                            keyCode = char.charCodeAt(0)
+
+                          try {
+                            /**
+                             * `quit` or `exit` command will close the connection
+                             * If none of them were found then skip this try-catch block
+                             */
+                            if (!isQuitFound)
+                              throw 0
+
+                            // Show feedback to the user
+                            terminalPrintMessage(terminal, 'info', `Work area for the cluster ${getAttributes(clusterElement, 'data-name')} will be closed in few seconds`)
+
+                            // Pause the print of output from the Pty instance
+                            isSessionPaused = true
+
+                            // Dispose the readline addon
+                            prefix = ''
+
+                            // Click the close connection button after a while
+                            setTimeout(() => workareaElement.find('div.cluster-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
+                          } catch (e) {}
+
+                          // Send the character in realtime to the pty instance
+                          IPCRenderer.send('pty:data', {
+                            id: clusterID,
+                            char
+                          })
 
                           // Switch between the key code's values
                           switch (keyCode) {
-                            // `TAB`
-                            case 9: {
-                              // Attempt to get the closest word to the cursor
-                              let closestWord = StripChar.RSExceptUnsAlpNum(getClosestWord())
-
-                              // If we didn't get a word then stop this process
-                              if (closestWord == false || closestWord.trim().length <= 0)
-                                return
-
-                              // Get suitable suggestions
-                              let suggestions = suggestionSearch(closestWord, Modules.Consts.CQLKeywords)
-
-                              try {
-                                // If we've got more than one suggestion then continue in this try-catch block
-                                if (suggestions.length <= 1 || typeof suggestions === 'string')
-                                  throw 0
-
-                                // Move the cursor to the next line
-                                let currentLine = readLine.state.line.buf
-
-                                // Make a new line in the terminal
-                                readLine.print(OS.EOL)
-
-                                // Print suggestions in an info box
-                                terminalPrintMessage(readLine, 'info', arrayToString(suggestions), true)
-
-                                // Refresh the terminal
-                                readActiveLine(prefix)
-
-                                // Update the last line; to see suggestions
-                                setTimeout(() => readLine.state.update(currentLine))
-
-                                // Skip the upcoming code
-                                return
-                              } catch (e) {}
-
-                              /**
-                               * Reaching here means we've got one suggestion
-                               *
-                               * Make sure it is valid, if it's not then end this process
-                               */
-                              if (suggestions[0] == undefined && typeof suggestions !== 'string')
-                                return
-
-                              // Wrap the suggestion in the `suggestion` variable
-                              let suggestion = (typeof suggestions === 'object') ? suggestions[0] : suggestions
-
-                              /**
-                               * Replace the closest word in the terminal with that suggestion and move the cursor in the right way to the end of the line
-                               *
-                               * Get the line's buffer/content - without the prompt -
-                               */
-                              let line = readLine.state.line.buf,
-                                // Make a copy of the line's content
-                                updatedLine = line.slice(0, readLine.state.line.pos),
-                                // Get the closest word in the line's content
-                                regex = new RegExp(`${closestWord}(?!.*${closestWord})`, 'gm')
-
-                              // Replace the word with the suggestion
-                              updatedLine = updatedLine.replace(regex, suggestion)
-
-                              // Slice the line's content and get everything after the closest word to the cursor
-                              line = line.slice(readLine.state.line.pos)
-
-                              // Combine the updated content with what is after the closest word
-                              line = `${updatedLine}${line}`
-
-                              // Calculate the updated position of the cursor based on the updated line's content
-                              let updatedPosition = readLine.state.line.pos + Math.abs(closestWord.length - suggestion.length)
-                              updatedPosition = line.length - updatedPosition
-
-                              // Update the line's content
-                              readLine.state.update(line)
-
-                              // If the updated position is not the beginning of the line then move the cursor to it
-                              if (updatedPosition > 0)
-                                readLine.state.moveCursorBack(updatedPosition)
-
-                              // End of `TAB` key press case
-                              break
-                            }
-
                             // `ENTER`
                             case 13: {
                               // Scroll to the very bottom of the terminal
@@ -2664,14 +2539,6 @@
                           // Reset the terminal
                           terminal.clear()
 
-                          // Send new line char to the terminal
-                          setTimeout(() => {
-                            IPCRenderer.send('pty:command', {
-                              id: clusterID,
-                              cmd: OS.EOL
-                            })
-                          })
-
                           // Hide the interactive terminal
                           interactiveTerminal.hide()
                         } catch (e) {
@@ -2809,8 +2676,8 @@
                          */
                         lastData.cursorPosition = $(this)[0].selectionEnd
 
-                        // The default array for suggestions is the CQL keywords
-                        let suggestionsArray = Modules.Consts.CQLKeywords,
+                        // The default array for suggestions is the CQL keywords with the commands
+                        let suggestionsArray = Modules.Consts.CQLKeywords.concat(Modules.Consts.CQLSHCommands),
                           // Get the keyspaces and their tables from the last metadata
                           metadataInfo = getMetadataInfo(),
                           // Get keyspaces' names
@@ -3110,9 +2977,7 @@
                       {
                         // Define global variables to be used in this code block
                         let terminalBash, // The XTermJS object for Bash
-                          readLineBash, // Will handle the prompt, printing messages, and data
                           fitAddonBash, // Used for resizing the terminal and making it responsive
-                          bashLoaded = false, // Whether or not the pty instance has been loaded - for easier reference it's called a Bash instance -
                           printData = false, // Whether or not the data coming from the pty instances should be printed or not
                           latestCommand = '', // Store the user's input to create a command
                           sessionID = getRandomID(5) // Get a random ID as a suffix to the sandbox project's ID

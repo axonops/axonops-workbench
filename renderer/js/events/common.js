@@ -357,6 +357,11 @@
     })
   })
 
+  let aboutModal = getElementMDBObject($('#appAbout'), 'Modal')
+  $(`${selector}[action="about"]`).click(() => {
+    aboutModal.show()
+  })
+
   // Handle the click of items in more options/settings menu
   {
     // Point at the items
@@ -476,27 +481,29 @@
   }
 }
 
-// Handle the app's settings' dialog events and processes
+// Handle the app's settings' and about dialogs events and processes
 {
-  // Define the common element CSS selector
-  let dialog = `div.modal#appSettings div.modal-body div.side`
+  (['appSettings', 'appAbout']).forEach((modalID) => {
+    // Define the common element CSS selector
+    let dialog = `div.modal#${modalID} div.modal-body div.side`
 
-  // Clicks one of the left side buttons
-  $(`${dialog}-left div.sections div.section div.btn`).click(function() {
-    // Get the section's name
-    let section = $(this).attr('section')
+    // Clicks one of the left side buttons
+    $(`${dialog}-left div.sections div.section div.btn`).click(function() {
+      // Get the section's name
+      let section = $(this).attr('section')
 
-    // Deactivate all sections
-    $(`${dialog}-left div.sections div.section div.btn`).removeClass('active')
+      // Deactivate all sections
+      $(`${dialog}-left div.sections div.section div.btn`).removeClass('active')
 
-    // Hide all sections
-    $(`${dialog}-right div.modal-section`).hide()
+      // Hide all sections
+      $(`${dialog}-right div.modal-section`).hide()
 
-    // Activate the clicked section
-    $(this).addClass('active')
+      // Activate the clicked section
+      $(this).addClass('active')
 
-    // Show the clicked section
-    $(`${dialog}-right div.modal-section[section="${section}"]`).show().removeAttr('hidden')
+      // Show the clicked section
+      $(`${dialog}-right div.modal-section[section="${section}"]`).show().removeAttr('hidden')
+    })
   })
 
   // Clicks the `SAVE SETTINGS` button in the footer in the dialog

@@ -252,7 +252,7 @@ let properties = {
     center: true,
     icon: AppProps.Paths.Icon,
     title: AppProps.Info.title,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#17181a',
     show: false,
     webPreferences: {
       devTools: true,
@@ -528,6 +528,13 @@ App.on('window-all-closed', () => {
     IPCMain.on('pty:command', (_, data) => {
       try {
         CQLSHInstances[data.id].command(data.cmd, data.blockID)
+      } catch (e) {}
+    })
+
+    // Send a realtime data to the pty instance - while the user is acutally typing
+    IPCMain.on('pty:data', (_, data) => {
+      try {
+        CQLSHInstances[data.id].realtimeData(data.char)
       } catch (e) {}
     })
 

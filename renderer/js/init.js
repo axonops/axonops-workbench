@@ -10,7 +10,7 @@ require('v8-compile-cache')
  * Used for working with files system, it provides related utilities
  */
 const FS = require('fs-extra'),
-  // JQuery library
+  // jQuery library
   $ = require('jquery'),
   jQuery = $,
   /**
@@ -529,9 +529,9 @@ $(document).on('initialize', () => {
     loadScript(Path.join(xtermModulePath, '..', 'xterm-addon-fit', 'lib', 'xterm-addon-fit.js'))
   }
 
-  // JQuery UI and its related plugins
+  // jQuery UI and its related plugins
   {
-    // JQuery UI
+    // jQuery UI
     {
       let jQueryUIPath = Path.join(__dirname, '..', 'js', 'jqueryui')
 
@@ -540,7 +540,7 @@ $(document).on('initialize', () => {
       loadScript(Path.join(jQueryUIPath, 'jqueryui.js'))
     }
 
-    // JQuery JS Tree Plugin
+    // jQuery JS Tree Plugin
     {
       let jsTreePath = Path.join(__dirname, '..', 'js', 'jstree')
 
@@ -549,7 +549,7 @@ $(document).on('initialize', () => {
       loadScript(Path.join(jsTreePath, 'jstree.js'))
     }
 
-    // JQuery JSON Viewer plugin
+    // jQuery JSON Viewer plugin
     {
       let jsonViewerPath = Path.join(__dirname, '..', '..', 'node_modules', 'jquery.json-viewer', 'json-viewer')
 
@@ -558,9 +558,14 @@ $(document).on('initialize', () => {
       loadScript(Path.join(jsonViewerPath, 'jquery.json-viewer.js'))
     }
 
-    // JQuery Actual element's values plugin
+    // jQuery Actual element's values plugin
     {
       loadScript(Path.join(__dirname, '..', 'js', 'actual.js'))
+    }
+
+    // jQuery pause/resume element's animation plugin
+    {
+      loadScript(Path.join(__dirname, '..', 'js', 'pause.js'))
     }
   }
 
@@ -965,6 +970,9 @@ $(document).on('initialize', () => {
     } catch (e) {}
   }, 3000)
 })
+
+// Add the app's license in the `About` modal
+$(document).on('initialize', () => $('div.modal#appAbout').find('div.modal-section[section="app-license"] pre, div.modal-section[section="cassandra-license"] pre').text(Modules.Consts.LICENSE))
 
 // Once the main window/view is fully loaded send the `loaded` event to the main thread
 $(document).on('initialize', () => setTimeout(() => IPCRenderer.send('loaded'), 1500))

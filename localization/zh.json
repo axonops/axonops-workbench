@@ -334,6 +334,7 @@
       "execute cql statement": "执行cql语句",
       "start now by executing cql statement": "现在通过执行 cql 语句开始",
       "no output was received": "未收到任何输出",
+      "no data found": "没有找到数据",
       "content has been copied to the clipboard, the size is $data": "内容已复制到剪贴板，大小为 $data"
     }
   }

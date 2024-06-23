@@ -24,9 +24,11 @@
       "config",
       "localization"
     ],
-    "publish": [{
-      "provider": "github"
-    }],
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ],
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",
       "category": "Development",
@@ -132,8 +134,6 @@
     "xterm": "^5.2.1",
     "xterm-addon-canvas": "^0.5.0",
     "xterm-addon-fit": "^0.7.0",
-    "xterm-addon-web-links": "^0.8.0",
-    "xterm-readline": "^1.1.1",
     "xterm-theme": "^1.1.0",
     "xterm-webfont": "^2.0.0"
   }

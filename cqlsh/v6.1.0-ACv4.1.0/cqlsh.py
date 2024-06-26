@@ -25,7 +25,7 @@ def custom_exit(*args, **kwargs):
     # If it's a test process then make sure to print the keyword for the app
     if '--test' in sys.argv:
         print("KEYWORD:TEST-COMPLETED")
-    
+
     # Call the original sys.exit
     original_exit(*args, **kwargs)
 
@@ -125,7 +125,7 @@ cqlruleset = None
 
 
 if platform.system() == 'Windows':
-   set_keyring(backends.Windows.WinVaultKeyring()) 
+   set_keyring(backends.Windows.WinVaultKeyring())
 
 epilog = """Connects to %(DEFAULT_HOST)s:%(DEFAULT_PORT)d by default. These
 defaults can be changed by setting $CQLSH_HOST and/or $CQLSH_PORT. When a
@@ -905,7 +905,7 @@ class Shell(cmd.Cmd):
                         self.stop = True
                     else:
                         line = self.get_input_line(self.prompt)
-                        
+
                     """
                     Print a dumped JSON metadata of the current cluster
                     """
@@ -919,7 +919,7 @@ class Shell(cmd.Cmd):
                             printProcess = threading.Thread(target=axonOpsDeveloperWorkbench.printMetadataBackground, args=(metadata_id, self.session))
                             printProcess.start()
                         not_custom = False
-                    
+
                     """
                     Print the CQL description of a specified scope
                     """
@@ -927,7 +927,7 @@ class Shell(cmd.Cmd):
                         info = re.findall(r'\((.*?)\)', line)
                         printProcess = threading.Thread(target=axonOpsDeveloperWorkbench.printCQLDescBackground, args=(info[0], info[1], self.session))
                         printProcess.start()
-                        not_custom = False       
+                        not_custom = False
 
                     """
                     Check the connectivity with the current cluster/node
@@ -936,7 +936,7 @@ class Shell(cmd.Cmd):
                         info = re.findall(r'\((.*?)\)', line)
                         checkProcess = threading.Thread(target=axonOpsDeveloperWorkbench.checkConnectivityBackground, args=(info[0], self.session))
                         checkProcess.start()
-                        not_custom = False       
+                        not_custom = False
 
                     if not_custom is True:
                         self.statement.write(line)
@@ -969,6 +969,9 @@ class Shell(cmd.Cmd):
         return statementtext
 
     def onecmd(self, statementtext):
+        if len(re.findall("KEYWORD:IGNORE-THIS-STATEMENT-\d+", statementtext)) > 0:
+            return True
+
         """
         Returns true if the statement is complete and was handled (meaning it
         can be reset).

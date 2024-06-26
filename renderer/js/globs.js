@@ -47,11 +47,13 @@ isLoggingEnabled = true
  */
 let viewContentID = null
 
-/**
- * All `fit` terminal addon objects for the app's terminals
- * This addon is used to make the terminal's dimensions more responsive
- */
-let terminalFitAddonObjects = [],
+// All XTerm.js objects are stored here; to be accessed across the entire app
+let terminalObjects = [],
+  /**
+   * All `fit` terminal addon objects for the app's terminals
+   * This addon is used to make the terminal's dimensions more responsive
+   */
+  terminalFitAddonObjects = [],
   /**
    * All query tracing charts' objects
    * By adding those objects to the array, they can be resized and destroyed as needed

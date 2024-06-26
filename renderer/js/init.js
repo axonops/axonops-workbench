@@ -78,6 +78,22 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
             } catch (e) {}
           }
         } catch (e) {} finally {
+          try {
+            /**
+             * Ensure that all required data files exists
+             *
+             * Define the files' names and folders
+             */
+            let files = [
+              ['data', 'docker', 'docker.json'],
+              ['data', 'workspaces', 'workspaces.json']
+            ]
+
+            // Loop through each file and ensure it's exists
+            for (let file of files)
+              await FS.ensureFile(Path.join(extraResourcesPath, ...file))
+          } catch (e) {}
+
           /**
            * Now call the `initialization` event for `document`
            * This event will load and initialize the entire app after getting the path of the extra resources

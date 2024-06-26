@@ -1049,6 +1049,7 @@
                      */
                     let workareaElement = $(this),
                       terminal, // The XTermJS object
+                      terminalID = getRandomID(10), // The cqlsh session's unique ID
                       prefix = '', // Dynamic prefix/prompt; `cqlsh>`, `cqlsh:system>`, etc...
                       isSessionPaused = false, // To determine if there's a need to pause the print of received data temporarily or permanently
                       isTracingSessionPrinted = false, // To determine if there was a query tracing result that has been printed previously
@@ -1320,9 +1321,12 @@
                     }
 
                     // Create the terminal instance from the XtermJS constructor
-                    terminal = new XTerm({
+                    terminalObjects[terminalID] = new XTerm({
                       theme: XTermThemes.Atom
                     })
+
+                    // Set the `terminal` variable to be as a reference to the object
+                    terminal = terminalObjects[terminalID]
 
                     // Add log
                     addLog(`CQLSH session created for the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
@@ -1389,7 +1393,7 @@
                           }
 
                           // Request to get query tracing result by passing the cluster's and the session's IDs
-                          Modules.Clusters.getQueryTracingResult(clusterID, sessionID, (result) => {
+                          Modules.Clusters.getQueryTracingResult(clusterID, sessionID, terminal, (result) => {
                             // If the `result` value is `null` then the app wasn't able to get the query tracing result
                             if (result == null)
                               return
@@ -1607,7 +1611,8 @@
 
                         // Call the inner function - at the very end of this code block -; to create a pty instance for that cluster
                         requestPtyInstanceCreation(terminal, {
-                          cqlshSessionContentID
+                          cqlshSessionContentID,
+                          terminalID
                         })
 
                         // Call the fit addon for the terminal
@@ -1617,11 +1622,20 @@
                           IPCRenderer.removeAllListeners(`pty:data:${clusterID}`)
                         } catch (e) {}
 
+                        // Restricted-scope variable that will hold all output till new line character is detected
+                        let allOutput = ''
+
                         // Listen to data sent from the pty instance which are fetched from the cqlsh tool
                         IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
                           // If the session is paused then nothing would be printed
-                          if (isSessionPaused)
+                          if (isSessionPaused || ['print metadata', 'print cql_desc', 'check connection'].some((command) => `${data.output}`.includes(command)))
                             return
+
+                          // Make sure the given output is string
+                          data.output = data.output || ''
+
+                          // Store all received data
+                          allOutput += data.output
 
                           /**
                            * Check if the received data contains the `tracing session` keyword
@@ -1656,11 +1670,14 @@
                             /**
                              * Attempt to recall the process again
                              * This method helps with the hang that happen sometimes while booting the cqlsh session
+                             *
+                             * Send an `EOL` character to the pty instance if the buffer is empty
                              */
-                            setTimeout(() => IPCRenderer.send('pty:command', {
-                              id: clusterID,
-                              cmd: OS.EOL
-                            }), 500)
+                            if (Modules.Clusters.getTerminalCurrentBuffer(terminal, true).length <= 0)
+                              IPCRenderer.send('pty:command', {
+                                id: clusterID,
+                                cmd: ''
+                              })
 
                             // Remove the loading class
                             $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).removeClass('loading')
@@ -1670,13 +1687,11 @@
 
                             setTimeout(() => {
                               // For Windows, there's a need to send a newline to start the cqlsh session
-                              if (OS.platform() == 'win32')
-                                setTimeout(() => {
-                                  IPCRenderer.send('pty:command', {
-                                    id: clusterID,
-                                    cmd: OS.EOL
-                                  })
-                                }, 500)
+                              if (OS.platform() == 'win32' && Modules.Clusters.getTerminalCurrentBuffer(terminal, true).length <= 0)
+                                IPCRenderer.send('pty:command', {
+                                  id: clusterID,
+                                  cmd: ''
+                                })
                             }, 1000)
                           } catch (e) {}
 
@@ -1744,7 +1759,7 @@
                               }
 
                               // Get the cluster's metadata
-                              Modules.Clusters.getMetadata(clusterID, (metadata) => {
+                              Modules.Clusters.getMetadata(clusterID, terminal, (metadata) => {
                                 try {
                                   // Convert the metadata from JSON string to an object
                                   metadata = JSON.parse(metadata)
@@ -1825,6 +1840,7 @@
                                       click: `() => views.main.webContents.send('cql-desc:get', {
                                          clusterID: '${getAttributes(clusterElement, 'data-id')}',
                                          scope: '${scope}',
+                                         terminalID: '${terminalID}',
                                          tabID: '${cqlDescriptionContentID}',
                                          nodeID: '${getAttributes(clickedNode, 'id')}'
                                        })`
@@ -2018,7 +2034,7 @@
                               blockElement.find('div.processing').remove()
 
                             // Get rid of all keywords
-                            data.output = data.output.replace(new RegExp(`^${OS.EOL}*KEYWORD\:[A-Z]+(\-[A-Z]+)?${OS.EOL}*`, 'gm'), '')
+                            data.output = data.output.replace(new RegExp(`(^${OS.EOL}*)?KEYWORD\:[A-Z]+(\-[A-Z]+)?${OS.EOL}*`, 'gm'), '')
 
                             // Define the final content to be manipulated and rendered
                             let finalContent = `${blockOutput}${data.output}`
@@ -2266,32 +2282,30 @@
 
                               // If it has been enabled
                               if (data.output.toLowerCase().indexOf('tracing is enabled') != -1) {
-                                terminalPrintMessage(terminal, 'info', 'Query tracing feature is now enabled')
                                 queryTracingHint.hide()
                                 $(`div.tab-pane#_${queryTracingContentID}`).find('lottie-player')[0].play()
-                                throw 0
                               }
 
                               // If it has been disabled
-                              if (data.output.toLowerCase().indexOf('disabled tracing') != -1) {
-                                terminalPrintMessage(terminal, 'info', 'Query tracing feature has been disabled')
+                              if (data.output.toLowerCase().indexOf('disabled tracing') != -1)
                                 queryTracingHint.show()
-                                throw 0
-                              }
                             }
 
-                            let isKeywordFound = data.output.match(new RegExp(`^${OS.EOL}*KEYWORD\:[A-Z]+(\-[A-Z]+)?${OS.EOL}*`, 'gm')) != null
-
                             // Extra manipulation of the output
-                            data.output = data.output.replace(new RegExp(`^${OS.EOL}*KEYWORD\:[A-Z]+(\-[A-Z]+)?${OS.EOL}*`, 'gm'), '')
+                            data.output = data.output.replace(new RegExp(`(^${OS.EOL}*)?KEYWORD\:[A-Z]+(\-[A-Z]+)?${OS.EOL}*`, 'gm'), '')
 
                             // If there's a need to add a new line character as prefix
                             try {
                               // Make sure the output is not actually one character or a whitespace
-                              if (!(manipulateOutput(minifyText(data.output).replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')).length > 5 && isKeywordFound))
+                              if (!allOutput.includes(OS.EOL))
                                 throw 0
 
-                              terminal.writeln('')
+                              // If there's a need to add a new line then perform that
+                              if (manipulateOutput(minifyText(data.output).replace(new RegExp(OS.EOL, 'gi'), '').replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')).length > 0 && data.output.length > 1)
+                                terminal.writeln('')
+
+                              // Reset the `allOutput` variable
+                              allOutput = ''
                             } catch (e) {}
 
                             try {
@@ -2368,6 +2382,13 @@
                           IPCRenderer.send('pty:data', {
                             id: clusterID,
                             char
+                          })
+
+                          // Make sure both the app's UI terminal and the associated pty instance are syned in their size
+                          IPCRenderer.send('pty:resize', {
+                            id: clusterID,
+                            cols: terminal.cols,
+                            rows: terminal.rows
                           })
 
                           // Switch between the key code's values
@@ -2533,11 +2554,18 @@
                           if (basicTerminal.css('display') != 'none')
                             throw 0
 
-                          // Show the basic terminal
-                          basicTerminal.show()
-
                           // Reset the terminal
                           terminal.clear()
+
+                          // Send an `EOL` character to the pty instance if the buffer is empty
+                          if (Modules.Clusters.getTerminalCurrentBuffer(terminal, true).length <= 0)
+                            IPCRenderer.send('pty:command', {
+                              id: clusterID,
+                              cmd: ''
+                            })
+
+                          // Show the basic terminal
+                          basicTerminal.show()
 
                           // Hide the interactive terminal
                           interactiveTerminal.hide()
@@ -3282,7 +3310,7 @@
                           $(this).attr('disabled', '').addClass('disabled refreshing')
 
                           // Get the latest metadata
-                          Modules.Clusters.getMetadata(clusterID, (metadata) => {
+                          Modules.Clusters.getMetadata(clusterID, terminal, (metadata) => {
                             try {
                               // Convert the metadata from JSON string to an object
                               metadata = JSON.parse(metadata)
@@ -4072,7 +4100,7 @@
                             return
 
                           // Call the connectivity check function from the clusters' module
-                          Modules.Clusters.checkConnectivity(getAttributes(clusterElement, 'data-id'), (connected) => {
+                          Modules.Clusters.checkConnectivity(getAttributes(clusterElement, 'data-id'), terminal, (connected) => {
                             // Show a `not-connected` class if the app is not connected with the cluster
                             connectionStatusElement.removeClass('show connected not-connected').toggleClass('show not-connected', !connected)
 
@@ -5186,6 +5214,7 @@
                 // Send a request to create a pty instance and connect with the cluster
                 IPCRenderer.send('pty:create', {
                   ...creationData,
+                  terminalID: info.terminalID,
                   workspaceID: getActiveWorkspaceID()
                 })
               } catch (e) {
@@ -7619,7 +7648,7 @@
       clickedNode.addClass('perform-process')
 
       // Get the CQL description based on the passed scope
-      Modules.Clusters.getCQLDescription(data.clusterID, data.scope, (description) => {
+      Modules.Clusters.getCQLDescription(data.clusterID, data.scope, terminalObjects[data.terminalID], (description) => {
         // As the description has been received remove the processing class
         clickedNode.removeClass('perform-process')
 
@@ -7705,7 +7734,9 @@
             // Point at the description UI element
             let main = $(this),
               // Hold the original height of the description before any manipulation
-              originalHeight = main.actual('height'),
+              originalHeight = main.actual('height', {
+                absolute: true
+              }),
               // Point at the expandation/shrinking button
               expandBtnElement = $(this).find('button.expand-editor'); // This semicolon is critical here
 
@@ -7722,7 +7753,9 @@
 
               // If the original height hasn't been fetched then fetch it now
               if (originalHeight <= 0)
-                originalHeight = main.actual('height')
+                originalHeight = main.actual('height', {
+                  absolute: true
+                })
 
               try {
                 // If the description's UI element is not expanded already then skip this try-catch block
@@ -7826,5 +7859,10 @@
         }))
       })
     })
+  }
+
+  // Handle the request of clearing the current active line of specific terminal
+  {
+    IPCRenderer.on(`terminal:clear-line`, (_, terminalID) => Modules.Clusters.clearTerminalCurrentLine(terminalObjects[terminalID]))
   }
 }

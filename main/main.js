@@ -538,31 +538,38 @@ App.on('window-all-closed', () => {
       } catch (e) {}
     })
 
+    // Send a resize request to the pty instance based on the app's associated UI terminal
+    IPCMain.on('pty:resize', (_, data) => {
+      try {
+        CQLSHInstances[data.id].resize(data)
+      } catch (e) {}
+    })
+
     // Get the metadata of a cluster
     IPCMain.on('pty:metadata', (_, data) => {
       try {
-        CQLSHInstances[data.id].getMetadata(data.metadataSendID)
+        CQLSHInstances[data.id].getMetadata(data.metadataSendID, data.currentBuffer)
       } catch (e) {}
     })
 
     // Get the CQL description of a cluster, keyspace in it, or table
     IPCMain.on('pty:cql-desc', (_, data) => {
       try {
-        CQLSHInstances[data.id].getCQLDescription(data.cqlDescSendID, data.scope)
+        CQLSHInstances[data.id].getCQLDescription(data.cqlDescSendID, data.scope, data.currentBuffer)
       } catch (e) {}
     })
 
     // Check the connectivity with a cluster
     IPCMain.on('pty:check-connection', (_, data) => {
       try {
-        CQLSHInstances[data.id].checkConnectivity(data.checkConnectivityRequestID)
+        CQLSHInstances[data.id].checkConnectivity(data.checkConnectivityRequestID, data.currentBuffer)
       } catch (e) {}
     })
 
     // Get the result of the query tracing process
     IPCMain.on('pty:query-tracing', (_, data) => {
       try {
-        CQLSHInstances[data.clusterID].getQueryTracing(data.id, data.sessionID)
+        CQLSHInstances[data.clusterID].getQueryTracing(data.id, data.sessionID, data.currentBuffer)
       } catch (e) {}
     })
 

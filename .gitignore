@@ -6,8 +6,7 @@ test*/*
 docker/*
 
 data/**
-!data/**/*.json
-
+data/workspaces/workspaces.json
 main/bin/*
 !main/bin/temp.txt
 

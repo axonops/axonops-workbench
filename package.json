@@ -46,7 +46,12 @@
       "notarize": {
         "teamId": "UJ776LUP23"
       },
-      "identity": "AXONOPS Limited (UJ776LUP23)"
+      "identity": "AXONOPS Limited (UJ776LUP23)",
+      "binaries": [
+        "main/bin/cqlsh-407",
+        "main/bin/cqlsh-410",
+        "main/bin/keys_generator"
+      ]
     },
     "deb": {
       "depends": [

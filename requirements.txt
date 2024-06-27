@@ -14,7 +14,7 @@ more-itertools==10.2.0
 packaging==24.0
 pycparser==2.22
 pycryptodome==3.19.1
-pyinstaller==6.8.0
+# pyinstaller==6.8.0
 pyinstaller-hooks-contrib==2024.6
 pytz==2022.7.1
 SecretStorage==3.3.3

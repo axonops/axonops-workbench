@@ -9,7 +9,7 @@
   "main": "main/main.js",
   "license": "Apache-2.0",
   "description": "AxonOps Developer Workbench for Apache Cassandra",
-  "productName": "AxonOps Developer Workbench for Apache Cassandra",
+  "productName": "AxonOpsCassandra",
   "maintainers": [
     "info@axonops.com"
   ],

@@ -1,6 +1,6 @@
 {
-  "name": "axonops-developer-workbench",
-  "title": "AxonOps Developer Workbench",
+  "name": "axonops-developer-workbench-cassandra",
+  "title": "AxonOps Developer Workbench for Aapche Cassandra",
   "version": "0.1.0-1",
   "author": {
     "name": "AxonOps",
@@ -29,9 +29,6 @@
     }],
     "win": {
       "icon": "./renderer/assets/images/icon-colored.ico",
-      "publisherName": "AxonOps Limited",
-      "verifyUpdateCodeSignature": false,
-      "certificateSubjectName": "AxonOps Limited",
       "target": [
         "nsis",
         "zip"

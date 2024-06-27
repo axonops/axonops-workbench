@@ -26,9 +26,10 @@ jobs:
       - name: Build binaries for cqlsh and keys_generator
         run: |
           pip install --upgrade pip
-          pip install virtualenv
-          virtualenv venv
+          
+          pip3 install -r requirements.txt
 
+<<<<<<< HEAD
           ./venv/bin/pip3 install -r requirements.txt
 
           ./venv/bin/pip3 uninstall pyinstaller
@@ -41,6 +42,11 @@ jobs:
 
       - name: Start with AxonOps Developer Workbench
         run: echo ""
+=======
+          pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407 --osx-entitlements-file resources/entitlements.mac.plist
+          pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410 --osx-entitlements-file resources/entitlements.mac.plist
+          pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile keys_generator/keys_generator.py --osx-entitlements-file resources/entitlements.mac.plist
+>>>>>>> 2b9605d (Testing windows build)
 
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4

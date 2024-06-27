@@ -30,7 +30,6 @@ jobs:
           virtualenv venv
           ./venv/bin/pip3 install -r requirements.txt
           
-          ./venv/bin/pip3 uninstall pyinstaller
           ./venv/bin/pip3 install https://github.com/pyinstaller/pyinstaller/archive/develop.zip
           
           ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407

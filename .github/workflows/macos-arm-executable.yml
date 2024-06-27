@@ -18,10 +18,10 @@ jobs:
         with:
           ref: ${{ steps.extract_branch.outputs.branch }}
 
-      - name: Setup Python v3.12
-        uses: actions/setup-python@v3
+      - name: Setup Python v3.11.3
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12.4'
+          python-version: 3.11.3
 
       - name: Build binaries for cqlsh and keys_generator
         run: |
@@ -30,6 +30,10 @@ jobs:
           virtualenv venv
 
           ./venv/bin/pip3 install -r requirements.txt
+
+          ./venv/bin/pip3 uninstall pyinstaller
+
+          ./venv/bin/pip3 install https://github.com/pyinstaller/pyinstaller/archive/develop.zip
 
           ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407 --osx-entitlements-file resources/entitlements.mac.plist
           ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410 --osx-entitlements-file resources/entitlements.mac.plist

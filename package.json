@@ -52,10 +52,13 @@
       "type": "distribution",
       "entitlements": "./resources/entitlements.mac.plist",
       "entitlementsInherit": "./resources/entitlements.mac.plist",
+      "provisioningProfile": "./resources/workbenchcassandra.provisionprofile",
+      "extraFiles": [
+        "./resources/workbenchcassandra.provisionprofile"
+      ],
       "notarize": {
         "teamId": "UJ776LUP23"
       },
-      "identity": "AXONOPS Limited (UJ776LUP23)",
       "binaries": [
         "main/bin/cqlsh-407",
         "main/bin/cqlsh-410",
@@ -82,7 +85,8 @@
     "rpm": "electron-builder --linux rpm --publish onTag",
     "snap": "electron-builder --linux snap --publish onTag",
     "mac": "electron-builder --mac dmg --publish onTag",
-    "mac:zip": "electron-builder --mac zip --publish onTag"
+    "mac:zip": "electron-builder --mac zip --publish onTag",
+    "mac:pkg": "electron-builder --mac pkg --publish onTag"
   },
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {

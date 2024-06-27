@@ -21,7 +21,7 @@ jobs:
       - name: Setup Python v3.12
         uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: '3.12.4'
 
       - name: Build binaries for cqlsh and keys_generator
         run: |

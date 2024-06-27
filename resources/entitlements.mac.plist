@@ -17,6 +17,8 @@
     <true/>
     <key>com.apple.security.network.server</key>
     <true/>
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
     <key>com.apple.security.application-groups</key>
     <array>
         <string>UJ776LUP23.com.axonops.workbench.cassandra</string>

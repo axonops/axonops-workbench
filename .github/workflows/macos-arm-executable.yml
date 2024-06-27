@@ -19,7 +19,7 @@ jobs:
           ref: ${{ steps.extract_branch.outputs.branch }}
 
       - name: Setup Python v3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v3
         with:
           python-version: '3.12.4'
 

@@ -322,9 +322,9 @@ App.on('ready', () => {
    */
   let introView = createWindow({
     ...properties,
-    minWidth: 450,
+    minWidth: 530,
     minHeight: 80,
-    width: 480,
+    width: 560,
     height: 80,
     transparent: true,
     backgroundColor: 'rgba(255, 255, 255, 0)',

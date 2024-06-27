@@ -770,7 +770,7 @@
                           <div class="tab-content">
                             <div class="tab-pane fade show active loading" tab="cqlsh-session" id="_${cqlshSessionContentID}" role="tabpanel">
                               <div class="switch-terminal">
-                                <button type="button" class="btn btn-primary btn-dark changed-bg changed-color">
+                                <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" disabled>
                                   <ion-icon name="switch"></ion-icon>
                                   <span mulang="switch terminal"></span>
                                 </button>
@@ -1623,7 +1623,9 @@
                         } catch (e) {}
 
                         // Restricted-scope variable that will hold all output till new line character is detected
-                        let allOutput = ''
+                        let allOutput = '',
+                          // Timeout object which will be triggerd in 10ms to check if the prompt is duplicated
+                          promptDuplicationTimeout
 
                         // Listen to data sent from the pty instance which are fetched from the cqlsh tool
                         IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
@@ -1673,11 +1675,16 @@
                              *
                              * Send an `EOL` character to the pty instance if the buffer is empty
                              */
-                            if (Modules.Clusters.getTerminalCurrentBuffer(terminal, true).length <= 0)
+                            setTimeout(() => {
+                              // Enable the terminal switch button
+                              $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find(`div.switch-terminal button`).attr('disabled', null)
+
+                              // Send the `EOL` character
                               IPCRenderer.send('pty:command', {
                                 id: clusterID,
                                 cmd: ''
                               })
+                            }, 1000)
 
                             // Remove the loading class
                             $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).removeClass('loading')
@@ -2315,6 +2322,40 @@
                               // Resize the terminal
                               fitAddon.fit()
                             }
+
+                            /**
+                             * Check if the prompt has been doubled
+                             *
+                             * This is happening the most on macOS
+                             */
+                            try {
+                              // If a timeout has already been set then clear it
+                              if (promptDuplicationTimeout != null)
+                                clearTimeout(promptDuplicationTimeout)
+
+                              // Set a timeout function
+                              promptDuplicationTimeout = setTimeout(() => {
+                                try {
+                                  // Get the current buffer
+                                  let currentBuffer = Modules.Clusters.getTerminalCurrentBuffer(terminal, true),
+                                    // Match all prompts in the buffer - one or more -
+                                    cqlPrompt = currentBuffer.match(/([\Ss]+(\@))?cqlsh.*\>\s*/gi)
+
+                                  // Point at the first match
+                                  cqlPrompt = cqlPrompt[0]
+
+                                  // If only one prompt found then skip this try-catch block
+                                  if (cqlPrompt.match(/\>/gi).length <= 1)
+                                    throw 0
+
+                                  // Clear the line again
+                                  Modules.Clusters.clearTerminalCurrentLine(terminal)
+
+                                  // Write the given data - previous buffer again -
+                                  terminal.write(data.output)
+                                } catch (e) {}
+                              })
+                            } catch (e) {}
                           } catch (e) {
                             errorLog(e, 'clusters')
                           }
@@ -7863,6 +7904,6 @@
 
   // Handle the request of clearing the current active line of specific terminal
   {
-    IPCRenderer.on(`terminal:clear-line`, (_, terminalID) => Modules.Clusters.clearTerminalCurrentLine(terminalObjects[terminalID]))
+    IPCRenderer.on(`terminal:clear-line`, (_, data) => Modules.Clusters.clearTerminalCurrentLine(terminalObjects[data.terminalID], data.clearRequestID))
   }
 }

@@ -91,6 +91,9 @@
     "electron-builder": "24.12.0",
     "electron-rebuild": "^3.2.9"
   },
+  "optionalDependencies": {
+    "electron-installer-debian": "^3.1.0"
+  },
   "dependencies": {
     "@ramumb/strip-tags": "^0.1.3",
     "ansi-to-html": "^0.7.2",
@@ -103,7 +106,6 @@
     "configparser": "^0.3.10",
     "diff": "^5.1.0",
     "electron-context-menu": "^3.6.1",
-    "electron-installer-debian": "^3.2.0",
     "electron-positioner": "^4.1.0",
     "escape-html": "^1.0.3",
     "escape-quotes": "^1.0.2",

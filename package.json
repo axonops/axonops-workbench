@@ -35,8 +35,7 @@
       "target": [
         "nsis",
         "zip"
-      ],
-      "sign": false
+      ]
     },
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",

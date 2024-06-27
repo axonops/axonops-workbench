@@ -267,7 +267,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
       </div>`
 
   // Append the toast to the main toasts' container
-  $('body div.toast-container').append($(element).show(function() {
+  $(`body div.${toastID.length != 0 ? 'pinned-' : ''}toast-container`).append($(element).show(function() {
     // Point at the just-created toast element
     let toast = $(this),
       // Point at the progress bar
@@ -294,6 +294,9 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
           width: '0%'
         }, timeout - 200, () => closeBtn.click())
       }, 150)
+
+      // When hovering on the toast's body the closing timer will be paused then resumed on hover out
+      toast.find('div.toast-body').hover(() => progressBar.pause(), () => progressBar.resume())
     } catch (e) {}
 
     // When double clicks the toast's body its content will be selected
@@ -309,9 +312,6 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
       // Remove the toast after it's hidden
       setTimeout(() => toast.remove(), 120)
     })
-
-    // When hovering on the toast's body the closing timer will be paused then resumed on hover out
-    toast.find('div.toast-body').hover(() => progressBar.pause(), () => progressBar.resume())
 
     try {
       // If there's no passed callback function then skip this try-catch block
@@ -401,7 +401,7 @@ let showPinnedToast = (pinnedToastID, title, text) => showToast(title, text, 'bg
 let updatePinnedToast = (pinnedToastID, text, destroy = false) => {
   try {
     // Point at the toast
-    let toast = $(`div.toast-container div.toast[toast-id="${pinnedToastID}"]`),
+    let toast = $(`div.pinned-toast-container div.toast[toast-id="${pinnedToastID}"]`),
       // Find the toast's body
       toastBody = toast.find('div.toast-body'),
       // Point at the progress bar
@@ -459,8 +459,11 @@ let updatePinnedToast = (pinnedToastID, text, destroy = false) => {
     setTimeout(() => {
       progressBar.animate({
         width: '0%'
-      }, 10000).promise().done(() => closeBtn.click())
+      }, 10000, () => closeBtn.click())
     }, 150)
+
+    // When hovering on the toast's body the closing timer will be paused then resumed on hover out
+    toastBody.hover(() => progressBar.pause(), () => progressBar.resume())
   } catch (e) {}
 }
 

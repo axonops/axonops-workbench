@@ -1987,12 +1987,14 @@ div.row {
   }
 }
 
+div.pinned-toast-container,
 div.toast-container {
   @include position(absolute, auto, 40px);
   z-index: 100000000000000;
 }
 
 div.content.notifications-center div.notifications-container,
+div.pinned-toast-container,
 div.toast-container {
   div.toast {
     --mdb-toast-bg: #262626;
@@ -3540,6 +3542,20 @@ div.modal#addEditClusterDialog {
     }
   }
 }
+
+div.pinned-toast-container {
+  --mdb-toast-zindex: 1060;
+    width: max-content;
+    max-width: 100%;
+    pointer-events: none;
+    right: auto;
+    left: 100px;
+}
+
+div.pinned-toast-container > :not(:last-child) {
+  margin-bottom: var(--mdb-toast-spacing);
+}
+
 /**
 * Import right-to-left style
 */

@@ -5,9 +5,15 @@ dev/*
 test*/*
 docker/*
 
-data/**
-data/workspaces/workspaces.json
-data/docker/docker.jso
+data/docker/*
+!data/docker/temp.txt
+
+data/logging/*
+!data/logging/temp.txt
+
+data/workspaces/*
+!data/workspaces/temp.txt
+
 main/bin/*
 !main/bin/temp.txt
 

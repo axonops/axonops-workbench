@@ -18,20 +18,26 @@ jobs:
         with:
           ref: ${{ steps.extract_branch.outputs.branch }}
 
-      - name: Setup Python v3.11.3
-        uses: actions/setup-python@v5
+      - name: Setup Python v3.8
+        uses: actions/setup-python@v3
         with:
-          python-version: 3.11.3
+          python-version: 3.8
 
       - name: Build binaries for cqlsh and keys_generator
         run: |
           pip install --upgrade pip
+          pip install virtualenv
+          virtualenv venv
+          ./venv/bin/pip3 install -r requirements.txt
           
-          pip3 install -r requirements.txt
-
-          pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407 --osx-entitlements-file resources/entitlements.mac.plist
-          pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410 --osx-entitlements-file resources/entitlements.mac.plist
-          pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile keys_generator/keys_generator.py --osx-entitlements-file resources/entitlements.mac.plist
+          ./venv/bin/pip3 uninstall pyinstaller
+          ./venv/bin/pip3 install https://github.com/pyinstaller/pyinstaller/archive/develop.zip
+          
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile keys_generator/keys_generator.py
+      - name: Start with AxonOps Developer Workbench
+        run: echo ""
 
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4
@@ -41,7 +47,6 @@ jobs:
       - name: Install AxonOps Developer Workbench dependencies
         run: |
           npm i
-
       - name: Pack Axonops Developer Workbench for macOS
         run: |
           npm run mac

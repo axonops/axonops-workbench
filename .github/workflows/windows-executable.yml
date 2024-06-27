@@ -33,9 +33,6 @@ jobs:
           pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh\v6.1.0-ACv4.1.0\cqlsh.py -n cqlsh-410
           pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile keys_generator\keys_generator.py
 
-      - name: Start with AxonOps Developer Workbench
-        run: echo ""
-
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4
         with:
@@ -46,15 +43,13 @@ jobs:
           npm cache clear --force
           npm i
         env:
-          CSC_IDENTITY_AUTO_DISCOVERY: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Pack AxonOps Developer Workbench For Windows
         run: |
           npm run win
-        shell: pwsh7
+        shell: powershell
         env:
-          CSC_IDENTITY_AUTO_DISCOVERY: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Windows Packed Version As Artifacts
@@ -66,5 +61,5 @@ jobs:
       - name: Upload Windows Packed Version As Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: AxonOps.Developer.Workbench-Windows.zip
+          name: AxonOps.Developer.Workbench-Windows.nsis
           path: dist/*.nsis

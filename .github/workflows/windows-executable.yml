@@ -52,6 +52,7 @@ jobs:
       - name: Pack AxonOps Developer Workbench For Windows
         run: |
           npm run win
+        shell: pwsh7
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

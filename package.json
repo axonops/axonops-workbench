@@ -8,8 +8,8 @@
   },
   "main": "main/main.js",
   "license": "Apache-2.0",
-  "description": "AxonOps Developer Workbench",
-  "productName": "AxonOps Developer Workbench",
+  "description": "AxonOps Developer Workbench for Apache Cassandra",
+  "productName": "AxonOps Developer Workbench for Apache Cassandra",
   "maintainers": [
     "info@axonops.com"
   ],
@@ -27,11 +27,21 @@
     "publish": [{
       "provider": "github"
     }],
+    "win": {
+      "icon": "./renderer/assets/images/icon-colored.ico",
+      "publisherName": "AxonOps Limited",
+      "verifyUpdateCodeSignature": false,
+      "certificateSubjectName": "AxonOps Limited",
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",
       "category": "Development",
-      "desktop": "AxonOps Developer Workbench",
-      "description": "AxonOps Developer Workbench"
+      "desktop": "AxonOps Developer Workbench for Apache Cassandra",
+      "description": "AxonOps Developer Workbench for Apache Cassandra"
     },
     "mac": {
       "icon": "./renderer/assets/images/icon-colored.icns",

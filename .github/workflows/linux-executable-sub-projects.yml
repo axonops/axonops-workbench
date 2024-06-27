@@ -16,10 +16,10 @@ jobs:
         with:
           ref: cqlsh
 
-      - name: Setup Python v3.11.3
+      - name: Setup Python v3.12
         uses: actions/setup-python@v3
         with:
-          python-version: 3.11.3
+          python-version: 3.12
 
       - name: Build CQLSH v6.0.0
         run: |

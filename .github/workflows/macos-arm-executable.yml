@@ -18,10 +18,10 @@ jobs:
         with:
           ref: ${{ steps.extract_branch.outputs.branch }}
 
-      - name: Setup Python v3.11.3
+      - name: Setup Python v3.12
         uses: actions/setup-python@v3
         with:
-          python-version: 3.11.3
+          python-version: 3.12
 
       - name: Build binaries for cqlsh and keys_generator
         run: |
@@ -31,9 +31,9 @@ jobs:
 
           ./venv/bin/pip3 install -r requirements.txt
 
-          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407
-          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410
-          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile keys_generator/keys_generator.py
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407 --osx-entitlements-file resources/entitlements.mac.plist
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410 --osx-entitlements-file resources/entitlements.mac.plist
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile keys_generator/keys_generator.py --osx-entitlements-file resources/entitlements.mac.plist
 
       - name: Start with AxonOps Developer Workbench
         run: echo ""

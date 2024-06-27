@@ -7,6 +7,7 @@ docker/*
 
 data/**
 data/workspaces/workspaces.json
+data/docker/docker.jso
 main/bin/*
 !main/bin/temp.txt
 

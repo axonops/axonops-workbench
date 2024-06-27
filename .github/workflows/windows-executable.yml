@@ -8,77 +8,35 @@ jobs:
     runs-on: windows-2019
 
     steps:
-      - name: Switch To `cqlsh` Branch
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Switch to ${{ steps.extract_branch.outputs.branch }} branch
         uses: actions/checkout@v4
         with:
-          ref: cqlsh
+          ref: ${{ steps.extract_branch.outputs.branch }}
 
       - name: Setup Python v3.8
         uses: actions/setup-python@v3
         with:
           python-version: 3.8
 
-      - name: Build CQLSH v6.0.0
+      - name: Build binaries for cqlsh and keys_generator
         run: |
-          cd "v6.0.0-ACv4.0.7"
-          dir
           pip install --upgrade pip
           pip install virtualenv
           virtualenv venv
-          venv\Scripts\activate.bat
-          pip install -r requirements.txt
-          pip install pypiwin32
-          pyinstaller --noconfirm --clean --noupx --onefile cqlsh.py
 
-      - name: Build CQLSH v6.1.0
-        run: |
-          cd "v6.1.0-ACv4.1.0"
-          dir
-          pip install --upgrade pip
-          pip install virtualenv
-          virtualenv venv
-          venv\Scripts\activate.bat
-          pip install -r requirements.txt
-          pip install pypiwin32
-          pyinstaller --noconfirm --clean --noupx --onefile cqlsh.py
+          ./venv/bin/pip3 install -r requirements.txt
 
-      - name: Rename Artifacts
-        run: |
-          md CQLSH_ALL
-          move v6.0.0-ACv4.0.7\dist\cqlsh.exe CQLSH_ALL\cqlsh-407.exe
-          move v6.1.0-ACv4.1.0\dist\cqlsh.exe CQLSH_ALL\cqlsh-410.exe
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile keys_generator/keys_generator.py
 
-      - name: Save Artifacts To Be Used Next
-        run: |
-          mkdir D:\CQLSH_ALL\
-          move CQLSH_ALL\* D:\CQLSH_ALL\
-
-      - name: Switch To `keys_generator` Branch
-        uses: actions/checkout@v4
-        with:
-          ref: keys_generator
-
-      - name: Build Keys Generator Tool
-        run: |
-          dir
-          pip install --upgrade pip
-          pip install virtualenv
-          virtualenv venv
-          venv\Scripts\activate.bat
-          pip install -r requirements.txt
-          pyinstaller --noconfirm --clean --noupx --onefile keys_generator.py
-
-      - name: Save Artifacts To Be Used Next
-        run: |
-          move dist/*keys_generator* D:\CQLSH_ALL\
-
-      - name: Start With AxonOps Developer Workbench
+      - name: Start with AxonOps Developer Workbench
         run: echo ""
-
-      - name: Switch To `main` Branch
-        uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4
@@ -90,10 +48,6 @@ jobs:
           npm cache clear --force
           npm i
 
-      - name: Move CQLSH To `bin` Folder
-        run: |
-          move D:\CQLSH_ALL\* main\bin\
-
       - name: Pack AxonOps Developer Workbench For Windows
         run: |
           npm run win
@@ -102,4 +56,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AxonOps.Developer.Workbench-Windows.zip
-          path: release-builds/axonops-developer-workbench-win32*
+          path: dist/*.zip
+
+      - name: Upload Windows Packed Version As Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxonOps.Developer.Workbench-Windows.zip
+          path: dist/*.nsis

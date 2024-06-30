@@ -81,6 +81,8 @@
            * The value will be updated with every test connection process
            */
           sshTunnelCreationRequestID,
+          // For Docker/Sandbox projects set the process ID of checking Cassandra
+          checkCassandraProcessID,
           /**
            * The AxonOps sectin ID
            * It's defined here as it's being used in different parts of the event
@@ -407,6 +409,9 @@
 
                 // The app is now testing the connection with the cluster
                 clusterElement.addClass('test-connection')
+
+                // Enable the process termination button
+                $(`div.btn[button-id="${terminateProcessBtnID}"]`).removeClass('disabled')
 
                 // Show the termination process' button
                 setTimeout(() => clusterElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
@@ -4359,6 +4364,9 @@
                   // Point at the project's work area
                   let projectWorkarea = $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`)
 
+                  // Enable the process termination button
+                  $(`div.btn[button-id="${terminateProcessBtnID}"]`).removeClass('disabled')
+
                   // If exists then click the hidden `CONNECT` button and skip the upcoming code
                   if (projectWorkarea.length > 0)
                     return $(`button[button-id="${connectBtnID}"]`).trigger('click')
@@ -4485,6 +4493,9 @@
                         // Set the flag to be `false`
                         isStartingProcessTerminated = false
 
+                        // Show feedback to the user about starting the project
+                        showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('docker project [b]$data[/b] is about to start, a notification will show up once the process begins', [getAttributes(clusterElement, 'data-name')])) + '.')
+
                         // Start the project
                         Modules.Docker.getDockerInstance(clusterElement).startDockerCompose(pinnedToastID, (feedback) => {
                           // Don't trigger the time out function
@@ -4509,9 +4520,50 @@
                           // Remove all previous states
                           clusterElement.children('div.status').removeClass('success failure').addClass('show')
 
-                          setTimeout(() => {
+                          // Update the process ID
+                          checkCassandraProcessID = getRandomID(20)
+
+                          // Define variables which will hold important timeout and interval functions
+                          let checkingCassandraTimeout, checkingTerminationInterval
+
+                          checkingTerminationInterval = setInterval(() => {
+                            // If the checking process is flagged to be terminated
+                            try {
+                              if (checkCassandraProcessID != 'terminated')
+                                throw 0
+
+                              // Request to destroy the associated pinned toast
+                              updatePinnedToast(pinnedToastID, true, true)
+
+                              // Clear the checking trigger timeout
+                              clearTimeout(checkingCassandraTimeout)
+
+                              // Clear the termination checking interval
+                              clearInterval(checkingTerminationInterval)
+                            } catch (e) {}
+                          }, 500)
+
+                          checkingCassandraTimeout = setTimeout(() => {
+                            // Make sure to clear the termination check interval
+                            try {
+                              clearInterval(checkingTerminationInterval)
+                            } catch (e) {}
+
+                            // Define inner flag to tell if the process has been terminated
+                            let isTerminated = false
+
                             // Start watching Cassandra's node inside the project
                             Modules.Docker.checkCassandraInContainer(pinnedToastID, ports.cassandra, (status) => {
+
+                              // If the process has been terminated then skip the upcoming code and stop the process
+                              if (status.terminated || isTerminated) {
+                                // Update the associated flag
+                                isTerminated = true
+
+                                // Skip the upcoming code
+                                return
+                              }
+
                               // Failed to connect with the node
                               if (!status.connected) {
                                 // Show a failure feedback to the user
@@ -4548,6 +4600,9 @@
                                 // Skip the upcoming code
                                 return
                               }
+
+                              // Disable the process termination button
+                              $(`div.btn[button-id="${terminateProcessBtnID}"]`).addClass('disabled')
 
                               /**
                                * Successfully started the project and Cassandra's one node at least is up
@@ -4607,7 +4662,7 @@
                                   } catch (e) {}
                                 }, 1000)
                               }, 3000)
-                            })
+                            }, null, checkCassandraProcessID)
                           }, 20000)
                         })
                       })
@@ -5013,6 +5068,9 @@
 
               // Clicks the process termination button
               $(`div.btn[button-id="${terminateProcessBtnID}"]`).click(() => {
+                // Disable this button while processing
+                $(`div.btn[button-id="${terminateProcessBtnID}"]`).addClass('disabled')
+
                 try {
                   // If the current cluster is not actually a docker/sandbox project then skip this try-catch block
                   if (!isSandbox)
@@ -5030,6 +5088,12 @@
 
                   // Show/create that toast
                   showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('terminate docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+
+                  // Send request to the main thread to terminate the connection test process - if there's any -
+                  IPCRenderer.send(`pty:test-connection:terminate`, checkCassandraProcessID)
+
+                  // Update the ID to be `terminated`; to stop the checking process from being started if it's not yet
+                  checkCassandraProcessID = 'terminated'
 
                   // Attempt to close/stop the docker project
                   Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, (feedback) => {
@@ -5055,6 +5119,7 @@
                     setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
                   })
 
+                  // Skip the upcoming code
                   return
                 } catch (e) {}
 
@@ -6822,6 +6887,9 @@
 
               // Send request to the main thread to terminate the current ongoing connection test process
               IPCRenderer.send(`process:terminate:${testConnectionProcessID}`)
+
+              // Send request to the main thread to terminate the connection test process - if there's any -
+              IPCRenderer.send(`pty:test-connection:terminate`, checkCassandraProcessID)
 
               // Once the termination status is received
               IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with the cluster to be added/edited in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with the cluster to be added/edited in workspace [b]$data[/b]', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), status ? 'success' : 'failure'))

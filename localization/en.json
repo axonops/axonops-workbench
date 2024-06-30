@@ -335,7 +335,8 @@
       "start now by executing cql statement": "start now by executing cql statement",
       "no output was received": "no output was received",
       "no data found": "no data found",
-      "content has been copied to the clipboard, the size is $data": "content has been copied to the clipboard, the size is $data"
+      "content has been copied to the clipboard, the size is $data": "content has been copied to the clipboard, the size is $data",
+      "docker project [b]$data[/b] is about to start, a notification will show up once the process begins": "docker project [b]$data[/b] is about to start, a notification will show up once the process begins"
     }
   }
 }

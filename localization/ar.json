@@ -335,7 +335,8 @@
       "start now by executing cql statement": "ابدأ الآن بتنفيذ بيان CQL",
       "no output was received": "لم يتم تلقي أي مخرج",
       "no data found": "لم يتم تلقي أي معلومات",
-      "content has been copied to the clipboard, the size is $data": "تم نسخ المحتوى إلى الحافظة، الحجم هو $data"
+      "content has been copied to the clipboard, the size is $data": "تم نسخ المحتوى إلى الحافظة، الحجم هو $data",
+      "docker project [b]$data[/b] is about to start, a notification will show up once the process begins": "مشروع عامل الإرساء [b]$data[/b] على وشك البدء، وسيظهر إشعار بمجرد بدء العملية"
     }
   }
 }

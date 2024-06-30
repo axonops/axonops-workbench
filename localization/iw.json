@@ -335,7 +335,8 @@
       "start now by executing cql statement": "התחל עכשיו על ידי ביצוע משפט cql",
       "no output was received": "לא התקבל פלט",
       "no data found": "לא נמצאו נתונים",
-      "content has been copied to the clipboard, the size is $data": "התוכן הועתק ללוח, הגודל הוא $data"
+      "content has been copied to the clipboard, the size is $data": "התוכן הועתק ללוח, הגודל הוא $data",
+      "docker project [b]$data[/b] is about to start, a notification will show up once the process begins": "פרויקט docker [b]$data[/b] עומד להתחיל, הודעה תופיע ברגע שהתהליך יתחיל"
     }
   }
 }

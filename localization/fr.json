@@ -336,7 +336,8 @@
       "start now by executing cql statement": "commencez maintenant en exécutant l'instruction cql",
       "no output was received": "aucune sortie n'a été reçue",
       "no data found": "Aucune donnée disponible",
-      "content has been copied to the clipboard, the size is $data": "le contenu a été copié dans le presse-papiers, la taille est $data"
+      "content has been copied to the clipboard, the size is $data": "le contenu a été copié dans le presse-papiers, la taille est $data",
+      "docker project [b]$data[/b] is about to start, a notification will show up once the process begins": "le projet docker [b]$data[/b] est sur le point de démarrer, une notification s'affichera une fois le processus commencé"
     }
   }
 }

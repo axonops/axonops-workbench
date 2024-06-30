@@ -31,88 +31,61 @@ const FS = require('fs-extra'),
 let extraResourcesPath = null
 
 // Get the set extra resources path from the main thread
-$(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
+$(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) => {
   // Adopt the set path
   extraResourcesPath = path
 
-  // Make sure resources are in the correct place
+  // Make sure resources are exist in the correct place
   try {
-    if (extraResourcesPath == null)
-      throw 0
-
     // Get the app's path
-    let appPath = Path.join(__dirname, '..', '..', '..'),
-      // Define the resources' names
-      resourcesNames = ['config', 'data', 'main', 'localization']
+    let appPath = await IPCRenderer.invoke('app-path:get'),
+      // Define the process type and the associated folders and files
+      processTypes = {
+        // Those files will be checked and created if not exist
+        ensureFile: [
+          ['config', 'variables.json'],
+          ['config', 'app-config.cfg'],
+          ['data', 'docker', 'docker.json'],
+          ['data', 'logging', 'log.tmp'],
+          ['data', 'workspaces', 'workspaces.json']
+        ],
+        // Those folders will be copied from the app's folder to the set resources' path
+        copy: [
+          ['main'],
+          ['localization']
+        ]
+      }
 
-    // Make sure the set resources' path/directory exists, and if it's not then it'll be created
-    FS.ensureDir(extraResourcesPath, (_) => {
-      /**
-       * Check if resources are in the home directory of the current user
-       *
-       * Read the set path and get all possible items
-       */
-      FS.readdir(extraResourcesPath, async (err, items) => {
-        // Flag to tell if all resources exist or not
-        let areAllResourcesExist = resourcesNames.every((name) => items.includes(name))
-
+    try {
+      // For the process `ensureFile`
+      for (let file of processTypes.ensureFile)
         try {
-          // If all resources exist then skip this try-catch block
-          if (areAllResourcesExist)
-            throw 0
+          await FS.ensureFile(Path.join((extraResourcesPath || appPath), ...file))
+        } catch (e) {}
 
-          // Loop through the resources
-          for (let resource of resourcesNames) {
-            // Flag to tell if the current resource exists
-            let isResourceExists = items.includes(resource)
+      // If the set resources' path is `null` then there's no need to copy and folder, skip this try-catch block
+      if (extraResourcesPath == null)
+        throw 0
 
-            // If the current resource exists then skip it and move to the next resource
-            if (isResourceExists)
-              continue
-
-            // Attempt to copy the resource from the app's path to the set resource's path
-            try {
-              await FS.copy(Path.join(appPath, resource), Path.join(extraResourcesPath, resource), {
-                overwrite: true
-              })
-            } catch (e) {}
-          }
-        } catch (e) {} finally {
-          try {
-            /**
-             * Ensure that all required data files exists
-             *
-             * Define the files' names and folders
-             */
-            let files = [
-              ['data', 'docker', 'docker.json'],
-              ['data', 'workspaces', 'workspaces.json']
-            ]
-
-            // Loop through each file and ensure it's exists
-            for (let file of files)
-              await FS.ensureFile(Path.join(extraResourcesPath, ...file))
-          } catch (e) {}
-
-          /**
-           * Now call the `initialization` event for `document`
-           * This event will load and initialize the entire app after getting the path of the extra resources
-           */
-          setTimeout(() => $(document).trigger('initialize'), 100)
-        }
-      })
-    })
+      // For the process `copy`
+      for (let folder of processTypes.copy)
+        try {
+          await FS.copy(Path.join(Path.join(appPath, '..'), ...folder), Path.join(extraResourcesPath, ...folder), {
+            overwrite: true
+          })
+        } catch (e) {}
+    } catch (e) {} finally {
+      // Now call the `pre-initialize` event for `document`
+      setTimeout(() => $(document).trigger('pre-initialize'), 100)
+    }
   } catch (e) {
-    /**
-     * Now call the `initialization` event for `document`
-     * This event will load and initialize the entire app after getting the path of the extra resources
-     */
-    setTimeout(() => $(document).trigger('initialize'), 100)
+    // Now call the `pre-initialize` event for `document`
+    setTimeout(() => $(document).trigger('pre-initialize'), 100)
   }
 }))
 
 // Load bootstrap JS files
-$(document).on('initialize', () => {
+$(document).on('pre-initialize', async () => {
   /**
    * Functions file
    * It has global functions that are used throughout the app
@@ -167,7 +140,44 @@ $(document).on('initialize', () => {
   }
 
   // Load the rest bootstrap JS files
-  (['libs', 'globs']).forEach((file) => loadScript(Path.join(__dirname, '..', 'js', `${file}.js`)))
+  for (let file of ['libs', 'globs'])
+    loadScript(Path.join(__dirname, '..', 'js', `${file}.js`))
+
+  /**
+   * Extra checking process
+   * Merge the shipped new config file with the old
+   *
+   * Get the app's path
+   */
+  let appPath = await IPCRenderer.invoke('app-path:get'),
+    // Define the old config file's path
+    oldConfigFilePath = Path.join((extraResourcesPath || appPath), 'config', 'app-config.cfg'),
+    // Define the new config file's path
+    newConfigFilePath = Path.join(appPath, 'config', 'app-config.cfg')
+
+  try {
+    // If the old and new config files' paths' are not the same then skip this try-catch block
+    if (oldConfigFilePath != newConfigFilePath)
+      throw 0
+
+    /**
+     * Now call the `initialization` event for `document`
+     * This event will load and initialize the entire app after getting the path of the extra resources
+     */
+    setTimeout(() => $(document).trigger('initialize'), 100)
+
+    // Skip the upcoming code
+    return
+  } catch (e) {}
+
+  // Merge the two config files, and wait for the callback function to be triggerd
+  Modules.Config.mergeConfigFiles(oldConfigFilePath, newConfigFilePath, () => {
+    /**
+     * Now call the `initialization` event for `document`
+     * This event will load and initialize the entire app after getting the path of the extra resources
+     */
+    setTimeout(() => $(document).trigger('initialize'), 100)
+  })
 })
 
 // Initialize the logging system

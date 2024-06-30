@@ -3545,17 +3545,16 @@ div.modal#addEditClusterDialog {
 
 div.pinned-toast-container {
   --mdb-toast-zindex: 1060;
-    width: max-content;
-    max-width: 100%;
-    pointer-events: none;
-    right: auto;
-    left: 100px;
+  width: max-content;
+  max-width: 100%;
+  pointer-events: none;
+  right: auto;
+  left: 100px;
 }
 
 div.pinned-toast-container > :not(:last-child) {
   margin-bottom: var(--mdb-toast-spacing);
 }
-
 /**
 * Import right-to-left style
 */

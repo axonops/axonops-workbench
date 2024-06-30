@@ -600,6 +600,16 @@ App.on('window-all-closed', () => {
       Modules.Pty.testConnectionWithCluster(views.main, data)
     })
 
+    // Terminate a connection test process - especially docker/sandbox project -
+    IPCMain.on(`pty:test-connection:terminate`, (_, requestID) => {
+      // Send the request to associated renderer thread
+      views.main.webContents.send(`pty:test-connection:${requestID}`, {
+        connected: false,
+        terminated: true,
+        requestID
+      })
+    })
+
     // Create a Bash session
     IPCMain.on(`pty:create:bash-session`, (_, data) => {
       Modules.Pty.bashSession(views.main, {
@@ -774,6 +784,9 @@ App.on('window-all-closed', () => {
 
   // Request to change the content protection state
   IPCMain.on('content-protection', (_, apply) => views.main.setContentProtection(apply))
+
+  // Request to get the app's current path
+  IPCMain.handle('app-path:get', () => App.getAppPath())
 
   /**
    * Show a pop-up context menu with passed items

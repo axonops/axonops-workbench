@@ -18,22 +18,22 @@ jobs:
         with:
           ref: ${{ steps.extract_branch.outputs.branch }}
 
-      - name: Setup Python v3.10
-        uses: actions/setup-python@v5
+      - name: Setup Python v3.8
+        uses: actions/setup-python@v3
         with:
-          python-version: 3.10
+          python-version: 3.8
 
       - name: Build binaries for cqlsh and keys_generator
         run: |
           pip3 install --upgrade pip
           pip3 install virtualenv
           virtualenv venv
-          
+
           ./venv/bin/pip3 install -r requirements.txt
 
-          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407
-          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410
-          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile keys_generator/keys_generator.py
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410
+          ./venv/bin/pyinstaller --noconfirm --clean --noupx --onefile keys_generator/keys_generator.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}

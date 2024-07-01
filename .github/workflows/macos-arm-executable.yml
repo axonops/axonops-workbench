@@ -18,10 +18,10 @@ jobs:
         with:
           ref: ${{ steps.extract_branch.outputs.branch }}
 
-      - name: Setup Python v3.8
-        uses: actions/setup-python@v3
+      - name: Setup Python v3.10
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.10
 
       - name: Build binaries for cqlsh and keys_generator
         run: |

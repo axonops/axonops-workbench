@@ -5090,7 +5090,9 @@
                   showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('terminate docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
 
                   // Send request to the main thread to terminate the connection test process - if there's any -
-                  IPCRenderer.send(`pty:test-connection:terminate`, checkCassandraProcessID)
+                  try {
+                    IPCRenderer.send(`pty:test-connection:terminate`, checkCassandraProcessID)
+                  } catch (e) {}
 
                   // Update the ID to be `terminated`; to stop the checking process from being started if it's not yet
                   checkCassandraProcessID = 'terminated'
@@ -6889,7 +6891,9 @@
               IPCRenderer.send(`process:terminate:${testConnectionProcessID}`)
 
               // Send request to the main thread to terminate the connection test process - if there's any -
-              IPCRenderer.send(`pty:test-connection:terminate`, checkCassandraProcessID)
+              try {
+                IPCRenderer.send(`pty:test-connection:terminate`, checkCassandraProcessID)
+              } catch (e) {}
 
               // Once the termination status is received
               IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with the cluster to be added/edited in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with the cluster to be added/edited in workspace [b]$data[/b]', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), status ? 'success' : 'failure'))

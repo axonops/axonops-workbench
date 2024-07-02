@@ -48,6 +48,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
           ['data', 'docker', 'docker.json'],
           ['data', 'logging', 'log.tmp'],
           ['data', 'workspaces', 'workspaces.json']
+          ['data', 'credits.db']
         ],
         // Those folders will be copied from the app's folder to the set resources' path
         copy: [
@@ -57,11 +58,32 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
       }
 
     try {
-      // For the process `ensureFile`
-      for (let file of processTypes.ensureFile)
+      /**
+       * For the process `ensureFile`
+       * The `credits.db` will be always copied from the app's path to the resources path if there's a difference
+       *
+       * Loop through each file
+       */
+      for (let file of processTypes.ensureFile) {
+        try {
+          // If the current file is the `credits` database
+          if (file[1] != 'credits.db' || extraResourcesPath == null)
+            throw 0
+
+          // Copy the database to the set extra resources path
+          try {
+            await FS.copy(Path.join(appPath, ...file), Path.join(extraResourcesPath, ...file))
+          } catch (e) {}
+
+          // Skip the upcoming code and move to the next file
+          continue
+        } catch (e) {}
+
+        // Ensure the file exists
         try {
           await FS.ensureFile(Path.join((extraResourcesPath || appPath), ...file))
         } catch (e) {}
+      }
 
       // If the set resources' path is `null` then there's no need to copy and folder, skip this try-catch block
       if (extraResourcesPath == null)
@@ -997,8 +1019,83 @@ $(document).on('initialize', () => {
   }, 3000)
 })
 
-// Add the app's license in the `About` modal
-$(document).on('initialize', () => $('div.modal#appAbout').find('div.modal-section[section="app-license"] pre, div.modal-section[section="cassandra-license"] pre').text(Modules.Consts.LICENSE))
+// Initialization process for the `About` modal - with ID `#appAbout` -
+$(document).on('initialize', () => {
+  /**
+   * Handle the `credits` SQLite database
+   * This database mainly has credits to all packages, plugins and modules used in the app
+   * It also has general text for licenses like Apache 2.0 license
+   *
+   * Get the app's path
+   */
+  IPCRenderer.invoke('app-path:get').then((appPath) => {
+    // Point at the credits' container in the modal
+    let creditsContainer = $('div.modal#appAbout').find('div.modal-section[section="credits"]'),
+      // Connect with the associated database
+      database = new SQLite3(Path.join((extraResourcesPath || appPath), 'data', 'credits.db')),
+      // Get all records inside the `credits` table
+      credits = database.prepare('SELECT * FROM credits').all(),
+      // Get all records inside the `licenses` table
+      licenses = database.prepare('SELECT * FROM licenses').all()
 
-// Once the main window/view is fully loaded send the `loaded` event to the main thread
-$(document).on('initialize', () => setTimeout(() => IPCRenderer.send('loaded'), 1500))
+    // Add general license's content to specified `pre` elements
+    $('div.modal#appAbout').find('pre[license]').each(function() {
+      try {
+        // Get the license code; to get its content
+        let licenseCode = $(this).attr('license'),
+          // Get the content/text of the license
+          licenseContent = licenses.filter((license) => license.code == licenseCode)[0].content
+
+        // Add the content
+        $(this).text(licenseContent)
+      } catch (e) {}
+    })
+
+    // Loop through each credit/record
+    for (let credit of credits) {
+      // The credit's notice UI structure
+      let element = `
+          <div class="notice">
+            <span class="badge badge-primary">${credit.name}</span>
+            <span class="badge badge-info">${credit.license}</span>
+            <pre>${StripTags(credit.content)}</pre>
+          </div>`
+
+      // Append the credit
+      creditsContainer.append($(element))
+    }
+  })
+
+  // Enable the click event and opening of external links
+  $('div.modal#appAbout').find('span.link').click(function() {
+    Open($(this).children('span.content').text())
+  })
+})
+
+// Send the `loaded` event to the main thread, and show the `About` dialog/modal
+$(document).on('initialize', () => setTimeout(() => {
+  // Send the event
+  IPCRenderer.send('loaded')
+
+  /**
+   * Handle whether or not the `About` dialog should be shown
+   *
+   * Get the app's config
+   */
+  Modules.Config.getConfig((config) => {
+    try {
+      // Whether or not the dialog is meant to be hidden
+      let isAboutDialogHidden = config.get('ui', 'hideAboutDialog') == 'true'
+
+      // Update the associated checkbox
+      $('#noShowAgainForNotice').prop('checked', isAboutDialogHidden)
+
+      // If the dialog should be hidden then skip this try-catch block
+      if (isAboutDialogHidden)
+        throw 0
+
+      // Show the modal
+      setTimeout(() => $('div.body div.left div.content div.navigation div.group div.item[action="about"]').click(), 1000)
+    } catch (e) {}
+  })
+}, 1500))

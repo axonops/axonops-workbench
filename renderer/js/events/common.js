@@ -357,10 +357,11 @@
     })
   })
 
+  // Point at the `About` modal
   let aboutModal = getElementMDBObject($('#appAbout'), 'Modal')
-  $(`${selector}[action="about"]`).click(() => {
-    aboutModal.show()
-  })
+
+  // Show it when click the associated icon
+  $(`${selector}[action="about"]`).click(() => aboutModal.show())
 
   // Handle the click of items in more options/settings menu
   {
@@ -578,6 +579,21 @@
 
       // Once the parent `form-outline` is clicked trigger the `focus` event
       input.parent().click(() => input.trigger('focus'))
+    })
+  })
+
+  // Handle showing/hiding the `About` dialog automatically in the next launch
+  setTimeout(() => {
+    // Clicking the checkbox
+    $('#noShowAgainForNotice').click(function() {
+      // Get the app's config
+      Modules.Config.getConfig((config) => {
+        // Update the associated key
+        config.set('ui', 'hideAboutDialog', `${$(this).prop('checked')}`)
+
+        // Write the changes
+        Modules.Config.setConfig(config)
+      })
     })
   })
 }

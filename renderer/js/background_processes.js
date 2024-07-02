@@ -30,7 +30,7 @@ const FS = require('fs-extra'),
    * Create an SSH tunnel with the ability to close it, and listen to its traffic
    * It has been implemented within the function `createSSHTunnel(data)`
    */
-  OpenSSHTunnel = require('open-ssh-tunnel'),
+  OpenSSHTunnel = require(Path.join(__dirname, '..', 'js', 'open_ssh_tunnel.js')),
   /**
    * Useful SSH2 utilities
    * Used especially for `parseKey` function
@@ -181,6 +181,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               // Increasing those will give more time to establish a tunnel with a slow connection
               readyTimeout: timeout.ready,
               forwardTimeout: timeout.forward,
+              debug: function(data) {
+                addLog(data)
+              }
             }
 
             // Obscure sensitive info if present

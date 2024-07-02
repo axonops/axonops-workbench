@@ -108,26 +108,16 @@ const OS = require('os'),
    */
   PortGet = require('port-get'),
   /**
-   * Create an SSH tunnel with the ability to close it, and listen to its traffic
-   * It has been implemented within the function `createSSHTunnel(data)`
-   */
-  OpenSSHTunnel = require('open-ssh-tunnel'),
-  /**
    * Fix a given JSON in string format
    * It has been implemented within the function `repairJSON(json)`
    */
   JSONRepair = require('jsonrepair').jsonrepair,
-  // The adopted HTTP client in the app
-  Axios = require('axios'),
   // Cross-browser storage for all use cases
   Store = require('store'),
+  // The fastest and simplest library for SQLite3 in Node.js
+  SQLite3 = require('better-sqlite3'),
   // Node.js CMD module to execute commands
   Terminal = require('node-cmd'),
-  /**
-   * This module gives a hand with creating nice aligned boxes in the terminal
-   * It has been implemented within the function `terminalPrintMessage(terminal, type, message, ?hideIcon)`
-   */
-  CLIBoxes = require('cli-boxes'),
   /**
    * XtermJS
    * Used to have a base to build the app's unique terminal

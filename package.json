@@ -24,9 +24,11 @@
       "config",
       "localization"
     ],
-    "publish": [{
-      "provider": "github"
-    }],
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ],
     "win": {
       "icon": "./renderer/assets/images/icon-colored.ico",
       "target": [
@@ -92,7 +94,8 @@
   "devDependencies": {
     "electron": "^30.0.9",
     "electron-builder": "24.12.0",
-    "electron-rebuild": "^3.2.9"
+    "electron-rebuild": "^3.2.9",
+    "license-checker": "^25.0.1"
   },
   "optionalDependencies": {
     "electron-installer-debian": "^3.1.0"
@@ -102,16 +105,16 @@
     "ansi-to-html": "^0.7.2",
     "appdata-path": "^1.0.0",
     "autosize": "^6.0.1",
-    "axios": "^1.4.0",
+    "better-sqlite3": "^11.1.1",
     "byte-size": "^8.1.1",
     "chart.js": "^4.3.0",
-    "cli-boxes": "^3.0.0",
+    "co": "^4.6.0",
     "configparser": "^0.3.10",
+    "debug": "^4.3.5",
     "diff": "^5.1.0",
     "electron-context-menu": "^3.6.1",
     "electron-positioner": "^4.1.0",
     "escape-html": "^1.0.3",
-    "escape-quotes": "^1.0.2",
     "extract-string": "^1.0.2",
     "fast-string-search": "^1.4.3",
     "fs-extra": "^11.1.1",
@@ -134,13 +137,12 @@
     "node-pty": "^1.0.0",
     "node-rsa": "^1.1.1",
     "open": "^8.4.0",
-    "open-ssh-tunnel": "^0.3.1",
     "port-get": "^1.0.0",
     "random-flat-colors": "^1.0.7",
     "regedit-simple": "^0.0.4",
     "sanitize-filename": "^1.6.3",
     "sort-json": "^2.0.1",
-    "ssh2": "^1.14.0",
+    "ssh2": "^1.15.0",
     "store": "^2.0.12",
     "stripchar": "^1.2.1",
     "systeminformation": "^5.18.2",
@@ -153,6 +155,7 @@
     "xterm-addon-canvas": "^0.5.0",
     "xterm-addon-fit": "^0.7.0",
     "xterm-theme": "^1.1.0",
-    "xterm-webfont": "^2.0.0"
+    "xterm-webfont": "^2.0.0",
+    "yargs": "^17.7.2"
   }
 }

@@ -1171,7 +1171,12 @@
             <div class="side-left">
               <div class="sections">
                 <div class="section">
-                  <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="app-license">
+                  <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="notices">
+                    <span mulang="Notices" capitalize></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="app-license">
                     <span mulang="app license" capitalize></span>
                   </div>
                 </div>
@@ -1180,15 +1185,40 @@
                     <span mulang="apache cassandra ™ license" capitalize></span>
                   </div>
                 </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="credits">
+                    <span mulang="credits" capitalize></span>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="side-right">
-              <div class="modal-section" section="app-license">
-                <pre></pre>
+              <div class="modal-section" section="notices">
+                <div class="notice">
+                  Apache Cassandra, Cassandra and Apache are either registered trademarks or trademarks of the Apache Software Foundation (<span class="link"><span class="content">http://www.apache.org/</span>
+                    <ion-icon name="external-link"></ion-icon>
+                  </span>) in the United States and/or other countries and are used with permission. The Apache Software Foundation has no affiliation with and does not endorse or review AxonOps Developer Workbench.
+                </div>
+              </div>
+              <div class="modal-section" section="app-license" hidden>
+                <div class="notice">
+                  <pre license="Apache2"></pre>
+                </div>
               </div>
               <div class="modal-section" section="cassandra-license" hidden>
-                <pre></pre>
+                <div class="notice">
+                  <pre license="Apache2"></pre>
+                </div>
               </div>
+              <div class="modal-section" section="credits" hidden></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="form-check margin-bottom">
+              <input class="form-check-input" type="checkbox" value id="noShowAgainForNotice">
+              <label class="form-check-label" for="noShowAgainForNotice">
+                <span mulang="don't show this dialog in the next launch" capitalize-first></span>.
+              </label>
             </div>
           </div>
         </div>

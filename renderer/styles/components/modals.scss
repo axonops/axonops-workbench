@@ -457,13 +457,6 @@ div.modal {
     div.side-right {
       width: calc(100% - 270px) !important;
     }
-
-    pre {
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      font-size: 85% !important;
-    }
   }
 
   &#loadSnapshot {
@@ -822,4 +815,39 @@ div.backdrop {
   margin: auto;
   width: auto;
   height: auto;
+}
+
+div.modal-section {
+  div.notice {
+    background: #373737;
+    padding: 7px;
+    border-radius: 7px;
+    width: 100%;
+    text-align: justify;
+    font-family: 'Terminal', monospace;
+    font-size: 85%;
+
+    pre {
+      display: block;
+      padding-top: 5px;
+      font-size: 90% !important;
+    }
+
+    &:not(:first-of-type) {
+      margin-top: 20px;
+    }
+
+    span.link {
+      span.content {
+        text-decoration: underline;
+      }
+      opacity: 0.6;
+      cursor: pointer;
+      transition: opacity 0.2s ease-in-out;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
 }

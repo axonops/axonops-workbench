@@ -42,7 +42,7 @@
 
       /**
        * Check if there's at least one visible opened sandbox project
-       * This process is done because the sandbox project has extra tabs - AxonOps -; so the app's window's width should be wider
+       * This process is done because the sandbox project has extra tabs - AxonOps™ -; so the app's window's width should be wider
        */
       let existsAxonopsTab = $('div.cluster-tabs ul.nav.nav-tabs li.axonops-tab').filter(':visible').length > 0
 
@@ -490,6 +490,22 @@
 
     // Clicks one of the left side buttons
     $(`${dialog}-left div.sections div.section div.btn`).click(function() {
+      // Handle if the button should redirect the user to an external link
+      try {
+        // Attempt to get the link
+        let link = $(this).attr('link')
+
+        // If the link is not found then skip this try-catch block
+        if (link == undefined)
+          throw 0
+
+        // Open the link
+        Open(link)
+
+        // Skip the upcoming code
+        return
+      } catch (e) {}
+
       // Get the section's name
       let section = $(this).attr('section')
 

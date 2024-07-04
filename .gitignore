@@ -1,5 +1,6 @@
-node_modules/*
-package-lock.json
+**/node_modules/*
+**/package-lock.json
+**/packages-list.json
 renderer/styles/*.css.map
 dev/*
 test*/*

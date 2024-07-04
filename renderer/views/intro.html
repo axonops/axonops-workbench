@@ -10,13 +10,34 @@
 
 <body>
   <center>
-    <div class="icon">
-      <img src="../assets/images/icon-colored.png">
+    <div class="header">
+      <div class="icon">
+        <img src="../assets/images/icon-colored.png">
+      </div>
+      <div class="info">
+        <div id="title"></div>
+        <div id="version"></div>
+      </div>
     </div>
-    <div class="info">
-      <div id="title"></div>
-      <div class="version">v<span id="version"></span></div>
+    <div class="loading">
+      <div class="spinner">
+      </div>
     </div>
-    <div class="loading"></div>
+    <div class="notice">
+      Apache Cassandra®, Cassandra® and Apache® are either registered trademarks or trademarks of the Apache Software Foundation (<span class="link"><span class="content">http://www.apache.org/</span>
+        <ion-icon name="external-link"></ion-icon>
+      </span>) in the United States and/or other countries and are used with permission. The Apache Software Foundation has no affiliation with and does not endorse or review AxonOps™ Developer Workbench.
+    </div>
+    <div class="copyright-acknowledgement">
+      <div class="form-check margin-bottom">
+        <input class="form-check-input" type="checkbox" value id="cassandraCopyrightAcknowledged">
+        <label class="form-check-label" for="cassandraCopyrightAcknowledged">
+          I have read and acknowledge the copyright notice for Apache Cassandra®
+        </label>
+        <div class="hint">
+          This box needs to be checked for the first time in order to proceed
+        </div>
+      </div>
+    </div>
   </center>
 </body>

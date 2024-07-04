@@ -65,8 +65,8 @@ const OS = require('os'),
    * It has been implemented within the function `applyJSONBeautify(object, ?sort)`
    */
   SortJSON = require('sort-json'),
-  // Convert JSON data to HTML table
-  ConvertJSONTable = require('json-table-converter').jsonToTableHtmlString,
+  // Convert an array of Objects into a table format
+  ConvertJSONTable = require('json-to-table'),
   // Generate interactive HTML table
   Tabulator = require('tabulator-tables'),
   // Sanitize a string to be safe for use as a file name; by removing directory paths and invalid characters
@@ -80,6 +80,8 @@ const OS = require('os'),
   StripChar = require('stripchar').StripChar,
   // Escape string for use in HTML
   EscapeHTML = require('escape-html'),
+  // A Markdown parser for javascript
+  MarkDown = require('markdown').markdown,
   /**
    * Pure Node.js RSA library implemented
    * It has been implemented within the functions `encrypt(publicKey, text)` and `decrypt(privateKey, text)`

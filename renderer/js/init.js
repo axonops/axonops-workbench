@@ -47,7 +47,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
           ['config', 'app-config.cfg'],
           ['data', 'docker', 'docker.json'],
           ['data', 'logging', 'log.tmp'],
-          ['data', 'workspaces', 'workspaces.json']
+          ['data', 'workspaces', 'workspaces.json'],
           ['data', 'credits.db']
         ],
         // Those folders will be copied from the app's folder to the set resources' path
@@ -254,7 +254,7 @@ $(document).on('initialize', async () => getMachineID().then((id) => {
   // Add the first set of logs
   setTimeout(() => {
     try {
-      addLog(`AxonOps Developer Workbench has loaded all components and is ready to be used`)
+      addLog(`AxonOps™ Developer Workbench has loaded all components and is ready to be used`)
       addLog(`This machine has a unique ID of '${machineID}'`, 'env')
     } catch (e) {}
   }, 1000)
@@ -609,11 +609,6 @@ $(document).on('initialize', () => {
     // jQuery Actual element's values plugin
     {
       loadScript(Path.join(__dirname, '..', 'js', 'actual.js'))
-    }
-
-    // jQuery pause/resume element's animation plugin
-    {
-      loadScript(Path.join(__dirname, '..', 'js', 'pause.js'))
     }
   }
 
@@ -1034,7 +1029,7 @@ $(document).on('initialize', () => {
       // Connect with the associated database
       database = new SQLite3(Path.join((extraResourcesPath || appPath), 'data', 'credits.db')),
       // Get all records inside the `credits` table
-      credits = database.prepare('SELECT * FROM credits').all(),
+      credits = database.prepare('SELECT * FROM credits ORDER BY license ASC, name ASC').all(),
       // Get all records inside the `licenses` table
       licenses = database.prepare('SELECT * FROM licenses').all()
 
@@ -1053,16 +1048,43 @@ $(document).on('initialize', () => {
 
     // Loop through each credit/record
     for (let credit of credits) {
+      let content = credit.content
+
+      try {
+        content = MarkDown.toHTML(content)
+      } catch (e) {}
       // The credit's notice UI structure
       let element = `
           <div class="notice">
-            <span class="badge badge-primary">${credit.name}</span>
-            <span class="badge badge-info">${credit.license}</span>
-            <pre>${StripTags(credit.content)}</pre>
+            <div class="notice-header">
+              <span class="badge badge-primary">${credit.name}</span>
+              <span class="badge badge-info">${credit.license}</span>
+              <span class="badge badge-info btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" data-link="${credit.repository}">${credit.repository} <ion-icon name="external-link"></ion-icon></span>
+              <ion-icon name="arrow-down" for-pre></ion-icon>
+              <div class="clickable"></div>
+            </div>
+            <pre main>${StripTags(content)}</pre>
           </div>`
 
       // Append the credit
-      creditsContainer.append($(element))
+      creditsContainer.append($(element).show(function() {
+        // Point at the header of the notice
+        let noticeHeader = $(this).find('div.notice-header')
+
+        // The user clicks the clickable area of the header
+        $(this).find('div.clickable').click(() => {
+          // Rotate the arrow based on the status
+          noticeHeader.toggleClass('shown-pre')
+
+          // Show/hide the license
+          $(this).find('pre[main]').slideToggle()
+        })
+
+        // Clicks the link-badge
+        $(this).find('span.badge.btn').click(function() {
+          Open($(this).attr('data-link'))
+        })
+      }))
     }
   })
 
@@ -1074,15 +1096,22 @@ $(document).on('initialize', () => {
 
 // Send the `loaded` event to the main thread, and show the `About` dialog/modal
 $(document).on('initialize', () => setTimeout(() => {
-  // Send the event
-  IPCRenderer.send('loaded')
-
   /**
    * Handle whether or not the `About` dialog should be shown
    *
    * Get the app's config
    */
   Modules.Config.getConfig((config) => {
+    // Whether or not the copyright notice is acknowledged already
+    let isCopyrightAcknowledged = config.get('security', 'cassandraCopyrightAcknowledged') == 'true'
+
+    // If it's not then skip the upcoming code - the app won't be loaded till the checkbox is checked -
+    if (!isCopyrightAcknowledged)
+      return
+
+    // Send the event
+    IPCRenderer.send('loaded')
+
     try {
       // Whether or not the dialog is meant to be hidden
       let isAboutDialogHidden = config.get('ui', 'hideAboutDialog') == 'true'
@@ -1095,7 +1124,7 @@ $(document).on('initialize', () => setTimeout(() => {
         throw 0
 
       // Show the modal
-      setTimeout(() => $('div.body div.left div.content div.navigation div.group div.item[action="about"]').click(), 1000)
+      $(document).ready(() => setTimeout(() => $('div.body div.left div.content div.navigation div.group div.item[action="about"]').click(), 2000))
     } catch (e) {}
   })
-}, 1500))
+}, 2000))

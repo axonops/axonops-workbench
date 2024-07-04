@@ -82,6 +82,12 @@ div.modal {
           div.section {
             border-radius: 5px;
 
+            ion-icon[name="external-link"] {
+              margin-left: 5px;
+              position: relative;
+              bottom: 1px;
+            }
+
             div.btn {
               width: 100%;
               text: {
@@ -827,14 +833,66 @@ div.modal-section {
     font-family: 'Terminal', monospace;
     font-size: 85%;
 
+    div.notice-header {
+      position: relative;
+      cursor: pointer;
+
+      div.clickable {
+        position: absolute;
+        inset: 0;
+        margin: auto;
+      }
+
+      span.badge {
+        &.btn {
+          border-radius: 0.27rem;
+          box-shadow: none;
+          text-transform: none;
+          padding: var(--mdb-badge-padding-y) var(--mdb-badge-padding-x);
+          font-size: var(--mdb-badge-font-size);
+          font-weight: var(--mdb-badge-font-weight);
+          white-space: nowrap;
+          vertical-align: baseline;
+          overflow: hidden;
+          position: relative;
+          top: 5px;
+          height: 16.25px;
+          cursor: pointer;
+          z-index: 1;
+        }
+      }
+
+      ion-icon[for-pre] {
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        left: auto;
+        font-size: 150%;
+        opacity: 0.8;
+        transition: all 0.2s ease-in-out;
+      }
+
+      &:hover {
+        ion-icon[for-pre] {
+          opacity: 1;
+        }
+      }
+
+      &.shown-pre {
+        ion-icon[for-pre] {
+          transform: rotate(180deg);
+        }
+      }
+    }
+
     pre {
-      display: block;
-      padding-top: 5px;
-      font-size: 90% !important;
+      display: none;
+      margin-top: 5px !important;
+      font-size: 85% !important;
     }
 
     &:not(:first-of-type) {
-      margin-top: 20px;
+      margin-top: 10px;
     }
 
     span.link {

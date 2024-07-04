@@ -139,6 +139,8 @@ global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main'
 let views = {
   // The main view/window object
   main: null,
+  // A view/window as a loding screen
+  intro: null,
   // A view/window for all background processes
   backgroundProcesses: null,
   // A view/window for the app's offline documentation
@@ -320,12 +322,10 @@ App.on('ready', () => {
    * Create the intro view/window with custom properties
    * This window will be destroyed once the main view/window and its children loaded
    */
-  let introView = createWindow({
+  views.intro = createWindow({
     ...properties,
-    minWidth: 530,
-    minHeight: 80,
-    width: 560,
-    height: 80,
+    width: 700,
+    height: 400,
     transparent: true,
     backgroundColor: 'rgba(255, 255, 255, 0)',
     frame: false,
@@ -387,7 +387,7 @@ App.on('ready', () => {
     setTimeout(() => {
       // Destroy the intro view/window entirely
       try {
-        introView.destroy()
+        views.intro.destroy()
       } catch (e) {}
 
       // Show the main view/window and maximize it
@@ -395,22 +395,8 @@ App.on('ready', () => {
         views.main.show()
         views.main.maximize()
       } catch (e) {}
-    }, 500)
+    }, 2000)
   })
-
-  // Trigger after 1s of loading the main view
-  setTimeout(() => {
-    // Destroy the intro view/window entirely
-    try {
-      introView.destroy()
-    } catch (e) {}
-
-    // Show the main view/window and maximize it
-    try {
-      views.main.show()
-      views.main.maximize()
-    } catch (e) {}
-  }, 5000)
 
   // Set the menu bar to `null`; so it won't be created
   Menu.setApplicationMenu(null)
@@ -787,6 +773,21 @@ App.on('window-all-closed', () => {
 
   // Request to get the app's current path
   IPCMain.handle('app-path:get', () => App.getAppPath())
+
+  // Request to get the copyright acknowledgement status
+  IPCMain.on('cassandra-copyright-acknowledged', () => Modules.Config.getConfig((config) => views.intro.webContents.send('cassandra-copyright-acknowledged', config.get('security', 'cassandraCopyrightAcknowledged') == 'true')))
+
+  // Request to set the copyright acknowledgement to be `true`
+  IPCMain.on('cassandra-copyright-acknowledged:true', () => {
+    // Get the app's current config
+    Modules.Config.getConfig((config) => {
+      // Set the associated key to be `true`
+      config.set('security', 'cassandraCopyrightAcknowledged', 'true')
+
+      // Write the new config values
+      Modules.Config.setConfig(config)
+    })
+  })
 
   /**
    * Show a pop-up context menu with passed items

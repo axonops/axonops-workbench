@@ -81,16 +81,16 @@
            * The value will be updated with every test connection process
            */
           sshTunnelCreationRequestID,
-          // For Docker/Sandbox projects set the process ID of checking Cassandra
+          // For Docker/Sandbox projects set the process ID of checking Cassandra®
           checkCassandraProcessID,
           /**
-           * The AxonOps sectin ID
+           * The AxonOps™ section ID
            * It's defined here as it's being used in different parts of the event
            */
           axonopsContentID = getRandomID(15),
           // Flag to tell if this cluster is going to be added/appended to the UI as a new element or if it already exists, by default it's `true`
           isAppendAllowed = true,
-          // Flag to tell if an SSH tunnel is needed before connecting with Cassandra cluster/node
+          // Flag to tell if an SSH tunnel is needed before connecting with Cassandra® cluster/node
           isSSHTunnelNeeded = false
 
         /**
@@ -104,7 +104,7 @@
         let secrets = ''
 
         try {
-          // If the current cluster doesn't have secrets - `username` and `password` for Apache Cassandra DB, and SSH `username` and `password` - then skip this try-catch block
+          // If the current cluster doesn't have secrets - `username` and `password` for Apache Cassandra®, and SSH `username` and `password` - then skip this try-catch block
           if (cluster.info.secrets == undefined)
             throw 0
 
@@ -387,7 +387,7 @@
                   if (connected != 'true')
                     throw 0
 
-                  // Hide the Cassandra's version and the data center's name
+                  // Hide the Cassandra®'s version and the data center's name
                   clusterElement.find('div[info="cassandra"], div[info="data-center"]').each(function() {
                     $(this).children('div.text').text('')
                     $(this).children('div._placeholder').fadeIn('fast').removeAttr('hidden')
@@ -585,10 +585,10 @@
                   /**
                    * Define tabs that shown only to sandbox projects
                    *
-                   * Define the AxonOps tab's content, by default it's empty
+                   * Define the AxonOps™ tab's content, by default it's empty
                    */
                   let axonopsTab = '',
-                    // Define the Bash Session tab's content, as AxonOps, it's empty by default
+                    // Define the Bash Session tab's content, as AxonOps™, it's empty by default
                     bashSessionTab = ''
 
                   try {
@@ -596,14 +596,14 @@
                     if (!isSandbox)
                       throw 0
 
-                    // Define the content of the AxonOps tab to be added
+                    // Define the content of the AxonOps™ tab to be added
                     axonopsTab = `
-                    <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title="AxonOps">
+                    <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps™" capitalize data-title="AxonOps™">
                       <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${axonopsContentID}" role="tab" aria-selected="true">
                         <span class="icon">
                           <ion-icon name="axonops"></ion-icon>
                         </span>
-                        <span class="title">AxonOps</span>
+                        <span class="title">AxonOps™</span>
                       </a>
                     </li>`
 
@@ -631,7 +631,7 @@
                               <div class="status" data-tippy="tooltip" data-mdb-placement="left" data-mulang="analyzing status" capitalize-first data-title="Analyzing status">
                                 <ion-icon name="unknown"></ion-icon>
                               </div>
-                              <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps in browser" capitalize-first data-title="Open AxonOps in browser">
+                              <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps™ in browser" capitalize-first data-title="Open AxonOps™ in browser">
                                 <ion-icon name="globe"></ion-icon>
                               </div>
                               <div class="connection-status">
@@ -1831,7 +1831,7 @@
                                       clickedNode.append($(`<div class="processing"></div>`))
 
                                     let [
-                                      // Get the target's node name in Cassandra
+                                      // Get the target's node name in Cassandra®
                                       targetName,
                                       // Get the target's keyspace's name - if it's a table -
                                       keyspaceName,
@@ -3773,7 +3773,7 @@
                               // Click the button to connect with the cluster again
                               $(`button[button-id="${connectBtnID}"]`).trigger('click', true)
 
-                              // Add an AxonOps webview if needed
+                              // Add an AxonOps™ webview if needed
                               setTimeout(() => {
                                 try {
                                   // Get the chosen port and the final URL
@@ -4451,7 +4451,7 @@
                         // Get the current project's object
                         let currentProject = projects.filter((project) => project.folder == getAttributes(clusterElement, 'data-folder'))
 
-                        // Set Cassandra's version
+                        // Set Cassandra®'s version
                         clusterElement.attr('data-cassandra-version', currentProject[0].cassandraVersion)
                       } catch (e) {
                         errorLog(e, 'clusters')
@@ -4515,7 +4515,7 @@
                           }
 
                           // Show success feedback to the user
-                          showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra ™ to be up, you\'ll be automatically navigated to the project work area once it\'s up', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                          showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra® to be up, you\'ll be automatically navigated to the project work area once it\'s up', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                           // Remove all previous states
                           clusterElement.children('div.status').removeClass('success failure').addClass('show')
@@ -4552,7 +4552,7 @@
                             // Define inner flag to tell if the process has been terminated
                             let isTerminated = false
 
-                            // Start watching Cassandra's node inside the project
+                            // Start watching Cassandra®'s node inside the project
                             Modules.Docker.checkCassandraInContainer(pinnedToastID, ports.cassandra, (status) => {
 
                               // If the process has been terminated then skip the upcoming code and stop the process
@@ -4567,7 +4567,7 @@
                               // Failed to connect with the node
                               if (!status.connected) {
                                 // Show a failure feedback to the user
-                                showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the Apache Cassandra ™ nodes of the docker project [b]$data[/b] didn\'t start as expected, automatic stop of the docker project will be started in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                                showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the Apache Cassandra® nodes of the docker project [b]$data[/b] didn\'t start as expected, automatic stop of the docker project will be started in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                                 /**
                                  * Create a pinned toast to show the output of the process
@@ -4605,10 +4605,10 @@
                               $(`div.btn[button-id="${terminateProcessBtnID}"]`).addClass('disabled')
 
                               /**
-                               * Successfully started the project and Cassandra's one node at least is up
+                               * Successfully started the project and Cassandra®'s one node at least is up
                                * Show feedback to the user
                                */
-                              showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra ™ nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                              showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra® nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                               // Request to destroy the associated pinned toast
                               updatePinnedToast(pinnedToastID, true, true)
@@ -4817,7 +4817,7 @@
                     object._deactivate()
                   })
 
-                  // Check username and password existence for Apache Cassandra and SSH tunnel
+                  // Check username and password existence for Apache Cassandra® and SSH tunnel
                   let username = '',
                     password = '',
                     sshUsername = '',
@@ -5169,16 +5169,16 @@
 
                 // Get the `cqlsh.rc` config file's path for the current cluster
                 let cqlshrcPath = Path.join(clusterFolder, 'config', 'cqlsh.rc'),
-                  // Get Apache Cassandra's version
+                  // Get Apache Cassandra®'s version
                   version = getAttributes(clusterElement, 'data-cassandra-version')
 
-                // Print the host and Apache Cassandra's version in the terminal
+                // Print the host and Apache Cassandra®'s version in the terminal
                 terminalPrintMessage(readLine, 'info', `Connecting with host ${getAttributes(clusterElement, 'data-host')}`)
-                terminalPrintMessage(readLine, 'info', `Detected Apache Cassandra ™ version is ${version}`)
+                terminalPrintMessage(readLine, 'info', `Detected Apache Cassandra® version is ${version}`)
 
                 // Show it in the interactive terminal
                 addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Connecting with host ${getAttributes(clusterElement, 'data-host')}.`, null, true, 'neutral')
-                addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Detected Apache Cassandra ™ version is ${version}.`, null, true, 'neutral')
+                addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Detected Apache Cassandra® version is ${version}.`, null, true, 'neutral')
 
                 /**
                  * Check some options in the `cqlsh.rc` file
@@ -5237,7 +5237,7 @@
 
                 /**
                  * The connection creation object
-                 * The initial data: The cluster's ID, its `cqlsh.rc` config file path, Apache Cassandra's version, and the log file path for this connection session
+                 * The initial data: The cluster's ID, its `cqlsh.rc` config file path, Apache Cassandra®'s version, and the log file path for this connection session
                  */
                 let creationData = {
                   id: clusterID,
@@ -5349,7 +5349,7 @@
      * {string} `?sshTunnelCreationRequestID` the ID of the SSH tunnel creation process - if needed -
      */
     let testConnection = async (clusterElement, testConnectionProcessID = '', sshTunnelCreationRequestID = '') => {
-      // Point at the Apache Cassandra's version UI element
+      // Point at the Apache Cassandra®'s version UI element
       let cassandraVersion = clusterElement.find('div[info="cassandra"]'),
         // Point at the data center element
         dataCenterElement = clusterElement.find('div[info="data-center"]'),
@@ -5361,7 +5361,7 @@
         statusElement = clusterElement.children('div.status'),
         // Get the cluster's ID from its attribute
         clusterID = getAttributes(clusterElement, 'data-id'),
-        // Username and password - for Apache Cassandra DB Auth - to be passed if needed
+        // Username and password - for Apache Cassandra® DB Auth - to be passed if needed
         username = '',
         password = '',
         // By default, there's no wait for encrypting username and password
@@ -5441,7 +5441,7 @@
         cqlshrcPath: clusterObject.cqlshrcPath
       }
 
-      // Check if there is a username and password for Apache Cassandra
+      // Check if there is a username and password for Apache Cassandra®
       try {
         // Username and password have been encrypted already and added to the cluster's UI attributes
         [username, password] = getAttributes(clusterElement, ['data-username', 'data-password'])
@@ -5522,7 +5522,7 @@
 
             // Failed to connect with the cluster
             try {
-              // If the `connected` attribute in the result is `true`, and the Apache Cassandra's version has been identified, or the testing process hasn't been terminated then skip this try-catch block
+              // If the `connected` attribute in the result is `true`, and the Apache Cassandra®'s version has been identified, or the testing process hasn't been terminated then skip this try-catch block
               if (result.connected && ![undefined, null].includes(result.version) && result.terminated == undefined)
                 throw 0
 
@@ -5652,7 +5652,7 @@
              */
             sshTunnelsObjects[clusterObject.info.id] = sshCreation
 
-            // Show Apache Cassandra version
+            // Show Apache Cassandra® version
             cassandraVersion.children('div._placeholder').hide()
             cassandraVersion.children('div.text').text(`v${result.version}`)
 
@@ -5684,12 +5684,12 @@
             statusElement.removeClass('failure').addClass('success')
 
             try {
-              // If the version of Cassandra is not v3 then skip this try-catch block
+              // If the version of Cassandra® is not v3 then skip this try-catch block
               if (!result.version.startsWith('3.'))
                 throw 0
 
               // Just warn the user about that unsupported version
-              setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra ™ is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
+              setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra® is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
             } catch (e) {}
 
             // Show success feedback to the user
@@ -6288,15 +6288,15 @@
             let testConnectionProcessID,
               // Define an initial ID for the SSH tunnel creation process as well
               sshTunnelCreationRequestID,
-              // Flag to tell if an SSH tunnel is needed before connecting with Cassandra cluster/node
+              // Flag to tell if an SSH tunnel is needed before connecting with Cassandra® cluster/node
               isSSHTunnelNeeded = false
 
             // Clicks the `TEST CONNECTION` button to do a connection test with the cluster before saving/updating it
             $('#testConnectionCluster').click(async function() {
               let hostname = '', // The given hostname
-                port = 9042, // Default port to connect with Apache Cassandra
+                port = 9042, // Default port to connect with Apache Cassandra®
                 dataCenter = $('[info-section="none"][info-key="datacenter"]').val(), // By default, no data center is set unless the user provides one
-                // Apache Cassandra's authentication username and password
+                // Apache Cassandra®'s authentication username and password
                 username = '',
                 password = '',
                 waitForEncryption = false, // Don't wait for encryption as username and password are not provided
@@ -6446,7 +6446,7 @@
                   tempClusterID = null
 
                 try {
-                  // Get the SSH username and password - for Apache Cassandra's authentication -
+                  // Get the SSH username and password - for Apache Cassandra®'s authentication -
                   username = $('[info-section="none"][info-key="username"]').val()
                   password = $('[info-section="none"][info-key="password"]').val()
 
@@ -6653,12 +6653,12 @@
                           suffix = I18next.t('you can now complete the update')
 
                         try {
-                          // If the version of Cassandra is not v3 then skip this try-catch block
+                          // If the version of Cassandra® is not v3 then skip this try-catch block
                           if (!result.version.startsWith('3.'))
                             throw 0
 
                           // Just warn the user about that unsupported version
-                          setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra ™ is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
+                          setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra® is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
                         } catch (e) {}
 
                         // Show feedback to the user
@@ -6905,8 +6905,8 @@
             $('#addCluster').click(async function() {
               let clusterName = $('[info-section="none"][info-key="clusterName"]').val(), // The cluster's unique name
                 dataCenter = $('[info-section="none"][info-key="datacenter"]').val(), // By default, no data center is set unless the user provides one
-                username = '', // Apache Cassandra's username
-                password = '', // Apache Cassandra's password
+                username = '', // Apache Cassandra®'s username
+                password = '', // Apache Cassandra®'s password
                 sshUsername = '', // SSH username - for creating a tunnel -
                 sshPassword = '', // SSH password
                 sshPrivatekey = '', // SSH RSA private key content - not a path -
@@ -7049,7 +7049,7 @@
                     clusterUI.find('div.info[info="host"] div.text').text(newEditedCluster.host)
                   } catch (e) {}
 
-                  // Hide cassandra and datacenter info elements and show their placeholder
+                  // Hide cassandra® and datacenter info elements and show their placeholder
                   (['cassandra', 'data-center']).forEach((info) => {
                     info = clusterUI.find(`div.info[info="${info}"]`)
                     info.children('div.text').text('')
@@ -7069,7 +7069,7 @@
                   updateMiniCluster(workspaceID, getAttributes(clusterUI, 'data-id'), true)
 
                   try {
-                    // Update secrets data for the cluster - Apache Cassandra's authentication and SSH credentials -
+                    // Update secrets data for the cluster - Apache Cassandra®'s authentication and SSH credentials -
                     clusterUI.attr({
                       'data-username': saveAuthCredentials && secrets.auth == undefined ? (secrets != null ? secrets.username : null) : null,
                       'data-password': saveAuthCredentials && secrets.auth == undefined ? (secrets != null ? secrets.password : null) : null,
@@ -7120,7 +7120,7 @@
                       } catch (e) {}
                     } catch (e) {}
 
-                    // Show Apache Cassandra version
+                    // Show Apache Cassandra® version
                     cassandraVersion.children('div._placeholder').hide()
                     cassandraVersion.children('div.text').text(`v${testedClusterObject.version}`)
 
@@ -7164,7 +7164,7 @@
 
               try {
                 /**
-                 * Check username and password for both; Apache Cassandra and SSH tunnel
+                 * Check username and password for both; Apache Cassandra® and SSH tunnel
                  *
                  * Define the secrets to be checked
                  */
@@ -7179,7 +7179,7 @@
                   eval(`${value.replace('ssh-', '')} = "${$(`[info-section="none"][info-key="${(value.replace('-ssh', '-')).toLowerCase()}"]`).val()}"`)
                 })
 
-                // If Apache Cassandra's username and password have been provided then the encryption process must be executed
+                // If Apache Cassandra®'s username and password have been provided then the encryption process must be executed
                 if ([username, password].every((secret) => secret.trim().length != 0))
                   waitForEncryption = true
 
@@ -7243,7 +7243,7 @@
                   } catch (e) {}
 
                   /**
-                   * Encrypt all provided secrets - for Apache Cassandra and SSH -
+                   * Encrypt all provided secrets - for Apache Cassandra® and SSH -
                    *
                    * Create an array of names and values of the secrets
                    */
@@ -7370,7 +7370,7 @@
           })
 
           /**
-           * This input is related to select files regards SSH, SSL, and Cassandra authentication
+           * This input is related to select files regards SSH, SSL, and Cassandra® authentication
            * Listeners are `click` and `keypress` - ENTER -
            */
           $('div.form-outline[role="file-selector"] input').on('click keypress', function(e) {

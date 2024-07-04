@@ -23,6 +23,14 @@ $minorWeights: 'thin', 'extralight', 'light', 'regular', 'medium', 'semibold', '
   }
 }
 /*
+* Fustat
+* https://fonts.google.com/specimen/Fustat
+* Font name: 'Brand'
+*/
+@font-face {
+  @include fontface('Brand', 'fustat', 'medium', 'ttf', normal, 500)
+}
+/*
 * Noto Sans Simplified Chinese
 * https://fonts.google.com/noto/specimen/Noto+Sans+SC?subset=chinese-simplified
 * Font name: 'SimplifiedChinese'

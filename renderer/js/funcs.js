@@ -288,15 +288,29 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
       /**
        * Start to animate the decreasing of the progress bar after a set period of time of creation
        * Once the animation is done click the close button
+       *
+       * Define the animation's attributes
        */
-      setTimeout(() => {
-        progressBar.animate({
+      let animation = {
+        startTimestamp: null,
+        properties: {
           width: '0%'
-        }, timeout - 200, () => closeBtn.click())
+        },
+        duration: timeout - 200,
+        complete: () => closeBtn.click()
+      }
+
+      // After a set period of time start the animation process
+      setTimeout(() => {
+        // Update the `startTimestamp` attributes
+        animation.startTimestamp = new Date().getTime()
+
+        // Start the animation process
+        progressBar.animate(animation.properties, animation.duration, animation.complete)
       }, 150)
 
       // When hovering on the toast's body the closing timer will be paused then resumed on hover out
-      toast.find('div.toast-body').hover(() => progressBar.pause(), () => progressBar.resume())
+      toast.find('div.toast-body').hover(() => progressBar.pause(animation), () => progressBar.resume(animation))
     } catch (e) {}
 
     // When double clicks the toast's body its content will be selected
@@ -570,7 +584,7 @@ let repairJSON = (json) => {
  * {string} `json` the JSON string to be manipulated
  * {boolean} `?isExpandOn` flag to tell if the expandation feature is enabled in cqlsh
  *
- * @Return: {string} the HTML table, or an empty string
+ * @Return: {object} the JSON in table array format, and the manipulated JSON
  */
 let convertJSONToTable = (json, isExpandOn = false) => {
   // Attempt to repair the passed JSON string
@@ -629,11 +643,11 @@ let convertJSONToTable = (json, isExpandOn = false) => {
     // Convert the final manipulated JSON object to HTML table string
     let tableHTML = ConvertJSONTable(jsonObject)
 
-    // Remove any defined style and unwanted new lines
-    tableHTML = tableHTML.replace(/style="[^"]*"/g, '').replace(/\n\s*/g, '')
-
     // Return final result
-    return tableHTML
+    return {
+      table: tableHTML,
+      json: jsonObject
+    }
   } catch (e) {}
 
   /**
@@ -655,19 +669,26 @@ let convertJSONToTable = (json, isExpandOn = false) => {
  */
 let convertTableToTabulator = (json, container, callback) => {
   // Convert the passed JSON string to HTML table
-  let tableHTML = convertJSONToTable(json),
+  let convertedJSON = convertJSONToTable(json),
     // Get a random ID for the table
     tableID = getRandomID(20),
     // The variable which is going to hold the Tabulator object
     tabulatorTable
 
   // Append the HTML table to the passed container
-  container.append($(tableHTML.replace('<table', `<table id="_${tableID}"`)).show(function() {
+  container.append($(`<div id="_${tableID}"></div>`).show(function() {
     try {
       setTimeout(() => {
         // Create a Tabulator object with set properties
-        tabulatorTable = new Tabulator(`table#_${tableID}`, {
+        tabulatorTable = new Tabulator(`div#_${tableID}`, {
           layout: 'fitDataStretch',
+          columns: convertedJSON.table[0].map((column) => {
+            return {
+              title: column,
+              field: column
+            }
+          }),
+          data: convertedJSON.json,
           autoColumns: true,
           resizableColumnFit: true,
           resizableRowGuide: true,
@@ -1926,6 +1947,28 @@ jQuery.fn.extend({
      * https://developer.mozilla.org/en-US/docs/Web/API/Selection/addRange
      */
     window.getSelection().addRange(range)
+  },
+  // Pause the current animation process of element
+  pause: function(animation) {
+    // Get the current timestamp
+    let currentTimestamp = new Date().getTime(),
+      // Calculate the remaining duration to preserved and used on `resume`
+      remainingDuration = animation.duration - (currentTimestamp - animation.startTimestamp)
+
+    // If the remaining duration is less than 2s then set it to be 2s
+    if (remainingDuration < 2000)
+      remainingDuration = 2000
+
+    // Save the remaining duration
+    $(this).data('remaining-duration', remainingDuration)
+
+    // Stop the animation but keep the state as it
+    $(this).stop()
+  },
+  // Resume the animation process of element
+  resume: function(animation) {
+    // Trigger the animation process again with the remaining time
+    $(this).animate(animation.properties, $(this).data('remaining-duration'), animation.complete)
   }
 })
 
@@ -3299,14 +3342,14 @@ let calcSwitchersAllowedHeight = () => {
 }
 
 /**
- * Set the trademark symbol `™` to "Apache Cassandra"
+ * Set the right symbol `®` to "Apache Cassandra®"
  *
  * @Parameters:
- * {string} `text` the text which the `™` symbol will be added to where Cassandra is located
+ * {string} `text` the text which the `®` symbol will be added to where Cassandra® is located
  *
  * @Return: {string} final manipulated text
  */
-let setApacheCassandraTMSymbol = (text) => text.replace(/Cassandra/gm, 'Cassandra ™')
+let setApacheCassandraRightSymbol = (text) => text.replace(/Cassandra/gm, 'Cassandra®')
 
 /**
  * Add a new log text in the current logging session

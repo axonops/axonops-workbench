@@ -14,9 +14,8 @@
     <!-- The left side -->
     <div class="main left">
       <div class="content">
-        <!-- The app's logo (AxonOps for now) -->
         <div class="logo">
-          <img src="../assets/images/icon.png">
+          <img src="../assets/images/icon-colored.png">
         </div>
 
         <!-- Workspaces switcher -->
@@ -65,7 +64,7 @@
           <!-- Sections which alike in purpose or content are grouped in `group` -->
           <div class="group">
             <!-- The AI assistant
-            Users can ask questions about Apache Cassandra, AxonOps, and related topics -->
+            Users can ask questions about Apache Cassandra®, AxonOps™, and related topics -->
             <div class="item" action="ai" data-tippy="tooltip" data-mdb-placement="right" data-mulang="ai assistant" data-title="AI Assistant" capitalize>
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <ion-icon name="brain"></ion-icon>
@@ -172,7 +171,7 @@
       Second is the question text area and ask button container
       And finally, the loading container -->
       <div class="content ai-assistant not-initialized">
-        <!-- Integrate the AxonOps AI using `webview` tag -->
+        <!-- Integrate the AxonOps™ AI using `webview` tag -->
         <webview class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups></webview>
 
         <!-- The loading container of the AI Assistant
@@ -511,7 +510,7 @@
                 </div>
               </div>
               <div class="modal-section" section="authentication" hidden>
-                <div class="form-outline form-white margin-bottom file" data-mulang="cassandra credentials" capitalize file-info="Cassandra Credentials" role="file-selector" file-name="-">
+                <div class="form-outline form-white margin-bottom file" data-mulang="cassandra® credentials" capitalize file-info="Cassandra® Credentials" role="file-selector" file-name="-">
                   <input data-tippy="tooltip" data-mdb-placement="top" data-title="-" type="text" class="form-control form-icon-trailing form-control-lg" info-section="authentication" info-key="credentials" readonly>
                 </div>
                 <div class="form-outline form-white margin-bottom">
@@ -752,7 +751,7 @@
               <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
               <input type="text" class="form-control form-icon-trailing form-control-lg" style="background-color: inherit; cursor: pointer;" id="apacheCassandraVersion" value="4.1" readonly>
               <label class="form-label">
-                Apache Cassandra <span mulang="version" capitalize></span>
+                Apache Cassandra® <span mulang="version" capitalize></span>
               </label>
               <div class="valid-feedback"></div>
               <div class="invalid-feedback"></div>
@@ -767,7 +766,7 @@
             </div>
             <div class="form-outline form-white" style="margin-bottom: 25px;">
               <label class="form-label" style="color: #fbfbfb;">
-                <span mulang="cassandra nodes" capitalize></span> (<span mulang="default" capitalize></span> 3)
+                <span mulang="cassandra® nodes" capitalize></span> (<span mulang="default" capitalize></span> 3)
               </label>
               <div class="range" style="opacity:0.9">
                 <input type="range" class="form-range" min="1" max="20" value="3" id="numOfNodes">
@@ -1176,18 +1175,31 @@
                   </div>
                 </div>
                 <div class="section">
-                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="app-license">
-                    <span mulang="app license" capitalize></span>
-                  </div>
-                </div>
-                <div class="section">
-                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="cassandra-license">
-                    <span mulang="apache cassandra ™ license" capitalize></span>
-                  </div>
-                </div>
-                <div class="section">
                   <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="credits">
                     <span mulang="credits" capitalize></span>
+                  </div>
+                </div>
+                <div class="seperator">
+                  <span class="badge badge-primary">
+                    <span mulang="external links" capitalize></span>
+                  </span>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" link="https://docs.axonops.com/workbench/cassandra/license">
+                    <span mulang="app license" capitalize></span>
+                    <ion-icon name="external-link"></ion-icon>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" link="https://axonops.com/privacy">
+                    <span mulang="privacy statement" capitalize></span>
+                    <ion-icon name="external-link"></ion-icon>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" link="https://cassandra.apache.org">
+                    <span mulang="about apache cassandra®" capitalize></span>
+                    <ion-icon name="external-link"></ion-icon>
                   </div>
                 </div>
               </div>
@@ -1195,14 +1207,9 @@
             <div class="side-right">
               <div class="modal-section" section="notices">
                 <div class="notice">
-                  Apache Cassandra, Cassandra and Apache are either registered trademarks or trademarks of the Apache Software Foundation (<span class="link"><span class="content">http://www.apache.org/</span>
+                  Apache Cassandra®, Cassandra® and Apache® are either registered trademarks or trademarks of the Apache Software Foundation (<span class="link"><span class="content">http://www.apache.org/</span>
                     <ion-icon name="external-link"></ion-icon>
-                  </span>) in the United States and/or other countries and are used with permission. The Apache Software Foundation has no affiliation with and does not endorse or review AxonOps Developer Workbench.
-                </div>
-              </div>
-              <div class="modal-section" section="app-license" hidden>
-                <div class="notice">
-                  <pre license="Apache2"></pre>
+                  </span>) in the United States and/or other countries and are used with permission. The Apache Software Foundation has no affiliation with and does not endorse or review AxonOps™ Developer Workbench.
                 </div>
               </div>
               <div class="modal-section" section="cassandra-license" hidden>

@@ -1,6 +1,6 @@
 {
   "name": "axonops-developer-workbench-cassandra",
-  "title": "AxonOps Developer Workbench Cassandra",
+  "title": "AxonOps™ Developer Workbench Cassandra®",
   "version": "0.1.0-1",
   "author": {
     "name": "AxonOps",
@@ -8,7 +8,7 @@
   },
   "main": "main/main.js",
   "license": "Apache-2.0",
-  "description": "AxonOps Developer Workbench Cassandra",
+  "description": "AxonOps™ Developer Workbench Cassandra®",
   "productName": "AxonOpsCassandra",
   "maintainers": [
     "info@axonops.com"
@@ -40,8 +40,8 @@
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",
       "category": "Development",
-      "desktop": "AxonOps Developer Workbench Cassandra",
-      "description": "AxonOps Developer Workbench Cassandra"
+      "desktop": "AxonOps™ Developer Workbench Cassandra®",
+      "description": "AxonOps™ Developer Workbench Cassandra®"
     },
     "mac": {
       "icon": "./renderer/assets/images/icon-colored.icns",
@@ -125,10 +125,11 @@
     "jquery.json-viewer": "^1.5.0",
     "js-yaml": "^4.1.0",
     "json-beautify": "^1.1.1",
-    "json-table-converter": "^0.3.0",
+    "json-to-table": "^4.2.1",
     "jsonfile": "^6.1.0",
     "jsonrepair": "^3.0.2",
     "keytar": "^7.9.0",
+    "markdown": "^0.5.0",
     "material-components-web": "^14.0.0",
     "material-icons": "^1.13.1",
     "monaco-editor": "^0.34.1",

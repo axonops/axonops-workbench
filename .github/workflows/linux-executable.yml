@@ -35,13 +35,6 @@ jobs:
           ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410
           ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile keys_generator/keys_generator.py
 
-      - name: Get credits and add them to the database
-        run: |
-          cd get_credits
-          npm i
-          npm rebuild
-          node get_credits.js
-
       - name: Start with AxonOps Developer Workbench
         run: echo ""
 

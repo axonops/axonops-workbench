@@ -39,6 +39,13 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          
+      - name: Get credits and add them to the database
+        run: |
+          cd get_credits
+          npm i
+          npm rebuild
+          node get_credits.js
 
       - name: Start with AxonOps Developer Workbench
         run: echo ""

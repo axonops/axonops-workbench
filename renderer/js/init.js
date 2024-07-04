@@ -92,7 +92,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
       // For the process `copy`
       for (let folder of processTypes.copy)
         try {
-          await FS.copy(Path.join(Path.join(appPath, '..'), ...folder), Path.join(extraResourcesPath, ...folder), {
+          await FS.copy(Path.join(Path.join(appPath), ...folder), Path.join(extraResourcesPath, ...folder), {
             overwrite: true
           })
         } catch (e) {}

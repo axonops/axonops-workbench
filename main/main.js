@@ -772,21 +772,46 @@ App.on('window-all-closed', () => {
   IPCMain.on('content-protection', (_, apply) => views.main.setContentProtection(apply))
 
   // Request to get the app's current path
-  IPCMain.handle('app-path:get', () => App.getAppPath())
+  IPCMain.handle('app-path:get', () => {
+    // Get the app's path
+    let path = App.getAppPath()
+
+    // If the app in production mode
+    if (IsAsarFound)
+      path = Path.join(path, '..')
+
+    // Return the app's final path
+    return path
+  })
 
   // Request to get the copyright acknowledgement status
-  IPCMain.on('cassandra-copyright-acknowledged', () => Modules.Config.getConfig((config) => views.intro.webContents.send('cassandra-copyright-acknowledged', config.get('security', 'cassandraCopyrightAcknowledged') == 'true')))
+  IPCMain.on('cassandra-copyright-acknowledged', () => Modules.Config.getConfig((config) => {
+    // Define the initial value
+    let result = false
+
+    // Attempt to get the saved value
+    try {
+      result = config.get('security', 'cassandraCopyrightAcknowledged') == 'true'
+    } catch (e) {}
+
+    // Send the result
+    views.intro.webContents.send('cassandra-copyright-acknowledged', result)
+  }))
 
   // Request to set the copyright acknowledgement to be `true`
   IPCMain.on('cassandra-copyright-acknowledged:true', () => {
-    // Get the app's current config
-    Modules.Config.getConfig((config) => {
-      // Set the associated key to be `true`
-      config.set('security', 'cassandraCopyrightAcknowledged', 'true')
+    setTimeout(() => {
+      // Get the app's current config
+      Modules.Config.getConfig((config) => {
+        try {
+          // Set the associated key to be `true`
+          config.set('security', 'cassandraCopyrightAcknowledged', 'true')
 
-      // Write the new config values
-      Modules.Config.setConfig(config)
-    })
+          // Write the new config values
+          Modules.Config.setConfig(config)
+        } catch (e) {}
+      })
+    }, 5000)
   })
 
   /**

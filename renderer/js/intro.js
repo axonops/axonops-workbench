@@ -44,7 +44,7 @@ window.onload = () => {
       IPCRenderer.send(`cassandra-copyright-acknowledged:true`)
 
       // The app should be loaded now
-      setTimeout(() => IPCRenderer.send(`loaded`), 1000)
+      setTimeout(() => IPCRenderer.send(`loaded`), 4000)
     })
 
     // Send request to the main thread; to get the status of the copyright acknowledgement

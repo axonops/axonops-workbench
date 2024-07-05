@@ -24,11 +24,9 @@
       "config",
       "localization"
     ],
-    "publish": [
-      {
-        "provider": "github"
-      }
-    ],
+    "publish": [{
+      "provider": "github"
+    }],
     "win": {
       "icon": "./renderer/assets/images/icon-colored.ico",
       "target": [

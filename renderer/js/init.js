@@ -846,6 +846,27 @@ $(document).on('initialize', () => {
                   if (_content[section_][key_] != undefined)
                     return
 
+                  // Handle when the input is actually a file selector
+                  try {
+                    // If the input is not a file selector then skip this try-catch block
+                    if ($(this).parent().attr('file-name') == undefined)
+                      throw 0
+                    
+                    /**
+                     * Update the tooltip's content and state
+                     * Get the object
+                     */
+                    let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
+
+                    // Clear the file's name preview
+                    $(this).parent().attr('file-name', '-')
+
+                    // Disable the tooltip
+                    try {
+                      tooltipObject[0].object.disable()
+                    } catch (e) {}
+                  } catch (e) {}
+
                   /**
                    * If it is `undefined` then it hasn't been found in the `cqlsh.rc` file
                    * Set the input value to ''

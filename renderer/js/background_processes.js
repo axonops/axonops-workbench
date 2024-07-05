@@ -125,8 +125,8 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
             try {
               // If private key file path has been passed
-              if (![undefined, null, ''].includes(data.privateKey))
-                authentication.privateKey = await FS.readFileSync(data.privateKey, 'utf8')
+              if (![undefined, null, ''].includes(data.privatekey))
+                authentication.privateKey = await FS.readFileSync(data.privatekey, 'utf8')
             } catch (e) {
               errorLog(e, 'SSH tunnel')
             }
@@ -194,7 +194,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               }; // This semicolon is critical here
 
               // Loop through the sensitive data and obscure it if present
-              (['username', 'password', 'privateKey', 'passphrase', 'requestID']).forEach((attribute) => {
+              (['username', 'password', 'privatekey', 'passphrase', 'requestID']).forEach((attribute) => {
                 // If the current sensitive data doesn't exist then end the process
                 if (sshTunnelAttributesCopy[attribute] == undefined)
                   return

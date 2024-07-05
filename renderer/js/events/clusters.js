@@ -4752,56 +4752,42 @@
                     val: currentCluster.info.datacenter
                   }]
 
-                  // Check if there's a need to create an SSH tunnel
+                  // Handle all SSH related input fields/file selectors
                   try {
-                    // If there's no SSH tunneling info then skip this try-catch block
-                    if (currentCluster.ssh == undefined || Object.keys(currentCluster.ssh).length <= 0)
-                      throw 0
-
                     // If there's a saved destination address, and it is not `127.0.0.1` then show it to the user
-                    if (!([undefined, '127.0.0.1'].includes(currentCluster.ssh.dstAddr))) {
-                      inputs.push({
-                        section: 'none',
-                        key: 'ssh-dest-addr',
-                        val: currentCluster.ssh.dstAddr
-                      })
-                    }
+                    inputs.push({
+                      section: 'none',
+                      key: 'ssh-dest-addr',
+                      val: !([undefined, '127.0.0.1'].includes(currentCluster.ssh.dstAddr)) ? currentCluster.ssh.dstAddr : ''
+                    })
 
                     // If we have a private key then show it to the user
-                    if (currentCluster.ssh.privateKey != undefined) {
-                      inputs.push({
-                        section: 'none',
-                        key: 'ssh-privateKey',
-                        val: currentCluster.ssh.privateKey
-                      })
-                    }
+                    inputs.push({
+                      section: 'none',
+                      key: 'ssh-privatekey',
+                      val: (currentCluster.ssh.privatekey != undefined) ? currentCluster.ssh.privatekey : ''
+                    })
 
                     // If there's a saved destination port, and it is not the same as the connection port then show it as well
-                    if (currentCluster.ssh.dstPort != undefined && $('input[info-section="connection"][info-key="port"]').val() != currentCluster.ssh.dstPort) {
-                      inputs.push({
-                        section: 'none',
-                        key: 'ssh-dest-port',
-                        val: currentCluster.ssh.dstPort
-                      })
-                    }
+                    inputs.push({
+                      section: 'none',
+                      key: 'ssh-dest-port',
+                      val: (currentCluster.ssh.dstPort != undefined && $('input[info-section="connection"][info-key="port"]').val() != currentCluster.ssh.dstPort) ? currentCluster.ssh.dstPort : ''
+                    })
 
                     // Do the same process to the SSH host
-                    if (currentCluster.ssh.host != undefined && $('input[info-section="connection"][info-key="hostname"]').val() != currentCluster.ssh.host) {
-                      inputs.push({
-                        section: 'none',
-                        key: 'ssh-host',
-                        val: currentCluster.ssh.host
-                      })
-                    }
+                    inputs.push({
+                      section: 'none',
+                      key: 'ssh-host',
+                      val: (currentCluster.ssh.host != undefined && $('input[info-section="connection"][info-key="hostname"]').val() != currentCluster.ssh.host) ? currentCluster.ssh.host : ''
+                    })
 
                     // And the SSH port as well
-                    if (!([undefined, '22'].includes(currentCluster.ssh.port))) {
-                      inputs.push({
-                        section: 'none',
-                        key: 'ssh-port',
-                        val: currentCluster.ssh.port
-                      })
-                    }
+                    inputs.push({
+                      section: 'none',
+                      key: 'ssh-port',
+                      val: (!([undefined, '22'].includes(currentCluster.ssh.port))) ? currentCluster.ssh.port : ''
+                    })
                   } catch (e) {
                     errorLog(e, 'clusters')
                   }
@@ -4817,6 +4803,36 @@
                     // Update the object
                     object.update()
                     object._deactivate()
+
+                    // If the current input is not a file selector then skip this try-catch block
+                    if ($(object._element).attr('file-name') == undefined)
+                      return
+
+                    /**
+                     * Update the tooltip's content and state
+                     * Get the object
+                     */
+                    let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(object._element)))
+
+                    // Set the selected file's path
+                    $(object._element).find('input').val(input.val).trigger('input')
+                    $(object._element).attr('file-name', input.val.length <= 0 ? '-' : Path.basename(input.val))
+
+                    // Handle the tooltip
+                    try {
+                      // If the value is acutally empty then attempt to disable the tooltip
+                      if (input.val.length <= 0)
+                        throw 0
+
+                      // Enable the tooltip and update its content
+                      tooltipObject[0].object.enable()
+                      tooltipObject[0].object.setContent(selected[0])
+                    } catch (e) {
+                      try {
+                        // Disable the tooltip
+                        tooltipObject[0].object.disable()
+                      } catch (e) {}
+                    }
                   })
 
                   // Check username and password existence for Apache Cassandra® and SSH tunnel
@@ -4927,7 +4943,7 @@
                       key: 'ssh-password',
                     }, {
                       section: 'none',
-                      key: 'ssh-privateKey',
+                      key: 'ssh-privatekey',
                     })
 
                     // Loop through the input fields and empty them
@@ -4941,6 +4957,21 @@
                       // Update the object
                       object.update()
                       object._deactivate()
+
+                      // If the current input is not a file selector then skip this try-catch block
+                      if ($(object._element).attr('file-name') == undefined)
+                        return
+
+                      /**
+                       * Update the tooltip's content and state
+                       * Get the object
+                       */
+                      let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(object._element)))
+
+                      try {
+                        // Disable the tooltip
+                        tooltipObject[0].object.disable()
+                      } catch (e) {}
                     })
                   }
 
@@ -6412,7 +6443,7 @@
               // Check if there's a need to create an SSH tunnel
               try {
                 // Get related inputs values to the SSH tunnel info
-                let values = ['username', 'password', 'privateKey', 'passphrase']
+                let values = ['username', 'password', 'privatekey', 'passphrase']
 
                 // Loop through each value
                 values.forEach((value) => {
@@ -6420,8 +6451,12 @@
                   ssh[value] = $(`[info-section="none"][info-key="ssh-${value}"]`).val()
                 })
 
+                // Check if username has been given but without password nor private key path
+                if (ssh.username.trim().length != 0 && ([ssh.password, ssh.privatekey].every((secret) => secret.trim().length <= 0)))
+                  return showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('username [code]$data[/code] has been provided for creating an SSH tunnel without providing neither a password nor private key, please consider to provide one of them and try again', [ssh.username])) + '.', 'failure')
+
                 // If both username and (password or private key) have been provided then an SSH tunnel should be created
-                sshTunnel = ssh.username.trim().length != 0 && ([ssh.password, ssh.privateKey].some((secret) => secret.trim().length != 0))
+                sshTunnel = ssh.username.trim().length != 0 && ([ssh.password, ssh.privatekey].some((secret) => secret.trim().length != 0))
 
                 // Set the flag's value
                 isSSHTunnelNeeded = sshTunnel
@@ -7202,9 +7237,9 @@
                 // Add `ssh` object to the final cluster's object
                 finalCluster.ssh = {}
 
-                // Add the `privateKey` attribute if it has been provided
+                // Add the `privatekey` attribute if it has been provided
                 if (sshPrivatekey.trim().length != 0)
-                  finalCluster.ssh.privateKey = sshPrivatekey
+                  finalCluster.ssh.privatekey = sshPrivatekey
 
                 // Add the `passphrase` attribute if it has been provided
                 if (sshPassphrase.trim().length != 0)
@@ -7394,7 +7429,7 @@
                 title = 'select cassandra credentials file'
                 break
               }
-              case 'ssh-privateKey': {
+              case 'ssh-privatekey': {
                 title = 'select SSH private key file'
                 break
               }

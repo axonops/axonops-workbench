@@ -487,10 +487,11 @@ let updatePinnedToast = (pinnedToastID, text, destroy = false) => {
  * @Parameters:
  * {integer} `timestamp` the timestamp value to be formatted
  * {boolean} `?isSecondFormat` return the second format `Year-Month-Day Hours:Minutes:Seconds`
+ * {boolean} `?withMilliSeconds` add milliseconds to the final result
  *
  * @Return: {string} formatted timestamp with the chosen format
  */
-let formatTimestamp = (timestamp, isSecondFormat = false) => {
+let formatTimestamp = (timestamp, isSecondFormat = false, withMilliSeconds = false) => {
   // Define the final result to be returned
   let format = ''
 
@@ -509,7 +510,8 @@ let formatTimestamp = (timestamp, isSecondFormat = false) => {
     // Get left hours, minutes, and seconds in the given timestamp
     let hours = date.getHours(),
       minutes = date.getMinutes(),
-      seconds = date.getSeconds()
+      seconds = date.getSeconds(),
+      milliSeconds = date.getMilliseconds()
 
     // Manipulate hours, minutes, and seconds values; by adding `0` to what is less than `10`
     hours = hours < 10 ? `0${hours}` : hours
@@ -522,6 +524,10 @@ let formatTimestamp = (timestamp, isSecondFormat = false) => {
     // If it's required to adopt the second format
     if (isSecondFormat)
       format = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+
+    // If it's required to add milliSeconds
+    if (withMilliSeconds)
+      format = `${format}.${milliSeconds}`
   } catch (e) {}
 
   // Add log for this process
@@ -529,6 +535,45 @@ let formatTimestamp = (timestamp, isSecondFormat = false) => {
 
   // Return the human-readable result
   return format
+}
+
+/**
+ * Format a time UUID string to readable text
+ *
+ * @Inspired by this answer: https://stackoverflow.com/a/26915856
+ * Comments added after understanding the purpose of each line
+ *
+ * @Parameters:
+ * {string} `uuid` the time UUID string format
+ * {boolean} `?withMilliSeconds` add milliseconds to the final result
+ *
+ * @Return: {string} formatted timestamp extracted from the passed time UUID
+ */
+let formatTimeUUID = (uuid, withMilliSeconds = false) => {
+  // Extract the `int` time value from the UUID string
+  let getTimeInt = (uuidString) => {
+    // Split the UUID string
+    let uuidArray = uuidString.split('-'),
+      // Rearrange and join specific parts; to create the time string in HEX format
+      timeString = [uuidArray[2].substring(1), uuidArray[1], uuidArray[0]].join('')
+
+    // Convert the HEX time string
+    return parseInt(timeString, 16)
+  }
+
+  // Convert the passed UUI string to a timestamp
+  let getTimestamp = (uuidString) => {
+    // Get the `int` time value from the UUID
+    let intTime = getTimeInt(uuidString) - 122192928000000000,
+      // Convert the nanosecond to milliseconds
+      intMilliSeconds = Math.floor(intTime / 10000)
+
+    // Return the final timestamp
+    return intMilliSeconds
+  }
+
+  // Return the formatted UUID string
+  return formatTimestamp(getTimestamp(uuid), false, withMilliSeconds)
 }
 
 /**

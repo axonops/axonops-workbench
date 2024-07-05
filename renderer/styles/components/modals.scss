@@ -458,6 +458,16 @@ div.modal {
   &#appAbout {
     div.side-left {
       width: 250px !important;
+
+      div.sections {
+        max-height: 100%;
+        overflow-y: auto;
+
+        &::-webkit-scrollbar {
+          width: 4px;
+          height: 4px;
+        }
+      }
     }
 
     div.side-right {

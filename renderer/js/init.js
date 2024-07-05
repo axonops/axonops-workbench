@@ -1094,6 +1094,12 @@ $(document).on('initialize', () => {
   })
 })
 
+/*
+ * Whether or not the content protection should be shown in the app's settings
+ * This feature is hidden from Linux platform only
+ */
+$(document).on('initialize', () => $(`div.row#contentProtectionContainer`).toggle(OS.platform() != 'linux'))
+
 // Send the `loaded` event to the main thread, and show the `About` dialog/modal
 $(document).on('initialize', () => setTimeout(() => {
   /**

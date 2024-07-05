@@ -3555,6 +3555,19 @@ div.pinned-toast-container {
 div.pinned-toast-container > :not(:last-child) {
   margin-bottom: var(--mdb-toast-spacing);
 }
+
+div.query {
+  span.id-time {
+    ion-icon {
+      font-size: 140%;
+      vertical-align: middle;
+      position: relative;
+      bottom: 1px;
+      margin-left: 10px;
+      opacity: 0.9;
+    }
+  }
+}
 /**
 * Import right-to-left style
 */

@@ -1418,7 +1418,7 @@
                             // The query tracing's result UI structure
                             let element = `
                                 <div class="query" data-session-id="${sessionID}">
-                                  <span class="badge rounded-pill badge-secondary">#${sessionID}</span>
+                                  <span class="badge rounded-pill badge-secondary id-time">#${sessionID} <ion-icon name="time"></ion-icon> ${formatTimeUUID(sessionID)}</span>
                                   <div class="info-left">
                                     <div class="left-chart"><canvas data-canvas-id="${canvasTimelineID}" width="100%"></canvas></div>
                                     <div class="right-chart"><canvas data-canvas-id="${canvasPieChartID}" width="100%"></canvas></div>
@@ -1432,7 +1432,8 @@
                                     <table class="table table-bordered">
                                       <thead>
                                         <tr>
-                                          <th scope="col"><span mulang="activity" capitalize></span></th>
+                                          <th scope="col" style="width: 40%;"><span mulang="activity" capitalize></span></th>
+                                          <th scope="col"><span mulang="time" capitalize></span></th>
                                           <th scope="col"><span mulang="source" capitalize></span></th>
                                           <th scope="col"><span mulang="source port" capitalize></span></th>
                                           <th scope="col"><span mulang="source elapsed" capitalize></span></th>
@@ -1470,6 +1471,7 @@
                                     let element = `
                                         <tr>
                                           <td><span class="color" style="background-color:${colors[index]}"></span> ${activity.activity}</td>
+                                          <td>${formatTimeUUID(activity.event_id, true)}</td>
                                           <td>${activity.source}</td>
                                           <td>${activity.source_port || '-'}</td>
                                           <td>${((index == 0 ? activity.source_elapsed : activity.source_elapsed - result[index - 1].source_elapsed) / 1000).toFixed(2)}ms</td>

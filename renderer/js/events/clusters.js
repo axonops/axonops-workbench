@@ -5874,7 +5874,7 @@
           let [sshUsername, sshPassword, sshPassphrase] = getAttributes(clusterElement, ['data-ssh-username', 'data-ssh-password', 'data-ssh-passphrase'])
 
           // Check that the username is at least, and maybe password values are valid
-          if (([sshUsername, sshPassword, sshPassphrase].filter((secret) => secret == undefined || secret.trim().length <= 0)).length == 2) {
+          if (([sshUsername, sshPassword, sshPassphrase].every((secret) => secret == undefined || secret.trim().length <= 0))) {
             // If not then stop the test process and show feedback to the user
             showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.t('SSH tunnel can\'t be established without passing at least a username, please check given info before attempting to connect again') + '.', 'failure')
 
@@ -8016,3 +8016,4 @@
     IPCRenderer.on(`terminal:clear-line`, (_, data) => Modules.Clusters.clearTerminalCurrentLine(terminalObjects[data.terminalID], data.clearRequestID))
   }
 }
+

@@ -47,7 +47,9 @@ let extraResourcesPath = null,
   // An array to hold all created SSH tunnels
   sshTunnelsObjects = [],
   // Boolean value used to tell if the logging system should be enabled in the current session or not
-  isLoggingEnabled = true
+  isLoggingEnabled = true,
+  // An array that tells which SSH tunnel should be closed - after terminating the process -
+  toBeClosedSSHTunnels = []
 
 // Get the set extra resources path from the main thread
 $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
@@ -194,7 +196,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               }; // This semicolon is critical here
 
               // Loop through the sensitive data and obscure it if present
-              (['username', 'password', 'privatekey', 'passphrase', 'requestID']).forEach((attribute) => {
+              (['username', 'password', 'privateKey', 'passphrase', 'requestID']).forEach((attribute) => {
                 // If the current sensitive data doesn't exist then end the process
                 if (sshTunnelAttributesCopy[attribute] == undefined)
                   return
@@ -209,6 +211,27 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
             // Create the tunnel
             OpenSSHTunnel(sshTunnelAttributes).then((tunnel) => {
+              // Handle the need to close this tunnel and stop the process
+              try {
+                if (!(toBeClosedSSHTunnels.some((_requestID) => _requestID == data.requestID)))
+                  throw 0
+
+                // Close that SSH tunnel
+                try {
+                  tunnel.close()
+
+                  // Add log for this process
+                  addLog(`The SSH tunnel which associated with request ID '${data.requestID}' has been closed`)
+
+                  toBeClosedSSHTunnels = toBeClosedSSHTunnels.filter((_requestID) => _requestID == data.requestID)
+                } catch (e) {
+                  errorLog(e, 'SSH tunnel')
+                }
+
+                // Skip the upcoming code and stop the process
+                return
+              } catch (e) {}
+
               /**
                * Set the SSH tunnel's object key in the array
                * The key is either the cluster's ID or the port
@@ -319,6 +342,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
           sshTunnelsObjects[data.newID] = sshTunnelsObjects[data.oldID]
         } catch (e) {}
       })
+
+      // Request to close SSH tunnel when it's created as the process has been terminated
+      IPCRenderer.on('ssh-tunnel:close:queue', (_, requestID) => toBeClosedSSHTunnels.push(requestID))
     }
 
     // Detect differentiation between two texts (metadata in specific)

@@ -306,6 +306,7 @@ App.on('ready', () => {
   // Create the background processes' view/window and make it hidden; as there's no need for a window or GUI for it
   views.backgroundProcesses = createWindow(properties, Path.join(AppProps.Paths.MainView, '..', 'background.html'), {
     show: false,
+    // openDevTools: true,
     parent: views.main
   })
 
@@ -686,6 +687,9 @@ App.on('window-all-closed', () => {
           terminated: true,
           requestID
         })
+
+        // Send request to close the created SSH tunnel as the process has been terminated
+        views.backgroundProcesses.webContents.send(`ssh-tunnel:close:queue`, requestID)
       })
     }
 

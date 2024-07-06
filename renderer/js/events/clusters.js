@@ -5181,7 +5181,8 @@
                 IPCRenderer.removeAllListeners(`process:terminate:${testConnectionProcessID}:result`)
 
                 // Once the termination status is received
-                IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), status ? 'success' : 'failure'))
+                if (!isSSHTunnelNeeded)
+                  IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), status ? 'success' : 'failure'))
               })
             })
             // End of handling the `click` events for actions buttons
@@ -6933,7 +6934,8 @@
               } catch (e) {}
 
               // Once the termination status is received
-              IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with the cluster to be added/edited in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with the cluster to be added/edited in workspace [b]$data[/b]', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), status ? 'success' : 'failure'))
+              if (!isSSHTunnelNeeded)
+                IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with the cluster to be added/edited in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with the cluster to be added/edited in workspace [b]$data[/b]', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), status ? 'success' : 'failure'))
             })
           }
 
@@ -8016,4 +8018,3 @@
     IPCRenderer.on(`terminal:clear-line`, (_, data) => Modules.Clusters.clearTerminalCurrentLine(terminalObjects[data.terminalID], data.clearRequestID))
   }
 }
-

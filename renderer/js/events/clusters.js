@@ -4812,7 +4812,7 @@
                      * Update the tooltip's content and state
                      * Get the object
                      */
-                    let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(object._element)))
+                    let tooltipObject = getElementMDBObject($(object._element).find('input'), 'Tooltip')
 
                     // Set the selected file's path
                     $(object._element).find('input').val(input.val).trigger('input')
@@ -4825,12 +4825,12 @@
                         throw 0
 
                       // Enable the tooltip and update its content
-                      tooltipObject[0].object.enable()
-                      tooltipObject[0].object.setContent(selected[0])
+                      tooltipObject.enable()
+                      tooltipObject.setContent(input.val)
                     } catch (e) {
                       try {
                         // Disable the tooltip
-                        tooltipObject[0].object.disable()
+                        tooltipObject.disable()
                       } catch (e) {}
                     }
                   })
@@ -4966,11 +4966,11 @@
                        * Update the tooltip's content and state
                        * Get the object
                        */
-                      let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(object._element)))
+                      let tooltipObject = getElementMDBObject($(object._element).find('input'), 'Tooltip')
 
                       try {
                         // Disable the tooltip
-                        tooltipObject[0].object.disable()
+                        tooltipObject.disable()
                       } catch (e) {}
                     })
                   }
@@ -7466,7 +7466,7 @@
                * Update the tooltip's content and state
                * Get the object
                */
-              let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
+              let tooltipObject = getElementMDBObject($(this), 'Tooltip')
 
               // If the path to the file is invalid or inaccessible then don't adopt it
               if (!pathIsAccessible(selected[0])) {
@@ -7478,7 +7478,7 @@
 
                 try {
                   // Disable the tooltip
-                  tooltipObject[0].object.disable()
+                  tooltipObject.disable()
                 } catch (e) {}
 
                 // Skip the upcoming code
@@ -7487,8 +7487,8 @@
 
               try {
                 // Enable the tooltip and update its content
-                tooltipObject[0].object.enable()
-                tooltipObject[0].object.setContent(selected[0])
+                tooltipObject.enable()
+                tooltipObject.setContent(selected[0])
               } catch (e) {}
 
               // Set the selected file's path

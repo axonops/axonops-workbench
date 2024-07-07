@@ -53,6 +53,7 @@ jobs:
       - name: Install AxonOps Developer Workbench dependencies
         run: |
           npm i
+          find ./node_modules -name python3 -exec rm {} \;
       - name: Pack Axonops Developer Workbench for macOS
         run: |
           npm run mac

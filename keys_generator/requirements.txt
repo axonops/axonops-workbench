@@ -1,6 +1,0 @@
-keyring==21.5.0
-keyrings.alt==4.2.0
-pycryptodome==3.19.1
-pyinstaller==5.13.1
-SecretStorage~=3.3.3
-cryptography~=42.0.8

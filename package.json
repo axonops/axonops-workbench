@@ -62,7 +62,9 @@
       "binaries": [
         "main/bin/cqlsh-407",
         "main/bin/cqlsh-410",
-        "main/bin/keys_generator"
+        "main/bin/keys_generator",
+        "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+        "node_modules/better-sqlite3/deps/sqlite3.gyp"
       ]
     },
     "deb": {

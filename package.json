@@ -35,12 +35,12 @@
         "nsis",
         "zip"
       ],
-      "sign": null
+      "certificateSubjectName": "Developer ID Application: AXONOPS Limited (UJ776LUP23)"
     },
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",
       "category": "Development",
-      "desktop": "AxonOps™ Developer Workbench Cassandra®",
+      "desktop": "AxonOps Developer Workbench Cassandra",
       "description": "AxonOps™ Developer Workbench Cassandra®"
     },
     "mac": {

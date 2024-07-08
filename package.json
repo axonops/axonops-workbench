@@ -24,23 +24,21 @@
       "config",
       "localization"
     ],
-    "publish": [
-      {
-        "provider": "github"
-      }
-    ],
+    "publish": [{
+      "provider": "github"
+    }],
     "win": {
       "icon": "./renderer/assets/images/icon-colored.ico",
       "target": [
         "nsis",
         "zip"
       ],
-      "certificateSubjectName": "Developer ID Application: AXONOPS Limited (UJ776LUP23)"
+      "sign": null
     },
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",
       "category": "Development",
-      "desktop": "AxonOps Developer Workbench Cassandra",
+      "desktop": "AxonOps™ Developer Workbench Cassandra®",
       "description": "AxonOps™ Developer Workbench Cassandra®"
     },
     "mac": {
@@ -64,7 +62,9 @@
       "binaries": [
         "main/bin/cqlsh-407",
         "main/bin/cqlsh-410",
-        "main/bin/keys_generator"
+        "main/bin/keys_generator",
+        "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+        "node_modules/better-sqlite3/deps/sqlite3.gyp"
       ]
     },
     "deb": {

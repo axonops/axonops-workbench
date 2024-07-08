@@ -57,6 +57,7 @@ jobs:
           
       - name: Get credits and add them to the database
         run: |
+          python3 -m pip install --upgrade setuptools
           cd get_credits
           npm i
           npm rebuild

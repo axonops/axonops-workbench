@@ -45,10 +45,10 @@ jobs:
         env:
           GITHUB_URL: https://github.com/axonops/axonops-developer-workbench-cqlsh/releases/latest/download
 
-      - name: Setup Python v3.12
+      - name: Setup Python v3.8
         uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: 3.8
 
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4
@@ -58,6 +58,7 @@ jobs:
       - name: Get credits and add them to the database
         run: |
           cd get_credits
+          pip3 install --upgrade pip
           pip3 install cassandra-driver==3.25.0
           npm i
           npm rebuild

@@ -58,8 +58,6 @@ jobs:
       - name: Get credits and add them to the database
         run: |
           cd get_credits
-          pip3 install --upgrade pip
-          pip3 install cassandra-driver==3.25.0
           npm i
           npm rebuild
           node get_credits.js

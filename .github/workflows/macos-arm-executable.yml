@@ -1,11 +1,18 @@
-name: "macOS (ARM): Build and Pack"
+name: "macOS: Build and Pack"
 
 on:
   workflow_dispatch:
 
 jobs:
-  macOS:
-    runs-on: macOS-ARM
+  build:
+    name: Build on ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ["macos-latest"]
+        include:
+          - os: macos-latest
+            target: Macos
 
     steps:
       - name: Extract branch name
@@ -18,30 +25,19 @@ jobs:
         with:
           ref: ${{ steps.extract_branch.outputs.branch }}
 
-      - name: Setup Python v3.8
+      - name: Setup Python v3.12
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.12
 
-      - name: Build binaries for cqlsh and keys_generator
+      - name: Download python components
         run: |
-          pip3 install -r requirements.txt
-
-          /Users/customer/Library/Python/3.9/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407
-          /Users/customer/Library/Python/3.9/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410
-          /Users/customer/Library/Python/3.9/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile keys_generator/keys_generator.py
+          mkdir -p main/bin
+          curl -L ${GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m) > main/bin/cqlsh-410
+          curl -L ${GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m) > main/bin/cqlsh-407
+          curl -L ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-
-      - name: Setup Node.js v16.20.2
-        uses: actions/setup-node@v4
-        with:
-          node-version: 16.20.2
+          GITHUB_URL: https://github.com/axonops/axonops-developer-workbench-cqlsh/releases/latest/download
           
       - name: Get credits and add them to the database
         run: |
@@ -50,9 +46,18 @@ jobs:
           npm rebuild
           node get_credits.js
 
+      - name: Start with AxonOps Developer Workbench
+        run: echo ""
+
+      - name: Setup Node.js v16.20.2
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16.20.2
+
       - name: Install AxonOps Developer Workbench dependencies
         run: |
           npm i
+
       - name: Pack Axonops Developer Workbench for macOS
         run: |
           npm run mac
@@ -67,5 +72,5 @@ jobs:
       - name: Upload packages
         uses: actions/upload-artifact@v4
         with:
-          name: AxonOps-Developer-Workbench-arm64.dmg
+          name: AxonOps-Developer-Workbench-amd64.dmg
           path: dist/*.dmg

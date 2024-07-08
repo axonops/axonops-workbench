@@ -23,20 +23,14 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Build binaries for cqlsh and keys_generator
+      - name: Download python components
         run: |
-          pip install --upgrade pip
-          pip install virtualenv
-          virtualenv venv
-
-          ./venv/bin/pip3 install -r requirements.txt
-
-          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407
-          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410
-          ./venv/bin/pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile keys_generator/keys_generator.py
-
-      - name: Start with AxonOps Developer Workbench
-        run: echo ""
+          mkdir -p main/bin
+          curl -L ${GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m) > main/bin/cqlsh-410
+          curl -L ${GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m) > main/bin/cqlsh-407
+          curl -L ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
+        env:
+          GITHUB_URL: https://github.com/axonops/axonops-developer-workbench-cqlsh/releases/latest/download
 
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4

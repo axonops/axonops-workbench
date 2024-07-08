@@ -4,8 +4,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  macOS:
-    runs-on: macos-13
+  build:
+    name: Build on ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ["macos-14-large"]
+        include:
+          - os: macos-14-large
+            target: x86_64-apple-darwin
 
     steps:
       - name: Extract branch name
@@ -18,27 +25,19 @@ jobs:
         with:
           ref: ${{ steps.extract_branch.outputs.branch }}
 
-      - name: Setup Python v3.8
+      - name: Setup Python v3.12
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.12
 
-      - name: Build binaries for cqlsh and keys_generator
+      - name: Download python components
         run: |
-          pip3 install --upgrade pip
-
-          pip3 install -r requirements.txt
-
-          pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.0.0-ACv4.0.7/cqlsh.py -n cqlsh-407
-          pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile cqlsh/v6.1.0-ACv4.1.0/cqlsh.py -n cqlsh-410
-          pyinstaller --noconfirm --clean --noupx --distpath main/bin --onefile keys_generator/keys_generator.py
+          mkdir -p main/bin
+          curl -L ${GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m) > main/bin/cqlsh-410
+          curl -L ${GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m) > main/bin/cqlsh-407
+          curl -L ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          GITHUB_URL: https://github.com/axonops/axonops-developer-workbench-cqlsh/releases/latest/download
           
       - name: Get credits and add them to the database
         run: |

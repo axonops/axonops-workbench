@@ -1,4 +1,4 @@
-name: Compile
+name: Release Workbench
 
 on:
   release:
@@ -30,7 +30,7 @@ jobs:
           - os: windows-latest
             target: Windows
 
-          - os: [self-hosted, linux, ARM64]
+          - os: "[self-hosted, linux, ARM64]"
             target: Linux
     steps:
       - name: Checkout Repository
@@ -44,6 +44,11 @@ jobs:
           curl -L ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
         env:
           GITHUB_URL: https://github.com/axonops/axonops-developer-workbench-cqlsh/releases/latest/download
+
+      - name: Setup Python v3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
 
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4

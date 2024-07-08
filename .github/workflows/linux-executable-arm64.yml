@@ -24,7 +24,7 @@ jobs:
           python-version: 3.12
 
       - name: Install python dependencies
-        run:  pip3 install -r requirements.txt
+        run: pip3 install -r requirements.txt
 
       - name: Download python components
         run: |

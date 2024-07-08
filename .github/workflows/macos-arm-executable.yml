@@ -30,6 +30,9 @@ jobs:
         with:
           python-version: 3.12
 
+      - name: Install python dependencies
+        run:  pip3 install -r requirements.txt
+
       - name: Download python components
         run: |
           mkdir -p main/bin
@@ -38,16 +41,16 @@ jobs:
           curl -L ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
         env:
           GITHUB_URL: https://github.com/axonops/axonops-developer-workbench-cqlsh/releases/latest/download
-          
+
+      - name: Install python dependencies
+        run:  pip3 install -r requirements.txt
+
       - name: Get credits and add them to the database
         run: |
           cd get_credits
           npm i
           npm rebuild
           node get_credits.js
-
-      - name: Start with AxonOps Developer Workbench
-        run: echo ""
 
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4

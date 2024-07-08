@@ -62,9 +62,7 @@
       "binaries": [
         "main/bin/cqlsh-407",
         "main/bin/cqlsh-410",
-        "main/bin/keys_generator",
-        "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
-        "node_modules/better-sqlite3/deps/sqlite3.gyp"
+        "main/bin/keys_generator"
       ]
     },
     "deb": {
@@ -105,8 +103,8 @@
     "ansi-to-html": "^0.7.2",
     "appdata-path": "^1.0.0",
     "autosize": "^6.0.1",
-    "better-sqlite3": "^11.1.1",
     "byte-size": "^8.1.1",
+    "better-sqlite3": "^11.1.1",
     "chart.js": "^4.3.0",
     "co": "^4.6.0",
     "configparser": "^0.3.10",

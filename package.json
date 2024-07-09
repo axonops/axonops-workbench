@@ -1,6 +1,6 @@
 {
-  "name": "axonops-developer-workbench-cassandra",
-  "title": "AxonOps™ Developer Workbench Cassandra®",
+  "name": "axonops-workbench-cassandra",
+  "title": "AxonOps™ Workbench Cassandra®",
   "version": "0.1.0-1",
   "author": {
     "name": "AxonOps",
@@ -8,7 +8,7 @@
   },
   "main": "main/main.js",
   "license": "Apache-2.0",
-  "description": "AxonOps™ Developer Workbench Cassandra®",
+  "description": "AxonOps™ Workbench Cassandra®",
   "productName": "AxonOpsCassandra",
   "maintainers": [
     "info@axonops.com"
@@ -38,8 +38,8 @@
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",
       "category": "Development",
-      "desktop": "AxonOps Developer Workbench Cassandra",
-      "description": "AxonOps™ Developer Workbench Cassandra®"
+      "desktop": "AxonOps Workbench Cassandra",
+      "description": "AxonOps™ Workbench Cassandra®"
     },
     "mac": {
       "icon": "./renderer/assets/images/icon-colored.icns",

@@ -34,9 +34,7 @@
         "zip"
       ],
       "verifyUpdateCodeSignature": false,
-      "win": {
-        "sign": false
-      }
+      "sign": false
     },
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",

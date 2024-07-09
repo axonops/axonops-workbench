@@ -27,8 +27,8 @@ jobs:
           - os: macos-14-large
             target: x86_64-apple-darwin
 
-          - os: windows-latest
-            target: Windows
+          # - os: windows-latest
+          #   target: Windows
 
           # - os: "[self-hosted, linux, ARM64]"
           #   target: Linux
@@ -111,7 +111,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
-      - name: Release
+      - name: Upload Artifacts
         uses: softprops/action-gh-release@v2
         with:
           files: |

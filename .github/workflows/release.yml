@@ -92,15 +92,13 @@ jobs:
           fi
 
           if [ "$(uname -s )" == "Darwin" ]; then
-            npm run mac:zip
             npm run mac
           fi
+          export CSC_IDENTITY_AUTO_DISCOVERY=false
           if [ "$(uname -s )" == "Linux" ]; then
-            export CSC_IDENTITY_AUTO_DISCOVERY=false
             npm run linux
           fi
           if [[ "$(uname -s)" =~ "MINGW64" ]]; then
-            export CSC_IDENTITY_AUTO_DISCOVERY=false
             npm run win
           fi
         env:

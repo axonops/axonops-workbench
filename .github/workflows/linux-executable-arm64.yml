@@ -33,7 +33,7 @@ jobs:
           curl -L ${GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m) > main/bin/cqlsh-407
           curl -L ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
         env:
-          GITHUB_URL: https://github.com/axonops/axonops-developer-workbench-cqlsh/releases/latest/download
+          GITHUB_URL: https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.0.1-beta1
 
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4

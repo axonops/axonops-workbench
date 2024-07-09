@@ -65,12 +65,6 @@ jobs:
         with:
           node-version: 16.20.2
 
-      - name: Install Windows-Build-Tools
-        run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            npm install --global windows-build-tools
-          fi
-
       - name: Clear npm cache
         run: npm cache clean --force
 
@@ -102,9 +96,7 @@ jobs:
             npm run mac
           fi
           if [ "$(uname -s )" == "Linux" ]; then
-            npm run deb
-            npm run rpm
-            npm run snap
+            npm run linux
           fi
           if [[ "$(uname -s)" =~ "MINGW64" ]]; then
             npm run win

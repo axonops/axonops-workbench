@@ -81,6 +81,7 @@ jobs:
 
       - name: Install Snapcraft
         uses: samuelmeuli/action-snapcraft@v2
+        if: ${{ runner.os != 'Windows' }}
 
       - name: Pack AxonOps Developer Workbench for Linux
         run: |

@@ -32,9 +32,7 @@
       "target": [
         "nsis",
         "zip"
-      ],
-      "verifyUpdateCodeSignature": false,
-      "sign": false
+      ]
     },
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",
@@ -91,7 +89,8 @@
     "mac": "electron-builder --mac dmg pkg zip --publish onTag --x64",
     "mac:arm64": "electron-builder --mac dmg pkg zip --publish onTag --arm64",
     "mac:zip": "electron-builder --mac zip --publish onTag",
-    "mac:pkg": "electron-builder --mac pkg --publish onTag"
+    "mac:pkg": "electron-builder --mac pkg --publish onTag",
+    "postinstall": "electron-builder install-app-deps"
   },
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",
   "devDependencies": {

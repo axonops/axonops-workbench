@@ -33,7 +33,7 @@
         "nsis",
         "zip"
       ],
-      "certificateSubjectName": "Developer ID Application: AXONOPS Limited (UJ776LUP23)"
+      "verifyUpdateCodeSignature": false
     },
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",

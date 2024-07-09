@@ -1,4 +1,4 @@
-name: Release
+name: Release Workbench
 
 on:
   release:
@@ -30,41 +30,54 @@ jobs:
           - os: windows-latest
             target: Windows
 
-          - os: "[self-hosted, linux, ARM64]"
-            target: Linux
+          # - os: "[self-hosted, linux, ARM64]"
+          #   target: Linux
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Download python components
+      - name: Download CQLSH prebuilt binaries
         run: |
           mkdir -p main/bin
-          curl -L ${GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m) > main/bin/cqlsh-410
-          curl -L ${GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m) > main/bin/cqlsh-407
-          curl -L ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
+          if [[ "$(uname -s)" =~ "MINGW64" ]]; then
+            curl -L ${GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m).exe > main/bin/cqlsh-410.exe
+            curl -L ${GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m).exe > main/bin/cqlsh-407.exe
+            curl -L ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m).exe > main/bin/keys_generator.exe
+          else
+            curl -L ${GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m) > main/bin/cqlsh-410
+            curl -L ${GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m) > main/bin/cqlsh-407
+            curl -L ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
+            chmod 755 main/bin/*
+          fi
         env:
           GITHUB_URL: https://github.com/axonops/axonops-developer-workbench-cqlsh/releases/latest/download
 
-      - name: Setup Python v3.8
+      - name: Setup Python v3.12
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.12
+
+      - name: Install python dependencies
+        run:  pip3 install -r requirements.txt
 
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4
         with:
           node-version: 16.20.2
-          
+
+      - name: Clear npm cache
+        run: npm cache clean --force
+
       - name: Get credits and add them to the database
         run: |
           cd get_credits
+          npm cache clean --force
           npm i
           npm rebuild
           node get_credits.js
-
+        
       - name: Install AxonOps Developer Workbench dependencies
-        run: |
-          npm i
+        run: npm i
 
       - name: Install Snapcraft
         uses: samuelmeuli/action-snapcraft@v2
@@ -83,15 +96,18 @@ jobs:
             npm run mac
           fi
           if [ "$(uname -s )" == "Linux" ]; then
-            npm run deb
-            npm run rpm
-            npm run snap
+            npm run linux
           fi
           if [[ "$(uname -s)" =~ "MINGW64" ]]; then
             npm run win
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Release
         uses: softprops/action-gh-release@v2

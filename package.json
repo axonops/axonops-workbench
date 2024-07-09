@@ -33,12 +33,12 @@
         "nsis",
         "zip"
       ],
-      "sign": null
+      "certificateSubjectName": "Developer ID Application: AXONOPS Limited (UJ776LUP23)"
     },
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",
       "category": "Development",
-      "desktop": "AxonOps™ Developer Workbench Cassandra®",
+      "desktop": "AxonOps Developer Workbench Cassandra",
       "description": "AxonOps™ Developer Workbench Cassandra®"
     },
     "mac": {
@@ -84,6 +84,7 @@
     "deb": "electron-builder --linux deb --publish onTag",
     "rpm": "electron-builder --linux rpm --publish onTag",
     "snap": "electron-builder --linux snap --publish onTag",
+    "linux": "electron-builder --linux tar.gz deb rpm --publish onTag",
     "mac": "electron-builder --mac dmg --publish onTag",
     "mac:zip": "electron-builder --mac zip --publish onTag",
     "mac:pkg": "electron-builder --mac pkg --publish onTag"

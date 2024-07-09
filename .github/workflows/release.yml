@@ -27,8 +27,8 @@ jobs:
           - os: macos-14-large
             target: x86_64-apple-darwin
 
-          # - os: windows-latest
-          #   target: Windows
+          - os: windows-latest
+            target: Windows
 
           # - os: "[self-hosted, linux, ARM64]"
           #   target: Linux
@@ -65,9 +65,11 @@ jobs:
         with:
           node-version: 16.20.2
 
-
       - name: Install Windows-Build-Tools
-        run: npm install --global windows-build-tools
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            npm install --global windows-build-tools
+          fi
 
       - name: Clear npm cache
         run: npm cache clean --force

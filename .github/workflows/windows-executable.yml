@@ -1,4 +1,4 @@
-name: Release Workbench
+name: Release Workbench Windows Only
 
 on:
   release:

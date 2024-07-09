@@ -27,8 +27,8 @@ jobs:
           - os: macos-14-large
             target: x86_64-apple-darwin
 
-          # - os: windows-latest
-          #   target: Windows
+          - os: windows-latest
+            target: Windows
 
           # - os: "[self-hosted, linux, ARM64]"
           #   target: Linux

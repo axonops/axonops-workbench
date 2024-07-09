@@ -70,8 +70,9 @@ jobs:
 
       - name: Install Snapcraft
         uses: samuelmeuli/action-snapcraft@v2
+        if: ${{ runner.os != 'Windows' }}
 
-      - name: Pack AxonOps Developer Workbench for Linux
+      - name: Pack AxonOps Developer Workbench
         run: |
           if [ "$(uname -m)" == "aarch64" ] && [ "$(uname -s)" == "Linux" ]; then
             sudo apt-get -y install ruby

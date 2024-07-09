@@ -33,7 +33,10 @@
         "nsis",
         "zip"
       ],
-      "verifyUpdateCodeSignature": false
+      "verifyUpdateCodeSignature": false,
+      "win": {
+        "sign": false
+      }
     },
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",

@@ -99,6 +99,8 @@ jobs:
             npm run linux
           fi
           if [[ "$(uname -s)" =~ "MINGW64" ]]; then
+            unset CSC_KEY_PASSWORD
+            unset CSC_LINK
             npm run win
           fi
         env:

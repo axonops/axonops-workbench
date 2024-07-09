@@ -1,9 +1,6 @@
 name: Release Workbench Windows Only
 
 on:
-  release:
-    types: [published]
-
   workflow_dispatch:
 
 defaults:

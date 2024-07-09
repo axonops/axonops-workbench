@@ -30,8 +30,8 @@ jobs:
           # - os: windows-latest
           #   target: Windows
 
-          - os: "[self-hosted, linux, ARM64]"
-            target: Linux
+          # - os: "[self-hosted, linux, ARM64]"
+          #   target: Linux
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -65,16 +65,23 @@ jobs:
         with:
           node-version: 16.20.2
 
+
+      - name: Install Windows-Build-Tools
+        run: npm install --global windows-build-tools
+
+      - name: Clear npm cache
+        run: npm cache clean --force
+
       - name: Get credits and add them to the database
         run: |
           cd get_credits
+          npm cache clean --force
           npm i
           npm rebuild
           node get_credits.js
-
+        
       - name: Install AxonOps Developer Workbench dependencies
-        run: |
-          npm i
+        run: npm i
 
       - name: Install Snapcraft
         uses: samuelmeuli/action-snapcraft@v2
@@ -102,6 +109,11 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Release
         uses: softprops/action-gh-release@v2

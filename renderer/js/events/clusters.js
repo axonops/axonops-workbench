@@ -1,3 +1,19 @@
+/*
+ * © 2024 AxonOps Limited. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 {
   /**
    * Get and refresh all clusters events
@@ -755,8 +771,8 @@
                                 ${axonopsTab}
                               </ul>
                             </div>
-                            <div class="cluster-actions">
-                              <div class="action" action="restart">
+                            <div class="cluster-actions" style="width:40px">
+                              <div class="action" action="restart" hidden>
                                 <div class="btn-container">
                                   <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Restart the work area" data-mulang="restart the work area" capitalize-first data-id="${restartWorkareaBtnID}">
                                     <ion-icon name="restart"></ion-icon>
@@ -1057,7 +1073,6 @@
                       terminalID = getRandomID(10), // The cqlsh session's unique ID
                       prefix = '', // Dynamic prefix/prompt; `cqlsh>`, `cqlsh:system>`, etc...
                       isSessionPaused = false, // To determine if there's a need to pause the print of received data temporarily or permanently
-                      isTracingSessionPrinted = false, // To determine if there was a query tracing result that has been printed previously
                       isCQLSHLoaded = false, // To determine if the cqlsh tool has been loaded and ready to be used
                       isMetadataFetched = false, // To determine if the metadata will be fetched or not
                       latestMetadata = null, // Save the latest fetched metadata in JSON format
@@ -1201,12 +1216,12 @@
                                 <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
                               </span>
                               <div class="text"><pre>${isOnlyInfo ? (type == 'neutral' ? 'info' : type) : statement}</pre></div>
-                              <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
+                              <div class="info-badges">
+                                <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
+                                <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
+                              </div>
                             </div>
                             <div class="output">
-                              <div class="processing" ${isOnlyInfo ? 'hidden' : ''}>
-                                <lottie-player src="../assets/lottie/executing-statement.json" background="transparent" autoplay loop speed="1.75"></lottie-player>
-                              </div>
                               ${isOnlyInfo ? statement : ''}
                             </div>
                             <div class="actions" ${isOnlyInfo ? 'hidden' : ''}>
@@ -1225,10 +1240,6 @@
                               <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
                                 data-mulang="copy the block" capitalize-first>
                                 <ion-icon name="copy-solid"></ion-icon>
-                              </div>
-                              <div class="action btn btn-tertiary disabled" data-mdb-ripple-color="dark" action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Trace the query"
-                                data-mulang="trace the query" capitalize-first>
-                                <ion-icon name="query-tracing"></ion-icon>
                               </div>
                               <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
                                 data-mulang="delete the block" capitalize-first>
@@ -1632,7 +1643,13 @@
                         // Restricted-scope variable that will hold all output till new line character is detected
                         let allOutput = '',
                           // Timeout object which will be triggerd in 10ms to check if the prompt is duplicated
-                          promptDuplicationTimeout
+                          promptDuplicationTimeout,
+                          // Hold all blocks' output to be handled and removed later
+                          blocksOutput = [],
+                          // Hold all detected sessions' IDs to be used later
+                          detectedSessionsID = [],
+                          // Flag to tell if an empty line has been found or not
+                          isEmptyLineFound = false
 
                         // Listen to data sent from the pty instance which are fetched from the cqlsh tool
                         IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
@@ -1646,31 +1663,22 @@
                           // Store all received data
                           allOutput += data.output
 
-                          /**
-                           * Check if the received data contains the `tracing session` keyword
-                           * Based on the check, pause printing data and print the custom session's navigation link
-                           */
+                          // Check if the received data contains the `tracing session` keyword
                           try {
                             // Match the regular expression and get the session's ID
                             sessionID = (new RegExp('tracing\\s*session\\s*:\\s*(.+)', 'gm')).exec(data.output.toLowerCase())[1]
 
-                            // Update the associated flag
-                            isTracingSessionPrinted = true
+                            // Push the detected session ID
+                            detectedSessionsID.push(manipulateOutput(sessionID))
 
-                            try {
-                              // If the given `blockID` is empty then the execution hasn't executed from the interactive terminal, skip this try-catch block
-                              if (minifyText(`${data.blockID}`).length <= 0)
-                                throw 0
-
-                              // Set the session's ID as attribute
-                              $(`div.session-content div.block[data-id="${data.blockID}"]`).find('div.btn[action="tracing"]').attr('data-session-id', manipulateOutput(sessionID))
-                            } catch (e) {}
+                            // Remove any duplication
+                            detectedSessionsID = [...new Set(detectedSessionsID)]
                           } catch (e) {}
 
                           // Check if `CQLSH-STARTED` has been received
                           try {
                             // If the keywords haven't been received yet or cqlsh has already been loaded then skip this try-catch block
-                            if (!minifyText(data.output).search('keyword:cqlsh-started') || !minifyText(data.output).search('keyword:cqlsh-started') || isCQLSHLoaded)
+                            if (!minifyText(data.output).search(minifyText('KEYWORD:CQLSH:STARTED')) || isCQLSHLoaded)
                               throw 0
 
                             // The CQLSH tool has been loaded
@@ -2008,11 +2016,10 @@
                            *
                            * Whether or not the output has been completed
                            */
-                          let isOutputCompleted = data.output.indexOf('KEYWORD:OUTPUT-FINISHED') != -1,
-                            // Whether or not an error has been found in the output
-                            isErrorFound = data.output.indexOf('KEYWORD:ERROR') != -1
+                          let isOutputCompleted = data.output.indexOf('KEYWORD:OUTPUT:COMPLETED:ALL') != -1
 
-                          // Handle if the execution was called from the interactive terminal, not the basic one
+                          let refreshMetadataTimeout
+
                           try {
                             // If the given `blockID` is empty - the execution has not been called from the interactive terminal - then skip this try-catch block
                             if (minifyText(`${data.blockID}`).length <= 0)
@@ -2025,250 +2032,357 @@
                               // Define the content of the `no-output` element
                               noOutputElement = '<no-output><span mulang="no output was received" capitalize-first></span>.</no-output>'
 
-                            // If the output has already been completed then skip this try-catch block
-                            if (blockElement.attr('data-output-completed') != undefined)
-                              throw 0
-
-                            // Get the block's current output
-                            let blockOutput = blockElement.children('div.output').text()
-
-                            // Update the block's content by adding the new chunks of output
-                            blockElement.children('div.output').text(`${blockOutput}${data.output}`)
-
-                            if (isOutputCompleted) {
-                              // Set attribute related with output complete state if needed
-                              blockElement.attr('data-output-completed', '')
-                            } else {
-                              // Or skip this try-catch block as the output is not yet completed
-                              throw 0
-                            }
-
-                            // Make sure the `processing` element is removed
-                            if (blockElement.attr('data-output-completed') != undefined)
-                              blockElement.find('div.processing').remove()
-
-                            // Get rid of all keywords
-                            data.output = data.output.replace(new RegExp(`(^${OS.EOL}*)?KEYWORD\:[A-Z]+(\-[A-Z]+)?${OS.EOL}*`, 'gm'), '')
+                            // Update the block's output
+                            blocksOutput[data.blockID] = `${blocksOutput[data.blockID] || ''}${data.output}`
 
                             // Define the final content to be manipulated and rendered
-                            let finalContent = `${blockOutput}${data.output}`
+                            finalContent = blocksOutput[data.blockID]
 
-                            // Refresh the latest metadata based on specific actions and only if no erorr has occurred
-                            if (['Alter', 'Create', 'Drop'].some((type) => blockStatement.match(Modules.Consts.CQLRegexPatterns[type].Basic) != null) && !isErrorFound)
-                              $(`div.btn[data-id="${refreshMetadataBtnID}"]`).click()
+                            // Get the identifiers detected in the statements
+                            let statementsIdentifiers = []
 
                             try {
-                              // If the block's content is not empty then make sure to remove the `no-output` element
-                              if (minifyText(finalContent).length > 0)
-                                throw 0
+                              // Get the detected identifiers
+                              statementsIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[(.+)\]/i)[1].split(',')
 
-                              // Otherwise, set it
-                              finalContent = noOutputElement
-                            } catch (e) {
-                              /**
-                               * Reaching here means there's an output already
-                               * Remove the `no-output` element
-                               */
-                              blockElement.find('no-output').remove()
-                            }
+                              // Manipulate them
+                              statementsIdentifiers = statementsIdentifiers.map((identifier) => identifier.trim())
+                            } catch (e) {}
+
+                            // Get the detected output of each statement
+                            let detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:OUTPUT:COMPLETED:ALL/gm)
+
+                            // If no output has been detected then skip this try-catch block
+                            if (detectedOutput == null)
+                              throw 0
+
+                            // Handle all statements and their output
+                            try {
+                              // Loop through each detected output
+                              for (let output of detectedOutput) {
+                                // Make sure to remove the current handled output
+                                blocksOutput[data.blockID] = blocksOutput[data.blockID].replace(output, '')
+
+                                // Point at the output's container
+                                let outputContainer = blockElement.children('div.output'),
+                                  // Define a regex to match each output of each statement
+                                  statementOutputRegex = /KEYWORD:OUTPUT:STARTED([\s\S]*?)KEYWORD:OUTPUT:COMPLETED/gm,
+                                  // Define variable to initially hold the regex's match
+                                  matches,
+                                  // The index of loop's pointer
+                                  loopIndex = -1
+
+                                // Loop through the final content and match output
+                                while ((matches = statementOutputRegex.exec(output)) !== null) {
+                                  // Increase the loop; to match the identifier of the current output's statement
+                                  loopIndex = loopIndex + 1
+
+                                  // Point at the current identifier
+                                  let statementIdentifier = statementsIdentifiers[loopIndex]
+
+                                  // Avoid infinite loops with zero-width matches
+                                  if (matches.index === statementOutputRegex.lastIndex)
+                                    statementOutputRegex.lastIndex++
+
+                                  // Loop through each matched part of the output
+                                  matches.forEach((match, groupIndex) => {
+                                    // Ignore specific group
+                                    if (groupIndex != 1)
+                                      return
+
+                                    // Whether or not an error has been found in the output
+                                    let isErrorFound = match.indexOf('KEYWORD:ERROR:STARTED') != -1
+
+                                    // Refresh the latest metadata based on specific actions and only if no erorr has occurred
+                                    if (['alter', 'create', 'drop'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound)) {
+                                      // Make sure to clear the previous timeout
+                                      try {
+                                        clearTimeout(refreshMetadataTimeout)
+                                      } catch (e) {}
+
+                                      // Set the timeout to be triggerd and refresh the metadata
+                                      refreshMetadataTimeout = setTimeout(() => $(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(), 1000)
+                                    }
+
+                                    // The sub output structure UI
+                                    let element = `
+                                        <div class="sub-output ${isErrorFound ? 'error' : ''}">
+                                          <div class="sub-output-content"></div>
+                                          <div class="sub-actions" hidden>
+                                            <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block" data-mulang="download the block" capitalize-first>
+                                              <ion-icon name="download"></ion-icon>
+                                            </div>
+                                            <div class="download-options">
+                                              <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                                <ion-icon name="csv"></ion-icon>
+                                              </div>
+                                              <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                                <ion-icon name="pdf"></ion-icon>
+                                              </div>
+                                            </div>
+                                            <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Trace the query" data-mulang="trace the query" capitalize-first>
+                                              <ion-icon name="query-tracing"></ion-icon>
+                                            </div>
+                                          </div>
+                                        </div>`
+
+                                    // Append a `sub-output` element in the output's container
+                                    outputContainer.append($(element).show(function() {
+                                      // Point at the appended element
+                                      let outputElement = $(this)
+
+                                      // If the number of executed statements are more than `1` then show a badge indicates that
+                                      setTimeout(() => {
+                                        try {
+                                          // Get the number of statements in the current block based on how many sub output elements exist
+                                          let numberOfStatements = outputContainer.find('div.sub-output').length
+
+                                          // If it's less than `2` then hide the badge
+                                          if (numberOfStatements < 2)
+                                            throw 0
+
+                                          // Show the badge with the number of statements
+                                          blockElement.find('div.statements-count').text(`${numberOfStatements} statements`).hide().fadeIn('fast')
+                                        } catch (e) {
+                                          // Hide the badge
+                                          blockElement.find('div.statements-count').hide()
+                                        }
+                                      }, 500)
+
+                                      /**
+                                       * Reaching here with `match` means this is an output to be rendered
+                                       *
+                                       * Manipulate the content
+                                       * Remove any given prompts within the output
+                                       */
+                                      match = match.replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
+                                        // Remove the statement from the output
+                                        .replace(new RegExp(blockElement.children('div.statement').text(), 'g'), '')
+                                        // Get rid of tracing results
+                                        .replace(/Tracing\s*session\:[\S\s]+/gi, '')
+                                        // Trim the output
+                                        .trim()
+
+                                      // Make sure to show the emptiness message if the output is empty
+                                      if (minifyText(match).replace(/nooutputreceived\./g, '').length <= 0)
+                                        match = noOutputElement
+
+                                      // Define the JSON string which will be updated if the output has valid JSON block
+                                      let jsonString = '',
+                                        // Define the tabulator object if one is created
+                                        tabulatorObject = null
+
+                                      // Handle if the content has JSON string
+                                      try {
+                                        // If the statement is not `SELECT` then don't attempt to render a table
+                                        if (statementIdentifier.toLowerCase().indexOf('select') <= -1)
+                                          throw 0
+
+                                        // Deal with the given output as JSON string by default
+                                        jsonString = manipulateOutput(match).match(/\{[\s\S]+\}/gm)[0]
+
+                                        // Repair the JSON to make sure it can be converted to JSON object easily
+                                        jsonString = JSONRepair(jsonString)
+
+                                        // Convert the JSON string to HTML table related to a Tabulator object
+                                        convertTableToTabulator(jsonString, outputElement.find('div.sub-output-content'), (_tabulatorObject) => {
+                                          // As a tabulator object has been created add the associated class
+                                          outputElement.find('div.sub-actions').attr('hidden', null)
+
+                                          outputElement.addClass('actions-shown')
+
+                                          // Hold the created object
+                                          tabulatorObject = _tabulatorObject
+                                        })
+
+                                        // Show the block
+                                        blockElement.show().addClass('show')
+
+                                        // Scroll at the bottom of the blocks' container after each new block
+                                        setTimeout(() => {
+                                          try {
+                                            blockElement.parent().animate({
+                                              scrollTop: blockElement.parent().get(0).scrollHeight
+                                            }, 100)
+                                          } catch (e) {}
+                                        }, 100)
+
+                                        // Skip the upcoming code
+                                        return
+                                      } catch (e) {} finally {
+                                        // Execute this code whatever the case is
+                                        setTimeout(() => {
+                                          // Unbind all events regards the actions' buttons of the block
+                                          blockElement.find('div.btn[action], div.btn[sub-action]').unbind()
+
+                                          // Clicks the copy button; to copy content in JSON string format
+                                          blockElement.find('div.btn[action="copy"]').click(function() {
+                                            // Get all sub output elements
+                                            let allOutputElements = blockElement.find('div.output').find('div.sub-output').find('div.sub-output-content'),
+                                              // Initial group of all output inside the block
+                                              outputGroup = []
+
+                                            // Loop through each sub output
+                                            allOutputElements.each(function() {
+                                              try {
+                                                // If the output is not a table then skip this try-catch block
+                                                if ($(this).find('div.tabulator').length <= 0)
+                                                  throw 0
+
+                                                // Push the table's data as JSON
+                                                outputGroup.push(Tabulator.findTable($(this).find('div.tabulator')[0])[0].getData())
+
+                                                // Skip the upcoming code
+                                                return
+                                              } catch (e) {}
+
+                                              // Just get the output's text
+                                              outputGroup.push($(this).text())
+                                            })
+
+                                            // Get the beautified version of the block's content
+                                            let contentBeautified = applyJSONBeautify({
+                                                statement: blockElement.find('div.statement div.text').text() || 'No statement',
+                                                output: outputGroup
+                                              }),
+                                              // Get the content's size
+                                              contentSize = ByteSize(ValueSize(contentBeautified))
+
+                                            // Copy content to the clipboard
+                                            try {
+                                              Clipboard.writeText(contentBeautified)
+                                            } catch (e) {
+                                              errorLog(e, 'clusters')
+                                            }
+
+                                            // Give feedback to the user
+                                            showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
+                                          })
+
+                                          // Clicks the download button; to download the tabulator object either as PDF or CSV
+                                          outputElement.find('div.btn[sub-action="download"]').click(function() {
+                                            // Point at the download options' container
+                                            let downloadOptionsElement = outputElement.find('div.download-options'),
+                                              // Whether or not the optionss' container is hidden
+                                              isOptionsHidden = downloadOptionsElement.css('display') == 'none'
+
+                                            // Show/hide the container
+                                            downloadOptionsElement.css('display', isOptionsHidden ? 'flex' : 'none')
+                                          })
+
+                                          // Handle the download options
+                                          {
+                                            // Download the table as CSV
+                                            outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', 'statement_block.csv'))
+
+                                            // Download the table as PDF
+                                            outputElement.find('div.option[option="pdf"]').click(() => tabulatorObject.download('pdf', 'statement_block.pdf', {
+                                              orientation: 'portrait',
+                                              title: `${blockStatement}`,
+                                            }))
+                                          }
+
+                                          // Handle the clicks of the tracing button
+                                          {
+                                            // Point at the tracing button
+                                            let tracingButton = outputElement.find('div.btn[sub-action="tracing"]')
+
+                                            setTimeout(() => {
+                                              // Get the session's tracing ID
+                                              let sessionID
+
+                                              try {
+                                                sessionID = detectedSessionsID.filter((sessionID) => sessionID != null)[0]
+                                              } catch (e) {}
+
+                                              try {
+                                                // If there's no session ID exists then skip this try-catch block
+                                                if (sessionID == undefined)
+                                                  throw 0
+
+                                                tracingButton.attr('data-session-id', sessionID)
+
+                                                detectedSessionsID = detectedSessionsID.map((_sessionID) => _sessionID == sessionID ? null : _sessionID)
+
+                                                // Enable the tracing button
+                                                tracingButton.removeClass('disabled')
+
+                                                // Add listener to the `click` event
+                                                tracingButton.click(() => clickEvent(true, sessionID))
+                                              } catch (e) {}
+                                            }, 2000)
+
+                                            // Clicks the deletion button
+                                            blockElement.find('div.btn[action="delete"]').click(() => {
+                                              let queriesContainer = $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
+
+                                              setTimeout(function() {
+                                                // Remove related query tracing element if exists
+                                                blockElement.find('div.btn[sub-action="tracing"]').each(function() {
+                                                  $(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
+                                                })
+
+                                                // If there's still one query tracing result then skip this try-catch block
+                                                try {
+                                                  if (queriesContainer.find('div.query').length > 0)
+                                                    throw 0
+
+                                                  // Show the emptiness class
+                                                  queriesContainer.addClass('_empty')
+
+                                                  // Plat the emptiness animation
+                                                  queriesContainer.find('lottie-player')[0].play()
+                                                } catch (e) {}
+                                              }, 500)
+
+                                              // Remove the block from the session
+                                              blockElement.remove()
+
+                                              try {
+                                                // Point at the session's statements' container
+                                                let sessionContainer = $(`#_${cqlshSessionContentID}_container`)
+
+                                                // If there's still one block then skip this try-catch block
+                                                if (sessionContainer.find('div.block').length > 0)
+                                                  throw 0
+
+                                                // Show the emptiness class
+                                                sessionContainer.parent().find(`div.empty-statements`).addClass('show')
+                                              } catch (e) {}
+                                            })
+                                          }
+                                        })
+                                      }
+
+                                      // Manipulate the content
+                                      match = match.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
+                                        .replace(createRegex(OS.EOL, 'g'), '<br>')
+                                        .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>')
+                                        .replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
+                                        .replace(/\r?\n?KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\r?\n?/gmi, '')
+
+                                      // Convert any ANSI characters to HTML characters - especially colors -
+                                      match = (new ANSIToHTML()).toHtml(match)
+
+                                      // Reaching here and has a `json` keyword in the output means there's no record/row to be shown
+                                      if (match.includes('[json]'))
+                                        match = '<no-output><span mulang="no data found" capitalize-first></span>.</no-output>'
+
+                                      // Set the final content and make sure the localization process is updated
+                                      outputElement.find('div.sub-output-content').html(`<pre>${match}</pre>`).show(function() {
+                                        $(this).children('pre').find('br').remove()
+
+                                        // Apply the localization process on elements that support it
+                                        setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+                                      })
+                                    }))
+                                  })
+                                }
+                              }
+                            } catch (e) {}
 
                             // Show the current active prefix/prompt
                             setTimeout(() => blockElement.find('div.prompt').text(minifyText(prefix).slice(0, -1)).hide().fadeIn('fast'), 1000)
-
-                            /**
-                             * Manipulate the content
-                             * Remove any given prompts within the output
-                             */
-                            finalContent = finalContent.replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
-                              // Remove the statement from the output
-                              .replace(new RegExp(blockElement.children('div.statement').text(), 'g'), '')
-                              // Get rid of tracing results
-                              .replace(/Tracing\s*session\:[\S\s]+/gi, '')
-                              // Trim the output
-                              .trim()
-
-                            // Make sure to show the emptiness message if the output is empty
-                            if (minifyText(finalContent).replace(/nooutputreceived\./g, '').length <= 0)
-                              finalContent = noOutputElement
-
-                            // Define the JSON string which will be updated if the output has valid JSON block
-                            let jsonString = '',
-                              // Define the tabulator object if one is created
-                              tabulatorObject = null
-
-                            // Handle if the content has JSON string
-                            try {
-                              // If the statement is not `SELECT` then don't attempt to render a table
-                              if (blockStatement.match(Modules.Consts.CQLRegexPatterns.Select.Basic) == null)
-                                throw 0
-
-                              // Deal with the given output as JSON string by default
-                              jsonString = manipulateOutput(finalContent).match(/\{[\s\S]+\}/gm)[0]
-
-                              // Repair the JSON to make sure it can be converted to JSON object easily
-                              jsonString = JSONRepair(jsonString)
-
-                              // Clean the output's container
-                              blockElement.children('div.output').html('')
-
-                              // Convert the JSON string to HTML table related to a Tabulator object
-                              convertTableToTabulator(jsonString, blockElement.children('div.output'), (_tabulatorObject) => {
-                                // As a tabulator object has been created add the associated class
-                                blockElement.find('div.actions').addClass('tabulator-action')
-
-                                // Show the download button
-                                blockElement.find('div.action[action="download"]').attr('hidden', null)
-
-                                // Hold the created object
-                                tabulatorObject = _tabulatorObject
-                              })
-
-                              // Show the block
-                              blockElement.show().addClass('show')
-
-                              // Scroll at the bottom of the blocks' container after each new block
-                              setTimeout(() => {
-                                try {
-                                  blockElement.parent().animate({
-                                    scrollTop: blockElement.parent().get(0).scrollHeight
-                                  }, 100)
-                                } catch (e) {}
-                              }, 100)
-
-                              // Skip the upcoming code
-                              return
-                            } catch (e) {} finally {
-                              // Execute this code whatever the case is
-                              setTimeout(() => {
-                                // Unbind all events regards the actions' buttons of the block
-                                blockElement.find('div.btn[action]').unbind()
-
-                                // Clicks the copy button; to copy content in JSON string format
-                                blockElement.find('div.btn[action="copy"]').click(function() {
-                                  // Get the beautified version of the block's content
-                                  let contentBeautified = applyJSONBeautify({
-                                      statement: blockElement.find('div.statement div.text').text() || 'No statement',
-                                      output: jsonString.length != 0 ? jsonString : (blockElement.find('div.output').text() || 'No output')
-                                    }),
-                                    // Get the content's size
-                                    contentSize = ByteSize(ValueSize(contentBeautified))
-
-                                  // Copy content to the clipboard
-                                  try {
-                                    Clipboard.writeText(contentBeautified)
-                                  } catch (e) {
-                                    errorLog(e, 'clusters')
-                                  }
-
-                                  // Give feedback to the user
-                                  showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
-                                })
-
-                                // Clicks the download button; to download the tabulator object either as PDF or CSV
-                                blockElement.find('div.btn[action="download"]').click(function() {
-                                  // Point at the download options' container
-                                  let downloadOptionsElement = blockElement.find('div.download-options'),
-                                    // Whether or not the optionss' container is hidden
-                                    isOptionsHidden = downloadOptionsElement.css('display') == 'none'
-
-                                  // Show/hide the container
-                                  downloadOptionsElement.css('display', isOptionsHidden ? 'flex' : 'none')
-                                })
-
-                                // Handle the download options
-                                {
-                                  // Download the table as CSV
-                                  blockElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', 'statement_block.csv'))
-
-                                  // Download the table as PDF
-                                  blockElement.find('div.option[option="pdf"]').click(() => tabulatorObject.download('pdf', 'statement_block.pdf', {
-                                    orientation: 'portrait',
-                                    title: `${blockStatement}`,
-                                  }))
-                                }
-
-                                // Handle the clicks of the tracing button
-                                {
-                                  // Point at the tracing button
-                                  let tracingButton = blockElement.find('div.btn[action="tracing"]')
-
-                                  setTimeout(() => {
-                                    // Get the session's tracing ID
-                                    let sessionID = tracingButton.attr('data-session-id')
-
-                                    try {
-                                      // If there's no session ID exists then skip this try-catch block
-                                      if (sessionID == undefined)
-                                        throw 0
-
-                                      // Enable the tracing button
-                                      tracingButton.removeClass('disabled')
-
-                                      // Add listener to the `click` event
-                                      tracingButton.click(() => clickEvent(true, sessionID))
-                                    } catch (e) {}
-                                  }, 1500)
-
-                                  // Clicks the deletion button
-                                  blockElement.find('div.btn[action="delete"]').click(() => {
-                                    let queriesContainer = $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
-
-                                    setTimeout(function() {
-                                      // Remove related query tracing element if exists
-                                      $(`div.queries div.query[data-session-id="${tracingButton.attr('data-session-id')}"]`).remove()
-
-                                      // If there's still one query tracing result then skip this try-catch block
-                                      try {
-                                        if (queriesContainer.find('div.query').length > 0)
-                                          throw 0
-
-                                        // Show the emptiness class
-                                        queriesContainer.addClass('_empty')
-
-                                        // Plat the emptiness animation
-                                        queriesContainer.find('lottie-player')[0].play()
-                                      } catch (e) {}
-                                    }, 500)
-
-                                    // Remove the block from the session
-                                    blockElement.remove()
-
-                                    try {
-                                      // Point at the session's statements' container
-                                      let sessionContainer = $(`#_${cqlshSessionContentID}_container`)
-
-                                      // If there's still one block then skip this try-catch block
-                                      if (sessionContainer.find('div.block').length > 0)
-                                        throw 0
-
-                                      // Show the emptiness class
-                                      sessionContainer.parent().find(`div.empty-statements`).addClass('show')
-                                    } catch (e) {}
-                                  })
-                                }
-                              })
-                            }
-
-                            // Manipulate the content
-                            finalContent = finalContent.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
-                              .replace(createRegex(OS.EOL, 'g'), '<br>')
-                              .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>')
-                              .replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
-
-                            // Convert any ANSI characters to HTML characters - especially colors -
-                            finalContent = (new ANSIToHTML()).toHtml(finalContent)
-
-                            // Reaching here and has a `json` keyword in the output means there's no record/row to be shown
-                            if (finalContent.includes('[json]'))
-                              finalContent = '<no-output><span mulang="no data found" capitalize-first></span>.</no-output>'
-
-                            // Set the final content and make sure the localization process is updated
-                            blockElement.children('div.output').html(`<pre>${finalContent}</pre>`).show(function() {
-                              $(this).children('pre').find('br').remove()
-
-                              // Apply the localization process on elements that support it
-                              setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
-                            })
 
                             // Show the block
                             blockElement.show().addClass('show')
@@ -2306,7 +2420,7 @@
                             }
 
                             // Extra manipulation of the output
-                            data.output = data.output.replace(new RegExp(`(^${OS.EOL}*)?KEYWORD\:[A-Z]+(\-[A-Z]+)?${OS.EOL}*`, 'gm'), '')
+                            data.output = data.output.replace(/\n*KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\n*/gmi, '')
 
                             // If there's a need to add a new line character as prefix
                             try {
@@ -2314,15 +2428,31 @@
                               if (!allOutput.includes(OS.EOL))
                                 throw 0
 
-                              // If there's a need to add a new line then perform that
-                              if (manipulateOutput(minifyText(data.output).replace(new RegExp(OS.EOL, 'gi'), '').replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')).length > 0 && data.output.length > 1)
-                                terminal.writeln('')
-
-                              // Reset the `allOutput` variable
+                              // Reset all saved output
                               allOutput = ''
+
+                              // If the received data has real characters or empty line has been found then skip this try-catch block
+                              if (manipulateOutput(data.output).trim().length > 0)
+                                throw 0
+
+                              // Update the flag to be `true`
+                              isEmptyLineFound = true
                             } catch (e) {}
 
+                            // Get the previous buffer of the terminal
+                            let previousBuffer = Modules.Clusters.getTerminalCurrentBuffer(terminal)
+
                             try {
+                              // If an empty line has been found
+                              if (isEmptyLineFound) {
+                                // Reset the flag
+                                isEmptyLineFound = false
+
+                                // Don't print the data only if the previous buffer is empty
+                                if (previousBuffer.length <= 0 && OS.platform() != 'darwin')
+                                  throw 0
+                              }
+
                               // Print the data
                               terminal.write(data.output)
                             } catch (e) {} finally {
@@ -2451,6 +2581,69 @@
                               break
                             }
                           }
+                        })
+
+                        // Listen to custom key event
+                        terminal.attachCustomKeyEventHandler((event) => {
+                          // Get different values from the event
+                          let {
+                            key, // The pressed key
+                            ctrlKey, // Whether or not the `CTRL` is being pressed
+                            shiftKey, // Whether or not the `SHIFT` is being pressed
+                            metaKey // Whether or not the `META/WINDOWS/SUPER` key is being pressed
+                          } = event
+
+                          // Inner function to prevent the event from performing its defined handler
+                          let preventEvent = () => {
+                            /**
+                             * Prevent the default behavior of pressing the combination
+                             * https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault
+                             */
+                            event.preventDefault()
+
+                            /**
+                             * Prevent further propagation of the event in the capturing and bubbling phases
+                             * https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation
+                             */
+                            event.stopPropagation()
+                          }
+
+                          /**
+                           * Handle the termination of the terminal's session
+                           * `CTRL+C` or `CTRL+D`
+                           */
+                          try {
+                            if (!(ctrlKey && (key.toLowerCase() == 'c' || key.toLowerCase() == 'd') && !shiftKey))
+                              throw 0
+
+                            // Call the inner function
+                            preventEvent()
+
+                            // Return `false` to make sure the handler of xtermjs won't be executed
+                            return false
+                          } catch (e) {}
+
+                          /**
+                           * Handle the copying process of selected text in the terminal
+                           *
+                           * `CTRL+SHIFT+C` for Linux and Windows
+                           * `CMD+C` for macOS
+                           */
+                          try {
+                            if (!((ctrlKey && shiftKey && `${key}`.toLowerCase() === 'c') || (metaKey && `${key}`.toLowerCase() === 'c')))
+                              throw 0
+
+                            // Call the inner function
+                            preventEvent()
+
+                            // Attempt to write the selected text in the terminal
+                            try {
+                              Clipboard.writeText(terminal.getSelection())
+                            } catch (e) {}
+
+                            // Return `false` to make sure the handler of xtermjs won't be executed
+                            return false
+                          } catch (e) {}
                         })
 
                         /**
@@ -2675,7 +2868,7 @@
                           // Add the statement to the cluster's history space
                           {
                             // Get current saved statements
-                            let history = Store.get(clusterID) || [];
+                            let history = Store.get(clusterID) || []
 
                             /**
                              * Maximum allowed statements to be saved are 30 for each cluster
@@ -2700,10 +2893,10 @@
                           // Handle when the statement is `SELECT` but there's no `JSON` after it
                           try {
                             // Regex pattern to match 'SELECT' not followed by 'JSON'
-                            let pattern = /\bselect\b(?!\s+json\b)/i;
+                            let pattern = /\bselect\b(?!\s+json\b)/gi
 
                             // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
-                            statement = statement.replace(pattern, 'SELECT JSON');
+                            statement = statement.replace(pattern, 'SELECT JSON')
                           } catch (e) {}
 
                           // Send the command to the main thread to be executed
@@ -4498,174 +4691,186 @@
                         // Show feedback to the user about starting the project
                         showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('docker project [b]$data[/b] is about to start, a notification will show up once the process begins', [getAttributes(clusterElement, 'data-name')])) + '.')
 
-                        // Start the project
-                        Modules.Docker.getDockerInstance(clusterElement).startDockerCompose(pinnedToastID, (feedback) => {
-                          // Don't trigger the time out function
-                          clearTimeout(installationInfo)
+                        Modules.Docker.checkProjectIsRunning(getAttributes(clusterElement, 'data-folder'), (isProjectRunning) => {
+                          if (isProjectRunning) {
+                            showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the docker project [b]$data[/b] seems be running or is stopping or being terminated, the app will shortly attempt to terminate the project', [getAttributes(clusterElement, 'data-name')])) + `. `, 'warning')
 
-                          // The project didn't run as expected or the starting process has been terminated
-                          if (!feedback.status || isStartingProcessTerminated) {
-                            // Show failure feedback to the user if the process hasn't been terminated
-                            if (!isStartingProcessTerminated)
-                              showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the docker project [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
-
-                            // Call the post function
-                            startPostProcess()
+                            // Call the termination button
+                            $(`div.btn[button-id="${terminateProcessBtnID}"]`).addClass('disabled').click()
 
                             // Skip the upcoming code
                             return
                           }
 
-                          // Show success feedback to the user
-                          showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra® to be up, you\'ll be automatically navigated to the project work area once it\'s up', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                          // Start the project
+                          Modules.Docker.getDockerInstance(clusterElement).startDockerCompose(pinnedToastID, (feedback) => {
+                            // Don't trigger the time out function
+                            clearTimeout(installationInfo)
 
-                          // Remove all previous states
-                          clusterElement.children('div.status').removeClass('success failure').addClass('show')
+                            // The project didn't run as expected or the starting process has been terminated
+                            if (!feedback.status || isStartingProcessTerminated) {
+                              // Show failure feedback to the user if the process hasn't been terminated
+                              if (!isStartingProcessTerminated)
+                                showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the docker project [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
 
-                          // Update the process ID
-                          checkCassandraProcessID = getRandomID(20)
+                              // Call the post function
+                              startPostProcess()
 
-                          // Define variables which will hold important timeout and interval functions
-                          let checkingCassandraTimeout, checkingTerminationInterval
+                              // Skip the upcoming code
+                              return
+                            }
 
-                          checkingTerminationInterval = setInterval(() => {
-                            // If the checking process is flagged to be terminated
-                            try {
-                              if (checkCassandraProcessID != 'terminated')
-                                throw 0
+                            // Show success feedback to the user
+                            showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra® to be up, you\'ll be automatically navigated to the project work area once it\'s up', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
-                              // Request to destroy the associated pinned toast
-                              updatePinnedToast(pinnedToastID, true, true)
+                            // Remove all previous states
+                            clusterElement.children('div.status').removeClass('success failure').addClass('show')
 
-                              // Clear the checking trigger timeout
-                              clearTimeout(checkingCassandraTimeout)
+                            // Update the process ID
+                            checkCassandraProcessID = getRandomID(20)
 
-                              // Clear the termination checking interval
-                              clearInterval(checkingTerminationInterval)
-                            } catch (e) {}
-                          }, 500)
+                            // Define variables which will hold important timeout and interval functions
+                            let checkingCassandraTimeout, checkingTerminationInterval
 
-                          checkingCassandraTimeout = setTimeout(() => {
-                            // Make sure to clear the termination check interval
-                            try {
-                              clearInterval(checkingTerminationInterval)
-                            } catch (e) {}
+                            checkingTerminationInterval = setInterval(() => {
+                              // If the checking process is flagged to be terminated
+                              try {
+                                if (checkCassandraProcessID != 'terminated')
+                                  throw 0
 
-                            // Define inner flag to tell if the process has been terminated
-                            let isTerminated = false
+                                // Request to destroy the associated pinned toast
+                                updatePinnedToast(pinnedToastID, true, true)
 
-                            // Start watching Cassandra®'s node inside the project
-                            Modules.Docker.checkCassandraInContainer(pinnedToastID, ports.cassandra, (status) => {
+                                // Clear the checking trigger timeout
+                                clearTimeout(checkingCassandraTimeout)
 
-                              // If the process has been terminated then skip the upcoming code and stop the process
-                              if (status.terminated || isTerminated) {
-                                // Update the associated flag
-                                isTerminated = true
+                                // Clear the termination checking interval
+                                clearInterval(checkingTerminationInterval)
+                              } catch (e) {}
+                            }, 500)
 
-                                // Skip the upcoming code
-                                return
-                              }
+                            checkingCassandraTimeout = setTimeout(() => {
+                              // Make sure to clear the termination check interval
+                              try {
+                                clearInterval(checkingTerminationInterval)
+                              } catch (e) {}
 
-                              // Failed to connect with the node
-                              if (!status.connected) {
-                                // Show a failure feedback to the user
-                                showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the Apache Cassandra® nodes of the docker project [b]$data[/b] didn\'t start as expected, automatic stop of the docker project will be started in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                              // Define inner flag to tell if the process has been terminated
+                              let isTerminated = false
+
+                              // Start watching Cassandra®'s node inside the project
+                              Modules.Docker.checkCassandraInContainer(pinnedToastID, ports.cassandra, (status) => {
+
+                                // If the process has been terminated then skip the upcoming code and stop the process
+                                if (status.terminated || isTerminated) {
+                                  // Update the associated flag
+                                  isTerminated = true
+
+                                  // Skip the upcoming code
+                                  return
+                                }
+
+                                // Failed to connect with the node
+                                if (!status.connected) {
+                                  // Show a failure feedback to the user
+                                  showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the Apache Cassandra® nodes of the docker project [b]$data[/b] didn\'t start as expected, automatic stop of the docker project will be started in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+
+                                  /**
+                                   * Create a pinned toast to show the output of the process
+                                   *
+                                   * Get a random ID for the toast
+                                   */
+                                  let pinnedToastID = getRandomID(10)
+
+                                  // Show/create that toast
+                                  showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+
+                                  setTimeout(() => {
+                                    // Attempt to stop the project
+                                    Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, (feedback) => {
+                                      // Call the post function
+                                      startPostProcess()
+
+                                      /**
+                                       * Failed to stop the project
+                                       * Show failure feedback to the user and tell how to stop it manually
+                                       */
+                                      if (!feedback.status)
+                                        return showToast(I18next.capitalize(I18next.t('stop docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to stop the docker project [b]$data[/b], please consider to do it manually by stopping the project [b]cassandra_$data[/b]', [getAttributes(clusterElement, 'data-name'), getAttributes(clusterElement, 'data-folder')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+
+                                      // The Docker project has successfully stopped
+                                      showToast(I18next.capitalize(I18next.t('stop docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the docker project [b]$data[/b] has been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                                    })
+                                  }, 3000)
+
+                                  // Skip the upcoming code
+                                  return
+                                }
+
+                                // Disable the process termination button
+                                $(`div.btn[button-id="${terminateProcessBtnID}"]`).addClass('disabled')
 
                                 /**
-                                 * Create a pinned toast to show the output of the process
-                                 *
-                                 * Get a random ID for the toast
+                                 * Successfully started the project and Cassandra®'s one node at least is up
+                                 * Show feedback to the user
                                  */
-                                let pinnedToastID = getRandomID(10)
+                                showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra® nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
-                                // Show/create that toast
-                                showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+                                // Request to destroy the associated pinned toast
+                                updatePinnedToast(pinnedToastID, true, true)
+
+                                // Update the data center title
+                                clusterElement.attr('data-datacenter', 'datacenter1')
 
                                 setTimeout(() => {
-                                  // Attempt to stop the project
-                                  Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, (feedback) => {
+                                  // Click the hidden `CONNECT` button
+                                  $(`button[button-id="${connectBtnID}"]`).trigger('click')
+
+                                  // Update the button's text to be `ENTER`
+                                  setTimeout(() => $(this).children('span').attr('mulang', 'enter').text(I18next.t('enter')), 1000)
+
+                                  setTimeout(() => {
                                     // Call the post function
-                                    startPostProcess()
+                                    startPostProcess(true)
 
-                                    /**
-                                     * Failed to stop the project
-                                     * Show failure feedback to the user and tell how to stop it manually
-                                     */
-                                    if (!feedback.status)
-                                      return showToast(I18next.capitalize(I18next.t('stop docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to stop the docker project [b]$data[/b], please consider to do it manually by stopping the project [b]cassandra_$data[/b]', [getAttributes(clusterElement, 'data-name'), getAttributes(clusterElement, 'data-folder')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                                    try {
+                                      // Get the chosen port and the final URL
+                                      let axonopsPort = getAttributes(clusterElement, 'data-port-axonops'),
+                                        axonopsURL = `http://localhost:${axonopsPort}`
 
-                                    // The Docker project has successfully stopped
-                                    showToast(I18next.capitalize(I18next.t('stop docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the docker project [b]$data[/b] has been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
-                                  })
-                                }, 3000)
+                                      // If the provided port is not actually a number then skip this try-catch block
+                                      if (isNaN(axonopsPort))
+                                        throw 0
 
-                                // Skip the upcoming code
-                                return
-                              }
+                                      // Append the `webview`
+                                      $(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops_webview.js')}"></webview>`).show(function() {
+                                        // Point at the webview element
+                                        let webView = $(this)[0]
 
-                              // Disable the process termination button
-                              $(`div.btn[button-id="${terminateProcessBtnID}"]`).addClass('disabled')
+                                        // Reload it after 1s of creation
+                                        try {
+                                          setTimeout(() => webView.reloadIgnoringCache(), 1000)
+                                        } catch (e) {}
 
-                              /**
-                               * Successfully started the project and Cassandra®'s one node at least is up
-                               * Show feedback to the user
-                               */
-                              showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra® nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
-
-                              // Request to destroy the associated pinned toast
-                              updatePinnedToast(pinnedToastID, true, true)
-
-                              // Update the data center title
-                              clusterElement.attr('data-datacenter', 'datacenter1')
-
-                              setTimeout(() => {
-                                // Click the hidden `CONNECT` button
-                                $(`button[button-id="${connectBtnID}"]`).trigger('click')
-
-                                // Update the button's text to be `ENTER`
-                                setTimeout(() => $(this).children('span').attr('mulang', 'enter').text(I18next.t('enter')), 1000)
-
-                                setTimeout(() => {
-                                  // Call the post function
-                                  startPostProcess(true)
-
-                                  try {
-                                    // Get the chosen port and the final URL
-                                    let axonopsPort = getAttributes(clusterElement, 'data-port-axonops'),
-                                      axonopsURL = `http://localhost:${axonopsPort}`
-
-                                    // If the provided port is not actually a number then skip this try-catch block
-                                    if (isNaN(axonopsPort))
-                                      throw 0
-
-                                    // Append the `webview`
-                                    $(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops_webview.js')}"></webview>`).show(function() {
-                                      // Point at the webview element
-                                      let webView = $(this)[0]
-
-                                      // Reload it after 1s of creation
-                                      try {
-                                        setTimeout(() => webView.reloadIgnoringCache(), 1000)
-                                      } catch (e) {}
-
-                                      // Once the content inside the webview is ready/loaded
-                                      webView.addEventListener('dom-ready', () => {
-                                        // Once a message from the IPC is received
-                                        webView.addEventListener(`ipc-message`, (event) => {
-                                          // If it's a request to reload the webview then reload it
-                                          if (event.channel == 'reload-webview')
-                                            webView.reloadIgnoringCache()
+                                        // Once the content inside the webview is ready/loaded
+                                        webView.addEventListener('dom-ready', () => {
+                                          // Once a message from the IPC is received
+                                          webView.addEventListener(`ipc-message`, (event) => {
+                                            // If it's a request to reload the webview then reload it
+                                            if (event.channel == 'reload-webview')
+                                              webView.reloadIgnoringCache()
+                                          })
                                         })
-                                      })
-                                    }))
+                                      }))
 
-                                    // Clicks the globe icon in the cluster's info
-                                    $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
-                                  } catch (e) {}
-                                }, 1000)
-                              }, 3000)
-                            }, null, checkCassandraProcessID)
-                          }, 20000)
+                                      // Clicks the globe icon in the cluster's info
+                                      $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
+                                    } catch (e) {}
+                                  }, 1000)
+                                }, 3000)
+                              }, null, checkCassandraProcessID)
+                            }, 20000)
+                          })
                         })
                       })
                     })
@@ -4752,56 +4957,42 @@
                     val: currentCluster.info.datacenter
                   }]
 
-                  // Check if there's a need to create an SSH tunnel
+                  // Handle all SSH related input fields/file selectors
                   try {
-                    // If there's no SSH tunneling info then skip this try-catch block
-                    if (currentCluster.ssh == undefined || Object.keys(currentCluster.ssh).length <= 0)
-                      throw 0
-
                     // If there's a saved destination address, and it is not `127.0.0.1` then show it to the user
-                    if (!([undefined, '127.0.0.1'].includes(currentCluster.ssh.dstAddr))) {
-                      inputs.push({
-                        section: 'none',
-                        key: 'ssh-dest-addr',
-                        val: currentCluster.ssh.dstAddr
-                      })
-                    }
+                    inputs.push({
+                      section: 'none',
+                      key: 'ssh-dest-addr',
+                      val: !([undefined, '127.0.0.1'].includes(currentCluster.ssh.dstAddr)) ? currentCluster.ssh.dstAddr : ''
+                    })
 
                     // If we have a private key then show it to the user
-                    if (currentCluster.ssh.privateKey != undefined) {
-                      inputs.push({
-                        section: 'none',
-                        key: 'ssh-privateKey',
-                        val: currentCluster.ssh.privateKey
-                      })
-                    }
+                    inputs.push({
+                      section: 'none',
+                      key: 'ssh-privatekey',
+                      val: (currentCluster.ssh.privatekey != undefined) ? currentCluster.ssh.privatekey : ''
+                    })
 
                     // If there's a saved destination port, and it is not the same as the connection port then show it as well
-                    if (currentCluster.ssh.dstPort != undefined && $('input[info-section="connection"][info-key="port"]').val() != currentCluster.ssh.dstPort) {
-                      inputs.push({
-                        section: 'none',
-                        key: 'ssh-dest-port',
-                        val: currentCluster.ssh.dstPort
-                      })
-                    }
+                    inputs.push({
+                      section: 'none',
+                      key: 'ssh-dest-port',
+                      val: (currentCluster.ssh.dstPort != undefined && $('input[info-section="connection"][info-key="port"]').val() != currentCluster.ssh.dstPort) ? currentCluster.ssh.dstPort : ''
+                    })
 
                     // Do the same process to the SSH host
-                    if (currentCluster.ssh.host != undefined && $('input[info-section="connection"][info-key="hostname"]').val() != currentCluster.ssh.host) {
-                      inputs.push({
-                        section: 'none',
-                        key: 'ssh-host',
-                        val: currentCluster.ssh.host
-                      })
-                    }
+                    inputs.push({
+                      section: 'none',
+                      key: 'ssh-host',
+                      val: (currentCluster.ssh.host != undefined && $('input[info-section="connection"][info-key="hostname"]').val() != currentCluster.ssh.host) ? currentCluster.ssh.host : ''
+                    })
 
                     // And the SSH port as well
-                    if (!([undefined, '22'].includes(currentCluster.ssh.port))) {
-                      inputs.push({
-                        section: 'none',
-                        key: 'ssh-port',
-                        val: currentCluster.ssh.port
-                      })
-                    }
+                    inputs.push({
+                      section: 'none',
+                      key: 'ssh-port',
+                      val: (!([undefined, '22'].includes(currentCluster.ssh.port))) ? currentCluster.ssh.port : ''
+                    })
                   } catch (e) {
                     errorLog(e, 'clusters')
                   }
@@ -4817,6 +5008,36 @@
                     // Update the object
                     object.update()
                     object._deactivate()
+
+                    // If the current input is not a file selector then skip this try-catch block
+                    if ($(object._element).attr('file-name') == undefined)
+                      return
+
+                    /**
+                     * Update the tooltip's content and state
+                     * Get the object
+                     */
+                    let tooltipObject = getElementMDBObject($(object._element).find('input'), 'Tooltip')
+
+                    // Set the selected file's path
+                    $(object._element).find('input').val(input.val).trigger('input')
+                    $(object._element).attr('file-name', input.val.length <= 0 ? '-' : Path.basename(input.val))
+
+                    // Handle the tooltip
+                    try {
+                      // If the value is acutally empty then attempt to disable the tooltip
+                      if (input.val.length <= 0)
+                        throw 0
+
+                      // Enable the tooltip and update its content
+                      tooltipObject.enable()
+                      tooltipObject.setContent(input.val)
+                    } catch (e) {
+                      try {
+                        // Disable the tooltip
+                        tooltipObject.disable()
+                      } catch (e) {}
+                    }
                   })
 
                   // Check username and password existence for Apache Cassandra® and SSH tunnel
@@ -4927,7 +5148,7 @@
                       key: 'ssh-password',
                     }, {
                       section: 'none',
-                      key: 'ssh-privateKey',
+                      key: 'ssh-privatekey',
                     })
 
                     // Loop through the input fields and empty them
@@ -4941,6 +5162,21 @@
                       // Update the object
                       object.update()
                       object._deactivate()
+
+                      // If the current input is not a file selector then skip this try-catch block
+                      if ($(object._element).attr('file-name') == undefined)
+                        return
+
+                      /**
+                       * Update the tooltip's content and state
+                       * Get the object
+                       */
+                      let tooltipObject = getElementMDBObject($(object._element).find('input'), 'Tooltip')
+
+                      try {
+                        // Disable the tooltip
+                        tooltipObject.disable()
+                      } catch (e) {}
                     })
                   }
 
@@ -5150,7 +5386,8 @@
                 IPCRenderer.removeAllListeners(`process:terminate:${testConnectionProcessID}:result`)
 
                 // Once the termination status is received
-                IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), status ? 'success' : 'failure'))
+                if (!isSSHTunnelNeeded)
+                  IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), status ? 'success' : 'failure'))
               })
             })
             // End of handling the `click` events for actions buttons
@@ -5843,7 +6080,7 @@
           let [sshUsername, sshPassword, sshPassphrase] = getAttributes(clusterElement, ['data-ssh-username', 'data-ssh-password', 'data-ssh-passphrase'])
 
           // Check that the username is at least, and maybe password values are valid
-          if (([sshUsername, sshPassword, sshPassphrase].filter((secret) => secret == undefined || secret.trim().length <= 0)).length == 2) {
+          if (([sshUsername, sshPassword, sshPassphrase].every((secret) => secret == undefined || secret.trim().length <= 0))) {
             // If not then stop the test process and show feedback to the user
             showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.t('SSH tunnel can\'t be established without passing at least a username, please check given info before attempting to connect again') + '.', 'failure')
 
@@ -6412,7 +6649,7 @@
               // Check if there's a need to create an SSH tunnel
               try {
                 // Get related inputs values to the SSH tunnel info
-                let values = ['username', 'password', 'privateKey', 'passphrase']
+                let values = ['username', 'password', 'privatekey', 'passphrase']
 
                 // Loop through each value
                 values.forEach((value) => {
@@ -6420,8 +6657,12 @@
                   ssh[value] = $(`[info-section="none"][info-key="ssh-${value}"]`).val()
                 })
 
+                // Check if username has been given but without password nor private key path
+                if (ssh.username.trim().length != 0 && ([ssh.password, ssh.privatekey].every((secret) => secret.trim().length <= 0)))
+                  return showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('username [code]$data[/code] has been provided for creating an SSH tunnel without providing neither a password nor private key, please consider to provide one of them and try again', [ssh.username])) + '.', 'failure')
+
                 // If both username and (password or private key) have been provided then an SSH tunnel should be created
-                sshTunnel = ssh.username.trim().length != 0 && ([ssh.password, ssh.privateKey].some((secret) => secret.trim().length != 0))
+                sshTunnel = ssh.username.trim().length != 0 && ([ssh.password, ssh.privatekey].some((secret) => secret.trim().length != 0))
 
                 // Set the flag's value
                 isSSHTunnelNeeded = sshTunnel
@@ -6898,7 +7139,8 @@
               } catch (e) {}
 
               // Once the termination status is received
-              IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with the cluster to be added/edited in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with the cluster to be added/edited in workspace [b]$data[/b]', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), status ? 'success' : 'failure'))
+              if (!isSSHTunnelNeeded)
+                IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with the cluster to be added/edited in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with the cluster to be added/edited in workspace [b]$data[/b]', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), status ? 'success' : 'failure'))
             })
           }
 
@@ -7202,9 +7444,9 @@
                 // Add `ssh` object to the final cluster's object
                 finalCluster.ssh = {}
 
-                // Add the `privateKey` attribute if it has been provided
+                // Add the `privatekey` attribute if it has been provided
                 if (sshPrivatekey.trim().length != 0)
-                  finalCluster.ssh.privateKey = sshPrivatekey
+                  finalCluster.ssh.privatekey = sshPrivatekey
 
                 // Add the `passphrase` attribute if it has been provided
                 if (sshPassphrase.trim().length != 0)
@@ -7394,7 +7636,7 @@
                 title = 'select cassandra credentials file'
                 break
               }
-              case 'ssh-privateKey': {
+              case 'ssh-privatekey': {
                 title = 'select SSH private key file'
                 break
               }
@@ -7431,7 +7673,7 @@
                * Update the tooltip's content and state
                * Get the object
                */
-              let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
+              let tooltipObject = getElementMDBObject($(this), 'Tooltip')
 
               // If the path to the file is invalid or inaccessible then don't adopt it
               if (!pathIsAccessible(selected[0])) {
@@ -7443,7 +7685,7 @@
 
                 try {
                   // Disable the tooltip
-                  tooltipObject[0].object.disable()
+                  tooltipObject.disable()
                 } catch (e) {}
 
                 // Skip the upcoming code
@@ -7452,8 +7694,8 @@
 
               try {
                 // Enable the tooltip and update its content
-                tooltipObject[0].object.enable()
-                tooltipObject[0].object.setContent(selected[0])
+                tooltipObject.enable()
+                tooltipObject.setContent(selected[0])
               } catch (e) {}
 
               // Set the selected file's path

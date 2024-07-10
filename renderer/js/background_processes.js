@@ -1,3 +1,19 @@
+/*
+ * © 2024 AxonOps Limited. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /**
  * Handle all background processes in this secondary hidden view
  * This view is completely separated from the main - renderer - view and only the modules and JS files that are needed are being imported
@@ -47,7 +63,9 @@ let extraResourcesPath = null,
   // An array to hold all created SSH tunnels
   sshTunnelsObjects = [],
   // Boolean value used to tell if the logging system should be enabled in the current session or not
-  isLoggingEnabled = true
+  isLoggingEnabled = true,
+  // An array that tells which SSH tunnel should be closed - after terminating the process -
+  toBeClosedSSHTunnels = []
 
 // Get the set extra resources path from the main thread
 $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
@@ -125,8 +143,8 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
             try {
               // If private key file path has been passed
-              if (![undefined, null, ''].includes(data.privateKey))
-                authentication.privateKey = await FS.readFileSync(data.privateKey, 'utf8')
+              if (![undefined, null, ''].includes(data.privatekey))
+                authentication.privateKey = await FS.readFileSync(data.privatekey, 'utf8')
             } catch (e) {
               errorLog(e, 'SSH tunnel')
             }
@@ -209,6 +227,28 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
             // Create the tunnel
             OpenSSHTunnel(sshTunnelAttributes).then((tunnel) => {
+              // Handle the need to close this tunnel and stop the process
+              try {
+                if (!(toBeClosedSSHTunnels.some((_requestID) => _requestID == data.requestID)))
+                  throw 0
+
+                try {
+                  // Close that SSH tunnel
+                  tunnel.close()
+
+                  // Add log for this process
+                  addLog(`The SSH tunnel which associated with request ID '${data.requestID}' has been closed`)
+
+                  // Remove the SSH tunnel from being closed
+                  toBeClosedSSHTunnels = toBeClosedSSHTunnels.filter((_requestID) => _requestID == data.requestID)
+                } catch (e) {
+                  errorLog(e, 'SSH tunnel')
+                }
+
+                // Skip the upcoming code and stop the process
+                return
+              } catch (e) {}
+
               /**
                * Set the SSH tunnel's object key in the array
                * The key is either the cluster's ID or the port
@@ -319,6 +359,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
           sshTunnelsObjects[data.newID] = sshTunnelsObjects[data.oldID]
         } catch (e) {}
       })
+
+      // Request to close SSH tunnel when it's created as the process has been terminated
+      IPCRenderer.on('ssh-tunnel:close:queue', (_, requestID) => toBeClosedSSHTunnels.push(requestID))
     }
 
     // Detect differentiation between two texts (metadata in specific)

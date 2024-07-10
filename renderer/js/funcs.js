@@ -1,3 +1,19 @@
+/*
+ * © 2024 AxonOps Limited. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /**
  * Define all global functions
  *
@@ -467,17 +483,31 @@ let updatePinnedToast = (pinnedToastID, text, destroy = false) => {
     closeBtn.add(hideProgressBar).removeAttr('hidden')
 
     /**
-     * Start to animate the decreasing of the progress bar after 100ms
+     * Start to animate the decreasing of the progress bar after a set period of time of creation
      * Once the animation is done click the close button
+     *
+     * Define the animation's attributes
      */
-    setTimeout(() => {
-      progressBar.animate({
+    let animation = {
+      startTimestamp: null,
+      properties: {
         width: '0%'
-      }, 10000, () => closeBtn.click())
+      },
+      duration: 10000,
+      complete: () => closeBtn.click()
+    }
+
+    // After a set period of time start the animation process
+    setTimeout(() => {
+      // Update the `startTimestamp` attributes
+      animation.startTimestamp = new Date().getTime()
+
+      // Start the animation process
+      progressBar.animate(animation.properties, animation.duration, animation.complete)
     }, 150)
 
     // When hovering on the toast's body the closing timer will be paused then resumed on hover out
-    toastBody.hover(() => progressBar.pause(), () => progressBar.resume())
+    toastBody.hover(() => progressBar.pause(animation), () => progressBar.resume(animation))
   } catch (e) {}
 }
 
@@ -3447,6 +3477,9 @@ let closeAllWorkareas = () => {
 
   // Add log for this  process
   addLog(`Close all active work areas, count is '${workareas.length}' work area(s)`, 'process')
+
+  // Loop through each docker/sandbox project and attempt to close it
+  Modules.Docker.getProjects().then((projects) => projects.forEach((project) => Modules.Docker.getDockerInstance(project.folder).stopDockerCompose(undefined, () => {})))
 
   // Loop through all work areas
   workareas.each(function() {

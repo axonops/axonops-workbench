@@ -1,3 +1,19 @@
+/*
+ * © 2024 AxonOps Limited. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /**
 * Import global mixins, fonts definition and animations
 */
@@ -2442,6 +2458,36 @@ div.tab-content {
               border-bottom-left-radius: 0;
               border-bottom-right-radius: 0;
 
+              div.text {
+                max-width: 100%;
+
+                pre {
+                  width: 100%;
+                }
+              }
+
+              div.info-badges {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                align-content: center;
+                align-items: center;
+                position: absolute;
+                top: 0;
+                right: 0;
+                margin: 5px;
+
+                div.badge {
+                  opacity: 0.85;
+                  position: relative;
+                  top: 3px;
+                }
+
+                div.prompt {
+                  margin-right: 5px;
+                }
+              }
+
               &.capitalize {
                 text-transform: capitalize;
                 display: flex;
@@ -2458,12 +2504,6 @@ div.tab-content {
                 position: relative;
                 bottom: 1px;
               }
-
-              div.prompt {
-                opacity: 0.7;
-                position: relative;
-                top: 3px;
-              }
             }
 
             div.output {
@@ -2476,6 +2516,36 @@ div.tab-content {
               border-top-right-radius: 0;
               min-height: 55px;
               position: relative;
+
+              div.sub-output {
+                background: #393939;
+                padding: 5px 10px;
+                border-radius: 3px;
+                margin-bottom: 10px;
+                position: relative;
+
+                &.actions-shown {
+                  margin-bottom: 35px;
+                }
+
+                &:before {
+                  content: '';
+                  width: 2px;
+                  height: calc(100% - 10px);
+                  position: absolute;
+                  top: 0;
+                  bottom: 0;
+                  left: 3px;
+                  margin: auto;
+                  opacity: 0.5;
+                }
+
+                &.error {
+                  &:before {
+                    background: #f44336;
+                  }
+                }
+              }
 
               div.processing {
                 position: absolute;
@@ -2516,14 +2586,15 @@ div.tab-content {
               }
             }
 
-            div.actions {
+            div.actions,
+            div.sub-actions {
               position: absolute;
               top: auto;
               bottom: -18px;
               right: 10px;
               left: auto;
               margin: auto;
-              width: 90px;
+              width: 60px;
               height: 30px;
               display: flex;
               flex-direction: row;
@@ -2537,7 +2608,8 @@ div.tab-content {
                 width: 120px;
               }
 
-              div.action[action="download"] {
+              div.action[action="download"],
+              div.sub-action[sub-action="download"] {
                 ion-icon {
                   font-size: 140%;
                   position: relative;
@@ -2595,7 +2667,8 @@ div.tab-content {
                   opacity: 0.15 !important;
                 }
 
-                &[action="tracing"] {
+                &[action="tracing"],
+                &[sub-action="tracing"] {
                   font-size: 200%;
 
                   ion-icon {
@@ -2606,10 +2679,15 @@ div.tab-content {
                   }
                 }
 
-                &[action="delete"] {
+                &[action="delete"],
+                &[sub-action="delete"] {
                   font-size: 120%;
                 }
               }
+            }
+
+            div.sub-actions {
+              bottom: -22px !important;
             }
 
             &:not(:last-of-type) {

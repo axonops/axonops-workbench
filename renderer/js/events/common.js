@@ -1,3 +1,19 @@
+/*
+ * © 2024 AxonOps Limited. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // When the window is being resized
 {
   $(window.visualViewport).on('resize', () => {
@@ -223,14 +239,11 @@
 
   // Clicks the help/documentation button
   $(`${selector}[action="help"]`).click(() => {
-    /**
-     * Send a request to the main thread to show the documentation view
-     * If the documentation view is already shown it'll be focused on
-     */
-    IPCRenderer.send('documentation-view:show')
+    // Open the documentation's web page
+    Open('https://docs.axonops.com')
 
     // Add log for this action
-    addLog(`The navigation side, opened the help/documentation section`, 'action')
+    addLog(`The navigation side, opened the help/documentation web page`, 'action')
   })
 
   // Clicks the AI assistant button
@@ -595,21 +608,6 @@
 
       // Once the parent `form-outline` is clicked trigger the `focus` event
       input.parent().click(() => input.trigger('focus'))
-    })
-  })
-
-  // Handle showing/hiding the `About` dialog automatically in the next launch
-  setTimeout(() => {
-    // Clicking the checkbox
-    $('#noShowAgainForNotice').click(function() {
-      // Get the app's config
-      Modules.Config.getConfig((config) => {
-        // Update the associated key
-        config.set('ui', 'hideAboutDialog', `${$(this).prop('checked')}`)
-
-        // Write the changes
-        Modules.Config.setConfig(config)
-      })
     })
   })
 }

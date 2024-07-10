@@ -1,3 +1,19 @@
+/*
+ * © 2024 AxonOps Limited. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /**
  * Import the initial packages/modules
  *
@@ -73,6 +89,20 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
           // Copy the database to the set extra resources path
           try {
             await FS.copy(Path.join(appPath, ...file), Path.join(extraResourcesPath, ...file))
+          } catch (e) {}
+
+          // Skip the upcoming code and move to the next file
+          continue
+        } catch (e) {}
+
+        try {
+          // If the current file about `logging`
+          if (file[1] != 'logging')
+            throw 0
+
+          // Ensure the file exists
+          try {
+            await FS.ensureFile(Path.join(appPath, ...file))
           } catch (e) {}
 
           // Skip the upcoming code and move to the next file
@@ -846,6 +876,27 @@ $(document).on('initialize', () => {
                   if (_content[section_][key_] != undefined)
                     return
 
+                  // Handle when the input is actually a file selector
+                  try {
+                    // If the input is not a file selector then skip this try-catch block
+                    if ($(this).parent().attr('file-name') == undefined)
+                      throw 0
+
+                    /**
+                     * Update the tooltip's content and state
+                     * Get the object
+                     */
+                    let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
+
+                    // Clear the file's name preview
+                    $(this).parent().attr('file-name', '-')
+
+                    // Disable the tooltip
+                    try {
+                      tooltipObject[0].object.disable()
+                    } catch (e) {}
+                  } catch (e) {}
+
                   /**
                    * If it is `undefined` then it hasn't been found in the `cqlsh.rc` file
                    * Set the input value to ''
@@ -1117,20 +1168,5 @@ $(document).on('initialize', () => setTimeout(() => {
 
     // Send the event
     IPCRenderer.send('loaded')
-
-    try {
-      // Whether or not the dialog is meant to be hidden
-      let isAboutDialogHidden = config.get('ui', 'hideAboutDialog') == 'true'
-
-      // Update the associated checkbox
-      $('#noShowAgainForNotice').prop('checked', isAboutDialogHidden)
-
-      // If the dialog should be hidden then skip this try-catch block
-      if (isAboutDialogHidden)
-        throw 0
-
-      // Show the modal
-      $(document).ready(() => setTimeout(() => $('div.body div.left div.content div.navigation div.group div.item[action="about"]').click(), 2000))
-    } catch (e) {}
   })
 }, 2000))

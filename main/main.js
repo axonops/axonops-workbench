@@ -1,3 +1,19 @@
+/*
+ * © 2024 AxonOps Limited. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /**
  * The main - singular - thread for the app overall
  *
@@ -78,8 +94,8 @@ const ContextMenu = require('electron-context-menu'),
   Positioner = require('electron-positioner')
 
 /**
- * Whether or not `app.asar` has been found in the app's path
- * Based on that the app can determine where are the important files and folders are - like `config`, `data` and so on.. -
+ * Flag to tell whether or not `app.asar` has been found in the app's path
+ * Based on that the app can determine where the important files and folders are - like `config`, `data` and so on.. -
  * The same process is in the renderer thread as well
  */
 const IsAsarFound = __dirname.includes('app.asar')
@@ -142,9 +158,7 @@ let views = {
   // A view/window as a loding screen
   intro: null,
   // A view/window for all background processes
-  backgroundProcesses: null,
-  // A view/window for the app's offline documentation
-  documentation: null
+  backgroundProcesses: null
 }
 
 // An array that will save all cqlsh instances with their ID given by the renderer thread
@@ -285,7 +299,7 @@ ContextMenu(contextMenuProperties)
 
 // Start the crash handler immediately before the app gets ready
 try {
-  Modules.Reports.startCrashingHandler()
+  // Modules.Reports.startCrashingHandler()
 } catch (e) {}
 
 // When the app is ready a renderer thread should be created and started
@@ -306,15 +320,7 @@ App.on('ready', () => {
   // Create the background processes' view/window and make it hidden; as there's no need for a window or GUI for it
   views.backgroundProcesses = createWindow(properties, Path.join(AppProps.Paths.MainView, '..', 'background.html'), {
     show: false,
-    parent: views.main
-  })
-
-  // Create the documentation view
-  views.documentation = createWindow({
-    ...properties,
-    title: `${properties.title} Documentation`
-  }, Path.join(AppProps.Paths.MainView, '..', 'documentation', 'index.html'), {
-    show: false,
+    // openDevTools: true,
     parent: views.main
   })
 
@@ -340,24 +346,6 @@ App.on('ready', () => {
     show: true,
     center: true,
     parent: views.main
-  })
-
-  // When the `close` event is triggered for the documentation view
-  views.documentation.on('close', (event) => {
-    // This will be set to `true` if the entire app is about to be closed
-    if (!isDocumentationViewPreventClose)
-      return
-
-    // Prevent the default behavior - terminate the view/window -
-    event.preventDefault()
-
-    /**
-     * Only hide the documentation view
-     * In this way we prevent unnecessary loading and create time for the view/window each time it's called
-     */
-    try {
-      views.documentation.hide()
-    } catch (e) {}
   })
 
   /**
@@ -452,15 +440,6 @@ App.on('ready', () => {
         // Close the background-processes view
         try {
           views.backgroundProcesses.close()
-        } catch (e) {}
-
-        // Close the documentation view
-        try {
-          // Set it to `true`; to close the documentation view/window and destroy it as well
-          isDocumentationViewPreventClose = false
-
-          // Close the documentation view
-          views.documentation.close()
         } catch (e) {}
       }, 250)
     }
@@ -613,7 +592,9 @@ App.on('window-all-closed', () => {
     // Initialize the logging system
     IPCMain.on('logging:init', (_, data) => {
       // Create a `logging` object and refer to it via the global `logging` variable
-      logging = new Modules.Logging.Logging(data)
+      try {
+        logging = new Modules.Logging.Logging(data)
+      } catch (e) {}
     })
 
     /**
@@ -686,6 +667,9 @@ App.on('window-all-closed', () => {
           terminated: true,
           requestID
         })
+
+        // Send request to close the created SSH tunnel as the process has been terminated
+        views.backgroundProcesses.webContents.send(`ssh-tunnel:close:queue`, requestID)
       })
     }
 
@@ -747,7 +731,7 @@ App.on('window-all-closed', () => {
 
     // Make sure the tool is executable on Linux and macOS
     if (process.platform !== 'win32')
-      Terminal.runSync(`cd '${binFolder}' && chmod +x keys_generator`)
+      Terminal.runSync(`cd "${binFolder}" && chmod +x keys_generator`)
 
     // Run the keys generator tool
     let binCall = `./keys_generator`
@@ -764,9 +748,6 @@ App.on('window-all-closed', () => {
    * Given data: {id, scriptPath}
    */
   IPCMain.on('script:run', (_, data) => Modules.Scripts.executeScript(views.main, Terminal, data))
-
-  // Show the documentation view
-  IPCMain.on('documentation-view:show', () => views.documentation.show())
 
   // Request to change the content protection state
   IPCMain.on('content-protection', (_, apply) => views.main.setContentProtection(apply))

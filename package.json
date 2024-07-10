@@ -32,7 +32,8 @@
       "target": [
         "nsis",
         "zip"
-      ]
+      ],
+      "artifactName":  "${productName}-${version}-${arch}.${ext}"
     },
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",
@@ -62,7 +63,8 @@
         "main/bin/cqlsh-407",
         "main/bin/cqlsh-410",
         "main/bin/keys_generator"
-      ]
+      ],
+      "artifactName":  "${productName}-${version}-${arch}.${ext}"
     },
     "deb": {
       "depends": [
@@ -78,7 +80,7 @@
     "start": "electron .",
     "rebuild": "electron-rebuild -w -f",
     "dev": "electron --trace-warnings --inspect .",
-    "win": "electron-builder --win --publish never",
+    "win": "electron-builder --win --x64 --ia32 --publish never",
     "win:32": "electron-builder --win --publish never --ia32",
     "win:64": "electron-builder --win --publish never --x64",
     "win:arm64": "electron-builder --win --publish never --arm64",

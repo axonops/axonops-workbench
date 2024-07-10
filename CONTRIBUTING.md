@@ -16,6 +16,7 @@ the branch from the GitHub UI.
 
 ![Create a branch](./docs/create-branch.png)
 
+4. Our primary branch is `main` and all branches should be created from `main`.
 
 ## Code Signing
 
@@ -30,6 +31,17 @@ https://docs.github.com/en/authentication/managing-commit-signature-verification
 2. Ensure all files contain the copyright notice
 3. It's strongly advised you use `linting` for your code. This will be enforced in the near future.
    https://pre-commit.com/
+4. When creating a PR, the target branch should always be `main`
+
+## Tagging and releasing
+
+This project will be using [semantic versioning](https://github.com/semver/semver/blob/master/semver.md):
+
+Given a version number MAJOR.MINOR.PATCH, increment the:
+
+- MAJOR version when you make major changes that include incompatibilities witht the previous release
+- MINOR version when you add functionality in a backward compatible manner
+- PATCH version when you make backward compatible bug fixes
 
 ## Code of Conduct
 

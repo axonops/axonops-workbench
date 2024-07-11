@@ -16,16 +16,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
         include:
-          - os: ubuntu-latest
+          - os: [self-hosted, linux, X64]
             target: Linux
 
-          - os: macos-latest
+          # M1
+          - os: macos-14
             target: Macos
 
-          - os: macos-14-large
-            target: x86_64-apple-darwin
+          # X86
+          - os: macos-13
+            target: Macos
 
           - os: windows-latest
             target: Windows
@@ -35,6 +36,13 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Starting build
+        run: |
+          echo "running build"
+          uname -a
+          hostname
+          date
 
       - name: Download CQLSH prebuilt binaries
         run: |
@@ -79,9 +87,9 @@ jobs:
       - name: Install AxonOps Developer Workbench dependencies
         run: npm i
 
-      - name: Install Snapcraft
-        uses: samuelmeuli/action-snapcraft@v2
-        if: ${{ runner.os != 'Windows' }}
+      # - name: Install Snapcraft
+      #   uses: samuelmeuli/action-snapcraft@v2
+      #   if: ${{ runner.os != 'Windows' }}
 
       - name: Pack AxonOps Developer Workbench for Linux
         run: |
@@ -92,7 +100,9 @@ jobs:
             export USE_SYSTEM_FPM=true
           fi
 
-          if [ "$(uname -s )" == "Darwin" ]; then
+          if [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "arm64" ]; then
+            npm run mac:arm64
+          elif [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "x86_64" ]; then
             npm run mac
           fi
           export CSC_IDENTITY_AUTO_DISCOVERY=false
@@ -117,8 +127,8 @@ jobs:
         with:
           files: |
             dist/*.zip
+            dist/*.pkg
             dist/*.dmg
-            dist/*.snap
             dist/*.deb
             dist/*.rpm
             dist/*.exe

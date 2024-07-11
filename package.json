@@ -32,8 +32,12 @@
       "target": [
         "nsis",
         "zip"
+<<<<<<< HEAD
       ],
       "artifactName":  "${productName}-${version}-${arch}.${ext}"
+=======
+      ]
+>>>>>>> origin/main
     },
     "linux": {
       "icon": "./renderer/assets/images/icon-colored.png",
@@ -63,8 +67,12 @@
         "main/bin/cqlsh-407",
         "main/bin/cqlsh-410",
         "main/bin/keys_generator"
+<<<<<<< HEAD
       ],
       "artifactName":  "${productName}-${version}-${arch}.${ext}"
+=======
+      ]
+>>>>>>> origin/main
     },
     "deb": {
       "depends": [
@@ -80,6 +88,7 @@
     "start": "electron .",
     "rebuild": "electron-rebuild -w -f",
     "dev": "electron --trace-warnings --inspect .",
+<<<<<<< HEAD
     "win": "electron-builder --win --publish never",
     "win:32": "electron-builder --win --publish never --ia32",
     "win:64": "electron-builder --win --publish never --x64",
@@ -94,6 +103,22 @@
     "mac:arm64": "electron-builder --mac dmg pkg zip --publish never --arm64",
     "mac:zip": "electron-builder --mac zip --publish never",
     "mac:pkg": "electron-builder --mac pkg --publish never",
+=======
+    "win": "electron-builder --win --publish onTag",
+    "win:32": "electron-builder --win --publish onTag --ia32",
+    "win:64": "electron-builder --win --publish onTag --x64",
+    "win:arm64": "electron-builder --win --publish onTag --arm64",
+    "tar": "electron-builder --linux tar.gz --publish onTag",
+    "deb": "electron-builder --linux deb --publish onTag",
+    "rpm": "electron-builder --linux rpm --publish onTag",
+    "snap": "electron-builder --linux snap --publish onTag",
+    "linux": "electron-builder --linux tar.gz deb rpm --publish onTag",
+    "linux:arm64": "electron-builder --linux tar.gz deb rpm --publish onTag --arm64",
+    "mac": "electron-builder --mac dmg pkg zip --publish onTag --x64",
+    "mac:arm64": "electron-builder --mac dmg pkg zip --publish onTag --arm64",
+    "mac:zip": "electron-builder --mac zip --publish onTag",
+    "mac:pkg": "electron-builder --mac pkg --publish onTag",
+>>>>>>> origin/main
     "postinstall": "electron-builder install-app-deps"
   },
   "repository": "https://github.com/axonops/axonops-developer-workbench-cassandra",

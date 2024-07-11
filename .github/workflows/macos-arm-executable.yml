@@ -1,0 +1,79 @@
+name: "macOS: Build and Pack"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ["macos-latest"]
+        include:
+          - os: macos-latest
+            target: Macos
+
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Switch to ${{ steps.extract_branch.outputs.branch }} branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.extract_branch.outputs.branch }}
+
+      - name: Setup Python v3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install python dependencies
+        run:  pip3 install -r requirements.txt
+
+      - name: Download python components
+        run: |
+          mkdir -p main/bin
+          curl -L ${GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m) > main/bin/cqlsh-410
+          curl -L ${GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m) > main/bin/cqlsh-407
+          curl -L ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
+        env:
+          GITHUB_URL: https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.0.1-beta2
+
+      - name: Install python dependencies
+        run:  pip3 install -r requirements.txt
+
+      - name: Get credits and add them to the database
+        run: |
+          cd get_credits
+          npm i
+          npm rebuild
+          node get_credits.js
+
+      - name: Setup Node.js v16.20.2
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16.20.2
+
+      - name: Install AxonOps Developer Workbench dependencies
+        run: |
+          npm i
+
+      - name: Pack Axonops Developer Workbench for macOS
+        run: |
+          npm run mac
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxonOps-Developer-Workbench-amd64.dmg
+          path: dist/*.dmg

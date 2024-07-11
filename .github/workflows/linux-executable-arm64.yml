@@ -1,4 +1,4 @@
-name: Release Workbench
+name: Build Linux ARM64
 
 on:
   release:

@@ -20,11 +20,13 @@ jobs:
           - os: [self-hosted, linux, X64]
             target: Linux
 
-          - os: macos-latest
+          # M1
+          - os: macos-14-latest
             target: Macos
 
-          - os: macos-14-large
-            target: x86_64-apple-darwin
+          # X86
+          - os: macos-13-large
+            target: Macos
 
           - os: windows-latest
             target: Windows
@@ -34,6 +36,13 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Starting build
+        run: |
+          echo "running build"
+          uname -a
+          hostname
+          date
 
       - name: Download CQLSH prebuilt binaries
         run: |

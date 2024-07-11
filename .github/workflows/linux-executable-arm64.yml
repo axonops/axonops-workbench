@@ -1,0 +1,94 @@
+name: "Linux: Build and Pack (ARM64)"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Linux:
+    runs-on: [self-hosted, linux, ARM64]
+
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Switch to ${{ steps.extract_branch.outputs.branch }} branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.extract_branch.outputs.branch }}
+
+      - name: Setup Python v3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install python dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Download python components
+        run: |
+          mkdir -p main/bin
+          curl -L ${GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m) > main/bin/cqlsh-410
+          curl -L ${GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m) > main/bin/cqlsh-407
+          curl -L ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
+        env:
+          GITHUB_URL: https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.0.1-beta2
+
+      - name: Setup Node.js v16.20.2
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16.20.2
+
+      - name: Get credits and add them to the database
+        run: |
+          cd get_credits
+          npm i
+          npm rebuild
+          node get_credits.js
+
+      - name: Install AxonOps Developer Workbench dependencies
+        run: |
+          npm i
+
+      - name: Install Snapcraft
+        uses: samuelmeuli/action-snapcraft@v2
+
+      - name: Pack AxonOps Developer Workbench for Linux
+        run: |
+          if [ "$(uname -m)" == "aarch64" ]; then
+            sudo apt-get -y install ruby
+            sudo gem install dotenv -v 2.8.1
+            sudo gem instal fpm
+            export USE_SYSTEM_FPM=true
+          fi
+
+          npm run deb
+          npm run rpm
+          npm run snap
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Debian packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxonOps-Developer-Workbench-Linux-arm64.deb
+          path: dist/axonops-developer-workbench*.deb
+
+      - name: Upload RedHat packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxonOps-Developer-Workbench-Linux-arm64.rpm
+          path: dist/axonops-developer-workbench*.rpm
+
+      - name: Upload Snap packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxonOps-Developer-Workbench-Linux-arm64.snap
+          path: dist/axonops-developer-workbench*.snap
+
+      - name: Upload Tar packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxonOps-Developer-Workbench-Linux-arm64.tar.gz
+          path: dist/axonops-developer-workbench*.tar.gz

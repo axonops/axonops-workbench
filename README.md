@@ -1,13 +1,6 @@
 # AxonOps™ Workbench for Apache Cassandra®
 Apache Cassandra, Cassandra and Apache are either registered trademarks or trademarks of the Apache Software Foundation (http://www.apache.org/) in the United States and/or other countries and are used with permission. The Apache Software Foundation has no affiliation with and does not endorse or review AxonOps Workbench
 
-## Join Our Slack Community
-
-We have a Slack workspace where you can interact with the community, ask questions, and contribute to discussions. Click the link below to join:
-
-[Join our AxonOps Slack Workspace](https://join.slack.com/t/axonops/shared_invite/zt-2mcdli0af-Lo4fKBazvUI9mzZVzzoF~g)
-
-We look forward to collaborating with you!
 
 THIS IS IN-DEVELOPMENT - DO NOT USE
 =======

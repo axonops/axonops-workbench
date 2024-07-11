@@ -100,7 +100,9 @@ jobs:
             export USE_SYSTEM_FPM=true
           fi
 
-          if [ "$(uname -s )" == "Darwin" ]; then
+          if [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "arm64" ]; then
+            npm run mac:arm64
+          elif [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "x86_64" ]; then
             npm run mac
           fi
           export CSC_IDENTITY_AUTO_DISCOVERY=false
@@ -125,6 +127,7 @@ jobs:
         with:
           files: |
             dist/*.zip
+            dist/*.pkg
             dist/*.dmg
             dist/*.deb
             dist/*.rpm

@@ -5,7 +5,7 @@ Apache Cassandra, Cassandra and Apache are either registered trademarks or trade
 
 We have a Slack workspace where you can interact with the community, ask questions, and contribute to discussions. Click the link below to join:
 
-[Join our Slack Workspace]([https://your-slack-invite-link.com](https://join.slack.com/t/axonops/shared_invite/zt-2mcdli0af-Lo4fKBazvUI9mzZVzzoF~g))
+[Join our AxonOps Slack Workspace](https://join.slack.com/t/axonops/shared_invite/zt-2mcdli0af-Lo4fKBazvUI9mzZVzzoF~g)
 
 We look forward to collaborating with you!
 

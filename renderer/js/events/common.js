@@ -111,7 +111,9 @@
     let assistantContent = $('div.body div.hidden-area div.content.ai-assistant')
 
     // Add log for this action
-    addLog(`The navigation side, opened the AI Assistant section`, 'action')
+    try {
+      addLog(`The navigation side, opened the AI Assistant section`, 'action')
+    } catch (e) {}
 
     try {
       // If the content is already shown/visible
@@ -243,7 +245,9 @@
     Open('https://docs.axonops.com')
 
     // Add log for this action
-    addLog(`The navigation side, opened the help/documentation web page`, 'action')
+    try {
+      addLog(`The navigation side, opened the help/documentation web page`, 'action')
+    } catch (e) {}
   })
 
   // Clicks the AI assistant button
@@ -260,7 +264,9 @@
       btn = $(this).find('div.sub-content.btn')
 
     // Add log for this action
-    addLog(`The navigation side, opened the notifications center section`, 'action')
+    try {
+      addLog(`The navigation side, opened the notifications center section`, 'action')
+    } catch (e) {}
 
     try {
       // If the content is already shown/visible
@@ -326,7 +332,9 @@
         displayLanguage = config.get('ui', 'language')
 
       // Add log for this action
-      addLog(`The navigation side, opened the settings dialog`, 'action')
+      try {
+        addLog(`The navigation side, opened the settings dialog`, 'action')
+      } catch (e) {}
 
       // Check the maximum number of allowed CQLSH sessions at once
       $('input#maxNumCQLSHSessions').val(!isNaN(maxNumCQLSHSessions) && maxNumCQLSHSessions > 0 ? maxNumCQLSHSessions : 10)
@@ -396,7 +404,9 @@
           $('div.terminal-container div.terminal.xterm').trigger('changefont', 187)
 
           // Add log for this action
-          addLog(`Zoom in the UI by '${zoomLevel}%'`, 'action')
+          try {
+            addLog(`Zoom in the UI by '${zoomLevel}%'`, 'action')
+          } catch (e) {}
           break
         }
         case 'zoomOut': {
@@ -405,7 +415,9 @@
           $('div.terminal-container div.terminal.xterm').trigger('changefont', 189)
 
           // Add log for this action
-          addLog(`Zoom out the UI by '${zoomLevel}%'`, 'action')
+          try {
+            addLog(`Zoom out the UI by '${zoomLevel}%'`, 'action')
+          } catch (e) {}
           break
         }
         case 'zoomReset': {
@@ -414,33 +426,43 @@
           $('div.terminal-container div.terminal.xterm').trigger('changefont', 48)
 
           // Add log for this action
-          addLog(`Rest the zoom of the UI to '${zoomLevel}%'`, 'action')
+          try {
+            addLog(`Rest the zoom of the UI to '${zoomLevel}%'`, 'action')
+          } catch (e) {}
           break
         }
         case 'toggleFullscreen': {
           IPCRenderer.send('options:view:toggle-fullscreen')
 
           // Add log for this action
-          addLog(`Toggle the fullscreen mode`, 'action')
+          try {
+            addLog(`Toggle the fullscreen mode`, 'action')
+          } catch (e) {}
           break
         }
         case 'restartApp': {
           // Add log for this action
-          addLog(`Restart the app`, 'action')
+          try {
+            addLog(`Restart the app`, 'action')
+          } catch (e) {}
 
           IPCRenderer.send('options:actions:restart')
           break
         }
         case 'quitApp': {
           // Add log for this action
-          addLog(`Quit the app`, 'action')
+          try {
+            addLog(`Quit the app`, 'action')
+          } catch (e) {}
 
           IPCRenderer.send('options:actions:quit')
           break
         }
         case 'closeWorkareas': {
           // Add log for this action
-          addLog(`Request to close all active work areas`, 'action')
+          try {
+            addLog(`Request to close all active work areas`, 'action')
+          } catch (e) {}
 
           // Confirm the close of all work areas
           openDialog(I18next.capitalizeFirstLetter(I18next.t('are you sure about closing all active work areas - including sandbox projects - ?')), (confirm) => {
@@ -539,7 +561,9 @@
   // Clicks the `SAVE SETTINGS` button in the footer in the dialog
   $(`button#saveSettings`).click(function() {
     // Add log about this action
-    addLog(`Request to save the updated app's settings`, 'action')
+    try {
+      addLog(`Request to save the updated app's settings`, 'action')
+    } catch (e) {}
 
     // Update variables and get the result
     $('button#updateVariables').trigger('click', (result) => {
@@ -586,7 +610,9 @@
           }, 100)
         })
       } catch (e) {
-        errorLog(e, 'common')
+        try {
+          errorLog(e, 'common')
+        } catch (e) {}
       }
     })
   })
@@ -673,7 +699,9 @@
           setTimeout(() => clusterElement.find('div.button button.test-connection').click())
         })
       } catch (e) {
-        errorLog(e, 'common')
+        try {
+          errorLog(e, 'common')
+        } catch (e) {}
 
         // The updating process failed, show feedback to the user
         return showToast(I18next.capitalize(I18next.t('ignore cluster credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
@@ -827,7 +855,9 @@
               if (credentialsArray.authpassword.trim().length != 0)
                 cluster.info.secrets.password = encrypt(key, credentialsArray.authpassword)
             } catch (e) {
-              errorLog(e, 'common')
+              try {
+                errorLog(e, 'common')
+              } catch (e) {}
             }
 
             try {
@@ -847,7 +877,9 @@
               if (credentialsArray.sshpassphrase.trim().length != 0)
                 cluster.info.secrets.sshPassphrase = encrypt(key, credentialsArray.sshpassphrase)
             } catch (e) {
-              errorLog(e, 'common')
+              try {
+                errorLog(e, 'common')
+              } catch (e) {}
             }
 
             // Attempt to update the cluster
@@ -860,7 +892,9 @@
               clusterElement.removeAttr(`${saveAuthCredentialsConfirmed ? 'data-credentials-auth' : ''} ${saveSSHCredentialsConfirmed ? 'data-credentials-ssh' : ''}`)
             })
           } catch (e) {
-            errorLog(e, 'common')
+            try {
+              errorLog(e, 'common')
+            } catch (e) {}
 
             // The updating process failed, show feedback to the user
             showToast(I18next.capitalize(I18next.t('save cluster credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
@@ -873,7 +907,9 @@
           }
         })
       } catch (e) {
-        errorLog(e, 'common')
+        try {
+          errorLog(e, 'common')
+        } catch (e) {}
       }
 
       // Enable the proceed button again

@@ -188,7 +188,9 @@ let loadScript = (path) => {
       dataType: 'script'
     })
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   }
 }
 
@@ -208,7 +210,9 @@ let loadStyleSheet = (path) => {
   try {
     $('head').prepend(`<link rel="stylesheet" href="${path}">`)
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   }
 }
 
@@ -253,7 +257,9 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
     let logType = (['success', 'neutral']).some((_type) => type == _type) ? 'info' : (type == 'failure' ? 'error' : type)
 
     // Add the log - toast's title and text -
-    addLog(`${StripTags(title)}: ${StripTags(text)}`, logType)
+    try {
+      addLog(`${StripTags(title)}: ${StripTags(text)}`, logType)
+    } catch (e) {}
   }
 
   // Whether or not the `toast-id` attribute will be added
@@ -561,7 +567,9 @@ let formatTimestamp = (timestamp, isSecondFormat = false, withMilliSeconds = fal
   } catch (e) {}
 
   // Add log for this process
-  addLog(`Format the timestamp '${timestamp}' to a human-readable format '${format}'`, 'process')
+  try {
+    addLog(`Format the timestamp '${timestamp}' to a human-readable format '${format}'`, 'process')
+  } catch (e) {}
 
   // Return the human-readable result
   return format
@@ -620,7 +628,9 @@ let repairJSON = (json) => {
   let result = json // Final result which be returned
 
   // Add a log about this process -  without logging the result afterward -
-  addLog(`Repair a string-format JSON '${json.slice(0, 20)}...'`, 'process')
+  try {
+    addLog(`Repair a string-format JSON '${json.slice(0, 20)}...'`, 'process')
+  } catch (e) {}
 
   try {
     // Replace non-ascii chars except the ones which are used to build a valid JSON
@@ -645,7 +655,9 @@ let repairJSON = (json) => {
     // Update the result with the new repaired JSON string
     result = json
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   } finally {
     // Return the final result
     return result
@@ -2072,7 +2084,9 @@ let openDialog = (text, callback, noBackdrop = false) => {
   dialogContent.html(text)
 
   // Add log for this confirmation dialog - its text -
-  addLog(`Confirmation dialog, text: '${text}'`, 'action')
+  try {
+    addLog(`Confirmation dialog, text: '${text}'`, 'action')
+  } catch (e) {}
 
   // Point at the confirm and cancel buttons in the dialog
   let confirm = dialog.find('button.btn-primary'),
@@ -2087,7 +2101,9 @@ let openDialog = (text, callback, noBackdrop = false) => {
     callback($(this).is(confirm))
 
     // Add log for the confirmation's status
-    addLog(`Confirmation dialog status: '${$(this).is(confirm) ? 'confirmed' : 'canceled'}'`)
+    try {
+      addLog(`Confirmation dialog status: '${$(this).is(confirm) ? 'confirmed' : 'canceled'}'`)
+    } catch (e) {}
 
     // Hide the dialog
     dialogObject.hide()
@@ -2179,7 +2195,9 @@ let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
  */
 let getKey = async (type, callback, called = false) => {
   // Add log for this process
-  addLog(`Obtain the ${type} key for encryption or decryption`, 'process')
+  try {
+    addLog(`Obtain the ${type} key for encryption or decryption`, 'process')
+  } catch (e) {}
 
   try {
     // If the key's type is not `private` then skip this try-catch block
@@ -2224,7 +2242,9 @@ let getKey = async (type, callback, called = false) => {
     // Skip the upcoming code - since it's about obtaining a public key -
     return
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   }
 
   /**
@@ -2269,7 +2289,9 @@ let encrypt = (publicKey, text) => {
   let encryptedText = '' // The final encrypted text which be returned
 
   // Add log for this process
-  addLog(`Use the RSA cryptosystem to encrypt a text`, 'process')
+  try {
+    addLog(`Use the RSA cryptosystem to encrypt a text`, 'process')
+  } catch (e) {}
 
   try {
     // Create a public RSA object
@@ -2280,7 +2302,9 @@ let encrypt = (publicKey, text) => {
     // Encrypt the given text
     encryptedText = public.encrypt(text).toString('base64')
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   } finally {
     // Return the final encrypted text
     return encryptedText
@@ -2300,7 +2324,9 @@ let decrypt = (privateKey, text) => {
   let decryptedText = '' // The final decrypted text
 
   // Add log for this process
-  addLog(`Use the RSA cryptosystem to decrypt a text`, 'process')
+  try {
+    addLog(`Use the RSA cryptosystem to decrypt a text`, 'process')
+  } catch (e) {}
 
   try {
     // Create a private RSA object
@@ -2311,7 +2337,9 @@ let decrypt = (privateKey, text) => {
     // Decrypt the given text
     decryptedText = private.decrypt(text).toString('utf8')
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   } finally {
     // Return the final decrypted text
     return decryptedText
@@ -2335,7 +2363,9 @@ let executeScript = (scriptID, scripts, callback) => {
   let requestID = getRandomID(20)
 
   // Add log about executing the current script
-  addLog(`Executing the script '${scripts[scriptID]}' within a connection process with cluster`, 'process')
+  try {
+    addLog(`Executing the script '${scripts[scriptID]}' within a connection process with cluster`, 'process')
+  } catch (e) {}
 
   // Send the execution request
   IPCRenderer.send('script:run', {
@@ -2355,7 +2385,9 @@ let executeScript = (scriptID, scripts, callback) => {
     status = parseInt(status)
 
     // Add log for the execution's status
-    addLog(`Execution status of the script '${scripts[scriptID]}' is '${isNaN(status) ? originalStatus : status}'`)
+    try {
+      addLog(`Execution status of the script '${scripts[scriptID]}' is '${isNaN(status) ? originalStatus : status}'`)
+    } catch (e) {}
 
     try {
       // If the status/returned value is not `0` then it is considered an error
@@ -2372,7 +2404,9 @@ let executeScript = (scriptID, scripts, callback) => {
       // Call the execution function again in a recursive way
       executeScript(scriptID, scripts, callback)
     } catch (e) {
-      errorLog(e, 'functions')
+      try {
+        errorLog(e, 'functions')
+      } catch (e) {}
 
       /**
        * Call the callback function
@@ -2414,7 +2448,9 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
   let workspace = `workspace #${workspaceID}`
 
   // Add log about this process
-  addLog(`Get all pre and post-connection scripts of ${clusterID != null ? 'cluster #' + clusterID + ' in ' : ' a cluster about to be added/updated in '}${workspace}`, 'process')
+  try {
+    addLog(`Get all pre and post-connection scripts of ${clusterID != null ? 'cluster #' + clusterID + ' in ' : ' a cluster about to be added/updated in '}${workspace}`, 'process')
+  } catch (e) {}
 
   // Check pre and post-connection scripts
   try {
@@ -2432,7 +2468,9 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
       // Get the target cluster's object
       cluster = clusters.filter((cluster) => cluster.info.id == clusterID)[0]
     } catch (e) {
-      errorLog(e, 'functions')
+      try {
+        errorLog(e, 'functions')
+      } catch (e) {}
     }
 
     // Get the cluster's `cqlsh.rc` file's content
@@ -2468,12 +2506,16 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
       }
     }
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   }
 
   // Add log if scripts have been found
   if (scripts.length != 0)
-    addLog(`Pre and post-connection scripts of ${clusterID != null ? 'cluster #' + clusterID + ' in ' : ' a cluster about to be added/updated in '}${workspace} are (${JSON.stringify(scripts)})`, 'process')
+    try {
+      addLog(`Pre and post-connection scripts of ${clusterID != null ? 'cluster #' + clusterID + ' in ' : ' a cluster about to be added/updated in '}${workspace} are (${JSON.stringify(scripts)})`, 'process')
+    } catch (e) {}
 
   // Return the final result
   return {
@@ -2503,11 +2545,15 @@ let getRandomPort = async (amount = 1) => {
     try {
       ports.push(await PortGet())
     } catch (e) {
-      errorLog(e, 'functions')
+      try {
+        errorLog(e, 'functions')
+      } catch (e) {}
     }
 
   // Add log about the free-to-use ports
-  addLog(`Get ${amount} free-to-use port(s), returned '${amount == 1 ? ports[0] : JSON.stringify(ports)}'`, 'network')
+  try {
+    addLog(`Get ${amount} free-to-use port(s), returned '${amount == 1 ? ports[0] : JSON.stringify(ports)}'`, 'network')
+  } catch (e) {}
 
   // Return one `port` if only one is needed, or the entire array otherwise
   return amount == 1 ? ports[0] : ports
@@ -2605,7 +2651,9 @@ let invertColor = (hex) => {
     g = padZero((255 - parseInt(hex.slice(2, 4), 16)).toString(16))
     b = padZero((255 - parseInt(hex.slice(4, 6), 16)).toString(16))
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   }
 
   // Return the final result
@@ -2626,13 +2674,17 @@ let checkSSH = (callback) => {
     // Run the command to check SSH
     Terminal.run('ssh -V', (err, stderr, data) => {
       // Add log for the process' result
-      addLog(`Check SSH client existence and accessibility, status: '${!(err || stderr) ? 'exists and accessible' : 'not exists or inaccessible. Details: ' + err || stderr}'`, 'process')
+      try {
+        addLog(`Check SSH client existence and accessibility, status: '${!(err || stderr) ? 'exists and accessible' : 'not exists or inaccessible. Details: ' + err || stderr}'`, 'process')
+      } catch (e) {}
 
       // Call the callback function with the result
       callback(!(err || stderr))
     })
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   }
 }
 
@@ -2693,14 +2745,18 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
     try {
       variablesManifest = await FS.readFileSync(variablesFilePath.manifest, 'utf8')
     } catch (e) {
-      errorLog(e, 'functions')
+      try {
+        errorLog(e, 'functions')
+      } catch (e) {}
     }
 
     // Get the saved variables' values in the host config/app data folder
     try {
       variablesValues = await FS.readFileSync(variablesFilePath.values, 'utf8')
     } catch (e) {
-      errorLog(e, 'functions')
+      try {
+        errorLog(e, 'functions')
+      } catch (e) {}
     }
 
     // Define the final variables object
@@ -2732,7 +2788,9 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
         if (exists != undefined)
           variables.push(exists)
       } catch (e) {
-        errorLog(e, 'functions')
+        try {
+          errorLog(e, 'functions')
+        } catch (e) {}
       }
     })
 
@@ -2785,7 +2843,9 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
         // Skip the upcoming code
         return
       } catch (e) {
-        errorLog(e, 'functions')
+        try {
+          errorLog(e, 'functions')
+        } catch (e) {}
       }
 
       /**
@@ -2809,7 +2869,9 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
       result[objectValue] = value
     })
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   } finally {
     // Return the final result in case more than raw data is wanted
     if (!rawData)
@@ -2865,7 +2927,9 @@ let variablesToValues = (object, variables) => {
       object[key] = value
     })
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   }
 
   // Return the object after manipulation
@@ -2897,7 +2961,9 @@ let applyJSONBeautify = (object, sort = false) => {
     // Attempt to beautify the passed JSON object
     beautifiedJSON = BeautifyJSON(object, null, 2, 80)
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   }
 
   // Return the beautified version of the JSON
@@ -3020,7 +3086,9 @@ let getWorkspaceFolderPath = (workspaceID, replaceDefault = true) => {
     // Return the result
     return Path.join(folderPath, folderName)
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
 
     // Return an empty value if an error has occurred
     return ''
@@ -3071,11 +3139,15 @@ let pathIsAccessible = (path) => {
     // Reaching here means the test has successfully passed
     accessible = true
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   }
 
   // Add log for this process
-  addLog(`Check the path '${path}' is accessible and the user has privileges to manipulate it, result is '${accessible ? '' : 'in'}accessible'`, 'process')
+  try {
+    addLog(`Check the path '${path}' is accessible and the user has privileges to manipulate it, result is '${accessible ? '' : 'in'}accessible'`, 'process')
+  } catch (e) {}
 
   // Return the test result
   return accessible
@@ -3100,7 +3172,9 @@ let getMachineID = async () => {
       original: true // Set to `true`; to return the original ID value of the machine rather than a hashed value (SHA-256)
     })
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   }
 
   // Return the machine ID
@@ -3116,13 +3190,20 @@ let clearTemp = () => {
   let tempFolder = OS.tmpdir()
 
   // Add log about this process
-  addLog(`Clear temporary files from the last session`, 'process')
+  try {
+    addLog(`Clear temporary files from the last session`, 'process')
+  } catch (e) {}
 
   // Read the temp folder and get all items (files and folders) in it
   FS.readdir(tempFolder, (err, items) => {
     // If any error has occurred then end this process
-    if (err)
-      return errorLog(err, 'functions')
+    if (err) {
+      try {
+        errorLog(err, 'functions')
+      } catch (e) {}
+
+      return
+    }
 
     // Loop through detected items in the temp folder
     for (let item of items) {
@@ -3297,7 +3378,9 @@ let setUIColor = (workspaceColor) => {
     // Append the stylesheet
     $('body').append($(stylesheet))
   } catch (e) {
-    errorLog(e, 'functions')
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
   }
 }
 
@@ -3464,7 +3547,9 @@ let errorLog = (error, process) => {
     return
 
   // Log the error
-  addLog(`Error in process ${process}. Details: ${error}`, 'error')
+  try {
+    addLog(`Error in process ${process}. Details: ${error}`, 'error')
+  } catch (e) {}
 }
 
 /**
@@ -3476,7 +3561,9 @@ let closeAllWorkareas = () => {
   let workareas = $('div.body div.right div.content div[content="workarea"] div.workarea[cluster-id]')
 
   // Add log for this  process
-  addLog(`Close all active work areas, count is '${workareas.length}' work area(s)`, 'process')
+  try {
+    addLog(`Close all active work areas, count is '${workareas.length}' work area(s)`, 'process')
+  } catch (e) {}
 
   // Loop through each docker/sandbox project and attempt to close it
   Modules.Docker.getProjects().then((projects) => projects.forEach((project) => Modules.Docker.getDockerInstance(project.folder).stopDockerCompose(undefined, () => {})))

@@ -145,7 +145,11 @@ try {
 global.eventEmitter = new EventEmitter()
 
 // Import the set customized logging addition function and make it global across the entire thread
-global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
+global.addLog = null
+
+try {
+  global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
+} catch (e) {}
 
 /**
  * Define global variables that will be used in different scopes in the main thread
@@ -310,11 +314,6 @@ App.on('ready', () => {
     try {
       views.main.webContents.send(`extra-resources-path`, extraResourcesPath)
     } catch (e) {}
-
-    // Send the set extra resources path to the background processes renderer thread
-    try {
-      views.backgroundProcesses.webContents.send(`extra-resources-path`, extraResourcesPath)
-    } catch (e) {}
   })
 
   // Create the background processes' view/window and make it hidden; as there's no need for a window or GUI for it
@@ -322,6 +321,11 @@ App.on('ready', () => {
     show: false,
     // openDevTools: true,
     parent: views.main
+  }, () => {
+    // Send the set extra resources path to the background processes renderer thread
+    try {
+      views.backgroundProcesses.webContents.send(`extra-resources-path`, extraResourcesPath)
+    } catch (e) {}
   })
 
   /**
@@ -390,8 +394,7 @@ App.on('ready', () => {
   Menu.setApplicationMenu(null)
 
   // Variable to prevent the immediate closure of the main view; so we have time to save the logs and terminate cqlsh sessions
-  let isMainViewPreventClose = true,
-    isDocumentationViewPreventClose = true
+  let isMainViewPreventClose = true
 
   // Once the `close` event is triggered
   views.main.on('close', (event) => {

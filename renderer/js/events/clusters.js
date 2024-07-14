@@ -72,7 +72,9 @@
           cluster.name = cluster.name || cluster.folder
           cluster.host = `127.0.0.1:${cluster.ports.cassandra}`
         } catch (e) {
-          errorLog(e, 'clusters')
+          try {
+            errorLog(e, 'clusters')
+          } catch (e) {}
         }
 
         // Define the cluster's ID
@@ -142,7 +144,9 @@
           // Check the SSH passphrase
           secrets += secretsInfo.sshPassphrase != undefined ? `data-ssh-passphrase="${secretsInfo.sshPassphrase}" ` : ''
         } catch (e) {
-          errorLog(e, 'clusters')
+          try {
+            errorLog(e, 'clusters')
+          } catch (e) {}
         }
 
         // This variable will hold the requirement of DB auth and SSH credentials in UI attributes if needed
@@ -159,7 +163,9 @@
           // Check the SSH credentials
           credentials += cluster.info.credentials.ssh != undefined ? ` data-credentials-ssh="true"` : ''
         } catch (e) {
-          errorLog(e, 'clusters')
+          try {
+            errorLog(e, 'clusters')
+          } catch (e) {}
         }
 
         /**
@@ -323,7 +329,9 @@
                 isSSHTunnelNeeded = clusterElement.getAllAttributes('data-ssh')
 
                 // Add log for this request
-                addLog(`Request to test connection with the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                try {
+                  addLog(`Request to test connection with the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                } catch (e) {}
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
@@ -462,7 +470,9 @@
                   maximumRunningClusters = isNaN(maximumRunningClusters) || maximumRunningClusters < 1 ? 10 : maximumRunningClusters
 
                   // Add log for this request
-                  addLog(`Request to connect with the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                  try {
+                    addLog(`Request to connect with the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                  } catch (e) {}
 
                   // If the currently running clusters are more than or equal to the maximum allowed number and this is not the sandbox workspace then end the process and show feedback to the user
                   if (([numRunningClusters, numAttemptingClusters]).some((num) => num >= maximumRunningClusters) && !isSandbox)
@@ -1345,7 +1355,9 @@
                     terminal = terminalObjects[terminalID]
 
                     // Add log
-                    addLog(`CQLSH session created for the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
+                    try {
+                      addLog(`CQLSH session created for the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
+                    } catch (e) {}
 
                     /**
                      * Custom terminal options
@@ -1507,7 +1519,9 @@
                                   try {
                                     Clipboard.writeText(resultBeautified)
                                   } catch (e) {
-                                    errorLog(e, 'clusters')
+                                    try {
+                                      errorLog(e, 'clusters')
+                                    } catch (e) {}
                                   }
 
                                   // Give feedback to the user
@@ -1576,7 +1590,9 @@
                                   return `${(val[1] - val[0]).toFixed(2)}ms`
                                 }
                               } catch (e) {
-                                errorLog(e, 'clusters')
+                                try {
+                                  errorLog(e, 'clusters')
+                                } catch (e) {}
                               }
 
                               /**
@@ -1597,7 +1613,9 @@
                                   return `${parseFloat(activity.formattedValue).toFixed(2)}ms`
                                 }
                               } catch (e) {
-                                errorLog(e, 'clusters')
+                                try {
+                                  errorLog(e, 'clusters')
+                                } catch (e) {}
                               }
 
                               /**
@@ -1971,17 +1989,23 @@
                                       metadataDiffEditors.new.object = createEditor('new', metadata)
                                     })
                                   } catch (e) {
-                                    errorLog(e, 'clusters')
+                                    try {
+                                      errorLog(e, 'clusters')
+                                    } catch (e) {}
                                   }
 
                                   // Hide the loading indicator in the tree view section
                                   setTimeout(() => metadataContent.parent().removeClass('loading'), 150)
                                 } catch (e) {
-                                  errorLog(e, 'clusters')
+                                  try {
+                                    errorLog(e, 'clusters')
+                                  } catch (e) {}
                                 }
                               })
                             } catch (e) {
-                              errorLog(e, 'clusters')
+                              try {
+                                errorLog(e, 'clusters')
+                              } catch (e) {}
                             }
                           }
                           // End of the check metadata function
@@ -2252,7 +2276,9 @@
                                             try {
                                               Clipboard.writeText(contentBeautified)
                                             } catch (e) {
-                                              errorLog(e, 'clusters')
+                                              try {
+                                                errorLog(e, 'clusters')
+                                              } catch (e) {}
                                             }
 
                                             // Give feedback to the user
@@ -2494,7 +2520,9 @@
                               })
                             } catch (e) {}
                           } catch (e) {
-                            errorLog(e, 'clusters')
+                            try {
+                              errorLog(e, 'clusters')
+                            } catch (e) {}
                           }
 
                           // Set the prompt which has been got from cqlsh tool
@@ -2686,7 +2714,9 @@
                         }, 1000)
                       })
                     } catch (e) {
-                      errorLog(e, 'clusters')
+                      try {
+                        errorLog(e, 'clusters')
+                      } catch (e) {}
                     }
                     // End of handling the app's terminal
 
@@ -3257,7 +3287,9 @@
                         })
 
                         // Add log
-                        addLog(`Created a bash session for sandbox project ${getAttributes(clusterElement, ['data-id'])}`)
+                        try {
+                          addLog(`Created a bash session for sandbox project ${getAttributes(clusterElement, ['data-id'])}`)
+                        } catch (e) {}
 
                         /**
                          * Custom terminal options
@@ -3405,7 +3437,9 @@
                         // End of handling the app's terminal
                       }
                     } catch (e) {
-                      errorLog(e, 'clusters')
+                      try {
+                        errorLog(e, 'clusters')
+                      } catch (e) {}
                     }
                     // End of handling the bash session's terminal
 
@@ -3424,7 +3458,9 @@
                           try {
                             Clipboard.writeText(metadataBeautified)
                           } catch (e) {
-                            errorLog(e, 'clusters')
+                            try {
+                              errorLog(e, 'clusters')
+                            } catch (e) {}
                           }
 
                           // Give feedback to the user
@@ -3447,7 +3483,9 @@
                           $(`div.btn[data-id="${searchInMetadataBtnID}"]`).trigger('click', true)
 
                           // Add log about this refreshing process
-                          addLog(`Request to refresh the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                          try {
+                            addLog(`Request to refresh the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                          } catch (e) {}
 
                           // Reset the metadata trigger
                           isMetadataFetched = false
@@ -3571,7 +3609,9 @@
                               // Enable the button again
                               $(this).removeAttr('disabled').removeClass('disabled refreshing')
                             } catch (e) {
-                              errorLog(e, 'clusters')
+                              try {
+                                errorLog(e, 'clusters')
+                              } catch (e) {}
                             }
                           })
                         })
@@ -3619,7 +3659,9 @@
                             snapshotName = `${timeFormatted}`
 
                           // Add log a about the request
-                          addLog(`Request to save a snapshot of the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                          try {
+                            addLog(`Request to save a snapshot of the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                          } catch (e) {}
 
                           // Minimize the size of the metadata by compression
                           try {
@@ -3709,7 +3751,9 @@
                                 $(this).find('a[action="load"]').click(async function() {
                                   try {
                                     // Add log about this loading process
-                                    addLog(`Request to load a snapshot in path '${snapshotPath}' related to the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                    try {
+                                      addLog(`Request to load a snapshot in path '${snapshotPath}' related to the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                    } catch (e) {}
 
                                     // Read the snapshot's content
                                     let snapshotContent = await FS.readFileSync(snapshotPath, 'utf8')
@@ -3732,7 +3776,9 @@
                                     // Close the modal/dialog
                                     $('div.modal#loadSnapshot').find('button.btn-close').click()
                                   } catch (e) {
-                                    errorLog(e, 'clusters')
+                                    try {
+                                      errorLog(e, 'clusters')
+                                    } catch (e) {}
 
                                     // If any error has occurred then show feedback to the user about the failure
                                     showToast(I18next.capitalize(I18next.t('load snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]', [snapshot.attr('data-name')])) + '.', 'failure')
@@ -3748,7 +3794,9 @@
                                       // If any error has occurred then show feedback to the user and skip the upcoming code
                                       if (err) {
                                         // Add error log
-                                        errorLog(e, 'clusters')
+                                        try {
+                                          errorLog(e, 'clusters')
+                                        } catch (e) {}
 
                                         // Show feedback to the user
                                         showToast(I18next.capitalize(I18next.t('delete snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it', [snapshotName])) + '.', 'failure')
@@ -3770,7 +3818,9 @@
                                   }
 
                                   // Add log about this deletion process
-                                  addLog(`Request to delete a snapshot in path '${snapshotPath}' related to the metadata of cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                  try {
+                                    addLog(`Request to delete a snapshot in path '${snapshotPath}' related to the metadata of cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                  } catch (e) {}
 
                                   // If no need for confirmation then call the deletion function and skip the upcoming code
                                   if (noConfirm)
@@ -3840,7 +3890,9 @@
                       setTimeout(() => {
                         $(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).click(function() {
                           // Add log for this action
-                          addLog(`Request to close/refresh the work area of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                          try {
+                            addLog(`Request to close/refresh the work area of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                          } catch (e) {}
 
                           // Ask the user for credentials again if they're required
                           try {
@@ -3918,7 +3970,9 @@
                             // Reset the button's text
                             setTimeout(() => $(`button[button-id="${startProjectBtnID}"]`).children('span').attr('mulang', 'start').text(I18next.t('start')))
                           } catch (e) {
-                            errorLog(e, 'clusters')
+                            try {
+                              errorLog(e, 'clusters')
+                            } catch (e) {}
                           }
 
                           // Point at the current active work aree
@@ -4167,7 +4221,9 @@
                               method: 'after'
                             }
                           } catch (e) {
-                            errorLog(e, 'clusters')
+                            try {
+                              errorLog(e, 'clusters')
+                            } catch (e) {}
                           }
 
                           // Append the switcher to the container
@@ -4210,7 +4266,9 @@
                                   clusterElement = $(`div[content="clusters"] div.clusters-container div.clusters[workspace-id="${workspaceID}"] div.cluster[data-id="${clusterID}"]`)
 
                                 // Add log about this action
-                                addLog(`Switch to the work area of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                try {
+                                  addLog(`Switch to the work area of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                } catch (e) {}
 
                                 // Set the workspace's color on the UI
                                 setUIColor(getAttributes(workspaceElement, 'data-color'))
@@ -4241,7 +4299,9 @@
                         }, 200)
                       })
                     } catch (e) {
-                      errorLog(e, 'clusters')
+                      try {
+                        errorLog(e, 'clusters')
+                      } catch (e) {}
                     }
 
                     // Allow for resizing the left side of the work area taking into account all affected elements
@@ -4576,7 +4636,9 @@
                       numAttemptingSandbox = $(`div[content="clusters"] div.clusters-container div.cluster[data-is-sandbox="true"].test-connection`).length
 
                     // Add log for this request
-                    addLog(`Request to start a sandbox project '${getAttributes(clusterElement, ['data-id'])}'`, 'action')
+                    try {
+                      addLog(`Request to start a sandbox project '${getAttributes(clusterElement, ['data-id'])}'`, 'action')
+                    } catch (e) {}
 
                     // Manipulate the maximum number, set it to the default value `1` if needed
                     maximumRunningSandbox = isNaN(maximumRunningSandbox) || maximumRunningSandbox < 1 ? 1 : maximumRunningSandbox
@@ -4649,7 +4711,9 @@
                         // Set Cassandra®'s version
                         clusterElement.attr('data-cassandra-version', currentProject[0].cassandraVersion)
                       } catch (e) {
-                        errorLog(e, 'clusters')
+                        try {
+                          errorLog(e, 'clusters')
+                        } catch (e) {}
                       }
 
                       // A time out function which triggers if Docker seems to be downloading files related to the project
@@ -4877,7 +4941,9 @@
                   })
                 })
               } catch (e) {
-                errorLog(e, 'clusters')
+                try {
+                  errorLog(e, 'clusters')
+                } catch (e) {}
               }
 
               // Clicks the settings button
@@ -4896,7 +4962,9 @@
                   hasWorkarea = getAttributes(clusterElement, 'data-workarea')
 
                 // Add log about edit cluster
-                addLog(`Attempt to edit cluster/sandbox '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                try {
+                  addLog(`Attempt to edit cluster/sandbox '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                } catch (e) {}
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
@@ -4994,7 +5062,9 @@
                       val: (!([undefined, '22'].includes(currentCluster.ssh.port))) ? currentCluster.ssh.port : ''
                     })
                   } catch (e) {
-                    errorLog(e, 'clusters')
+                    try {
+                      errorLog(e, 'clusters')
+                    } catch (e) {}
                   }
 
                   // Loop through all inputs in the `inputs` array and set their proper values
@@ -5088,7 +5158,9 @@
                             val: sshUsername
                           })
                         } catch (e) {
-                          errorLog(e, 'clusters')
+                          try {
+                            errorLog(e, 'clusters')
+                          } catch (e) {}
                         }
 
                         // Check if SSH password is provided
@@ -5106,7 +5178,9 @@
                             val: sshPassword
                           })
                         } catch (e) {
-                          errorLog(e, 'clusters')
+                          try {
+                            errorLog(e, 'clusters')
+                          } catch (e) {}
                         }
 
                         // Loop through secrets' inputs and set their value
@@ -5123,7 +5197,9 @@
                         })
                       })
                     } catch (e) {
-                      errorLog(e, 'clusters')
+                      try {
+                        errorLog(e, 'clusters')
+                      } catch (e) {}
                     }
                   } else {
                     /**
@@ -5192,7 +5268,9 @@
                 let confirmText = I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the cluster [b]$data[/b] in the workspace [b]$data[/b]?', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]))
 
                 // Add log
-                addLog(`Request to delete cluster/sandbox ${getAttributes(clusterElement, ['data-name', 'data-id'])}`, 'action')
+                try {
+                  addLog(`Request to delete cluster/sandbox ${getAttributes(clusterElement, ['data-name', 'data-id'])}`, 'action')
+                } catch (e) {}
 
                 // If the current workspace is sandbox then change the text
                 if (isSandbox)
@@ -5427,8 +5505,13 @@
                   // Read the `cqlsh.rc` file
                   FS.readFile(cqlshrcPath, 'utf8', (err, content) => {
                     // With an error occurs stop the checking process
-                    if (err)
-                      return errorLog(err, 'clusters')
+                    if (err) {
+                      try {
+                        errorLog(err, 'clusters')
+                      } catch (e) {}
+
+                      return
+                    }
 
                     // Convert content to UTF-8 string
                     content = content.toString()
@@ -5463,7 +5546,9 @@
                     })
                   })
                 } catch (e) {
-                  errorLog(e, 'clusters')
+                  try {
+                    errorLog(e, 'clusters')
+                  } catch (e) {}
                 }
 
                 // Show feedback to the user when the connection is established through the SSH tunnel
@@ -5518,7 +5603,9 @@
                     }
                   })
                 } catch (e) {
-                  errorLog(e, 'clusters')
+                  try {
+                    errorLog(e, 'clusters')
+                  } catch (e) {}
                 }
 
                 // Check if there is SSH tunnel creation info
@@ -5565,13 +5652,17 @@
                   workspaceID: getActiveWorkspaceID()
                 })
               } catch (e) {
-                errorLog(e, 'clusters')
+                try {
+                  errorLog(e, 'clusters')
+                } catch (e) {}
               }
             }
           }))
           // End of the process when appending a cluster in the container
         } catch (e) {
-          errorLog(e, 'clusters')
+          try {
+            errorLog(e, 'clusters')
+          } catch (e) {}
         }
       })
     })
@@ -6560,7 +6651,9 @@
               sshTunnelCreationRequestID = getRandomID(30)
 
               // Add log about this request
-              addLog(`Request to test connection with cluster that could be added/updated`, 'action')
+              try {
+                addLog(`Request to test connection with cluster that could be added/updated`, 'action')
+              } catch (e) {}
 
               // Attempt to close the created SSH tunnel - if exists -
               try {
@@ -6727,7 +6820,9 @@
                         try {
                           await FS.unlinkSync(tempConfigFile)
                         } catch (e) {
-                          errorLog(e, 'clusters')
+                          try {
+                            errorLog(e, 'clusters')
+                          } catch (e) {}
                         }
 
                         // Remove the test connection class
@@ -6792,7 +6887,9 @@
                       try {
                         await FS.unlinkSync(tempConfigFile)
                       } catch (e) {
-                        errorLog(e, 'clusters')
+                        try {
+                          errorLog(e, 'clusters')
+                        } catch (e) {}
                       }
 
                       /**
@@ -7168,7 +7265,9 @@
                 editingMode = getAttributes($(`div.modal#addEditClusterDialog`), 'data-edit-cluster-id') != undefined
 
               // Add log about this request
-              addLog(`Request to add/edit new cluster after successful connection test`, 'action')
+              try {
+                addLog(`Request to add/edit new cluster after successful connection test`, 'action')
+              } catch (e) {}
 
               try {
                 // If the provided cluster's name is valid then skip this try-catch block
@@ -7324,7 +7423,9 @@
                       'data-credentials-ssh': secrets.ssh != undefined || !saveSSHCredentials && (secrets != null && secrets.sshUsername != null && secrets.sshPassword != null) ? 'true' : null,
                     })
                   } catch (e) {
-                    errorLog(e, 'clusters')
+                    try {
+                      errorLog(e, 'clusters')
+                    } catch (e) {}
                   }
 
                   // Remove all test connection status classes
@@ -7433,7 +7534,9 @@
                   sshTunnel = true
                 }
               } catch (e) {
-                errorLog(e, 'clusters')
+                try {
+                  errorLog(e, 'clusters')
+                } catch (e) {}
               }
 
               try {
@@ -7458,7 +7561,9 @@
                 finalCluster.ssh.dstAddr = $('[info-section="none"][info-key="ssh-dest-addr"]').val() || '127.0.0.1'
                 finalCluster.ssh.dstPort = $('[info-section="none"][info-key="ssh-dest-port"]').val() || $('[info-section="connection"][info-key="port"]').val()
               } catch (e) {
-                errorLog(e, 'clusters')
+                try {
+                  errorLog(e, 'clusters')
+                } catch (e) {}
               }
 
               // Determine the proper function to be called based on whether the current mode is `edit` or not

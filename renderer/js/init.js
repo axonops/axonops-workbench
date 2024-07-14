@@ -187,7 +187,9 @@ $(document).on('pre-initialize', async () => {
         }
       })
     } catch (e) {
-      errorLog(e, 'initialization')
+      try {
+        errorLog(e, 'initialization')
+      } catch (e) {}
     }
   }
 
@@ -300,7 +302,9 @@ $(document).on('initialize', () => {
         let chosenLanguage = config.get('ui', 'language') || 'en'
 
         // Add a log about the chosen language
-        addLog(`The configuration file has been loaded, and the language to be rendered is '${chosenLanguage.toUpperCase()}'`)
+        try {
+          addLog(`The configuration file has been loaded, and the language to be rendered is '${chosenLanguage.toUpperCase()}'`)
+        } catch (e) {}
 
         // Load all saved languages and make sure the chosen language exists and is loaded as well
         Modules.Localization.loadLocalization((languages) => {
@@ -400,7 +404,9 @@ $(document).on('initialize', () => {
                   text = text.replace(close, `</${tag}>`)
                 })
               } catch (e) {
-                errorLog(e, 'initialization')
+                try {
+                  errorLog(e, 'initialization')
+                } catch (e) {}
               }
 
               // Return the final result
@@ -460,7 +466,9 @@ $(document).on('initialize', () => {
                 clearLoadInterval()
             })
           } catch (e) {
-            errorLog(e, 'initialization')
+            try {
+              errorLog(e, 'initialization')
+            } catch (e) {}
           }
 
           // Update the list of languages to select in the settings dialog
@@ -498,7 +506,9 @@ $(document).on('initialize', () => {
         })
       })
     } catch (e) {
-      errorLog(e, 'initialization')
+      try {
+        errorLog(e, 'initialization')
+      } catch (e) {}
     }
   })
 })
@@ -970,7 +980,9 @@ $(document).on('initialize', () => {
           })
         })
       } catch (e) {
-        errorLog(e, 'initialization')
+        try {
+          errorLog(e, 'initialization')
+        } catch (e) {}
       }
     })
   }
@@ -1006,7 +1018,9 @@ $(document).on('initialize', () => {
       } catch (e) {}
     })
   } catch (e) {
-    errorLog(e, 'initialization')
+    try {
+      errorLog(e, 'initialization')
+    } catch (e) {}
   }
 })
 

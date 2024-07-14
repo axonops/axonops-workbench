@@ -39,7 +39,9 @@
     $(this).attr('disabled', '')
 
     // Add log about this request
-    addLog(`Request has been triggered, create a docker/sandbox project`, 'action')
+    try {
+      addLog(`Request has been triggered, create a docker/sandbox project`, 'action')
+    } catch (e) {}
 
     // Check the existence of Docker in the machine
     Modules.Docker.checkDockerCompose((dockerExists, userGroup) => {
@@ -77,7 +79,9 @@
       numOfNodes = (numOfNodes < minNumOfNodes) ? minNumOfNodes : ((numOfNodes > maxNumOfNodes) ? maxNumOfNodes : numOfNodes)
 
       // Add log about the project's attributes
-      addLog(`The docker/sandbox project's attributes are: [Cassandra® version: ${cassandraVersion}, Number of nodes: ${numOfNodes}]`)
+      try {
+        addLog(`The docker/sandbox project's attributes are: [Cassandra® version: ${cassandraVersion}, Number of nodes: ${numOfNodes}]`)
+      } catch (e) {}
 
       // Create a Docker instance/object
       let dockerObject = new Modules.Docker.DockerCompose()

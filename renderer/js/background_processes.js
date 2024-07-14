@@ -106,7 +106,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
       // Request from the main thread to create an SSH tunnel
       IPCRenderer.on(`ssh-tunnel:create`, async (_, data) => {
         // Add log for this request
-        addLog(`Create an SSH tunnel to connect with cluster`, 'network')
+        try {
+          addLog(`Create an SSH tunnel to connect with cluster`, 'network')
+        } catch (e) {}
 
         // Get the app's config
         Config.getConfig(async (config) => {
@@ -146,7 +148,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               if (![undefined, null, ''].includes(data.privatekey))
                 authentication.privateKey = await FS.readFileSync(data.privatekey, 'utf8')
             } catch (e) {
-              errorLog(e, 'SSH tunnel')
+              try {
+                errorLog(e, 'SSH tunnel')
+              } catch (e) {}
             }
 
             try {
@@ -160,7 +164,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               // Update the key's content
               authentication.privateKey = prasedKey.getPrivatePEM()
             } catch (e) {
-              errorLog(e, 'SSH tunnel')
+              try {
+                errorLog(e, 'SSH tunnel')
+              } catch (e) {}
             }
 
             // Make sure there's no key with an `undefined` value
@@ -177,7 +183,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                   delete authentication[key]
               })
             } catch (e) {
-              errorLog(e, 'SSH tunnel')
+              try {
+                errorLog(e, 'SSH tunnel')
+              } catch (e) {}
             }
 
             // Define the final SSH tunnel's attributes
@@ -200,7 +208,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               readyTimeout: timeout.ready,
               forwardTimeout: timeout.forward,
               debug: function(data) {
-                addLog(data)
+                try {
+                  addLog(data)
+                } catch (e) {}
               }
             }
 
@@ -222,7 +232,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               })
 
               // Add log about the final attributes
-              addLog(`Final attributes of the SSH tunnel are '${JSON.stringify(sshTunnelAttributesCopy)}'`)
+              try {
+                addLog(`Final attributes of the SSH tunnel are '${JSON.stringify(sshTunnelAttributesCopy)}'`)
+              } catch (e) {}
             }
 
             // Create the tunnel
@@ -237,12 +249,16 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                   tunnel.close()
 
                   // Add log for this process
-                  addLog(`The SSH tunnel which associated with request ID '${data.requestID}' has been closed`)
+                  try {
+                    addLog(`The SSH tunnel which associated with request ID '${data.requestID}' has been closed`)
+                  } catch (e) {}
 
                   // Remove the SSH tunnel from being closed
                   toBeClosedSSHTunnels = toBeClosedSSHTunnels.filter((_requestID) => _requestID == data.requestID)
                 } catch (e) {
-                  errorLog(e, 'SSH tunnel')
+                  try {
+                    errorLog(e, 'SSH tunnel')
+                  } catch (e) {}
                 }
 
                 // Skip the upcoming code and stop the process
@@ -270,7 +286,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                 requestID: data.requestID
               })
             }).catch((e) => {
-              errorLog(e, 'SSH tunnel')
+              try {
+                errorLog(e, 'SSH tunnel')
+              } catch (e) {}
 
               // Catch any occurred error
               result.error = e.toString()
@@ -282,7 +300,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               })
             })
           } catch (e) {
-            errorLog(e, 'SSH tunnel')
+            try {
+              errorLog(e, 'SSH tunnel')
+            } catch (e) {}
 
             // Catch any occurred error
             result.error = e.toString()
@@ -305,7 +325,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
         let isPort = !isNaN(parseInt(clusterID))
 
         // Add log for this process
-        addLog(`Close an SSH tunnel that associated with the cluster of ID/defined-port '${clusterID}'`, 'network')
+        try {
+          addLog(`Close an SSH tunnel that associated with the cluster of ID/defined-port '${clusterID}'`, 'network')
+        } catch (e) {}
 
         try {
           // If what has been given is not a port then skip this try-catch block
@@ -326,16 +348,22 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               sshTunnel.object.close()
 
               // Add log for this process
-              addLog(`The SSH tunnel which associated with cluster of ID/defined-port '${clusterID}' has been closed`)
+              try {
+                addLog(`The SSH tunnel which associated with cluster of ID/defined-port '${clusterID}' has been closed`)
+              } catch (e) {}
             } catch (e) {
-              errorLog(e, 'SSH tunnel')
+              try {
+                errorLog(e, 'SSH tunnel')
+              } catch (e) {}
             }
           })
 
           // Skip the upcoming code
           return
         } catch (e) {
-          errorLog(e, 'SSH tunnel')
+          try {
+            errorLog(e, 'SSH tunnel')
+          } catch (e) {}
         }
 
         // Close that SSH tunnel
@@ -345,7 +373,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
           // Add log for this process
           addLog(`The SSH tunnel which associated with cluster of ID/defined-port '${clusterID}' has been closed.`)
         } catch (e) {
-          errorLog(e, 'SSH tunnel')
+          try {
+            errorLog(e, 'SSH tunnel')
+          } catch (e) {}
         }
       })
 
@@ -414,7 +444,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                 content: oldLine
               })
           } catch (e) {
-            errorLog(e, 'SSH tunnel')
+            try {
+              errorLog(e, 'SSH tunnel')
+            } catch (e) {}
           }
         }
 

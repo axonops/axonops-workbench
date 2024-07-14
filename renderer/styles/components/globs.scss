@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 // Mixin to change the scrollbar's appearence
 @mixin scrollbar($thumbColor, $trackColor) {
   &::-webkit-scrollbar {

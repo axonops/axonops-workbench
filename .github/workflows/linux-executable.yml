@@ -41,7 +41,7 @@ jobs:
             chmod 755 main/bin/*
           fi
         env:
-          GITHUB_URL: https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.0.1-beta2
+          GITHUB_URL: https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.0.1-beta3
 
       - name: Setup Python v3.12
         uses: actions/setup-python@v5

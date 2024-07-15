@@ -37,12 +37,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Starting build
+      - name: Check if packages.json has the right version
         run: |
-          echo "running build"
-          uname -a
-          hostname
-          date
+          grep -q "\"version\": \"${{ github.ref_name }}\"" packages.json
+          if [ $? -ne 0 ]; then
+            echo "Error: packages.json does not have the right version"
+            exit 1
+          fi
 
       - name: Download CQLSH prebuilt binaries
         run: |

@@ -37,12 +37,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Starting build
+      - name: Check if package.json has the right version
         run: |
-          echo "running build"
-          uname -a
-          hostname
-          date
+          grep -q "\"version\": \"${{ github.ref_name }}\"" package.json
+          if [ $? -ne 0 ]; then
+            echo "Error: package.json does not have the right version"
+            exit 1
+          fi
 
       - name: Download CQLSH prebuilt binaries
         run: |
@@ -58,7 +59,7 @@ jobs:
             chmod 755 main/bin/*
           fi
         env:
-          GITHUB_URL: https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.0.1-beta2
+          GITHUB_URL: https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.0.1-beta3
 
       - name: Setup Python v3.12
         uses: actions/setup-python@v5

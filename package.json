@@ -1,7 +1,7 @@
 {
   "name": "axonops-workbench-cassandra",
   "title": "AxonOps™ Workbench Cassandra®",
-  "version": "0.1.0-1",
+  "version": "0.1.0-beta1-rc4",
   "author": {
     "name": "AxonOps",
     "email": "info@axonops.com"
@@ -74,6 +74,9 @@
     },
     "dmg": {
       "sign": false
+    },
+    "pkg": {
+      "identity": "D3E52372A6B5AA2166662E0D564085D1E6C43DFC"
     }
   },
   "scripts": {

@@ -1,9 +1,6 @@
 name: Build MacOS Intel
 
 on:
-  release:
-    types: [published]
-
   workflow_dispatch:
 
 defaults:

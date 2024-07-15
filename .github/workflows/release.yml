@@ -37,11 +37,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Check if packages.json has the right version
+      - name: Check if package.json has the right version
         run: |
-          grep -q "\"version\": \"${{ github.ref_name }}\"" packages.json
+          grep -q "\"version\": \"${{ github.ref_name }}\"" package.json
           if [ $? -ne 0 ]; then
-            echo "Error: packages.json does not have the right version"
+            echo "Error: package.json does not have the right version"
             exit 1
           fi
 

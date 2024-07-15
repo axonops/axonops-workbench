@@ -275,7 +275,7 @@ let properties = {
     backgroundColor: '#17181a',
     show: false,
     webPreferences: {
-      devTools: true,
+      devTools: process.env.AXONOPS_DEV_TOOLS ? process.env.AXONOPS_DEV_TOOLS : false,
       nodeIntegration: true,
       webviewTag: true,
       enableRemoteModule: true,
@@ -286,7 +286,7 @@ let properties = {
   extraProperties = {
     maximize: false,
     show: false,
-    openDevTools: true
+    devTools: process.env.AXONOPS_DEV_TOOLS ? process.env.AXONOPS_DEV_TOOLS : false
   },
   contextMenuProperties = {
     showLearnSpelling: false,

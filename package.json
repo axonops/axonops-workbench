@@ -14,7 +14,7 @@
     "info@axonops.com"
   ],
   "build": {
-    "icon": "./renderer/assets/images/icon-colored.png",
+    "icon": "./renderer/assets/images/icon-256x256.png",
     "copyright": "AxonOps Limited 2024",
     "appId": "com.axonops.workbench.cassandra",
     "compression": "maximum",
@@ -36,10 +36,16 @@
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "linux": {
-      "icon": "./renderer/assets/images/icon-colored.png",
+      "icon": "./renderer/assets/images/",
       "category": "Development",
-      "desktop": "AxonOps Workbench Cassandra",
-      "description": "AxonOps™ Workbench Cassandra®"
+      "desktop": {
+        "Name": "AxonOps Workbench for Cassandra",
+        "Common": "AxonOps™ Workbench for Apache Cassandra®",
+        "Terminal": false,
+        "Keywords": "cassandra;axonops;development;workbench",
+        "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench-cassandra.png"
+      },
+      "description": "AxonOps™ Workbench for Apache Cassandra®"
     },
     "mac": {
       "icon": "./renderer/assets/images/icon-colored.icns",
@@ -74,9 +80,6 @@
     },
     "dmg": {
       "sign": false
-    },
-    "pkg": {
-      "identity": "D3E52372A6B5AA2166662E0D564085D1E6C43DFC"
     }
   },
   "scripts": {

@@ -107,16 +107,10 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Upload Artifacts
-        uses: softprops/action-gh-release@v2
+        uses: actions/upload-artifact@v4
         with:
-          files: |
-            dist/*.zip
-            dist/*.pkg
+          path: |
             dist/*.dmg
-            dist/*.deb
-            dist/*.rpm
-            dist/*.exe
-            dist/*.tar.gz
-            dist/*.nsis
+            dist/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

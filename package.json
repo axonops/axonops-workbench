@@ -18,6 +18,7 @@
     "copyright": "AxonOps Limited 2024",
     "appId": "com.axonops.workbench.cassandra",
     "compression": "maximum",
+    "companyName": "AxonOps Limited",
     "extraResources": [
       "main/bin",
       "data",
@@ -45,7 +46,8 @@
         "Keywords": "cassandra;axonops;development;workbench",
         "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench-cassandra.png"
       },
-      "description": "AxonOps™ Workbench for Apache Cassandra®"
+      "description": "AxonOps™ Workbench for Apache Cassandra®",
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
       "icon": "./renderer/assets/images/icon-colored.icns",

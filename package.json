@@ -10,6 +10,7 @@
   "license": "Apache-2.0",
   "description": "AxonOps™ Workbench Cassandra®",
   "productName": "AxonOpsCassandra",
+  "companyName": "AxonOps Limited",
   "maintainers": [
     "info@axonops.com"
   ],
@@ -18,7 +19,6 @@
     "copyright": "AxonOps Limited 2024",
     "appId": "com.axonops.workbench.cassandra",
     "compression": "maximum",
-    "companyName": "AxonOps Limited",
     "extraResources": [
       "main/bin",
       "data",
@@ -34,7 +34,8 @@
       "target": [
         "nsis",
         "zip"
-      ]
+      ],
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "linux": {
       "icon": "./renderer/assets/images/",
@@ -46,7 +47,8 @@
         "Keywords": "cassandra;axonops;development;workbench",
         "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench-cassandra.png"
       },
-      "description": "AxonOps™ Workbench for Apache Cassandra®"
+      "description": "AxonOps™ Workbench for Apache Cassandra®",
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
       "icon": "./renderer/assets/images/icon-colored.icns",
@@ -70,7 +72,8 @@
         "main/bin/cqlsh-407",
         "main/bin/cqlsh-410",
         "main/bin/keys_generator"
-      ]
+      ],
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "deb": {
       "depends": [

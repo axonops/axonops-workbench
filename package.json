@@ -8,7 +8,7 @@
   },
   "main": "main/main.js",
   "license": "Apache-2.0",
-  "description": "AxonOps™ Workbench Cassandra®",
+  "description": "AxonOps™ Workbench for Apache Cassandra®",
   "productName": "AxonOpsCassandra",
   "companyName": "AxonOps Limited",
   "maintainers": [
@@ -47,7 +47,6 @@
         "Keywords": "cassandra;axonops;development;workbench",
         "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench-cassandra.png"
       },
-      "description": "AxonOps™ Workbench for Apache Cassandra®",
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "mac": {

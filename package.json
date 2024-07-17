@@ -28,13 +28,13 @@
     "publish": [{
       "provider": "github"
     }],
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "./renderer/assets/images/icon-colored.ico",
       "target": [
         "nsis",
         "zip"
-      ],
-      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+      ]
     },
     "linux": {
       "icon": "./renderer/assets/images/",
@@ -46,8 +46,7 @@
         "Keywords": "cassandra;axonops;development;workbench",
         "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench-cassandra.png"
       },
-      "description": "AxonOps™ Workbench for Apache Cassandra®",
-      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+      "description": "AxonOps™ Workbench for Apache Cassandra®"
     },
     "mac": {
       "icon": "./renderer/assets/images/icon-colored.icns",
@@ -71,8 +70,7 @@
         "main/bin/cqlsh-407",
         "main/bin/cqlsh-410",
         "main/bin/keys_generator"
-      ],
-      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+      ]
     },
     "deb": {
       "depends": [

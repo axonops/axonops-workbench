@@ -33,7 +33,7 @@
         "nsis",
         "zip"
       ],
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "linux": {
       "icon": "./renderer/assets/images/",
@@ -70,7 +70,7 @@
         "main/bin/cqlsh-410",
         "main/bin/keys_generator"
       ],
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "deb": {
       "depends": [

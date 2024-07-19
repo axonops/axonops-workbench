@@ -110,7 +110,3 @@ jobs:
         with:
           path: dist/*.deb
           name: axonops-developer-workbench-linux-amd64.deb.zip
-
-      - name: Create Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

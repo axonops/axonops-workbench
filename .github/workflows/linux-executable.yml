@@ -31,17 +31,17 @@ jobs:
         run: |
           mkdir -p main/bin
           if [[ "$(uname -s)" =~ "MINGW64" ]]; then
-            curl -fL ${GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m).exe > main/bin/cqlsh-410.exe
-            curl -fL ${GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m).exe > main/bin/cqlsh-407.exe
-            curl -fL ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m).exe > main/bin/keys_generator.exe
+            curl -fL ${CQLSH_GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m).exe > main/bin/cqlsh-410.exe
+            curl -fL ${CQLSH_GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m).exe > main/bin/cqlsh-407.exe
+            curl -fL ${CQLSH_GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m).exe > main/bin/keys_generator.exe
           else
-            curl -fL ${GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m) > main/bin/cqlsh-410
-            curl -fL ${GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m) > main/bin/cqlsh-407
-            curl -fL ${GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
+            curl -fL ${CQLSH_GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m) > main/bin/cqlsh-410
+            curl -fL ${CQLSH_GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m) > main/bin/cqlsh-407
+            curl -fL ${CQLSH_GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
             chmod 755 main/bin/*
           fi
         env:
-          GITHUB_URL: https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.0.1-beta5
+          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/latest/download' }}"
 
       - name: Setup Python v3.12
         uses: actions/setup-python@v5

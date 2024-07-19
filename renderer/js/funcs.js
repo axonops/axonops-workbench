@@ -3214,7 +3214,7 @@ let clearTemp = () => {
       if (['cwb', 'metadata', 'tmp', 'cqldesc', 'checkconn'].some((extension) => item.endsWith(`.${extension}`))) {
         // Remove that temporary config file
         try {
-          FS.remove(Path.join(tempFolder, item))
+          FS.removeSync(Path.join(tempFolder, item))
         } catch (e) {}
 
         // Skip the upcoming code and move to the next item
@@ -3230,7 +3230,7 @@ let clearTemp = () => {
         // If the current folder contains any of the defined names then remove that folder and all its content
         if (items.some((item) => ['cassandra', 'secretstorage', 'pytz'].some((name) => item.toLowerCase().indexOf(name) != -1)))
           try {
-            FS.remove(Path.join(tempFolder, item))
+            FS.removeSync(Path.join(tempFolder, item))
           } catch (e) {}
       })
     }

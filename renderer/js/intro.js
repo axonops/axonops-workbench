@@ -54,13 +54,13 @@ window.onload = () => {
         return
 
       // Hide the checkbox's form
-      setTimeout(() => container.classList.remove("show-checkbox"), 100)
+      setTimeout(() => container.classList.remove('show-checkbox'), 100)
 
       // Set the associated key in the app's config to be `true`
       IPCRenderer.send(`cassandra-copyright-acknowledged:true`)
 
       // The app should be loaded now
-      setTimeout(() => IPCRenderer.send(`loaded`), 2500)
+      setTimeout(() => IPCRenderer.send('loaded'), 1000)
     })
 
     // Send request to the main thread; to get the status of the copyright acknowledgement
@@ -71,17 +71,17 @@ window.onload = () => {
       // Show spinner then the notice
       try {
         // Show the spinner
-        setTimeout(() => container.classList.add("show-spinner"), 750)
+        setTimeout(() => container.classList.add('show-spinner'), 750)
 
         // Now show the notice
-        setTimeout(() => container.classList.add("show-notice"), 1500)
+        setTimeout(() => container.classList.add('show-notice'), 1500)
 
         // If the copyright notice is already acknowledgement then skip this try-catch block
         if (isAcknowledged)
           throw 0
 
         // Now show the notice
-        setTimeout(() => container.classList.add("show-checkbox"), 2000)
+        setTimeout(() => container.classList.add('show-checkbox'), 2000)
       } catch (e) {}
     })
   }

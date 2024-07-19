@@ -63,38 +63,17 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
           ['config', 'app-config.cfg'],
           ['data', 'docker', 'docker.json'],
           ['data', 'logging', 'log.tmp'],
-          ['data', 'workspaces', 'workspaces.json'],
-          ['data', 'credits.db']
-        ],
-        // Those folders will be copied from the app's folder to the set resources' path
-        copy: [
-          ['main'],
-          ['localization']
+          ['data', 'workspaces', 'workspaces.json']
         ]
       }
 
     try {
       /**
        * For the process `ensureFile`
-       * The `credits.db` will be always copied from the app's path to the resources path if there's a difference
        *
        * Loop through each file
        */
       for (let file of processTypes.ensureFile) {
-        try {
-          // If the current file is the `credits` database
-          if (file[1] != 'credits.db' || extraResourcesPath == null)
-            throw 0
-
-          // Copy the database to the set extra resources path
-          try {
-            await FS.copy(Path.join(appPath, ...file), Path.join(extraResourcesPath, ...file))
-          } catch (e) {}
-
-          // Skip the upcoming code and move to the next file
-          continue
-        } catch (e) {}
-
         try {
           // If the current file about `logging`
           if (file[1] != 'logging')
@@ -114,18 +93,6 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
           await FS.ensureFile(Path.join((extraResourcesPath || appPath), ...file))
         } catch (e) {}
       }
-
-      // If the set resources' path is `null` then there's no need to copy and folder, skip this try-catch block
-      if (extraResourcesPath == null)
-        throw 0
-
-      // For the process `copy`
-      for (let folder of processTypes.copy)
-        try {
-          await FS.copy(Path.join(Path.join(appPath), ...folder), Path.join(extraResourcesPath, ...folder), {
-            overwrite: true
-          })
-        } catch (e) {}
     } catch (e) {} finally {
       // Now call the `pre-initialize` event for `document`
       setTimeout(() => $(document).trigger('pre-initialize'), 100)
@@ -1059,24 +1026,30 @@ $(document).on('initialize', () => {
 
 // Check whether or not binaries exist
 $(document).on('initialize', () => {
-  setTimeout(() => {
-    try {
-      // Define the path to all binaries
-      let binariesPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'main', 'bin')
-      // Check their existence
-      Terminal.run(`cd "${binariesPath}" && ${OS.platform() == 'win32' ? 'dir' : 'ls'}`, (err, data, stderr) => {
-        // Make sure all of them are exist
-        let areBinariesExist = ['cqlsh-407', 'cqlsh-410', 'keys_generator'].every((binary) => `${data}`.search(binary))
+  // Get the app's path
+  IPCRenderer.invoke('app-path:get').then((appPath) => {
+    setTimeout(() => {
+      try {
+        // Define the path to all binaries
+        let binariesPath = Path.join((extraResourcesPath != null ? Path.join(appPath) : Path.join(__dirname, '..', '..')), 'main', 'bin'),
+          // Define binaries to be checked
+          binaries = ['cqlsh-407', 'cqlsh-410', 'keys_generator']
 
-        // Skip the upcoming code if all of them exist
-        if (areBinariesExist)
-          return
+        // Check their existence
+        Terminal.run(`cd "${binariesPath}" && ${OS.platform() == 'win32' ? 'dir' : 'ls'}`, (err, data, stderr) => {
+          // Make sure all of them are exist
+          let areBinariesExist = binaries.every((binary) => `${data}`.search(binary))
 
-        // Show feedback to the user if one of the binaries is missing
-        showToast(I18next.capitalize(I18next.t(`binaries check`)), I18next.capitalizeFirstLetter(I18next.t(`it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app`)) + '.', 'failure')
-      })
-    } catch (e) {}
-  }, 3000)
+          // Skip the upcoming code if all of them exist
+          if (areBinariesExist)
+            return
+
+          // Show feedback to the user if one of the binaries is missing
+          showToast(I18next.capitalize(I18next.t(`binaries check`)), I18next.capitalizeFirstLetter(I18next.t(`it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app`)) + '.', 'failure')
+        })
+      } catch (e) {}
+    }, 3000)
+  })
 })
 
 // Initialization process for the `About` modal - with ID `#appAbout` -
@@ -1089,68 +1062,71 @@ $(document).on('initialize', () => {
    * Get the app's path
    */
   IPCRenderer.invoke('app-path:get').then((appPath) => {
-    // Point at the credits' container in the modal
-    let creditsContainer = $('div.modal#appAbout').find('div.modal-section[section="credits"]'),
-      // Connect with the associated database
-      database = new SQLite3(Path.join((extraResourcesPath || appPath), 'data', 'credits.db')),
-      // Get all records inside the `credits` table
-      credits = database.prepare('SELECT * FROM credits ORDER BY license ASC, name ASC').all(),
-      // Get all records inside the `licenses` table
-      licenses = database.prepare('SELECT * FROM licenses').all()
+    try {
+      // Point at the credits' container in the modal
+      let creditsContainer = $('div.modal#appAbout').find('div.modal-section[section="credits"]'),
+        // Connect with the associated database
+        // database = new SQLite3(Path.join((extraResourcesPath || appPath), 'data', 'credits.db')),
+        database = new SQLite3(Path.join(appPath, 'data', 'credits.db')),
+        // Get all records inside the `credits` table
+        credits = database.prepare('SELECT * FROM credits ORDER BY license ASC, name ASC').all(),
+        // Get all records inside the `licenses` table
+        licenses = database.prepare('SELECT * FROM licenses').all()
 
-    // Add general license's content to specified `pre` elements
-    $('div.modal#appAbout').find('pre[license]').each(function() {
-      try {
-        // Get the license code; to get its content
-        let licenseCode = $(this).attr('license'),
-          // Get the content/text of the license
-          licenseContent = licenses.filter((license) => license.code == licenseCode)[0].content
+      // Add general license's content to specified `pre` elements
+      $('div.modal#appAbout').find('pre[license]').each(function() {
+        try {
+          // Get the license code; to get its content
+          let licenseCode = $(this).attr('license'),
+            // Get the content/text of the license
+            licenseContent = licenses.filter((license) => license.code == licenseCode)[0].content
 
-        // Add the content
-        $(this).text(licenseContent)
-      } catch (e) {}
-    })
+          // Add the content
+          $(this).text(licenseContent)
+        } catch (e) {}
+      })
 
-    // Loop through each credit/record
-    for (let credit of credits) {
-      let content = credit.content
+      // Loop through each credit/record
+      for (let credit of credits) {
+        let content = credit.content
 
-      try {
-        content = MarkDown.toHTML(content)
-      } catch (e) {}
-      // The credit's notice UI structure
-      let element = `
-          <div class="notice">
-            <div class="notice-header">
-              <span class="badge badge-primary">${credit.name}</span>
-              <span class="badge badge-info">${credit.license}</span>
-              <span class="badge badge-info btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" data-link="${credit.repository}">${credit.repository} <ion-icon name="external-link"></ion-icon></span>
-              <ion-icon name="arrow-down" for-pre></ion-icon>
-              <div class="clickable"></div>
-            </div>
-            <pre main>${StripTags(content)}</pre>
-          </div>`
+        try {
+          content = MarkDown.toHTML(content)
+        } catch (e) {}
+        // The credit's notice UI structure
+        let element = `
+            <div class="notice">
+              <div class="notice-header">
+                <span class="badge badge-primary">${credit.name}</span>
+                <span class="badge badge-info">${credit.license}</span>
+                <span class="badge badge-info btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" data-link="${credit.repository}">${credit.repository} <ion-icon name="external-link"></ion-icon></span>
+                <ion-icon name="arrow-down" for-pre></ion-icon>
+                <div class="clickable"></div>
+              </div>
+              <pre main>${StripTags(content)}</pre>
+            </div>`
 
-      // Append the credit
-      creditsContainer.append($(element).show(function() {
-        // Point at the header of the notice
-        let noticeHeader = $(this).find('div.notice-header')
+        // Append the credit
+        creditsContainer.append($(element).show(function() {
+          // Point at the header of the notice
+          let noticeHeader = $(this).find('div.notice-header')
 
-        // The user clicks the clickable area of the header
-        $(this).find('div.clickable').click(() => {
-          // Rotate the arrow based on the status
-          noticeHeader.toggleClass('shown-pre')
+          // The user clicks the clickable area of the header
+          $(this).find('div.clickable').click(() => {
+            // Rotate the arrow based on the status
+            noticeHeader.toggleClass('shown-pre')
 
-          // Show/hide the license
-          $(this).find('pre[main]').slideToggle()
-        })
+            // Show/hide the license
+            $(this).find('pre[main]').slideToggle()
+          })
 
-        // Clicks the link-badge
-        $(this).find('span.badge.btn').click(function() {
-          Open($(this).attr('data-link'))
-        })
-      }))
-    }
+          // Clicks the link-badge
+          $(this).find('span.badge.btn').click(function() {
+            Open($(this).attr('data-link'))
+          })
+        }))
+      }
+    } catch (e) {}
   })
 
   // Enable the click event and opening of external links

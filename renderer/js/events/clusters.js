@@ -4393,6 +4393,22 @@
                       setTimeout(() => {
                         // Inner function to check the connectivity status
                         let checkConnectivity = () => {
+                          /**
+                           * Handle if the basic terminal is currently active
+                           * In this case, the app won't perform a connectivity check
+                           */
+                          try {
+                            // If the basic terminal is not active then skip this try-catch block
+                            if ($(`div[data-id="${terminalContainerID}"]`).css('display') == 'none')
+                              throw 0
+
+                            // Perform a new check process after 1 minute
+                            setTimeout(() => checkConnectivity(), 60000)
+
+                            // Skip the upcoming code
+                            return
+                          } catch (e) {}
+
                           // Point at the connection status element in the UI
                           let connectionStatusElement = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-id')}"][workarea-id="${workareaID}"]`).find('div.connection-status')
 

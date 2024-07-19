@@ -19,15 +19,17 @@
     "copyright": "AxonOps Limited 2024",
     "appId": "com.axonops.workbench.cassandra",
     "compression": "maximum",
+    "asarUnpack": "**/*.node",
     "extraResources": [
-      "main/bin",
       "data",
-      "config",
-      "localization"
+      "main/bin",
+      "config"
     ],
-    "publish": [{
-      "provider": "github"
-    }],
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "./renderer/assets/images/icon-colored.ico",
@@ -119,13 +121,14 @@
     "ansi-to-html": "^0.7.2",
     "appdata-path": "^1.0.0",
     "autosize": "^6.0.1",
-    "byte-size": "^8.1.1",
     "better-sqlite3": "^11.1.2",
+    "byte-size": "^8.1.1",
     "chart.js": "^4.3.0",
     "co": "^4.6.0",
     "configparser": "^0.3.10",
     "debug": "^4.3.5",
     "diff": "^5.1.0",
+    "dotenv": "^16.4.5",
     "electron-context-menu": "^3.6.1",
     "electron-positioner": "^4.1.0",
     "escape-html": "^1.0.3",
@@ -148,6 +151,7 @@
     "material-icons": "^1.13.1",
     "monaco-editor": "^0.34.1",
     "node-cmd": "^5.0.0",
+    "node-gyp": "^10.1.0",
     "node-machine-id": "^1.1.12",
     "node-pty": "^1.0.0",
     "node-rsa": "^1.1.1",
@@ -171,7 +175,6 @@
     "xterm-addon-fit": "^0.7.0",
     "xterm-theme": "^1.1.0",
     "xterm-webfont": "^2.0.0",
-    "yargs": "^17.7.2",
-    "node-gyp": "^10.1.0"
+    "yargs": "^17.7.2"
   }
 }

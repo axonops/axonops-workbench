@@ -91,7 +91,9 @@ const URL = require('url'),
  */
 const ContextMenu = require('electron-context-menu'),
   // Used to position the windows of the application.
-  Positioner = require('electron-positioner')
+  Positioner = require('electron-positioner'),
+  // Loads environment variables from a .env file into process.env
+  DotEnv = require('dotenv')
 
 /**
  * Flag to tell whether or not `app.asar` has been found in the app's path
@@ -151,6 +153,13 @@ try {
   global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
 } catch (e) {}
 
+// Load environment variables from .env file
+try {
+  DotEnv.config({
+    path: Path.join(__dirname, '..', '.env')
+  })
+} catch (e) {}
+
 /**
  * Define global variables that will be used in different scopes in the main thread
  *
@@ -200,7 +209,11 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
   // Whether or not the window should be at the center of the screen
   if (extraProperties.center)
     try {
+      // Call the custom module to center the window
       (new Positioner(windowObject)).move('center')
+
+      // Call the native `BrowserWindow` centering function
+      windowObject.center()
     } catch (e) {}
 
   // When the window has loaded
@@ -261,6 +274,9 @@ const AppProps = {
   Info: require(Path.join(__dirname, '..', 'package.json'))
 }
 
+// Flag to tell whether or not dev tools are enabled
+const isDevToolsEnabled = process.env.AXONOPS_DEV_TOOLS == 'true'
+
 /**
  * When the main thread is ready creates the main window/view
  *
@@ -275,7 +291,7 @@ let properties = {
     backgroundColor: '#17181a',
     show: false,
     webPreferences: {
-      devTools: process.env.AXONOPS_DEV_TOOLS ? process.env.AXONOPS_DEV_TOOLS : false,
+      devTools: isDevToolsEnabled,
       nodeIntegration: true,
       webviewTag: true,
       enableRemoteModule: true,
@@ -286,7 +302,7 @@ let properties = {
   extraProperties = {
     maximize: false,
     show: false,
-    devTools: process.env.AXONOPS_DEV_TOOLS ? process.env.AXONOPS_DEV_TOOLS : false
+    openDevTools: isDevToolsEnabled
   },
   contextMenuProperties = {
     showLearnSpelling: false,
@@ -345,6 +361,7 @@ App.on('ready', () => {
     skipTaskbar: true,
     alwaysOnTop: true,
     thickFrame: false,
+    center: true,
     show: true
   }, Path.join(AppProps.Paths.MainView, '..', 'intro.html'), {
     show: true,
@@ -730,7 +747,8 @@ App.on('window-all-closed', () => {
   // Request to get the public key from the keys generator tool
   IPCMain.on('public-key:get', (_, id) => {
     // Define the bin folder path
-    let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
+    // let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
+    let binFolder = Path.join((extraResourcesPath != null ? Path.join(__dirname, '..', '..', 'main') : Path.join(__dirname)), 'bin')
 
     // Make sure the tool is executable on Linux and macOS
     if (process.platform !== 'win32')

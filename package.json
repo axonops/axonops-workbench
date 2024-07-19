@@ -100,8 +100,8 @@
     "snap": "electron-builder --linux snap --publish never",
     "linux": "electron-builder --linux tar.gz deb rpm --publish never",
     "linux:arm64": "electron-builder --linux tar.gz deb rpm --publish never --arm64",
-    "mac": "electron-builder --mac dmg pkg zip --publish never --x64",
-    "mac:arm64": "electron-builder --mac dmg pkg zip --publish never --arm64",
+    "mac": "electron-builder --mac dmg zip --publish never --x64",
+    "mac:arm64": "electron-builder --mac dmg zip --publish never --arm64",
     "mac:zip": "electron-builder --mac zip --publish never",
     "mac:pkg": "electron-builder --mac pkg --publish never",
     "postinstall": "electron-builder install-app-deps"

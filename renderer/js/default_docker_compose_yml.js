@@ -19,6 +19,7 @@ const DockerYAML = `version: "3.8"
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.12
+    restart: unless-stopped
     environment:
       - discovery.type=single-node
       - 'ES_JAVA_OPTS=-Xms256m -Xmx256m'
@@ -42,6 +43,7 @@ services:
       timeout: 5s
       start_period: 10s
   axon-dash:
+    restart: unless-stopped
     depends_on:
       axon-server:
         condition: service_healthy
@@ -59,7 +61,7 @@ services:
   cassandra-0:
     image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
     hostname: cassandra-0
-    restart: always
+    restart: unless-stopped
     volumes:
       - cassandra-0:/var/lib/cassandra
     environment:
@@ -92,7 +94,7 @@ services:
         condition: service_healthy
     image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
     hostname: cassandra-1
-    restart: always
+    restart: unless-stopped
     volumes:
       - cassandra-1:/var/lib/cassandra
     environment:
@@ -125,7 +127,7 @@ services:
         condition: service_healthy
     image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
     hostname: cassandra-2
-    restart: always
+    restart: unless-stopped
     volumes:
       - cassandra-2:/var/lib/cassandra
     environment:

@@ -96,8 +96,8 @@ const OS = require('os'),
   StripChar = require('stripchar').StripChar,
   // Escape string for use in HTML
   EscapeHTML = require('escape-html'),
-  // A Markdown parser for javascript
-  MarkDown = require('markdown').markdown,
+  // A markdown parser and compiler. Built for speed
+  Marked = require('marked'),
   /**
    * Pure Node.js RSA library implemented
    * It has been implemented within the functions `encrypt(publicKey, text)` and `decrypt(privateKey, text)`
@@ -140,9 +140,9 @@ const OS = require('os'),
    * XtermJS
    * Used to have a base to build the app's unique terminal
    */
-  XTerm = require('xterm').Terminal,
+  XTerm = require('@xterm/xterm').Terminal,
   // Canvas addon for rendering the terminal's content in canvas instead of regular DOMs
-  CanvasAddon = require('xterm-addon-canvas').CanvasAddon,
+  CanvasAddon = require('@xterm/addon-canvas').CanvasAddon,
   // XtermJS themes
   XTermThemes = require('xterm-theme'),
   // Addon for ensuring that webfonts load correctly before attempting to draw characters in an xterm instance

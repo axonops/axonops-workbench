@@ -575,13 +575,13 @@ $(document).on('initialize', () => {
   // XtermJS and its add-ons
   {
     // Define the path to the dist version
-    let xtermModulePath = Path.join(__dirname, '..', '..', 'node_modules', 'xterm')
+    let xtermModulePath = Path.join(__dirname, '..', '..', 'node_modules', '@xterm')
 
     // Load CSS only, JS part has been imported already
-    loadStyleSheet(Path.join(xtermModulePath, 'css', 'xterm.css'))
+    loadStyleSheet(Path.join(xtermModulePath, 'xterm', 'css', 'xterm.css'))
 
     // Fit addon; to let the console fit its container
-    loadScript(Path.join(xtermModulePath, '..', 'xterm-addon-fit', 'lib', 'xterm-addon-fit.js'))
+    loadScript(Path.join(xtermModulePath, 'addon-fit', 'lib', 'addon-fit.js'))
   }
 
   // jQuery UI and its related plugins
@@ -1091,8 +1091,9 @@ $(document).on('initialize', () => {
         let content = credit.content
 
         try {
-          content = MarkDown.toHTML(content)
+          content = Marked.parse(content)
         } catch (e) {}
+
         // The credit's notice UI structure
         let element = `
             <div class="notice">

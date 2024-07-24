@@ -277,7 +277,7 @@
               </div>
               <div class="test-connection">
                 <div class="sub-content">
-                  <lottie-player src="../assets/lottie/test-connection.json" background="transparent" autoplay loop speed="1.2"></lottie-player>
+                  <l-pinwheel class="ldr change-color" size="60" stroke="4" speed="0.6" color="${getAttributes(workspaceElement, 'data-color')}"></l-pinwheel>
                 </div>
                 <div class="terminate-process">
                   <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" reference-id="${clusterID}" button-id="${terminateProcessBtnID}" data-tippy="tooltip" data-mdb-placement="right" data-title="Terminate the process" data-mulang="terminate the process"
@@ -1226,15 +1226,21 @@
                                 <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
                               </span>
                               <div class="text"><pre>${isOnlyInfo ? (type == 'neutral' ? 'info' : type) : statement}</pre></div>
-                              <div class="info-badges">
-                                <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
-                                <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
+                              <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
+                                <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement"
+                                  data-mulang="copy the statement" capitalize-first>
+                                  <ion-icon name="copy-solid"></ion-icon>
+                                </div>
                               </div>
+                            </div>
+                            <div class="info-badges">
+                              <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
+                              <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
                             </div>
                             <div class="output">
                               ${isOnlyInfo ? statement : ''}
                             </div>
-                            <div class="actions" ${isOnlyInfo ? 'hidden' : ''}>
+                            <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
                               <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
                                 data-mulang="download the block" capitalize-first hidden>
                                 <ion-icon name="download"></ion-icon>
@@ -1248,7 +1254,7 @@
                                 </div>
                               </div>
                               <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
-                                data-mulang="copy the block" capitalize-first>
+                                data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
                                 <ion-icon name="copy-solid"></ion-icon>
                               </div>
                               <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
@@ -1269,12 +1275,54 @@
                         if (callback != null)
                           callback($(this))
 
+                        // Handle the copy action of the block's statement
+                        setTimeout(() => {
+                          // Clicks the copy button; to copy content in JSON string format
+                          $(this).find('div.btn[action="copy-statement"]').click(() => {
+                            // Get the block's statement
+                            let content = $(this).find('div.statement div.text').text(),
+                              // Get the statement's size
+                              contentSize = ByteSize(ValueSize(content))
+
+                            // Copy statement to the clipboard
+                            try {
+                              Clipboard.writeText(content)
+                            } catch (e) {
+                              try {
+                                errorLog(e, 'clusters')
+                              } catch (e) {}
+                            }
+
+                            // Give feedback to the user
+                            showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
+                          })
+                        }, 500)
+
                         // Skip the upcoming code if the block is not an info
                         if (!isOnlyInfo)
                           return
 
                         // Show the block if needed
                         $(this).show().addClass('show')
+
+                        setTimeout(() => {
+                          $(this).find('div.btn[action="delete"]').click(() => {
+                            // Remove the block from the session
+                            $(this).remove()
+
+                            try {
+                              // Point at the session's statements' container
+                              let sessionContainer = $(`#_${cqlshSessionContentID}_container`)
+
+                              // If there's still one block then skip this try-catch block
+                              if (sessionContainer.find('div.block').length > 0)
+                                throw 0
+
+                              // Show the emptiness class
+                              sessionContainer.parent().find(`div.empty-statements`).addClass('show')
+                            } catch (e) {}
+                          })
+                        })
 
                         // Scroll to the very bottom of the session's container
                         setTimeout(() => {
@@ -3136,6 +3184,15 @@
                       }).keydown(function(event, isVirtual = false) {
                         // Get the pressed key's code
                         let keyCode = event.keyCode
+
+                        // If the pressed key is the `RIGHT ARROW`
+                        try {
+                          if (keyCode != 39)
+                            throw 0
+
+                          // Complete the word with the first suggestion
+                          $(this).trigger('keydown', true)
+                        } catch (e) {}
 
                         // If the pressed key is not `TAB` then trigger the `input` event for the textarea
                         if (keyCode != 9)
@@ -7385,6 +7442,66 @@
 
                 // Click the close button
                 $(`${dialog}-right`).parent().parent().find('button.btn-close').click()
+
+                // Make sure all fields are cleared
+                try {
+                  /**
+                   * If this is an editing mode then there's no need for this try-catch block
+                   * When the user attempts to edit another cluster all fields are updated
+                   * Also when attempting to add a new cluster the app detects that the previous attempt was `edit` and do changes as needed
+                   */
+                  if (editingMode)
+                    throw 0
+
+                  setTimeout(() => {
+                    // Set the default `.cqlshrc` content
+                    editor.setValue(Modules.Consts.CQLSHRC)
+
+                    // Loop through each input not related to section nor key in the `.cqlshrc` content
+                    $('[info-section="none"][info-key]').each(function() {
+                      // Get the input's Material Design object
+                      let object_ = getElementMDBObject($(this))
+
+                      // Handle when the input is actually a file selector
+                      try {
+                        // If the input is not a file selector then skip this try-catch block
+                        if ($(this).parent().attr('file-name') == undefined)
+                          throw 0
+
+                        /**
+                         * Update the tooltip's content and state
+                         * Get the object
+                         */
+                        let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
+
+                        // Clear the file's name preview
+                        $(this).parent().attr('file-name', '-')
+
+                        // Disable the tooltip
+                        try {
+                          tooltipObject[0].object.disable()
+                        } catch (e) {}
+                      } catch (e) {}
+
+                      /**
+                       * If it is `undefined` then it hasn't been found in the `cqlsh.rc` file
+                       * Set the input value to ''
+                       */
+                      try {
+                        $(this).val('')
+                      } catch (e) {
+                        // If the previous set didn't work then try to call the `selected` attribute
+                        try {
+                          $(this).prop('checked', getAttributes($(this), 'default-value') == 'true' ? true : false)
+                        } catch (e) {}
+                      } finally {
+                        // Update the object
+                        object_.update()
+                        object_._deactivate()
+                      }
+                    })
+                  }, 1000)
+                } catch (e) {}
 
                 try {
                   // If the current mode is not `edit` then skip this try-catch block

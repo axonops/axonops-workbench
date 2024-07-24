@@ -46,7 +46,7 @@ const FS = require('fs-extra'),
    * Create an SSH tunnel with the ability to close it, and listen to its traffic
    * It has been implemented within the function `createSSHTunnel(data)`
    */
-  OpenSSHTunnel = require(Path.join(__dirname, '..', 'js', 'open_ssh_tunnel.js')),
+  OpenSSHTunnel = require(Path.join(__dirname, '..', 'js', 'external', 'open_ssh_tunnel.js')),
   /**
    * Useful SSH2 utilities
    * Used especially for `parseKey` function

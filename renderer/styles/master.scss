@@ -16,14 +16,14 @@
 /**
 * Import global mixins, fonts definition and animations
 */
-@import 'components/globs';
-@import 'components/fonts';
-@import 'components/animations';
+@import 'collections/globs';
+@import 'collections/fonts';
+@import 'collections/animations';
 /**
-* Import different components
+* Import different collections
 */
-@import 'components/material_design';
-@import 'components/modals';
+@import 'collections/material_design';
+@import 'collections/modals';
 
 body {
   @include position();
@@ -1711,6 +1711,12 @@ div.body {
                 border-radius: 10px;
                 pointer-events: none;
                 transition: opacity 0.15s ease-in-out;
+
+                .ldr {
+                  position: absolute;
+                  inset: 0;
+                  margin: auto;
+                }
               }
 
               &.loading {
@@ -1727,6 +1733,12 @@ div.body {
                 pointer-events: none;
                 transition: opacity 0.15s ease-in-out;
                 background: rgba(0, 0, 0, 0.4);
+
+                .ldr {
+                  position: absolute;
+                  inset: 0;
+                  margin: auto;
+                }
               }
 
               div.terminate-process {
@@ -2099,6 +2111,11 @@ div.toast-container {
   }
 }
 
+div.toast-container {
+  transition: transform 0.4s ease-out;
+  transition-delay: 0.2s;
+}
+
 ion-icon {
   &.trailing.is-valid {
     color: #14a44d;
@@ -2434,6 +2451,10 @@ div.tab-content {
             transform: translateY(10px);
             display: none;
 
+            &:first-of-type {
+              margin-top: 20px;
+            }
+
             &.show {
               animation: {
                 name: animate-save-snapshot;
@@ -2445,7 +2466,7 @@ div.tab-content {
 
             div.statement {
               background: rgba(62, 62, 62, 0.8);
-              padding: 10px;
+              padding: 7px;
               font-family: 'Terminal', monospace;
               display: flex;
               flex-direction: row;
@@ -2453,37 +2474,25 @@ div.tab-content {
               align-content: center;
               justify-content: space-between;
               align-items: flex-start;
-              border-radius: 7px;
-              border-bottom-left-radius: 0;
-              border-bottom-right-radius: 0;
+              width: fit-content;
+              max-width: 50%;
+              border-radius: 10px;
+              position: relative;
+              bottom: 15px;
+              left: 10px;
+
+              &:hover {
+                div.actions.for-statement {
+                  opacity: 1 !important;
+                  pointer-events: all !important;
+                }
+              }
 
               div.text {
                 max-width: 100%;
 
                 pre {
                   width: 100%;
-                }
-              }
-
-              div.info-badges {
-                display: flex;
-                flex-direction: row;
-                flex-wrap: nowrap;
-                align-content: center;
-                align-items: center;
-                position: absolute;
-                top: 0;
-                right: 0;
-                margin: 5px;
-
-                div.badge {
-                  opacity: 0.85;
-                  position: relative;
-                  top: 3px;
-                }
-
-                div.prompt {
-                  margin-right: 5px;
                 }
               }
 
@@ -2505,21 +2514,43 @@ div.tab-content {
               }
             }
 
+            div.info-badges {
+              display: flex;
+              flex-direction: row;
+              flex-wrap: nowrap;
+              align-content: center;
+              align-items: center;
+              position: absolute;
+              top: 0;
+              right: 0;
+              margin: 5px;
+
+              div.badge {
+                opacity: 0.85;
+                position: relative;
+                top: 3px;
+              }
+
+              div.prompt {
+                margin-right: 5px;
+              }
+            }
+
             div.output {
-              padding: 10px;
+              padding: 3px 10px 10px;
               font-family: 'Terminal', monospace;
               overflow: scroll;
               @include scrollbar(#515151, #2a2a2a);
               border-radius: 7px;
               border-top-left-radius: 0;
               border-top-right-radius: 0;
-              min-height: 55px;
+              min-height: 10px;
               position: relative;
 
               div.sub-output {
                 background: #393939;
                 padding: 5px 10px;
-                border-radius: 3px;
+                border-radius: 5px;
                 margin-bottom: 10px;
                 position: relative;
 
@@ -2583,6 +2614,18 @@ div.tab-content {
                   border-top-width: 1px;
                 }
               }
+            }
+
+            div.actions.for-statement {
+              width: 30px;
+              right: -15px;
+              left: auto;
+              bottom: -15px;
+              top: auto;
+              transform: scale(0.9);
+              opacity: 0;
+              pointer-events: none;
+              transition: opacity 0.15s ease-in-out;
             }
 
             div.actions,
@@ -2714,6 +2757,7 @@ div.tab-content {
           pointer-events: none;
           transition: opacity 0.3s ease-in-out;
           transition-delay: 0.05s;
+          background: inherit;
 
           &.show {
             opacity: 1;
@@ -3004,7 +3048,7 @@ div.tab-content {
                 background: #303036;
                 filter: opacity(0.6);
                 transition: filter 0.2s ease-in-out;
-                margin: 0 1px;
+                margin: 2px;
                 cursor: pointer;
 
                 &:first-child,
@@ -3627,6 +3671,8 @@ div.pinned-toast-container {
   pointer-events: none;
   right: auto;
   left: 100px;
+  transition: left 0.4s ease-out;
+  transition-delay: 0.15s;
 }
 
 div.pinned-toast-container > :not(:last-child) {
@@ -3648,4 +3694,4 @@ div.query {
 /**
 * Import right-to-left style
 */
-@import 'components/rtl';
+@import 'collections/rtl';

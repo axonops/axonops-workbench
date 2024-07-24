@@ -30,6 +30,7 @@ services:
       interval: 10s
       timeout: 5s
       start_period: 30s
+      retries: 50
   axon-server:
     depends_on:
       elasticsearch:
@@ -42,6 +43,7 @@ services:
       interval: 10s
       timeout: 5s
       start_period: 10s
+      retries: 5
   axon-dash:
     restart: unless-stopped
     depends_on:
@@ -57,6 +59,7 @@ services:
       interval: 10s
       timeout: 5s
       start_period: 10s
+      retries: 5
 
   cassandra-0:
     image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
@@ -80,12 +83,12 @@ services:
       - AXON_AGENT_TLS_MODE=none
       - AXON_AGENT_LOG_OUTPUT=file
     ports:
-      - "{cassandraPort}:9042"
+      - "{cassandraPort01}:9042"
     healthcheck:
       test: ["CMD", "nc", "-z", "127.0.0.1", "9042"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 50
       start_period: 60s
 
   cassandra-1:
@@ -113,12 +116,12 @@ services:
       - AXON_AGENT_TLS_MODE=none
       - AXON_AGENT_LOG_OUTPUT=file
     ports:
-      - "9043:9043"
+      - "{cassandraPort02}:9043"
     healthcheck:
       test: ["CMD", "nc", "-z", "127.0.0.1", "9043"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 50
       start_period: 60s
 
   cassandra-2:
@@ -146,12 +149,12 @@ services:
       - AXON_AGENT_TLS_MODE=none
       - AXON_AGENT_LOG_OUTPUT=file
     ports:
-      - "9044:9044"
+      - "{cassandraPort02}:9044"
     healthcheck:
       test: ["CMD", "nc", "-z", "127.0.0.1", "9044"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 50
       start_period: 60s
 
 volumes:

@@ -149,7 +149,7 @@ services:
       - AXON_AGENT_TLS_MODE=none
       - AXON_AGENT_LOG_OUTPUT=file
     ports:
-      - "{cassandraPort02}:9044"
+      - "{cassandraPort03}:9044"
     healthcheck:
       test: ["CMD", "nc", "-z", "127.0.0.1", "9044"]
       interval: 10s

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 const DockerYAML = `version: "3.8"
 
 services:
@@ -83,7 +83,7 @@ services:
       - AXON_AGENT_TLS_MODE=none
       - AXON_AGENT_LOG_OUTPUT=file
     ports:
-      - "{cassandraPort01}:9042"
+      - "{cassandraPort}:9042"
     healthcheck:
       test: ["CMD", "nc", "-z", "127.0.0.1", "9042"]
       interval: 10s
@@ -116,7 +116,7 @@ services:
       - AXON_AGENT_TLS_MODE=none
       - AXON_AGENT_LOG_OUTPUT=file
     ports:
-      - "{cassandraPort02}:9043"
+      - "9043:9043"
     healthcheck:
       test: ["CMD", "nc", "-z", "127.0.0.1", "9043"]
       interval: 10s
@@ -149,7 +149,7 @@ services:
       - AXON_AGENT_TLS_MODE=none
       - AXON_AGENT_LOG_OUTPUT=file
     ports:
-      - "{cassandraPort03}:9044"
+      - "9044:9044"
     healthcheck:
       test: ["CMD", "nc", "-z", "127.0.0.1", "9044"]
       interval: 10s

@@ -95,15 +95,8 @@ const ContextMenu = require('electron-context-menu'),
   // Loads environment variables from a .env file into process.env
   DotEnv = require('dotenv')
 
-/**
- * Flag to tell whether or not `app.asar` has been found in the app's path
- * Based on that the app can determine where the important files and folders are - like `config`, `data` and so on.. -
- * The same process is in the renderer thread as well
- */
-const IsAsarFound = __dirname.includes('app.asar')
-
 // Based on the `asar` checking process the extra resources path would be changed
-global.extraResourcesPath = IsAsarFound ? Path.join(App.getPath('home'), '.axonops-developer-workbench') : null
+global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), '.axonops-developer-workbench') : null
 
 /**
  * Import the custom node modules for the main thread
@@ -149,6 +142,7 @@ global.eventEmitter = new EventEmitter()
 // Import the set customized logging addition function and make it global across the entire thread
 global.addLog = null
 
+// Set the proper add log function
 try {
   global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
 } catch (e) {}
@@ -248,8 +242,7 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
 
     // Attempt to call the callback function
     try {
-      if (callback != null)
-        callback()
+      callback()
     } catch (e) {}
   })
 
@@ -404,6 +397,9 @@ App.on('ready', () => {
         views.main.show()
         views.main.maximize()
       } catch (e) {}
+
+      // Send a `shown` status to the main view
+      setTimeout(() => views.main.webContents.send('windows-shown'), 100)
     }, 2000)
   })
 
@@ -750,10 +746,6 @@ App.on('window-all-closed', () => {
     // let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
     let binFolder = Path.join((extraResourcesPath != null ? Path.join(__dirname, '..', '..', 'main') : Path.join(__dirname)), 'bin')
 
-    // Make sure the tool is executable on Linux and macOS
-    if (process.platform !== 'win32')
-      Terminal.runSync(`cd "${binFolder}" && chmod +x keys_generator`)
-
     // Run the keys generator tool
     let binCall = `./keys_generator`
 
@@ -779,7 +771,7 @@ App.on('window-all-closed', () => {
     let path = App.getAppPath()
 
     // If the app in production mode
-    if (IsAsarFound)
+    if (App.isPackaged)
       path = Path.join(path, '..')
 
     // Return the app's final path

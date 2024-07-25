@@ -103,13 +103,7 @@ center {
     align-items: center;
     justify-content: center;
 
-    div.spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px rgba(255, 255, 255, 0.25) solid;
-      border-radius: 50%;
-      border-top: 4px #dfdfdf solid;
-      margin-right: 20px;
+    l-squircle {
       opacity: 0;
     }
   }
@@ -156,8 +150,8 @@ center {
   &.show-spinner {
     height: 110px;
 
-    div.spinner {
-      animation: rotate 0.75s infinite linear, show 1.4s forwards ease-in-out;
+    l-squircle {
+      animation: show 1.4s forwards ease-in-out;
       animation-delay: 0.2s;
     }
   }

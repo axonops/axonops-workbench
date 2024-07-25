@@ -126,7 +126,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               </div>
             </div>
             <div class="loading" style="background: rgb(${color} / 10%)">
-              <lottie-player src="../assets/lottie/loading-clusters.json" background="transparent" autoplay loop speed="1.15"></lottie-player>
+              <l-line-wobble class="ldr" size="100" stroke="5" bg-opacity="0.25" speed="1.3"  color="${workspace.color}"></l-line-wobble>
             </div>
           </div>`
 
@@ -992,6 +992,33 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
           // Show the toast with the final text and type
           showToast(I18next.capitalize(I18next.t('add workspace')), I18next.capitalizeFirstLetter(I18next.replaceData(toastText, [name.val()])) + '.', toastType)
+
+          // Make sure all fields are cleared on a successful save
+          try {
+            // If the saving process wasn't successful then skip this try-catch block
+            if (status != 1)
+              throw 0
+
+            setTimeout(() => {
+              // Define the inputs' IDs in the dialog and reset them
+              let inputsIDs = ['workspaceName', 'workspaceColor', 'workspacePath']
+
+              // Loop through each input ID
+              inputsIDs.forEach((inputID) => {
+                // Point at the input
+                let input = $(`input#${inputID}`),
+                  // Get its MDB object
+                  inputObject = getElementMDBObject(input)
+
+                // Remove its value and remove the `active` class
+                input.val('').removeClass('active')
+
+                // Update the MDB object
+                inputObject.update()
+                inputObject._deactivate()
+              })
+            }, 1000)
+          } catch (e) {}
         })
       })
     }

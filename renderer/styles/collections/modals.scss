@@ -383,8 +383,10 @@ div.modal {
           height: 100%;
           opacity: 0.7;
 
-          lottie-player {
-            transform: scale(0.4);
+          .ldr {
+            position: absolute;
+            inset: 0;
+            margin: auto;
           }
         }
       }

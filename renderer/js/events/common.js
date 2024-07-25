@@ -99,7 +99,9 @@
     latestWidth = 350,
     triggerStopTimeout,
     hiddenAreaElement = $('div.body div.main.hidden-area'),
-    rightSideElement = $('div.body div.main.right')
+    rightSideElement = $('div.body div.main.right'),
+    toastsContainer = $('div.toast-container'),
+    pinnedToastsContainer = $('div.pinned-toast-container')
 
   // Clicks the AI assistant button
   $(`${selector}[action="ai"]`).click(() => {
@@ -124,6 +126,12 @@
         // Reset the width of each sides - hidden area and the right side -
         setTimeout(() => hiddenAreaElement.add(rightSideElement).css('width', ''))
 
+        // Update the pinned toasts' container's position
+        setTimeout(() => pinnedToastsContainer.css('left', '100px'))
+
+        // Update the toasts' container's position
+        setTimeout(() => toastsContainer.css('transform', 'translateX(0px)'))
+
         // Skip this try-catch block
         throw 0
       }
@@ -143,6 +151,12 @@
 
         // Same thing with the right side
         rightSideElement.css('width', `calc(100% - 80px - ${latestWidth}px)`)
+
+        // Update the pinned toasts' container's position
+        pinnedToastsContainer.css('left', 100 + latestWidth + 'px')
+
+        // Update the toasts' container's position
+        toastsContainer.css('transform', 'translateX(' + (latestWidth - 300) + 'px)')
       })
     } catch (e) {}
 
@@ -167,7 +181,7 @@
       }).on('resize',
         function(_, __) {
           // Make sure there's no transition effects while the resizing process is being performed
-          hiddenAreaElement.add(rightSideElement).addClass('no-transition')
+          hiddenAreaElement.add(rightSideElement).add(pinnedToastsContainer).add(toastsContainer).addClass('no-transition')
 
           // Applying this rule will prevent the sudden stop while the area is being resized
           hiddenAreaElement.find('webview').css('pointer-events', 'none')
@@ -177,6 +191,12 @@
 
           // Update the right side width based on the hidden area's new width
           rightSideElement.css('width', `calc(100% - 80px - ${latestWidth}px)`)
+
+          // Update the pinned toasts' container's position
+          pinnedToastsContainer.css('left', 100 + latestWidth + 'px')
+
+          // Update the toasts' container's position
+          toastsContainer.css('transform', 'translateX(' + (latestWidth - 300) + 'px)')
 
           // Set a timeout to trigger the `resizestop` event after set period of time
           {
@@ -189,7 +209,7 @@
           // When the resizing process stop
         }).on('resizestop', function(_, __) {
         // Restore the transition effects
-        hiddenAreaElement.add(rightSideElement).removeClass('no-transition')
+        hiddenAreaElement.add(rightSideElement).add(pinnedToastsContainer).add(toastsContainer).removeClass('no-transition')
 
         // Make the hidden area interactive again
         hiddenAreaElement.find('webview').css('pointer-events', 'all')

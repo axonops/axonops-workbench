@@ -489,7 +489,7 @@ let ReadableTime
 
 $(document).on('initialize', () => {
   // Import the module
-  ReadableTime = require(Path.join(__dirname, '..', 'js', 's-ago'))
+  ReadableTime = require(Path.join(__dirname, '..', 'js', 'external', 's-ago'))
 
   // Every 10 seconds update the associated elements
   setInterval(() => {
@@ -534,7 +534,7 @@ $(document).on('initialize', () => {
    * This framework reduces the ugliness of Material Design API calls and provides better control over colors
    */
   {
-    let materialPath = Path.join(__dirname, '..', 'js', 'mdb5')
+    let materialPath = Path.join(__dirname, '..', 'js', 'external', 'mdb5')
 
     loadStyleSheet(Path.join(materialPath, 'style-dark.css'))
 
@@ -557,14 +557,14 @@ $(document).on('initialize', () => {
 
   // Ion Icons
   {
-    loadScript(Path.join(__dirname, '..', 'js', 'ionicons', 'main.js'))
+    loadScript(Path.join(__dirname, '..', 'js', 'external', 'ionicons', 'main.js'))
   }
 
   // jsPDF - for the Tabulator library -
   {
-    loadScript(Path.join(__dirname, '..', 'js', 'jspdf', 'jspdf.js'))
+    loadScript(Path.join(__dirname, '..', 'js', 'external', 'jspdf', 'jspdf.js'))
 
-    loadScript(Path.join(__dirname, '..', 'js', 'jspdf', 'plugin.autotable.js'))
+    loadScript(Path.join(__dirname, '..', 'js', 'external', 'jspdf', 'plugin.autotable.js'))
   }
 
   // Tabulator library theme
@@ -588,7 +588,7 @@ $(document).on('initialize', () => {
   {
     // jQuery UI
     {
-      let jQueryUIPath = Path.join(__dirname, '..', 'js', 'jqueryui')
+      let jQueryUIPath = Path.join(__dirname, '..', 'js', 'external', 'jqueryui')
 
       loadStyleSheet(Path.join(jQueryUIPath, 'style.css'))
 
@@ -597,7 +597,7 @@ $(document).on('initialize', () => {
 
     // jQuery JS Tree Plugin
     {
-      let jsTreePath = Path.join(__dirname, '..', 'js', 'jstree')
+      let jsTreePath = Path.join(__dirname, '..', 'js', 'external', 'jstree')
 
       loadStyleSheet(Path.join(jsTreePath, 'theme', 'style.css'))
 
@@ -615,13 +615,13 @@ $(document).on('initialize', () => {
 
     // jQuery Actual element's values plugin
     {
-      loadScript(Path.join(__dirname, '..', 'js', 'actual.js'))
+      loadScript(Path.join(__dirname, '..', 'js', 'external', 'actual.js'))
     }
   }
 
   // Coloris
   {
-    let colorisPath = Path.join(__dirname, '..', 'js', 'coloris')
+    let colorisPath = Path.join(__dirname, '..', 'js', 'external', 'coloris')
 
     loadStyleSheet(Path.join(colorisPath, 'style.css'))
 
@@ -646,7 +646,7 @@ $(document).on('initialize', () => {
 
   // Mutate.js
   {
-    loadScript(Path.join(__dirname, '..', 'js', 'mutate.js'))
+    loadScript(Path.join(__dirname, '..', 'js', 'external', 'mutate.js'))
   }
 
   // Chart.js
@@ -654,9 +654,19 @@ $(document).on('initialize', () => {
     loadScript(Path.join(__dirname, '..', '..', 'node_modules', 'chart.js', 'dist', 'chart.umd.js'))
   }
 
+  // ldrs.js
+  {
+    let ldrsPath = Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js'),
+      usedLoaders = ['lineWobble', 'pinwheel']
+
+    try {
+      import(ldrsPath).then((loaders) => usedLoaders.forEach((loader) => loaders[loader].register()))
+    } catch (e) {}
+  }
+
   // Lottie Files Player
   {
-    loadScript(Path.join(__dirname, '..', 'js', 'lottie-player.js'))
+    loadScript(Path.join(__dirname, '..', 'js', 'external', 'lottie-player.js'))
   }
 
   // Monaco editor
@@ -956,7 +966,7 @@ $(document).on('initialize', () => {
 
   // TippyJS
   {
-    let tippyPath = Path.join(__dirname, '..', 'js', 'tippyjs')
+    let tippyPath = Path.join(__dirname, '..', 'js', 'external', 'tippyjs')
 
     loadScript(Path.join(tippyPath, 'popper.js'))
 
@@ -990,9 +1000,6 @@ $(document).on('initialize', () => {
     } catch (e) {}
   }
 })
-
-// Once the UI is ready, get all workspaces
-$(document).on('initialize', () => $(document).trigger('getWorkspaces'))
 
 // Clear the temporary files and folders created by the app and its binaries
 $(document).on('initialize', () => clearTemp())
@@ -1066,7 +1073,6 @@ $(document).on('initialize', () => {
       // Point at the credits' container in the modal
       let creditsContainer = $('div.modal#appAbout').find('div.modal-section[section="credits"]'),
         // Connect with the associated database
-        // database = new SQLite3(Path.join((extraResourcesPath || appPath), 'data', 'credits.db')),
         database = new SQLite3(Path.join(appPath, 'data', 'credits.db')),
         // Get all records inside the `credits` table
         credits = database.prepare('SELECT * FROM credits ORDER BY license ASC, name ASC').all(),
@@ -1161,3 +1167,6 @@ $(document).on('initialize', () => setTimeout(() => {
     IPCRenderer.send('loaded')
   })
 }, 2000))
+
+// Once the UI is ready, get all workspaces
+$(document).ready(() => IPCRenderer.on('windows-shown', () => $(document).trigger('getWorkspaces')))

@@ -12,7 +12,7 @@
 
   var scriptElm = doc.createElement('script');
   scriptElm.setAttribute('type', 'module');
-  scriptElm.src = '../js/ionicons/esm.js';
+  scriptElm.src = '../js/external/ionicons/esm.js';
   warn.push(scriptElm.outerHTML);
   scriptElm.setAttribute('data-stencil-namespace', 'ionicons');
   doc.head.appendChild(scriptElm);

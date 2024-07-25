@@ -846,7 +846,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
   // Get a keyspaces container's random ID
   let keyspacesID = getRandomID(30),
     // Define the path of extra icons to be used with each leaf
-    extraIconsPath = normalizePath(Path.join(__dirname, '..', 'js', 'jstree', 'theme', 'extra')),
+    extraIconsPath = normalizePath(Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra')),
     // The initial tree structure
     treeStructure = {
       'types': {
@@ -3347,8 +3347,11 @@ let setUIColor = (workspaceColor) => {
     // Remove the old UI color
     $('style#uicolor').remove()
 
+    // Change the loaders' color
+    $('.change-color[color]').attr('color', tinyColor.isValid() ? workspaceColor : '#dfdfdf')
+
     // If the given color is not valid then stop the entire process
-    if (workspaceColor.trim().length <= 0)
+    if (!tinyColor.isValid())
       return
 
     // Define the stylesheet that will be applied

@@ -24,7 +24,7 @@ const r = () => {
     }
     return null
   },
-  s = e => r().get(e) || n(`../../assets/images/icons/${e}.svg`),
+  s = e => r().get(e) || n(`../../../assets/images/icons/${e}.svg`),
   o = (n, e, r, t, i) => (r = "ios" === (r && l(r)) ? "ios" : "md", t && "ios" === r ? n = l(t) : i && "md" === r ? n = l(i) : (n || !e || u(e) || (n = e), a(n) && (n = l(n))), a(n) && "" !== n.trim() ? "" !== n.replace(/[a-z]|-|\d/gi, "") ? null : n : null),
   f = n => a(n) && (n = n.trim(), u(n)) ? n : null,
   u = n => n.length > 0 && /(\/|\.)/.test(n),

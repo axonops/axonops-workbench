@@ -29,6 +29,11 @@ const Path = require('path'),
 
 // When the window/view is fully loaded
 window.onload = () => {
+  // Enable the spinner
+  try {
+    import(Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js')).then((loaders) => loaders.squircle.register())
+  } catch (e) {}
+
   try {
     // Import the app's info from the `package.json` file
     const AppInfo = require(Path.join(__dirname, '..', '..', 'package.json')); // This semicolon is critical here

@@ -68,7 +68,7 @@ services:
     volumes:
       - cassandra-0:/var/lib/cassandra
     environment:
-      - CASSANDRA_CLUSTER_NAME=demo-cluster
+      - CASSANDRA_CLUSTER_NAME=sandbox-cluster
       - CASSANDRA_SEEDS=cassandra-0
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
       - CASSANDRA_DC=dc1
@@ -79,7 +79,7 @@ services:
       - HEAP_NEWSIZE=50m
       - AXON_AGENT_SERVER_HOST=axon-server
       - AXON_AGENT_SERVER_PORT=1888
-      - AXON_AGENT_ORG=demo
+      - AXON_AGENT_ORG=sandbox
       - AXON_AGENT_TLS_MODE=none
       - AXON_AGENT_LOG_OUTPUT=file
     ports:
@@ -101,7 +101,7 @@ services:
     volumes:
       - cassandra-1:/var/lib/cassandra
     environment:
-      - CASSANDRA_CLUSTER_NAME=demo-cluster
+      - CASSANDRA_CLUSTER_NAME=sandbox-cluster
       - CASSANDRA_SEEDS=cassandra-0
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
       - CASSANDRA_DC=dc1
@@ -112,7 +112,7 @@ services:
       - HEAP_NEWSIZE=50m
       - AXON_AGENT_SERVER_HOST=axon-server
       - AXON_AGENT_SERVER_PORT=1888
-      - AXON_AGENT_ORG=demo
+      - AXON_AGENT_ORG=sandbox
       - AXON_AGENT_TLS_MODE=none
       - AXON_AGENT_LOG_OUTPUT=file
     ports:
@@ -134,7 +134,7 @@ services:
     volumes:
       - cassandra-2:/var/lib/cassandra
     environment:
-      - CASSANDRA_CLUSTER_NAME=demo-cluster
+      - CASSANDRA_CLUSTER_NAME=sandbox-cluster
       - CASSANDRA_SEEDS=cassandra-0
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
       - CASSANDRA_DC=dc1
@@ -145,7 +145,7 @@ services:
       - HEAP_NEWSIZE=50m
       - AXON_AGENT_SERVER_HOST=axon-server
       - AXON_AGENT_SERVER_PORT=1888
-      - AXON_AGENT_ORG=demo
+      - AXON_AGENT_ORG=sandbox
       - AXON_AGENT_TLS_MODE=none
       - AXON_AGENT_LOG_OUTPUT=file
     ports:

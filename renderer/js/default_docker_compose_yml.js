@@ -30,6 +30,7 @@ services:
       interval: 10s
       timeout: 5s
       start_period: 30s
+      retries: 50
   axon-server:
     depends_on:
       elasticsearch:
@@ -42,6 +43,7 @@ services:
       interval: 10s
       timeout: 5s
       start_period: 10s
+      retries: 5
   axon-dash:
     restart: unless-stopped
     depends_on:
@@ -57,6 +59,7 @@ services:
       interval: 10s
       timeout: 5s
       start_period: 10s
+      retries: 5
 
   cassandra-0:
     image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
@@ -85,7 +88,7 @@ services:
       test: ["CMD", "nc", "-z", "127.0.0.1", "9042"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 50
       start_period: 60s
 
   cassandra-1:
@@ -118,7 +121,7 @@ services:
       test: ["CMD", "nc", "-z", "127.0.0.1", "9043"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 50
       start_period: 60s
 
   cassandra-2:
@@ -151,7 +154,7 @@ services:
       test: ["CMD", "nc", "-z", "127.0.0.1", "9044"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 50
       start_period: 60s
 
 volumes:

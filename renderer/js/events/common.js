@@ -343,11 +343,11 @@
   // Clicks the settings button
   $(`${selector}[action="settings"]`).click(() => {
     // Get the app's config/settings
-    Modules.Config.getConfig((config) => {
+    Modules.Config.getConfig(async (config) => {
       // Get different saved settings to be checked and applied on the UI
       let maxNumCQLSHSessions = config.get('limit', 'cqlsh'),
         maxNumSandboxProjects = config.get('limit', 'sandbox'),
-        contentProtection = config.get('security', 'contentProtection'),
+        contentProtection = await Keytar.findPassword('AxonOpsWorkbenchContentProtection') || false,
         loggingEnabled = config.get('security', 'loggingEnabled'),
         displayLanguage = config.get('ui', 'language')
 
@@ -365,7 +365,10 @@
       setTimeout(() => maxNumSandboxProjectsObject.update())
 
       // Check the content protection status
-      $('input#contentProtection[type="checkbox"]').prop('checked', contentProtection == 'true')
+      $('input#contentProtection[type="checkbox"]').prop('checked', `${contentProtection}` == 'true').attr({
+        'data-initial-status': `${contentProtection}`,
+        'data-authenticated': 'false'
+      })
 
       // Check the logging system
       $('input#loggingSystem[type="checkbox"]').prop('checked', loggingEnabled == 'true')
@@ -578,7 +581,7 @@
     })
   })
 
-  // Clicks the `SAVE SETTINGS` button in the footer in the dialog
+  // Clicks the `SAVE SETTINGS` button in the footer of the dialog
   $(`button#saveSettings`).click(function() {
     // Add log about this action
     try {
@@ -606,11 +609,17 @@
       // Apply the new content protection state
       IPCRenderer.send('content-protection', contentProtection)
 
+      // Set the new state of the content protection feature
+      $('input#contentProtection[type="checkbox"]').attr({
+        'data-initial-status': `${contentProtection}`,
+        'data-authenticated': 'false'
+      })
+
       try {
         // Get the current app's config/settings
         Modules.Config.getConfig((config) => {
           // Update settings
-          config.set('security', 'contentProtection', contentProtection)
+          Keytar.setPassword('AxonOpsWorkbenchContentProtection', 'value', `${contentProtection}`)
           config.set('security', 'loggingEnabled', loggingEnabled)
           config.set('limit', 'cqlsh', maxNumCQLSHSessions)
           config.set('limit', 'sandbox', maxNumSandboxProjects)
@@ -634,6 +643,35 @@
           errorLog(e, 'common')
         } catch (e) {}
       }
+    })
+  })
+
+  // Attempt to change the `content protection` checkbox status
+  $('input#contentProtection[type="checkbox"]').change(function(event) {
+    // Get both; the initial status and whether or not the user has passed the authentication process
+    [initialStatus, isAuthenticated] = getAttributes($(this), ['data-initial-status', 'data-authenticated'])
+
+    // Based on the given result the process may be skipped and no need for an authentication process
+    if (initialStatus == 'false' || isAuthenticated != 'false')
+      return
+
+    // Get the new/updated status
+    let newStatus = $(this).prop('checked')
+
+    // Make sure it won't be applied till the authentication process is completed with success
+    $(this).prop('checked', !newStatus)
+
+    // Show sudo prompt
+    promptSudo((authenticated) => {
+      // If the authentication failed then stop the process and don't apply the new status
+      if (!authenticated)
+        return
+
+      // Apply the new status
+      $(this).prop('checked', newStatus)
+
+      // The authentication process result will be saved till the new settings applied
+      $(this).attr('data-authenticated', 'true')
     })
   })
 

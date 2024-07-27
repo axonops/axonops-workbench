@@ -501,7 +501,7 @@ App.on('window-all-closed', () => {
 
       // Call that instance to create a cqlsh instance
       try {
-        CQLSHInstances[data.id].createCQLSHInstance(data.cqlshrc)
+        CQLSHInstances[data.id].createCQLSHInstance(data)
       } catch (e) {}
     })
 

@@ -132,6 +132,8 @@ const OS = require('os'),
   JSONRepair = require('jsonrepair').jsonrepair,
   // Cross-browser storage for all use cases
   Store = require('store'),
+  // Run commands using sudo, prompting the user with a graphical OS dialog
+  Sudo = require('sudo-prompt'),
   // The fastest and simplest library for SQLite3 in Node.js
   SQLite3 = require('better-sqlite3'),
   // Node.js CMD module to execute commands

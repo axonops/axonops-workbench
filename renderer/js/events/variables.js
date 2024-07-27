@@ -20,14 +20,7 @@
     changedVariables = null, // Changed variables in which some or all their attributes would be changed - name, value, and scope -
     savedWorkspaces = [], // All saved workspaces - synced and up to date -
     variablesList = $('div.variables-list'), // Point at the variables' container in the settings dialog
-    content = variablesList.children('div.content'), // Point at the variables' content inside the container
-    // Define variables files' path
-    variablesFilePath = {
-      // Path of the manifest file in the app's root folder
-      manifest: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'config', 'variables.json'),
-      // Path of the values of the actual variables stored in the os config/appdata folder
-      values: AppData('cassandra_workbench.variables')
-    }
+    content = variablesList.children('div.content') // Point at the variables' content inside the container
 
   // Click the `Add Variable` button inside the dialog
   $('#addNewVariable').click(() => {
@@ -237,21 +230,19 @@
 
     try {
       // Update variables' manifest file
-      await FS.writeFileSync(
-        variablesFilePath.manifest,
-        JSON.stringify(
-          [...variables.map(
-            (variable) => {
-              return {
-                name: variable.name,
-                scope: variable.scope
-              }
+      await Keytar.setPassword('AxonOpsWorkbenchVarsManifest', 'content', JSON.stringify(
+        [...variables.map(
+          (variable) => {
+            return {
+              name: variable.name,
+              scope: variable.scope
             }
-          )]
-        ))
+          }
+        )]
+      ) || '')
 
       // Update variables' values file
-      await FS.writeFileSync(variablesFilePath.values, JSON.stringify(variables))
+      await Keytar.setPassword('AxonOpsWorkbenchVarsValues', 'content', JSON.stringify(variables) || '')
 
       // Call the update function
       setTimeout(async () => {
@@ -278,32 +269,14 @@
   let retrieveVariables = async () => {
     try {
       // The saved variables' manifest and their values
-      let variablesManifest = '',
-        variablesValues = ''
-
-      // Get the variables manifest file's content
-      try {
-        variablesManifest = await FS.readFileSync(variablesFilePath.manifest, 'utf8')
-      } catch (e) {
-        try {
-          errorLog(e, 'variables')
-        } catch (e) {}
-      }
-
-      // Get the saved variables values file's content
-      try {
-        variablesValues = await FS.readFileSync(variablesFilePath.values, 'utf8')
-      } catch (e) {
-        try {
-          errorLog(e, 'variables')
-        } catch (e) {}
-      }
+      let variablesManifest = await Keytar.findPassword('AxonOpsWorkbenchVarsManifest'),
+        variablesValues = await Keytar.findPassword('AxonOpsWorkbenchVarsValues')
 
       // Define the final variables object,
       let variables = [],
         // Convert manifest and values strings to JSON object
-        variablesManifestObject = variablesManifest.trim().length > 0 ? JSON.parse(variablesManifest) : [],
-        variablesValuesObject = variablesValues.trim().length > 0 ? JSON.parse(variablesValues) : []
+        variablesManifestObject = variablesManifest != null && `${variablesManifest}`.trim().length > 0 ? JSON.parse(variablesManifest) : [],
+        variablesValuesObject = variablesValues != null && `${variablesValues}`.trim().length > 0 ? JSON.parse(variablesValues) : []
 
       /**
        * Loop through variables' manifest items

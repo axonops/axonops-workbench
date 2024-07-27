@@ -2725,45 +2725,20 @@ let createSSHTunnel = (data, callback) => {
  * @Return: {object} the passed object after manipulation
  */
 let variablesManipulation = async (workspaceID, object, rawData = false) => {
-  let result = object, // Final result which be returned
-    // Define variables files' path
-    variablesFilePath = {
-      // Path of the manifest file in the app's root folder
-      manifest: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'config', 'variables.json'),
-      // Path of the values of the actual variables stored in the os config/appdata folder
-      values: AppData('cassandra_workbench.variables')
-    }
+  let result = object // Final result which be returned
 
   try {
     // Get the object's values
     let objectValues = Object.keys(object),
       // Define the manifest and the values of saved variables
-      variablesManifest = '',
-      variablesValues = ''
-
-    // Get the variables' manifest content
-    try {
-      variablesManifest = await FS.readFileSync(variablesFilePath.manifest, 'utf8')
-    } catch (e) {
-      try {
-        errorLog(e, 'functions')
-      } catch (e) {}
-    }
-
-    // Get the saved variables' values in the host config/app data folder
-    try {
-      variablesValues = await FS.readFileSync(variablesFilePath.values, 'utf8')
-    } catch (e) {
-      try {
-        errorLog(e, 'functions')
-      } catch (e) {}
-    }
+      variablesManifest = await Keytar.findPassword('AxonOpsWorkbenchVarsManifest'),
+      variablesValues = await Keytar.findPassword('AxonOpsWorkbenchVarsValues')
 
     // Define the final variables object
     let variables = [],
       // Convert manifest and values content from string JSON to object
-      variablesManifestObject = variablesManifest.trim().length > 0 ? JSON.parse(variablesManifest) : [],
-      variablesValuesObject = variablesValues.trim().length > 0 ? JSON.parse(variablesValues) : []
+      variablesManifestObject = variablesManifest != null && `${variablesManifest}`.trim().length > 0 ? JSON.parse(variablesManifest) : [],
+      variablesValuesObject = variablesValues != null && `${variablesValues}`.trim().length > 0 ? JSON.parse(variablesValues) : []
 
     // Filter the variables based on their scope
     variablesManifestObject = variablesManifestObject.filter(
@@ -3211,7 +3186,7 @@ let clearTemp = () => {
        * Check if the item ends with the `.cwb` or `.metadata` extensions
        * The `.cwb` item is a `cqlsh.rc` config file created for test connection and it should be removed
        */
-      if (['cwb', 'metadata', 'tmp', 'cqldesc', 'checkconn'].some((extension) => item.endsWith(`.${extension}`))) {
+      if (['cwb', 'metadata', 'tmp', 'cqldesc', 'checkconn', 'aocwtmp'].some((extension) => item.endsWith(`.${extension}`))) {
         // Remove that temporary config file
         try {
           FS.removeSync(Path.join(tempFolder, item))
@@ -3596,4 +3571,27 @@ let closeAllWorkareas = () => {
       showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of cluster [b]$data[/b] in workspace [b]$data[/b] has been successfully closed`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
     } catch (e) {}
   })
+}
+
+/**
+ * Show prompt/authentication dialog using sudo
+ *
+ * @Parameters:
+ * {object} `callback` function that will be triggered with passing the final result
+ *
+ * @Return: {boolean} whether or not the process finished with success
+ */
+let promptSudo = (callback) => {
+  try {
+    // Attempt to execute common command and show the sudo prompt dialog
+    Sudo.exec(`echo ""`, {
+        name: 'AxonOps'
+      },
+      // Return the final result
+      (error, stdout, stderr) => callback(!error)
+    )
+  } catch (e) {
+    // Return result with `false` if any error has occured
+    callback(false)
+  }
 }

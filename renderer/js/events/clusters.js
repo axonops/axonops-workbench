@@ -317,7 +317,9 @@
               // Clicks the `TEST CONNECTION` button
               $(`button[button-id="${testConnectionBtnID}"]`).click(function() {
                 // Determine if the app is already connected with that cluster, and if it has an active work area
-                let [connected, hasWorkarea] = getAttributes(clusterElement, ['data-connected', 'data-workarea'])
+                let [connected, hasWorkarea] = getAttributes(clusterElement, ['data-connected', 'data-workarea']),
+                  // Whether or not the current process to be executed is disconnecting with the cluster
+                  isProcessDisconnect = $(this).find('span[mulang]').attr('mulang') == 'disconnect'
 
                 // Get a random ID for this connection test process
                 testConnectionProcessID = getRandomID(30)
@@ -333,9 +335,13 @@
                   addLog(`Request to test connection with the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                 } catch (e) {}
 
-                // If the cluster has an active work area then stop the process and show feedback to the user
-                if (hasWorkarea == 'true')
+                // If the cluster has an active work area and the process to be executed is not disconnecting with the cluster then stop the process and show feedback to the user
+                if (hasWorkarea == 'true' && !isProcessDisconnect)
                   return showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('this cluster [b]$data[/b] has an active work area, make sure to close its work area before attempting to test connection with it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+
+                // Handle if the process is disconnecting with the cluster
+                if (isProcessDisconnect)
+                  return $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.cluster-actions div.action[action="close"]').find('div.btn').trigger('click', false)
 
                 // Check if the cluster needs credentials to be provided before test the connection with it
                 try {
@@ -3945,7 +3951,7 @@
 
                       // Clicks either the restart or the close buttons for the cluster's work area
                       setTimeout(() => {
-                        $(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).click(function() {
+                        $(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).on('click', (event, moveToWorkspace = true) => {
                           // Add log for this action
                           try {
                             addLog(`Request to close/refresh the work area of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
@@ -3975,7 +3981,7 @@
 
                           try {
                             // If the current workspace is not the sandbox or it's not a `close` event then skip this try-catch block
-                            if (!isSandbox || !$(this).is($(`div.btn[data-id="${closeWorkareaBtnID}"]`)))
+                            if (!isSandbox || !$(event.currentTarget).is($(`div.btn[data-id="${closeWorkareaBtnID}"]`)))
                               throw 0
 
                             // Show the test connection state - it's used here to indicate the closing process of a sandbox project -
@@ -4070,7 +4076,7 @@
 
                             try {
                               // If the clicked button is not for restarting the work area then skip this try-catch block
-                              if (!$(this).is($(`div.btn[data-id="${restartWorkareaBtnID}"]`)))
+                              if (!$(event.currentTarget).is($(`div.btn[data-id="${restartWorkareaBtnID}"]`)))
                                 throw 0
 
                               // Remove the work area element
@@ -4173,10 +4179,29 @@
                             })
 
                             // Clicks the `ENTER` button for the cluster's workspace
-                            $(`div.workspaces-container div.workspace[data-id="${getAttributes(clusterElement, 'data-workspace-id')}"]`).find('div.button button').click()
+                            if (moveToWorkspace || $('div.body div.right div.content div[content][content="workarea"]').is(':visible'))
+                              $(`div.workspaces-container div.workspace[data-id="${getAttributes(clusterElement, 'data-workspace-id')}"]`).find('div.button button').click()
 
-                            // Reset the button's text
-                            setTimeout(() => $(`button[button-id="${connectBtnID}"]`).children('span').attr('mulang', 'connect').text(I18next.t('connect')))
+                            setTimeout(() => {
+                              try {
+                                // Handle the reset of the UI if the process is not restarting the work area
+                                if ($(event.currentTarget).is($(`div.btn[data-id="${restartWorkareaBtnID}"]`)))
+                                  throw 0
+
+                                // Point at both buttons; the `CONNECT` and `TEST CONNECTION`
+                                let connectBtn = $(`button[button-id="${connectBtnID}"]`),
+                                  testConnectionBtn = $(`button[button-id="${testConnectionBtnID}"]`); // This semicolon is critical here
+
+                                // Reset the text of each button
+                                ([connectBtn, testConnectionBtn]).forEach((button) => button.children('span').attr('mulang', button.is(connectBtn) ? 'connect' : 'test connection').text(I18next.t(button.is(connectBtn) ? 'connect' : 'test connection')))
+
+                                // Disable the `CONNECT` button
+                                connectBtn.attr('disabled', '')
+
+                                // Reset the cluster's connection status
+                                clusterElement.find('div.status').removeClass('show success failure')
+                              } catch (e) {}
+                            })
 
                             setTimeout(() => {
                               /**
@@ -4350,6 +4375,23 @@
                               })
                             })
 
+                            // Handle the `right button` click event of the switcher
+                            setTimeout(() => {
+                              $(this).mousedown(function(event) {
+                                // Make sure the `right button` is one which clicked
+                                if (event.which != 3)
+                                  return
+
+                                // Send a request to the main thread regards pop-up a menu
+                                IPCRenderer.send('show-context-menu', JSON.stringify([{
+                                  label: I18next.capitalize(I18next.t('close workarea (Disconnect)')),
+                                  click: `() => views.main.webContents.send('workarea:close', {
+                                     btnID: '${closeWorkareaBtnID}'
+                                   })`
+                                }]))
+                              })
+                            })
+
                             // Handle the first switcher's margin
                             setTimeout(() => handleClusterSwitcherMargin())
                           }))
@@ -4436,6 +4478,8 @@
                     // Update the button's text to be `ENTER`
                     setTimeout(() => $(`button[button-id="${connectBtnID}"]`).children('span').attr('mulang', 'enter').text(I18next.t('enter')), 1000)
 
+                    // Update the test connection's button's text to be `DISCONNECT`
+                    setTimeout(() => $(`button[button-id="${testConnectionBtnID}"]`).children('span').attr('mulang', 'disconnect').text(I18next.t('disconnect')), 1000)
 
                     /*
                      * Check the connectivity with the current cluster
@@ -5550,7 +5594,7 @@
              * @Parameters:
              * {object} `readLine` is the read line object that has been created for the terminal, the terminal object itself can be passed too
              */
-            let requestPtyInstanceCreation = (readLine, info) => {
+            let requestPtyInstanceCreation = async (readLine, info) => {
               try {
                 // Get the workspace's folder path
                 let workspaceFolderPath = getWorkspaceFolderPath(workspaceID),
@@ -5718,6 +5762,32 @@
                   }
                 } catch (e) {}
 
+                // Get variables manifest and values
+                try {
+                  // Define JSON object which will hold the names of the temporary files
+                  let files = {}
+
+                  // Loop through the names of the content
+                  for (let name of ['manifest', 'values']) {
+                    // Get the content from the OS keychain
+                    let content = await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`)
+
+                    // Create a name for the temporary file
+                    files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandomID(20)}.aocwtmp`))
+
+                    // Create the temporary file with related content
+                    await FS.writeFileSync(files[name], content || '')
+                  }
+
+                  // Update the creation data to adopt the variables' info
+                  creationData = {
+                    ...creationData,
+                    variables: {
+                      ...files
+                    }
+                  }
+                } catch (e) {}
+
                 // Send a request to create a pty instance and connect with the cluster
                 IPCRenderer.send('pty:create', {
                   ...creationData,
@@ -5866,7 +5936,7 @@
        * @Parameters:
        * {object} `?sshCreation` the SSH tunnel object associated with the cluster
        */
-      let startTestConnection = (sshCreation = null) => {
+      let startTestConnection = async (sshCreation = null) => {
         // Define an SSH port object to be passed if needed
         let sshPort = {},
           // Get a random ID for the connection test's request
@@ -5875,6 +5945,32 @@
         // If the `sshCreation` object has been passed then use the random used port in the creation process instead of the one the user has passed
         if (sshCreation != null)
           sshPort.port = sshCreation.port
+
+        // Get variables manifest and values
+        try {
+          // Define JSON object which will hold the names of the temporary files
+          let files = {}
+
+          // Loop through the names of the content
+          for (let name of ['manifest', 'values']) {
+            // Get the content from the OS keychain
+            let content = await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`)
+
+            // Create a name for the temporary file
+            files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandomID(20)}.aocwtmp`))
+
+            // Create the temporary file with related content
+            await FS.writeFileSync(files[name], content || '')
+          }
+
+          // Update the creation data to adopt the variables' info
+          testData = {
+            ...testData,
+            variables: {
+              ...files
+            }
+          }
+        } catch (e) {}
 
         // Send test request to the main thread and pass the final `testData`
         IPCRenderer.send('pty:test-connection', {
@@ -6864,7 +6960,7 @@
                 } catch (e) {}
 
                 // Inner function inside `afterSSHProcess` function; to start the connection test with cluster
-                let startTestConnection = () => {
+                let startTestConnection = async () => {
                   /**
                    * A custom port might be passed to the `cqlsh` tool in case there's an SSH tunnel creation process
                    *
@@ -6879,6 +6975,32 @@
                       port: sshCreation.port
                     }
                   }
+
+                  // Get variables manifest and values
+                  try {
+                    // Define JSON object which will hold the names of the temporary files
+                    let files = {}
+
+                    // Loop through the names of the content
+                    for (let name of ['manifest', 'values']) {
+                      // Get the content from the OS keychain
+                      let content = await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`)
+
+                      // Create a name for the temporary file
+                      files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandomID(20)}.aocwtmp`))
+
+                      // Create the temporary file with related content
+                      await FS.writeFileSync(files[name], content || '')
+                    }
+
+                    // Update the creation data to adopt the variables' info
+                    override = {
+                      ...override,
+                      variables: {
+                        ...files
+                      }
+                    }
+                  } catch (e) {}
 
                   // If there's a need to wait for the encryption of the username and password before starting the connection test
                   if (waitForEncryption) {
@@ -8454,6 +8576,11 @@
         }))
       })
     })
+  }
+
+  // Handle the request of closing a cluster's work area
+  {
+    IPCRenderer.on('workarea:close', (_, data) => $(`div.btn[data-id="${data.btnID}"]`).trigger('click', false))
   }
 
   // Handle the request of clearing the current active line of specific terminal

@@ -59,7 +59,6 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
       processTypes = {
         // Those files will be checked and created if not exist
         ensureFile: [
-          ['config', 'variables.json'],
           ['config', 'app-config.cfg'],
           ['data', 'docker', 'docker.json'],
           ['data', 'logging', 'log.tmp'],

@@ -1,15 +1,15 @@
 {
-  "name": "axonops-workbench-cassandra",
-  "title": "AxonOps™ Workbench Cassandra®",
-  "version": "0.1.0-internal-20240719",
+  "name": "axonops-workbench",
+  "title": "AxonOps™ Workbench",
+  "version": "0.1.0-internal-20240726",
   "author": {
     "name": "AxonOps",
     "email": "info@axonops.com"
   },
   "main": "main/main.js",
   "license": "Apache-2.0",
-  "description": "AxonOps™ Workbench for Apache Cassandra®",
-  "productName": "AxonOpsCassandra",
+  "description": "AxonOps™ Workbench",
+  "productName": "AxonOpsWorkbench",
   "companyName": "AxonOps Limited",
   "maintainers": [
     "info@axonops.com"
@@ -17,7 +17,7 @@
   "build": {
     "icon": "./renderer/assets/images/icon-256x256.png",
     "copyright": "AxonOps Limited 2024",
-    "appId": "com.axonops.workbench.cassandra",
+    "appId": "com.axonops.workbench",
     "compression": "maximum",
     "asarUnpack": "**/*.node",
     "extraResources": [
@@ -41,8 +41,8 @@
       "icon": "./renderer/assets/images/",
       "category": "Development",
       "desktop": {
-        "Name": "AxonOps Workbench for Cassandra",
-        "Common": "AxonOps™ Workbench for Apache Cassandra®",
+        "Name": "AxonOps Workbench",
+        "Common": "AxonOps™ Workbench",
         "Terminal": false,
         "Keywords": "cassandra;axonops;development;workbench",
         "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench-cassandra.png"

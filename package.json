@@ -9,7 +9,7 @@
   "main": "main/main.js",
   "license": "Apache-2.0",
   "description": "AxonOps™ Workbench",
-  "productName": "AxonOpsWorkbench",
+  "productName": "AxonOps Workbench",
   "companyName": "AxonOps Limited",
   "maintainers": [
     "info@axonops.com"
@@ -50,7 +50,7 @@
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
-      "icon": "./renderer/assets/images/axonops-icon-256x256.icns",
+      "icon": "./renderer/assets/images/axonops-icon-512x512.icns",
       "category": "public.app-category.developer-tools",
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"

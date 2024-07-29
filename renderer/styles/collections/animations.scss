@@ -73,7 +73,7 @@
 @keyframes show-sandbox {
   0% {
     opacity: 0;
-    transform: translateY(15px);
+    transform: translateY(20px);
   }
 
   25% {
@@ -82,7 +82,7 @@
 
   100% {
     opacity: 0.1;
-    transform: translateY(0px);
+    transform: translateY(12px);
   }
 }
 @keyframes show-sandbox-icon {
@@ -151,7 +151,7 @@
 
   100% {
     opacity: 1;
-    width: 4%;
+    width: 6%;
   }
 }
 @keyframes animate-sandbox-button {

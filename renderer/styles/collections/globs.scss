@@ -701,3 +701,26 @@ pre {
   background: #666666;
   opacity: 0.7;
 }
+
+.tabulator .tabulator-footer .tabulator-page:disabled {
+  color: rgba(0, 0, 0, 0.7) !important;
+  opacity: 0.4;
+}
+
+.tabulator .tabulator-footer .tabulator-page,
+.tabulator .tabulator-footer .tabulator-page-size {
+  background: #202020;
+  min-width: 25px;
+  outline: none !important;
+}
+
+div.tabulator * {
+  transition: all 0.2s ease-in-out;
+}
+
+span[no-clusters-message] {
+  b {
+    color: white;
+    font-weight: 500;
+  }
+}

@@ -850,6 +850,7 @@
                                     <div class="execute">
                                       <button class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
                                         <ion-icon name="send"></ion-icon>
+                                        <l-reuleaux size="20" stroke="2" stroke-length="0.25" bg-opacity="0.25" speed="0.8" color="white"></l-reuleaux>
                                       </button>
                                     </div>
                                   </div>
@@ -1341,65 +1342,6 @@
                       }))
                     }
 
-                    /**
-                     * Inner function to get the closest word to the cursor
-                     * Used when the user presses the `TAB` key
-                     *
-                     * @Return: {string} the matched content, or an empty value if there's no string close to the cursor
-                     */
-                    let getClosestWord = () => {
-                      /**
-                       * If the user is currently selecting something then return an empty value
-                       * The reason is by selecting something while the function is executing will lead to get incorrect values about the cursor's position
-                       */
-                      if (terminal.getSelection().length != 0)
-                        return ''
-
-                      // `Y` is the column - where the cursor is right now -
-                      let cursorY = terminal._core.buffer.y,
-                        // `X` is the row
-                        cursorX = terminal._core.buffer.x,
-                        // By using the position of the cursor in the `Y` axis the function will be able to get the line's content
-                        line = terminal._core.buffer.lines.get(cursorY).translateToString(),
-                        // Get the specific part of the line that matters; by slicing the line content from the beginning till the cursor's `X` position
-                        lineContent = line.slice(0, cursorX)
-
-                      // Do a matching process; which is getting the last string in the line that has a space right before it
-                      let match = /\S+$/.exec(lineContent)
-
-                      // If there's a value from the matching process then return it, otherwise return an empty value
-                      return match ? match[0] : ''
-                    }
-
-                    /**
-                     * Inner function to convert an array to a sorted string table
-                     * Will be used to print suggestions in the terminal
-                     *
-                     * @Parameters:
-                     * {object} `array` the array which will be converted to a sorted string table
-                     *
-                     * @Return: {string} the array's items converted to a string and well sorted
-                     */
-                    let arrayToString = (array) => {
-                      try {
-                        // Convert the given array to JSON string
-                        array = JSON.stringify(array)
-
-                        // Remove brackets from the beginning and the end
-                        array = array.slice(1, -1)
-
-                        /**
-                         * Remove all double quotes
-                         * Replace commas with spaces
-                         */
-                        array = array.replace(/\"/g, '')
-                          .replace(/,/g, ' ')
-                      } catch (e) {} finally {
-                        // Return the `array` after manipulation
-                        return array
-                      }
-                    }
-
                     // Create the terminal instance from the XtermJS constructor
                     terminalObjects[terminalID] = new XTerm({
                       theme: XTermThemes.Atom
@@ -1475,7 +1417,7 @@
                           }
 
                           // Request to get query tracing result by passing the cluster's and the session's IDs
-                          Modules.Clusters.getQueryTracingResult(clusterID, sessionID, terminal, (result) => {
+                          Modules.Clusters.getQueryTracingResult(clusterID, sessionID, (result) => {
                             // If the `result` value is `null` then the app wasn't able to get the query tracing result
                             if (result == null)
                               return
@@ -1723,6 +1665,18 @@
                           // Flag to tell if an empty line has been found or not
                           isEmptyLineFound = false
 
+                        // Listen to data sent from the pty instance regards the basic terminal
+                        IPCRenderer.on(`pty:data-basic:${clusterID}`, (_, data) => {
+                          try {
+                            // If the session is paused then nothing would be printed
+                            if (isSessionPaused)
+                              throw 0
+
+                            // Print/write the data to the terminal
+                            terminal.write(data.output)
+                          } catch (e) {}
+                        })
+
                         // Listen to data sent from the pty instance which are fetched from the cqlsh tool
                         IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
                           // If the session is paused then nothing would be printed
@@ -1756,20 +1710,29 @@
                             // The CQLSH tool has been loaded
                             isCQLSHLoaded = true
 
-                            /**
-                             * Attempt to recall the process again
-                             * This method helps with the hang that happen sometimes while booting the cqlsh session
-                             *
-                             * Send an `EOL` character to the pty instance if the buffer is empty
-                             */
-                            setTimeout(() => {
-                              // Enable the terminal switch button
-                              $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find(`div.switch-terminal button`).attr('disabled', null)
+                            // Handle the initialization of the basic terminal and the activation of the switching button
+                            setTimeout(function() {
+                              // Point at the switching button
+                              let switchTerminalBtn = $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find(`div.switch-terminal button`)
 
-                              // Send the `EOL` character
+                              // Click it to initialize the terminal
+                              switchTerminalBtn.trigger('click', true)
+
+                              // Enable the terminal switch button
+                              setTimeout(() => switchTerminalBtn.attr('disabled', null), 1000)
+                            }, 1000)
+
+                            // Send an `EOL` character to the pty instance
+                            IPCRenderer.send('pty:command', {
+                              id: clusterID,
+                              cmd: ''
+                            })
+
+                            // Disable paging for the interactive terminal
+                            setTimeout(() => {
                               IPCRenderer.send('pty:command', {
                                 id: clusterID,
-                                cmd: ''
+                                cmd: 'PAGING OFF;'
                               })
                             }, 1000)
 
@@ -1778,30 +1741,6 @@
 
                             // Enable all tabs and their associated sections
                             workareaElement.find('div.cluster-tabs').find('li a').removeClass('disabled')
-
-                            setTimeout(() => {
-                              // For Windows, there's a need to send a newline to start the cqlsh session
-                              if (OS.platform() == 'win32' && Modules.Clusters.getTerminalCurrentBuffer(terminal, true).length <= 0)
-                                IPCRenderer.send('pty:command', {
-                                  id: clusterID,
-                                  cmd: ''
-                                })
-                            }, 1000)
-                          } catch (e) {}
-
-                          try {
-                            // If the received data is `failed` then the connection attempt has failed and the user needs to retry
-                            if (data.output != 'failed')
-                              throw 0
-
-                            // Show feedback to the user
-                            terminalPrintMessage(terminal, 'error', 'The connection attempt failed, please check cqlsh.rc file and press the restart button')
-
-                            // Show it in the interactive terminal
-                            addBlock($(`#_${cqlshSessionContentID}_container`), getRandomID(10), 'The connection attempt failed, please check cqlsh.rc file and press the restart button', null, true, 'failure')
-
-                            // Skip the upcoming code
-                            return
                           } catch (e) {}
 
                           /**
@@ -1853,7 +1792,7 @@
                               }
 
                               // Get the cluster's metadata
-                              Modules.Clusters.getMetadata(clusterID, terminal, (metadata) => {
+                              Modules.Clusters.getMetadata(clusterID, (metadata) => {
                                 try {
                                   // Convert the metadata from JSON string to an object
                                   metadata = JSON.parse(metadata)
@@ -1934,7 +1873,6 @@
                                       click: `() => views.main.webContents.send('cql-desc:get', {
                                          clusterID: '${getAttributes(clusterElement, 'data-id')}',
                                          scope: '${scope}',
-                                         terminalID: '${terminalID}',
                                          tabID: '${cqlDescriptionContentID}',
                                          nodeID: '${getAttributes(clickedNode, 'id')}'
                                        })`
@@ -2094,9 +2032,9 @@
                            *
                            * Whether or not the output has been completed
                            */
-                          let isOutputCompleted = data.output.indexOf('KEYWORD:OUTPUT:COMPLETED:ALL') != -1
-
-                          let refreshMetadataTimeout
+                          let isOutputCompleted = data.output.indexOf('KEYWORD:OUTPUT:COMPLETED:ALL') != -1,
+                            // Define the variable that will hold a timeout to refresh the metadata content
+                            refreshMetadataTimeout
 
                           try {
                             // If the given `blockID` is empty - the execution has not been called from the interactive terminal - then skip this try-catch block
@@ -2273,6 +2211,8 @@
                                           tabulatorObject = _tabulatorObject
                                         })
 
+                                        $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').removeClass('busy')
+
                                         // Show the block
                                         blockElement.show().addClass('show')
 
@@ -2445,7 +2385,7 @@
                                       match = (new ANSIToHTML()).toHtml(match)
 
                                       // Reaching here and has a `json` keyword in the output means there's no record/row to be shown
-                                      if (match.includes('[json]'))
+                                      if (match.includes('[json]') || StripTags(match).length <= 0)
                                         match = '<no-output><span mulang="no data found" capitalize-first></span>.</no-output>'
 
                                       // Set the final content and make sure the localization process is updated
@@ -2464,6 +2404,8 @@
                             // Show the current active prefix/prompt
                             setTimeout(() => blockElement.find('div.prompt').text(minifyText(prefix).slice(0, -1)).hide().fadeIn('fast'), 1000)
 
+                            $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').removeClass('busy')
+
                             // Show the block
                             blockElement.show().addClass('show')
 
@@ -2477,12 +2419,7 @@
                             }, 100)
                           } catch (e) {}
 
-                          // Determine whether to print the given data or not
                           try {
-                            // If empty data has been received and the length of the output is more than one character then ignore it
-                            if (manipulateOutput(minifyText(data.output).replace(new RegExp(OS.EOL, 'gi'), '')).length <= 0 && data.output.includes(OS.EOL) && data.output.length > 1)
-                              throw 0
-
                             // Check if the query tracing feature has been enabled/disabled
                             {
                               // Point at the hint UI element in the query tracing's tab
@@ -2498,86 +2435,7 @@
                               if (data.output.toLowerCase().indexOf('disabled tracing') != -1)
                                 queryTracingHint.show()
                             }
-
-                            // Extra manipulation of the output
-                            data.output = data.output.replace(/\n*KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\n*/gmi, '')
-
-                            // If there's a need to add a new line character as prefix
-                            try {
-                              // Make sure the output is not actually one character or a whitespace
-                              if (!allOutput.includes(OS.EOL))
-                                throw 0
-
-                              // Reset all saved output
-                              allOutput = ''
-
-                              // If the received data has real characters or empty line has been found then skip this try-catch block
-                              if (manipulateOutput(data.output).trim().length > 0)
-                                throw 0
-
-                              // Update the flag to be `true`
-                              isEmptyLineFound = true
-                            } catch (e) {}
-
-                            // Get the previous buffer of the terminal
-                            let previousBuffer = Modules.Clusters.getTerminalCurrentBuffer(terminal)
-
-                            try {
-                              // If an empty line has been found
-                              if (isEmptyLineFound) {
-                                // Reset the flag
-                                isEmptyLineFound = false
-
-                                // Don't print the data only if the previous buffer is empty
-                                if (previousBuffer.length <= 0 && OS.platform() != 'darwin')
-                                  throw 0
-                              }
-
-                              // Print the data
-                              terminal.write(data.output)
-                            } catch (e) {} finally {
-                              // Resize the terminal
-                              fitAddon.fit()
-                            }
-
-                            /**
-                             * Check if the prompt has been doubled
-                             *
-                             * This is happening the most on macOS
-                             */
-                            try {
-                              // If a timeout has already been set then clear it
-                              if (promptDuplicationTimeout != null)
-                                clearTimeout(promptDuplicationTimeout)
-
-                              // Set a timeout function
-                              promptDuplicationTimeout = setTimeout(() => {
-                                try {
-                                  // Get the current buffer
-                                  let currentBuffer = Modules.Clusters.getTerminalCurrentBuffer(terminal, true),
-                                    // Match all prompts in the buffer - one or more -
-                                    cqlPrompt = currentBuffer.match(/([\Ss]+(\@))?cqlsh.*\>\s*/gi)
-
-                                  // Point at the first match
-                                  cqlPrompt = cqlPrompt[0]
-
-                                  // If only one prompt found then skip this try-catch block
-                                  if (cqlPrompt.match(/\>/gi).length <= 1)
-                                    throw 0
-
-                                  // Clear the line again
-                                  Modules.Clusters.clearTerminalCurrentLine(terminal)
-
-                                  // Write the given data - previous buffer again -
-                                  terminal.write(data.output)
-                                } catch (e) {}
-                              })
-                            } catch (e) {}
-                          } catch (e) {
-                            try {
-                              errorLog(e, 'clusters')
-                            } catch (e) {}
-                          }
+                          } catch (e) {}
 
                           // Set the prompt which has been got from cqlsh tool
                           activePrefix = ''
@@ -2689,6 +2547,24 @@
                              */
                             event.stopPropagation()
                           }
+
+                          /**
+                           * Handle the terminal's buffer clearing process on Windows
+                           * `CTRL+L`
+                           */
+                          try {
+                            if (!(ctrlKey && (key.toLowerCase() == 'l')) || OS.platform() != 'win32')
+                              throw 0
+
+                            // Call the inner function
+                            preventEvent()
+
+                            // Clear the buffer
+                            terminal.clear()
+
+                            // Return `false` to make sure the handler of xtermjs won't be executed
+                            return false
+                          } catch (e) {}
 
                           /**
                            * Handle the termination of the terminal's session
@@ -2873,21 +2749,47 @@
                       AutoSize(statementInputField[0])
 
                       // Clicks the terminal's switching button
-                      switchTerminalBtn.click(function() {
+                      switchTerminalBtn.click(function(event, onlyInit = false) {
                         try {
                           // If the basic terminal is already shown then skip this try-catch block
                           if (basicTerminal.css('display') != 'none')
                             throw 0
 
-                          // Reset the terminal
-                          terminal.clear()
+                          try {
+                            // If the terminal has already been initialized then skip this try-catch block
+                            if (basicTerminal.attr('data-initialized') == 'true')
+                              throw 0
 
-                          // Send an `EOL` character to the pty instance if the buffer is empty
-                          if (Modules.Clusters.getTerminalCurrentBuffer(terminal, true).length <= 0)
-                            IPCRenderer.send('pty:command', {
-                              id: clusterID,
-                              cmd: ''
+                            // Reset the terminal's buffer - will clear it with the prompt -
+                            terminal.reset()
+
+                            // Send multiple `EOL` chars at the same time; to make sure the messy buffer is completely cleared
+                            setTimeout(() => {
+                              // Define the variable which will hold all the `EOL` chars
+                              let charEOL = ''; // This semicolon is critical here
+
+                              // Get 20x of `EOL` char
+                              (new Array(20).fill('')).forEach((_) => {
+                                charEOL += OS.EOL
+                              })
+
+                              // Send it at once to the basic terminal
+                              IPCRenderer.send('pty:data', {
+                                id: clusterID,
+                                char: charEOL
+                              })
+
+                              // Clear the screen again but with the prompt this time
+                              setTimeout(() => terminal.clear(), 1000)
                             })
+
+                            // Update the attribute; to not perform this process again
+                            basicTerminal.attr('data-initialized', 'true')
+                          } catch (e) {}
+
+                          // If the process is only initialization then skip the upcoming code
+                          if (onlyInit)
+                            return
 
                           // Show the basic terminal
                           basicTerminal.show()
@@ -2913,16 +2815,13 @@
                       // Clicks the statement's execution button
                       executeBtn.click(function() {
                         // If the button is disabled then skip the upcoming code and end the process
-                        if ($(this).attr('disabled') != undefined)
+                        if ($(this).attr('disabled') != undefined || $(this).hasClass('busy'))
                           return
 
                         // Get the statement
                         let statement = statementInputField.val(),
                           // Get a random ID for the block which will be created
                           blockID = getRandomID(10)
-
-                        // Write it to the basic terminal
-                        terminal.writeln(statement)
 
                         // Clear the statement's input field and make sure it's focused on it
                         setTimeout(() => statementInputField.val('').trigger('input').focus().attr('style', null))
@@ -2946,6 +2845,8 @@
                           // Skip the upcoming code in the execution button
                           return
                         } catch (e) {}
+
+                        executeBtn.parent().addClass('busy')
 
                         // Add the block
                         addBlock(sessionContainer, blockID, statement, (element) => {
@@ -3190,15 +3091,6 @@
                       }).keydown(function(event, isVirtual = false) {
                         // Get the pressed key's code
                         let keyCode = event.keyCode
-
-                        // If the pressed key is the `RIGHT ARROW`
-                        try {
-                          if (keyCode != 39)
-                            throw 0
-
-                          // Complete the word with the first suggestion
-                          $(this).trigger('keydown', true)
-                        } catch (e) {}
 
                         // If the pressed key is not `TAB` then trigger the `input` event for the textarea
                         if (keyCode != 9)
@@ -3652,7 +3544,7 @@
                           $(this).attr('disabled', '').addClass('disabled refreshing')
 
                           // Get the latest metadata
-                          Modules.Clusters.getMetadata(clusterID, terminal, (metadata) => {
+                          Modules.Clusters.getMetadata(clusterID, (metadata) => {
                             try {
                               // Convert the metadata from JSON string to an object
                               metadata = JSON.parse(metadata)
@@ -4494,6 +4386,7 @@
                       setTimeout(() => {
                         // Inner function to check the connectivity status
                         let checkConnectivity = () => {
+                          return
                           /**
                            * Handle if the basic terminal is currently active
                            * In this case, the app won't perform a connectivity check
@@ -4518,7 +4411,7 @@
                             return
 
                           // Call the connectivity check function from the clusters' module
-                          Modules.Clusters.checkConnectivity(getAttributes(clusterElement, 'data-id'), terminal, (connected) => {
+                          Modules.Clusters.checkConnectivity(getAttributes(clusterElement, 'data-id'), (connected) => {
                             // Show a `not-connected` class if the app is not connected with the cluster
                             connectionStatusElement.removeClass('show connected not-connected').toggleClass('show not-connected', !connected)
 
@@ -6636,10 +6529,6 @@
               if (!(['hostname', 'port'].includes(key)))
                 finalValue = 'DISABLED'
 
-              // If the key/option is `port` then set it to its default value
-              if (key == 'port')
-                finalValue = '9042'
-
               // Set the final value
               cqlshValues[section][key] = finalValue
 
@@ -7934,6 +7823,8 @@
           $('div.form-outline div.clickable').click(function() {
             // Get the input key's name
             let key = getAttributes($(this), 'for-info-key') || getAttributes($(this), 'for-input'),
+              // Whether or not empty value is allowed
+              allowEmptyValue = getAttributes($(this), 'data-empty-not-allowed') == undefined,
               id = getRandomID(5), // Get random ID for the selection file dialog
               title = '' // Define the file selection dialog's title
 
@@ -7960,12 +7851,18 @@
               // The received value is either a path or convert it to an empty string
               selected = selected || ``
 
+              if (!allowEmptyValue && selected.length <= 0)
+                return
+
               // Get the MDB object for the current input field
               let inputObject = getElementMDBObject($(this).parent().children('input'))
 
               try {
                 // Update the input's value
                 $(this).parent().children('input').val(selected)
+
+                // Trigger a custom event
+                $(this).parent().children('input').trigger('inputChanged')
 
                 // Update its state
                 inputObject.update()
@@ -8365,7 +8262,7 @@
       clickedNode.addClass('perform-process')
 
       // Get the CQL description based on the passed scope
-      Modules.Clusters.getCQLDescription(data.clusterID, data.scope, terminalObjects[data.terminalID], (description) => {
+      Modules.Clusters.getCQLDescription(data.clusterID, data.scope, (description) => {
         // As the description has been received remove the processing class
         clickedNode.removeClass('perform-process')
 
@@ -8581,10 +8478,5 @@
   // Handle the request of closing a cluster's work area
   {
     IPCRenderer.on('workarea:close', (_, data) => $(`div.btn[data-id="${data.btnID}"]`).trigger('click', false))
-  }
-
-  // Handle the request of clearing the current active line of specific terminal
-  {
-    IPCRenderer.on(`terminal:clear-line`, (_, data) => Modules.Clusters.clearTerminalCurrentLine(terminalObjects[data.terminalID], data.clearRequestID))
   }
 }

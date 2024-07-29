@@ -43,7 +43,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         id: 'workspace-sandbox',
         defaultPath: true,
         folder: 'docker',
-        name: 'Sandbox',
+        name: 'Docker Projects (Sandbox)',
         color: '#3b71ca'
       })
     } catch (e) {}
@@ -217,6 +217,10 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   'data-mulang': tooltipAddContent,
                   'data-mdb-original-title': I18next.capitalize(I18next.t(tooltipAddContent))
                 })
+              }
+
+              {
+                $('span[no-clusters-message]').html(I18next.capitalizeFirstLetter(I18next.replaceData($('span[no-clusters-message]').attr('mulang'), [getAttributes(workspaceElement, 'data-name')])))
               }
 
               // Update the show/hide of cleaning Docker
@@ -599,10 +603,17 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   // Point at the dialog's `Workspace Folder Path` input field's parent
                   let workspaceFolderPathElement = $('input#workspacePath'),
                     // Get its MDB object
-                    workspaceFolderPathObject = getElementMDBObject(workspaceFolderPathElement)
+                    workspaceFolderPathObject = getElementMDBObject(workspaceFolderPathElement),
+                    clickableArea = $('div.clickable[for-input="workspacePath"]'),
+                    clickableAreaTooltip = getElementMDBObject(clickableArea, 'Tooltip'),
+                    workspaceSetPath = workspaceFolderPath == 'default' ? workspaceFolderPathElement.attr('data-default-path') : workspaceFolderPath
+
+
+                  clickableAreaTooltip.setContent(workspaceSetPath)
+
 
                   // Change its value
-                  workspaceFolderPathObject.val(workspaceFolderPath == 'default' ? '' : workspaceFolderPath)
+                  workspaceFolderPathElement.val(workspaceSetPath)
 
                   // Update its state
                   workspaceFolderPathObject.update()
@@ -726,8 +737,15 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             // Get its MDB object
             inputObject = getElementMDBObject(input)
 
-          // Remove its value and remove the `active` class
-          input.val('').removeClass('active')
+          try {
+            if (inputID != 'workspacePath')
+              throw 0
+
+            $('div.btn[data-action="defaultPath"][data-reference="workspace"]').click()
+          } catch (e) {
+            // Remove its value and remove the `active` class
+            input.val('').removeClass('active')
+          }
 
           // Update the MDB object
           inputObject.update()
@@ -802,7 +820,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           let path = folderPath.val()
 
           // Make sure it's not empty; because if it's then use the default path
-          if (path.trim().length <= 0)
+          if (path.trim().length <= 0 || path == folderPath.attr('data-default-path'))
             throw 0
 
           // Test the path accessibility
@@ -1050,7 +1068,13 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
   // Clicks on the default path button
   {
     // It'll empty the path input field
-    $('div.btn[data-action="defaultPath"][data-reference="workspace"]').click(() => $('#workspacePath').val('').removeClass('active'))
+    $('div.btn[data-action="defaultPath"][data-reference="workspace"]').click(() => {
+      $('#workspacePath').val($('#workspacePath').attr('data-default-path'))
+
+      $('#workspacePath').trigger('inputChanged')
+
+      getElementMDBObject($('#workspacePath')).update()
+    })
   }
 }
 
@@ -1161,4 +1185,21 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
   observer.observe(switchersContainer[0], {
     childList: true
   })
+}
+
+{
+  let workspacePathElement = $('#workspacePath'),
+    clickableArea = $('div.clickable[for-input="workspacePath"]'),
+    clickableAreaTooltip = getElementMDBObject(clickableArea, 'Tooltip'),
+    defaultPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces')
+
+  workspacePathElement.attr('data-default-path', defaultPath)
+
+  workspacePathElement.val(defaultPath)
+
+  clickableAreaTooltip.props.delay = 250
+
+  clickableAreaTooltip.setContent(defaultPath)
+
+  workspacePathElement.on('inputChanged', () => clickableAreaTooltip.setContent(workspacePathElement.val()))
 }

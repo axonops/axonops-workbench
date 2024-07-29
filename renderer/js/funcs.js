@@ -644,6 +644,10 @@ let repairJSON = (json) => {
       // Get rid of the function's body - which is code -; as this causes the parsing process to fall apart
       .replace(/'body':\s*'([\s\S]*?)',/g, `'body': '',`)
 
+    // Remove more covered ASCII escape characters for Windows
+    if (OS.platform == 'win32')
+      json = json.replace(/[\x1B\x9B][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]|\[0K|\[\?25[hl]/g, '')
+
     // Attempt to match the JSON block `{...JSON content...}`
     try {
       json = json.match(/\{[\s\S]+/gm)[0]
@@ -705,11 +709,38 @@ let convertJSONToTable = (json, isExpandOn = false) => {
     })
 
     // Loop through each record
-    for (let record of jsonObject) {
+    for (let i = 0; i < jsonObject.length; i++) {
+      // Point at the record
+      let record = jsonObject[i]
+
       // Loop through each column inside the current record
       Object.keys(record).forEach((key) => {
         // Get the value of the current column
         let data = record[key]
+
+        try {
+          // Process only for Windows
+          if (OS.platform() != 'win32')
+            throw 0
+
+          // If the data is `undefined`
+          if (data == undefined) {
+            // Delete it from the record with its key
+            delete jsonObject[i][key]
+
+            // Skip the remaining code in this try-catch block
+            throw 0
+          }
+
+          // If the key has characters - like new line -
+          if (minifyText(key) != key) {
+            // Minify the key and add it to the record
+            jsonObject[i][minifyText(key)] = data
+
+            // Delete the old key
+            delete jsonObject[i][key]
+          }
+        } catch (e) {}
 
         // If the value type is not `object` then skip the upcoming code
         if (typeof data != 'object')
@@ -772,11 +803,11 @@ let convertTableToTabulator = (json, container, callback) => {
           columns: convertedJSON.table[0].map((column) => {
             return {
               title: column,
-              field: column
+              field: column,
+              headerFilter: 'input'
             }
           }),
           data: convertedJSON.json,
-          autoColumns: true,
           resizableColumnFit: true,
           resizableRowGuide: true,
           movableColumns: true,
@@ -3012,6 +3043,10 @@ let manipulateOutput = (output) => {
       // Remove some added chars from cqlsh tool
       .replace(/u\'/gm, "'")
 
+    // Another regex to cover more ASCII escape characters for Windows
+    if (OS.platform == 'win32')
+      manipulatedOutput = manipulatedOutput.replace(/[\x1B\x9B][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]|\[0K|\[\?25[hl]/g, '')
+
     // Return the final manipulated output
     return manipulatedOutput
   } catch (e) {
@@ -3346,10 +3381,11 @@ let setUIColor = (workspaceColor) => {
           .jstree-default-dark .jstree-search {background: ${backgroundColor.hover.replace('70%', '15%')} !important;}
           .tabulator .tabulator-header{border-bottom-color:${backgroundColor.default} !important;}
           .tabulator .tabulator-footer{border-top-color:${backgroundColor.default} !important;}
+          .tabulator .tabulator-header .tabulator-col input:focus, .tabulator .tabulator-header .tabulator-col select:focus{border-color: ${backgroundColor.default} !important}
           .tabulator .tabulator-header .tabulator-col.tabulator-sortable .tabulator-col-content .tabulator-col-sorter .tabulator-arrow {border-top-color: ${backgroundColor.default} !important; color: ${backgroundColor.default} !important;}
           .tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort=ascending] .tabulator-col-content .tabulator-col-sorter .tabulator-arrow {border-bottom-color: ${backgroundColor.default} !important;}
           .tabulator .tabulator-footer .tabulator-page-size, .tabulator .tabulator-footer .tabulator-page {border: 1px solid ${backgroundColor.default} !important;color: #f8f8f8 !important;}
-          .tabulator .tabulator-footer .tabulator-page.active{color: #f8f8f8 !important;}
+          .tabulator .tabulator-footer .tabulator-page.active{background:${backgroundColor.hover} !important;color: ${textColor} !important}
           :root {--workspace-background-color:${backgroundColor.default};}
         </style>`
 

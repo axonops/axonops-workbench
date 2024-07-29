@@ -239,10 +239,45 @@ $(document).on('initialize', () => {
     return
 
   // Point at the web view element
-  let webviewAIAssistant = $('webview#ai_assistant_webview')
+  let webviewAIAssistant = $('webview#ai_assistant_webview'),
+    // Point at the web view's navigation's container
+    webviewNavigationContainer = $('div.webview-navigation'),
+    // Point at the different buttons
+    buttons = {
+      back: webviewNavigationContainer.find('div.nav[action="back"] button'),
+      forward: webviewNavigationContainer.find('div.nav[action="forward"] button'),
+      refresh: webviewNavigationContainer.find('div.nav[action="refresh"] button')
+    }
 
   // Update its `src` with the AI Assistant's server URL
   webviewAIAssistant.attr('src', Modules.Consts.AIAssistantServer)
+
+  // Go back to the previous page
+  buttons.back.click(() => {
+    try {
+      webviewAIAssistant[0].goBack()
+    } catch (e) {}
+  })
+
+  // Go forward to the next page
+  buttons.forward.click(() => {
+    try {
+      webviewAIAssistant[0].goForward()
+    } catch (e) {}
+  })
+
+  // Refresh the entire webview
+  buttons.refresh.click(() => {
+    try {
+      webviewAIAssistant[0].reloadIgnoringCache()()
+    } catch (e) {}
+  })
+
+  // Check and enable/disable the back/forward buttons based on the status
+  setInterval(() => {
+    buttons.back.toggleClass('disabled', !webviewAIAssistant[0].canGoBack())
+    buttons.forward.toggleClass('disabled', !webviewAIAssistant[0].canGoForward())
+  }, 500)
 })
 
 // Get the unique machine's ID and set it to be used across the app
@@ -656,7 +691,7 @@ $(document).on('initialize', () => {
   // ldrs.js
   {
     let ldrsPath = Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js'),
-      usedLoaders = ['lineWobble', 'pinwheel']
+      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux']
 
     try {
       import(ldrsPath).then((loaders) => usedLoaders.forEach((loader) => loaders[loader].register()))

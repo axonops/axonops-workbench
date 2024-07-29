@@ -22,7 +22,7 @@
       "or": "or",
       "create a docker project": "create a docker project",
       "refresh workspace": "refresh workspace",
-      "no clusters added to the workspace yet, why not adding one?": "no clusters added to the workspace yet, why not adding one?",
+      "no clusters added to the workspace [b]$data[/b] yet, why not adding one?": "no clusters added to the workspace [b]$data[/b] yet, why not adding one?",
       "no docker projects created yet, why not adding one?": "no docker projects created yet, why not adding one?",
       "add cluster": "add cluster",
       "create project": "create project",

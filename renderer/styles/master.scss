@@ -297,9 +297,14 @@ div.body {
               flex-flow: column nowrap;
               align-items: center;
               justify-content: center;
+              color: #797979;
 
               ion-icon {
                 font-size: 170%;
+              }
+
+              &:hover {
+                color: var(--mdb-btn-hover-color) !important;
               }
             }
 
@@ -906,10 +911,18 @@ div.body {
             }
 
             lottie-player {
-              transition: opacity 0.4s ease-in-out;
+              transition: all 0.4s ease-in-out;
               transition-delay: 0.2s;
               opacity: 0;
-              filter: brightness(2.1);
+              filter: brightness(1.5);
+              border-radius: 50%;
+              cursor: pointer;
+
+              &:hover {
+                transition-delay: 0s;
+                opacity: 1 !important;
+                transform: scale(1.2);
+              }
 
               &[src*="empty-sandbox"] {
                 transform: scale(0.8) translateY(40px) !important;
@@ -986,8 +999,6 @@ div.body {
             div.sub-content {
               lottie-player {
                 position: relative;
-                bottom: 30px;
-                transform: scale(0.85);
               }
             }
           }
@@ -1501,7 +1512,8 @@ div.body {
 
             div.sub-content {
               lottie-player {
-                opacity: 1;
+                opacity: 0.7;
+                width: fit-content;
 
                 &[src*="empty-sandbox"] {
                   opacity: 0.1;
@@ -1509,7 +1521,9 @@ div.body {
               }
 
               div.message {
-                opacity: 0.5;
+                opacity: 0.6;
+                font-weight: 300;
+                margin-bottom: 15px;
               }
 
               div.button {
@@ -1537,7 +1551,7 @@ div.body {
 
                 button#createSandboxProjectProcess {
                   animation: {
-                    name: animate-sandbox-button;
+                    name: animate-save-snapshot;
                     duration: 0.9s;
                     delay: 1.25s;
                     timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -1993,6 +2007,19 @@ div[class*="col-md"].flex {
         font-size: 145%;
         color: #e3e3e3;
         opacity: 0.5;
+      }
+
+      &.reset-path {
+        height: 20px;
+        width: 20px;
+        position: relative;
+        left: -2px;
+
+        ion-icon {
+          transform: rotate(55deg) scaleX(-1);
+          bottom: 9px;
+          left: 1px;
+        }
       }
     }
   }
@@ -2995,6 +3022,35 @@ div.tab-content {
               }
             }
 
+            div.execute {
+              button {
+                l-reuleaux {
+                  position: absolute;
+                  inset: 0;
+                  margin: auto;
+                  transform: rotate(90deg);
+                  filter: invert(1);
+                  opacity: 0;
+                }
+              }
+
+              ion-icon {
+                transition: opacity 0.2s ease-in-out;
+              }
+
+              &.busy {
+                ion-icon {
+                  opacity: 0;
+                  transition-delay: 0s;
+                }
+
+                l-reuleaux {
+                  opacity: 0.7;
+                  transition: opacity 0.2s ease-in-out;
+                }
+              }
+            }
+
             div.history {
               border-radius: 50%;
               margin-left: 0;
@@ -3542,7 +3598,7 @@ div.btn {
     lottie-player {
       position: absolute;
       transform: scale(0.62);
-      opacity: 0.2;
+      opacity: 0.45;
       transition: opacity 0.15s ease-in-out;
     }
   }
@@ -3688,6 +3744,73 @@ div.query {
       bottom: 1px;
       margin-left: 10px;
       opacity: 0.9;
+    }
+  }
+}
+
+#createSandboxProjectProcess {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-content: center;
+  align-items: center;
+
+  span {
+    vertical-align: middle;
+    margin-left: 5px;
+  }
+}
+
+div.webview-navigation {
+  background: #2f2f2f;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  margin: auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+
+  div.nav {
+    width: 100%;
+
+    button {
+      color: inherit !important;
+      width: 100%;
+      display: flex;
+      flex-direction: row-reverse;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: center;
+
+      &.disabled {
+        opacity: 0.35;
+      }
+
+      ion-icon {
+        font-size: 150%;
+        margin-left: 5px;
+        transform: rotate(90deg);
+      }
+    }
+
+    &[action="back"] {
+      button {
+        flex-direction: row;
+
+        ion-icon {
+          transform: rotate(-90deg);
+        }
+      }
+    }
+
+    &[action="refresh"] {
+      ion-icon {
+        font-size: 120%;
+      }
     }
   }
 }

@@ -190,7 +190,25 @@
       And finally, the loading container -->
       <div class="content ai-assistant not-initialized">
         <!-- Integrate the AxonOps™ AI using `webview` tag -->
-        <webview class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups></webview>
+        <webview style="height: calc(100% - 30px); bottom: auto;" class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups></webview>
+
+        <div class="webview-navigation">
+          <div class="nav" action="back">
+            <button type="button" class="btn btn-tertiary btn-sm disabled" data-mdb-ripple-color="#ffffff">
+              <ion-icon name="arrow-up"></ion-icon> back
+            </button>
+          </div>
+          <div class="nav" action="refresh">
+            <button type="button" class="btn btn-tertiary btn-sm" data-mdb-ripple-color="#ffffff">
+              <ion-icon name="refresh"></ion-icon> refresh
+            </button>
+          </div>
+          <div class="nav" action="forward">
+            <button type="button" class="btn btn-tertiary btn-sm disabled" data-mdb-ripple-color="#ffffff">
+              <ion-icon name="arrow-up"></ion-icon> forward
+            </button>
+          </div>
+        </div>
 
         <!-- The loading container of the AI Assistant
         The app waits for authentication from the server in which AI assistant has been deployed in -->
@@ -247,9 +265,9 @@
           Indicates the emptiness of workspaces' container -->
           <div class="empty">
             <div class="sub-content">
-              <lottie-player src="../assets/lottie/empty-workspaces.json" background="transparent" autoplay loop speed="0.5"></lottie-player>
+              <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addWorkspaceProcess').click()"></lottie-player>
               <div class="message">
-                <span mulang="it's so empty here, why not adding a workspace?" capitalize-first></span>
+                <span mulang="it’s so empty here, why not add a workspace?" capitalize-first></span>
               </div>
               <div class="button">
                 <button type="button" class="btn btn-primary btn-dark" id="addWorkspaceProcess" data-mdb-toggle="modal" data-mdb-target="#addEditWorkspaceDialog">
@@ -260,9 +278,10 @@
                     <span mulang="or" uppercase></span>
                   </span>
                 </div>
-                <div class="sandbox-btn-container" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-trigger="hover" data-mulang="create a docker project" capitalize-first data-title="Create a docker project">
-                  <button type="button" class="btn btn-secondary btn-floating btn-dark" data-mdb-toggle="modal" data-mdb-target="#createSandboxProjectDialog" id="createSandboxProjectProcess">
+                <div class="sandbox-btn-container">
+                  <button type="button" class="btn btn-secondary btn-dark" data-mdb-toggle="modal" data-mdb-target="#createSandboxProjectDialog" id="createSandboxProjectProcess">
                     <ion-icon name="sandbox"></ion-icon>
+                    <span mulang="create docker project"></span>
                   </button>
                 </div>
               </div>
@@ -304,10 +323,10 @@
           Indicates the emptiness of clusters' container -->
           <div class="empty">
             <div class="sub-content">
-              <lottie-player src="../assets/lottie/empty-clusters.json" background="transparent" autoplay loop speed="0.5"></lottie-player>
-              <lottie-player src="../assets/lottie/empty-sandbox.json" background="transparent" autoplay loop speed="0.3" for-sandbox></lottie-player>
+              <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addClusterProcess').click()"></lottie-player>
+              <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addSandboxProjectProcess').click()" for-sandbox></lottie-player>
               <div class="message">
-                <span mulang="no clusters added to the workspace yet, why not adding one?" capitalize-first></span>
+                <span no-clusters-message mulang="no clusters added to the workspace [b]$data[/b] yet, why not adding one?" capitalize-first></span>
               </div>
               <div class="message" for-sandbox>
                 <span mulang="no docker projects created yet, why not adding one?" capitalize-first></span>
@@ -316,7 +335,7 @@
                 <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#addEditClusterDialog" id="addClusterProcess">
                   <span mulang="add cluster"></span>
                 </button>
-                <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#createSandboxProjectDialog" for-sandbox>
+                <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#createSandboxProjectDialog" for-sandbox id="addSandboxProjectProcess">
                   <span mulang="create project"></span>
                 </button>
               </div>
@@ -409,14 +428,14 @@
                   </label>
                   <div class="valid-feedback"></div>
                   <div class="invalid-feedback"></div>
-                  <div class="clickable" for-input="workspacePath"></div>
+                  <div class="clickable" for-input="workspacePath" data-empty-not-allowed="true" data-tippy="tooltip" data-mdb-placement="top" data-title="-"></div>
                 </div>
               </div>
               <div class="col-md-1 flex col-add-border">
                 <div class="icon-button" style="top: auto; left: 3px;">
-                  <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="set default path" capitalize-first data-title="Set default path" data-action="defaultPath"
+                  <div class="action btn btn-tertiary reset-path" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="set default path" capitalize-first data-title="Set default path" data-action="defaultPath"
                     data-reference="workspace">
-                    <ion-icon name="folder-open"></ion-icon>
+                    <ion-icon name="undo"></ion-icon>
                   </div>
                 </div>
               </div>

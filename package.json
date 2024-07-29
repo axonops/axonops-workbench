@@ -15,7 +15,7 @@
     "info@axonops.com"
   ],
   "build": {
-    "icon": "./renderer/assets/images/icon-256x256.png",
+    "icon": "./renderer/assets/images/axonops-icon-256x256.png",
     "copyright": "AxonOps Limited 2024",
     "appId": "com.axonops.workbench",
     "compression": "maximum",
@@ -30,7 +30,7 @@
     }],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
-      "icon": "./renderer/assets/images/icon-colored.ico",
+      "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
       "target": [
         "nsis",
         "zip"
@@ -45,12 +45,12 @@
         "Common": "AxonOps™ Workbench",
         "Terminal": false,
         "Keywords": "cassandra;axonops;development;workbench",
-        "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench-cassandra.png"
+        "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench.png"
       },
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
-      "icon": "./renderer/assets/images/icon-colored.icns",
+      "icon": "./renderer/assets/images/axonops-icon-256x256.icns",
       "category": "public.app-category.developer-tools",
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"

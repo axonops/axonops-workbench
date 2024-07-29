@@ -22,7 +22,7 @@
       "or": "או",
       "create a docker project": "צור פרויקט docker",
       "refresh workspace": "רענן את איזור העבודה",
-      "no clusters added to the workspace yet, why not adding one?": "עדיין לא הוספו מקבוצות לאיזור העבודה, למה לא להוסיף אחת?",
+      "no clusters added to the workspace [b]$data[/b] yet, why not adding one?": "עדיין לא הוספו מקבוצות לאיזור העבודה, למה לא להוסיף אחת?",
       "no docker projects created yet, why not adding one?": "עדיין לא נוצרו פרויקטי docker, למה לא להוסיף אחד?",
       "add cluster": "הוסף מקבוצה",
       "create project": "צור פרויקט",

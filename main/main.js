@@ -17,12 +17,17 @@
 /**
  * The main - singular - thread for the app overall
  *
+ * https://www.electronjs.org/docs/latest/glossary#main-process
+ *
  * Import the compilation cache optimizer
+ * It attaches a require hook to use V8's code cache to speed up instantiation time
  */
 require('v8-compile-cache')
 
 /**
  * Import Electron module and its sub-modules
+ *
+ * https://www.electronjs.org/docs/latest/api/app
  *
  * Import the main module
  */
@@ -52,7 +57,7 @@ const Electron = require('electron'),
 
 /**
  * Import modules globally
- * Those modules can be reached from all sub-modules of the main module, such as `pty` and `config`
+ * Those modules can be reached from all sub-modules of the main thread, such as `pty` and `config`
  *
  * `ipcMain`
  * For communicating asynchronously from the main thread to the renderer thread(s)
@@ -96,7 +101,7 @@ const ContextMenu = require('electron-context-menu'),
   DotEnv = require('dotenv')
 
 // Based on the `asar` checking process the extra resources path would be changed
-global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), '.axonops-developer-workbench') : null
+global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), (process.platform != 'win32') ? '.' : '' + 'axonops-developer-workbench') : null
 
 /**
  * Import the custom node modules for the main thread
@@ -136,7 +141,22 @@ try {
   })
 } catch (e) {}
 
-// Create an event emitter object from the `events` class
+// Load environment variables from .env file
+try {
+  DotEnv.config({
+    path: Path.join(__dirname, '..', '.env')
+  })
+} catch (e) {}
+
+// Flag to tell whether or not dev tools are enabled
+const isDevToolsEnabled = process.env.AXONOPS_DEV_TOOLS == 'true'
+
+/**
+ * Define global variables that will be used in different scopes in the main thread
+ *
+ * Create an event emitter object from the `events` class
+ *
+ */
 global.eventEmitter = new EventEmitter()
 
 // Import the set customized logging addition function and make it global across the entire thread
@@ -147,18 +167,7 @@ try {
   global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
 } catch (e) {}
 
-// Load environment variables from .env file
-try {
-  DotEnv.config({
-    path: Path.join(__dirname, '..', '.env')
-  })
-} catch (e) {}
-
-/**
- * Define global variables that will be used in different scopes in the main thread
- *
- * Object that will hold all views/windows of the app
- */
+// Object that will hold all views/windows of the app
 let views = {
   // The main view/window object
   main: null,
@@ -194,11 +203,13 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
   windowObject = new Window(properties)
 
   // Load the main HTML file of that window
-  windowObject.loadURL(URL.format({
-    pathname: viewPath,
-    protocol: 'file:',
-    slashes: true
-  }))
+  try {
+    windowObject.loadURL(URL.format({
+      pathname: viewPath,
+      protocol: 'file:',
+      slashes: true
+    }))
+  } catch (e) {}
 
   // Whether or not the window should be at the center of the screen
   if (extraProperties.center)
@@ -221,7 +232,6 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
       try {
         windowObject.maximize()
       } catch (e) {}
-
 
     // Whether or not the window should be shown
     if (extraProperties.show)
@@ -267,9 +277,6 @@ const AppProps = {
   Info: require(Path.join(__dirname, '..', 'package.json'))
 }
 
-// Flag to tell whether or not dev tools are enabled
-const isDevToolsEnabled = process.env.AXONOPS_DEV_TOOLS == 'true'
-
 /**
  * When the main thread is ready creates the main window/view
  *
@@ -311,9 +318,11 @@ let properties = {
 ContextMenu(contextMenuProperties)
 
 // Start the crash handler immediately before the app gets ready
+/*
 try {
-  // Modules.Reports.startCrashingHandler()
+  Modules.Reports.startCrashingHandler()
 } catch (e) {}
+*/
 
 // When the app is ready a renderer thread should be created and started
 App.on('ready', () => {
@@ -398,7 +407,10 @@ App.on('ready', () => {
         views.main.maximize()
       } catch (e) {}
 
-      // Send a `shown` status to the main view
+      /**
+       * Send a `shown` status to the main view
+       * This will tell the app to load workspaces
+       */
       setTimeout(() => views.main.webContents.send('windows-shown'), 100)
     }, 2000)
   })

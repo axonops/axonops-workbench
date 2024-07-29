@@ -1,7 +1,7 @@
 {
   "name": "axonops-workbench",
   "title": "AxonOps™ Workbench",
-  "version": "0.1.0-internal-20240726",
+  "version": "0.1.0-internal-20240729",
   "author": {
     "name": "AxonOps",
     "email": "info@axonops.com"
@@ -166,7 +166,6 @@
     "ssh2": "^1.15.0",
     "store": "^2.0.12",
     "stripchar": "^1.2.1",
-    "sudo-prompt": "^9.2.1",
     "systeminformation": "^5.18.2",
     "tabulator-tables": "^6.2.1",
     "tinycolor2": "^1.6.0",
@@ -175,6 +174,7 @@
     "value-size": "^1.0.1",
     "xterm-theme": "^1.1.0",
     "xterm-webfont": "^2.0.0",
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "sudo-prompt": "^9.2.1"
   }
 }

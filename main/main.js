@@ -326,6 +326,16 @@ try {
 
 // When the app is ready a renderer thread should be created and started
 App.on('ready', () => {
+  // Force to run only one instance of the app at once
+  try {
+    // https://www.electronjs.org/docs/latest/api/app#apprequestsingleinstancelockadditionaldata
+    if (App.requestSingleInstanceLock())
+      throw 0
+
+    // Quit/terminate that new instance
+    App.quit()
+  } catch (e) {}
+
   // Create the main view, and pass the properties
   views.main = createWindow(properties, AppProps.Paths.MainView, extraProperties, () => {
     // Send the set extra resources path to the main renderer thread
@@ -489,6 +499,18 @@ App.on('activate', () => {
 App.on('window-all-closed', () => {
   try {
     App.quit()
+  } catch (e) {}
+})
+
+// On attempt to run a second instance
+App.on('second-instance', () => {
+  try {
+    // Restore the main's instance's window
+    if (views.main.isMinimized())
+      views.main.restore()
+
+    // And focus it
+    views.main.focus()
   } catch (e) {}
 })
 

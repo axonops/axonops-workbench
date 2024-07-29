@@ -3293,7 +3293,8 @@
                           setTimeout(() => IPCRenderer.send('pty:create:bash-session', {
                             id: `${clusterID}-bash-${sessionID}`,
                             projectID: `cassandra_${clusterID}`,
-                            path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'docker', clusterID)
+                            path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'docker', clusterID),
+                            dockerComposeBinary: Modules.Docker.getDockerComposeBinary()
                           }), 500)
 
                           /**

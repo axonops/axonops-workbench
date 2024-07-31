@@ -10,6 +10,15 @@ Browse to the [releases](https://github.com/axonops/axonops-workbench-cassandra/
 - Linux (RedHat, Debian and others)
 - Windows (Intel)
 
+For MacOS it is also possible to install the AxonOps Workbench using [brew](https://brew.sh/)
+
+```sh
+# Optional: set applications directory to your $HOME
+export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
+brew tap axonops/homebrew-repository
+brew install --cask axonopsworkbench
+```
+
 ## Development
 
 If you would like to run it in development, please follow the instructions below.

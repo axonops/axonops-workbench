@@ -190,6 +190,7 @@
       And finally, the loading container -->
       <div class="content ai-assistant not-initialized">
         <!-- Integrate the AxonOps™ AI using `webview` tag -->
+        <!-- <webview style="height: calc(100% - 30px); bottom: auto;" class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups preload="../js/axonops_ai_webview.js"></webview> -->
         <webview style="height: calc(100% - 30px); bottom: auto;" class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups></webview>
 
         <div class="webview-navigation">
@@ -301,6 +302,13 @@
             <div class="action" action="add">
               <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add workspace" capitalize data-title="Add Workspace">
                 <ion-icon name="plus"></ion-icon>
+              </button>
+            </div>
+
+            <!-- Import workspaces action -->
+            <div class="action" action="import">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="import workspaces" capitalize data-title="Import Workspaces">
+                <ion-icon name="import"></ion-icon>
               </button>
             </div>
 
@@ -1261,6 +1269,80 @@
                 </div>
               </div>
               <div class="modal-section" section="credits" hidden></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal top fade" id="importWorkspaces" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <span mulang="import workspaces" capitalize></span>
+            </h5>
+            <span class="badge badge-secondary"></span>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="side-left" hidden>
+              <div class="sections">
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="phase-1">
+                    <span mulang="select workspaces" capitalize></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg disabled" data-mdb-ripple-color="dark" section="phase-2">
+                    <span mulang="validate data" capitalize></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="side-right" style="width:100%;">
+              <div class="modal-section" section="phase-1">
+                <div class="drag-drop-workspaces">
+                  <div class="lottie-container">
+                    <lottie-player src="../assets/lottie/empty-workspaces.json" background="transparent" autoplay loop speed="1"></lottie-player>
+                  </div>
+                  <div class="hint">
+                    Drag and drop or click to select workspace(s)
+                  </div>
+                </div>
+              </div>
+              <div class="modal-section" section="phase-2" hidden>
+                <table id="importWorkspacesValidate" class="table align-middle mb-0" style="background: transparent;">
+                  <thead class="bg-light">
+                    <tr>
+                      <th width="5%">
+                        <input class="form-check-input" type="checkbox" id="importWorkspacesCheckbox">
+                      </th>
+                      <th width="30%">Name</th>
+                      <th width="20%">Color</th>
+                      <th width="30%">Checks</th>
+                      <th width="15%">Clusters</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="float-left">
+              <button type="button" class="btn btn-danger btn-sm" id="importWorkspacesReset" disabled>
+                <span mulang="Reset"></span>
+              </button>
+            </div>
+            <div class="float-right">
+              <button type="button" class="btn btn-primary btn-dark btn-sm" id="importWorkspacesFinish" disabled>
+                <span mulang="import"></span>
+              </button>
+              <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal" onclick="setTimeout(() => $('#importWorkspacesReset').click(), 1000)" hidden>
+                <span mulang="close"></span>
+              </button>
             </div>
           </div>
         </div>

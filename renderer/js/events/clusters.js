@@ -3990,7 +3990,7 @@
                                     throw 0
 
                                   // Append the `webview` ElectronJS custom element
-                                  $(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops_webview.js')}"></webview>`).show(function() {
+                                  $(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops_agent_webview.js')}"></webview>`).show(function() {
                                     // Point at the webview element
                                     let webView = $(this)[0]
 
@@ -4918,7 +4918,7 @@
                                         throw 0
 
                                       // Append the `webview`
-                                      $(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops_webview.js')}"></webview>`).show(function() {
+                                      $(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops_agent_webview.js')}"></webview>`).show(function() {
                                         // Point at the webview element
                                         let webView = $(this)[0]
 

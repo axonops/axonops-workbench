@@ -38,7 +38,8 @@ div.modal {
   &#addEditClusterDialog,
   &#appAbout,
   &#appSettings,
-  &#clusterCredentials {
+  &#clusterCredentials,
+  &#importWorkspaces {
     div.modal-dialog {
       transition: transform 0.3s ease-out, max-width 0.2s ease-in-out;
 
@@ -112,7 +113,7 @@ div.modal {
               padding-left: 5px;
               color: inherit;
               transition: opacity 0.2s ease-in-out;
-              opacity: 0.4;
+              opacity: 0.5;
 
               &:hover {
                 opacity: 0.8;
@@ -932,6 +933,57 @@ div.modal-section {
 
       &:hover {
         opacity: 1;
+      }
+    }
+  }
+}
+
+div.modal-section {
+  div.drag-drop-workspaces {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    border: 2px rgba(236, 236, 236, 0.65) dashed;
+    border-radius: 10px;
+    @extend .no-select;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+
+    div.lottie-container {
+      height: 250px;
+
+      lottie-player {
+        filter: grayscale(1) invert(1);
+        opacity: 0.7;
+        transition: opacity 0.2s ease-in-out;
+        transition-delay: 0.15s;
+      }
+    }
+
+    &.drag {
+      border: 5px rgba(236, 236, 236, 0.85) dashed;
+
+      div.lottie-container {
+        lottie-player {
+          filter: grayscale(1) invert(1);
+          opacity: 0.9;
+        }
+      }
+    }
+
+    &:hover {
+      border: 3px rgba(236, 236, 236, 0.85) dashed;
+
+      div.lottie-container {
+        lottie-player {
+          filter: grayscale(1) invert(1);
+          opacity: 0.9;
+        }
       }
     }
   }

@@ -874,6 +874,19 @@ div.body {
                 top: 10px;
                 left: -50px;
               }
+
+              &[action="import"] {
+                top: -50px;
+                left: 20px;
+
+                button {
+                  ion-icon {
+                    font-size: 130%;
+                    position: relative;
+                    bottom: 1px;
+                  }
+                }
+              }
             }
 
             &.sandbox {

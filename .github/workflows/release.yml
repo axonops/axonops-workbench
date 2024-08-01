@@ -141,7 +141,6 @@ jobs:
           ;;
           MINGW64*)
             FILES=$(ls -1 *.exe)
-            FILES=$(ls -1 *.tar.gz)
             for f in $FILES; do
               sha256sum $f > ${f}.sha256sum
             done
@@ -173,3 +172,105 @@ jobs:
             dist/*.sha256sum
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# Release choco and brew
+
+  release-brew:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ !cancelled() && (success() || failure() || needs.build.result == 'skipped') }}
+
+    steps:    
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          repository: axonops/homebrew-repository
+          path: homebrew
+          persist-credentials: true
+          fetch-depth: 0
+          ssh-key: ${{ secrets.BREW_SSH_KEY }}
+
+      - name: Make changes to Homebrew
+        run: |
+          VERSION=$GITHUB_REF_NAME
+          cd homebrew
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          # Get the sha256sum
+          SHA_ARM=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-mac-arm64.zip.sha256sum | awk '{print $1}')
+          SHA_AMD=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-mac-amd64.zip.sha256sum | awk '{print $1}')
+          # Update versions
+          sed "s/%SHA_ARM%/$SHA_ARM/g" $TEMPLATE > $CONFIG_FILE
+          sed "s/%SHA_AMD%/$SHA_AMD/g" $TEMPLATE > $CONFIG_FILE
+          sed "s/%VERSION%/${VERSION}/g" $TEMPLATE > $CONFIG_FILE
+          git add .
+          if [ $(git status --porcelain | wc -l) -eq "0" ]; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git --no-pager diff
+          git commit -m "Changes made by GitHub Actions"
+          git tag $VERSION
+        env:
+          GITHUB_URL: https://github.com/axonops/axonops-workbench-cassandra/releases/download/
+          TEMPLATE: Casks/axonopsworkbench.rb.tmpl
+          CONFIG_FILE: Casks/axonopsworkbench.rb
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          directory: homebrew
+          repository: axonops/homebrew-repository
+          ssh: true
+          tags: true
+
+  release-choco:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ !cancelled() && (success() || failure() || needs.build.result == 'skipped') }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          repository: axonops/chocolatey
+          path: chocolatey
+          persist-credentials: true
+          fetch-depth: 0
+          ssh-key: ${{ secrets.CHOCO_SSH_KEY }}
+
+      - name: Make changes to Homebrew
+        run: |
+          VERSION=$GITHUB_REF_NAME
+          cd chocolatey
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          # Get the sha256sum
+          #SHA_ARM=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-win-x64.zip.sha256sum | awk '{print $1}')
+          SHA_AMD=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-win-x64.zip.sha256sum | awk '{print $1}')
+          # Update versions
+          sed "s/%SHA_ARM%/$SHA_ARM/g" $TEMPLATE > $CONFIG_FILE
+          sed "s/%SHA_AMD%/$SHA_AMD/g" $TEMPLATE > $CONFIG_FILE
+          sed "s/%VERSION%/${VERSION}/g" $TEMPLATE > $CONFIG_FILE
+          git add .
+          if [ $(git status --porcelain | wc -l) -eq "0" ]; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git --no-pager diff
+          git commit -m "Changes made by GitHub Actions"
+          git tag $VERSION
+        env:
+          GITHUB_URL: https://github.com/axonops/axonops-workbench-cassandra/releases/download/
+          TEMPLATE: tools/chocolateyinstall.ps1.tmpl
+          CONFIG_FILE: tools/chocolateyinstall.ps1
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          directory: chocolatey
+          repository: axonops/chocolatey
+          ssh: true
+          tags: true

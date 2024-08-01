@@ -128,7 +128,17 @@ jobs:
       - name: Create checksum files
         run: |
           cd dist
-          for f in *.zip *.exe *.tar.gz; do
+          if [ "$(uname -s )" == "Darwin" ]; do
+            FILES=$(ls -1 *.dmg *.zip)
+          fi
+          if [[ "$(uname -s)" =~ "MINGW64" ]]; then
+            FILES=$(ls -1 *.exe)
+          fi
+          if [ "$(uname -s )" == "Linux" ]; then
+            FILES=$(ls -1 *.tar.gz)
+          fi
+
+          for f in $FILES; do
             sha256sum $f > ${f}.sha256sum
           done
         env:

@@ -128,6 +128,9 @@ jobs:
   release:
     name: Build on ${{ matrix.target }}
     runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ always() && !cancelled() && needs.build.result == 'success' }}
+
     steps:
       - name: Create checksum files
         run: |

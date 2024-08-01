@@ -192,6 +192,7 @@ jobs:
 
       - name: Make changes to Homebrew
         run: |
+          set -x
           VERSION=$GITHUB_REF_NAME
           cd homebrew
           git config user.name "GitHub Actions"
@@ -242,6 +243,7 @@ jobs:
 
       - name: Make changes to Homebrew
         run: |
+          set -x
           VERSION=$GITHUB_REF_NAME
           cd chocolatey
           git config user.name "GitHub Actions"

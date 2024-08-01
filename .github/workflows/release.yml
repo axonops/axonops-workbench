@@ -199,7 +199,7 @@ jobs:
           git config user.email "actions@github.com"
           # Get the sha256sum
           SHA_ARM=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-mac-arm64.zip.sha256sum | awk '{print $1}')
-          SHA_AMD=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-mac-amd64.zip.sha256sum | awk '{print $1}')
+          SHA_AMD=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-mac-x64.zip.sha256sum | awk '{print $1}')
           # Update versions
           sed "s/%SHA_ARM%/$SHA_ARM/g" $TEMPLATE > $CONFIG_FILE
           sed "s/%SHA_AMD%/$SHA_AMD/g" $TEMPLATE > $CONFIG_FILE
@@ -249,8 +249,8 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           # Get the sha256sum
-          #SHA_ARM=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-win-x64.zip.sha256sum | awk '{print $1}')
-          SHA_AMD=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-win-x64.zip.sha256sum | awk '{print $1}')
+          #SHA_ARM=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-win-x64.exe.sha256sum | awk '{print $1}')
+          SHA_AMD=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-win-x64.exe.sha256sum | awk '{print $1}')
           # Update versions
           sed "s/%SHA_ARM%/$SHA_ARM/g" $TEMPLATE > $CONFIG_FILE
           sed "s/%SHA_AMD%/$SHA_AMD/g" $TEMPLATE > $CONFIG_FILE

@@ -724,3 +724,74 @@ span[no-clusters-message] {
     font-weight: 500;
   }
 }
+
+div.form-outline.for-coloris {
+  border: 1px solid rgb(78, 78, 78);
+  border-radius: 7px;
+  overflow: hidden;
+  width: 140px;
+}
+
+div.form-outline.label-top {
+  label {
+    margin-left: 0;
+    top: 1px;
+  }
+}
+
+td.clusters-table {
+  background: #2b2b2b !important;
+
+  div {
+    td,
+    th {
+      background: #2b2b2b !important;
+    }
+  }
+}
+
+div.color-preview {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  margin: auto;
+  background: #575757;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  border-radius: 3px;
+}
+
+button.clusters-list {
+  width: fit-content;
+  height: 35px;
+  color: inherit !important;
+  position: relative;
+
+  ion-icon {
+    font-size: 150% !important;
+    transform: rotate(180deg);
+    transition: all 0.2s ease-in-out;
+  }
+
+  &.shown {
+    ion-icon {
+      transform: rotate(0deg);
+    }
+  }
+}
+
+td[data-id].checks {
+  white-space: nowrap;
+
+  span.badge:not(:first-of-type) {
+    margin-left: 2px;
+  }
+}
+
+div.section {
+  div.btn[section*="phase"].disabled {
+    opacity: 0.2 !important;
+  }
+}

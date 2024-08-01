@@ -25,9 +25,11 @@
       "main/bin",
       "config"
     ],
-    "publish": [{
-      "provider": "github"
-    }],
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
@@ -107,7 +109,7 @@
   "repository": "https://github.com/axonops/axonops-workbench-cassandra",
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",
-    "electron": "^30.0.9",
+    "electron": "^27.3.11",
     "electron-builder": "^24.13.3",
     "license-checker": "^25.0.1"
   },
@@ -166,6 +168,7 @@
     "ssh2": "^1.15.0",
     "store": "^2.0.12",
     "stripchar": "^1.2.1",
+    "sudo-prompt": "^9.2.1",
     "systeminformation": "^5.18.2",
     "tabulator-tables": "^6.2.1",
     "tinycolor2": "^1.6.0",
@@ -174,7 +177,6 @@
     "value-size": "^1.0.1",
     "xterm-theme": "^1.1.0",
     "xterm-webfont": "^2.0.0",
-    "yargs": "^17.7.2",
-    "sudo-prompt": "^9.2.1"
+    "yargs": "^17.7.2"
   }
 }

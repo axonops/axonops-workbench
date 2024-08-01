@@ -758,15 +758,25 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     })
   }
 
-  // Clicks the `ADD` and `REFRESH` buttons at the right bottom of the workspaces' list container
+  // Clicks the `ADD`, `IMPORT` and `REFRESH` buttons at the right bottom of the workspaces' list container
   {
     // Define the common CSS selector
-    let selector = `div.body div.right div.content div[content="workspaces"] div.section-actions div.action`
+    let selector = `div.body div.right div.content div[content="workspaces"] div.section-actions div.action`,
+      // Point at the import process' dialog
+      importWorkspacesDialog = getElementMDBObject($('#importWorkspaces'), 'Modal')
 
     // Clicks the add button
     $(`${selector}[action="add"] button`).click(() => {
       // It'll click the `ADD WORKSPACE` button
       $(`button#addWorkspaceProcess`).click()
+
+      // Remove the `show` class of the actions section; to hide the actions buttons
+      $(`${selector}`).parent().removeClass('show')
+    })
+
+    // Clicks the import button
+    $(`${selector}[action="import"] button`).click(() => {
+      importWorkspacesDialog.show()
 
       // Remove the `show` class of the actions section; to hide the actions buttons
       $(`${selector}`).parent().removeClass('show')
@@ -1202,4 +1212,618 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
   clickableAreaTooltip.setContent(defaultPath)
 
   workspacePathElement.on('inputChanged', () => clickableAreaTooltip.setContent(workspacePathElement.val()))
+}
+
+
+// Handle the importing process of workspaces
+{
+  // Point at the drag and drop workspaces element
+  let dragDropWorkspaces = $('div.modal-section div.drag-drop-workspaces')
+
+  /**
+   * Users can also click the element instead of drop folders
+   *
+   * Handle the click event
+   */
+  dragDropWorkspaces.click(function() {
+    // Get a random ID for the dialog request
+    let requestID = getRandomID(10),
+      // Set other attributes to be used to create the dialog
+      data = {
+        id: requestID,
+        title: I18next.capitalizeFirstLetter(I18next.t('select workspaces to be imported')),
+        properties: ['openFile', 'openDirectory', 'multiSelections', 'showHiddenFiles']
+      }
+
+    // Send a request to the main thread to create a dialog
+    IPCRenderer.send('dialog:create', data)
+
+    // Listen for the response - folders' paths - and call the check workspaces inner function
+    IPCRenderer.on(`dialog:${requestID}`, (_, foldersPaths) => checkWorkspaces(foldersPaths))
+  })
+
+  // Handle the drag and drop events
+  {
+    // When the dragging process starts
+    dragDropWorkspaces.on('dragstart dragover dragenter', function(e) {
+      // Prevent the default behavior
+      e.originalEvent.preventDefault()
+
+      // Show to the user in the UI that the dragging process is detected
+      dragDropWorkspaces.addClass('drag')
+    })
+
+    // When the dragging process ends
+    dragDropWorkspaces.on('dragend dragleave', function(e) {
+      // Prevent the default behavior
+      e.originalEvent.preventDefault()
+
+      // Show to the user in the UI that the dragging process has been detected as `finished`
+      dragDropWorkspaces.removeClass('drag')
+    })
+
+    // Handle items - files and folders - dropping process
+    dragDropWorkspaces.on('drop', function(e) {
+      // Prevent the default behavior
+      e.originalEvent.preventDefault()
+
+      // Show to the user in the UI that the dragging process has been detected as `finished`
+      dragDropWorkspaces.removeClass('drag')
+
+      try {
+        // Get all selected folders' paths
+        let foldersPaths = [...e.originalEvent.dataTransfer.files].map((file) => file.path || '').filter((file) => `${file}`.length != 0)
+
+        // Call the check workspaces inner function
+        checkWorkspaces(foldersPaths)
+      } catch (e) {}
+    })
+  }
+
+  let checkWorkspaces = async (foldersPaths) => {
+    // If the given array has no items - paths - then show feedback to the user and end the process
+    if (foldersPaths.length <= 0)
+      return showToast('Import Workspaces', 'Please consider to select the folders of the workspace.', 'failure')
+
+    // The final workspaces to be handled
+    let workspaces = []
+
+    // Loop through each given folder's path
+    for (let folderPath of foldersPaths) {
+      // Get the path's base name - the name of the last folder/file -
+      let baseName = Path.basename(folderPath)
+
+      try {
+        // If the given path is inaccessible then skip this try-catch block
+        if (!pathIsAccessible(folderPath))
+          throw 0
+
+        // Flag to tell whether or not the given path is directory
+        let isPathDirectory = await FS.lstatSync(folderPath)
+
+        // If not then skip this try-catch block
+        if (!isPathDirectory)
+          throw 0
+
+        // Read the directory's items
+        let content = await FS.readdirSync(folderPath),
+          // The given directory is actually a workspace's directory if `clusters.json` file has been found
+          isValidWorkspace = content.some((item) => item == 'clusters.json')
+
+        // If the given directory is not a valid workspace then ignore it and skip this try-catch block
+        if (!isValidWorkspace)
+          throw 0
+
+        // Push info regards the current workspace to the `workspaces` array
+        workspaces.push({
+          name: baseName,
+          folder: baseName,
+          path: folderPath
+        })
+      } catch (e) {}
+    }
+
+    // If after the looping process no valid workspace has benn found then show feedback to the user and end the process
+    if (workspaces.length <= 0)
+      return showToast('Import Workspaces', 'No valid workspace folder has been found among the provided ones.', 'failure')
+
+    // Point at the table's of the detection workspaces and their clusters
+    let table = $('#importWorkspacesValidate'),
+      // Get all saved workspaces
+      savedWorkspaces = await Modules.Workspaces.getWorkspaces()
+
+    // Clean the table
+    table.children('tbody').html('')
+
+    // Loop through each valid detected workspace
+    workspaces.forEach((workspace, workspaceIndex) => {
+      // Define different IDs for different elements
+      let [
+        importWorkspacesCheckboxInputID,
+        importClustersCheckboxInputID,
+        workspaceNameInputID,
+        workspaceColorInputID,
+        workspaceChecksID,
+        workspaceClustersBtnID,
+        workspaceClustersListID
+      ] = getRandomID(10, 7),
+        // Get a random color for the workspace
+        workspaceColor = getRandomColor(),
+        // Workspace UI element structure
+        element = `
+        <tr data-id="${workspaceIndex}" data-clusters-path="${workspace.path}">
+          <td>
+            <input type="checkbox" id="_${importWorkspacesCheckboxInputID}" class="form-check-input for-import-workspaces" checked="true" />
+          </td>
+          <td>
+            <div class="form-outline form-white label-top">
+              <input type="text" id="_${workspaceNameInputID}" style="margin-bottom:0px;" class="form-control form-icon-trailing form-control-lg workspace-name" value="${workspace.name}">
+            </div>
+          </td>
+          <td>
+            <div class="form-outline for-coloris">
+              <input type="text" id="_${workspaceColorInputID}" class="coloris form-control form-icon-trailing form-control-lg workspace-color" value="${workspaceColor}" data-coloris>
+              <div class="color-preview" style="background:${workspaceColor}"></div>
+            </div>
+          </td>
+          <td class="checks" data-id="_${workspaceChecksID}">
+            <l-line-wobble size="50" stroke="2" bg-opacity="0.25" speed="1.25" color="#e3e3e3"></l-line-wobble>
+            <span class="badge rounded-pill badge-warning" check="variables" style="display:none">Missing Variables</span>
+            <span class="badge rounded-pill badge-danger" check="name" style="display:none">Duplicate Name</span>
+            <span class="badge rounded-pill badge-success" check="passed" style="display:none">Passed</span>
+          </td>
+          <td style="text-align: center;">
+            <button type="button" id="_${workspaceClustersBtnID}" class="btn btn-sm clusters-list btn-dark disabled" data-mdb-ripple-init>
+              <span class="badge badge-primary clusters-count">0</span>
+              <ion-icon name="dash"></ion-icon>
+            </button>
+          </td>
+        </tr>`
+
+      // Append the workspace
+      table.children('tbody').append($(element).show(function() {
+        // Actions to be performed as the element has been created
+        setTimeout(() => {
+          try {
+            $(`tr[data-id="${workspaceIndex}"]`).find('input[type="text"]:not(.coloris)').each(function() {
+              getElementMDBObject($(this))
+            })
+          } catch (e) {}
+
+          // When the workspace's color changes
+          $(`input#_${workspaceColorInputID}`).on('input', function(e) {
+            // Update the preview
+            $(`tr[data-id="${workspaceIndex}"]`).find('div.color-preview').css('background', $(this).val())
+          })
+
+          // When the checkbox status changes
+          $(`input#_${importWorkspacesCheckboxInputID}`).change(function() {
+            let allRelatedCheckboxes = [...$('input.for-import-workspaces[type="checkbox"], input.for-import-clusters[type="checkbox"]')]
+
+            try {
+              $('#importWorkspacesCheckbox').prop('checked', (allRelatedCheckboxes.every((checkbox) => $(checkbox).prop('checked'))))
+            } catch (e) {}
+
+            $(`input#_${importClustersCheckboxInputID}`).prop('checked', $(this).prop('checked')).trigger('change')
+          })
+
+          // When clicks the button to show/hide clusters
+          $(`button#_${workspaceClustersBtnID}`).click(function() {
+            // Whether or not clusters are shown already
+            let areClustersShown = $(this).hasClass('shown')
+
+            // Toggle the list based on the status
+            $(`div#_${workspaceClustersListID}`).slideToggle(areClustersShown)
+
+            // Toggle the arrow's direction based on the new status
+            $(this).toggleClass('shown', !areClustersShown)
+          })
+
+          $(`input#_${workspaceNameInputID}`).on('input', function() {
+            healthChecks(workspace, workspaceIndex, savedWorkspaces, workspaceChecksID, importWorkspacesCheckboxInputID, $(this))
+          })
+        })
+
+        // Handle the workspace's clusters
+        setTimeout(() => {
+          try {
+            // Attempt to get the workspace's clusters' manifest
+            let clusters = FS.readFileSync(Path.join(workspace.path, 'clusters.json'), 'utf8')
+
+            // Convert the manifest to a JSON object
+            clusters = JSON.parse(clusters)
+
+            // If no clusters have been found then skip this try-catch block
+            if (clusters.length <= 0)
+              throw 0
+
+            // Add clusters to the `workspace` object
+            workspace.clusters = clusters
+
+            // Update the cluster's list button
+            setTimeout(() => {
+              // Enable it
+              $(`button#_${workspaceClustersBtnID}`).removeClass('disabled')
+
+              // Change the icon to be arrow instead of dash
+              $(`button#_${workspaceClustersBtnID}`).find('ion-icon').attr('name', 'arrow-up')
+
+              // Set the clusters' count
+              $(`button#_${workspaceClustersBtnID}`).children('span.clusters-count').text(clusters.length)
+            }, 100)
+
+            // Clusters UI element structure
+            let element = `
+                <tr for-workspace-id="${workspaceIndex}">
+                  <td colspan="5" class="clusters-table" style="height: fit-content; padding: 0;">
+                    <div id="_${workspaceClustersListID}" style="display:none;">
+                      <table class="table align-middle mb-0" style="background: transparent;">
+                        <thead>
+                          <tr>
+                            <th width="5%">
+                              <input id="_${importClustersCheckboxInputID}" class="form-check-input for-import-clusters" type="checkbox" checked="true"/>
+                            </th>
+                            <th width="35%">Name</th>
+                            <th width="60%">Host:Port</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                      </table>
+                    </div>
+                  </td>
+                </tr>`
+
+            // Append the clusters' list's container
+            $(`tr[data-id="${workspaceIndex}"]`).after($(element).show(function() {
+              setTimeout(() => {
+                // Handle the parent checkbox which controls all clusters' checkboxes
+                $(`#_${importClustersCheckboxInputID}`).change(function() {
+                  // Whether or not the checkbox is checked
+                  let isChecked = $(this).prop('checked')
+
+                  // Based on the status change all checkboxes
+                  $(`tr[for-workspace-id="${workspaceIndex}"]`).find('input.for-import-clusters-sub[type="checkbox"]').prop('checked', isChecked)
+
+                  let allRelatedCheckboxes = [...$('input.for-import-workspaces[type="checkbox"]')]
+
+                  try {
+                    $('#importWorkspacesCheckbox').prop('checked', (allRelatedCheckboxes.every((checkbox) => $(checkbox).prop('checked'))))
+                  } catch (e) {}
+                })
+              })
+
+              // Now loop through each cluster
+              setTimeout(() => {
+                clusters.forEach((cluster, clusterIndex) => {
+                  let element = `
+                      <tr for-cluster-id="${clusterIndex}" data-folder="${cluster.folder}">
+                        <td>
+                          <input class="form-check-input for-import-clusters-sub" type="checkbox" checked="true" />
+                        </td>
+                        <td>
+                          ${cluster.name}
+                        </td>
+                        <td data-host-port>
+                        -
+                        </td>
+                      </tr>`
+
+                  $(`tr[for-workspace-id="${workspaceIndex}"]`).find('tbody').append($(element).show(function() {
+                    setTimeout(() => {
+                      // When the checkbox status changes
+                      $(this).find('input[type="checkbox"]').change(function() {
+                        let allRelatedCheckboxes = [...$(`tr[for-workspace-id="${workspaceIndex}"]`).find('input.for-import-clusters-sub[type="checkbox"]')]
+
+                        try {
+                          $(`#_${importClustersCheckboxInputID}`).prop('checked', (allRelatedCheckboxes.every((checkbox) => $(checkbox).prop('checked'))))
+
+                          if ($(`#_${importClustersCheckboxInputID}`).prop('checked'))
+                            $(`#_${importClustersCheckboxInputID}`).trigger('change')
+                        } catch (e) {}
+                      })
+                    })
+                  }))
+                })
+              })
+            }))
+          } catch (e) {}
+
+          // Update the import workspaces' checkbox's status
+          setTimeout(() => $('#importWorkspacesCheckbox').prop('checked', true).trigger('change'))
+
+          // Show the next phase in the dialog
+          setTimeout(() => $('div.modal#importWorkspaces').find('div.btn[section="phase-2"]').removeClass('disabled').click())
+        })
+      }))
+
+      setTimeout(() => healthChecks(workspace, workspaceIndex, savedWorkspaces, workspaceChecksID, importWorkspacesCheckboxInputID, $(`input#_${workspaceNameInputID}`)))
+    })
+  }
+
+  let healthChecks = async (workspace, workspaceIndex, savedWorkspaces, workspaceChecksID, importWorkspacesCheckboxInputID, workspaceNameInput = null) => {
+    // By default, there's no duplication found regards the name
+    let isNameDuplicated = false,
+      // By default, there's no missing variable
+      isMissingVariableFound = false,
+      // Get the workspace name to be checked
+      workspaceName = workspaceNameInput != null ? workspaceNameInput.val() : workspace.name,
+      // Point at the checks' loader
+      loader = $(`td[data-id="_${workspaceChecksID}"]`).find(`l-line-wobble`)
+
+    try {
+      let isInvalid = minifyText(workspaceNameInput.val()).length <= 0
+
+      workspaceNameInput.toggleClass('is-invalid', isInvalid)
+
+      try {
+        if (!isInvalid)
+          throw 0
+
+        setTimeout(() => $(`input#_${importWorkspacesCheckboxInputID}`).prop('checked', false).trigger('change').attr('disabled', ''))
+
+        return
+      } catch (e) {}
+
+      $(`input#_${importWorkspacesCheckboxInputID}`).attr('disabled', null)
+    } catch (e) {}
+
+    // First check; name duplication
+    try {
+      // Point at the check's badge if exists
+      let checkBadge = $(`td[data-id="_${workspaceChecksID}"]`).find('span[check="name"]'),
+        // Check the existence of the name among the saved workspaces
+        nameExists = savedWorkspaces.find((savedWorkspace) => manipulateText(savedWorkspace.name) == manipulateText(workspaceName))
+
+      // Check the existence of the name among other workspaces which about to be imported
+      try {
+        // Get all related inputs
+        let allRelatedInputs = [...$(`table#importWorkspacesValidate`).find(`input.workspace-name`)],
+          // Array which will hold their values
+          allInputsValues = []
+
+        // Map the inputs and get their current values
+        allInputsValues = (allRelatedInputs.filter((input) => !($(input).is(workspaceNameInput)))).map((input) => $(input).val())
+
+        // Perform the check
+        if (!nameExists)
+          nameExists = allInputsValues.find((nameValue) => manipulateText(nameValue) == manipulateText(workspaceName))
+      } catch (e) {}
+
+      // If there's no duplication in name
+      if (nameExists == undefined) {
+        // Hide the check's badge if exists
+        if (checkBadge.length != 0)
+          checkBadge.hide()
+
+        // Remove the `invalid` class from the associated input field
+        workspaceNameInput.removeClass('is-invalid')
+
+        // Skip this try-catch block - check the name duplication -
+        throw 0
+      }
+
+      /**
+       * Reaching here means there's a duplication
+       *
+       * Update the flag
+       */
+      isNameDuplicated = true
+
+      // Hide the loader
+      loader.hide()
+
+      // Add the `invalid` class
+      workspaceNameInput.addClass('is-invalid')
+
+      // Hide the `passed` badge
+      try {
+        $(`td[data-id="_${workspaceChecksID}"]`).find('span[check="passed"]').hide()
+      } catch (e) {}
+
+      // If there's a badge already
+      if (checkBadge.length != 0) {
+        // Show it
+        checkBadge.show()
+      }
+    } catch (e) {}
+    // Name duplication check ends here
+
+    // Check missing values for variables in clusters
+    try {
+      // Map the workspace's clusters' array and keep the `cqlsh.rc` files' paths
+      let clusters = [...workspace.clusters.map((cluster) => Path.join(workspace.path, cluster.folder, 'config', 'cqlsh.rc'))],
+        // Get all saved variables
+        savedVariables = await retrieveAllVariables(),
+        // Point at the check's badge if exists
+        checkBadge = $(`td[data-id="_${workspaceChecksID}"]`).find('span[check="variables"]'),
+        clusterIndex = -1
+
+      // Loop through each cluster
+      for (let cluster of clusters) {
+        // Increase the index
+        ++clusterIndex
+
+        try {
+          // Point at the current cluster's `tr` element
+          let clusterTRElement = $(`tr[for-workspace-id="${workspaceIndex}"]`).find($(`tr[for-cluster-id="${clusterIndex}"]`)),
+            // Get the content of the config file
+            cqlshrcContentString = FS.readFileSync(cluster, 'utf8'),
+            // Convert the content to formatted Object
+            cqlshrcContentObject = await Modules.Clusters.getCQLSHRCContent(null, cqlshrcContentString, null, false),
+            // Get all sections in the content
+            sections = Object.keys(cqlshrcContentObject),
+            // Define the variable's regex
+            variableRegex = /\${([\s\S]*?)}/gi
+
+          try {
+            clusterTRElement.find('td[data-host-port]').text(`${cqlshrcContentObject.connection.hostname}:${cqlshrcContentObject.connection.port}`)
+          } catch (e) {}
+
+          // Loop through each section
+          for (let section of sections) {
+            // Get the current section's active options
+            options = Object.keys(cqlshrcContentObject[section])
+
+            // If the current section has no options, then skip this section
+            if (options.length <= 0)
+              continue
+
+            // Otherwise, loop through all options
+            for (let _option of options) {
+              // Get the value of the current option
+              let option = cqlshrcContentObject[section][_option],
+                // Search for variables in the option's value
+                match = option.match(variableRegex)
+
+              // If no variable has been found then skip this option
+              if (match == null)
+                continue
+
+              // Keep the variable's name
+              match = match.map((variable) => `${variable.slice(2, variable.length - 1)}`)
+
+              // Determine if there's a missing variable or more in the current cluster
+              if (!(match.every((variable) => savedVariables.some((savedVariable) => savedVariable.name == variable && savedVariable.scope.includes('workspace-all')))))
+                isMissingVariableFound = true
+
+              // If there's no missing variable then skip this option
+              if (!isMissingVariableFound)
+                continue
+
+              // Hide the loader
+              loader.hide()
+
+              // Hide the `passed` badge
+              try {
+                $(`td[data-id="_${workspaceChecksID}"]`).find('span[check="passed"]').hide()
+              } catch (e) {}
+
+              // If there's a badge already
+              if (checkBadge.length != 0) {
+                // Show it
+                checkBadge.show()
+              }
+            }
+          }
+        } catch (e) {}
+      }
+    } catch (e) {}
+    // Missing variables check ends here
+
+    // Show the `passed` badge if there's no failed checks
+    try {
+      try {
+        // If there's a name duplication then uncheck the related checkbox and disable it
+        if (isNameDuplicated) {
+          $(`input#_${importWorkspacesCheckboxInputID}`).prop('checked', false).trigger('change').attr('disabled', '')
+
+          // Skip this try-catch block
+          throw 0
+        }
+
+        // Check the workspace and enable the checkbox
+        $(`input#_${importWorkspacesCheckboxInputID}`).prop('checked', true).trigger('change').attr('disabled', null)
+      } catch (e) {}
+
+      // If one check has failed then skip this try-catch block
+      if (isNameDuplicated || isMissingVariableFound)
+        throw 0
+
+      // Hide the loader
+      loader.hide()
+
+      // Point at the check's badge if exists
+      let checkBadge = $(`td[data-id="_${workspaceChecksID}"]`).find('span[check="passed"]')
+
+      // If there's a badge already
+      if (checkBadge.length != 0) {
+        // Hide all badges
+        try {
+          $(`td[data-id="_${workspaceChecksID}"]`).find('span[check]').hide()
+        } catch (e) {}
+
+        // Show it
+        checkBadge.show()
+
+        // Skip this try-catch block
+        throw 0
+      }
+    } catch (e) {}
+  }
+
+  // Handle the parent checkbox which controls all checkboxes in the table
+  $('#importWorkspacesCheckbox').change(function() {
+    // Whether or not the checkbox is checked
+    let isChecked = $(this).prop('checked')
+
+    // Based on the status change all checkboxes
+    $('input.for-import-workspaces[type="checkbox"]:not([disabled]), input.for-import-clusters[type="checkbox"]:not([disabled])').prop('checked', isChecked).trigger('change')
+  })
+
+  // Handle the click of sections' navigation buttons
+  $('div.modal#importWorkspaces').find('div.btn[section*="phase-"]').click(function() {
+    $('div.modal#importWorkspaces').find('div.modal-footer').find('button').attr('disabled', $(this).attr('section') == 'phase-1' ? '' : null)
+  })
+
+  $('button#importWorkspacesReset').click(function() {
+    $('#importWorkspacesValidate').children('tbody').html('')
+
+    $('div.modal#importWorkspaces').find('div.btn[section*="phase-"]:not([section*="phase-1"])').addClass('disabled')
+
+    $('div.modal#importWorkspaces').find('div.btn[section="phase-1"]').click()
+
+    $(`div.modal#importWorkspaces`).find('div.modal-footer').find('button[data-mdb-dismiss="modal"]').attr('hidden', '')
+    $(`#importWorkspacesFinish`).attr('hidden', null)
+  })
+
+  $('button#importWorkspacesFinish').click(async function() {
+    let workspacesTRElements = $('table#importWorkspacesValidate').find('tr[data-id]').filter(function() {
+        return $(this).find('input[type="checkbox"].for-import-workspaces').prop('checked')
+      }),
+      savingResults = []
+
+    if (workspacesTRElements.length <= 0)
+      return showToast('Import Workspaces', 'No checked workspaces have been detected, please consider to check at least one workspace.', 'failure')
+
+    for (let workspace of [...workspacesTRElements]) {
+      try {
+        let workspaceStructure = {
+          defaultPath: true,
+          name: $(workspace).find(`input.workspace-name`).val(),
+          color: $(workspace).find(`input.workspace-color`).val(),
+          id: `workspace-${getRandomID(10)}`,
+          clustersPath: $(workspace).attr('data-clusters-path')
+        }
+
+        let clustersTRElements = $('table#importWorkspacesValidate').find(`tr[for-workspace-id="${$(workspace).attr('data-id')}"]`).find(`tr[for-cluster-id]`).filter(function() {
+          return $(this).find('input[type="checkbox"].for-import-clusters-sub').prop('checked')
+        })
+
+        workspaceStructure.checkedClusters = [...clustersTRElements].map((cluster) => $(cluster).attr('data-folder'))
+
+        let saveWorkspace = await Modules.Workspaces.saveWorkspace(workspaceStructure)
+
+        savingResults.push({
+          name: workspaceStructure.name,
+          status: saveWorkspace
+        })
+      } catch (e) {}
+    }
+
+    let savingResultsTxt = ''
+
+    for (let result of savingResults) {
+      savingResultsTxt += `, ${result.name}: ${result.status == 1 ? 'successfully saved ' : 'failed to save '}`
+    }
+
+    savingResultsTxt = savingResultsTxt.slice(2)
+
+    showToast('Import Workspaces', `The importing process has finished, results for the workspaces are: ${savingResultsTxt}.`, 'success')
+
+    $(`div.modal#importWorkspaces`).find('button[data-mdb-dismiss="modal"]').attr('hidden', null)
+    $(`div.modal#importWorkspaces`).find('button#importWorkspacesFinish').attr('hidden', '')
+
+    $(document).trigger('refreshWorkspaces')
+  })
 }

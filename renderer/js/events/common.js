@@ -542,7 +542,7 @@
 
 // Handle the app's settings' and about dialogs events and processes
 {
-  (['appSettings', 'appAbout']).forEach((modalID) => {
+  (['appSettings', 'appAbout', 'importWorkspaces']).forEach((modalID) => {
     // Define the common element CSS selector
     let dialog = `div.modal#${modalID} div.modal-body div.side`
 

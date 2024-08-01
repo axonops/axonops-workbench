@@ -110,9 +110,9 @@
         selectedWorkspaces = selectedWorkspaces.map((workspace) => workspace.id)
 
       // Make sure both name and value for the current variable/row are not empty
-      if ([nameInput.val(), valueInput.val()].some((val) => val.trim().length <= 0)) {
+      if ([nameInput.val(), valueInput.val()].some((val) => `${val}`.trim().length <= 0) || !(/^\d*[a-zA-Z][a-zA-Z\d]*$/g.test(`${nameInput.val()}`))) {
         // If not, show feedback to the user
-        failureMessage = I18next.capitalizeFirstLetter(I18next.t('variable or more are not having invalid name or value, make sure unique names and values are provided for each variable'))
+        failureMessage = I18next.capitalizeFirstLetter(I18next.t('variable or more are not having invalid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters'))
 
         // By setting the `collision` value to true the process will be stopped entirely
         collision = true
@@ -266,7 +266,7 @@
   })
 
   // Retrieve all saved values in JSON object format
-  let retrieveVariables = async () => {
+  retrieveVariables = async (onlyVariables = false) => {
     try {
       // The saved variables' manifest and their values
       let variablesManifest = await Keytar.findPassword('AxonOpsWorkbenchVarsManifest'),
@@ -297,11 +297,32 @@
       })
 
       /**
+       * Handle the missing variables
+       *
+       * Define the array which will hold the detected missing variables
+       */
+      let missingVariables = []
+
+      try {
+        // Call the inner function which gets the missing variables
+        missingVariables = await getMissingVariables(variables)
+
+        // Manipulate the data to be merged with the `variables` array
+        missingVariables = Object.keys(missingVariables).map((variableName) => {
+          return {
+            name: variableName,
+            value: '',
+            scope: [...new Set(missingVariables[variableName])]
+          }
+        })
+      } catch (e) {}
+
+      /**
        * As a final result, there should be a valid `variables` array
        *
-       * Check if there are variables to show
+       * Check if there are variables to show - even if they're missing and not defined yet -
        */
-      variablesList.toggleClass('empty', variables.length <= 0)
+      variablesList.toggleClass('empty', variables.length <= 0 && missingVariables.length <= 0)
 
       // Whether the `Refresh Variables` button should be shown
       $('#refreshVariables').toggleClass('show', variables.length > 0)
@@ -311,6 +332,14 @@
 
       // Reverse `variables` array; so newly added ones will be at the top
       variables = variables.reverse()
+
+      try {
+        if (onlyVariables)
+          return variables
+      } catch (e) {}
+
+      // Concat the defined and the missing variables
+      variables = variables.concat(missingVariables)
 
       // Create a row element for each variable
       variables.forEach((variable) => createVariableElement(variable))
@@ -323,6 +352,9 @@
       } catch (e) {}
     }
   }
+
+  // Set global function to get all variables in all scopes
+  global.retrieveAllVariables = async () => await retrieveVariables(true)
 
   /**
    * Create a UI element for a variable in the settings' dialog, sub-elements are:
@@ -509,6 +541,8 @@
           // Filter variables and remove the deleted one
           variables = variables.filter((_var) => _var.name != name && _var.value != value)
 
+          console.log("HERE");
+
           // Show the empty message again if there are no variables nor any rows
           if (variables.length <= 0 && content.children('div.variable').length <= 0) {
             variablesList.addClass('empty')
@@ -633,5 +667,74 @@
   {
     let selector = `div.body div.left div.content div.navigation div.group div.item`
     $(`${selector}[action="settings"]`).click(() => retrieveVariables())
+  }
+
+  // Inner function to get the missing variables in all clusters
+  let getMissingVariables = async (savedVariables) => {
+    // Get all saved workspaces
+    let workspaces = await Modules.Workspaces.getWorkspaces(),
+      // Define the array which will hold all the missing variables
+      missingVariables = []
+
+    // Loop through each saved workspace
+    for (let workspace of workspaces) {
+      // Get the workspace's clusters
+      let clusters = await Modules.Clusters.getClusters(workspace.id)
+
+      // Loop through each saved cluster
+      for (let cluster of clusters) {
+        // Get the cluster's cqlsh.rc file's content and convert it to Object
+        let cqlshrcContentObject = await Modules.Clusters.getCQLSHRCContent(null, cluster.cqlshrc, null, false),
+          // Get all sections in the content
+          sections = Object.keys(cqlshrcContentObject),
+          // Define the variable's regex
+          variableRegex = /\${([\s\S]*?)}/gi
+
+        // Loop through each section
+        for (let section of sections) {
+          // Get the current section's active options
+          options = Object.keys(cqlshrcContentObject[section])
+
+          // If the current section has no options, then skip this section
+          if (options.length <= 0)
+            continue
+
+          // Otherwise, loop through all options
+          for (let _option of options) {
+            // Get the value of the current option
+            let option = cqlshrcContentObject[section][_option],
+              // Search for variables in the option's value
+              match = option.match(variableRegex)
+
+            // If no variable has been found then skip this option
+            if (match == null)
+              continue
+
+            // Keep the variable's name
+            match = match.map((variable) => `${variable.slice(2, variable.length - 1)}`)
+
+            // Loop through each detected variable
+            for (let variable of match) {
+              // Determine if there's a missing variable or more in the current cluster
+              if (!(
+                  match.every((variable) =>
+                    savedVariables.some((savedVariable) =>
+                      savedVariable.name == variable && ['workspace-all', workspace.id].some((id) => savedVariable.scope.includes(id))
+                    )
+                  ))) {
+                if (missingVariables[variable] == undefined)
+                  missingVariables[variable] = []
+
+                // Push the variable with its workspace - scope -
+                missingVariables[variable].push(workspace.id)
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Return the detected missing variables
+    return missingVariables
   }
 }

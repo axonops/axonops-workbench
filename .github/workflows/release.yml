@@ -125,33 +125,35 @@ jobs:
           CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
           CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
 
-  release:
-    name: Build on ${{ matrix.target }}
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: ${{ always() && !cancelled() && needs.build.result == 'success' }}
-
-    steps:
       - name: Create checksum files
         run: |
+          SAVEIFS=$IFS
+          IFS=$(echo -en "\n\b")
+
           cd dist
+
           case "$(uname -s)" in
           Darwin)
             FILES=$(ls -1 *.dmg *.zip)
+            for f in $FILES; do
+              shasum -a 256 $f > ${f}.sha256sum
+            done
           ;;
           MINGW64*)
             FILES=$(ls -1 *.exe)
+            FILES=$(ls -1 *.tar.gz)
+            for f in $FILES; do
+              sha256sum $f > ${f}.sha256sum
+            done
           ;;
           Linux)
             FILES=$(ls -1 *.tar.gz)
+            for f in $FILES; do
+              sha256sum $f > ${f}.sha256sum
+            done
           ;;
           esac
 
-          SAVEIFS=$IFS
-          IFS=$(echo -en "\n\b")
-          for f in $FILES; do
-            sha256sum $f > ${f}.sha256sum
-          done
           IFS=$SAVEIFS
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

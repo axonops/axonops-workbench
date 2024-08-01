@@ -140,9 +140,12 @@ jobs:
           ;;
           esac
 
+          SAVEIFS=$IFS
+          IFS=$(echo -en "\n\b")
           for f in $FILES; do
             sha256sum $f > ${f}.sha256sum
           done
+          IFS=$SAVEIFS
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

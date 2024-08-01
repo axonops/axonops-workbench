@@ -125,6 +125,10 @@ jobs:
           CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
           CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
 
+  release:
+    name: Build on ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Create checksum files
         run: |
           cd dist

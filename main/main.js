@@ -27,8 +27,6 @@ require('v8-compile-cache')
 /**
  * Import Electron module and its sub-modules
  *
- * https://www.electronjs.org/docs/latest/api/app
- *
  * Import the main module
  */
 const Electron = require('electron'),
@@ -37,34 +35,46 @@ const Electron = require('electron'),
    *
    * `app`
    * For controlling the app's event life cycle
+   * https://www.electronjs.org/docs/latest/api/app
+   *
    */
   App = Electron.app,
   /**
    * `BrowserWindow`
    * Used to create and manage windows within the app
+   * https://www.electronjs.org/docs/latest/api/browser-window
+   *
    */
   Window = Electron.BrowserWindow,
   /**
    * `Menu`
    * Creating native application menus and context menus
+   * https://www.electronjs.org/docs/latest/api/menu
+   *
    */
   Menu = Electron.Menu,
   /**
    * `MenuItem`
    * For adding items to native application menus and context menus
+   * https://www.electronjs.org/docs/latest/api/menu-item
+   *
    */
   MenuItem = Electron.MenuItem
 
 /**
  * Import modules globally
- * Those modules can be reached from all sub-modules of the main thread, such as `pty` and `config`
+ * Those modules can be reached from all sub-modules of the main thread, such as `pty` and `config` sub-modules
  *
  * `ipcMain`
  * For communicating asynchronously from the main thread to the renderer thread(s)
+ * https://www.electronjs.org/docs/latest/api/ipc-main
+ *
  */
 global.IPCMain = Electron.ipcMain
+
 // Execute commands across all platforms
 global.Terminal = require('node-cmd')
+
 /**
  * Import Node.js modules
  *
@@ -72,6 +82,7 @@ global.Terminal = require('node-cmd')
  * Used for working with files system, it provides related utilities
  */
 global.FS = require('fs-extra')
+
 /**
  * Node.js path module
  * Working with file and directory paths, and providing useful utilities
@@ -79,6 +90,8 @@ global.FS = require('fs-extra')
 global.Path = require('path')
 
 /**
+ * Import extra modules needed in the main thread
+ *
  * Node.js URL module
  * For URL resolution and parsing
  */
@@ -87,26 +100,26 @@ const URL = require('url'),
    * Node.js events module
    * Used for creating and handling custom events
    */
-  EventEmitter = require('events')
-
-/**
- * Import extra modules needed in the main thread
- *
- * Enable - ready to be used - right-click context menu
- */
-const ContextMenu = require('electron-context-menu'),
+  EventEmitter = require('events'),
+  // Enable - ready to be used - right-click context menu
+  ContextMenu = require('electron-context-menu'),
   // Used to position the windows of the application.
   Positioner = require('electron-positioner'),
   // Loads environment variables from a .env file into process.env
   DotEnv = require('dotenv')
 
-// Based on the `asar` checking process the extra resources path would be changed
-global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), (process.platform != 'win32') ? '.' : '' + 'axonops-developer-workbench') : null
+/**
+ * Check if the app is in production environment
+ * https://www.electronjs.org/docs/latest/api/app#appispackaged-readonly
+ *
+ * Based on checking result the extra resources path would be changed
+ */
+global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), (process.platform != 'win32' ? '.' : '') + 'axonops-developer-workbench') : null
 
 /**
  * Import the custom node modules for the main thread
  *
- * Define the `Modules` constant that will contain all the custom modules
+ * `Modules` constant will contain all the custom modules
  */
 const Modules = []
 
@@ -804,7 +817,7 @@ App.on('second-instance', () => {
     // Get the app's path
     let path = App.getAppPath()
 
-    // If the app in production mode
+    // If the app in production environment
     if (App.isPackaged)
       path = Path.join(path, '..')
 

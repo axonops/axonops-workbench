@@ -973,19 +973,29 @@ div.body {
                 }
               }
 
-              div.sandbox-btn-container {
+              div.import-workspaces-btn-container {
                 position: relative;
                 bottom: 4px;
                 width: fit-content;
                 border-radius: 50%;
 
-                button#createSandboxProjectProcess {
+                button#importWorkspacesProcess {
                   transform: scale(0);
                   opacity: 0;
 
                   ion-icon {
-                    font-size: 180%;
-                    opacity: 0.9;
+                    font-size: 150%;
+                    position: relative;
+                    right: 1px;
+                    bottom: 1px;
+                    transition: all 0.1s ease-in-out;
+                  }
+
+                  &:focus,
+                  &:hover {
+                    ion-icon {
+                      transform: scale(1.05);
+                    }
                   }
                 }
               }
@@ -1562,7 +1572,7 @@ div.body {
                   }
                 }
 
-                button#createSandboxProjectProcess {
+                button#importWorkspacesProcess {
                   animation: {
                     name: animate-save-snapshot;
                     duration: 0.9s;
@@ -3761,7 +3771,7 @@ div.query {
   }
 }
 
-#createSandboxProjectProcess {
+#importWorkspacesProcess {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;

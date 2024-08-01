@@ -125,6 +125,15 @@ jobs:
           CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
           CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
 
+      - name: Create checksum files
+        run: |
+          cd dist
+          for f in *.zip *.exe *.tar.gz; do
+            sha256sum $f > ${f}.sha256sum
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload Artifacts
         uses: softprops/action-gh-release@v2
         with:

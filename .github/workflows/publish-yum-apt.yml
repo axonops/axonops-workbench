@@ -28,12 +28,14 @@ jobs:
 
       - name: Push Debian package
         run: |
+          export GITHUB_REF_NAME=0.1.0-internal-20240802
           curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-amd64.deb"
           gcloud config set project axonops-public
           gcloud artifacts apt upload axonops-apt-beta --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-amd64.deb
 
       - name: Push RedHat package
         run: |
+          export GITHUB_REF_NAME=0.1.0-internal-20240802
           curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-x86_64.rpm"
           gcloud config set project axonops-public
           gcloud artifacts yum upload axonops-apt-beta --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-x86_64.rpm

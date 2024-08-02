@@ -1,6 +1,9 @@
 name: Release Workbench to Yum/Apt
 
 on:
+  push:
+    branches:
+      - 180-push-debian-and-redhat-packages-to-the-axonops-repository
   workflow_dispatch:
 
 defaults:

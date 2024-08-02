@@ -1,0 +1,36 @@
+name: Release Workbench to Yum/Apt
+
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release-debian-redhat:
+    runs-on: ubuntu-latest
+
+    steps:
+      - id: "auth"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
+
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+
+      - name: "Use gcloud CLI"
+        run: "gcloud info"
+
+      - name: Push Debian package
+        run: |
+          curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-amd64.deb"
+          gcloud config set project axonops-public
+          gcloud artifacts apt upload axonops-apt-beta --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-amd64.deb
+
+      - name: Push RedHat package
+        run: |
+          curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-x86_64.rpm"
+          gcloud config set project axonops-public
+          gcloud artifacts yum upload axonops-apt-beta --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-x86_64.rpm

@@ -304,4 +304,4 @@ jobs:
         run: |
           curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-x86_64.rpm"
           gcloud config set project axonops-public
-          gcloud artifacts yum upload axonops-apt-beta --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-x86_64.rpm
+          gcloud artifacts yum upload axonops-yum-beta --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-x86_64.rpm

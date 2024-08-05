@@ -48,18 +48,13 @@ jobs:
       - name: Download CQLSH prebuilt binaries
         run: |
           mkdir -p main/bin
-          if [[ "$(uname -s)" =~ "MINGW64" ]]; then
-            curl -fL ${CQLSH_GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m).exe > main/bin/cqlsh-410.exe
-            curl -fL ${CQLSH_GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m).exe > main/bin/cqlsh-407.exe
-            curl -fL ${CQLSH_GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m).exe > main/bin/keys_generator.exe
-          else
-            curl -fL ${CQLSH_GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m) > main/bin/cqlsh-410
-            curl -fL ${CQLSH_GITHUB_URL}/cqlsh-407-$(uname -s)-$(uname -m) > main/bin/cqlsh-407
-            curl -fL ${CQLSH_GITHUB_URL}/keys_generator-$(uname -s)-$(uname -m) > main/bin/keys_generator
-            chmod 755 main/bin/*
-          fi
+          for binary in cqlsh-410 cqlsh-407 keys_generator; do
+            curl -fL ${CQLSH_GITHUB_URL}/${binary}-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
+            mv main/bin/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}
+            mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
+          done
         env:
-          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.1.0-beta1' }}"
+          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.3.0' }}"
 
       - name: Setup Python v3.12
         uses: actions/setup-python@v5
@@ -255,6 +250,7 @@ jobs:
           cp $TEMPLATE $CONFIG_FILE
           sed -i "s/%SHA_AMD%/$SHA_AMD/g" $CONFIG_FILE
           sed -i "s/%VERSION%/${VERSION}/g" $CONFIG_FILE
+          sed -i "s%<version>.*</version>%<version>${VERSION}</version>%g" axonopsworkbench.nuspec
           git add .
           if [ $(git status --porcelain | wc -l) -eq "0" ]; then
             echo "No changes to commit"

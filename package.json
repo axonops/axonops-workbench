@@ -1,7 +1,7 @@
 {
   "name": "axonops-workbench",
   "title": "AxonOps™ Workbench",
-  "version": "0.1.0-internal-20240802",
+  "version": "0.1.0-internal-20240805",
   "author": {
     "name": "AxonOps",
     "email": "info@axonops.com"
@@ -70,11 +70,11 @@
         "teamId": "UJ776LUP23"
       },
       "binaries": [
-        "main/bin/cqlsh-407",
-        "main/bin/cqlsh-410",
-        "main/bin/keys_generator"
+        "main/bin/cqlsh-407/cqlsh-407",
+        "main/bin/cqlsh-410/cqlsh-410",
+        "main/bin/keys_generator/keys_generator"
       ],
-      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+      "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "deb": {
       "depends": [

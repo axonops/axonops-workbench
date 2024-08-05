@@ -250,6 +250,7 @@ jobs:
           cp $TEMPLATE $CONFIG_FILE
           sed -i "s/%SHA_AMD%/$SHA_AMD/g" $CONFIG_FILE
           sed -i "s/%VERSION%/${VERSION}/g" $CONFIG_FILE
+          sed -i "s%<version>.*</version>%<version>${VERSION}</version>%g" axonopsworkbench.nuspec
           git add .
           if [ $(git status --porcelain | wc -l) -eq "0" ]; then
             echo "No changes to commit"

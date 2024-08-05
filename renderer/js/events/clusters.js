@@ -4238,6 +4238,9 @@
                             // Update the status of the cluster in the mini cluster's list
                             updateMiniCluster(workspaceID, clusterID, true)
 
+                            // Flag to tell if the workarea is actually visible
+                            let isWorkareaVisible = workarea.is(':visible')
+
                             // Remove the work area element
                             workarea.remove()
 
@@ -4285,7 +4288,7 @@
                             })
 
                             // Clicks the `ENTER` button for the cluster's workspace
-                            if (moveToWorkspace || $('div.body div.right div.content div[content][content="workarea"]').is(':visible'))
+                            if (moveToWorkspace || isWorkareaVisible)
                               $(`div.workspaces-container div.workspace[data-id="${getAttributes(clusterElement, 'data-workspace-id')}"]`).find('div.button button').click()
 
                             setTimeout(() => {

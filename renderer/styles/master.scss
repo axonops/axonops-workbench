@@ -3943,6 +3943,7 @@ div.webview-more-actions {
   pointer-events: none;
   transform: translateY(10px);
   transition: all 0.2s ease-in-out;
+  z-index: 1;
 
   &.show {
     pointer-events: all;

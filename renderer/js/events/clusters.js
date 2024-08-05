@@ -3645,7 +3645,7 @@
                           // If there's a tree object already then attempt to destroy it
                           if (jsTreeObject != null)
                             try {
-                              $.jstree.destroy(jsTreeObject)
+                              $(`div.metadata-content[data-id="${metadataContentID}"]`).jstree('destroy')
                             } catch (e) {}
 
                           // Trigger the `click` event for the search in metadata tree view button; to make sure it's reset

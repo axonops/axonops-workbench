@@ -48,7 +48,11 @@ jobs:
       - name: Download CQLSH prebuilt binaries
         run: |
           mkdir -p main/bin
-          curl -fL ${CQLSH_GITHUB_URL}/cqlsh-410-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
+          for binary in cqlsh-410 cqlsh-407 keys_generator; do
+            curl -fL ${CQLSH_GITHUB_URL}/${binary}-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
+            mv main/bin/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}
+            mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
+          done
         env:
           CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.3.0' }}"
 

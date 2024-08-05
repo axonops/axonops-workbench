@@ -70,9 +70,9 @@
         "teamId": "UJ776LUP23"
       },
       "binaries": [
-        "main/bin/cqlsh-407",
-        "main/bin/cqlsh-410",
-        "main/bin/keys_generator"
+        "main/bin/cqlsh-407/cqlsh-407",
+        "main/bin/cqlsh-410/cqlsh-410",
+        "main/bin/keys_generator/keys_generator"
       ],
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },

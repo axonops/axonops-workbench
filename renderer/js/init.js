@@ -238,32 +238,67 @@ $(document).on('initialize', () => {
   if (!Modules.Consts.EnableAIAssistant)
     return
 
-  // Point at the web view element
-  let webviewAIAssistant = $('webview#ai_assistant_webview'),
+  // Point at the hidden area
+  let hiddenAreaElement = $('div.main.hidden-area'),
+    // Point at the web view element
+    webviewAIAssistant = $('webview#ai_assistant_webview'),
     // Point at the web view's navigation's container
-    webviewNavigationContainer = $('div.webview-navigation'),
-    // Point at the different buttons
-    buttons = {
-      back: webviewNavigationContainer.find('div.nav[action="back"] button'),
-      forward: webviewNavigationContainer.find('div.nav[action="forward"] button'),
-      refresh: webviewNavigationContainer.find('div.nav[action="refresh"] button')
-    }
+    webviewNavigationContainer = hiddenAreaElement.find('div.webview-navigation'),
+    // Point at the container of the extra actions
+    webviewMoreActionsContainer = hiddenAreaElement.find('div.webview-more-actions'),
+    // Point at the loading element
+    loadingPage = hiddenAreaElement.find('div.loading-page')
 
-  // Update its `src` with the AI Assistant's server URL
+  // Point at different buttons related to the hidden area
+  let buttons = {}; // This semicolon is critical here
+
+  // Define the names, loop and point at the buttons
+  ['back', 'forward', 'more', 'refresh', 'logout'].forEach((button) => {
+    buttons[button] = webviewNavigationContainer.add(webviewMoreActionsContainer).find(`div.nav[action="${button}"] button`)
+  })
+
+  // Update the web view element `src` with the AI Assistant's server URL
   webviewAIAssistant.attr('src', Modules.Consts.AIAssistantServer)
 
-  // Go back to the previous page
+  // Show/hide the loading spinner based on the status
+  webviewAIAssistant
+    .on('did-start-loading', () => loadingPage.addClass('show'))
+    .on('did-stop-loading', () => loadingPage.removeClass('show'))
+
+  // Go back one page
   buttons.back.click(() => {
     try {
       webviewAIAssistant[0].goBack()
     } catch (e) {}
   })
 
-  // Go forward to the next page
+  // Go forward one page
   buttons.forward.click(() => {
     try {
       webviewAIAssistant[0].goForward()
     } catch (e) {}
+  })
+
+  // Click the `more` button
+  buttons.more.click(() => {
+    // Show/hide the more actions container
+    $(webviewMoreActionsContainer).toggleClass('show')
+
+    // Show the transparent background which prevent interacting with the webview
+    $('div.body div.hidden-area div.content div.more-list-bg').show()
+
+    setTimeout(() => {
+      // When clicking outside the more actions container
+      $(webviewMoreActionsContainer).oneClickOutside({
+        callback: () => {
+          // Hide the container
+          $(webviewMoreActionsContainer).removeClass('show')
+
+          // Hide the transparent background
+          $('div.body div.hidden-area div.content div.more-list-bg').hide()
+        }
+      })
+    }, 500)
   })
 
   // Refresh the entire webview
@@ -273,6 +308,9 @@ $(document).on('initialize', () => {
     } catch (e) {}
   })
 
+  // Logout from the AxonOps AI Chat
+  buttons.logout.click(() => webviewAIAssistant.attr('src', `${(new URL(Modules.Consts.AIAssistantServer)).origin}/logout`))
+  
   // Check and enable/disable the back/forward buttons based on the status
   setInterval(() => {
     buttons.back.toggleClass('disabled', !webviewAIAssistant[0].canGoBack())
@@ -651,6 +689,11 @@ $(document).on('initialize', () => {
     {
       loadScript(Path.join(__dirname, '..', 'js', 'external', 'actual.js'))
     }
+
+    // jQuery plugin that adds a one-time callback for a click outside of an element
+    {
+      loadScript(Path.join(__dirname, '..', 'js', 'external', 'click_outside.js'))
+    }
   }
 
   // Coloris
@@ -691,7 +734,7 @@ $(document).on('initialize', () => {
   // ldrs.js
   {
     let ldrsPath = Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js'),
-      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux']
+      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square']
 
     try {
       import(ldrsPath).then((loaders) => usedLoaders.forEach((loader) => loaders[loader].register()))

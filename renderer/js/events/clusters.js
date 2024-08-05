@@ -301,9 +301,7 @@
               setTimeout(() => $(this).addClass(`show-${currentIndex + 1}`))
 
               // Enable tooltip for the actions buttons
-              setTimeout(() => {
-                ([settingsBtnID, deleteBtnID, folderBtnID]).forEach((btn) => getElementMDBObject($(`div[button-id="${btn}"]`), 'Tooltip'))
-              })
+              setTimeout(() => ([settingsBtnID, deleteBtnID, folderBtnID]).forEach((btn) => getElementMDBObject($(`div[button-id="${btn}"]`), 'Tooltip')))
 
               // Apply the chosen language on the UI element after being fully loaded
               setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
@@ -787,7 +785,7 @@
                                 ${axonopsTab}
                               </ul>
                             </div>
-                            <div class="cluster-actions" style="width:40px">
+                            <div class="cluster-actions colored-box-shadow" style="width:40px">
                               <div class="action" action="restart" hidden>
                                 <div class="btn-container">
                                   <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Restart the work area" data-mulang="restart the work area" capitalize-first data-id="${restartWorkareaBtnID}">
@@ -845,6 +843,18 @@
                                         <label class="form-label">
                                           <span mulang="execute cql statement" capitalize-first></span>
                                         </label>
+                                      </div>
+                                    </div>
+                                    <div class="kill-process">
+                                      <button class="btn btn-primary btn-dark changed-bg changed-color" type="button" data-mdb-ripple-color="var(--mdb-danger)" data-tippy="tooltip" data-mdb-placement="left" data-title="Kill the process" data-mulang="Kill the process">
+                                        <ion-icon name="close"></ion-icon>
+                                      </button>
+                                    </div>
+                                    <div class="hints-container">
+                                      <div class="hint changed-bg changed-color">
+                                        <div class="text">
+                                          An incomplete statement would have interrupted the execution flow
+                                        </div>
                                       </div>
                                     </div>
                                     <div class="execute">
@@ -1732,7 +1742,7 @@
                             setTimeout(() => {
                               IPCRenderer.send('pty:command', {
                                 id: clusterID,
-                                cmd: 'PAGING OFF;'
+                                cmd: 'PAGING OFF;EXPAND OFF;'
                               })
                             }, 1000)
 
@@ -2033,6 +2043,11 @@
                            * Whether or not the output has been completed
                            */
                           let isOutputCompleted = data.output.indexOf('KEYWORD:OUTPUT:COMPLETED:ALL') != -1,
+                            // Whether or not this output is incomplete
+                            isOutputIncomplete = allOutput.endsWith('KEYWORD:STATEMENT:INCOMPLETE'),
+                            // Whether or not this output is ignored
+                            isOutputIgnored = data.output.indexOf('KEYWORD:STATEMENT:IGNORE') != -1,
+
                             // Define the variable that will hold a timeout to refresh the metadata content
                             refreshMetadataTimeout
 
@@ -2063,6 +2078,137 @@
 
                               // Manipulate them
                               statementsIdentifiers = statementsIdentifiers.map((identifier) => identifier.trim())
+                            } catch (e) {}
+
+                            // Handle if the statement's execution process has stopped
+                            try {
+                              // Toggle the `busy` state of the execution button
+                              $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+
+                              // Attempt to clear the killing process button showing state
+                              try {
+                                clearTimeout(killProcessTimeout)
+                              } catch (e) {}
+
+                              // Hide the button if there's no incomplete output
+                              if (!isOutputIncomplete)
+                                hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+
+                              // There's an incomplete output
+                              if (isOutputIncomplete)
+                                killProcessTimeout = setTimeout(() => {
+                                  killProcessBtn.parent().addClass('show')
+                                  setTimeout(() => hintsContainer.addClass('show'), 1000)
+                                }, 1500)
+                            } catch (e) {}
+
+                            try {
+                              if (!isOutputIgnored)
+                                throw 0
+
+                              // The sub output structure UI
+                              let element = `
+                                    <div class="sub-output info">
+                                      <div class="sub-output-content">Incomplete statement has been detected and stopped the execution flow.</div>
+                                    </div>`
+
+                              // Append a `sub-output` element in the output's container
+                              blockElement.children('div.output').append($(element).show(function() {
+                                $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').addClass('busy')
+
+                                // Execute this code whatever the case is
+                                setTimeout(() => {
+                                  // Unbind all events regards the actions' buttons of the block
+                                  blockElement.find('div.btn[action], div.btn[sub-action]').unbind()
+
+                                  // Clicks the copy button; to copy content in JSON string format
+                                  blockElement.find('div.btn[action="copy"]').click(function() {
+                                    // Get all sub output elements
+                                    let allOutputElements = blockElement.find('div.output').find('div.sub-output').find('div.sub-output-content'),
+                                      // Initial group of all output inside the block
+                                      outputGroup = []
+
+                                    // Loop through each sub output
+                                    allOutputElements.each(function() {
+                                      try {
+                                        // If the output is not a table then skip this try-catch block
+                                        if ($(this).find('div.tabulator').length <= 0)
+                                          throw 0
+
+                                        // Push the table's data as JSON
+                                        outputGroup.push(Tabulator.findTable($(this).find('div.tabulator')[0])[0].getData())
+
+                                        // Skip the upcoming code
+                                        return
+                                      } catch (e) {}
+
+                                      // Just get the output's text
+                                      outputGroup.push($(this).text())
+                                    })
+
+                                    // Get the beautified version of the block's content
+                                    let contentBeautified = applyJSONBeautify({
+                                        statement: blockElement.find('div.statement div.text').text() || 'No statement',
+                                        output: outputGroup
+                                      }),
+                                      // Get the content's size
+                                      contentSize = ByteSize(ValueSize(contentBeautified))
+
+                                    // Copy content to the clipboard
+                                    try {
+                                      Clipboard.writeText(contentBeautified)
+                                    } catch (e) {
+                                      try {
+                                        errorLog(e, 'clusters')
+                                      } catch (e) {}
+                                    }
+
+                                    // Give feedback to the user
+                                    showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
+                                  })
+
+                                  // Clicks the deletion button
+                                  blockElement.find('div.btn[action="delete"]').click(() => {
+                                    let queriesContainer = $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
+
+                                    setTimeout(function() {
+                                      // Remove related query tracing element if exists
+                                      blockElement.find('div.btn[sub-action="tracing"]').each(function() {
+                                        $(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
+                                      })
+
+                                      // If there's still one query tracing result then skip this try-catch block
+                                      try {
+                                        if (queriesContainer.find('div.query').length > 0)
+                                          throw 0
+
+                                        // Show the emptiness class
+                                        queriesContainer.addClass('_empty')
+
+                                        // Plat the emptiness animation
+                                        queriesContainer.find('lottie-player')[0].play()
+                                      } catch (e) {}
+                                    }, 500)
+
+                                    // Remove the block from the session
+                                    blockElement.remove()
+
+                                    try {
+                                      // Point at the session's statements' container
+                                      let sessionContainer = $(`#_${cqlshSessionContentID}_container`)
+
+                                      // If there's still one block then skip this try-catch block
+                                      if (sessionContainer.find('div.block').length > 0)
+                                        throw 0
+
+                                      // Show the emptiness class
+                                      sessionContainer.parent().find(`div.empty-statements`).addClass('show')
+                                    } catch (e) {}
+                                  })
+                                })
+                              }))
+
+                              return
                             } catch (e) {}
 
                             // Get the detected output of each statement
@@ -2107,40 +2253,43 @@
                                       return
 
                                     // Whether or not an error has been found in the output
-                                    let isErrorFound = match.indexOf('KEYWORD:ERROR:STARTED') != -1
+                                    let isErrorFound = `${match}`.indexOf('KEYWORD:ERROR:STARTED') != -1,
+                                      isOutputInfo = `${match}`.indexOf('[OUTPUT:INFO]') != -1
 
                                     // Refresh the latest metadata based on specific actions and only if no erorr has occurred
-                                    if (['alter', 'create', 'drop'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound)) {
-                                      // Make sure to clear the previous timeout
-                                      try {
-                                        clearTimeout(refreshMetadataTimeout)
-                                      } catch (e) {}
+                                    try {
+                                      if (['alter', 'create', 'drop'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound)) {
+                                        // Make sure to clear the previous timeout
+                                        try {
+                                          clearTimeout(refreshMetadataTimeout)
+                                        } catch (e) {}
 
-                                      // Set the timeout to be triggerd and refresh the metadata
-                                      refreshMetadataTimeout = setTimeout(() => $(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(), 1000)
-                                    }
+                                        // Set the timeout to be triggerd and refresh the metadata
+                                        refreshMetadataTimeout = setTimeout(() => $(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(), 1000)
+                                      }
+                                    } catch (e) {}
 
                                     // The sub output structure UI
                                     let element = `
-                                        <div class="sub-output ${isErrorFound ? 'error' : ''}">
-                                          <div class="sub-output-content"></div>
-                                          <div class="sub-actions" hidden>
-                                            <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block" data-mulang="download the block" capitalize-first>
-                                              <ion-icon name="download"></ion-icon>
-                                            </div>
-                                            <div class="download-options">
-                                              <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
-                                                <ion-icon name="csv"></ion-icon>
+                                          <div class="sub-output ${isErrorFound ? 'error' : ''} ${isOutputInfo ? 'info': ''}">
+                                            <div class="sub-output-content"></div>
+                                            <div class="sub-actions" hidden>
+                                              <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block" data-mulang="download the block" capitalize-first>
+                                                <ion-icon name="download"></ion-icon>
                                               </div>
-                                              <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
-                                                <ion-icon name="pdf"></ion-icon>
+                                              <div class="download-options">
+                                                <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                                  <ion-icon name="csv"></ion-icon>
+                                                </div>
+                                                <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                                  <ion-icon name="pdf"></ion-icon>
+                                                </div>
+                                              </div>
+                                              <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Trace the query" data-mulang="trace the query" capitalize-first>
+                                                <ion-icon name="query-tracing"></ion-icon>
                                               </div>
                                             </div>
-                                            <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Trace the query" data-mulang="trace the query" capitalize-first>
-                                              <ion-icon name="query-tracing"></ion-icon>
-                                            </div>
-                                          </div>
-                                        </div>`
+                                          </div>`
 
                                     // Append a `sub-output` element in the output's container
                                     outputContainer.append($(element).show(function() {
@@ -2211,7 +2360,23 @@
                                           tabulatorObject = _tabulatorObject
                                         })
 
-                                        $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').removeClass('busy')
+                                        try {
+                                          $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+
+                                          try {
+                                            clearTimeout(killProcessTimeout)
+                                          } catch (e) {}
+
+                                          if (!isOutputIncomplete)
+                                            hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+
+                                          if (isOutputIncomplete)
+                                            killProcessTimeout = setTimeout(() => {
+                                              killProcessBtn.parent().addClass('show')
+
+                                              setTimeout(() => hintsContainer.addClass('show'), 1000)
+                                            }, 1500)
+                                        } catch (e) {}
 
                                         // Show the block
                                         blockElement.show().addClass('show')
@@ -2379,6 +2544,7 @@
                                         .replace(createRegex(OS.EOL, 'g'), '<br>')
                                         .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>')
                                         .replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
+                                        .replace('[OUTPUT:INFO]', '')
                                         .replace(/\r?\n?KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\r?\n?/gmi, '')
 
                                       // Convert any ANSI characters to HTML characters - especially colors -
@@ -2404,7 +2570,23 @@
                             // Show the current active prefix/prompt
                             setTimeout(() => blockElement.find('div.prompt').text(minifyText(prefix).slice(0, -1)).hide().fadeIn('fast'), 1000)
 
-                            $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').removeClass('busy')
+                            try {
+                              $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+
+                              try {
+                                clearTimeout(killProcessTimeout)
+                              } catch (e) {}
+
+                              if (!isOutputIncomplete)
+                                hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+
+                              if (isOutputIncomplete)
+                                killProcessTimeout = setTimeout(() => {
+                                  killProcessBtn.parent().addClass('show')
+
+                                  setTimeout(() => hintsContainer.addClass('show'), 1000)
+                                }, 1500)
+                            } catch (e) {}
 
                             // Show the block
                             blockElement.show().addClass('show')
@@ -2568,10 +2750,10 @@
 
                           /**
                            * Handle the termination of the terminal's session
-                           * `CTRL+C` or `CTRL+D`
+                           * `CTRL+D`
                            */
                           try {
-                            if (!(ctrlKey && (key.toLowerCase() == 'c' || key.toLowerCase() == 'd') && !shiftKey))
+                            if (!(ctrlKey && key.toLowerCase() == 'd' && !shiftKey))
                               throw 0
 
                             // Call the inner function
@@ -2649,17 +2831,23 @@
                       } catch (e) {}
                     }
                     // End of handling the app's terminal
+                    /*
+                     * Point at killing the current process
+                     * Point at the CQLSH session's overall container
+                     */
+                    let cqlshSessionTabContainer = $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`),
+                      killProcessBtn = cqlshSessionTabContainer.find('div.kill-process button'),
+                      hintsContainer = cqlshSessionTabContainer.find('div.hints-container'),
+                      killProcessTimeout
 
                     // This block of code for the interactive terminal
                     {
                       /**
                        * Define variables and inner functions to be used in the current scope
                        *
-                       * Point at the CQLSH session's overall container
+                       * Point at the CQLSH interactive terminal's session's main container
                        */
-                      let cqlshSessionTabContainer = $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`),
-                        // Point at the CQLSH interactive terminal's session's main container
-                        sessionContainer = $(`#_${cqlshSessionContentID}_container`),
+                      let sessionContainer = $(`#_${cqlshSessionContentID}_container`),
                         // Point at the statement's input field
                         statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`),
                         // Point at the interactive terminal's container
@@ -2812,6 +3000,8 @@
                         }
                       })
 
+                      let blockID
+
                       // Clicks the statement's execution button
                       executeBtn.click(function() {
                         // If the button is disabled then skip the upcoming code and end the process
@@ -2819,9 +3009,10 @@
                           return
 
                         // Get the statement
-                        let statement = statementInputField.val(),
-                          // Get a random ID for the block which will be created
-                          blockID = getRandomID(10)
+                        let statement = statementInputField.val()
+
+                        // Get a random ID for the block which will be created
+                        blockID = getRandomID(10)
 
                         // Clear the statement's input field and make sure it's focused on it
                         setTimeout(() => statementInputField.val('').trigger('input').focus().attr('style', null))
@@ -2847,6 +3038,20 @@
                         } catch (e) {}
 
                         executeBtn.parent().addClass('busy')
+
+                        {
+                          try {
+                            clearTimeout(killProcessTimeout)
+                          } catch (e) {}
+
+                          hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+
+                          killProcessTimeout = setTimeout(() => {
+                            killProcessBtn.parent().addClass('show')
+
+                            setTimeout(() => hintsContainer.addClass('show'), 1000)
+                          }, 1500)
+                        }
 
                         // Add the block
                         addBlock(sessionContainer, blockID, statement, (element) => {
@@ -2892,6 +3097,14 @@
                           })
                         })
                       })
+
+                      killProcessBtn.click(function() {
+                        IPCRenderer.send('pty:command', {
+                          id: clusterID,
+                          cmd: `KEYWORD:STATEMENT:IGNORE-${Math.floor(Math.random() * 999) + 1}`,
+                          blockID
+                        })
+                      }).hover(() => hintsContainer.hide(), () => hintsContainer.show())
 
                       // The statement's input field's value has been updated
                       statementInputField.on('input', function() {
@@ -3432,7 +3645,7 @@
                           // If there's a tree object already then attempt to destroy it
                           if (jsTreeObject != null)
                             try {
-                              $.jstree.destroy(jsTreeObject)
+                              $(`div.metadata-content[data-id="${metadataContentID}"]`).jstree('destroy')
                             } catch (e) {}
 
                           // Trigger the `click` event for the search in metadata tree view button; to make sure it's reset
@@ -4025,6 +4238,9 @@
                             // Update the status of the cluster in the mini cluster's list
                             updateMiniCluster(workspaceID, clusterID, true)
 
+                            // Flag to tell if the workarea is actually visible
+                            let isWorkareaVisible = workarea.is(':visible')
+
                             // Remove the work area element
                             workarea.remove()
 
@@ -4072,7 +4288,7 @@
                             })
 
                             // Clicks the `ENTER` button for the cluster's workspace
-                            if (moveToWorkspace || $('div.body div.right div.content div[content][content="workarea"]').is(':visible'))
+                            if (moveToWorkspace || isWorkareaVisible)
                               $(`div.workspaces-container div.workspace[data-id="${getAttributes(clusterElement, 'data-workspace-id')}"]`).find('div.button button').click()
 
                             setTimeout(() => {
@@ -5664,7 +5880,7 @@
                   // Loop through the names of the content
                   for (let name of ['manifest', 'values']) {
                     // Get the content from the OS keychain
-                    let content = await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`)
+                    let content = name == 'manifest' ? await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`) : JSON.stringify(await retrieveAllVariables(true))
 
                     // Create a name for the temporary file
                     files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandomID(20)}.aocwtmp`))
@@ -5848,7 +6064,7 @@
           // Loop through the names of the content
           for (let name of ['manifest', 'values']) {
             // Get the content from the OS keychain
-            let content = await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`)
+            let content = name == 'manifest' ? await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`) : JSON.stringify(await retrieveAllVariables(true))
 
             // Create a name for the temporary file
             files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandomID(20)}.aocwtmp`))
@@ -6874,7 +7090,7 @@
                     // Loop through the names of the content
                     for (let name of ['manifest', 'values']) {
                       // Get the content from the OS keychain
-                      let content = await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`)
+                      let content = name == 'manifest' ? await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`) : JSON.stringify(await retrieveAllVariables(true))
 
                       // Create a name for the temporary file
                       files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandomID(20)}.aocwtmp`))

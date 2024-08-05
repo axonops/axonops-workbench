@@ -1475,7 +1475,6 @@ div.body {
                         div.btn {
                           @include position();
                           transition: opacity 0.2s ease-in-out;
-                          opacity: 0.6;
 
                           &:hover {
                             opacity: 0.8;
@@ -2625,6 +2624,14 @@ div.tab-content {
                     background: #f44336;
                   }
                 }
+
+                &.info {
+                  color: var(--mdb-info);
+
+                  &:before {
+                    background: var(--mdb-info);
+                  }
+                }
               }
 
               div.processing {
@@ -2781,6 +2788,7 @@ div.tab-content {
             div.sub-actions {
               bottom: -22px !important;
             }
+            margin-top: 20px;
 
             &:not(:last-of-type) {
               margin-bottom: 35px;
@@ -3095,6 +3103,82 @@ div.tab-content {
                 }
               }
             }
+
+            div.kill-process {
+              position: absolute;
+              bottom: 110px;
+              right: 7px;
+              margin: auto;
+              width: 35px;
+              height: 35px;
+              border-radius: 50%;
+              overflow: hidden;
+              opacity: 0;
+              pointer-events: none;
+              transform: translateY(5px);
+              transition: all 0.4s ease-in-out;
+              z-index: 2;
+
+              &.show {
+                pointer-events: all;
+                animation-name: show-sandbox-icon;
+                animation-duration: 0.9s;
+                animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                animation-fill-mode: forwards;
+              }
+
+              button {
+                position: absolute;
+                inset: 0;
+                margin: auto;
+                padding: 0;
+                color: inherit !important;
+
+                ion-icon {
+                  font-size: 190%;
+                  position: absolute;
+                  inset: 0;
+                  margin: auto;
+                }
+              }
+            }
+          }
+
+          div.hints-container {
+            margin: 0 50px;
+            font-family: 'Terminal', monospace;
+            font-size: 85%;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(10px);
+            transition: all 0.4s ease-in-out;
+            display: flex;
+            flex-direction: row-reverse;
+            position: absolute;
+            right: 2px;
+            bottom: 115px;
+
+            &.show {
+              pointer-events: all;
+              animation-name: show-answer;
+              animation-duration: 0.9s;
+              animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+              animation-fill-mode: forwards;
+            }
+
+            div.hint {
+              width: fit-content;
+              padding: 0 5px;
+              border-radius: 5px;
+              color: white;
+              display: flex;
+              flex-direction: row;
+              flex-wrap: nowrap;
+              align-content: center;
+              align-items: center;
+              justify-content: flex-start;
+              opacity: 0.85;
+            }
           }
 
           div.bottom {
@@ -3103,32 +3187,39 @@ div.tab-content {
             margin-top: 3px;
 
             div.suggestions-list {
-              margin-top: 12px;
+              min-height: 30px;
+              overflow-y: auto;
+              position: relative;
+              height: calc(100% - 40px);
+              padding-bottom: 20px;
+              display: flex;
+              flex-direction: row;
+              flex-wrap: wrap;
+              align-content: flex-start;
+              align-items: flex-start;
+              justify-content: flex-start;
+              margin: 12px 50px 0;
 
               span.suggestion {
-                display: inline-block;
-                height: inherit;
+                display: block;
+                width: fit-content;
+                height: fit-content;
                 line-height: 1;
-                text: {
-                  transform: inherit;
-                  align: center;
-                }
+                text-transform: inherit;
+                text-align: center;
                 padding: 0.35em 0.65em;
-                font: {
-                  size: 0.75em;
-                  weight: 500;
-                }
+                font-size: 0.75em;
+                font-weight: 500;
                 color: inherit;
                 white-space: nowrap;
                 vertical-align: baseline;
-                border-radius: 0.27rem;
                 overflow: hidden;
                 box-shadow: 0 0;
                 background: #303036;
                 filter: opacity(0.6);
                 transition: filter 0.2s ease-in-out;
-                margin: 2px;
                 cursor: pointer;
+                margin: 1px;
 
                 &:first-child,
                 &:first-of-type {
@@ -3820,6 +3911,12 @@ div.webview-navigation {
       }
     }
 
+    &[action="more"] {
+      button {
+        flex-direction: row;
+      }
+    }
+
     &[action="back"] {
       button {
         flex-direction: row;
@@ -3829,6 +3926,81 @@ div.webview-navigation {
         }
       }
     }
+  }
+}
+
+div.webview-more-actions {
+  position: absolute;
+  background: #2f2f2f;
+  bottom: 37px;
+  right: 0;
+  left: 0;
+  margin: auto;
+  width: 150px;
+  border-radius: 7px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: all 0.2s ease-in-out;
+  z-index: 1;
+
+  &.show {
+    pointer-events: all;
+    animation: {
+      name: animate-save-snapshot;
+      duration: 0.8s;
+      timing-function: ease-out;
+      fill-mode: forwards;
+    }
+  }
+
+  div.nav {
+    width: 100%;
+    position: relative;
+
+    button {
+      color: inherit !important;
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 9px;
+      font-size: 80%;
+
+      &.disabled {
+        opacity: 0.35;
+      }
+
+      ion-icon {
+        font-size: 150%;
+        margin-left: 5px;
+
+        &[name="refresh"] {
+          margin-right: 5px;
+          font-size: 125%;
+          position: relative;
+          margin-left: 0;
+          bottom: 1px;
+        }
+
+        &[name="logout"] {
+          margin-right: 5px;
+          font-size: 125%;
+          position: relative;
+          margin-left: 0;
+          bottom: 1px;
+          transform: scaleX(-1);
+        }
+      }
+    }
+
+    &[action="logout"] {
+      border-radius: 0;
+      border-top: 1px #4b4b4b solid;
+    }
 
     &[action="refresh"] {
       ion-icon {
@@ -3836,6 +4008,37 @@ div.webview-navigation {
       }
     }
   }
+}
+
+div.ai-assistant {
+  div.loading-page {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    height: calc(100% - 30px);
+    bottom: auto;
+
+    &.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+  }
+}
+
+div.more-list-bg {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  display: none;
 }
 /**
 * Import right-to-left style

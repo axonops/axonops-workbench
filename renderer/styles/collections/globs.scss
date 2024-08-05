@@ -795,3 +795,40 @@ div.section {
     opacity: 0.2 !important;
   }
 }
+
+div.resolve-variables {
+  @include position(absolute, 0, 0, 6px, auto);
+  display: flex;
+  flex: {
+    direction: column;
+    wrap: nowrap;
+  }
+  align: {
+    items: center;
+    content: center;
+  }
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  overflow: hidden;
+
+  div.btn {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    opacity: 0.8;
+
+    ion-icon {
+      @include position();
+      color: #e3e3e3;
+      font-size: 150%;
+    }
+  }
+}
+
+.form-outline.form-white .form-control.disabled,
+.form-outline.form-white .form-control:disabled,
+.form-outline.form-white .form-control[readonly] {
+  background-color: rgba(255, 255, 255, 0.15);
+}

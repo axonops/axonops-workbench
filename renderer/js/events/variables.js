@@ -16,6 +16,7 @@
 
 {
   let variables = [], // All adopted/approved variables
+    variablesBeforeUpdate = [], // All variables before being updated
     removedVariables = null, // Removed variables to be replaced with their values
     changedVariables = null, // Changed variables in which some or all their attributes would be changed - name, value, and scope -
     savedWorkspaces = [], // All saved workspaces - synced and up to date -
@@ -87,13 +88,28 @@
       // The failure message if any error has occurred
       failureMessage = ''
 
+    // Get all variables before the updating process
+    variablesBeforeUpdate = await retrieveAllVariables(true)
+
     // Loop through rows (variables in the UI)
     content.children('div.variable').each(function() {
       let row = $(this), // Point at the variable's row
         nameInput = row.find(`input[var-type="name"]`), // Point at its name input field
         valueInput = row.find(`input[var-type="value"]`), // Point at its value
         selectedWorkspaces = row.find(`div.workspaces`), // Point at its workspaces badges parent
-        tempWorkspaces = [] // Temp array that will hold the selected workspaces
+        resolveVariables = row.find(`div.resolve-variables`), // Point at the button to resolve nested variables
+        tempWorkspaces = [], // Temp array that will hold the selected workspaces
+        variableNewValue = valueInput.val() // Save the variable's new value
+
+
+      try {
+        // Reset the viewing state of the nested variables
+        if (resolveVariables.find('ion-icon').attr('name') != 'eye-closed')
+          throw 0
+
+        resolveVariables.find('div.btn').click()
+        variableNewValue = row.find(`a[action="delete"]`).attr('variable-value')
+      } catch (e) {}
 
       // Loop through workspaces and push each workspace's ID plus whether it's selected or not
       selectedWorkspaces.children('div.btn.workspace').each(function() {
@@ -110,7 +126,7 @@
         selectedWorkspaces = selectedWorkspaces.map((workspace) => workspace.id)
 
       // Make sure both name and value for the current variable/row are not empty
-      if ([nameInput.val(), valueInput.val()].some((val) => `${val}`.trim().length <= 0) || !(/^\d*[a-zA-Z][a-zA-Z\d]*$/g.test(`${nameInput.val()}`))) {
+      if ([nameInput.val(), variableNewValue].some((val) => `${val}`.trim().length <= 0) || !(/^\d*[a-zA-Z][a-zA-Z\d]*$/g.test(`${nameInput.val()}`))) {
         // If not, show feedback to the user
         failureMessage = I18next.capitalizeFirstLetter(I18next.t('variable or more are not having invalid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters'))
 
@@ -124,7 +140,7 @@
       // Push the variable to the `temp` array
       temp.push({
         name: nameInput.val(),
-        value: valueInput.val(),
+        value: variableNewValue,
         scope: selectedWorkspaces
       })
 
@@ -133,7 +149,7 @@
        *
        * First, filter variables and keep whose are similar in name or value
        */
-      collision = temp.filter((variable) => variable.name == nameInput.val() || variable.value == valueInput.val())
+      collision = temp.filter((variable) => variable.name == nameInput.val() || variable.value == variableNewValue)
 
       /**
        * Second, apply another filter that will keep variables with an intersection in their scope
@@ -176,7 +192,7 @@
        */
       if (
         (getAttributes(deleteBtn, 'variable-name') != nameInput.val() && getAttributes(deleteBtn, 'variable-name').trim().length != 0) ||
-        (getAttributes(deleteBtn, 'variable-value') != valueInput.val() && getAttributes(deleteBtn, 'variable-value').trim().length != 0) ||
+        (getAttributes(deleteBtn, 'variable-value') != variableNewValue && getAttributes(deleteBtn, 'variable-value').trim().length != 0) ||
         (JSON.stringify(selectedWorkspacesIDs) != JSON.stringify(originalselectedWorkspacesIDs))
       ) {
         /**
@@ -195,7 +211,7 @@
           },
           value: {
             old: getAttributes(deleteBtn, 'variable-value'),
-            new: valueInput.val()
+            new: variableNewValue
           },
           scope: {
             old: originalselectedWorkspacesIDs,
@@ -207,7 +223,7 @@
       // Update the delete button's attributes
       deleteBtn.attr({
         'variable-name': nameInput.val(),
-        'variable-value': valueInput.val(),
+        'variable-value': variableNewValue,
         'variable-scope': selectedWorkspacesIDs
       })
 
@@ -216,6 +232,18 @@
        * If the variable is empty, it should be ignored if it has been deleted, this is done by checking the `ignored` attribute
        */
       deleteBtn.removeAttr('ignored')
+
+      // Show/hide the `eye` button based on whether or not nested variables have been found
+      {
+        // Flag to tell if nested variables have been found
+        let isNestedVariablesExist = `${variableNewValue}`.match(/\${(.*?)}/gm) != null
+
+        // Update associated attributes
+        resolveVariables.attr({
+          'hidden': (isNestedVariablesExist || resolveVariables.attr('data-had-variable') != null) ? null : '',
+          'data-had-variable': isNestedVariablesExist ? '' : null
+        })
+      }
     })
 
     // If a collision has been detected then stop the updating process and call the callback function
@@ -266,7 +294,7 @@
   })
 
   // Retrieve all saved values in JSON object format
-  retrieveVariables = async (onlyVariables = false) => {
+  retrieveVariables = async (onlyVariables = false, handleNestedVariables = false) => {
     try {
       // The saved variables' manifest and their values
       let variablesManifest = await Keytar.findPassword('AxonOpsWorkbenchVarsManifest'),
@@ -296,6 +324,15 @@
         } catch (e) {}
       })
 
+      // Reverse `variables` array; so newly added ones will be at the top
+      variables = variables.reverse()
+
+      // Return variables if needed
+      try {
+        if (onlyVariables)
+          return (handleNestedVariables ? resolveNestedVariables(variables) : variables)
+      } catch (e) {}
+
       /**
        * Handle the missing variables
        *
@@ -317,6 +354,9 @@
         })
       } catch (e) {}
 
+      // Concat the defined and the missing variables
+      variables = variables.concat(missingVariables)
+
       /**
        * As a final result, there should be a valid `variables` array
        *
@@ -329,17 +369,6 @@
 
       // Remove all rows/variables
       content.children('div.variable').remove()
-
-      // Reverse `variables` array; so newly added ones will be at the top
-      variables = variables.reverse()
-
-      try {
-        if (onlyVariables)
-          return variables
-      } catch (e) {}
-
-      // Concat the defined and the missing variables
-      variables = variables.concat(missingVariables)
 
       // Create a row element for each variable
       variables.forEach((variable) => createVariableElement(variable))
@@ -354,7 +383,7 @@
   }
 
   // Set global function to get all variables in all scopes
-  global.retrieveAllVariables = async () => await retrieveVariables(true)
+  global.retrieveAllVariables = async (handleNestedVariables = false) => await retrieveVariables(true, handleNestedVariables)
 
   /**
    * Create a UI element for a variable in the settings' dialog, sub-elements are:
@@ -374,7 +403,9 @@
       variableNameID,
       variableValueID,
       deleteBtnID
-    ] = getRandomID(15, 3)
+    ] = getRandomID(15, 3),
+      // Check if the variable's value has nested variables
+      isNestedVariablesExist = `${variable.value}`.match(/\${(.*?)}/gm) != null
 
     // Variable UI element structure
     let element = `
@@ -391,6 +422,11 @@
               </div>
               <div class="col-md-5">
                 <div class="form-outline form-white left-margin">
+                  <div class="resolve-variables" ${!isNestedVariablesExist ? 'hidden' : 'data-had-variable'}>
+                    <div class="btn btn-tertiary" data-mdb-ripple-color="light" data-workspaces="${variable.scope.join(',')}" data-variable-name="${variable.name}">
+                      <ion-icon name="eye-opened"></ion-icon>
+                    </div>
+                  </div>
                   <input type="text" class="form-control form-control-m variable-value" id="_${variableValueID}" spellcheck="false" var-type="value">
                   <label class="form-label">
                     <span mulang="variable value" capitalize></span>
@@ -510,6 +546,33 @@
             $(allWorkspacesButton).attr('data-selected', 'true')
           }))
         })
+
+        // Click the `resolve variables` - the `eye` - button
+        $(this).find('div.resolve-variables div.btn').click(async function() {
+          try {
+            // Get all available variables
+            let allVariables = await retrieveAllVariables(true),
+              // Point at the `delete` button; to retrieve saved info about the variable
+              deleteBtn = $(`a[button-id="${deleteBtnID}"]`),
+              // Get the variable's name
+              variableName = deleteBtn.attr('variable-name'),
+              // Get its scope as an array
+              workspaces = deleteBtn.attr('variable-scope').split(','),
+              // Whether or not the value has already been resolved
+              isValueResolved = $(this).find('ion-icon').attr('name') == 'eye-closed',
+              // Get the resolved version of the variable
+              variableResolved = allVariables.find((variable) => variable.name == variableName && JSON.stringify(variable.scope) == JSON.stringify(workspaces))
+
+            // Change the button's state
+            $(this).find('ion-icon').attr('name', `eye-${isValueResolved ? 'opened' : 'closed'}`)
+
+            // Set the value based on the state
+            $(`input#_${variableValueID}`).val(isValueResolved ? variableResolved.originalValue : variableResolved.value)
+
+            // Disable/enable the value's input field based on the state
+            $(`input#_${variableValueID}`).attr('disabled', isValueResolved ? null : '')
+          } catch (e) {}
+        })
       })
 
       // Handle different events and UI elements related to variables
@@ -540,8 +603,6 @@
 
           // Filter variables and remove the deleted one
           variables = variables.filter((_var) => _var.name != name && _var.value != value)
-
-          console.log("HERE");
 
           // Show the empty message again if there are no variables nor any rows
           if (variables.length <= 0 && content.children('div.variable').length <= 0) {
@@ -626,7 +687,9 @@
     // Get all saved workspaces
     let savedWorkspaces = await Modules.Workspaces.getWorkspaces(),
       // Get the currently active workspace ID
-      workspaceID = getActiveWorkspaceID()
+      workspaceID = getActiveWorkspaceID(),
+      // Get all saved/updated variables
+      updatedVariables = await retrieveAllVariables(true)
 
     // Loop through all saved workspaces
     for (let workspace of savedWorkspaces) {
@@ -643,7 +706,10 @@
 
       // Loop through clusters objects, and update their `cqlsh.rc` file's content
       for (let cluster of clusters)
-        await Modules.Clusters.updateFilesVariables(workspace.id, cluster.content, cluster.path, removedVariables, changedVariables)
+        await Modules.Clusters.updateFilesVariables(workspace.id, cluster.content, cluster.path, removedVariables, changedVariables, {
+          before: variablesBeforeUpdate,
+          after: updatedVariables
+        })
 
       // If the current workspace is not the active one, or there's no need to update the editor's content then skip the upcoming code
       if (workspace.id != workspaceID || !updateEditor)
@@ -652,7 +718,10 @@
       // Get the editor's content
       let editorContent = editor.getValue(),
         // New content will be manipulated after updating values to variables
-        newContent = await Modules.Clusters.updateFilesVariables(workspace.id, editorContent, null, removedVariables, changedVariables)
+        newContent = await Modules.Clusters.updateFilesVariables(workspace.id, editorContent, null, removedVariables, changedVariables, {
+          before: variablesBeforeUpdate,
+          after: updatedVariables
+        })
 
       // Set the new content
       editor.setValue(newContent)

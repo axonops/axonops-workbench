@@ -791,7 +791,7 @@ App.on('second-instance', () => {
   IPCMain.on('public-key:get', (_, id) => {
     // Define the bin folder path
     // let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
-    let binFolder = Path.join((extraResourcesPath != null ? Path.join(__dirname, '..', '..', 'main') : Path.join(__dirname)), 'bin')
+    let binFolder = Path.join((extraResourcesPath != null ? Path.join(__dirname, '..', '..', 'main') : Path.join(__dirname)), 'bin', 'keys_generator')
 
     // Run the keys generator tool
     let binCall = `./keys_generator`

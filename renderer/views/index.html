@@ -189,24 +189,42 @@
       Second is the question text area and ask button container
       And finally, the loading container -->
       <div class="content ai-assistant not-initialized">
+        <div class="loading-page">
+          <l-square size="30" stroke="3" stroke-length="0.25" bg-opacity="0.1" speed="0.9" color="#777777"></l-square>
+        </div>
+
         <!-- Integrate the AxonOps™ AI using `webview` tag -->
         <!-- <webview style="height: calc(100% - 30px); bottom: auto;" class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups preload="../js/axonops_ai_webview.js"></webview> -->
         <webview style="height: calc(100% - 30px); bottom: auto;" class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups></webview>
 
+        <div class="more-list-bg"></div>
+
         <div class="webview-navigation">
           <div class="nav" action="back">
-            <button type="button" class="btn btn-tertiary btn-sm disabled" data-mdb-ripple-color="#ffffff">
+            <button type="button" class="btn btn-tertiary btn-sm disabled" data-mdb-ripple-color="light">
               <ion-icon name="arrow-up"></ion-icon> back
             </button>
           </div>
-          <div class="nav" action="refresh">
-            <button type="button" class="btn btn-tertiary btn-sm" data-mdb-ripple-color="#ffffff">
-              <ion-icon name="refresh"></ion-icon> refresh
+          <div class="nav" action="more">
+            <button type="button" class="btn btn-tertiary btn-sm" style="padding-right: 20px;" data-mdb-ripple-color="light">
+              <ion-icon name="more-h"></ion-icon> more
             </button>
           </div>
           <div class="nav" action="forward">
-            <button type="button" class="btn btn-tertiary btn-sm disabled" data-mdb-ripple-color="#ffffff">
+            <button type="button" class="btn btn-tertiary btn-sm disabled" data-mdb-ripple-color="light">
               <ion-icon name="arrow-up"></ion-icon> forward
+            </button>
+          </div>
+        </div>
+        <div class="webview-more-actions">
+          <div class="nav" action="refresh">
+            <button type="button" class="btn btn-tertiary btn-sm" data-mdb-ripple-color="light">
+              <ion-icon name="refresh"></ion-icon> refresh
+            </button>
+          </div>
+          <div class="nav" action="logout">
+            <button type="button" class="btn btn-tertiary btn-sm" data-mdb-ripple-color="light">
+              <ion-icon name="logout"></ion-icon> logout
             </button>
           </div>
         </div>

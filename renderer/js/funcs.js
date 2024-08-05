@@ -2761,18 +2761,14 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
   try {
     // Get the object's values
     let objectValues = Object.keys(object),
-      // Define the manifest and the values of saved variables
-      variablesManifest = await Keytar.findPassword('AxonOpsWorkbenchVarsManifest'),
-      variablesValues = await Keytar.findPassword('AxonOpsWorkbenchVarsValues')
+      // Retrieve all saved variables
+      savedVariables = await retrieveAllVariables(true)
 
     // Define the final variables object
-    let variables = [],
-      // Convert manifest and values content from string JSON to object
-      variablesManifestObject = variablesManifest != null && `${variablesManifest}`.trim().length > 0 ? JSON.parse(variablesManifest) : [],
-      variablesValuesObject = variablesValues != null && `${variablesValues}`.trim().length > 0 ? JSON.parse(variablesValues) : []
+    let variables = []
 
     // Filter the variables based on their scope
-    variablesManifestObject = variablesManifestObject.filter(
+    variables = savedVariables.filter(
       // The filter is whether or not the variable's scope includes the current workspace, or it includes all workspaces
       (variable) => variable.scope.some(
         (workspace) => [
@@ -2780,25 +2776,6 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
           'workspace-all'
         ].includes(workspace))
     )
-
-    /**
-     * Loop through the variables' manifest
-     * If the variable has a value in the values file, then return it and use it, otherwise, it'll be ignored
-     */
-    variablesManifestObject.forEach((variable) => {
-      try {
-        // Check if there's a value exists in the variables' values file
-        let exists = variablesValuesObject.find((_variable) => _variable.name == variable.name && JSON.stringify(_variable.scope) == JSON.stringify(variable.scope))
-
-        // If it exists, push and adopt it
-        if (exists != undefined)
-          variables.push(exists)
-      } catch (e) {
-        try {
-          errorLog(e, 'functions')
-        } catch (e) {}
-      }
-    })
 
     // If the call is about getting the available variables for the workspace then return `variables` and skip the upcoming code
     if (rawData)
@@ -2940,6 +2917,68 @@ let variablesToValues = (object, variables) => {
 
   // Return the object after manipulation
   return object
+}
+
+/**
+ * Resolve variables inside variables' values
+ *
+ * @Parameters:
+ * {object} `variables` the variables to be manipulated
+ *
+ * @Return: {object} final result after the manipulation process
+ */
+let resolveNestedVariables = (variables) => {
+  // Inner function to resolve a passed variable's value
+  let resolveValue = (savedVariable) => {
+    // The final variable to be returned
+    let finalValue = `${savedVariable.value}`,
+      // Define and match all available variables in the current variable's value
+      foundVariables = finalValue.match(new RegExp(/\${(.*?)}/, 'gm'))
+
+    try {
+      // If no variable has been found in the current variable's value then skip this try-catch block
+      if (foundVariables == null)
+        throw 0
+
+      // Loop through the found variables in the value
+      for (let foundVariable of foundVariables) {
+        // Get the variable's name
+        let variableName = foundVariable.slice(2, foundVariable.length - 1),
+          // Get that nested variable
+          variable = variables.find(
+            (variable) => variable.name == variableName && savedVariable.scope.some(
+              (workspace) => variable.scope.find(
+                (_workspace) => ['workspace-all', workspace].includes(_workspace) || _workspace == 'workspace-all')
+            )
+          )
+
+        // If the nested variable hasn't been defined or it's actually the current variable then skip it
+        if (variable == undefined || variable === savedVariable)
+          continue
+
+        // Resolve the variable's value recursively
+        let resolvedValue = resolveValue(variable)
+
+        // Set the new updated value
+        finalValue = finalValue.replace(foundVariable, resolvedValue)
+      }
+    } catch (e) {}
+
+    // Return the final value
+    return finalValue
+  }
+
+  // Iterate through each variable and resolve its value
+  for (let variable of variables) {
+    // Hold the original value
+    variable.originalValue = `${variable.value}`
+
+    // Manipulate the variable's value
+    variable.value = resolveValue(variable)
+  }
+
+  // Return the variables
+  return variables
 }
 
 /**
@@ -3386,6 +3425,7 @@ let setUIColor = (workspaceColor) => {
           .tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort=ascending] .tabulator-col-content .tabulator-col-sorter .tabulator-arrow {border-bottom-color: ${backgroundColor.default} !important;}
           .tabulator .tabulator-footer .tabulator-page-size, .tabulator .tabulator-footer .tabulator-page {border: 1px solid ${backgroundColor.default} !important;color: #f8f8f8 !important;}
           .tabulator .tabulator-footer .tabulator-page.active{background:${backgroundColor.hover} !important;color: ${textColor} !important}
+          .colored-box-shadow{box-shadow: 0px 0px 20px 1px ${backgroundColor.hover.replace('70%', '40%')} !important;}
           :root {--workspace-background-color:${backgroundColor.default};}
         </style>`
 

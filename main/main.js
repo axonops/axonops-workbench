@@ -793,6 +793,12 @@ App.on('second-instance', () => {
     // let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
     let binFolder = Path.join((extraResourcesPath != null ? Path.join(__dirname, '..', '..', 'main') : Path.join(__dirname)), 'bin', 'keys_generator')
 
+    // Switch to the single-file mode
+    try {
+      if (!FS.lstatSync(binFolder).isDirectory())
+        binFolder = Path.join(binFolder, '..')
+    } catch (e) {}
+
     // Run the keys generator tool
     let binCall = `./keys_generator`
 

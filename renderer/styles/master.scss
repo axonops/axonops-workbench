@@ -1984,7 +1984,7 @@ div.body {
 
   &.show-hidden {
     div.hidden-area {
-      width: 350px;
+      width: 450px;
       pointer-events: all;
 
       div.content .animate-hide,
@@ -1997,7 +1997,7 @@ div.body {
     }
 
     div.right {
-      width: calc(100% - 80px - 350px);
+      width: calc(100% - 80px - 450px);
     }
   }
 }

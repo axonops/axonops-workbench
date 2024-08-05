@@ -96,7 +96,7 @@
   // Define the common element CSS selector
   let selector = `div.body div.left div.content div.navigation div.group div.item`,
     isHiddenAreaResizable = false,
-    latestWidth = 350,
+    latestWidth = 450,
     triggerStopTimeout,
     hiddenAreaElement = $('div.body div.main.hidden-area'),
     rightSideElement = $('div.body div.main.right'),
@@ -156,7 +156,7 @@
         pinnedToastsContainer.css('left', 100 + latestWidth + 'px')
 
         // Update the toasts' container's position
-        toastsContainer.css('transform', 'translateX(' + (latestWidth - 300) + 'px)')
+        toastsContainer.css('transform', 'translateX(' + (latestWidth - 100) + 'px)')
       })
     } catch (e) {}
 
@@ -196,7 +196,7 @@
           pinnedToastsContainer.css('left', 100 + latestWidth + 'px')
 
           // Update the toasts' container's position
-          toastsContainer.css('transform', 'translateX(' + (latestWidth - 300) + 'px)')
+          toastsContainer.css('transform', 'translateX(' + (latestWidth - 100) + 'px)')
 
           // Set a timeout to trigger the `resizestop` event after set period of time
           {

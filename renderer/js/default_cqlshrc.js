@@ -147,7 +147,7 @@ port = 9042
 
 ;; Optional section to point at script(s) to exectue before attempting to connect
 ; order is important here, as scripts will be executed one by one
-; also remember to number the "script" keyword to aviod errors
+; also remember to number the "script" keyword to avoid errors
 [preconnect]
 ; script1 = ../script.sh
 ; script2 = ../script.sh
@@ -155,7 +155,7 @@ port = 9042
 
 ;; Optional section to point at script(s) to execute after a successful attempt to disconnect
 ; order is important here, as scripts will be executed one by one
-; also remember to number the "script" keyword to aviod errors
+; also remember to number the "script" keyword to avoid errors
 [postconnect]
 ; script1 = ../script.sh
 ; script2 = ../script.sh

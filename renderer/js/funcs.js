@@ -2236,7 +2236,7 @@ let getKey = async (type, callback, called = false) => {
       throw 0
 
     // Define our private key service
-    const Service = 'AxonOpsDeveloperWorkbenchPrivateKey'
+    const Service = 'AxonOpsWorkbenchPrivateKey'
 
     /**
      * Use `keytar` to get the private key on the fly

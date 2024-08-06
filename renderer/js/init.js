@@ -310,7 +310,7 @@ $(document).on('initialize', () => {
 
   // Logout from the AxonOps AI Chat
   buttons.logout.click(() => webviewAIAssistant.attr('src', `${(new URL(Modules.Consts.AIAssistantServer)).origin}/logout`))
-  
+
   // Check and enable/disable the back/forward buttons based on the status
   setInterval(() => {
     buttons.back.toggleClass('disabled', !webviewAIAssistant[0].canGoBack())
@@ -325,7 +325,7 @@ $(document).on('initialize', async () => getMachineID().then((id) => {
   // Add the first set of logs
   setTimeout(() => {
     try {
-      addLog(`AxonOps™ Developer Workbench has loaded all components and is ready to be used`)
+      addLog(`AxonOps™ Workbench has loaded all components and is ready to be used`)
       addLog(`This machine has a unique ID of '${machineID}'`, 'env')
     } catch (e) {}
   }, 1000)

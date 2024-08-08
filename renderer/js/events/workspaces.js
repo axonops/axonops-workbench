@@ -1038,13 +1038,23 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   // Get its MDB object
                   inputObject = getElementMDBObject(input)
 
-                // Remove its value and remove the `active` class
-                input.val('').removeClass('active')
+                try {
+                  if (inputID != 'workspacePath')
+                    throw 0
+
+                  $('div.btn[data-action="defaultPath"][data-reference="workspace"]').click()
+                } catch (e) {
+                  // Remove its value and remove the `active` class
+                  input.val('').removeClass('active')
+                }
 
                 // Update the MDB object
                 inputObject.update()
                 inputObject._deactivate()
               })
+
+              // Clear the color picker's value and trigger the `input` event as a refresh
+              $('input#workspaceColorHidden').val('').trigger('input')
             }, 1000)
           } catch (e) {}
         })

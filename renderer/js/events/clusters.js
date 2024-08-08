@@ -841,7 +841,7 @@
                                         <div class="suggestion"></div>
                                         <textarea spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionStatementInputID}"></textarea>
                                         <label class="form-label">
-                                          <span mulang="execute cql statement" capitalize-first></span>
+                                          <span mulang="execute a cql statement" capitalize-first></span>
                                         </label>
                                       </div>
                                     </div>
@@ -5780,10 +5780,10 @@
 
                 // Show feedback to the user when the connection is established through the SSH tunnel
                 if (sshTunnelsObjects[clusterID] != null) {
-                  terminalPrintMessage(readLine, 'info', 'This connection is established through SSH tunnel')
+                  terminalPrintMessage(readLine, 'info', 'The connection is encrypted and transmitted through an SSH tunnel')
 
                   // Show it in the interactive terminal
-                  addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `This connection is established through SSH tunnel.`, null, true, 'neutral')
+                  addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `The connection is encrypted and transmitted through an SSH tunnel.`, null, true, 'neutral')
                 }
 
                 /**
@@ -5823,10 +5823,10 @@
 
                     // If the username is `cassandra` then warn the user about that
                     if (usernameDecrypted == 'cassandra') {
-                      terminalPrintMessage(readLine, 'warn', 'Connection is using default `cassandra` user')
+                      terminalPrintMessage(readLine, 'warn', 'This connection is using the default `cassandra` user')
 
                       // Show it in the interactive terminal
-                      addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), 'Connection is using default `cassandra` user.', null, true, 'warning')
+                      addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), 'This connection is using the default `cassandra` user.', null, true, 'warning')
                     }
                   })
                 } catch (e) {

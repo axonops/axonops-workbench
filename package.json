@@ -130,7 +130,7 @@
     "co": "^4.6.0",
     "configparser": "^0.3.10",
     "debug": "^4.3.5",
-    "diff": "^5.1.0",
+    "diff": "^5.2.0",
     "dotenv": "^16.4.5",
     "electron-context-menu": "^3.6.1",
     "electron-positioner": "^4.1.0",

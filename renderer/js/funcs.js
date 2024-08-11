@@ -591,7 +591,7 @@ let formatTimeUUID = (uuid, withMilliSeconds = false) => {
   // Extract the `int` time value from the UUID string
   let getTimeInt = (uuidString) => {
     // Split the UUID string
-    let uuidArray = uuidString.split('-'),
+    let uuidArray = `${uuidString}`.split('-'),
       // Rearrange and join specific parts; to create the time string in HEX format
       timeString = [uuidArray[2].substring(1), uuidArray[1], uuidArray[0]].join('')
 
@@ -646,7 +646,7 @@ let repairJSON = (json) => {
 
     // Remove more covered ASCII escape characters for Windows
     if (OS.platform == 'win32')
-      json = json.replace(/[\x1B\x9B][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]|\[0K|\[\?25[hl]/g, '')
+      json = `${json}`.replace(/[\x1B\x9B][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]|\[0K|\[\?25[hl]/g, '')
 
     // Attempt to match the JSON block `{...JSON content...}`
     try {
@@ -832,7 +832,7 @@ let convertTableToTabulator = (json, container, callback) => {
                 })
 
                 // Manipulate the field's content
-                let content = $(this).text().replace(/\-OBJECT\-/g, '')
+                let content = `${$(this).text()}`.replace(/\-OBJECT\-/g, '')
 
                 // Create a JSON/Object view for the content
                 $(this).text('').jsonViewer(JSON.parse(content), {
@@ -872,7 +872,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
    * To solve this issue, this inner function replaces the backward slashes
    * If the OS is not Windows it'll simply return the path without any manipulation
    */
-  let normalizePath = (path) => OS.platform == 'win32' ? path.replace(/\\/gm, '/') : path
+  let normalizePath = (path) => OS.platform == 'win32' ? `${path}`.replace(/\\/gm, '/') : `${path}`
 
   // Get a keyspaces container's random ID
   let keyspacesID = getRandomID(30),
@@ -994,7 +994,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       let attributes = ['virtual', 'durable_writes', 'is_cql_compatible', 'is_static', 'is_reversed']
 
       if (parentType == 'partitionKeys')
-        attributes = attributes.slice(0, -2)
+        attributes = `${attributes}`.slice(0, -2)
 
       // Loop through them all
       attributes.forEach((attribute) => {
@@ -1973,7 +1973,7 @@ jQuery.fn.extend({
         throw 0
 
       // Create an array that holds all the element's classes
-      let classes = element.className.split(/\s/)
+      let classes = `${element.className}`.split(/\s/)
 
       // Loop through each class and add it to the final selector
       classes.forEach((_class) => {
@@ -2247,7 +2247,7 @@ let getKey = async (type, callback, called = false) => {
        * It happens - especially on Windows - that a `\x00` hex value might be added,
        * this value leads to corruption in the private key format, so it should be removed
        */
-      key = key.replace(/\x00/gm, '')
+      key = `${key}`.replace(/\x00/gm, '')
 
       /**
        * If the key is valid, or it's the second attempt already, then pass the key value whatever it's to the `callback` function
@@ -2317,7 +2317,7 @@ let getKey = async (type, callback, called = false) => {
  * @Return: {string} either the encrypted text or an empty text if something went wrong
  */
 let encrypt = (publicKey, text) => {
-  let encryptedText = '' // The final encrypted text which be returned
+  let encryptedText = text || '' // The final encrypted text which be returned
 
   // Add log for this process
   try {
@@ -2352,7 +2352,7 @@ let encrypt = (publicKey, text) => {
  * @Return: {string} either the decrypted text or an empty text if something went wrong
  */
 let decrypt = (privateKey, text) => {
-  let decryptedText = '' // The final decrypted text
+  let decryptedText = text || '' // The final decrypted text
 
   // Add log for this process
   try {
@@ -2655,7 +2655,7 @@ let invertColor = (hex) => {
   try {
     // Check if the color starts with `#` and remove it if so
     if (hex.indexOf('#') === 0)
-      hex = hex.slice(1)
+      hex = `${hex}`.slice(1)
 
     // If the given color is in the short form `#fff` then expand it to `#ffffff`
     if (hex.length === 3)
@@ -2669,7 +2669,7 @@ let invertColor = (hex) => {
     let padZero = (str, len) => {
       len = len || 2
       let zeros = new Array(len).join('0')
-      return (zeros + str).slice(-len)
+      return `${(zeros + str)}`.slice(-len)
     }
 
     /**
@@ -2678,9 +2678,9 @@ let invertColor = (hex) => {
      * Convert the result to HEXA (16).
      * Then add leading zeros if needed.
      */
-    r = padZero((255 - parseInt(hex.slice(0, 2), 16)).toString(16))
-    g = padZero((255 - parseInt(hex.slice(2, 4), 16)).toString(16))
-    b = padZero((255 - parseInt(hex.slice(4, 6), 16)).toString(16))
+    r = padZero((255 - parseInt(`${hex}`.slice(0, 2), 16)).toString(16))
+    g = padZero((255 - parseInt(`${hex}`.slice(2, 4), 16)).toString(16))
+    b = padZero((255 - parseInt(`${hex}`.slice(4, 6), 16)).toString(16))
   } catch (e) {
     try {
       errorLog(e, 'functions')
@@ -2816,7 +2816,7 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
             let regex = createRegex(`${variable.value}`, `gm`)
 
             // Replace the variable's value with its name
-            subValue = subValue.replace(regex, '${' + variable.name + '}')
+            subValue = `${subValue}`.replace(regex, '${' + variable.name + '}')
           })
 
           // Update the object's value with the manipulated one
@@ -2845,7 +2845,7 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
         let regex = createRegex(`${variable.value}`, `gm`)
 
         // Replace the variable's value with its name
-        value = value.replace(regex, '${' + variable.name + '}')
+        value = `${value}`.replace(regex, '${' + variable.name + '}')
       })
 
       // Update the object's value with the manipulated one
@@ -2903,7 +2903,7 @@ let variablesToValues = (object, variables) => {
         let regex = createRegex('${' + variable.name + '}', 'gm')
 
         // Replace the object's value with the variable's value
-        value = value.replace(regex, variable.value)
+        value = `${value}`.replace(regex, variable.value)
       })
 
       // Update the object's value with the manipulated one
@@ -2943,7 +2943,7 @@ let resolveNestedVariables = (variables) => {
       // Loop through the found variables in the value
       for (let foundVariable of foundVariables) {
         // Get the variable's name
-        let variableName = foundVariable.slice(2, foundVariable.length - 1),
+        let variableName = `${foundVariable}`.slice(2, foundVariable.length - 1),
           // Get that nested variable
           variable = variables.find(
             (variable) => variable.name == variableName && savedVariable.scope.some(
@@ -2960,7 +2960,7 @@ let resolveNestedVariables = (variables) => {
         let resolvedValue = resolveValue(variable)
 
         // Set the new updated value
-        finalValue = finalValue.replace(foundVariable, resolvedValue)
+        finalValue = `${finalValue}`.replace(foundVariable, resolvedValue)
       }
     } catch (e) {}
 
@@ -3084,7 +3084,7 @@ let manipulateOutput = (output) => {
 
     // Another regex to cover more ASCII escape characters for Windows
     if (OS.platform == 'win32')
-      manipulatedOutput = manipulatedOutput.replace(/[\x1B\x9B][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]|\[0K|\[\?25[hl]/g, '')
+      manipulatedOutput = `${manipulatedOutput}`.replace(/[\x1B\x9B][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]|\[0K|\[\?25[hl]/g, '')
 
     // Return the final manipulated output
     return manipulatedOutput
@@ -3561,7 +3561,7 @@ let calcSwitchersAllowedHeight = () => {
  *
  * @Return: {string} final manipulated text
  */
-let setApacheCassandraRightSymbol = (text) => text.replace(/Cassandra/gm, 'Cassandra®')
+let setApacheCassandraRightSymbol = (text) => `${text}`.replace(/Cassandra/gm, 'Cassandra®')
 
 /**
  * Add a new log text in the current logging session

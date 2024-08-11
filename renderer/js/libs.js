@@ -185,7 +185,7 @@ try {
   modulesFiles.forEach((moduleFile) => {
     try {
       // Make sure the module file's name is in lowercase
-      moduleFile = moduleFile.toLowerCase()
+      moduleFile = `${moduleFile}`.toLowerCase()
 
       // Ignore any file which is not JavaScript
       if (!moduleFile.endsWith('.js'))

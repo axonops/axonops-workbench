@@ -3665,6 +3665,14 @@ div.row {
   &.margin-bottom {
     margin-bottom: 28px;
   }
+
+  &.flex-advanced {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-content: flex-start;
+    align-items: flex-start;
+  }
 }
 
 .table > :not(caption) > * > * {

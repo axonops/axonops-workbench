@@ -2317,7 +2317,7 @@ let getKey = async (type, callback, called = false) => {
  * @Return: {string} either the encrypted text or an empty text if something went wrong
  */
 let encrypt = (publicKey, text) => {
-  let encryptedText = text // The final encrypted text which be returned
+  let encryptedText = text || '' // The final encrypted text which be returned
 
   // Add log for this process
   try {
@@ -2352,7 +2352,7 @@ let encrypt = (publicKey, text) => {
  * @Return: {string} either the decrypted text or an empty text if something went wrong
  */
 let decrypt = (privateKey, text) => {
-  let decryptedText = text // The final decrypted text
+  let decryptedText = text || '' // The final decrypted text
 
   // Add log for this process
   try {

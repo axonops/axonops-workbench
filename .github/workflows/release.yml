@@ -45,7 +45,7 @@ jobs:
             exit 1
           fi
 
-      - name: Download CQLSH prebuilt binaries
+      - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
         run: |
           mkdir -p main/bin
           for binary in cqlsh-410 cqlsh-407 keys_generator; do

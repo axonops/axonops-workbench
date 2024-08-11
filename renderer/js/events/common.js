@@ -349,6 +349,7 @@
         maxNumSandboxProjects = config.get('limit', 'sandbox'),
         contentProtection = await Keytar.findPassword('AxonOpsWorkbenchContentProtection') || false,
         loggingEnabled = config.get('security', 'loggingEnabled'),
+        sandboxProjectsEnabled = config.get('features', 'sandboxProjects'),
         displayLanguage = config.get('ui', 'language')
 
       // Add log for this action
@@ -372,6 +373,9 @@
 
       // Check the logging system
       $('input#loggingSystem[type="checkbox"]').prop('checked', loggingEnabled == 'true')
+
+      // Check the sandbox projects
+      $('input#sandboxProjects[type="checkbox"]').prop('checked', sandboxProjectsEnabled == 'true')
 
       /**
        * Check the chosen display language - whether it's valid or not -
@@ -594,6 +598,8 @@
       let contentProtection = $('input#contentProtection[type="checkbox"]').prop('checked'),
         // Check logging system enable/disable status
         loggingEnabled = $('input#loggingSystem[type="checkbox"]').prop('checked'),
+        // Check the sandbox projects enable/disable status
+        sandboxProjectsEnabled = $('input#sandboxProjects[type="checkbox"]').prop('checked'),
         // Get the maximum allowed running instances
         maxNumCQLSHSessions = $('input#maxNumCQLSHSessions').val(),
         maxNumSandboxProjects = $('input#maxNumSandboxProjects').val(),
@@ -621,6 +627,7 @@
           // Update settings
           Keytar.setPassword('AxonOpsWorkbenchContentProtection', 'value', `${contentProtection}`)
           config.set('security', 'loggingEnabled', loggingEnabled)
+          config.set('features', 'sandboxProjects', sandboxProjectsEnabled)
           config.set('limit', 'cqlsh', maxNumCQLSHSessions)
           config.set('limit', 'sandbox', maxNumSandboxProjects)
           config.set('ui', 'language', chosenDisplayLanguage)

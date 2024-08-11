@@ -420,10 +420,11 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
           let numOfLines = data.newText.length - data.oldText.length
 
           // Loop based on the calculated number and push index as a line number to the `newLines` array
-          for (let i = data.oldText.length; i < data.oldText.length + numOfLines; ++i)
+          for (let i = data.newText.length - numOfLines; i < data.newText.length; ++i)
             newLines.push({
               number: i,
-              content: data.newText[i]
+              content: data.newText[i],
+              type: 'ADD'
             })
         } catch (e) {}
 
@@ -441,7 +442,8 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
             if ([diff.added, diff.removed].some((val) => val != undefined))
               changedLines.push({
                 number: i,
-                content: oldLine
+                content: oldLine,
+                type: 'CHANGE'
               })
           } catch (e) {
             try {

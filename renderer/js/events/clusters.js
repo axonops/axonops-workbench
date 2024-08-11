@@ -1179,7 +1179,8 @@
                             options: {
                               isWholeLine: true,
                               className: 'diff'
-                            }
+                            },
+                            type: change.type
                           })
 
                           // Line UI element structure
@@ -1210,8 +1211,30 @@
 
                         // Add highlights to both editors
                         (['old', 'new']).forEach((type) => {
+                          let finalHighlights = [...highlights]
+
                           try {
-                            metadataDiffEditors[type].decorations = metadataDiffEditors[type].object.deltaDecorations([], highlights)
+                            if (type != 'new')
+                              throw 0
+
+                            finalHighlights = finalHighlights.map((highlight) => {
+                              delete highlight.type
+                              return highlight
+                            })
+                          } catch (e) {}
+
+                          try {
+                            if (type != 'old')
+                              throw 0
+
+                            finalHighlights = (finalHighlights.filter((highlight) => highlight.type != 'ADD')).map((highlight) => {
+                              delete highlight.type
+                              return highlight
+                            })
+                          } catch (e) {}
+
+                          try {
+                            metadataDiffEditors[type].decorations = metadataDiffEditors[type].object.deltaDecorations([], finalHighlights)
                           } catch (e) {}
                         })
                       })
@@ -1779,6 +1802,7 @@
                                   },
                                   theme: 'vs-dark',
                                   scrollBeyondLastLine: true,
+                                  mouseWheelZoom: true,
                                   fontSize: 11
                                 })
 
@@ -2047,7 +2071,6 @@
                             isOutputIncomplete = allOutput.endsWith('KEYWORD:STATEMENT:INCOMPLETE'),
                             // Whether or not this output is ignored
                             isOutputIgnored = data.output.indexOf('KEYWORD:STATEMENT:IGNORE') != -1,
-
                             // Define the variable that will hold a timeout to refresh the metadata content
                             refreshMetadataTimeout
 
@@ -2103,12 +2126,12 @@
                             } catch (e) {}
 
                             try {
-                              if (!isOutputIgnored)
+                              if (!isOutputIgnored || blockElement.children('div.output').find('div.incomplete-statement').length != 0)
                                 throw 0
 
                               // The sub output structure UI
                               let element = `
-                                    <div class="sub-output info">
+                                    <div class="sub-output info incomplete-statement">
                                       <div class="sub-output-content">Incomplete statement has been detected and stopped the execution flow.</div>
                                     </div>`
 
@@ -8643,6 +8666,7 @@
               },
               theme: 'vs-dark',
               scrollBeyondLastLine: false,
+              mouseWheelZoom: true,
               fontSize: 11
             })
 

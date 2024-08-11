@@ -786,6 +786,7 @@ $(document).on('initialize', () => {
           },
           theme: 'vs-dark',
           scrollBeyondLastLine: true,
+          mouseWheelZoom: true,
           fontSize: 11
         })
 

@@ -87,7 +87,7 @@
       "load snapshot": "加载模式快照",
       "search": "搜索",
       "toggle schema snapshot selections": "切换数据库架构快照选择",
-      "delete selected snapshots": "删除选定的快照",
+      "delete selected schema snapshots": "删除选定的模式快照",
       "cancel": "取消",
       "confirm": "确认",
       "credentials": "凭据",

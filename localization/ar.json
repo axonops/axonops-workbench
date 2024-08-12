@@ -87,7 +87,7 @@
       "load schema snapshot": "تحميل لقطة مخطط قاعدة البيانات",
       "search": "بحث",
       "toggle schema snapshot selections": "تبديل اختيارات لقطات المخطط",
-      "delete selected snapshots": "حذف اللقطات المحددة",
+      "delete selected schema snapshots": "احذف لقطات المخطط المحددة",
       "cancel": "إلغاء",
       "confirm": "تأكيد",
       "credentials": "بيانات الاعتماد",

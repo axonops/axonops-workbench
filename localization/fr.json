@@ -87,7 +87,7 @@
       "load schema snapshot": "Charger une capture du schéma",
       "search": "Rechercher",
       "toggle schema snapshot selections": "Basculer les sélections de captures de schéma",
-      "delete selected snapshots": "Supprimer les captures sélectionnées",
+      "delete selected schema snapshots": "Supprimer les instantanés de schéma sélectionnés",
       "cancel": "Annuler",
       "confirm": "Confirmer",
       "credentials": "Informations d'authentification",

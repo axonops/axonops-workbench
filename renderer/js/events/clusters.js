@@ -3887,7 +3887,7 @@
                           Modules.Clusters.getSnapshots(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(clusterElement, 'data-folder')), (snapshots) => {
                             // If there are no saved snapshots then show feedback to the user and skip the upcoming code
                             if (snapshots.length <= 0)
-                              return showToast(I18next.capitalize(I18next.t('load snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('there are no saved snapshots for the cluster [b]$data[/b], attempt first to save one', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
+                              return showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('there are no saved snapshots for the cluster [b]$data[/b], attempt first to save one', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
 
                             // Reset some elements' state in the dialog
                             try {
@@ -3939,7 +3939,7 @@
                                   // Get the snapshot's path and name
                                   [snapshotPath, snapshotName] = getAttributes($(this), ['data-path', 'data-name'])
 
-                                // Clicks the loading button - to load snapshot in the old side -
+                                // Clicks the loading button - to load schema snapshot in the old side -
                                 $(this).find('a[action="load"]').click(async function() {
                                   try {
                                     // Add log about this loading process
@@ -3963,7 +3963,7 @@
                                     detectDifferentiationShow(snapshotContent, JSON.parse(metadataDiffEditors.new.object.getValue()))
 
                                     // Show success feedback to the user
-                                    showToast(I18next.capitalize(I18next.t('load snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot [b]$data[/b] has been successfully loaded', [snapshot.attr('data-name')])) + '.', 'success')
+                                    showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot [b]$data[/b] has been successfully loaded', [snapshot.attr('data-name')])) + '.', 'success')
 
                                     // Close the modal/dialog
                                     $('div.modal#loadSnapshot').find('button.btn-close').click()
@@ -3973,7 +3973,7 @@
                                     } catch (e) {}
 
                                     // If any error has occurred then show feedback to the user about the failure
-                                    showToast(I18next.capitalize(I18next.t('load snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]', [snapshot.attr('data-name')])) + '.', 'failure')
+                                    showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]', [snapshot.attr('data-name')])) + '.', 'failure')
                                   }
                                 })
 
@@ -8204,7 +8204,7 @@
       }
     }
 
-    // Load snapshot dialog
+    // Load schema snapshot dialog
     {
       // Define a portion of the common CSS selector
       let dialog = `div.modal#loadSnapshot div.modal-body`

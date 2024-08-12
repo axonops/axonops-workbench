@@ -84,7 +84,7 @@
       "maximum number": "الحد الأقصى للعدد",
       "sandbox projects": "مشاريع الرملية",
       "save settings": "حفظ الإعدادات",
-      "load snapshot": "تحميل اللقطة",
+      "load schema snapshot": "تحميل لقطة مخطط قاعدة البيانات",
       "search": "بحث",
       "toggle snapshots selections": "تبديل تحديد اللقطات",
       "delete selected snapshots": "حذف اللقطات المحددة",

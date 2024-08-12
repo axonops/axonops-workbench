@@ -84,7 +84,7 @@
       "maximum number": "Nombre maximum",
       "sandbox projects": "Projets sandbox",
       "save settings": "Enregistrer les paramètres",
-      "load snapshot": "Charger une capture",
+      "load schema snapshot": "Charger une capture du schéma",
       "search": "Rechercher",
       "toggle snapshots selections": "Basculer la sélection des captures",
       "delete selected snapshots": "Supprimer les captures sélectionnées",

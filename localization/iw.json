@@ -121,7 +121,7 @@
       "copy metadata": "העתק מטא-נתונים",
       "refresh metadata": "רענן מטא-נתונים",
       "visualized metadata": "מטא-נתונים מודלים",
-      "cluster diff": "הבחנת אשכול",
+      "schema diff": "השוואת סכמות",
       "restart the work area": "הפעל אזור העבודה מחדש",
       "close the work area": "סגור אזור העבודה",
       "refresh the view": "רענן את התצוגה",

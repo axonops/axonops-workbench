@@ -772,13 +772,13 @@
                                     </span>
                                   </a>
                                 </li>
-                                <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="cluster diff" capitalize data-title="Cluster Diff">
+                                <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="schema diff" capitalize data-title="Schema Diff">
                                   <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${metadataDifferentiationContentID}" role="tab" aria-selected="true">
                                     <span class="icon">
                                       <ion-icon name="differentiation"></ion-icon>
                                     </span>
                                     <span class="title">
-                                      <span mulang="cluster diff" capitalize></span>
+                                      <span mulang="schema diff" capitalize></span>
                                     </span>
                                   </a>
                                 </li>

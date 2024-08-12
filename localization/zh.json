@@ -121,7 +121,7 @@
       "copy metadata": "复制元数据",
       "refresh metadata": "刷新元数据",
       "visualized metadata": "可视化元数据",
-      "cluster diff": "集群差异",
+      "schema diff": "模式差异",
       "restart the work area": "重新启动工作区",
       "close the work area": "关闭工作区",
       "refresh the view": "刷新视图",

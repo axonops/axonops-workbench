@@ -121,7 +121,7 @@
       "copy metadata": "نسخ البيانات الوصفية",
       "refresh metadata": "تحديث البيانات الوصفية",
       "visualized metadata": "بيانات وصفية مرئية",
-      "cluster diff": "فارق المجموعة",
+      "schema diff": "اختلاف المخطط",
       "restart the work area": "إعادة تشغيل منطقة العمل",
       "close the work area": "إغلاق منطقة العمل",
       "refresh the view": "تحديث العرض",

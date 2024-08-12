@@ -148,7 +148,7 @@
       "there is no difference between the old and new metadata": "لا يوجد اختلاف بين البيانات الوصفية القديمة والجديدة",
       "failed to save snapshot, please make sure the app has write permissions and try again": "فشل في حفظ اللقطة، يرجى التحقق من أن التطبيق يمتلك صلاحيات الكتابة والمحاولة مرة أخرى",
       "the snapshot has been successfully saved with name [b]$data[/b]": "تم حفظ اللقطة بنجاح بالاسم [b]$data[/b]",
-      "there are no saved snapshots for the cluster [b]$data[/b], attempt first to save one": "لا توجد لقطات محفوظة للمجموعة [b]$data[/b]، حاول أولاً حفظ واحدة",
+      "there are no saved schema snapshots for the cluster [b]$data[/b], attempt first to save one": "لا توجد لقطات محفوظة للمجموعة [b]$data[/b]، حاول أولاً حفظ واحدة",
       "the snapshot [b]$data[/b] has been successfully loaded": "تم تحميل اللقطة [b]$data[/b] بنجاح",
       "failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]": "فشل في تحميل اللقطة [b]$data[/b]، تأكد من وجود الملف وأنه ملف [code]JSON[/code] صالح",
       "delete snapshot": "حذف اللقطة",

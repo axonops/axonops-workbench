@@ -148,7 +148,7 @@
       "there is no difference between the old and new metadata": "旧元数据和新元数据之间没有区别",
       "failed to save snapshot, please make sure the app has write permissions and try again": "保存快照失败，请确保应用程序具有写权限并重试",
       "the snapshot has been successfully saved with name [b]$data[/b]": "已成功保存名为 [b]$data[/b] 的快照",
-      "there are no saved snapshots for the cluster [b]$data[/b], attempt first to save one": "集群 [b]$data[/b] 没有保存的快照，请首先尝试保存一个",
+      "there are no schema saved snapshots for the cluster [b]$data[/b], attempt first to save one": "集群[b]$data[/b]没有保存的模式快照，请先尝试保存一个",
       "the snapshot [b]$data[/b] has been successfully loaded": "已成功加载快照 [b]$data[/b]",
       "failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]": "加载快照 [b]$data[/b] 失败，请确保文件存在且为有效的 [code]JSON[/code]",
       "delete snapshot": "删除快照",

@@ -148,7 +148,7 @@
       "there is no difference between the old and new metadata": "Il n'y a aucune différence entre les anciennes et les nouvelles métadonnées",
       "failed to save snapshot, please make sure the app has write permissions and try again": "Échec de l'enregistrement de la capture, assurez-vous que l'application dispose des autorisations d'écriture et réessayez",
       "the snapshot has been successfully saved with name [b]$data[/b]": "La capture a été enregistrée avec succès sous le nom [b]$data[/b]",
-      "there are no saved snapshots for the cluster [b]$data[/b], attempt first to save one": "Il n'y a aucune capture enregistrée pour le cluster [b]$data[/b], essayez d'en enregistrer une d'abord",
+      "there are no saved schema snapshots for the cluster [b]$data[/b], attempt first to save one": "Il n'y a pas de captures de schéma enregistrées pour le cluster [b]$data[/b], essayez d'en enregistrer une d'abord",
       "the snapshot [b]$data[/b] has been successfully loaded": "La capture [b]$data[/b] a été chargée avec succès",
       "failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]": "Échec du chargement de la capture [b]$data[/b], assurez-vous que le fichier existe et qu'il s'agit d'un [code]JSON[/code] valide",
       "delete snapshot": "Supprimer la capture",

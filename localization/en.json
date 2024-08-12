@@ -148,7 +148,7 @@
       "there is no difference between the old and new metadata": "there is no difference between the old and new metadata",
       "failed to save snapshot, please make sure the app has write permissions and try again": "failed to save snapshot, please make sure the app has write permissions and try again",
       "the snapshot has been successfully saved with name [b]$data[/b]": "the snapshot has been successfully saved with name [b]$data[/b]",
-      "there are no saved snapshots for the cluster [b]$data[/b], attempt first to save one": "there are no saved snapshots for the cluster [b]$data[/b], attempt first to save one",
+      "there are no saved schema snapshots for the cluster [b]$data[/b], attempt first to save one": "there are no saved schema snapshots for the cluster [b]$data[/b], attempt first to save one",
       "the snapshot [b]$data[/b] has been successfully loaded": "the snapshot [b]$data[/b] has been successfully loaded",
       "failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]": "failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]",
       "delete snapshot": "delete snapshot",

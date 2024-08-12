@@ -16,7 +16,7 @@
   ],
   "build": {
     "icon": "./renderer/assets/images/axonops-icon-256x256.png",
-    "copyright": "AxonOps Limited 2024",
+    "copyright": "©2024 AxonOps Limited",
     "appId": "com.axonops.workbench",
     "compression": "maximum",
     "asarUnpack": "**/*.node",

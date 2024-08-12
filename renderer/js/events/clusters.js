@@ -956,7 +956,7 @@
                                     <input type="text" class="form-control form-icon-trailing form-control-lg">
                                     <label class="form-label"><span mulang="snapshot suffix" capitalize></span> (<span mulang="optional" capitalize></span>)</label>
                                   </div>
-                                  <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color"><span mulang="save snapshot"></span></button>
+                                  <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color"><span mulang="save schema snapshot"></span></button>
                                 </div>
                                 <div class="changes-lines" data-id="${changesLinesContainerID}">
                                 </div>
@@ -3753,7 +3753,7 @@
                         let suffixContainer = $(`div.save-snapshot-suffix[data-id="${saveSnapshotSuffixContainerID}"]`),
                           // Point at the time element; where the snapshot's time will be printed to the user
                           timeElement = suffixContainer.children('div.time'),
-                          // Point at the save snapshot button
+                          // Point at the save schema snapshot button
                           saveSnapshotBtn = suffixContainer.children('button'),
                           // Point at the suffix's input field
                           suffixInput = suffixContainer.find('input'),
@@ -3808,7 +3808,7 @@
                           })
                         })
 
-                        // Clicks the button to open the save snapshot pop-up container
+                        // Clicks the button to open the save schema snapshot pop-up container
                         $(`span.btn[data-id="${saveSnapshotBtnID}"]`).click(function() {
                           // Reset the suffix value
                           suffixInput.val('')
@@ -3820,7 +3820,7 @@
                           timeFormatted = formatTimestamp(time, true).replace(/\:/gm, '_')
                           timeElement.text(`${timeFormatted}`)
 
-                          // Show the save snapshot container
+                          // Show the save schema snapshot container
                           suffixContainer.addClass('show')
 
                           // Add a backdrop element
@@ -3839,7 +3839,7 @@
                           }))
                         })
 
-                        // Clicks the `SAVE SNAPSHOT` button
+                        // Clicks the `SAVE SCHEMA SNAPSHOT` button
                         saveSnapshotBtn.click(function() {
                           // Get the suffix's value
                           let suffix = suffixInput.val(),
@@ -3874,10 +3874,10 @@
 
                             // Show failure feedback to the user and skip the upcoming code
                             if (err)
-                              return showToast(I18next.capitalize(I18next.t('save snapshot')), I18next.capitalizeFirstLetter(I18next.t('failed to save snapshot, please make sure the app has write permissions and try again')) + '.', 'failure')
+                              return showToast(I18next.capitalize(I18next.t('save schema snapshot')), I18next.capitalizeFirstLetter(I18next.t('failed to save snapshot, please make sure the app has write permissions and try again')) + '.', 'failure')
 
                             // Show success feedback to the user
-                            showToast(I18next.capitalize(I18next.t('save snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot has been successfully saved with name [b]$data[/b]', [snapshotName])) + '.', 'success')
+                            showToast(I18next.capitalize(I18next.t('save schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot has been successfully saved with name [b]$data[/b]', [snapshotName])) + '.', 'success')
                           })
                         })
 

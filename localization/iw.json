@@ -149,7 +149,7 @@
       "failed to save snapshot, please make sure the app has write permissions and try again": "נכשל בשמירת הצילום, אנא בדוק שהאפליקציה מורשה לכתוב ונסה שוב",
       "the snapshot has been successfully saved with name [b]$data[/b]": "הצילום נשמר בהצלחה תחת השם [b]$data[/b]",
       "there are no saved schema snapshots for the cluster [b]$data[/b], attempt first to save one": "אין צילומים שמורים עבור האשכול [b]$data[/b], יש לנסות לשמור צילום תחילה",
-      "the snapshot [b]$data[/b] has been successfully loaded": "הצילום [b]$data[/b] נטען בהצלחה",
+      "the schema snapshot [b]$data[/b] has been successfully loaded": "תמונת המצב של הסכימה [b]$data[/b] נטענה בהצלחה",
       "failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]": "נכשל בטעינת הצילום [b]$data[/b], נא לוודא שהקובץ קיים ומכיל [code]JSON[/code] חוקי",
       "delete snapshot": "מחק צילום",
       "failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it": "נכשל במחיקת הצילום [b]$data[/b], יתכן שכבר נמחק או שאין הרשאה למחיקתו",

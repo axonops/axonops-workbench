@@ -3963,7 +3963,7 @@
                                     detectDifferentiationShow(snapshotContent, JSON.parse(metadataDiffEditors.new.object.getValue()))
 
                                     // Show success feedback to the user
-                                    showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot [b]$data[/b] has been successfully loaded', [snapshot.attr('data-name')])) + '.', 'success')
+                                    showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the schema snapshot [b]$data[/b] has been successfully loaded', [snapshot.attr('data-name')])) + '.', 'success')
 
                                     // Close the modal/dialog
                                     $('div.modal#loadSnapshot').find('button.btn-close').click()

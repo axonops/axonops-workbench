@@ -149,7 +149,7 @@
       "failed to save snapshot, please make sure the app has write permissions and try again": "فشل في حفظ اللقطة، يرجى التحقق من أن التطبيق يمتلك صلاحيات الكتابة والمحاولة مرة أخرى",
       "the snapshot has been successfully saved with name [b]$data[/b]": "تم حفظ اللقطة بنجاح بالاسم [b]$data[/b]",
       "there are no saved schema snapshots for the cluster [b]$data[/b], attempt first to save one": "لا توجد لقطات محفوظة للمجموعة [b]$data[/b]، حاول أولاً حفظ واحدة",
-      "the snapshot [b]$data[/b] has been successfully loaded": "تم تحميل اللقطة [b]$data[/b] بنجاح",
+      "the schema snapshot [b]$data[/b] has been successfully loaded": "تم تحميل اللقطة [b]$data[/b] بنجاح",
       "failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]": "فشل في تحميل اللقطة [b]$data[/b]، تأكد من وجود الملف وأنه ملف [code]JSON[/code] صالح",
       "delete snapshot": "حذف اللقطة",
       "failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it": "فشل في حذف اللقطة [b]$data[/b]، قد يكون قد تم حذفها بالفعل أو لا توجد إذن لحذفها",

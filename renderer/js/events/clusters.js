@@ -3991,14 +3991,14 @@
                                         } catch (e) {}
 
                                         // Show feedback to the user
-                                        showToast(I18next.capitalize(I18next.t('delete snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it', [snapshotName])) + '.', 'failure')
+                                        showToast(I18next.capitalize(I18next.t('delete schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it', [snapshotName])) + '.', 'failure')
 
                                         // Skip the upcoming code
                                         return
                                       }
 
                                       // Show success feedback to the user
-                                      showToast(I18next.capitalize(I18next.t('delete snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot [b]$data[/b] has been successfully deleted', [snapshotName])) + '.', 'success')
+                                      showToast(I18next.capitalize(I18next.t('delete schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot [b]$data[/b] has been successfully deleted', [snapshotName])) + '.', 'success')
 
                                       // Remove the snapshot UI element in the container
                                       snapshot.remove()

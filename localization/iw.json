@@ -151,7 +151,7 @@
       "there are no saved schema snapshots for the cluster [b]$data[/b], attempt first to save one": "אין צילומים שמורים עבור האשכול [b]$data[/b], יש לנסות לשמור צילום תחילה",
       "the schema snapshot [b]$data[/b] has been successfully loaded": "תמונת המצב של הסכימה [b]$data[/b] נטענה בהצלחה",
       "failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]": "נכשל בטעינת הצילום [b]$data[/b], נא לוודא שהקובץ קיים ומכיל [code]JSON[/code] חוקי",
-      "delete snapshot": "מחק צילום",
+      "delete schema snapshot": "מחק תמונת מצב",
       "failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it": "נכשל במחיקת הצילום [b]$data[/b], יתכן שכבר נמחק או שאין הרשאה למחיקתו",
       "the snapshot [b]$data[/b] has been successfully deleted": "הצילום [b]$data[/b] נמחק בהצלחה",
       "do you want to delete the snapshot [b]$data[/b]? once you confirm, there is no undo": "האם ברצונך למחוק את הצילום [b]$data[/b]? לא ניתן לשחזר לאחר המחיקה",

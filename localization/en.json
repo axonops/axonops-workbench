@@ -151,7 +151,7 @@
       "there are no saved schema snapshots for the cluster [b]$data[/b], attempt first to save one": "there are no saved schema snapshots for the cluster [b]$data[/b], attempt first to save one",
       "the schema snapshot [b]$data[/b] has been successfully loaded": "the schema snapshot [b]$data[/b] has been successfully loaded",
       "failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]": "failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]",
-      "delete snapshot": "delete snapshot",
+      "delete schema snapshot": "delete schema snapshot",
       "failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it": "failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it",
       "the snapshot [b]$data[/b] has been successfully deleted": "the snapshot [b]$data[/b] has been successfully deleted",
       "do you want to delete the snapshot [b]$data[/b]? once you confirm, there is no undo": "do you want to delete the snapshot [b]$data[/b]? Once you confirm, there is no undo",

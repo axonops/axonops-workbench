@@ -151,7 +151,7 @@
       "there are no schema saved snapshots for the cluster [b]$data[/b], attempt first to save one": "集群[b]$data[/b]没有保存的模式快照，请先尝试保存一个",
       "the schema snapshot [b]$data[/b] has been successfully loaded": "模式快照 [b]$data[/b] 已成功加载",
       "failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]": "加载快照 [b]$data[/b] 失败，请确保文件存在且为有效的 [code]JSON[/code]",
-      "delete snapshot": "删除快照",
+      "delete schema snapshot": "删除快照",
       "failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it": "删除快照 [b]$data[/b] 失败，可能已被删除或没有删除权限",
       "the snapshot [b]$data[/b] has been successfully deleted": "快照 [b]$data[/b] 已成功删除",
       "do you want to delete the snapshot [b]$data[/b]? once you confirm, there is no undo": "是否要删除快照 [b]$data[/b]？一旦确认，将无法撤销",

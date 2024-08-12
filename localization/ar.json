@@ -151,7 +151,7 @@
       "there are no saved schema snapshots for the cluster [b]$data[/b], attempt first to save one": "لا توجد لقطات محفوظة للمجموعة [b]$data[/b]، حاول أولاً حفظ واحدة",
       "the schema snapshot [b]$data[/b] has been successfully loaded": "تم تحميل اللقطة [b]$data[/b] بنجاح",
       "failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]": "فشل في تحميل اللقطة [b]$data[/b]، تأكد من وجود الملف وأنه ملف [code]JSON[/code] صالح",
-      "delete snapshot": "حذف اللقطة",
+      "delete schema snapshot": "حذف اللقطة",
       "failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it": "فشل في حذف اللقطة [b]$data[/b]، قد يكون قد تم حذفها بالفعل أو لا توجد إذن لحذفها",
       "the snapshot [b]$data[/b] has been successfully deleted": "تم حذف اللقطة [b]$data[/b] بنجاح",
       "do you want to delete the snapshot [b]$data[/b]? once you confirm, there is no undo": "هل ترغب في حذف اللقطة [b]$data[/b]؟ بمجرد التأكيد، لا يمكن التراجع",

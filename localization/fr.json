@@ -3,7 +3,7 @@
   "rtl": "false",
   "fr": {
     "translation": {
-      "workspaces home": "Accueil des espaces de travail",
+      "workspaces": "Espaces de travail",
       "ai assistant": "Assistant IA",
       "help and documentation": "Aide et documentation",
       "settings": "Paramètres",

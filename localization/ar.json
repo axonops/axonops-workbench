@@ -133,7 +133,7 @@
       "old": "قديم",
       "changes": "التغييرات",
       "save a schema snapshot": "احفظ لقطة مخطط",
-      "load a snapshot": "تحميل لقطة",
+      "load a schema snapshot": "تحميل لقطة مخطط قاعدة البيانات",
       "open the snapshots folder": "فتح مجلد اللقطات",
       "new": "جديد",
       "snapshot suffix": "لاحقة اللقطة",

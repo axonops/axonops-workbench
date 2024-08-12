@@ -133,7 +133,7 @@
       "old": "old",
       "changes": "changes",
       "save a schema snapshot": "save a schema snapshot",
-      "load a snapshot": "load a snapshot",
+      "load a schema snapshot": "load a schema snapshot",
       "open the snapshots folder": "open the snapshots folder",
       "new": "new",
       "snapshot suffix": "snapshot suffix",

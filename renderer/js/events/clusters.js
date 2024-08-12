@@ -935,7 +935,7 @@
                                       data-id="${saveSnapshotBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="save-floppy"></ion-icon>
                                     </span>
-                                    <span class="load-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Load a snapshot" data-mulang="load a snapshot" capitalize-first
+                                    <span class="load-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Load a schema snapshot" data-mulang="load a schema snapshot" capitalize-first
                                       data-id="${loadSnapshotBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="upload"></ion-icon>
                                     </span>
@@ -3944,7 +3944,7 @@
                                   try {
                                     // Add log about this loading process
                                     try {
-                                      addLog(`Request to load a snapshot in path '${snapshotPath}' related to the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                      addLog(`Request to load a schema snapshot in path '${snapshotPath}' related to the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                                     } catch (e) {}
 
                                     // Read the snapshot's content

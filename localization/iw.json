@@ -133,7 +133,7 @@
       "old": "ישן",
       "changes": "שינויים",
       "save a schema snapshot": "שמור תמונת מצב של סכימה",
-      "load a snapshot": "טען צילום",
+      "load a schema snapshot": "לטעון תמונת מצב של סכימה",
       "open the snapshots folder": "פתח את תיקיית הצילומים",
       "new": "חדש",
       "snapshot suffix": "סיומת הצילום",

@@ -133,7 +133,7 @@
       "old": "Ancien",
       "changes": "Modifications",
       "save a schema snapshot": "Enregistrer une capture de schéma",
-      "load a snapshot": "Charger une capture",
+      "load a schema snapshot": "Charger une capture de schéma",
       "open the snapshots folder": "Ouvrir le dossier des captures",
       "new": "Nouveau",
       "snapshot suffix": "Suffixe de la capture",

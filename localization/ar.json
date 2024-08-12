@@ -86,7 +86,7 @@
       "save settings": "حفظ الإعدادات",
       "load schema snapshot": "تحميل لقطة مخطط قاعدة البيانات",
       "search": "بحث",
-      "toggle snapshots selections": "تبديل تحديد اللقطات",
+      "toggle schema snapshot selections": "تبديل اختيارات لقطات المخطط",
       "delete selected snapshots": "حذف اللقطات المحددة",
       "cancel": "إلغاء",
       "confirm": "تأكيد",

@@ -86,7 +86,7 @@
       "save settings": "保存设置",
       "load snapshot": "加载模式快照",
       "search": "搜索",
-      "toggle snapshots selections": "切换快照选择",
+      "toggle schema snapshot selections": "切换数据库架构快照选择",
       "delete selected snapshots": "删除选定的快照",
       "cancel": "取消",
       "confirm": "确认",

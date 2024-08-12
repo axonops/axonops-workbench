@@ -86,7 +86,7 @@
       "save settings": "save settings",
       "load schema snapshot": "load schema snapshot",
       "search": "search",
-      "toggle snapshots selections": "toggle snapshots selections",
+      "toggle schema snapshot selections": "toggle schema snapshot selections",
       "delete selected snapshots": "delete selected snapshots",
       "cancel": "cancel",
       "confirm": "confirm",

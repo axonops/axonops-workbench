@@ -86,7 +86,7 @@
       "save settings": "Enregistrer les paramètres",
       "load schema snapshot": "Charger une capture du schéma",
       "search": "Rechercher",
-      "toggle snapshots selections": "Basculer la sélection des captures",
+      "toggle schema snapshot selections": "Basculer les sélections de captures de schéma",
       "delete selected snapshots": "Supprimer les captures sélectionnées",
       "cancel": "Annuler",
       "confirm": "Confirmer",

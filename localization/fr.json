@@ -132,7 +132,7 @@
       "no query has been traced yet": "Aucune requête n'a encore été tracée",
       "old": "Ancien",
       "changes": "Modifications",
-      "save a snapshot": "Enregistrer une capture",
+      "save a schema snapshot": "Enregistrer une capture de schéma",
       "load a snapshot": "Charger une capture",
       "open the snapshots folder": "Ouvrir le dossier des captures",
       "new": "Nouveau",

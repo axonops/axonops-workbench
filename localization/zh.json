@@ -132,7 +132,7 @@
       "no query has been traced yet": "尚未跟踪任何查询",
       "old": "旧",
       "changes": "更改",
-      "save a snapshot": "保存快照",
+      "save a schema snapshot": "保存模式快照",
       "load a snapshot": "加载快照",
       "open the snapshots folder": "打开快照文件夹",
       "new": "新",

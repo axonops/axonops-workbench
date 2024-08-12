@@ -931,7 +931,7 @@
                                       data-id="${refreshDifferentiationBtnID}" ${isSandbox ? 'style=\"bottom:0px\"' : '' }>
                                       <ion-icon name="refresh"></ion-icon>
                                     </span>
-                                    <span class="save-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Save a snapshot" data-mulang="save a snapshot" capitalize-first
+                                    <span class="save-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Save a schema snapshot" data-mulang="save a schema snapshot" capitalize-first
                                       data-id="${saveSnapshotBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="save-floppy"></ion-icon>
                                     </span>
@@ -3852,7 +3852,7 @@
 
                           // Add log a about the request
                           try {
-                            addLog(`Request to save a snapshot of the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                            addLog(`Request to save a schema snapshot of the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                           } catch (e) {}
 
                           // Minimize the size of the metadata by compression

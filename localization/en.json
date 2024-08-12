@@ -132,7 +132,7 @@
       "no query has been traced yet": "no query has been traced yet",
       "old": "old",
       "changes": "changes",
-      "save a snapshot": "save a snapshot",
+      "save a schema snapshot": "save a schema snapshot",
       "load a snapshot": "load a snapshot",
       "open the snapshots folder": "open the snapshots folder",
       "new": "new",

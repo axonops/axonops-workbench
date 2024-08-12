@@ -132,7 +132,7 @@
       "no query has been traced yet": "لم يتم تتبع أي استعلام حتى الآن",
       "old": "قديم",
       "changes": "التغييرات",
-      "save a snapshot": "حفظ لقطة",
+      "save a schema snapshot": "احفظ لقطة مخطط",
       "load a snapshot": "تحميل لقطة",
       "open the snapshots folder": "فتح مجلد اللقطات",
       "new": "جديد",

@@ -132,7 +132,7 @@
       "no query has been traced yet": "עדיין לא נעשה מעקב אחר שאילתות",
       "old": "ישן",
       "changes": "שינויים",
-      "save a snapshot": "שמור צילום",
+      "save a schema snapshot": "שמור תמונת מצב של סכימה",
       "load a snapshot": "טען צילום",
       "open the snapshots folder": "פתח את תיקיית הצילומים",
       "new": "חדש",

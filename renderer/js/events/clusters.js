@@ -939,7 +939,7 @@
                                       data-id="${loadSnapshotBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="upload"></ion-icon>
                                     </span>
-                                    <span class="snapshots-folder btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Open the snapshots folder" data-mulang="open the snapshots folder" capitalize-first
+                                    <span class="snapshots-folder btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Open the schema snapshot folder" data-mulang="open the schema snapshot folder" capitalize-first
                                       data-id="${openSnapshotsFolderBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="folder-open-outline"></ion-icon>
                                     </span>

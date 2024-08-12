@@ -134,7 +134,7 @@
       "changes": "التغييرات",
       "save a schema snapshot": "احفظ لقطة مخطط",
       "load a schema snapshot": "تحميل لقطة مخطط قاعدة البيانات",
-      "open the snapshots folder": "فتح مجلد اللقطات",
+      "open the schema snapshot folder": "افتح مجلد لقطة المخطط",
       "new": "جديد",
       "snapshot suffix": "لاحقة اللقطة",
       "save snapshot": "حفظ اللقطة",

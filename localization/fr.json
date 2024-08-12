@@ -134,7 +134,7 @@
       "changes": "Modifications",
       "save a schema snapshot": "Enregistrer une capture de schéma",
       "load a schema snapshot": "Charger une capture de schéma",
-      "open the snapshots folder": "Ouvrir le dossier des captures",
+      "open the schema snapshot folder": "Ouvrez le dossier de capture du schéma",
       "new": "Nouveau",
       "snapshot suffix": "Suffixe de la capture",
       "save snapshot": "Enregistrer la capture",

@@ -134,7 +134,7 @@
       "changes": "更改",
       "save a schema snapshot": "保存模式快照",
       "load a schema snapshot": "加载架构快照",
-      "open the snapshots folder": "打开快照文件夹",
+      "open the schema snapshot folder": "打开架构快照文件夹",
       "new": "新",
       "snapshot suffix": "快照后缀",
       "save snapshot": "保存快照",

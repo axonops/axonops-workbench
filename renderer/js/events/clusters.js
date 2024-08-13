@@ -8138,7 +8138,7 @@
                 break
               }
               case 'certfile': {
-                title = 'select SSL certificate file'
+                title = 'select SSL CA certificate file'
                 break
               }
               case 'userkey': {

@@ -931,15 +931,15 @@
                                       data-id="${refreshDifferentiationBtnID}" ${isSandbox ? 'style=\"bottom:0px\"' : '' }>
                                       <ion-icon name="refresh"></ion-icon>
                                     </span>
-                                    <span class="save-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Save a snapshot" data-mulang="save a snapshot" capitalize-first
+                                    <span class="save-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Save a schema snapshot" data-mulang="save a schema snapshot" capitalize-first
                                       data-id="${saveSnapshotBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="save-floppy"></ion-icon>
                                     </span>
-                                    <span class="load-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Load a snapshot" data-mulang="load a snapshot" capitalize-first
+                                    <span class="load-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Load a schema snapshot" data-mulang="load a schema snapshot" capitalize-first
                                       data-id="${loadSnapshotBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="upload"></ion-icon>
                                     </span>
-                                    <span class="snapshots-folder btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Open the snapshots folder" data-mulang="open the snapshots folder" capitalize-first
+                                    <span class="snapshots-folder btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Open the schema snapshot folder" data-mulang="open the schema snapshot folder" capitalize-first
                                       data-id="${openSnapshotsFolderBtnID}" ${isSandbox ? 'hidden' : '' }>
                                       <ion-icon name="folder-open-outline"></ion-icon>
                                     </span>
@@ -956,7 +956,7 @@
                                     <input type="text" class="form-control form-icon-trailing form-control-lg">
                                     <label class="form-label"><span mulang="snapshot suffix" capitalize></span> (<span mulang="optional" capitalize></span>)</label>
                                   </div>
-                                  <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color"><span mulang="save snapshot"></span></button>
+                                  <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color"><span mulang="save schema snapshot"></span></button>
                                 </div>
                                 <div class="changes-lines" data-id="${changesLinesContainerID}">
                                 </div>
@@ -3753,7 +3753,7 @@
                         let suffixContainer = $(`div.save-snapshot-suffix[data-id="${saveSnapshotSuffixContainerID}"]`),
                           // Point at the time element; where the snapshot's time will be printed to the user
                           timeElement = suffixContainer.children('div.time'),
-                          // Point at the save snapshot button
+                          // Point at the save schema snapshot button
                           saveSnapshotBtn = suffixContainer.children('button'),
                           // Point at the suffix's input field
                           suffixInput = suffixContainer.find('input'),
@@ -3808,7 +3808,7 @@
                           })
                         })
 
-                        // Clicks the button to open the save snapshot pop-up container
+                        // Clicks the button to open the save schema snapshot pop-up container
                         $(`span.btn[data-id="${saveSnapshotBtnID}"]`).click(function() {
                           // Reset the suffix value
                           suffixInput.val('')
@@ -3820,7 +3820,7 @@
                           timeFormatted = formatTimestamp(time, true).replace(/\:/gm, '_')
                           timeElement.text(`${timeFormatted}`)
 
-                          // Show the save snapshot container
+                          // Show the save schema snapshot container
                           suffixContainer.addClass('show')
 
                           // Add a backdrop element
@@ -3839,7 +3839,7 @@
                           }))
                         })
 
-                        // Clicks the `SAVE SNAPSHOT` button
+                        // Clicks the `SAVE SCHEMA SNAPSHOT` button
                         saveSnapshotBtn.click(function() {
                           // Get the suffix's value
                           let suffix = suffixInput.val(),
@@ -3852,7 +3852,7 @@
 
                           // Add log a about the request
                           try {
-                            addLog(`Request to save a snapshot of the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                            addLog(`Request to save a schema snapshot of the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                           } catch (e) {}
 
                           // Minimize the size of the metadata by compression
@@ -3874,10 +3874,10 @@
 
                             // Show failure feedback to the user and skip the upcoming code
                             if (err)
-                              return showToast(I18next.capitalize(I18next.t('save snapshot')), I18next.capitalizeFirstLetter(I18next.t('failed to save snapshot, please make sure the app has write permissions and try again')) + '.', 'failure')
+                              return showToast(I18next.capitalize(I18next.t('save schema snapshot')), I18next.capitalizeFirstLetter(I18next.t('failed to save snapshot, please make sure the app has write permissions and try again')) + '.', 'failure')
 
                             // Show success feedback to the user
-                            showToast(I18next.capitalize(I18next.t('save snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot has been successfully saved with name [b]$data[/b]', [snapshotName])) + '.', 'success')
+                            showToast(I18next.capitalize(I18next.t('save schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot has been successfully saved with name [b]$data[/b]', [snapshotName])) + '.', 'success')
                           })
                         })
 
@@ -3887,7 +3887,7 @@
                           Modules.Clusters.getSnapshots(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(clusterElement, 'data-folder')), (snapshots) => {
                             // If there are no saved snapshots then show feedback to the user and skip the upcoming code
                             if (snapshots.length <= 0)
-                              return showToast(I18next.capitalize(I18next.t('load snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('there are no saved snapshots for the cluster [b]$data[/b], attempt first to save one', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
+                              return showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('there are no saved schema snapshots for the cluster [b]$data[/b], attempt first to save one', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
 
                             // Reset some elements' state in the dialog
                             try {
@@ -3939,12 +3939,12 @@
                                   // Get the snapshot's path and name
                                   [snapshotPath, snapshotName] = getAttributes($(this), ['data-path', 'data-name'])
 
-                                // Clicks the loading button - to load snapshot in the old side -
+                                // Clicks the loading button - to load schema snapshot in the old side -
                                 $(this).find('a[action="load"]').click(async function() {
                                   try {
                                     // Add log about this loading process
                                     try {
-                                      addLog(`Request to load a snapshot in path '${snapshotPath}' related to the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                      addLog(`Request to load a schema snapshot in path '${snapshotPath}' related to the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                                     } catch (e) {}
 
                                     // Read the snapshot's content
@@ -3963,7 +3963,7 @@
                                     detectDifferentiationShow(snapshotContent, JSON.parse(metadataDiffEditors.new.object.getValue()))
 
                                     // Show success feedback to the user
-                                    showToast(I18next.capitalize(I18next.t('load snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot [b]$data[/b] has been successfully loaded', [snapshot.attr('data-name')])) + '.', 'success')
+                                    showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the schema snapshot [b]$data[/b] has been successfully loaded', [snapshot.attr('data-name')])) + '.', 'success')
 
                                     // Close the modal/dialog
                                     $('div.modal#loadSnapshot').find('button.btn-close').click()
@@ -3973,7 +3973,7 @@
                                     } catch (e) {}
 
                                     // If any error has occurred then show feedback to the user about the failure
-                                    showToast(I18next.capitalize(I18next.t('load snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]', [snapshot.attr('data-name')])) + '.', 'failure')
+                                    showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]', [snapshot.attr('data-name')])) + '.', 'failure')
                                   }
                                 })
 
@@ -3991,14 +3991,14 @@
                                         } catch (e) {}
 
                                         // Show feedback to the user
-                                        showToast(I18next.capitalize(I18next.t('delete snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it', [snapshotName])) + '.', 'failure')
+                                        showToast(I18next.capitalize(I18next.t('delete schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it', [snapshotName])) + '.', 'failure')
 
                                         // Skip the upcoming code
                                         return
                                       }
 
                                       // Show success feedback to the user
-                                      showToast(I18next.capitalize(I18next.t('delete snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot [b]$data[/b] has been successfully deleted', [snapshotName])) + '.', 'success')
+                                      showToast(I18next.capitalize(I18next.t('delete schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot [b]$data[/b] has been successfully deleted', [snapshotName])) + '.', 'success')
 
                                       // Remove the snapshot UI element in the container
                                       snapshot.remove()
@@ -8204,7 +8204,7 @@
       }
     }
 
-    // Load snapshot dialog
+    // Load schema snapshot dialog
     {
       // Define a portion of the common CSS selector
       let dialog = `div.modal#loadSnapshot div.modal-body`

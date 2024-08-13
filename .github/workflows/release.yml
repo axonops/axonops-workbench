@@ -141,7 +141,7 @@ jobs:
             done
           ;;
           Linux)
-            FILES=$(ls -1 *.tar.gz)
+            FILES=$(ls -1 *.tar.gz *.deb *.rpm)
             for f in $FILES; do
               sha256sum $f > ${f}.sha256sum
             done

@@ -121,7 +121,7 @@
       "copy metadata": "Copier les métadonnées",
       "refresh metadata": "Actualiser les métadonnées",
       "visualized metadata": "Métadonnées visualisées",
-      "cluster diff": "Différence de cluster",
+      "schema diff": "Différence de schéma",
       "restart the work area": "Redémarrer la zone de travail",
       "close the work area": "Fermer la zone de travail",
       "refresh the view": "Actualiser la vue",

@@ -79,3 +79,14 @@ body:
       description: 'Describe what actually happened'
     validations:
       required: true
+  - type: checkboxes
+    id: severity
+    attributes:
+      label: 'Severity'
+      description: 'Select the severity of the bug'
+      options:
+        - Low
+        - Medium
+        - High
+    validations:
+      required: true

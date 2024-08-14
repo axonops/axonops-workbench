@@ -8,7 +8,7 @@ body:
       value: ':stop_sign: _AxonOps Workbench for Cassandra is currently in beta for its very first release. Please ensure you have the latest build before raising a bug._'
   - type: markdown
     attributes:
-      value: '🙏 _For support questions, please visit the project discussions forumn [https://github.com/axonops/axonops-workbench-cassandra/discussions](https://github.com/axonops/axonops-workbench-cassandra/discussions) instead._'
+      value: '🙏 _For support questions, please visit the project discussions forum [https://github.com/axonops/axonops-workbench-cassandra/discussions](https://github.com/axonops/axonops-workbench-cassandra/discussions) instead._'
   - type: checkboxes
     attributes:
       label: 'Do I have the most recent version of AxonOps Workbench installed?'

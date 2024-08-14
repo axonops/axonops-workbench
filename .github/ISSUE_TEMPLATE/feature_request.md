@@ -1,9 +1,9 @@
 ---
 name: Feature request
 about: Suggest an idea for AxonOps Workbench for for Apache Cassandra®
-title: "[feat]:"
+title: "[feat]: "
 labels: [enhancement, Needs Triage]
-assignees: ''
+assignees: 'millerjp'
 
 ---
 

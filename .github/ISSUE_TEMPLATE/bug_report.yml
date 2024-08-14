@@ -20,3 +20,10 @@ body:
       options:
       - label: 'I have searched the existing issues'
         required: true
+  - type: input
+    id: app_version
+    attributes:
+      label: 'Application Version'
+      description: 'Enter the version AxonOps Workbench where the bug occurs.'
+    validations:
+      required: true

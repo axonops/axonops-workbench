@@ -72,3 +72,10 @@ body:
       description: 'Describe what you expected to happen instead'
     validations:
       required: true
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: 'Actual Behavior'
+      description: 'Describe what actually happened'
+    validations:
+      required: true

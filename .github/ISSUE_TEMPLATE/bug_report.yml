@@ -31,3 +31,10 @@ body:
         - Linux
     validations:
       required: true
+  - type: input
+    id: operating_system_version
+    attributes:
+      label: 'Operating System Version'
+      description: 'Enter the specific version of yoour OS where the bug occurs.'
+    validations:
+      required: true

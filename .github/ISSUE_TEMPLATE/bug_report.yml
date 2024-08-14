@@ -38,3 +38,10 @@ body:
       description: 'Enter the specific version of yoour OS where the bug occurs.'
     validations:
       required: true
+  - type: input
+    id: cassandra_version
+    attributes:
+      label: 'Apache Cassandra Version(s)'
+      description: 'Select the Cassandra version(s) you are using to connect to where the bug occurs (if relevant)'
+    validations:
+      required: false

@@ -2,6 +2,8 @@ name: 🐞 Bug Report
 description: File a new bug report for AxonOps Workbench for Apache Cassandra®
 title: '[bug]: '
 labels: [Bug, Needs Triage]
+assignees: 'millerjp'
+projects: 'axonops/projects/6'
 body:
   - type: markdown
     attributes:

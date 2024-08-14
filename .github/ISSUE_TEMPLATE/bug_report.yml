@@ -1,11 +1,12 @@
 name: 🐞 Bug Report
 description: File a new bug report for AxonOps Workbench for Apache Cassandra®
-title: '[bug] <title>'
+title: '[bug]: '
 labels: [Bug, Needs Triage]
 body:
   - type: markdown
     attributes:
       value: ':stop_sign: _AxonOps Workbench for Cassandra is currently in beta for its very first release. Please ensure you have the latest build before raising a bug_'
+  
   - type: checkboxes
     attributes:
       label: 'Do I have the most recent version of AxonOps Workbench installed?'
@@ -15,6 +16,7 @@ body:
       options:
       - label: 'I am using the most recent beta release'
         required: true
+  
   - type: checkboxes
     attributes:
       label: 'Is there an existing issue for this?'
@@ -22,6 +24,7 @@ body:
       options:
       - label: 'I have searched the existing issues'
         required: true
+  
   - type: input
     id: app_version
     attributes:
@@ -29,6 +32,7 @@ body:
       description: 'Enter the version AxonOps Workbench where the bug occurs.'
     validations:
       required: true
+  
   - type: dropdown
     id: operating_system
     attributes:
@@ -40,6 +44,7 @@ body:
         - Linux
     validations:
       required: true
+  
   - type: input
     id: operating_system_version
     attributes:
@@ -47,11 +52,12 @@ body:
       description: 'Enter the specific version of yoour OS where the bug occurs.'
     validations:
       required: true
+  
   - type: input
     id: cassandra_version
     attributes:
-      label: 'Apache Cassandra Version'
-      description: 'Select the Cassandra version you are using to connect to where the bug occurs (if relevant)'
+      label: 'Apache Cassandra Version(s)'
+      description: 'Select the Cassandra version(s) you are using to connect to where the bug occurs (if relevant)'
     validations:
       required: false
 
@@ -99,12 +105,11 @@ body:
       label: 'Severity'
       description: 'Select the severity of the bug'
       options:
-        - label: Low
-          required: false
-        - label: Medium
-          required: false
-        - label: High
-          required: false
+        - Low
+        - Medium
+        - High
+    validations:
+      required: true
 
   - type: textarea
     attributes:

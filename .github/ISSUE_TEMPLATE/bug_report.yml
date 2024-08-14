@@ -3,7 +3,7 @@ description: File a new bug report for AxonOps Workbench for Apache Cassandra®
 title: '[bug]: '
 labels: [Bug, Needs Triage]
 assignees: 'millerjp'
-projects: 'github/6'
+projects: 'axonops/6'
 body:
   - type: markdown
     attributes:

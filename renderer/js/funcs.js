@@ -399,6 +399,8 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
         // Clean the toast be removing the unnecessary elements
         ($(this).find('div.toast-header').find('button')).add($(this).find('div.hide-progress')).remove()
 
+        $(this).css('width', '100%')
+
         // Get the current timestamp
         let time = new Date().getTime(),
           // Define a footer to be appended to the toast
@@ -3298,11 +3300,13 @@ let clearTemp = () => {
  */
 let createRegex = (text, flags) => {
   // Escape special characters
-  text = `${text}`.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+  text = quoteForRegex(text)
 
   // Return a regular expression object
   return new RegExp(text, flags)
 }
+
+let quoteForRegex = (text) => `${text}`.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1')
 
 /**
  * Extract two characters from a given cluster name in a systematic way
@@ -3641,7 +3645,7 @@ let closeAllWorkareas = () => {
        * If the work area is actually for a sandbox project
        */
       if (isSandboxProject)
-        return showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of docker project [b]$data[/b] is being terminated`, [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+        return showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of local cluster [b]$data[/b] is being terminated`, [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
       // Otherwise, show this toast
       showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of cluster [b]$data[/b] in workspace [b]$data[/b] has been successfully closed`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
@@ -3669,5 +3673,34 @@ let promptSudo = (callback) => {
   } catch (e) {
     // Return result with `false` if any error has occured
     callback(false)
+  }
+}
+
+
+let handleContentInfo = (type, element = null) => {
+  let leftSide = $('div.body div.right div.content-info div._left'),
+    rightSide = $('div.body div.right div.content-info div._right'),
+    workspacesActions = rightSide.find('div._actions._for-workspaces'),
+    clustersActions = rightSide.find('div._actions._for-clusters'),
+    arrow = leftSide.find('div._arrow'),
+    cluster = leftSide.find('div._cluster')
+
+  arrow.add(cluster).toggleClass('show', type == 'clusters')
+
+  workspacesActions.toggleClass('show', type != 'clusters')
+  clustersActions.toggleClass('show', type == 'clusters')
+
+  setTimeout(() => $('div.body div.right').removeClass('hide-content-info'), 200)
+
+  try {
+    if (element == undefined)
+      throw 0
+
+    cluster.find('div.text').text(element.attr('data-name'))
+    cluster.find('div._color').css('background', element.attr('data-color'))
+  } catch (e) {
+
+  } finally {
+
   }
 }

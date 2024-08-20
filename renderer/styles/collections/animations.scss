@@ -223,3 +223,42 @@
     opacity: 0.8;
   }
 }
+@keyframes show-cluster {
+  0% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  25% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+@keyframes show-arrow {
+  0% {
+    opacity: 0;
+    transform: rotate(90deg) translateY(5px);
+  }
+
+  25% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+    transform: rotate(90deg) translateY(0px);
+  }
+}
+@keyframes loading-effect {
+  0% {
+    background-position: -500px 0;
+  }
+
+  100% {
+    background-position: 500px 0;
+  }
+}

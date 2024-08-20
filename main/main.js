@@ -114,7 +114,7 @@ const URL = require('url'),
  *
  * Based on checking result the extra resources path would be changed
  */
-global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), (process.platform != 'win32' ? '.' : '') + 'axonops-developer-workbench') : null
+global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), (process.platform != 'win32' ? '.' : '') + 'axonops-workbench') : null
 
 /**
  * Import the custom node modules for the main thread

@@ -60,7 +60,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           id: 'workspace-sandbox',
           defaultPath: true,
           folder: 'localclusters',
-          name: 'Local Clusters (Sandbox)',
+          name: 'Local Clusters',
           color: '#3b71ca'
         })
       } catch (e) {}

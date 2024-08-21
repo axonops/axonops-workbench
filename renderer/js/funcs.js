@@ -3704,3 +3704,22 @@ let handleContentInfo = (type, element = null) => {
 
   }
 }
+
+let copyStatement = (button) => {
+  // Get the block's statement
+  let content = `${$(button).parent().parent().children('div.text').text()}`,
+    // Get the statement's size
+    contentSize = ByteSize(ValueSize(content))
+
+  // Copy statement to the clipboard
+  try {
+    Clipboard.writeText(content)
+  } catch (e) {
+    try {
+      errorLog(e, 'clusters')
+    } catch (e) {}
+  }
+
+  // Give feedback to the user
+  showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
+}

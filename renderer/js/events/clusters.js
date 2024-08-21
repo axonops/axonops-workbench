@@ -1274,7 +1274,7 @@
                               </span>
                               <div class="text"><pre>${isOnlyInfo ? (type == 'neutral' ? 'info' : type) : statement}</pre></div>
                               <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
-                                <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement"
+                                <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
                                   data-mulang="copy the statement" capitalize-first>
                                   <ion-icon name="copy-solid"></ion-icon>
                                 </div>
@@ -1323,29 +1323,6 @@
                         if (callback != null)
                           callback($(this))
 
-                        // Handle the copy action of the block's statement
-                        setTimeout(() => {
-                          // Clicks the copy button; to copy content in JSON string format
-                          $(this).find('div.btn[action="copy-statement"]').click(() => {
-                            // Get the block's statement
-                            let content = $(this).find('div.statement div.text').text(),
-                              // Get the statement's size
-                              contentSize = ByteSize(ValueSize(content))
-
-                            // Copy statement to the clipboard
-                            try {
-                              Clipboard.writeText(content)
-                            } catch (e) {
-                              try {
-                                errorLog(e, 'clusters')
-                              } catch (e) {}
-                            }
-
-                            // Give feedback to the user
-                            showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
-                          })
-                        }, 500)
-
                         // Skip the upcoming code if the block is not an info
                         if (!isOnlyInfo)
                           return
@@ -1381,9 +1358,6 @@
                           } catch (e) {}
                         }, 100)
                       }))
-
-
-
                     }
 
                     // Create the terminal instance from the XtermJS constructor
@@ -3106,7 +3080,7 @@
                       // Clicks the statement's execution button
                       executeBtn.click(function() {
                         // If the button is disabled then skip the upcoming code and end the process
-                        if ($(this).attr('disabled') != undefined || $(this).hasClass('busy'))
+                        if ($(this).attr('disabled') != undefined || $(this).parent().hasClass('busy'))
                           return
 
                         // Get the statement

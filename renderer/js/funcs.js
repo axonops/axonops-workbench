@@ -993,7 +993,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
        *
        * Define the attributes' names
        */
-      let attributes = ['virtual', 'durable_writes', 'is_cql_compatible', 'is_static', 'is_reversed']
+      let attributes = ['virtual', 'durable_writes', 'is_static', 'is_reversed']
 
       if (parentType == 'partitionKeys')
         attributes = `${attributes}`.slice(0, -2)

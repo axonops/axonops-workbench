@@ -44,7 +44,8 @@ const FS = require('fs-extra'),
  * Get the set extra resources path
  * This value will be updated from the main thread
  */
-let extraResourcesPath = null
+let extraResourcesPath = null,
+  tinyKeys
 
 // Get the set extra resources path from the main thread
 $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) => {
@@ -60,7 +61,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
         // Those files will be checked and created if not exist
         ensureFile: [
           ['config', 'app-config.cfg'],
-          ['data', 'docker', 'docker.json'],
+          ['data', 'localclusters', 'localclusters.json'],
           ['data', 'logging', 'log.tmp'],
           ['data', 'workspaces', 'workspaces.json']
         ]
@@ -746,6 +747,15 @@ $(document).on('initialize', () => {
     loadScript(Path.join(__dirname, '..', 'js', 'external', 'lottie-player.js'))
   }
 
+  // keypress library
+  {
+    try {
+      import(Path.join(__dirname, '..', '..', 'node_modules', 'tinykeys', 'dist', 'tinykeys.modern.js')).then((module) => {
+        tinyKeys = module
+      })
+    } catch (e) {}
+  }
+
   // Monaco editor
   {
     let monacoPath = Path.join(__dirname, '..', '..', 'node_modules', 'monaco-editor', 'min'),
@@ -1225,6 +1235,28 @@ $(document).on('initialize', () => {
  * This feature is hidden from Linux platform only
  */
 $(document).on('initialize', () => $(`div.row#contentProtectionContainer`).toggle(OS.platform() != 'linux'))
+
+
+$(document).on('initialize', () => {
+  try {
+    // Import the app's info from the `package.json` file
+    const AppInfo = require(Path.join(__dirname, '..', '..', 'package.json')); // This semicolon is critical here
+
+    // Set the app's name and version
+    (['title', 'version']).forEach((info) => document.getElementById(`app${info}`).innerHTML = AppInfo[info])
+  } catch (e) {}
+})
+
+$(document).on('initialize', () => {
+  try {
+    if (OS.platform() != 'darwin')
+      throw 0
+
+    $('kbd[ctrl]').each(function() {
+      $(this).text('META')
+    })
+  } catch (e) {}
+})
 
 // Send the `loaded` event to the main thread, and show the `About` dialog/modal
 $(document).on('initialize', () => setTimeout(() => {

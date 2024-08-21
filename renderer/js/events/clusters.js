@@ -48,6 +48,8 @@
       // Toggle the `empty` class
       setTimeout(() => parentClusterContainer.toggleClass('empty', isNoClusters), isNoClusters ? 200 : 10)
 
+      handleContentInfo('clusters', workspaceElement)
+
       // Point at the cog actions button in the UI
       let clusterActions = parentClusterContainer.find('div.section-actions')
 
@@ -207,12 +209,12 @@
               <button type="button" class="btn btn-primary btn-dark btn-sm connect changed-bg changed-color" reference-id="${clusterID}" button-id="${connectBtnID}" hidden></button>
             </div>
             <div class="actions">
-              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the docker project folder"
-                data-mulang="open the docker project folder" capitalize-first>
+              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the local cluster folder"
+                data-mulang="open the local cluster folder" capitalize-first>
                 <ion-icon name="folder-open"></ion-icon>
               </div>
-              <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete docker project"
-                data-mulang="delete docker project" capitalize-first>
+              <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete local cluster"
+                data-mulang="delete local cluster" capitalize-first>
                 <ion-icon name="trash"></ion-icon>
               </div>
             </div>
@@ -492,6 +494,8 @@
 
                   // Point at the cluster's work area
                   let contentCluster = content.children(`div.workarea[cluster-id="${clusterID}"]`)
+
+                  $('div.body div.right').addClass('hide-content-info')
 
                   try {
                     // If the work area does not exist then skip this try-catch block
@@ -923,12 +927,12 @@
                                 <div class="metadata-content new">
                                   <div class="editor-container-new"></div>
                                 </div>
-                                <span class="badge badge-secondary old"><span mulang="old" capitalize></span><span class="old-snapshot" data-id="${oldSnapshotNameID}"></span></span>
+                                <span class="badge badge-secondary old"><span mulang="previous" capitalize></span><span class="old-snapshot" data-id="${oldSnapshotNameID}"></span></span>
                                 <div class="centered-badges">
                                   <span class="badge badge-primary btn btn-secondary btn-dark btn-sm changes" data-mdb-ripple-color="dark" data-changes="0" data-id="${showDifferentiationBtnID}"><span mulang="changes" capitalize></span>: <span>0</span></span>
                                   <div class="actions">
-                                    <span class="refresh btn btn-secondary btn-dark btn-sm disableable" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
-                                      data-id="${refreshDifferentiationBtnID}" ${isSandbox ? 'style=\"bottom:0px\"' : '' }>
+                                    <span class="refresh btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
+                                      data-id="${refreshDifferentiationBtnID}">
                                       <ion-icon name="refresh"></ion-icon>
                                     </span>
                                     <span class="save-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Save a schema snapshot" data-mulang="save a schema snapshot" capitalize-first
@@ -949,7 +953,7 @@
                                     </span>
                                   </div>
                                 </div>
-                                <span class="badge badge-secondary new"><span mulang="new" capitalize></span><span class="new-metadata-time" data-id="${newMetadataTimeID}"></span></span>
+                                <span class="badge badge-secondary new"><span mulang="new" capitalize></span><span class="new-metadata-time" data-id="${newMetadataTimeID}" data-time></span></span>
                                 <div class="save-snapshot-suffix" data-id="${saveSnapshotSuffixContainerID}" ${isSandbox ? 'hidden' : '' }>
                                   <div class="time"></div>
                                   <div class="form-outline form-white margin-bottom">
@@ -980,9 +984,12 @@
                       // Initialize the input and textarea fields
                       setTimeout(() => {
                         $(this).find('input[type="text"], textarea').each(function() {
-                          getElementMDBObject($(this), 'Input')
+                          try {
+                            let object = getElementMDBObject($(this), 'Input')
+                            object.update()
+                          } catch (e) {}
                         })
-                      })
+                      }, 1000)
 
                       // Initialize all tooltips inside the work area
                       setTimeout(() => {
@@ -1260,7 +1267,7 @@
 
                       // The statement's block UI structure
                       let element = `
-                          <div class="block" data-id="${blockID}">
+                          <div class="block show" data-id="${blockID}">
                             <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
                               <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
                                 <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
@@ -1278,6 +1285,7 @@
                               <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
                             </div>
                             <div class="output">
+                              <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
                               ${isOnlyInfo ? statement : ''}
                             </div>
                             <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
@@ -1305,7 +1313,7 @@
                           </div>`
 
                       // Append the block and hide it - till and output is received -
-                      sessionContainer.append($(element).hide(function() {
+                      sessionContainer.append($(element).show(function() {
                         // Enable tooltips
                         setTimeout(() => $(this).find('[data-tippy="tooltip"]').each(function() {
                           getElementMDBObject($(this), 'Tooltip')
@@ -1373,6 +1381,9 @@
                           } catch (e) {}
                         }, 100)
                       }))
+
+
+
                     }
 
                     // Create the terminal instance from the XtermJS constructor
@@ -1710,6 +1721,8 @@
                           } catch (e) {}
                         })
 
+                        let isConnectionLost = false
+
                         // Listen to data sent from the pty instance which are fetched from the cqlsh tool
                         IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
                           // If the session is paused then nothing would be printed
@@ -1721,6 +1734,29 @@
 
                           // Store all received data
                           allOutput += data.output
+
+                          if (isConnectionLost)
+                            return
+
+
+                          try {
+                            if (!((['connectionerror:', ',last_host']).some((keyword) => minifyText(allOutput).includes(keyword))))
+                              throw 0
+
+                            isConnectionLost = true
+
+                            workareaElement.find('div.sub-sides.left div.cluster-metadata.loading div.loading').find('lottie-player')[0].stop()
+
+                            workareaElement.css({
+                              'transition': 'filter 0.5s ease-in-out',
+                              'filter': 'grayscale(1)'
+                            })
+
+
+                            showToast(I18next.t('connect with cluster'), `Failed to finalize the creation of the work area as the connection has been lost with cluster ${getAttributes(clusterElement, 'data-name')}. Consider to close this workarea and test connection with cluster before trying again.`, 'failure')
+
+                            return
+                          } catch (e) {}
 
                           // Check if the received data contains the `tracing session` keyword
                           try {
@@ -1787,24 +1823,29 @@
 
                               // Inner function to create either the old or new editor
                               let createEditor = (type, metadata) => {
-                                // Create the editor
-                                let editor = monaco.editor.create($(`div.tab-pane[tab="metadata-differentiation"]#_${metadataDifferentiationContentID}`).find(`div.editor-container-${type}`)[0], {
-                                  value: applyJSONBeautify(metadata, true),
-                                  language: 'json', // Set the content's language
-                                  minimap: {
-                                    enabled: true
-                                  },
-                                  readOnly: true,
-                                  glyphMargin: true, // This option allows to render an object in the line numbering side
-                                  suggest: {
-                                    showFields: false,
-                                    showFunctions: false
-                                  },
-                                  theme: 'vs-dark',
-                                  scrollBeyondLastLine: true,
-                                  mouseWheelZoom: true,
-                                  fontSize: 11
-                                })
+                                let metadataDiffContainer = $(`div.tab-pane[tab="metadata-differentiation"]#_${metadataDifferentiationContentID}`),
+                                  // Create the editor
+                                  editor = monaco.editor.create(metadataDiffContainer.find(`div.editor-container-${type}`)[0], {
+                                    value: applyJSONBeautify(metadata, true),
+                                    language: 'json', // Set the content's language
+                                    minimap: {
+                                      enabled: true
+                                    },
+                                    readOnly: true,
+                                    glyphMargin: true, // This option allows to render an object in the line numbering side
+                                    suggest: {
+                                      showFields: false,
+                                      showFunctions: false
+                                    },
+                                    theme: 'vs-dark',
+                                    scrollBeyondLastLine: true,
+                                    mouseWheelZoom: true,
+                                    fontSize: 11
+                                  })
+
+                                $(`span[data-id="${oldSnapshotNameID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+                                $(`span[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+                                $(`span[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
 
                                 // Update its layout
                                 setTimeout(() => editor.layout(), 200)
@@ -1828,6 +1869,9 @@
                               // Get the cluster's metadata
                               Modules.Clusters.getMetadata(clusterID, (metadata) => {
                                 try {
+                                  if (OS.platform() == 'win32')
+                                    metadata = metadata.replace(/\\"/g, `\"`)
+
                                   // Convert the metadata from JSON string to an object
                                   metadata = JSON.parse(metadata)
 
@@ -1997,11 +2041,30 @@
                                           // Parse the content from JSON string to object
                                           toBeLoadedMetadata = JSON.parse(toBeLoadedMetadata)
 
+                                          let snapshotTakenTime = ''
+
+                                          try {
+                                            snapshotTakenTime = toBeLoadedMetadata.time
+
+                                            delete toBeLoadedMetadata.time
+                                          } catch (e) {}
+
+                                          try {
+                                            if (snapshotTakenTime.length <= 0)
+                                              throw 0
+
+                                            snapshotTakenTime = ` (${formatTimestamp(snapshotTakenTime)})`
+                                          } catch (e) {}
+
                                           // The old side's badge will be updated with the snapshot name
-                                          $(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: ${snapshot.name}`)
+                                          setTimeout(() => {
+                                            $(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: 11${snapshot.name}${snapshotTakenTime}`)
+                                          }, 1000);
 
                                           // The new side's badge will be updated with fetched time of the latest metadata
                                           $(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+
+                                          $(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
                                         } catch (e) {}
 
                                         // Create an editor for the old metadata content
@@ -2134,6 +2197,8 @@
                                     <div class="sub-output info incomplete-statement">
                                       <div class="sub-output-content">Incomplete statement has been detected and stopped the execution flow.</div>
                                     </div>`
+
+                              blockElement.children('div.output').children('div.executing').hide()
 
                               // Append a `sub-output` element in the output's container
                               blockElement.children('div.output').append($(element).show(function() {
@@ -2314,6 +2379,8 @@
                                             </div>
                                           </div>`
 
+                                    outputContainer.children('div.executing').hide()
+
                                     // Append a `sub-output` element in the output's container
                                     outputContainer.append($(element).show(function() {
                                       // Point at the appended element
@@ -2345,7 +2412,7 @@
                                        */
                                       match = match.replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
                                         // Remove the statement from the output
-                                        .replace(new RegExp(blockElement.children('div.statement').text(), 'g'), '')
+                                        .replace(new RegExp(quoteForRegex(blockElement.children('div.statement').text()), 'g'), '')
                                         // Get rid of tracing results
                                         .replace(/Tracing\s*session\:[\S\s]+/gi, '')
                                         // Trim the output
@@ -2358,19 +2425,25 @@
                                       // Define the JSON string which will be updated if the output has valid JSON block
                                       let jsonString = '',
                                         // Define the tabulator object if one is created
-                                        tabulatorObject = null
+                                        tabulatorObject = null,
+                                        connectionLost = `${match}`.indexOf('NoHostAvailable:') != -1
 
                                       // Handle if the content has JSON string
                                       try {
                                         // If the statement is not `SELECT` then don't attempt to render a table
-                                        if (statementIdentifier.toLowerCase().indexOf('select') <= -1)
+                                        if (statementIdentifier.toLowerCase().indexOf('select') <= -1 || connectionLost)
                                           throw 0
 
                                         // Deal with the given output as JSON string by default
                                         jsonString = manipulateOutput(match).match(/\{[\s\S]+\}/gm)[0]
 
+                                        if (OS.platform() == 'win32')
+                                          jsonString = jsonString.replace(/\\"/g, `\"`)
+
                                         // Repair the JSON to make sure it can be converted to JSON object easily
-                                        jsonString = JSONRepair(jsonString)
+                                        try {
+                                          jsonString = JSONRepair(jsonString)
+                                        } catch (e) {}
 
                                         // Convert the JSON string to HTML table related to a Tabulator object
                                         convertTableToTabulator(jsonString, outputElement.find('div.sub-output-content'), (_tabulatorObject) => {
@@ -2815,37 +2888,42 @@
                          * Custom event `changefont` has been added, it will be triggered when the app's zooming level is changing
                          */
                         setTimeout(() => {
-                          workareaElement.find('div.terminal.xterm').on('keydown changefont', function(e, keyCode = null) {
-                            // If the `CTRL` key is not pressed or `CTRL` and `SHIFT` are being pressed together then skip this try-catch block
-                            if ((!e.ctrlKey && e.type != 'changefont') || e.shiftKey)
-                              return true
+                          try {
+                            if (OS.platform() == 'darwin')
+                              throw 0
 
-                            // If the event type is `changefont` then the keycode is provided in variable `keyCode`
-                            if (e.type == 'changefont')
-                              e.keyCode = keyCode
+                            workareaElement.find('div.terminal.xterm').on('keydown changefont', function(e, keyCode = null) {
+                              // If the `CTRL` key is not pressed or `CTRL` and `SHIFT` are being pressed together then skip this try-catch block
+                              if ((!e.ctrlKey && e.type != 'changefont') || e.shiftKey)
+                                return true
 
-                            // Switch between the `keyCode` values
-                            switch (e.keyCode) {
-                              // `+` Increase the font size
-                              case 187: {
-                                terminal.options.fontSize += 1
-                                break
-                              }
-                              // `-` Decrease the font size
-                              case 189: {
-                                terminal.options.fontSize -= 1
-                                break
-                              }
-                              // `0` reset the font size
-                              case 48: {
-                                terminal.options.fontSize = 13
-                                break
-                              }
-                            }
+                              // If the event type is `changefont` then the keycode is provided in variable `keyCode`
+                              if (e.type == 'changefont')
+                                e.keyCode = keyCode
 
-                            // Prevent any default behavior
-                            e.preventDefault()
-                          })
+                              // Switch between the `keyCode` values
+                              switch (e.keyCode) {
+                                // `+` Increase the font size
+                                case 187: {
+                                  terminal.options.fontSize += 1
+                                  break
+                                }
+                                // `-` Decrease the font size
+                                case 189: {
+                                  terminal.options.fontSize -= 1
+                                  break
+                                }
+                                // `0` reset the font size
+                                case 48: {
+                                  terminal.options.fontSize = 13
+                                  break
+                                }
+                              }
+
+                              // Prevent any default behavior
+                              e.preventDefault()
+                            })
+                          } catch (e) {}
                         }, 1000)
                       })
                     } catch (e) {
@@ -3479,7 +3557,7 @@
 
                         // Add log
                         try {
-                          addLog(`Created a bash session for sandbox project ${getAttributes(clusterElement, ['data-id'])}`)
+                          addLog(`Created a bash session for local cluster ${getAttributes(clusterElement, ['data-id'])}`)
                         } catch (e) {}
 
                         /**
@@ -3529,7 +3607,7 @@
                           setTimeout(() => IPCRenderer.send('pty:create:bash-session', {
                             id: `${clusterID}-bash-${sessionID}`,
                             projectID: `cassandra_${clusterID}`,
-                            path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'docker', clusterID),
+                            path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters', clusterID),
                             dockerComposeBinary: Modules.Docker.getDockerComposeBinary()
                           }), 500)
 
@@ -3794,6 +3872,7 @@
 
                               // Update the fetch date and time of the new metadata
                               $(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+                              $(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
 
                               // Update the new editor's value
                               metadataDiffEditors.new.object.setValue(metadata)
@@ -3816,7 +3895,7 @@
                           suffixInputObject._deactivate()
 
                           // Get the current date and time, format it, and show it to the user
-                          let time = new Date().getTime()
+                          let time = parseInt($(`span[data-id="${newMetadataTimeID}"]`).attr('data-time')) || new Date().getTime()
                           timeFormatted = formatTimestamp(time, true).replace(/\:/gm, '_')
                           timeElement.text(`${timeFormatted}`)
 
@@ -3849,6 +3928,14 @@
                             workspaceFolderPath = getWorkspaceFolderPath(workspaceID, true),
                             // The snapshot's initial name is the fetched time of the new metadata
                             snapshotName = `${timeFormatted}`
+
+                          try {
+                            metadata = JSON.parse(metadata)
+
+                            metadata.time = parseInt($(`span[data-id="${newMetadataTimeID}"]`).attr('data-time')) || new Date().getTime()
+
+                            metadata = JSON.stringify(metadata)
+                          } catch (e) {}
 
                           // Add log a about the request
                           try {
@@ -3953,11 +4040,26 @@
                                     // Convert it from JSON string to object
                                     snapshotContent = JSON.parse(snapshotContent)
 
+                                    let snapshotTakenTime = ''
+
+                                    try {
+                                      snapshotTakenTime = snapshotContent.time
+
+                                      delete snapshotContent.time
+                                    } catch (e) {}
+
                                     // Update the old editor's value
                                     metadataDiffEditors.old.object.setValue(applyJSONBeautify(snapshotContent, true))
 
+                                    try {
+                                      if (snapshotTakenTime.length <= 0)
+                                        throw 0
+
+                                      snapshotTakenTime = ` (${formatTimestamp(snapshotTakenTime)})`
+                                    } catch (e) {}
+
                                     // Update the old side's badge
-                                    $(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: ${snapshot.attr('data-name')}`)
+                                    $(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: ${snapshot.attr('data-name')}${snapshotTakenTime}`)
 
                                     // Detect differentiation between the metadata content's after loading the snapshot
                                     detectDifferentiationShow(snapshotContent, JSON.parse(metadataDiffEditors.new.object.getValue()))
@@ -4130,7 +4232,7 @@
                             let pinnedToastID = getRandomID(10)
 
                             // Show/create that toast
-                            showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+                            showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
 
                             // Attempt to close/stop the docker project
                             Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, (feedback) => {
@@ -4139,13 +4241,13 @@
                                * Show feedback to the user and skip the upcoming code
                                */
                               if (!feedback.status)
-                                return showToast(I18next.capitalize(I18next.t('stop docker containers')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the docker project [b]$data[/b] were not successfully stopped', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                                return showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] were not successfully stopped', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
 
                               /**
                                * Successfully closed/stopped
                                * Show feedback to the user
                                */
-                              showToast(I18next.capitalize(I18next.t('stop docker containers')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the docker project [b]$data[/b] have been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                              showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] have been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                               // Reset the sandbox project's element in the clusters/sandbox projects container
                               clusterElement.removeClass('test-connection enable-terminate-process')
@@ -4157,7 +4259,7 @@
                             })
 
                             // Show the initial feedback to the user which
-                            showToast(I18next.capitalize(I18next.t('close docker project work area')), I18next.capitalizeFirstLetter(I18next.replaceData('the work area of the docker project [b]$data[/b] has been successfully closed, attempting to stop the docker containers', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                            showToast(I18next.capitalize(I18next.t('close local cluster work area')), I18next.capitalizeFirstLetter(I18next.replaceData('the work area of the local cluster [b]$data[/b] has been successfully closed, attempting to stop the local cluster containers', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                             // Reset the button's text
                             setTimeout(() => $(`button[button-id="${startProjectBtnID}"]`).children('span').attr('mulang', 'start').text(I18next.t('start')))
@@ -4887,7 +4989,7 @@
 
                     // Add log for this request
                     try {
-                      addLog(`Request to start a sandbox project '${getAttributes(clusterElement, ['data-id'])}'`, 'action')
+                      addLog(`Request to start a local cluster '${getAttributes(clusterElement, ['data-id'])}'`, 'action')
                     } catch (e) {}
 
                     // Manipulate the maximum number, set it to the default value `1` if needed
@@ -4895,7 +4997,7 @@
 
                     // If the currently running projects are more than or equal to the maximum allowed number then end the process and show feedback to the user
                     if (([numRunningSandbox, numAttemptingSandbox]).some((num) => num >= maximumRunningSandbox))
-                      return showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of sandbox projects which allowed to be started simultaneously is [b]$data[/b]', [maximumRunningSandbox])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limitation can be changed from the app\'s settings in the limitation section')) + `.`, 'failure')
+                      return showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of local clusters which allowed to be started simultaneously is [b]$data[/b]', [maximumRunningSandbox])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limitation can be changed from the app\'s settings in the limitation section')) + `.`, 'failure')
 
                     // Inner function to execute the post-start code
                     let startPostProcess = (success = false) => {
@@ -4921,7 +5023,7 @@
                         let pinnedToastID = getRandomID(10)
 
                         // Show/create that toast
-                        showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+                        showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
 
                         // Stop the docker/sandbox project as an error has been occurred
                         Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, () => {})
@@ -4966,9 +5068,6 @@
                         } catch (e) {}
                       }
 
-                      // A time out function which triggers if Docker seems to be downloading files related to the project
-                      let installationInfo = setTimeout(() => showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.t('docker is seems to be downloading necessary images and related files, this is a once time process and might take up to 10 minutes depending on the internet connection')) + '.'), 90000) // After 1 minute and 30 seconds
-
                       /**
                        * Create a pinned toast to show the output of the process
                        *
@@ -4977,13 +5076,13 @@
                       let pinnedToastID = getRandomID(10)
 
                       // Show/create that toast
-                      showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+                      showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
 
                       // Check the existence of Docker in the machine
                       Modules.Docker.checkDockerCompose((dockerExists, userGroup) => {
                         // If Docker doesn't exist then show feedback to the user and skip the upcoming code
                         if (!dockerExists) {
-                          showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure it\'s installed and accessible before attempting to create a docker project')) + '.', 'failure')
+                          showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('local clusters feature requires [code]docker compose[/code] or [code]docker-compose[/code] tool to be installed, please make sure it\'s installed and accessible before attempting to create a local cluster')) + '.', 'failure')
 
                           startPostProcess()
 
@@ -4992,7 +5091,7 @@
 
                         // If the current user is not in the `docker` group
                         if (!userGroup) {
-                          showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again')) + '.', 'failure')
+                          showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('local clusters feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again')) + '.', 'failure')
 
                           startPostProcess()
 
@@ -5003,11 +5102,11 @@
                         isStartingProcessTerminated = false
 
                         // Show feedback to the user about starting the project
-                        showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('docker project [b]$data[/b] is about to start, a notification will show up once the process begins', [getAttributes(clusterElement, 'data-name')])) + '.')
+                        showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('local cluster [b]$data[/b] is about to start, a notification will show up once the process begins', [getAttributes(clusterElement, 'data-name')])) + '.')
 
                         Modules.Docker.checkProjectIsRunning(getAttributes(clusterElement, 'data-folder'), (isProjectRunning) => {
                           if (isProjectRunning) {
-                            showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the docker project [b]$data[/b] seems be running or is stopping or being terminated, the app will shortly attempt to terminate the project', [getAttributes(clusterElement, 'data-name')])) + `. `, 'warning')
+                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster [b]$data[/b] seems be running or stopping, the app will shortly attempt to terminate it', [getAttributes(clusterElement, 'data-name')])) + `. `, 'warning')
 
                             // Call the termination button
                             $(`div.btn[button-id="${terminateProcessBtnID}"]`).addClass('disabled').click()
@@ -5018,14 +5117,11 @@
 
                           // Start the project
                           Modules.Docker.getDockerInstance(clusterElement).startDockerCompose(pinnedToastID, (feedback) => {
-                            // Don't trigger the time out function
-                            clearTimeout(installationInfo)
-
                             // The project didn't run as expected or the starting process has been terminated
                             if (!feedback.status || isStartingProcessTerminated) {
                               // Show failure feedback to the user if the process hasn't been terminated
                               if (!isStartingProcessTerminated)
-                                showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the docker project [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                                showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the local cluster [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
 
                               // Call the post function
                               startPostProcess()
@@ -5035,7 +5131,7 @@
                             }
 
                             // Show success feedback to the user
-                            showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('docker project [b]$data[/b] has been successfully started, waiting for Apache Cassandra® to be up, you\'ll be automatically navigated to the project work area once it\'s up', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('local cluster [b]$data[/b] has been successfully started, waiting for Apache Cassandra® to be up, you\'ll be automatically navigated to the local cluster work area once it\'s up', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                             // Remove all previous states
                             clusterElement.children('div.status').removeClass('success failure').addClass('show')
@@ -5087,7 +5183,7 @@
                                 // Failed to connect with the node
                                 if (!status.connected) {
                                   // Show a failure feedback to the user
-                                  showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the Apache Cassandra® nodes of the docker project [b]$data[/b] didn\'t start as expected, automatic stop of the docker project will be started in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                                  showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the Apache Cassandra® nodes of the local cluster [b]$data[/b] didn\'t start as expected, automatic stop of the local cluster will be started in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                                   /**
                                    * Create a pinned toast to show the output of the process
@@ -5097,7 +5193,7 @@
                                   let pinnedToastID = getRandomID(10)
 
                                   // Show/create that toast
-                                  showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+                                  showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
 
                                   setTimeout(() => {
                                     // Attempt to stop the project
@@ -5110,10 +5206,10 @@
                                        * Show failure feedback to the user and tell how to stop it manually
                                        */
                                       if (!feedback.status)
-                                        return showToast(I18next.capitalize(I18next.t('stop docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to stop the docker project [b]$data[/b], please consider to do it manually by stopping the project [b]cassandra_$data[/b]', [getAttributes(clusterElement, 'data-name'), getAttributes(clusterElement, 'data-folder')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                                        return showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to stop the local cluster [b]$data[/b], please consider to do it manually by stopping the project [b]cassandra_$data[/b]', [getAttributes(clusterElement, 'data-name'), getAttributes(clusterElement, 'data-folder')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
 
                                       // The Docker project has successfully stopped
-                                      showToast(I18next.capitalize(I18next.t('stop docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the docker project [b]$data[/b] has been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                                      showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster [b]$data[/b] has been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
                                     })
                                   }, 3000)
 
@@ -5128,7 +5224,7 @@
                                  * Successfully started the project and Cassandra®'s one node at least is up
                                  * Show feedback to the user
                                  */
-                                showToast(I18next.capitalize(I18next.t('start docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra® nodes of the docker project [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                                showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra® nodes of the local cluster [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                                 // Request to destroy the associated pinned toast
                                 updatePinnedToast(pinnedToastID, true, true)
@@ -5213,7 +5309,7 @@
 
                 // Add log about edit cluster
                 try {
-                  addLog(`Attempt to edit cluster/sandbox '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                  addLog(`Attempt to edit local cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                 } catch (e) {}
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
@@ -5234,6 +5330,8 @@
 
                 // Change the primary button's text
                 $(`button#addCluster`).text(I18next.t('update cluster'))
+
+                $('div.modal#addEditClusterDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
 
                 /**
                  * Reset some elements in the dialog
@@ -5519,12 +5617,12 @@
 
                 // Add log
                 try {
-                  addLog(`Request to delete cluster/sandbox ${getAttributes(clusterElement, ['data-name', 'data-id'])}`, 'action')
+                  addLog(`Request to delete local cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])}`, 'action')
                 } catch (e) {}
 
                 // If the current workspace is sandbox then change the text
                 if (isSandbox)
-                  confirmText = I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the docker project [b]$data[/b]?', [getAttributes(clusterElement, 'data-name')]))
+                  confirmText = I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the local cluster [b]$data[/b]?', [getAttributes(clusterElement, 'data-name')]))
 
                 // Open the confirmation dialog and wait for the response
                 openDialog(confirmText, (response) => {
@@ -5537,7 +5635,7 @@
 
                   // If there's a work area already then stop the deletion process
                   if (clusterWorkarea.length != 0)
-                    return showToast(I18next.capitalize(I18next.t('delete docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('there\'s an active work area for the docker project [b]$data[/b], please consider to close it before attempting to delete the project again', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                    return showToast(I18next.capitalize(I18next.t('delete local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('there\'s an active work area for the local cluster [b]$data[/b], please consider to close it before attempting to delete the local cluster again', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                   try {
                     // If the current workspace is not the sandbox then skip this try-catch block
@@ -5548,10 +5646,10 @@
                     Modules.Docker.deleteProject(getAttributes(clusterElement, 'data-folder')).then((status) => {
                       // Failed to delete the project
                       if (!status)
-                        return showToast(I18next.capitalize(I18next.t('delete docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to delete the docker project [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                        return showToast(I18next.capitalize(I18next.t('delete local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to delete the local cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                       // Successfully deleted the project
-                      showToast(I18next.capitalize(I18next.t('delete docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the docker project [b]$data[/b] has been successfully deleted', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                      showToast(I18next.capitalize(I18next.t('delete local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster [b]$data[/b] has been successfully deleted', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                       // Point at the projects' container
                       let projectsContainer = $(`div.clusters-container div.clusters[workspace-id="${workspaceID}"]`)
@@ -5625,7 +5723,7 @@
                   elementPath = Path.join(getWorkspaceFolderPath(getAttributes(clusterElement, 'data-workspace-id')), getAttributes(clusterElement, 'data-folder'))
                 } catch (e) {
                   // Get the sandbox project's path
-                  elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'docker', getAttributes(clusterElement, 'data-folder'))
+                  elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters', getAttributes(clusterElement, 'data-folder'))
                 }
 
                 // Open the final path
@@ -5653,7 +5751,7 @@
                   let pinnedToastID = getRandomID(10)
 
                   // Show/create that toast
-                  showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('terminate docker containers')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+                  showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('terminate local cluster')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
 
                   // Send request to the main thread to terminate the connection test process - if there's any -
                   try {
@@ -5670,13 +5768,13 @@
                      * Show feedback to the user and skip the upcoming code
                      */
                     if (!feedback.status)
-                      return showToast(I18next.capitalize(I18next.t('terminate docker containers')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the docker project [b]$data[/b] were not successfully stopped', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                      return showToast(I18next.capitalize(I18next.t('terminate local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] were not successfully stopped', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
 
                     /**
                      * Successfully closed/stopped
                      * Show feedback to the user
                      */
-                    showToast(I18next.capitalize(I18next.t('terminate docker containers')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the docker project [b]$data[/b] have been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                    showToast(I18next.capitalize(I18next.t('terminate local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] have been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
                     // Reset the sandbox project's element in the clusters/sandbox projects container
                     clusterElement.removeClass('test-connection enable-terminate-process')
@@ -6448,7 +6546,7 @@
 
       try {
         // If there's no need to create an SSH tunnel then skip this try-catch block
-        if (sshTunnelingInfo == null || typeof sshTunnelingInfo != 'object')
+        if (sshTunnelingInfo == null || typeof sshTunnelingInfo != 'object' || sshTunnelingInfo.length <= 0)
           throw 0
 
         // Check if an SSH client is installed and accessible
@@ -7708,6 +7806,8 @@
                     // Set the default `.cqlshrc` content
                     editor.setValue(Modules.Consts.CQLSHRC)
 
+                    $('div.modal#addEditClusterDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
+
                     // Loop through each input not related to section nor key in the `.cqlshrc` content
                     $('[info-section="none"][info-key]').each(function() {
                       // Get the input's Material Design object
@@ -8336,6 +8436,8 @@
         $(`${dialog} button#addCluster`).attr('disabled', 'disabled')
         $(`${dialog} button#addCluster`).text(I18next.capitalize(I18next.t('add cluster')))
 
+        $('div.modal#addEditClusterDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
+
         // Loop through all inputs in the dialog
         $(`${dialog}`).find('[info-section][info-key]').each(function() {
           let input = $(this),
@@ -8514,7 +8616,7 @@
         isDescriptionFetched = true
 
         // The CQL description's tab's container is not empty now, and make sure to clear the empty the search input field
-        cqlDescriptionsTabContent.removeClass('_empty').find('input').val('')
+        cqlDescriptionsTabContent.removeClass('_empty').find('input').val('').trigger('input')
 
         // Show the tab's content automatically
         setTimeout(() => cqlDescriptionTabObject.show(), 250)

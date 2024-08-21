@@ -803,9 +803,226 @@ div.body {
     height: 100%;
     transition: width 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
+    div.content-info {
+      position: relative;
+      background: #202023;
+      margin: 10px;
+      border-radius: 10px;
+      box-shadow: 0 0 0 1px #141414;
+      padding: 10px;
+      width: calc(100% - 20px);
+      height: 45px;
+      transition: all 0.2s ease-in-out;
+
+      &:before {
+        content: '';
+        position: absolute;
+        margin: auto;
+        background: #202023;
+        bottom: -15px;
+        left: 12px;
+        width: 5px;
+        height: 20px;
+        transition: all 0.2s ease-in-out;
+        transition-delay: 0.05s;
+      }
+
+      div._left,
+      div._right {
+        transition: all 0.2s ease-in-out;
+        transition-delay: 0.15s;
+      }
+
+      div._left {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-content: center;
+        align-items: center;
+        float: left;
+
+        div._cluster,
+        div._main {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          align-content: center;
+          align-items: center;
+          margin-right: 10px;
+        }
+
+        div._main {
+          cursor: pointer;
+          @extend .no-select;
+          transition: opacity 0.2s ease-in-out;
+
+          &:hover {
+            opacity: 0.9;
+          }
+        }
+
+        div.icon {
+          margin-right: 5px;
+          font-size: 120%;
+          opacity: 0.9;
+        }
+
+        div.text {
+          font-weight: 600;
+          font-size: 110%;
+        }
+
+        div._arrow {
+          margin-right: 10px;
+          transform: rotate(90deg) translateX(5px);
+          font-size: 110%;
+          position: relative;
+          top: 1px;
+          opacity: 0;
+
+          &.show {
+            animation: {
+              name: show-arrow;
+              duration: 0.8s;
+              timing-function: cubic-bezier(0.65, 0.05, 0.36, 1);
+              fill-mode: forwards;
+            }
+          }
+        }
+
+        div._cluster {
+          opacity: 0;
+          transform: translateY(5px);
+
+          div._color {
+            width: 18px;
+            height: 18px;
+            position: relative;
+            margin-right: 5px;
+            border-radius: 5px;
+            opacity: 0;
+            transition-delay: 0.5s;
+          }
+
+          div.text {
+            font-weight: normal !important;
+            position: relative;
+            top: 1px;
+          }
+
+          &.show {
+            animation: {
+              name: show-cluster;
+              duration: 0.8s;
+              timing-function: cubic-bezier(0.65, 0.05, 0.36, 1);
+              fill-mode: forwards;
+            }
+
+            div._color {
+              opacity: 1;
+            }
+          }
+        }
+      }
+
+      div._right {
+        border-radius: 7px;
+        overflow: hidden;
+        height: 35px;
+        width: fit-content;
+        float: right;
+        position: relative;
+        bottom: 5px;
+        text-align: -webkit-right;
+
+        div._actions {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          align-content: center;
+          align-items: center;
+          justify-content: space-evenly;
+          width: fit-content;
+          height: 100%;
+          transition: all 0.3s cubic-bezier(0.65, 0.05, 0.36, 1);
+          opacity: 0;
+          pointer-events: none;
+
+          &.show {
+            opacity: 1;
+            pointer-events: all;
+          }
+
+          &._for-workspaces {
+            transform: translateY(-30px);
+
+            &.show {
+              transform: translateY(0px);
+            }
+          }
+
+          &._for-clusters {
+            transform: translateY(30px);
+
+            &.show {
+              transform: translateY(-35px);
+            }
+          }
+
+          div.action {
+            width: 100%;
+            height: 100%;
+            margin: 0 5px;
+
+            button {
+              color: inherit !important;
+              width: 100%;
+              height: 100%;
+              position: relative;
+              transition: opacity 0.2s ease-in-out;
+              opacity: 0.75;
+              display: flex;
+              flex-direction: row;
+              flex-wrap: nowrap;
+              align-content: center;
+              align-items: center;
+              justify-content: flex-start;
+              padding: 0 5px;
+
+              ion-icon {
+                margin-right: 5px;
+              }
+
+              span {
+                white-space: nowrap;
+              }
+
+              &:hover {
+                opacity: 0.95;
+              }
+            }
+
+            &[action="import"] button ion-icon {
+              font-size: 130%;
+            }
+
+            &[action="add"] button ion-icon {
+              font-size: 160%;
+            }
+
+            &[action="refresh"] button ion-icon {
+              font-size: 140%;
+            }
+          }
+        }
+      }
+    }
+
     div.content {
       position: relative;
       overflow: hidden;
+      height: calc(100% - 20px - 55px) !important;
+      transition: height 0.2s ease-out;
 
       div[content] {
         @include position();
@@ -974,12 +1191,17 @@ div.body {
               }
 
               div.import-workspaces-btn-container {
+                bottom: 0 !important;
+              }
+
+              div.import-workspaces-btn-container,
+              div.sandbox-btn-container {
                 position: relative;
                 bottom: 4px;
                 width: fit-content;
                 border-radius: 50%;
 
-                button#importWorkspacesProcess {
+                button {
                   transform: scale(0);
                   opacity: 0;
 
@@ -1571,11 +1793,36 @@ div.body {
                   }
                 }
 
-                button#importWorkspacesProcess {
+                button#createSandboxProjectProcess {
                   animation: {
                     name: animate-save-snapshot;
                     duration: 0.9s;
                     delay: 1.25s;
+                    timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                    fill-mode: forwards;
+                  }
+                }
+
+                button#importWorkspacesProcess {
+                  opacity: 0;
+                  transform: translateX(10px);
+                  animation: {
+                    name: show-answer;
+                    duration: 0.9s;
+                    delay: 0.5s;
+                    timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                    fill-mode: forwards;
+                  }
+                }
+
+                button#addWorkspaceProcess {
+                  opacity: 0;
+                  transform: translateX(-10px);
+                  margin-right: 10px;
+                  animation: {
+                    name: show-question;
+                    duration: 0.9s;
+                    delay: 0.5s;
                     timing-function: cubic-bezier(0.4, 0, 0.2, 1);
                     fill-mode: forwards;
                   }
@@ -1962,6 +2209,29 @@ div.body {
         }
       }
     }
+
+    &.hide-content-info {
+      div.content-info {
+        height: 0;
+        padding: 0;
+        margin: 0;
+
+        &:before {
+          height: 0;
+        }
+
+        * {
+          color: transparent !important;
+          opacity: 0 !important;
+          transition-delay: 0s;
+          display: none;
+        }
+      }
+
+      div.content {
+        height: calc(100% - 20px) !important;
+      }
+    }
   }
 
   div.hidden-area,
@@ -1969,6 +2239,7 @@ div.body {
   div.right {
     div.content {
       height: calc(100% - 20px);
+      width: calc(100% - 20px);
       background: #202023;
       margin: 10px;
       border-radius: 10px;
@@ -2245,7 +2516,7 @@ div.tab-content {
           margin: 5px 5px 5px 20px;
 
           span.old-snapshot {
-            max-width: 200px;
+            max-width: 350px;
             display: inline-block;
             white-space: nowrap;
             overflow: hidden;
@@ -2498,7 +2769,6 @@ div.tab-content {
             border-radius: 7px;
             opacity: 0;
             transform: translateY(10px);
-            display: none;
 
             &:first-of-type {
               margin-top: 20px;
@@ -2596,6 +2866,7 @@ div.tab-content {
               min-height: 10px;
               position: relative;
 
+              div.executing,
               div.sub-output {
                 background: #393939;
                 padding: 5px 10px;
@@ -2634,26 +2905,15 @@ div.tab-content {
                 }
               }
 
-              div.processing {
-                position: absolute;
-                inset: 0;
-                margin: auto;
-                display: flex;
-                flex-direction: row;
-                flex-wrap: nowrap;
-                align-items: center;
-                justify-content: flex-start;
-                align-content: center;
-                overflow: hidden;
-
-                lottie-player {
-                  filter: invert(1);
-                  position: absolute;
-                  width: 100px;
-                  height: 200px;
-                  opacity: 0.4;
-                  transform: translate(-20px, 5px);
-                }
+              div.executing {
+                height: 35px;
+                animation-duration: 1s;
+                animation-fill-mode: forwards;
+                animation-iteration-count: infinite;
+                animation-name: loading-effect;
+                animation-timing-function: linear;
+                background: #393939;
+                background: linear-gradient(to right, #393939 8%, #454545 18%, #393939 33%);
               }
 
               div.tabulator {
@@ -3870,6 +4130,7 @@ div.query {
   }
 }
 
+#createSandboxProjectProcess,
 #importWorkspacesProcess {
   display: flex;
   flex-direction: row;
@@ -4047,6 +4308,35 @@ div.more-list-bg {
   inset: 0;
   margin: auto;
   display: none;
+}
+
+div.for-workspaces.buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+
+#addWorkspaceProcess {
+  height: 36px;
+
+  ion-icon {
+    font-size: 190%;
+    position: relative;
+    bottom: 2px;
+    vertical-align: middle;
+  }
+
+  span {
+    position: relative;
+    top: -1px;
+  }
+}
+
+#appversion:before {
+  content: 'v';
 }
 /**
 * Import right-to-left style

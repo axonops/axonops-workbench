@@ -297,6 +297,15 @@
         // Hide all toasts
         toasts.removeClass('show')
 
+        // Reset the width of each sides - hidden area and the right side -
+        setTimeout(() => hiddenAreaElement.add(rightSideElement).css('width', ''))
+
+        // Update the pinned toasts' container's position
+        setTimeout(() => pinnedToastsContainer.css('left', '100px'))
+
+        // Update the toasts' container's position
+        setTimeout(() => toastsContainer.css('transform', 'translateX(0px)'))
+
         // Skip this try-catch block
         throw 0
       }
@@ -312,6 +321,20 @@
 
       // Show all hidden toasts
       setTimeout(() => toasts.filter(':not(.show)').addClass('show'), 100)
+
+      setTimeout(() => {
+        // Set the latest saved width for the hidden area
+        hiddenAreaElement.css('width', `${latestWidth}px`)
+
+        // Same thing with the right side
+        rightSideElement.css('width', `calc(100% - 80px - ${latestWidth}px)`)
+
+        // Update the pinned toasts' container's position
+        pinnedToastsContainer.css('left', 100 + latestWidth + 'px')
+
+        // Update the toasts' container's position
+        toastsContainer.css('transform', 'translateX(' + (latestWidth - 100) + 'px)')
+      })
     } catch (e) {}
 
     try {
@@ -333,6 +356,65 @@
 
     // Trigger the resize event for the window; to hide the tabs' titles if needed
     $(window.visualViewport).trigger('resize')
+
+    try {
+      /**
+       * Make the hidden area resizable
+       *
+       * If the flag is already set to `true` then skip this try-catch block
+       */
+      if (isHiddenAreaResizable)
+        throw 0
+
+      // Update the flag
+      isHiddenAreaResizable = true
+
+      // Make the hidden area resizable
+      hiddenAreaElement.resizable({
+        handles: 'e', // [E]ast
+        minWidth: 350, // Minimum width allowed to be reached
+        maxWidth: 900
+        // While the resizing process is active
+      }).on('resize',
+        function(_, __) {
+          // Make sure there's no transition effects while the resizing process is being performed
+          hiddenAreaElement.add(rightSideElement).add(pinnedToastsContainer).add(toastsContainer).addClass('no-transition')
+
+          // Applying this rule will prevent the sudden stop while the area is being resized
+          hiddenAreaElement.find('webview').css('pointer-events', 'none')
+
+          // Update the `latestWidth` value
+          latestWidth = hiddenAreaElement.outerWidth()
+
+          // Update the right side width based on the hidden area's new width
+          rightSideElement.css('width', `calc(100% - 80px - ${latestWidth}px)`)
+
+          // Update the pinned toasts' container's position
+          pinnedToastsContainer.css('left', 100 + latestWidth + 'px')
+
+          // Update the toasts' container's position
+          toastsContainer.css('transform', 'translateX(' + (latestWidth - 100) + 'px)')
+
+          // Set a timeout to trigger the `resizestop` event after set period of time
+          {
+            if (triggerStopTimeout != undefined)
+              clearTimeout(triggerStopTimeout)
+
+            setTimeout(() => hiddenAreaElement.trigger('resizestop'), 100)
+          }
+
+          // When the resizing process stop
+        }).on('resizestop', function(_, __) {
+        // Restore the transition effects
+        hiddenAreaElement.add(rightSideElement).add(pinnedToastsContainer).add(toastsContainer).removeClass('no-transition')
+
+        // Make the hidden area interactive again
+        hiddenAreaElement.find('webview').css('pointer-events', 'all')
+
+        // Trigger the resize event for the window; to hide the tabs' titles if needed
+        $(window.visualViewport).trigger('resize')
+      })
+    } catch (e) {}
   })
 
   // Get the MDB objects for the settings modal, and different UI elements inside it
@@ -492,7 +574,7 @@
           } catch (e) {}
 
           // Confirm the close of all work areas
-          openDialog(I18next.capitalizeFirstLetter(I18next.t('are you sure about closing all active work areas - including sandbox projects - ?')), (confirm) => {
+          openDialog(I18next.capitalizeFirstLetter(I18next.t('are you sure about closing all active work areas - including local clusters - ?')), (confirm) => {
             // If canceled, or not confirmed then skip the upcoming code
             if (!confirm)
               return
@@ -512,29 +594,29 @@
     })
 
     // Listen to key presses in relation to the more options/settings shortcuts
-    $(document).on('keypress', function(e) {
-      // `CTRL` and `SHIFT` keys should be pressed
-      if (!e.ctrlKey || !e.shiftKey)
-        return
+    setTimeout(() => {
+      tinyKeys.tinykeys(window, {
+        "$mod+Shift+Equal": () => actionButton.filter('[action="zoomIn"]').click(),
+        "$mod+Shift+Minus": () => actionButton.filter('[action="zoomOut"]').click(),
+        "$mod+Shift+Digit0": () => actionButton.filter('[action="zoomReset"]').click()
+      })
 
-      switch (e.keyCode) {
-        // Zoom in
-        case 11: {
-          actionButton.filter('[action="zoomIn"]').click()
-          break
-        }
-        // Zoom out
-        case 31: {
-          actionButton.filter('[action="zoomOut"]').click()
-          break
-        }
-        // Zoom reset
-        case 9: {
-          actionButton.filter('[action="zoomReset"]').click()
-          break
-        }
+      if (OS.platform() == 'darwin')
+        tinyKeys.tinykeys(window, {
+          "$mod+Shift+BracketRight": () => actionButton.filter('[action="zoomIn"]').click(),
+          "$mod+Shift+Slash": () => actionButton.filter('[action="zoomOut"]').click(),
+          "$mod+Shift+Digit9": () => actionButton.filter('[action="zoomReset"]').click()
+        })
+
+      if (OS.platform() == 'win32') {
+        tinyKeys.tinykeys(window, {
+          "$mod+Shift+Digit9": () => actionButton.filter('[action="zoomReset"]').click()
+        })
+        $(`a[action="zoomReset"]`).find('kbd[digit]').text('9')
       }
-    }).on('keydown', function(e) {
+    }, 1000)
+
+    $(document).on('keydown', function(e) {
       // F11 for toggling fullscreen mode
       if (e.keyCode != 122)
         return

@@ -25,11 +25,9 @@
       "main/bin",
       "config"
     ],
-    "publish": [
-      {
-        "provider": "github"
-      }
-    ],
+    "publish": [{
+      "provider": "github"
+    }],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
@@ -172,6 +170,7 @@
     "systeminformation": "^5.18.2",
     "tabulator-tables": "^6.2.1",
     "tinycolor2": "^1.6.0",
+    "tinykeys": "^2.1.0",
     "tree-kill": "^1.2.2",
     "v8-compile-cache": "^2.3.0",
     "value-size": "^1.0.1",

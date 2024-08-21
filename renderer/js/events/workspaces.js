@@ -20,6 +20,8 @@
  * `getWorkspaces` event will remove all workspaces in the UI, and retrieve them from the workspaces' folder or the specific location of each one of them
  * `refreshWorkspaces` event, on the other hand, will keep the current workspaces in the UI, update them as needed, and just add the ones that are not in the UI already
  */
+let isContentInfoHandledFirstTime = false
+
 $(document).on('getWorkspaces refreshWorkspaces', function(e) {
   const event = e.type, // To determine if the event is `getWorkspaces` or `refreshWorkspaces`
     // Point at the workspaces container element
@@ -42,6 +44,13 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
       // Add or remove the empty class based on the number of saved workspaces
       workspacesContainer.parent().toggleClass('empty', workspaces.length <= 0 && dockerProjects.length <= 0)
 
+      $('div.body div.right').toggleClass('hide-content-info', workspaces.length <= 0 && dockerProjects.length <= 0)
+
+      if (!isContentInfoHandledFirstTime && !(workspaces.length <= 0 && dockerProjects.length <= 0)) {
+        isContentInfoHandledFirstTime = true
+        handleContentInfo('workspaces')
+      }
+
       // Add the docker/sandbox element
       try {
         if (!isSandboxProjectsEnabled)
@@ -50,8 +59,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         workspaces.unshift({
           id: 'workspace-sandbox',
           defaultPath: true,
-          folder: 'docker',
-          name: 'Docker Projects (Sandbox)',
+          folder: 'localclusters',
+          name: 'Local Clusters (Sandbox)',
           color: '#3b71ca'
         })
       } catch (e) {}
@@ -215,7 +224,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                  */
                 {
                   // Define the suitable key based on the type of the workspace
-                  let tooltipAddContent = activeWorkspaceID == 'workspace-sandbox' ? 'add project' : 'add cluster'
+                  let tooltipAddContent = activeWorkspaceID == 'workspace-sandbox' ? 'add local cluster' : 'add cluster'
 
                   // Update the tooltip's content
                   tooltips.addClusterActionButton.setContent(I18next.capitalize(I18next.t(tooltipAddContent)))
@@ -231,16 +240,10 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   $('span[no-clusters-message]').html(I18next.capitalizeFirstLetter(I18next.replaceData($('span[no-clusters-message]').attr('mulang'), [getAttributes(workspaceElement, 'data-name')])))
                 }
 
-                // Update the show/hide of cleaning Docker
-                // TODO: Will be updated
-                {
-                  // $('div.content div[content="clusters"] div.section-actions').toggleClass('sandbox', activeWorkspaceID == 'workspace-sandbox')
-                }
-
                 // Apply the same process on the `refresh` button
                 {
                   // Define the suitable key based on the type of the workspace
-                  let tooltipRefreshContent = activeWorkspaceID == 'workspace-sandbox' ? 'refresh projects' : 'refresh clusters'
+                  let tooltipRefreshContent = activeWorkspaceID == 'workspace-sandbox' ? 'refresh local clusters' : 'refresh clusters'
 
                   // Update the tooltip's content
                   tooltips.refreshClusterActionButton.setContent(I18next.capitalize(I18next.t(tooltipRefreshContent)))
@@ -254,6 +257,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
                 // Apply the workspace's color on the UI
                 setUIColor(getAttributes(workspaceElement, 'data-color'))
+
+                setTimeout(() => handleContentInfo('clusters', workspaceElement), 250)
 
                 // Toggle the class which handles docker empty state
                 $('div.content div[content="clusters"] div.empty').toggleClass('for-sandbox', isSandbox)
@@ -308,12 +313,12 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   } catch (e) {}
 
                   // Hide all content elements with fade out transition
-                  allContentElements.fadeOut(200)
+                  allContentElements.fadeOut(50)
 
                   // After 150ms of clicking the button
                   setTimeout(() => {
                     // Show the workspace's clusters' content with fade in transition
-                    clustersContentElement.fadeIn(200).removeAttr('hidden')
+                    clustersContentElement.fadeIn(50).removeAttr('hidden')
 
                     // Remove the active attribute from all switchers
                     $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
@@ -366,10 +371,10 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
                     // Show the clusters' container
                     $(this).show()
-                  }, 150)
+                  })
 
                   // Remove the loading class after a while
-                  setTimeout(() => workspaceElement.removeClass('loading'), 50)
+                  setTimeout(() => workspaceElement.removeClass('loading'))
 
                   // Show a toast to the user about the possibility of seeing an authentication request when dealing with the sandbox projects
                   try {
@@ -449,9 +454,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                       setTimeout(() => {
                         // The workspace switcher UI element structure
                         let element = `
-                              <div class="workspace" _workspace-id="${workspaceID}" style="background:${getAttributes(workspaceElement, 'data-color')};" ${hideSwitcher ? 'hidden': ''}>
-                                <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="right" data-title="${getAttributes(workspaceElement, 'data-name')}"></button>
-                              </div>`
+                               <div class="workspace" _workspace-id="${workspaceID}" style="background:${getAttributes(workspaceElement, 'data-color')};" ${hideSwitcher ? 'hidden': ''}>
+                                 <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="right" data-title="${getAttributes(workspaceElement, 'data-name')}"></button>
+                               </div>`
 
                         // Set the suitable adding function based on the state
                         let addingFunction = {
@@ -546,6 +551,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
                               // Click the `ENTER` button of the workspace UI element
                               setTimeout(() => workspaceElement.find('div.footer div.button button').trigger('click', true))
+
+                              handleContentInfo('clusters', workspaceElement)
                             })
                           })
                         }))
@@ -566,7 +573,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 // Clicks the folder button
                 $(`div.btn[button-id="${folderBtnID}"]`).click(() => {
                   // Set the path to open based on whether or not the workspace is the docker/sandbox
-                  let path = !isSandbox ? getWorkspaceFolderPath(workspaceID) : Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'docker')
+                  let path = !isSandbox ? getWorkspaceFolderPath(workspaceID) : Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters')
 
                   // Open the set path
                   Open(path)
@@ -1143,6 +1150,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
     // Deactivate all workspaces and clusters in both switchers
     $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
+
+    handleContentInfo('workspaces')
   })
 }
 
@@ -1239,7 +1248,6 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
   workspacePathElement.on('inputChanged', () => clickableAreaTooltip.setContent(workspacePathElement.val()))
 }
-
 
 // Handle the importing process of workspaces
 {
@@ -1851,5 +1859,14 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     $(`div.modal#importWorkspaces`).find('button#importWorkspacesFinish').attr('hidden', '')
 
     $(document).trigger('refreshWorkspaces')
+  })
+}
+
+{
+  $('#importWorkspacesAction').click(function() {
+    let closeButton = $('div.modal#importWorkspaces').find('div.modal-footer').find('button[data-mdb-dismiss="modal"]')
+
+    if (closeButton.attr('hidden') == undefined)
+      $('button#importWorkspacesReset').click()
   })
 }

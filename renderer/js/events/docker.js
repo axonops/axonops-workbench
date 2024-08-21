@@ -40,7 +40,7 @@
 
     // Add log about this request
     try {
-      addLog(`Request has been triggered, create a docker/sandbox project`, 'action')
+      addLog(`Request has been triggered, create a local cluster`, 'action')
     } catch (e) {}
 
     // Check the existence of Docker in the machine
@@ -50,11 +50,11 @@
 
       // If Docker doesn't exist then show feedback to the user and skip the upcoming code
       if (!dockerExists)
-        return showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires [code]docker[/code] and its [code]docker-compose[/code] tool to be installed, please make sure its installed and accessible before attempting to create a docker project')) + '.', 'failure')
+        return showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('local clusters feature requires [code]docker compose[/code] or [code]docker-compose[/code] tool to be installed, please make sure its installed and accessible before attempting to create a local cluster')) + '.', 'failure')
 
       // If the current user is not in the `docker` group
       if (!userGroup)
-        return showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('sandbox feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again')) + '.', 'failure')
+        return showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('local clusters feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again')) + '.', 'failure')
 
       /**
        * Get associated inputs
@@ -80,7 +80,7 @@
 
       // Add log about the project's attributes
       try {
-        addLog(`The docker/sandbox project's attributes are: [Cassandra® version: ${cassandraVersion}, Number of nodes: ${numOfNodes}]`)
+        addLog(`The local cluster attributes are: [Cassandra® version: ${cassandraVersion}, Number of nodes: ${numOfNodes}]`)
       } catch (e) {}
 
       // Create a Docker instance/object
@@ -102,10 +102,10 @@
         Modules.Docker.saveProject(project).then((status) => {
           // Failed to save the project
           if (status != 1)
-            return showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to save the docker project')) + '.', 'failure')
+            return showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to save the local cluster')) + '.', 'failure')
 
           // Successfully saved the project
-          showToast(I18next.capitalize(I18next.t('create docker project')), I18next.capitalizeFirstLetter(I18next.replaceData('the project with Apache Cassandra® v$data has been successfully created and saved', [cassandraVersion])) + '.', 'success')
+          showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster with Apache Cassandra® v$data has been successfully created and saved', [cassandraVersion])) + '.', 'success')
 
           // Either `refresh` or `get` workspaces based on the state of the process
           $(document).trigger(getAttributes($(this), 'data-refresh') == 'false' ? 'getWorkspaces' : 'refreshWorkspaces')

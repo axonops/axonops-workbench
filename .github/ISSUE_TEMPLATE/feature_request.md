@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for AxonOps Workbench. Before creating a Feature request, please start a <a href='https://github.com/axonops/axonops-workbench-cassandra/discussions/categories/ideas'>discussion</a>.
+about: Suggest an idea for AxonOps Workbench. Before creating a Feature request its recommended to start a Discussion thread in the ideas section.
 title: "[feat]: "
 labels: [enhancement, Needs Triage]
 assignees: 'millerjp'

@@ -128,7 +128,7 @@
       // Make sure both name and value for the current variable/row are not empty
       if ([nameInput.val(), variableNewValue].some((val) => `${val}`.trim().length <= 0) || !(/^\d*[a-zA-Z][a-zA-Z\d]*$/g.test(`${nameInput.val()}`))) {
         // If not, show feedback to the user
-        failureMessage = I18next.capitalizeFirstLetter(I18next.t('variable or more are not having invalid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters'))
+        failureMessage = I18next.capitalizeFirstLetter(I18next.t('variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters'))
 
         // By setting the `collision` value to true the process will be stopped entirely
         collision = true

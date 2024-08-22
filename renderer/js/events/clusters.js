@@ -482,7 +482,7 @@
 
                   // If the currently running clusters are more than or equal to the maximum allowed number and this is not the sandbox workspace then end the process and show feedback to the user
                   if (([numRunningClusters, numAttemptingClusters]).some((num) => num >= maximumRunningClusters) && !isSandbox)
-                    return showToast(I18next.capitalize(I18next.t('connect with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of clusters which allowed to be connected to simultaneously is [b]$data[/b]', [maximumRunningClusters])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limitation can be changed from the app\'s settings in the limitation section')) + `.`, 'failure')
+                    return showToast(I18next.capitalize(I18next.t('connect with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of clusters which allowed to be connected to simultaneously is [b]$data[/b]', [maximumRunningClusters])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limit can be changed from the app\'s settings in the limits section')) + `.`, 'failure')
 
                   // Point at the work areas content's container
                   let content = $('div.body div.right div.content div[content="workarea"]'),
@@ -850,14 +850,14 @@
                                       </div>
                                     </div>
                                     <div class="kill-process">
-                                      <button class="btn btn-primary btn-dark changed-bg changed-color" type="button" data-mdb-ripple-color="var(--mdb-danger)" data-tippy="tooltip" data-mdb-placement="left" data-title="Kill the process" data-mulang="Kill the process">
+                                      <button class="btn btn-primary btn-dark changed-bg changed-color" type="button" data-mdb-ripple-color="var(--mdb-danger)" data-tippy="tooltip" data-mdb-placement="left" data-title="Kill the process" data-mulang="kill the process" capitalize-first>
                                         <ion-icon name="close"></ion-icon>
                                       </button>
                                     </div>
                                     <div class="hints-container">
                                       <div class="hint changed-bg changed-color">
                                         <div class="text">
-                                          An incomplete statement would have interrupted the execution flow
+                                          <span mulang="an incomplete statement would have interrupted the execution flow" capitalize-first></span>
                                         </div>
                                       </div>
                                     </div>
@@ -1265,6 +1265,10 @@
                       // Hide the emptiness class as there's at least one block now
                       sessionContainer.parent().find(`div.empty-statements`).removeClass('show')
 
+                      let finalInfoContent = (type == 'neutral' ? 'info' : type)
+
+                      finalInfoContent = `<span mulang="${finalInfoContent}" capitalize></span>`
+
                       // The statement's block UI structure
                       let element = `
                           <div class="block show" data-id="${blockID}">
@@ -1272,7 +1276,7 @@
                               <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
                                 <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
                               </span>
-                              <div class="text"><pre>${isOnlyInfo ? (type == 'neutral' ? 'info' : type) : statement}</pre></div>
+                              <div class="text"><pre>${isOnlyInfo ? finalInfoContent : statement}</pre></div>
                               <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
                                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
                                   data-mulang="copy the statement" capitalize-first>
@@ -1357,6 +1361,9 @@
                             }, 100)
                           } catch (e) {}
                         }, 100)
+
+                        // Apply the chosen language on the UI element after being fully loaded
+                        setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
                       }))
                     }
 
@@ -2169,7 +2176,7 @@
                               // The sub output structure UI
                               let element = `
                                     <div class="sub-output info incomplete-statement">
-                                      <div class="sub-output-content">Incomplete statement has been detected and stopped the execution flow.</div>
+                                      <div class="sub-output-content"><span mulang="incomplete statement has been detected and stopped the execution flow" capitalize-first></span>.</div>
                                     </div>`
 
                               blockElement.children('div.output').children('div.executing').hide()
@@ -2177,6 +2184,9 @@
                               // Append a `sub-output` element in the output's container
                               blockElement.children('div.output').append($(element).show(function() {
                                 $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').addClass('busy')
+
+                                // Apply the chosen language on the UI element after being fully loaded
+                                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
 
                                 // Execute this code whatever the case is
                                 setTimeout(() => {
@@ -2359,6 +2369,9 @@
                                     outputContainer.append($(element).show(function() {
                                       // Point at the appended element
                                       let outputElement = $(this)
+
+                                      // Apply the chosen language on the UI element after being fully loaded
+                                      setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
 
                                       // If the number of executed statements are more than `1` then show a badge indicates that
                                       setTimeout(() => {
@@ -3821,7 +3834,7 @@
 
                           // If none, then skip the upcoming code and show feedback to the user
                           if (changes <= 0)
-                            return showToast(I18next.capitalize(I18next.t('show differentiation')), I18next.capitalizeFirstLetter(I18next.t('there is no difference between the old and new metadata')) + '.', 'warning')
+                            return showToast(I18next.capitalize(I18next.t('show differentiation')), I18next.capitalizeFirstLetter(I18next.t('there is no difference between the previous and new metadata')) + '.', 'warning')
 
                           // Show/hide the changes container
                           $(`div.changes-lines[data-id="${changesLinesContainerID}"]`).toggleClass('show')
@@ -3999,6 +4012,9 @@
                                 let snapshot = $(this),
                                   // Get the snapshot's path and name
                                   [snapshotPath, snapshotName] = getAttributes($(this), ['data-path', 'data-name'])
+
+                                // Apply the chosen language on the UI element after being fully loaded
+                                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
 
                                 // Clicks the loading button - to load schema snapshot in the old side -
                                 $(this).find('a[action="load"]').click(async function() {
@@ -4592,7 +4608,7 @@
 
                                 // Send a request to the main thread regards pop-up a menu
                                 IPCRenderer.send('show-context-menu', JSON.stringify([{
-                                  label: I18next.capitalize(I18next.t('close workarea (Disconnect)')),
+                                  label: I18next.capitalize(I18next.t('close workarea (disconnect)')),
                                   click: `() => views.main.webContents.send('workarea:close', {
                                      btnID: '${closeWorkareaBtnID}'
                                    })`
@@ -4895,6 +4911,9 @@
                               // Click the history button to update the items' list
                               historyBtn.click()
                             })
+
+                            // Apply the chosen language on the UI element after being fully loaded
+                            setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
                           }))
                         }
 
@@ -4971,7 +4990,7 @@
 
                     // If the currently running projects are more than or equal to the maximum allowed number then end the process and show feedback to the user
                     if (([numRunningSandbox, numAttemptingSandbox]).some((num) => num >= maximumRunningSandbox))
-                      return showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of local clusters which allowed to be started simultaneously is [b]$data[/b]', [maximumRunningSandbox])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limitation can be changed from the app\'s settings in the limitation section')) + `.`, 'failure')
+                      return showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of local clusters which allowed to be started simultaneously is [b]$data[/b]', [maximumRunningSandbox])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limit can be changed from the app\'s settings in the limits section')) + `.`, 'failure')
 
                     // Inner function to execute the post-start code
                     let startPostProcess = (success = false) => {
@@ -7060,7 +7079,7 @@
                   basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.t('to test connection, host name is the only required field to be fulfilled')) + '.', 'failure')
+                showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.t('to test connection, host name is the only required field to be provided')) + '.', 'failure')
 
                 // Skip the upcoming code - end the connection test process -
                 return
@@ -7681,7 +7700,7 @@
                   basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('add cluster')), I18next.capitalizeFirstLetter(I18next.t('to save a cluster, a unique valid name is required to be fulfilled')) + '.', 'failure')
+                showToast(I18next.capitalize(I18next.t('add cluster')), I18next.capitalizeFirstLetter(I18next.t('to save a cluster, a unique valid name is required to be provided')) + '.', 'failure')
 
                 // Skip the upcoming code - terminate the cluster's saving/updating process -
                 return
@@ -8787,6 +8806,9 @@
                 ++count
               }, 100)
           })
+
+          // Apply the chosen language on the UI element after being fully loaded
+          setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
         }))
       })
     })

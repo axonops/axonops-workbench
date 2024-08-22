@@ -83,7 +83,7 @@
           <div class="group">
             <!-- The AI assistant
             Users can ask questions about Apache Cassandra®, AxonOps™, and related topics -->
-            <div class="item" action="ai" data-tippy="tooltip" data-mdb-placement="right" data-mulang="ai assistant" data-title="AI Assistant" capitalize>
+            <div class="item" action="ai" data-tippy="tooltip" data-mdb-placement="right" data-mulang="AI assistant" data-title="AI Assistant" capitalize>
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <ion-icon name="brain"></ion-icon>
               </div>
@@ -202,29 +202,29 @@
         <div class="webview-navigation">
           <div class="nav" action="back">
             <button type="button" class="btn btn-tertiary btn-sm disabled" data-mdb-ripple-color="light">
-              <ion-icon name="arrow-up"></ion-icon> back
+              <ion-icon name="arrow-up"></ion-icon> <span mulang="back" capitalize></span>
             </button>
           </div>
           <div class="nav" action="more">
             <button type="button" class="btn btn-tertiary btn-sm" style="padding-right: 20px;" data-mdb-ripple-color="light">
-              <ion-icon name="more-h"></ion-icon> more
+              <ion-icon name="more-h"></ion-icon> <span mulang="more" capitalize></span>
             </button>
           </div>
           <div class="nav" action="forward">
             <button type="button" class="btn btn-tertiary btn-sm disabled" data-mdb-ripple-color="light">
-              <ion-icon name="arrow-up"></ion-icon> forward
+              <ion-icon name="arrow-up"></ion-icon> <span mulang="forward" capitalize></span>
             </button>
           </div>
         </div>
         <div class="webview-more-actions">
           <div class="nav" action="refresh">
             <button type="button" class="btn btn-tertiary btn-sm" data-mdb-ripple-color="light">
-              <ion-icon name="refresh"></ion-icon> refresh
+              <ion-icon name="refresh"></ion-icon> <span mulang="refresh" capitalize></span>
             </button>
           </div>
           <div class="nav" action="logout">
             <button type="button" class="btn btn-tertiary btn-sm" data-mdb-ripple-color="light">
-              <ion-icon name="logout"></ion-icon> logout
+              <ion-icon name="logout"></ion-icon> <span mulang="logout" capitalize></span>
             </button>
           </div>
         </div>
@@ -276,7 +276,7 @@
               <ion-icon name="workspaces"></ion-icon>
             </div>
             <div class="text">
-              Workspaces
+              <span mulang="workspaces" capitalize></span>
             </div>
           </div>
           <div class="_arrow">
@@ -789,7 +789,7 @@
                 </div>
               </div>
               <div class="modal-section" section="ssl" hidden>
-                <div class="form-outline form-white margin-bottom file" role="file-selector" file-name="-" data-mulang="ca certificate file" capitalize file-info="CA Certificate File">
+                <div class="form-outline form-white margin-bottom file" role="file-selector" file-name="-" data-mulang="CA certificate file" capitalize file-info="CA Certificate File">
                   <input data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000" type="text" class="form-control form-icon-trailing form-control-lg" info-section="ssl" info-key="certfile" readonly>
                 </div>
                 <div class="form-outline form-white margin-bottom file" role="file-selector" file-name="-" data-mulang="client key file" capitalize file-info="Client Key File">
@@ -1114,12 +1114,12 @@
               </div>
               <div class="modal-section" section="features" hidden>
                 <div class="row flex margin-bottom flex-advanced">
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <div>
                       <span mulang="local clusters" capitalize></span>:
                     </div>
                   </div>
-                  <div class="col-md-8">
+                  <div class="col-md-9">
                     <div class="form-check">
                       <input class="form-check-input" type="checkbox" id="sandboxProjects" no-color>
                       <label class="form-check-label" style="display: inline;" for="sandboxProjects">
@@ -1325,12 +1325,12 @@
               <div class="sections">
                 <div class="section">
                   <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="about">
-                    <span mulang="About" capitalize></span>
+                    <span mulang="about" capitalize></span>
                   </div>
                 </div>
                 <div class="section">
                   <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="notices">
-                    <span mulang="Notices" capitalize></span>
+                    <span mulang="notices" capitalize></span>
                   </div>
                 </div>
                 <div class="section">
@@ -1434,7 +1434,7 @@
                     <lottie-player src="../assets/lottie/empty-workspaces.json" background="transparent" autoplay loop speed="1"></lottie-player>
                   </div>
                   <div class="hint">
-                    Drag and drop or click to select workspace(s)
+                    <span mulang="drag and drop or click to select workspace(s)" capitalize-first></span>
                   </div>
                 </div>
               </div>
@@ -1445,10 +1445,10 @@
                       <th width="5%">
                         <input class="form-check-input" type="checkbox" id="importWorkspacesCheckbox">
                       </th>
-                      <th width="30%">Name</th>
-                      <th width="20%">Color</th>
-                      <th width="30%">Checks</th>
-                      <th width="15%">Clusters</th>
+                      <th width="30%"><span mulang="name" capitalize></span></th>
+                      <th width="20%"><span mulang="color" capitalize></span></th>
+                      <th width="30%"><span mulang="checks" capitalize></span></th>
+                      <th width="15%"><span mulang="clusters" capitalize></span></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1460,7 +1460,7 @@
           <div class="modal-footer">
             <div class="float-left">
               <button type="button" class="btn btn-danger btn-sm" id="importWorkspacesReset" disabled>
-                <span mulang="Reset"></span>
+                <span mulang="reset"></span>
               </button>
             </div>
             <div class="float-right">

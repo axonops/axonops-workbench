@@ -383,7 +383,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                       throw 0
 
                     // Show the toast to the user
-                    // showToast(I18next.capitalize(I18next.t('sandbox feature requires docker')), I18next.capitalizeFirstLetter(I18next.t('starting or stopping a sandbox project may prompt an authentication request due to its reliance on [code]docker[/code] and [code]docker-compose[/code]')) + '.')
+                    // showToast(I18next.capitalize(I18next.t('local clusters feature requires docker')), I18next.capitalizeFirstLetter(I18next.t('starting or stopping a sandbox project may prompt an authentication request due to its reliance on [code]docker[/code] and [code]docker-compose[/code]')) + '.')
 
                     // Update the global variable which tells if the info toast has been shown or not
                     isSandboxDockerInfoShown = true
@@ -1317,7 +1317,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
   let checkWorkspaces = async (foldersPaths) => {
     // If the given array has no items - paths - then show feedback to the user and end the process
     if (foldersPaths.length <= 0)
-      return showToast('Import Workspaces', 'Please consider to select the folders of the workspace.', 'failure')
+      return showToast(I18next.capitalize(I18next.t('import workspaces')), I18next.capitalizeFirstLetter(I18next.t('please consider to select the folders of the workspace')) + '.', 'failure')
 
     // The final workspaces to be handled
     let workspaces = []
@@ -1359,7 +1359,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
     // If after the looping process no valid workspace has benn found then show feedback to the user and end the process
     if (workspaces.length <= 0)
-      return showToast('Import Workspaces', 'No valid workspace folder has been found among the provided ones.', 'failure')
+      return showToast(I18next.capitalize(I18next.t('import workspaces')), I18next.capitalizeFirstLetter(I18next.t('no valid workspace folder has been found among the provided ones')) + '.', 'failure')
 
     // Point at the table's of the detection workspaces and their clusters
     let table = $('#importWorkspacesValidate'),
@@ -1402,9 +1402,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           </td>
           <td class="checks" data-id="_${workspaceChecksID}">
             <l-line-wobble size="50" stroke="2" bg-opacity="0.25" speed="1.25" color="#e3e3e3"></l-line-wobble>
-            <span class="badge rounded-pill badge-warning" check="variables" style="display:none">Missing Variables</span>
-            <span class="badge rounded-pill badge-danger" check="name" style="display:none">Duplicate Name</span>
-            <span class="badge rounded-pill badge-success" check="passed" style="display:none">Passed</span>
+            <span class="badge rounded-pill badge-warning" check="variables" style="display:none"><span mulang="missing variables" capitalize></span></span>
+            <span class="badge rounded-pill badge-danger" check="name" style="display:none"><span mulang="duplicate name" capitalize></span></span>
+            <span class="badge rounded-pill badge-success" check="passed" style="display:none"><span mulang="passed" capitalize></span></span>
           </td>
           <td style="text-align: center;">
             <button type="button" id="_${workspaceClustersBtnID}" class="btn btn-sm clusters-list btn-dark disabled" data-mdb-ripple-init>
@@ -1497,8 +1497,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                             <th width="5%">
                               <input id="_${importClustersCheckboxInputID}" class="form-check-input for-import-clusters" type="checkbox" checked="true"/>
                             </th>
-                            <th width="35%">Name</th>
-                            <th width="60%">Host:Port</th>
+                            <th width="35%"><span mulang="name" capitalize></span></th>
+                            <th width="60%"><span mulang="host" capitalize></span>:<span mulang="port" capitalize></span></th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1818,7 +1818,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
       savingResults = []
 
     if (workspacesTRElements.length <= 0)
-      return showToast('Import Workspaces', 'No checked workspaces have been detected, please consider to check at least one workspace.', 'failure')
+      return showToast(I18next.capitalize(I18next.t('import workspaces')), I18next.capitalizeFirstLetter(I18next.t('no checked workspaces have been detected, please consider to check at least one workspace')) + '.', 'failure')
 
     for (let workspace of [...workspacesTRElements]) {
       try {
@@ -1848,12 +1848,12 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     let savingResultsTxt = ''
 
     for (let result of savingResults) {
-      savingResultsTxt += `, ${result.name}: ${result.status == 1 ? 'successfully saved ' : 'failed to save '}`
+      savingResultsTxt += `, ${result.name}: ${I18next.capitalizeFirstLetter(I18next.t(result.status == 1 ? 'successfully saved' : 'failed to save'))}`
     }
 
     savingResultsTxt = savingResultsTxt.slice(2)
 
-    showToast('Import Workspaces', `The importing process has finished, results for the workspaces are: ${savingResultsTxt}.`, 'success')
+    showToast(I18next.capitalize(I18next.t('import workspaces')), I18next.capitalizeFirstLetter(I18next.replaceData(`the importing process has finished, results for the workspaces are: $data`, [savingResultsTxt])) + '.', 'success')
 
     $(`div.modal#importWorkspaces`).find('button[data-mdb-dismiss="modal"]').attr('hidden', null)
     $(`div.modal#importWorkspaces`).find('button#importWorkspacesFinish').attr('hidden', '')

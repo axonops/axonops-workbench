@@ -1,4 +1,4 @@
-<img src="https://github.com/axonops/axonops-workbench-cassandra/assets/163300/0732fa17-37c5-4509-9595-a4163337680e" width="50" height="50"> THIS IS IN-DEVELOPMENT - DO NOT USE 
+<img src="https://github.com/axonops/axonops-workbench-cassandra/assets/163300/0732fa17-37c5-4509-9595-a4163337680e" width="30" height="30"> THIS IS IN-DEVELOPMENT - DO NOT USE 
 =======
 
 # AxonOps™ Workbench for Apache Cassandra®

@@ -579,7 +579,19 @@ div.modal {
 
       a {
         color: inherit;
-        text-transform: capitalize;
+        max-width: 50%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-transform: inherit;
+
+        &[action="select"] {
+          float: left;
+        }
+
+        &[action="delete"] {
+          float: right;
+        }
       }
 
       &.show {

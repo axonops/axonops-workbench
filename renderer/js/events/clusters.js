@@ -4070,11 +4070,10 @@
                                 })
 
                                 // Delete a snapshot
-                                $(this).find('a[action="delete"]').on('click', function(e, noConfirm = false) {
+                                $(this).find('a[action="delete"]').on('click', function(e, info) {
                                   // Inner function to delete a snapshot
-                                  let deleteSnapshot = () => {
-                                    // Remove the snapshot file
-                                    FS.remove(snapshotPath, (err) => {
+                                  let deleteSnapshot = (keepFiles = false) => {
+                                    let callbackFunction = (err) => {
                                       // If any error has occurred then show feedback to the user and skip the upcoming code
                                       if (err) {
                                         // Add error log
@@ -4098,7 +4097,16 @@
                                       // If no saved snapshots left then close the modal/dialog
                                       if (snapshotsContainer.children('div.snapshot').length <= 0)
                                         $('#showLoadSnapshotDialog').click()
-                                    })
+                                    }
+
+                                    // Remove the snapshot file
+                                    if (!keepFiles)
+                                      FS.remove(snapshotPath, callbackFunction)
+
+                                    // Keep the snapshot file, however, adding a prefix to the extension will cause to be ignored by the app
+                                    if (keepFiles) {
+                                      FS.move(snapshotPath, `${snapshotPath}_DEL_${getRandomID(5)}`, callbackFunction)
+                                    }
                                   }
 
                                   // Add log about this deletion process
@@ -4107,18 +4115,20 @@
                                   } catch (e) {}
 
                                   // If no need for confirmation then call the deletion function and skip the upcoming code
-                                  if (noConfirm)
-                                    return deleteSnapshot()
+                                  try {
+                                    if (info.noConfirm)
+                                      return deleteSnapshot(info.checked)
+                                  } catch (e) {}
 
                                   // Open the confirmation dialog and wait for the response
                                   openDialog(I18next.capitalizeFirstLetter(I18next.replaceData('do you want to delete the snapshot [b]$data[/b]? once you confirm, there is no undo', [snapshotName])), (response) => {
                                     // If canceled, or not confirmed then skip the upcoming code
-                                    if (!response)
+                                    if (!response.confirmed)
                                       return
 
                                     // Call the deletion function
-                                    deleteSnapshot()
-                                  }, true)
+                                    deleteSnapshot(response.checked)
+                                  }, true, 'keep the associated files in the system')
                                 })
 
                                 // Select the snapshot to be deleted
@@ -5620,7 +5630,7 @@
                 // Open the confirmation dialog and wait for the response
                 openDialog(confirmText, (response) => {
                   // If canceled, or not confirmed then skip the upcoming code
-                  if (!response)
+                  if (!response.confirmed)
                     return
 
                   // Get the project/cluster work area
@@ -5636,7 +5646,7 @@
                       throw 0
 
                     // Attempt to delete the project
-                    Modules.Docker.deleteProject(getAttributes(clusterElement, 'data-folder')).then((status) => {
+                    Modules.Docker.deleteProject(getAttributes(clusterElement, 'data-folder'), response.checked).then((status) => {
                       // Failed to delete the project
                       if (!status)
                         return showToast(I18next.capitalize(I18next.t('delete local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to delete the local cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
@@ -5698,8 +5708,8 @@
 
                     // Show feedback to the user
                     showToast(I18next.capitalize(I18next.t('delete cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('cluster [b]$data[/b] in workspace [b]$data[/b] has been successfully deleted', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
-                  })
-                })
+                  }, response.checked)
+                }, false, 'keep the associated files in the system')
               })
 
               // Clicks the folder button
@@ -8343,8 +8353,9 @@
         $(`${dialog}`).find('div.actions-multiple a[action="delete"]').click(function() {
           // Open the confirmation dialog and wait for the response
           openDialog(I18next.capitalizeFirstLetter(I18next.t('do you want to delete the selected snapshots? once you confirm, there is no undo')), (response) => {
+            console.log(response);
             // If canceled, or not confirmed then skip the upcoming code
-            if (!response)
+            if (!response.confirmed)
               return
 
             // Loop through each snapshot
@@ -8354,9 +8365,12 @@
 
               // If so, then delete that snapshot
               if (checked)
-                $(this).find('a[action="delete"]').trigger('click', true)
+                $(this).find('a[action="delete"]').trigger('click', {
+                  noConfirm: true,
+                  checked: response.checked
+                })
             })
-          }, true)
+          }, true, 'keep the associated files in the system')
         })
       }
     }

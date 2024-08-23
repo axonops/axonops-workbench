@@ -656,7 +656,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   // Open the confirmation dialog and wait for the response
                   openDialog(I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the workspace [b]$data[/b]? once you confirm, there is no undo', [getAttributes(workspaceElement, 'data-name')])) + '.', (response) => {
                     // If canceled, or not confirmed then skip the upcoming code
-                    if (!response)
+                    if (!response.confirmed)
                       return
 
                     // Get all workspaces
@@ -669,7 +669,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                         return showToast(I18next.capitalize(I18next.t('delete workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('to delete a workspace, it must be empty and doesn\'t have any clusters in it, make sure to delete all clusters inside the workspace [b]$data[/b] before attempting to delete it again', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
 
                       // Request to delete the workspace, and wait for the result
-                      Modules.Workspaces.deleteWorkspace(workspace, workspaces).then((result) => {
+                      Modules.Workspaces.deleteWorkspace(workspace, workspaces, response.checked).then((result) => {
                         // Failed to delete the workspace
                         if (!result)
                           return showToast(I18next.capitalize(I18next.t('delete workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to delete workspace [b]$data[/b]', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
@@ -706,7 +706,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                         $(document).trigger('refreshWorkspaces')
                       })
                     })
-                  })
+                  }, false, 'keep the associated files in the system')
                 })
               }
             })

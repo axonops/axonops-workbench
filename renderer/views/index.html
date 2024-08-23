@@ -1167,10 +1167,10 @@
             </div>
             <div class="actions-multiple">
               <a action="select" check="true" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false">
-                <ion-icon name="checkbox"></ion-icon> <span mulang="toggle schema snapshot selections"></span>
+                <ion-icon name="checkbox"></ion-icon> <span mulang="toggle selections" capitalize></span>
               </a>
               <a action="delete" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false">
-                <ion-icon name="trash"></ion-icon> <span mulang="delete selected schema snapshots"></span>
+                <ion-icon name="trash"></ion-icon> <span mulang="delete selected snapshots" capitalize></span>
               </a>
             </div>
             <!-- Here all snapshots related to the active cluster will be listed as `snapshot` -->
@@ -1184,9 +1184,15 @@
 
     <!-- General purpose dialog -->
     <div class="modal top fade" id="generalPurposeDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
-      <div class="modal-dialog modal-sm  modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-body"></div>
+          <div class="form-check margin-bottom" style="margin: var(--mdb-modal-padding);display: flex;flex-direction: row;flex-wrap: nowrap;align-items: flex-start;justify-content: flex-start;align-content: flex-start;margin-top: 0px; display:none;">
+            <input class="form-check-input" type="checkbox" id="_VCC8RIhj">
+            <label class="form-check-label" for="_VCC8RIhj" style="width: 90%;">
+              <span mulang="" capitalize-first></span>.
+            </label>
+          </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal">
               <span mulang="cancel"></span>
@@ -1385,7 +1391,8 @@
               </div>
               <div class="modal-section" section="notices" hidden>
                 <div class="notice">
-                  Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation (<span class="link"><span class="content">http://www.apache.org/</span>
+                  Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation (<span class="link"><span
+                      class="content">http://www.apache.org/</span>
                     <ion-icon name="external-link"></ion-icon>
                   </span>) or its subsidiaries in Canada, the United States and/or other countries. The Apache Software Foundation has no affiliation with and does not endorse or review AxonOps Workbench.
                 </div>

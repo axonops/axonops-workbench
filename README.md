@@ -19,6 +19,21 @@ brew tap axonops/homebrew-repository
 brew install --cask axonopsworkbench
 ```
 
+## Tidying up between beta release installs
+
+The current builds are still in development and are not necessarily backwards compatible, so do this before taking a new beta release
+
+### Linux and macOS:
+
+- Delete the folder(s) with perfix .axonops- in the home folder.
+- In the OS Keychain, remove all keys with prefix AxonOps.
+
+### Windows:
+- Delete the folder with prefix axonops- in the user directory folder C:\Users{username}.
+- Delete the folder with prefix AxonOps in apps' data folder C:\Users{username}\AppData\Roaming or %appData%.
+- In the Windows Credential Manager, remove all credentials with prefix AxonOps.
+- In the registries - using the regedit tool -, navigate to Computer\HKEY_LOCAL_MACHINE\SOFTWARE\AxonOpsWorkbenchClustersSecrets - it can also be AxonOpsDeveloperWorkbenchClustersSecrets -, delete the entire key/folder.
+
 ## Development
 
 If you would like to run it in development, please follow the instructions below.

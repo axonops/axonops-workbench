@@ -118,7 +118,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 data-folder-path="${workspace.defaultPath ? 'default' : workspace.path}" style="box-shadow: inset 0px 0px 0 3px #161719, inset 0px 0px 0 4px rgb(${color} / 50%);">
                 <ion-icon name="sandbox" ${!isSandbox ? 'hidden' : '' }></ion-icon>
                 <div class="header">
-                  <div class="title">${workspace.name}</div>
+                  <div class="title workspace-name">${workspace.name}</div>
                   <div class="_clusters"></div>
                 </div>
                 <div class="footer">

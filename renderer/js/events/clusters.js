@@ -247,7 +247,7 @@
         let element = `
             <div class="cluster" data-name="${cluster.name}" data-folder="${cluster.folder}" data-id="${clusterID}" data-workspace-id="${workspaceID}" data-host="${cluster.host}" data-datacenter="${cluster.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-workarea="false" ${secrets} ${credentials}>
               <div class="header">
-                <div class="title">${cluster.name}</div>
+                <div class="title cluster-name">${cluster.name}</div>
                 <div class="cluster-info">
                   <div class="info" info="host">
                     <div class="title"><span mulang="host" capitalize></span>
@@ -1271,50 +1271,50 @@
 
                       // The statement's block UI structure
                       let element = `
-                          <div class="block show" data-id="${blockID}">
-                            <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
-                              <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
-                                <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
-                              </span>
-                              <div class="text"><pre>${isOnlyInfo ? finalInfoContent : statement}</pre></div>
-                              <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
-                                <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
-                                  data-mulang="copy the statement" capitalize-first>
-                                  <ion-icon name="copy-solid"></ion-icon>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="info-badges">
-                              <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
-                              <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
-                            </div>
-                            <div class="output">
-                              <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
-                              ${isOnlyInfo ? statement : ''}
-                            </div>
-                            <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
-                              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
-                                data-mulang="download the block" capitalize-first hidden>
-                                <ion-icon name="download"></ion-icon>
-                              </div>
-                              <div class="download-options">
-                                <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
-                                  <ion-icon name="csv"></ion-icon>
-                                </div>
-                                <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
-                                  <ion-icon name="pdf"></ion-icon>
-                                </div>
-                              </div>
-                              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
-                                data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
-                                <ion-icon name="copy-solid"></ion-icon>
-                              </div>
-                              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
-                                data-mulang="delete the block" capitalize-first>
-                                <ion-icon name="trash"></ion-icon>
-                              </div>
-                            </div>
-                          </div>`
+                           <div class="block show" data-id="${blockID}">
+                             <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
+                               <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
+                                 <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
+                               </span>
+                               <div class="text"><pre>${isOnlyInfo ? finalInfoContent : statement}</pre></div>
+                               <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
+                                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
+                                   data-mulang="copy the statement" capitalize-first>
+                                   <ion-icon name="copy-solid"></ion-icon>
+                                 </div>
+                               </div>
+                             </div>
+                             <div class="info-badges">
+                               <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
+                               <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
+                             </div>
+                             <div class="output">
+                               <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
+                               ${isOnlyInfo ? statement : ''}
+                             </div>
+                             <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
+                               <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
+                                 data-mulang="download the block" capitalize-first hidden>
+                                 <ion-icon name="download"></ion-icon>
+                               </div>
+                               <div class="download-options">
+                                 <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                   <ion-icon name="csv"></ion-icon>
+                                 </div>
+                                 <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                   <ion-icon name="pdf"></ion-icon>
+                                 </div>
+                               </div>
+                               <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
+                                 data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
+                                 <ion-icon name="copy-solid"></ion-icon>
+                               </div>
+                               <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
+                                 data-mulang="delete the block" capitalize-first>
+                                 <ion-icon name="trash"></ion-icon>
+                               </div>
+                             </div>
+                           </div>`
 
                       // Append the block and hide it - till and output is received -
                       sessionContainer.append($(element).show(function() {
@@ -1360,7 +1360,7 @@
                               scrollTop: $(this).parent().get(0).scrollHeight
                             }, 100)
                           } catch (e) {}
-                        }, 100)
+                        }, 200)
 
                         // Apply the chosen language on the UI element after being fully loaded
                         setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
@@ -2257,7 +2257,7 @@
                                         // Show the emptiness class
                                         queriesContainer.addClass('_empty')
 
-                                        // Plat the emptiness animation
+                                        // Play the emptiness animation
                                         queriesContainer.find('lottie-player')[0].play()
                                       } catch (e) {}
                                     }, 500)
@@ -2278,6 +2278,14 @@
                                     } catch (e) {}
                                   })
                                 })
+
+                                setTimeout(() => {
+                                  try {
+                                    blockElement.parent().animate({
+                                      scrollTop: blockElement.parent().get(0).scrollHeight
+                                    }, 100)
+                                  } catch (e) {}
+                                }, 100)
                               }))
 
                               return
@@ -2598,7 +2606,7 @@
                                                   // Show the emptiness class
                                                   queriesContainer.addClass('_empty')
 
-                                                  // Plat the emptiness animation
+                                                  // Play the emptiness animation
                                                   queriesContainer.find('lottie-player')[0].play()
                                                 } catch (e) {}
                                               }, 500)
@@ -6767,7 +6775,7 @@
   let updateMiniCluster
 
   // Set the time which after it the termination of the connection test process is allowed
-  const ConnectionTestProcessTerminationTimeout = 1000
+  const ConnectionTestProcessTerminationTimeout = 250
 
   // Handle different events for elements related to clusters - especially the add/edit cluster dialog -
   {
@@ -8353,7 +8361,6 @@
         $(`${dialog}`).find('div.actions-multiple a[action="delete"]').click(function() {
           // Open the confirmation dialog and wait for the response
           openDialog(I18next.capitalizeFirstLetter(I18next.t('do you want to delete the selected snapshots? once you confirm, there is no undo')), (response) => {
-            console.log(response);
             // If canceled, or not confirmed then skip the upcoming code
             if (!response.confirmed)
               return

@@ -993,7 +993,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
        *
        * Define the attributes' names
        */
-      let attributes = ['virtual', 'durable_writes', 'is_cql_compatible', 'is_static', 'is_reversed']
+      let attributes = ['virtual', 'durable_writes', 'is_static', 'is_reversed']
 
       if (parentType == 'partitionKeys')
         attributes = `${attributes}`.slice(0, -2)
@@ -1381,6 +1381,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             let text = I18next.capitalize(`${option}`.replace(/\_/g, ' ')),
               // Get the option's value
               value = options[option]
+
+            // Don't show `CDC` option if its value is `NULL`
+            if (text.toLowerCase() == 'cdc' && value.toLowerCase() == 'null')
+              return
 
             // If the value is one of the defined values in the array, then set the value to `NULL`
             value = [undefined, null].includes(value) ? 'NULL' : value
@@ -2100,10 +2104,11 @@ jQuery.fn.extend({
  * {string} `text` the dialog's text
  * {object} `callback` function that will be triggered with passing the final result
  * {boolean} `?noBackdrop` whether or not the backdrop background should be rendered
+ * {string} `?checkBox` whether or not showing a checkbox, the passed text will be the checkbox's label
  *
  * @Return: {boolean} action confirmed or canceled
  */
-let openDialog = (text, callback, noBackdrop = false) => {
+let openDialog = (text, callback, noBackdrop = false, checkBox = '') => {
   // Point at the dialog's UI element
   let dialog = $('div#generalPurposeDialog'),
     // Get the dialog's MDB object
@@ -2111,10 +2116,36 @@ let openDialog = (text, callback, noBackdrop = false) => {
     // Point at the dialog's content container
     dialogContent = dialog.find('div.modal-body'),
     // Point at the dialog's close `X` button
-    closeBtn = dialog.find('div.btn-close')
+    closeBtn = dialog.find('div.btn-close'),
+    // Point at the checkbox input element
+    checkBoxInput = dialog.find('input[type="checkbox"]')
 
   // Set the dialog's text
   dialogContent.html(text)
+
+  // By default, hide the checkbox form
+  checkBoxInput.parent().hide()
+
+  // Handle the need to show the checkbox
+  try {
+    // If no text passed as a checkbox's label then skip this try-catch block
+    if (checkBox.length <= 0)
+      throw 0
+
+    setTimeout(() => {
+      // Show the form
+      checkBoxInput.parent().show()
+
+      // Update the checkbox's label
+      checkBoxInput.parent().find('label').find('span[mulang]').attr('mulang', checkBox)
+
+      // Apply the proper language
+      Modules.Localization.applyLanguageSpecific(checkBoxInput.parent().find('label').find('span[mulang]'))
+
+      // Reset the checkbox
+      checkBoxInput.prop('checked', false)
+    })
+  } catch (e) {}
 
   // Add log for this confirmation dialog - its text -
   try {
@@ -2130,8 +2161,11 @@ let openDialog = (text, callback, noBackdrop = false) => {
 
   // Set a `click` event listener
   confirm.add(cancel).click(function() {
-    // Call the `callback` function with whether the user has clicked on the confirm button or not
-    callback($(this).is(confirm))
+    // Call the `callback` function with whether the user has clicked on the confirm button or not, and the checkbox's status if needed
+    callback(checkBox.length != 0 ? {
+      confirmed: $(this).is(confirm),
+      checked: checkBoxInput.prop('checked')
+    } : $(this).is(confirm))
 
     // Add log for the confirmation's status
     try {
@@ -3703,4 +3737,23 @@ let handleContentInfo = (type, element = null) => {
   } finally {
 
   }
+}
+
+let copyStatement = (button) => {
+  // Get the block's statement
+  let content = `${$(button).parent().parent().children('div.text').text()}`,
+    // Get the statement's size
+    contentSize = ByteSize(ValueSize(content))
+
+  // Copy statement to the clipboard
+  try {
+    Clipboard.writeText(content)
+  } catch (e) {
+    try {
+      errorLog(e, 'clusters')
+    } catch (e) {}
+  }
+
+  // Give feedback to the user
+  showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
 }

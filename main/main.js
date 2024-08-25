@@ -761,6 +761,9 @@ App.on('second-instance', () => {
 
     // Restart the entire app
     IPCMain.on('options:actions:restart', () => {
+      // Make sure the quit action will be performed well on macOS
+      isMacOSForcedClose = true
+
       // Close the main window
       views.main.close()
 

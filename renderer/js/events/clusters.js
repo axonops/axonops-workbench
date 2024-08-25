@@ -247,7 +247,7 @@
         let element = `
             <div class="cluster" data-name="${cluster.name}" data-folder="${cluster.folder}" data-id="${clusterID}" data-workspace-id="${workspaceID}" data-host="${cluster.host}" data-datacenter="${cluster.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-workarea="false" ${secrets} ${credentials}>
               <div class="header">
-                <div class="title">${cluster.name}</div>
+                <div class="title cluster-name">${cluster.name}</div>
                 <div class="cluster-info">
                   <div class="info" info="host">
                     <div class="title"><span mulang="host" capitalize></span>
@@ -482,7 +482,7 @@
 
                   // If the currently running clusters are more than or equal to the maximum allowed number and this is not the sandbox workspace then end the process and show feedback to the user
                   if (([numRunningClusters, numAttemptingClusters]).some((num) => num >= maximumRunningClusters) && !isSandbox)
-                    return showToast(I18next.capitalize(I18next.t('connect with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of clusters which allowed to be connected to simultaneously is [b]$data[/b]', [maximumRunningClusters])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limitation can be changed from the app\'s settings in the limitation section')) + `.`, 'failure')
+                    return showToast(I18next.capitalize(I18next.t('connect with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of clusters which allowed to be connected to simultaneously is [b]$data[/b]', [maximumRunningClusters])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limit can be changed from the app\'s settings in the limits section')) + `.`, 'failure')
 
                   // Point at the work areas content's container
                   let content = $('div.body div.right div.content div[content="workarea"]'),
@@ -850,14 +850,14 @@
                                       </div>
                                     </div>
                                     <div class="kill-process">
-                                      <button class="btn btn-primary btn-dark changed-bg changed-color" type="button" data-mdb-ripple-color="var(--mdb-danger)" data-tippy="tooltip" data-mdb-placement="left" data-title="Kill the process" data-mulang="Kill the process">
+                                      <button class="btn btn-primary btn-dark changed-bg changed-color" type="button" data-mdb-ripple-color="var(--mdb-danger)" data-tippy="tooltip" data-mdb-placement="left" data-title="Kill the process" data-mulang="kill the process" capitalize-first>
                                         <ion-icon name="close"></ion-icon>
                                       </button>
                                     </div>
                                     <div class="hints-container">
                                       <div class="hint changed-bg changed-color">
                                         <div class="text">
-                                          An incomplete statement would have interrupted the execution flow
+                                          <span mulang="an incomplete statement would have interrupted the execution flow" capitalize-first></span>
                                         </div>
                                       </div>
                                     </div>
@@ -1265,52 +1265,56 @@
                       // Hide the emptiness class as there's at least one block now
                       sessionContainer.parent().find(`div.empty-statements`).removeClass('show')
 
+                      let finalInfoContent = (type == 'neutral' ? 'info' : type)
+
+                      finalInfoContent = `<span mulang="${finalInfoContent}" capitalize></span>`
+
                       // The statement's block UI structure
                       let element = `
-                          <div class="block show" data-id="${blockID}">
-                            <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
-                              <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
-                                <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
-                              </span>
-                              <div class="text"><pre>${isOnlyInfo ? (type == 'neutral' ? 'info' : type) : statement}</pre></div>
-                              <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
-                                <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement"
-                                  data-mulang="copy the statement" capitalize-first>
-                                  <ion-icon name="copy-solid"></ion-icon>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="info-badges">
-                              <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
-                              <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
-                            </div>
-                            <div class="output">
-                              <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
-                              ${isOnlyInfo ? statement : ''}
-                            </div>
-                            <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
-                              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
-                                data-mulang="download the block" capitalize-first hidden>
-                                <ion-icon name="download"></ion-icon>
-                              </div>
-                              <div class="download-options">
-                                <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
-                                  <ion-icon name="csv"></ion-icon>
-                                </div>
-                                <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
-                                  <ion-icon name="pdf"></ion-icon>
-                                </div>
-                              </div>
-                              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
-                                data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
-                                <ion-icon name="copy-solid"></ion-icon>
-                              </div>
-                              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
-                                data-mulang="delete the block" capitalize-first>
-                                <ion-icon name="trash"></ion-icon>
-                              </div>
-                            </div>
-                          </div>`
+                           <div class="block show" data-id="${blockID}">
+                             <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
+                               <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
+                                 <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
+                               </span>
+                               <div class="text"><pre>${isOnlyInfo ? finalInfoContent : statement}</pre></div>
+                               <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
+                                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
+                                   data-mulang="copy the statement" capitalize-first>
+                                   <ion-icon name="copy-solid"></ion-icon>
+                                 </div>
+                               </div>
+                             </div>
+                             <div class="info-badges">
+                               <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
+                               <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
+                             </div>
+                             <div class="output">
+                               <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
+                               ${isOnlyInfo ? statement : ''}
+                             </div>
+                             <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
+                               <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
+                                 data-mulang="download the block" capitalize-first hidden>
+                                 <ion-icon name="download"></ion-icon>
+                               </div>
+                               <div class="download-options">
+                                 <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                   <ion-icon name="csv"></ion-icon>
+                                 </div>
+                                 <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                   <ion-icon name="pdf"></ion-icon>
+                                 </div>
+                               </div>
+                               <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
+                                 data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
+                                 <ion-icon name="copy-solid"></ion-icon>
+                               </div>
+                               <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
+                                 data-mulang="delete the block" capitalize-first>
+                                 <ion-icon name="trash"></ion-icon>
+                               </div>
+                             </div>
+                           </div>`
 
                       // Append the block and hide it - till and output is received -
                       sessionContainer.append($(element).show(function() {
@@ -1322,29 +1326,6 @@
                         // Call the callback function with the created block
                         if (callback != null)
                           callback($(this))
-
-                        // Handle the copy action of the block's statement
-                        setTimeout(() => {
-                          // Clicks the copy button; to copy content in JSON string format
-                          $(this).find('div.btn[action="copy-statement"]').click(() => {
-                            // Get the block's statement
-                            let content = $(this).find('div.statement div.text').text(),
-                              // Get the statement's size
-                              contentSize = ByteSize(ValueSize(content))
-
-                            // Copy statement to the clipboard
-                            try {
-                              Clipboard.writeText(content)
-                            } catch (e) {
-                              try {
-                                errorLog(e, 'clusters')
-                              } catch (e) {}
-                            }
-
-                            // Give feedback to the user
-                            showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
-                          })
-                        }, 500)
 
                         // Skip the upcoming code if the block is not an info
                         if (!isOnlyInfo)
@@ -1379,11 +1360,11 @@
                               scrollTop: $(this).parent().get(0).scrollHeight
                             }, 100)
                           } catch (e) {}
-                        }, 100)
+                        }, 200)
+
+                        // Apply the chosen language on the UI element after being fully loaded
+                        setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
                       }))
-
-
-
                     }
 
                     // Create the terminal instance from the XtermJS constructor
@@ -2195,7 +2176,7 @@
                               // The sub output structure UI
                               let element = `
                                     <div class="sub-output info incomplete-statement">
-                                      <div class="sub-output-content">Incomplete statement has been detected and stopped the execution flow.</div>
+                                      <div class="sub-output-content"><span mulang="incomplete statement has been detected and stopped the execution flow" capitalize-first></span>.</div>
                                     </div>`
 
                               blockElement.children('div.output').children('div.executing').hide()
@@ -2203,6 +2184,9 @@
                               // Append a `sub-output` element in the output's container
                               blockElement.children('div.output').append($(element).show(function() {
                                 $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').addClass('busy')
+
+                                // Apply the chosen language on the UI element after being fully loaded
+                                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
 
                                 // Execute this code whatever the case is
                                 setTimeout(() => {
@@ -2273,7 +2257,7 @@
                                         // Show the emptiness class
                                         queriesContainer.addClass('_empty')
 
-                                        // Plat the emptiness animation
+                                        // Play the emptiness animation
                                         queriesContainer.find('lottie-player')[0].play()
                                       } catch (e) {}
                                     }, 500)
@@ -2294,6 +2278,14 @@
                                     } catch (e) {}
                                   })
                                 })
+
+                                setTimeout(() => {
+                                  try {
+                                    blockElement.parent().animate({
+                                      scrollTop: blockElement.parent().get(0).scrollHeight
+                                    }, 100)
+                                  } catch (e) {}
+                                }, 100)
                               }))
 
                               return
@@ -2385,6 +2377,9 @@
                                     outputContainer.append($(element).show(function() {
                                       // Point at the appended element
                                       let outputElement = $(this)
+
+                                      // Apply the chosen language on the UI element after being fully loaded
+                                      setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
 
                                       // If the number of executed statements are more than `1` then show a badge indicates that
                                       setTimeout(() => {
@@ -2611,7 +2606,7 @@
                                                   // Show the emptiness class
                                                   queriesContainer.addClass('_empty')
 
-                                                  // Plat the emptiness animation
+                                                  // Play the emptiness animation
                                                   queriesContainer.find('lottie-player')[0].play()
                                                 } catch (e) {}
                                               }, 500)
@@ -3106,7 +3101,7 @@
                       // Clicks the statement's execution button
                       executeBtn.click(function() {
                         // If the button is disabled then skip the upcoming code and end the process
-                        if ($(this).attr('disabled') != undefined || $(this).hasClass('busy'))
+                        if ($(this).attr('disabled') != undefined || $(this).parent().hasClass('busy'))
                           return
 
                         // Get the statement
@@ -3847,7 +3842,7 @@
 
                           // If none, then skip the upcoming code and show feedback to the user
                           if (changes <= 0)
-                            return showToast(I18next.capitalize(I18next.t('show differentiation')), I18next.capitalizeFirstLetter(I18next.t('there is no difference between the old and new metadata')) + '.', 'warning')
+                            return showToast(I18next.capitalize(I18next.t('show differentiation')), I18next.capitalizeFirstLetter(I18next.t('there is no difference between the previous and new metadata')) + '.', 'warning')
 
                           // Show/hide the changes container
                           $(`div.changes-lines[data-id="${changesLinesContainerID}"]`).toggleClass('show')
@@ -4026,6 +4021,9 @@
                                   // Get the snapshot's path and name
                                   [snapshotPath, snapshotName] = getAttributes($(this), ['data-path', 'data-name'])
 
+                                // Apply the chosen language on the UI element after being fully loaded
+                                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
                                 // Clicks the loading button - to load schema snapshot in the old side -
                                 $(this).find('a[action="load"]').click(async function() {
                                   try {
@@ -4080,11 +4078,10 @@
                                 })
 
                                 // Delete a snapshot
-                                $(this).find('a[action="delete"]').on('click', function(e, noConfirm = false) {
+                                $(this).find('a[action="delete"]').on('click', function(e, info) {
                                   // Inner function to delete a snapshot
-                                  let deleteSnapshot = () => {
-                                    // Remove the snapshot file
-                                    FS.remove(snapshotPath, (err) => {
+                                  let deleteSnapshot = (keepFiles = false) => {
+                                    let callbackFunction = (err) => {
                                       // If any error has occurred then show feedback to the user and skip the upcoming code
                                       if (err) {
                                         // Add error log
@@ -4108,7 +4105,16 @@
                                       // If no saved snapshots left then close the modal/dialog
                                       if (snapshotsContainer.children('div.snapshot').length <= 0)
                                         $('#showLoadSnapshotDialog').click()
-                                    })
+                                    }
+
+                                    // Remove the snapshot file
+                                    if (!keepFiles)
+                                      FS.remove(snapshotPath, callbackFunction)
+
+                                    // Keep the snapshot file, however, adding a prefix to the extension will cause to be ignored by the app
+                                    if (keepFiles) {
+                                      FS.move(snapshotPath, `${snapshotPath}_DEL_${getRandomID(5)}`, callbackFunction)
+                                    }
                                   }
 
                                   // Add log about this deletion process
@@ -4117,18 +4123,20 @@
                                   } catch (e) {}
 
                                   // If no need for confirmation then call the deletion function and skip the upcoming code
-                                  if (noConfirm)
-                                    return deleteSnapshot()
+                                  try {
+                                    if (info.noConfirm)
+                                      return deleteSnapshot(info.checked)
+                                  } catch (e) {}
 
                                   // Open the confirmation dialog and wait for the response
                                   openDialog(I18next.capitalizeFirstLetter(I18next.replaceData('do you want to delete the snapshot [b]$data[/b]? once you confirm, there is no undo', [snapshotName])), (response) => {
                                     // If canceled, or not confirmed then skip the upcoming code
-                                    if (!response)
+                                    if (!response.confirmed)
                                       return
 
                                     // Call the deletion function
-                                    deleteSnapshot()
-                                  }, true)
+                                    deleteSnapshot(response.checked)
+                                  }, true, 'keep the associated files in the system')
                                 })
 
                                 // Select the snapshot to be deleted
@@ -4618,7 +4626,7 @@
 
                                 // Send a request to the main thread regards pop-up a menu
                                 IPCRenderer.send('show-context-menu', JSON.stringify([{
-                                  label: I18next.capitalize(I18next.t('close workarea (Disconnect)')),
+                                  label: I18next.capitalize(I18next.t('close workarea (disconnect)')),
                                   click: `() => views.main.webContents.send('workarea:close', {
                                      btnID: '${closeWorkareaBtnID}'
                                    })`
@@ -4921,6 +4929,9 @@
                               // Click the history button to update the items' list
                               historyBtn.click()
                             })
+
+                            // Apply the chosen language on the UI element after being fully loaded
+                            setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
                           }))
                         }
 
@@ -4997,7 +5008,7 @@
 
                     // If the currently running projects are more than or equal to the maximum allowed number then end the process and show feedback to the user
                     if (([numRunningSandbox, numAttemptingSandbox]).some((num) => num >= maximumRunningSandbox))
-                      return showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of local clusters which allowed to be started simultaneously is [b]$data[/b]', [maximumRunningSandbox])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limitation can be changed from the app\'s settings in the limitation section')) + `.`, 'failure')
+                      return showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of local clusters which allowed to be started simultaneously is [b]$data[/b]', [maximumRunningSandbox])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limit can be changed from the app\'s settings in the limits section')) + `.`, 'failure')
 
                     // Inner function to execute the post-start code
                     let startPostProcess = (success = false) => {
@@ -5627,7 +5638,7 @@
                 // Open the confirmation dialog and wait for the response
                 openDialog(confirmText, (response) => {
                   // If canceled, or not confirmed then skip the upcoming code
-                  if (!response)
+                  if (!response.confirmed)
                     return
 
                   // Get the project/cluster work area
@@ -5643,7 +5654,7 @@
                       throw 0
 
                     // Attempt to delete the project
-                    Modules.Docker.deleteProject(getAttributes(clusterElement, 'data-folder')).then((status) => {
+                    Modules.Docker.deleteProject(getAttributes(clusterElement, 'data-folder'), response.checked).then((status) => {
                       // Failed to delete the project
                       if (!status)
                         return showToast(I18next.capitalize(I18next.t('delete local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to delete the local cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
@@ -5705,8 +5716,8 @@
 
                     // Show feedback to the user
                     showToast(I18next.capitalize(I18next.t('delete cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('cluster [b]$data[/b] in workspace [b]$data[/b] has been successfully deleted', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
-                  })
-                })
+                  }, response.checked)
+                }, false, 'keep the associated files in the system')
               })
 
               // Clicks the folder button
@@ -6764,7 +6775,7 @@
   let updateMiniCluster
 
   // Set the time which after it the termination of the connection test process is allowed
-  const ConnectionTestProcessTerminationTimeout = 1000
+  const ConnectionTestProcessTerminationTimeout = 250
 
   // Handle different events for elements related to clusters - especially the add/edit cluster dialog -
   {
@@ -7086,7 +7097,7 @@
                   basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.t('to test connection, host name is the only required field to be fulfilled')) + '.', 'failure')
+                showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.t('to test connection, host name is the only required field to be provided')) + '.', 'failure')
 
                 // Skip the upcoming code - end the connection test process -
                 return
@@ -7707,7 +7718,7 @@
                   basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('add cluster')), I18next.capitalizeFirstLetter(I18next.t('to save a cluster, a unique valid name is required to be fulfilled')) + '.', 'failure')
+                showToast(I18next.capitalize(I18next.t('add cluster')), I18next.capitalizeFirstLetter(I18next.t('to save a cluster, a unique valid name is required to be provided')) + '.', 'failure')
 
                 // Skip the upcoming code - terminate the cluster's saving/updating process -
                 return
@@ -8351,7 +8362,7 @@
           // Open the confirmation dialog and wait for the response
           openDialog(I18next.capitalizeFirstLetter(I18next.t('do you want to delete the selected snapshots? once you confirm, there is no undo')), (response) => {
             // If canceled, or not confirmed then skip the upcoming code
-            if (!response)
+            if (!response.confirmed)
               return
 
             // Loop through each snapshot
@@ -8361,9 +8372,12 @@
 
               // If so, then delete that snapshot
               if (checked)
-                $(this).find('a[action="delete"]').trigger('click', true)
+                $(this).find('a[action="delete"]').trigger('click', {
+                  noConfirm: true,
+                  checked: response.checked
+                })
             })
-          }, true)
+          }, true, 'keep the associated files in the system')
         })
       }
     }
@@ -8813,6 +8827,9 @@
                 ++count
               }, 100)
           })
+
+          // Apply the chosen language on the UI element after being fully loaded
+          setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
         }))
       })
     })

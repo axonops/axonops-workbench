@@ -400,4 +400,40 @@ body.rtl {
     right: auto;
     left: 50px;
   }
+
+  div.body div.right div.content-info div._left {
+    float: right;
+  }
+
+  div.body div.right div.content-info div._right {
+    float: left;
+    text-align: -webkit-left;
+  }
+
+  div.body div.right div.content-info div._left div._arrow {
+    transform: rotate(-90deg) !important;
+  }
+
+  div.body div.right div.content-info div._left div._cluster div._color {
+    margin-right: 0 !important;
+    margin-left: 5px!important;
+  }
+
+  div.body div.right div.content-info div._left div._main {
+    margin-right: 0 !important;
+  }
+
+  div.body div.right div.content-info div._left div.icon {
+    margin-right: 0 !important;
+    margin-left: 5px !important;
+  }
+
+  div.body div.right div.content-info div._right div._actions div.action button ion-icon {
+    margin-right: 0 !important;
+    margin-left: 5px;
+  }
+
+  div.body div.right div.content div[content="workarea"] div.workarea div.sub-sides div.tab-content div.tab-pane[tab="cqlsh-session"] {
+    direction: ltr !important;
+  }
 }

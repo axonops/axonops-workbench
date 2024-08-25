@@ -1879,6 +1879,14 @@ div.body {
                     weight: 500;
                   }
                   margin-bottom: 5px;
+
+                  &.cluster-name,
+                  &.workspace-name {
+                    width: 100%;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  }
                 }
 
                 div._clusters {

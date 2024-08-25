@@ -45,7 +45,7 @@ Terminal.run(`cd "${Path.join(__dirname, '..')}" && npx license-checker --json >
     let getInfo = async (packages, index = 0) => {
       let package = packages[index];
 
-      if (package == undefined) return console.log('Finished');
+      if (package == undefined) return console.log('Process finished');
 
       let modifiedPackage = package.replace(/(\@.+)$/gi, '');
 

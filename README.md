@@ -14,7 +14,7 @@ AxonOps Workbench for Apache Cassandra is a cutting-edge desktop application cra
 ## AI Assistant
 <img width="1703" alt="Screenshot 2024-08-23 at 07 50 13" src="https://github.com/user-attachments/assets/83da8e29-6278-4094-ab21-2dba291fe9d6">
 
-## Organise clusters into workspaces and add to source control for sharing
+## Organise clusters into workspaces and securely add to source control for sharing
 <img width="1678" alt="Screenshot 2024-08-23 at 10 07 50" src="https://github.com/user-attachments/assets/42be7bd5-6fa6-4881-8c30-42ab96c2ae45">
 
 ## Run local Cassandra clusters

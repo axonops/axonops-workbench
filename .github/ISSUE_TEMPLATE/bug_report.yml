@@ -18,6 +18,13 @@ body:
       options:
       - label: 'I am using the most recent beta release'
         required: true
+  - type: input
+    id: axonops_workbench_version
+    attributes:
+      label: 'AxonOps Workbench Version'
+      description: 'Enter the specific version of AxonOps Workbench where the bug occurs.'
+    validations:
+      required: true
   - type: checkboxes
     attributes:
       label: 'Is there an existing issue for this?'
@@ -40,7 +47,7 @@ body:
     id: operating_system_version
     attributes:
       label: 'Operating System Version'
-      description: 'Enter the specific version of yoour OS where the bug occurs.'
+      description: 'Enter the specific version of your OS where the bug occurs.'
     validations:
       required: true
   - type: input

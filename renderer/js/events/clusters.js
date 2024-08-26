@@ -5400,6 +5400,13 @@
                       val: (currentCluster.ssh.privatekey != undefined) ? currentCluster.ssh.privatekey : ''
                     })
 
+                    // If we have a passphrase then show it to the user
+                    inputs.push({
+                      section: 'none',
+                      key: 'ssh-passphrase',
+                      val: (currentCluster.ssh.passphrase != undefined) ? currentCluster.ssh.passphrase : ''
+                    })
+
                     // If there's a saved destination port, and it is not the same as the connection port then show it as well
                     inputs.push({
                       section: 'none',

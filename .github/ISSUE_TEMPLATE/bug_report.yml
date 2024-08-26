@@ -19,7 +19,7 @@ body:
       - label: 'I am using the most recent beta release'
         required: true
   - type: input
-    id: operating_system_version
+    id: axonops_workbench_version
     attributes:
       label: 'AxonOps Workbench Version'
       description: 'Enter the specific version of AxonOps Workbench where the bug occurs.'

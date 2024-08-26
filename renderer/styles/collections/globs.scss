@@ -832,3 +832,7 @@ div.resolve-variables {
 .form-outline.form-white .form-control[readonly] {
   background-color: rgba(255, 255, 255, 0.15);
 }
+
+.monaco-sash {
+  z-index: 1 !important;
+}

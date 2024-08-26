@@ -20,6 +20,7 @@
  * The main editor which is being used for browsing and editing the `cqlsh.rc` file's content in the add/edit cluster's dialog
  */
 let editor,
+  diffEditors = [],
   // Boolean value used to prevent collisions while updating `cqlsh.rc` content in the editor
   isUpdatingEditor = false,
   // The editor's decorations which be used to highlight sensitive data in the editor

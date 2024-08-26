@@ -1244,6 +1244,32 @@ $(document).on('initialize', () => {
 
     // Set the app's name and version
     (['title', 'version']).forEach((info) => document.getElementById(`app${info}`).innerHTML = AppInfo[info])
+
+    $('button#copyReleaseVersion').click(() => {
+      // Copy the result to the clipboard
+      try {
+        Clipboard.writeText(`v${AppInfo.version}`)
+      } catch (e) {
+        try {
+          errorLog(e, 'init')
+        } catch (e) {}
+      }
+
+      // Give feedback to the user
+      showToast(I18next.capitalize(I18next.t('copy the release version')), I18next.capitalizeFirstLetter(I18next.t('the current release version has been successfully copied to the clipboard')) + '.', 'success')
+    })
+
+    try {
+      import(Path.join(__dirname, '..', '..', 'node_modules', 'url-join', 'lib', 'url-join.js')).then((module) => {
+        let releaseLink = module.default(AppInfo.repository, 'releases', 'tag', AppInfo.version)
+
+        $('button#releaseNotes').click(() => {
+          try {
+            Open(releaseLink)
+          } catch (e) {}
+        })
+      })
+    } catch (e) {}
   } catch (e) {}
 })
 

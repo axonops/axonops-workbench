@@ -601,6 +601,8 @@
                     metadataDifferentiationContentID,
                     refreshDifferentiationBtnID,
                     showDifferentiationBtnID,
+                    diffNavigationPrevBtnID,
+                    diffNavigationNextBtnID,
                     saveSnapshotBtnID,
                     loadSnapshotBtnID,
                     openSnapshotsFolderBtnID,
@@ -614,7 +616,7 @@
                     // Restart and close the work area
                     restartWorkareaBtnID,
                     closeWorkareaBtnID
-                  ] = getRandomID(20, 28)
+                  ] = getRandomID(20, 30)
 
                   /**
                    * Define tabs that shown only to sandbox projects
@@ -921,15 +923,22 @@
                             </div>
                             <div class="tab-pane fade" tab="metadata-differentiation" id="_${metadataDifferentiationContentID}" role="tabpanel">
                               <div class="metadata-content-container">
-                                <div class="metadata-content old">
-                                  <div class="editor-container-old"></div>
-                                </div>
-                                <div class="metadata-content new">
-                                  <div class="editor-container-new"></div>
+                                <div class="metadata-content all">
+                                  <div class="editor-container-all"></div>
                                 </div>
                                 <span class="badge badge-secondary old"><span mulang="previous" capitalize></span><span class="old-snapshot" data-id="${oldSnapshotNameID}"></span></span>
                                 <div class="centered-badges">
-                                  <span class="badge badge-primary btn btn-secondary btn-dark btn-sm changes" data-mdb-ripple-color="dark" data-changes="0" data-id="${showDifferentiationBtnID}"><span mulang="changes" capitalize></span>: <span>0</span></span>
+                                  <span class="badge badge-primary btn btn-secondary btn-dark btn-sm changes" style="cursor:pointer;" data-mdb-ripple-color="dark" data-changes="0" data-id="${showDifferentiationBtnID}"><span mulang="changes" capitalize></span>: <span>0</span></span>
+                                  <div class="diff-navigation">
+                                    <span class="diff-nav-prev btn btn-secondary btn-dark btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Previous change" data-mulang="previous change" capitalize-first
+                                      data-id="${diffNavigationPrevBtnID}">
+                                      <ion-icon name="arrow-up"></ion-icon>
+                                    </span>
+                                    <span class="diff-nav-next btn btn-secondary btn-dark btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Next change" data-mulang="next change" capitalize-first
+                                      data-id="${diffNavigationNextBtnID}">
+                                      <ion-icon name="arrow-up"></ion-icon>
+                                    </span>
+                                  </div>
                                   <div class="actions">
                                     <span class="refresh btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
                                       data-id="${refreshDifferentiationBtnID}">
@@ -948,7 +957,7 @@
                                       <ion-icon name="folder-open-outline"></ion-icon>
                                     </span>
                                     <span class="change-view btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Change the editors view" data-mulang="change the editors view" capitalize-first
-                                      data-id="${changeViewBtnID}">
+                                      data-id="${changeViewBtnID}" hidden>
                                       <ion-icon name="diff-vertical"></ion-icon>
                                     </span>
                                   </div>
@@ -1127,6 +1136,8 @@
                           decorations: null
                         }
                       },
+                      diffEditor,
+                      diffEditorNavigator,
                       // Hold the object of the metadata's tree view
                       jsTreeObject = null,
                       // Save the latest executed command
@@ -1791,6 +1802,38 @@
 
                             // Enable all tabs and their associated sections
                             workareaElement.find('div.cluster-tabs').find('li a').removeClass('disabled')
+
+                            try {
+                              let metadataDiffContainer = $(`div.tab-pane[tab="metadata-differentiation"]#_${metadataDifferentiationContentID}`)
+
+                              diffEditor = monaco.editor.createDiffEditor(metadataDiffContainer.find(`div.editor-container-all`)[0], {
+                                language: 'json', // Set the content's language
+                                minimap: {
+                                  enabled: true
+                                },
+                                readOnly: true,
+                                glyphMargin: true, // This option allows to render an object in the line numbering side
+                                suggest: {
+                                  showFields: false,
+                                  showFunctions: false
+                                },
+                                theme: 'vs-dark',
+                                scrollBeyondLastLine: true,
+                                mouseWheelZoom: true,
+                                fontSize: 11
+                              })
+
+                              diffEditors.push(diffEditor)
+
+                              diffEditorNavigator = monaco.editor.createDiffNavigator(diffEditor, {
+                                followsCaret: true, // Optional
+                                ignoreCharChanges: true // Optional: Treat each word/line as a diff, rather than individual characters
+                              });
+                            } catch (e) {
+
+                            } finally {
+
+                            }
                           } catch (e) {}
 
                           /**
@@ -1804,44 +1847,11 @@
 
                               // Inner function to create either the old or new editor
                               let createEditor = (type, metadata) => {
-                                let metadataDiffContainer = $(`div.tab-pane[tab="metadata-differentiation"]#_${metadataDifferentiationContentID}`),
-                                  // Create the editor
-                                  editor = monaco.editor.create(metadataDiffContainer.find(`div.editor-container-${type}`)[0], {
-                                    value: applyJSONBeautify(metadata, true),
-                                    language: 'json', // Set the content's language
-                                    minimap: {
-                                      enabled: true
-                                    },
-                                    readOnly: true,
-                                    glyphMargin: true, // This option allows to render an object in the line numbering side
-                                    suggest: {
-                                      showFields: false,
-                                      showFunctions: false
-                                    },
-                                    theme: 'vs-dark',
-                                    scrollBeyondLastLine: true,
-                                    mouseWheelZoom: true,
-                                    fontSize: 11
-                                  })
+                                let editor = monaco.editor.createModel(applyJSONBeautify(metadata, true), 'json')
 
                                 $(`span[data-id="${oldSnapshotNameID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
                                 $(`span[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
                                 $(`span[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
-
-                                // Update its layout
-                                setTimeout(() => editor.layout(), 200)
-
-                                /**
-                                 * Create a resize observer for the work area body element
-                                 * By doing this the editor's dimensions will always fit with the dialog's dimensions
-                                 */
-                                setTimeout(() => {
-                                  (new ResizeObserver(() => {
-                                    try {
-                                      editor.layout()
-                                    } catch (e) {}
-                                  })).observe(workareaElement[0])
-                                })
 
                                 // Return the editor's object
                                 return editor
@@ -2051,12 +2061,77 @@
                                         // Create an editor for the old metadata content
                                         metadataDiffEditors.old.object = createEditor('old', toBeLoadedMetadata)
 
-                                        // Detect differentiation between old and new content
-                                        detectDifferentiationShow(toBeLoadedMetadata, metadata)
+                                        // Create an editor for the new metadata content
+                                        metadataDiffEditors.new.object = createEditor('new', metadata)
+
+                                        diffEditor.setModel({
+                                          original: metadataDiffEditors.old.object,
+                                          modified: metadataDiffEditors.new.object
+                                        })
+
+                                        diffEditor.onDidUpdateDiff(function() {
+                                          // Point at the results
+                                          let result = diffEditor.getLineChanges(),
+                                            // Point at the differentiation show button000
+                                            differentiationBtn = $(`span.btn[data-id="${showDifferentiationBtnID}"]`),
+                                            // Point at the changes/differences container
+                                            changesContainer = $(`div.changes-lines[data-id="${changesLinesContainerID}"]`)
+
+                                          // Update the number of detected changes
+                                          differentiationBtn.attr('data-changes', result.length)
+
+                                          // Update the button's text by showing the number of detected changes
+                                          differentiationBtn.children('span').filter(':last').text(result.length); // This semicolon is critical here
+
+                                          $(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).add($(`span.btn[data-id="${diffNavigationNextBtnID}"]`)).toggleClass('disabled', result.length <= 0)
+
+                                          // If there's no detected change then end the process
+                                          if (result.length <= 0)
+                                            return
+
+                                          // Remove all previous changed lines from the changes' container
+                                          changesContainer.children('div.line').remove()
+
+                                          // Loop through each change in the content
+                                          result.forEach((change) => {
+                                            // Line UI element structure
+                                            let element = `
+                                                <div class="line" data-number="${change.originalStartLineNumber}">
+                                                  <span class="number">${change.originalStartLineNumber}</span>
+                                                  <span class="content">${metadataDiffEditors.old.object.getLineContent(change.originalStartLineNumber)}</span>
+                                                </div>`
+
+                                            // Append the line element to the container
+                                            changesContainer.append($(element).click(function() {
+                                              // Get the line's number
+                                              let lineNumber = parseInt($(this).attr('data-number')); // This semicolon is critical here
+
+                                              try {
+                                                diffEditor.revealLineInCenter(lineNumber)
+                                              } catch (e) {}
+                                            }))
+                                          }) // This semicolon is critical here
+                                        })
+
+                                        // Update its layout
+                                        setTimeout(() => diffEditor.layout(), 200)
+
+                                        /**
+                                         * Create a resize observer for the work area body element
+                                         * By doing this the editor's dimensions will always fit with the dialog's dimensions
+                                         */
+                                        setTimeout(() => {
+                                          (new ResizeObserver(() => {
+                                            try {
+                                              diffEditor.layout()
+                                            } catch (e) {}
+                                          })).observe(workareaElement[0])
+                                        })
+
+                                        // // Detect differentiation between old and new content
+                                        // detectDifferentiationShow(toBeLoadedMetadata, metadata)
                                       })
 
-                                      // Create an editor for the new metadata content
-                                      metadataDiffEditors.new.object = createEditor('new', metadata)
                                     })
                                   } catch (e) {
                                     try {
@@ -3848,6 +3923,10 @@
                           $(`div.changes-lines[data-id="${changesLinesContainerID}"]`).toggleClass('show')
                         })
 
+                        $(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).click(() => diffEditorNavigator.previous())
+
+                        $(`span.btn[data-id="${diffNavigationNextBtnID}"]`).click(() => diffEditorNavigator.next())
+
                         // Refresh the new metadata and do a differentiation check
                         $(`span.btn[data-id="${refreshDifferentiationBtnID}"]`).click(function() {
                           // Disable the button
@@ -3860,7 +3939,7 @@
                               metadata = JSON.parse(metadata)
 
                               // Detect differences
-                              detectDifferentiationShow(JSON.parse(metadataDiffEditors.old.object.getValue()), metadata)
+                              // detectDifferentiationShow(JSON.parse(metadataDiffEditors.old.object.getValue()), metadata)
 
                               // Beautify the received metadata
                               metadata = applyJSONBeautify(metadata, true)
@@ -4060,7 +4139,7 @@
                                     $(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: ${snapshot.attr('data-name')}${snapshotTakenTime}`)
 
                                     // Detect differentiation between the metadata content's after loading the snapshot
-                                    detectDifferentiationShow(snapshotContent, JSON.parse(metadataDiffEditors.new.object.getValue()))
+                                    // detectDifferentiationShow(snapshotContent, JSON.parse(metadataDiffEditors.new.object.getValue()))
 
                                     // Show success feedback to the user
                                     showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the schema snapshot [b]$data[/b] has been successfully loaded', [snapshot.attr('data-name')])) + '.', 'success')
@@ -5181,6 +5260,9 @@
 
                               // Start watching Cassandra®'s node inside the project
                               Modules.Docker.checkCassandraInContainer(pinnedToastID, ports.cassandra, (status) => {
+                                try {
+                                  clusterElement.attr('data-latest-cassandra-version', `${status.version}`)
+                                } catch (e) {}
 
                                 // If the process has been terminated then skip the upcoming code and stop the process
                                 if (status.terminated || isTerminated) {
@@ -5853,7 +5935,7 @@
                 // Get the `cqlsh.rc` config file's path for the current cluster
                 let cqlshrcPath = Path.join(clusterFolder, 'config', 'cqlsh.rc'),
                   // Get Apache Cassandra®'s version
-                  version = getAttributes(clusterElement, 'data-cassandra-version')
+                  version = getAttributes(clusterElement, 'data-latest-cassandra-version') || getAttributes(clusterElement, 'data-cassandra-version')
 
                 // Print the host and Apache Cassandra®'s version in the terminal
                 terminalPrintMessage(readLine, 'info', `Connecting with host ${getAttributes(clusterElement, 'data-host')}`)
@@ -5862,6 +5944,8 @@
                 // Show it in the interactive terminal
                 addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Connecting with host ${getAttributes(clusterElement, 'data-host')}.`, null, true, 'neutral')
                 addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Detected Apache Cassandra® version is ${version}.`, null, true, 'neutral')
+
+                $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${clusterElement.attr('data-id')}"]`).find('div.info[info="cassandra"]').children('div.text').text(`v${version}`)
 
                 /**
                  * Check some options in the `cqlsh.rc` file

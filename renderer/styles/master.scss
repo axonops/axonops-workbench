@@ -2499,7 +2499,7 @@ div.tab-content {
 
         div.metadata-content {
           position: relative;
-          width: calc(50% - 15px);
+          width: calc(100% - 15px);
           height: calc(100% - 20px);
           background: #1e1e1e;
           margin: 10px;
@@ -2553,7 +2553,8 @@ div.tab-content {
             line-height: 7px;
           }
 
-          div.actions {
+          div.actions,
+          div.diff-navigation {
             height: 19.33px;
             overflow: hidden;
             margin-left: 10px;
@@ -2586,6 +2587,26 @@ div.tab-content {
                 ion-icon {
                   font-size: 130%;
                   opacity: 0.8;
+                }
+              }
+            }
+          }
+
+          div.diff-navigation {
+            span[class*=diff-nav] {
+              ion-icon {
+                font-size: 130%;
+              }
+
+              &.diff-nav-prev {
+                ion-icon {
+                  transform: rotate(-90deg);
+                }
+              }
+
+              &.diff-nav-next {
+                ion-icon {
+                  transform: rotate(90deg);
                 }
               }
             }
@@ -2660,10 +2681,12 @@ div.tab-content {
           @include scrollbar(#515151, #262626);
           z-index: 3;
           opacity: 0;
+          pointer-events: none;
           transform: translateY(10px);
           transition: all 0.2s ease-in-out;
 
           &.show {
+            pointer-events: all;
             animation: {
               name: animate-save-snapshot;
               duration: 0.8s;
@@ -2710,6 +2733,12 @@ div.tab-content {
           }
         }
 
+        div.editor {
+          &.modified {
+            margin-left: 10px;
+          }
+        }
+
         &.view-horizontal {
           display: flex;
           flex-direction: column;
@@ -2719,18 +2748,22 @@ div.tab-content {
           align-content: center;
 
           div.metadata-content {
-            &.old {
-              height: calc(50% - 15px);
-              width: calc(100% - 20px);
-              margin-right: 10px;
-              margin-bottom: 5px;
-            }
+            div.editor-container-all {
+              div.editor {
+                &.original {
+                  height: calc(50% - 15px);
+                  width: calc(100% - 20px);
+                  margin-right: 10px;
+                  margin-bottom: 5px;
+                }
 
-            &.new {
-              height: calc(50% - 15px);
-              width: calc(100% - 20px);
-              margin-left: 10px;
-              margin-top: 5px;
+                &.modified {
+                  height: calc(50% - 15px);
+                  width: calc(100% - 20px);
+                  margin-left: 10px;
+                  margin-top: 5px;
+                }
+              }
             }
           }
 
@@ -4345,6 +4378,43 @@ div.for-workspaces.buttons {
 
 #appversion:before {
   content: 'v';
+}
+
+div.app-info-actions {
+  margin-top: 10px;
+
+  button {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 3px;
+    position: relative;
+
+    ion-icon {
+      position: absolute;
+      inset: 0;
+      margin: auto !important;
+      font-size: 130% !important;
+      color: #e3e3e3;
+      opacity: 0.8;
+      transition: opacity 0.2s ease-in-out;
+
+      &[name="external-link"] {
+        opacity: 0.65;
+      }
+    }
+
+    &:hover {
+      ion-icon {
+        opacity: 0.65;
+
+        &[name="external-link"] {
+          opacity: 0.50;
+        }
+      }
+    }
+  }
 }
 /**
 * Import right-to-left style

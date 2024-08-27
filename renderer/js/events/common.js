@@ -22,6 +22,10 @@
       // Get all editors
       let editors = monaco.editor.getEditors()
 
+      try {
+        editors = editors.concat(diffEditors)
+      } catch (e) {}
+
       // Loop through each one of them and resize it
       editors.forEach((editor) => {
         try {
@@ -488,10 +492,12 @@
   })
 
   // Point at the `About` modal
-  let aboutModal = getElementMDBObject($('#appAbout'), 'Modal')
+  {
+    let aboutModal = getElementMDBObject($('#appAbout'), 'Modal')
 
-  // Show it when click the associated icon
-  $(`${selector}[action="about"]`).click(() => aboutModal.show())
+    // Show it when click the associated icon
+    $(`${selector}[action="about"]`).click(() => aboutModal.show())
+  }
 
   // Handle the click of items in more options/settings menu
   {

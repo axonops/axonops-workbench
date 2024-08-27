@@ -91,6 +91,7 @@
       "create local cluster": "创建本地集群",
       "credentials": "凭据",
       "credits": "鸣谢",
+      "cassandra data center": "Cassandra数据中心",
       "data center": "数据中心",
       "default": "默认",
       "delete cluster": "删除集群",

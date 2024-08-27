@@ -91,6 +91,7 @@
       "create local cluster": "إنشاء عنقود محلي",
       "credentials": "بيانات الاعتماد",
       "credits": "مواد خارجية",
+      "cassandra data center": "مركز البيانات",
       "data center": "مركز البيانات",
       "default": "الافتراضي",
       "delete cluster": "حذف العنقود",

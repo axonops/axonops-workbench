@@ -91,6 +91,7 @@
       "create local cluster": "צור קלאסטר מקומי",
       "credentials": "אישורים",
       "credits": "קרדיטים",
+      "cassandra data center": "מרכז נתונים",
       "data center": "מרכז נתונים",
       "default": "ברירת מחדל",
       "delete cluster": "מחק קלאסטר",

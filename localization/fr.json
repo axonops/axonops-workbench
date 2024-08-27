@@ -174,7 +174,7 @@
       "next change": "prochain changement",
       "no added variables, yet": "pas encore de variables ajoutées",
       "no checked workspaces have been detected, please consider to check at least one workspace": "aucun espace de travail vérifié n'a été détecté, veuillez envisager de cocher au moins un espace de travail",
-      "no clusters added to the workspace [b]$data[/b] yet, why not add one?": "aucun cluster n'a encore été ajouté à l'espace de travail [b]$data[/b], pourquoi ne pas en ajouter un?",
+      "no cluster connections added to the workspace [b]$data[/b] yet, why not add one?": "aucun cluster n'a encore été ajouté à l'espace de travail [b]$data[/b], pourquoi ne pas en ajouter un?",
       "no data found": "aucune donnée trouvée",
       "no local clusters created yet, why not create one?": "aucun cluster local n'a encore été créé, pourquoi ne pas en créer un?",
       "no output was received": "aucune sortie n'a été reçue",

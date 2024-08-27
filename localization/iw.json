@@ -174,7 +174,7 @@
       "next change": "השינוי הבא",
       "no added variables, yet": "אין משתנים שנוספו, עדיין",
       "no checked workspaces have been detected, please consider to check at least one workspace": "לא נמצאו שטחי עבודה נבדקים, אנא שקול לסמן לפחות שטח עבודה אחד",
-      "no clusters added to the workspace [b]$data[/b] yet, why not add one?": "לא נוספו קלאסטרים לשטח העבודה [b]$data[/b] עדיין, למה לא להוסיף אחד?",
+      "no cluster connections added to the workspace [b]$data[/b] yet, why not add one?": "לא נוספו קלאסטרים לשטח העבודה [b]$data[/b] עדיין, למה לא להוסיף אחד?",
       "no data found": "לא נמצאו נתונים",
       "no local clusters created yet, why not create one?": "לא נוצרו קלאסטרים מקומיים עדיין, למה לא ליצור אחד?",
       "no output was received": "לא התקבל פלט",

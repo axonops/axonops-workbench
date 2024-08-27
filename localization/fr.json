@@ -91,6 +91,7 @@
       "create local cluster": "créer un cluster local",
       "credentials": "identifiants",
       "credits": "crédits",
+      "cassandra data center": "centre de données Cassandra",
       "data center": "centre de données",
       "default": "par défaut",
       "delete cluster": "supprimer le cluster",

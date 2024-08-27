@@ -189,6 +189,17 @@ jobs:
         run: |
           set -x
           VERSION=$GITHUB_REF_NAME
+          case $VERSION in
+            *internal*)
+              CONFIG_FILE=Casks/axonopsworkbench-internal.rb
+              ;;
+            *beta*)
+              CONFIG_FILE=Casks/axonopsworkbench-beta.rb
+              ;;
+            *)
+              CONFIG_FILE=Casks/axonopsworkbench.rb
+              ;;
+          esac
           cd homebrew
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
@@ -200,7 +211,7 @@ jobs:
           sed -i "s/%SHA_ARM%/$SHA_ARM/g" $CONFIG_FILE
           sed -i "s/%SHA_AMD%/$SHA_AMD/g" $CONFIG_FILE
           sed -i "s/%VERSION%/${VERSION}/g" $CONFIG_FILE
-          git add .
+          git add $CONFIG_FILE
           if [ $(git status --porcelain | wc -l) -eq "0" ]; then
             echo "No changes to commit"
             exit 0
@@ -211,7 +222,6 @@ jobs:
         env:
           GITHUB_URL: https://github.com/axonops/axonops-workbench-cassandra/releases/download/
           TEMPLATE: Casks/axonopsworkbench.rb.tmpl
-          CONFIG_FILE: Casks/axonopsworkbench.rb
 
       - name: Push changes
         uses: ad-m/github-push-action@master

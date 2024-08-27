@@ -173,7 +173,7 @@
       "next change": "التغيير التالي",
       "no added variables, yet": "لا توجد متغيرات مضافة بعد",
       "no checked workspaces have been detected, please consider to check at least one workspace": "لا يتم اكتشاف تحديد أي من مساحات العمل، من فضلك تأكد من تحديد مساحة عمل واحدة على الأقل",
-      "no clusters added to the workspace [b]$data[/b] yet, why not add one?": "لا توجد عناقيد مضافة في مساحة العمل [b]$data[/b]، لماذا لا نضيف واحداً؟",
+      "no cluster connections added to the workspace [b]$data[/b] yet, why not add one?": "لا توجد عناقيد مضافة في مساحة العمل [b]$data[/b]، لماذا لا نضيف واحداً؟",
       "no data found": "لم يتم إيجاد بيانات",
       "no local clusters created yet, why not create one?": "لم يتم إضافة عناقيد محلية بعد، لماذا لا نضيف واحداً؟",
       "no output was received": "لم يتم استقبال مخرج من الاستعلام",

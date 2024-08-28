@@ -2203,7 +2203,7 @@
                               // Get the block's statement/command
                               blockStatement = blockElement.find('div.statement div.text').text(),
                               // Define the content of the `no-output` element
-                              noOutputElement = '<no-output><span mulang="no output was received" capitalize-first></span>.</no-output>'
+                              noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span>.</no-output>'
 
                             // Update the block's output
                             blocksOutput[data.blockID] = `${blocksOutput[data.blockID] || ''}${data.output}`
@@ -2718,7 +2718,7 @@
 
                                       // Reaching here and has a `json` keyword in the output means there's no record/row to be shown
                                       if (match.includes('[json]') || StripTags(match).length <= 0)
-                                        match = '<no-output><span mulang="no data found" capitalize-first></span>.</no-output>'
+                                        match = '<no-output><span mulang="CQL statement executed" capitalize-first></span>.</no-output>'
 
                                       // Set the final content and make sure the localization process is updated
                                       outputElement.find('div.sub-output-content').html(`<pre>${match}</pre>`).show(function() {
@@ -4943,6 +4943,11 @@
                                   <pre>${historyItem}</pre>
                                 </div>
                                 <div class="click-area"></div>
+                                <div class="action-copy">
+                                  <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                    <ion-icon name="copy-solid"></ion-icon>
+                                  </span>
+                                </div>
                                 <div class="action-delete">
                                   <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
                                     <ion-icon name="trash"></ion-icon>
@@ -4977,8 +4982,27 @@
                               $(`div.backdrop:last`).click()
                             })
 
+                            $(this).find('div.action-copy').find('span.btn').click(() => {
+                              let statement = $(this).find('div.inner-content').children('pre').text(),
+                                icon = $(this).find('div.action-copy').find('span.btn').children('ion-icon')
+
+                              // Copy the result to the clipboard
+                              try {
+                                Clipboard.writeText(statement)
+
+                                icon.attr('name', 'copy')
+
+                                setTimeout(() => icon.attr('name', 'copy-solid'), 150);
+                              } catch (e) {
+                                try {
+                                  errorLog(e, 'clusters')
+                                } catch (e) {}
+                              }
+
+                            })
+
                             // Delete a history item
-                            $(this).find('span.btn').click(function() {
+                            $(this).find('div.action-delete').find('span.btn').click(function() {
                               // Get the index of the saved item in the array
                               let statementIndex = parseInt($(this).parent().parent().attr('data-index')) - 1
 

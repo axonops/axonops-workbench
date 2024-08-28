@@ -255,6 +255,16 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   })
                 }
 
+                // {
+                //   let actionsButtonsContainer = $('div.body div.right div.content-info div._right div._actions._for-clusters'),
+                //     isLocalClustersWorkspace = workspaceID == 'workspace-sandbox'
+                //
+                //   actionsButtonsContainer.find('div.action[action="add"]').find('span[mulang]').attr('mulang', isLocalClustersWorkspace ? 'add cluster' : 'add connection')
+                //   actionsButtonsContainer.find('div.action[action="refresh"]').find('span[mulang]').attr('mulang', isLocalClustersWorkspace ? 'refresh clusters' : 'refresh connections')
+                //
+                //   Modules.Localization.applyLanguageSpecific(actionsButtonsContainer.find('span[mulang]'))
+                // }
+
                 // Apply the workspace's color on the UI
                 setUIColor(getAttributes(workspaceElement, 'data-color'))
 

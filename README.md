@@ -5,6 +5,8 @@
 
 AxonOps Workbench for Apache Cassandra is a cutting-edge desktop application crafted exclusively for Cassandra DB developers and DBAs. Seamlessly connect and interact with Apache Cassandra clusters while enjoying a host of innovative enhancements and exciting features. Stay tuned for its highly anticipated first official release!
 
+We welcome your feedback, so feel free to discuss any ideas you have https://github.com/axonops/axonops-workbench-cassandra/discussions/categories/ideas or raise issues any issues (https://github.com/axonops/axonops-workbench-cassandra/issues/new/choose)
+
 ## New CQL Console
 <img width="1709" alt="Screenshot 2024-08-23 at 07 45 40" src="https://github.com/user-attachments/assets/fc95976e-30f9-4760-ada9-1eb4711bfe73">
 

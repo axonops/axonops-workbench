@@ -43,6 +43,12 @@ brew tap axonops/homebrew-repository
 brew install --cask axonopsworkbench
 ```
 
+If you'd like to use a `beta` release use instead
+
+```sh
+brew install --cask axonopsworkbench-beta
+```
+
 ## Tidying up between beta release installs
 
 The current builds are still in development and are not necessarily backwards compatible, so do this before taking a new beta release

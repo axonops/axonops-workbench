@@ -129,7 +129,7 @@ jobs:
 
           case "$(uname -s)" in
           Darwin)
-            FILES=$(ls -1 *.dmg *.zip)
+            FILES=$(ls -1 *.dmg *.zip *.pkg)
             for f in $FILES; do
               shasum -a 256 $f > ${f}.sha256sum
             done

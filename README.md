@@ -1,9 +1,11 @@
-<img src="https://github.com/axonops/axonops-workbench-cassandra/assets/163300/0732fa17-37c5-4509-9595-a4163337680e" width="30" height="30"> THIS IS IN-DEVELOPMENT - DO NOT USE 
+<img src="https://github.com/axonops/axonops-workbench-cassandra/assets/163300/0732fa17-37c5-4509-9595-a4163337680e" width="30" height="30"> THIS IS IN BETA FOR FIRST RELEASE
 =======
 
 # AxonOps™ Workbench for Apache Cassandra®
 
-AxonOps Workbench for Apache Cassandra is a cutting-edge desktop application crafted exclusively for Cassandra DB developers and DBAs. Seamlessly connect and interact with Apache Cassandra clusters while enjoying a host of innovative enhancements and exciting features. Stay tuned for its highly anticipated first official release!
+AxonOps Workbench for Apache Cassandra is a desktop application built for Cassandra DB developers and DBAs. Seamlessly connect and interact with Apache Cassandra clusters while enjoying a host of innovative enhancements and exciting features. Stay tuned for its highly anticipated first official release!
+
+We welcome your feedback, so feel free to discuss any ideas you have https://github.com/axonops/axonops-workbench-cassandra/discussions/categories/ideas or raise issues any issues (https://github.com/axonops/axonops-workbench-cassandra/issues/new/choose)
 
 ## New CQL Console
 <img width="1709" alt="Screenshot 2024-08-23 at 07 45 40" src="https://github.com/user-attachments/assets/fc95976e-30f9-4760-ada9-1eb4711bfe73">
@@ -41,6 +43,18 @@ For MacOS it is also possible to install the AxonOps Workbench using [brew](http
 export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
 brew tap axonops/homebrew-repository
 brew install --cask axonopsworkbench
+```
+
+If you'd like to use a `beta` release use instead
+
+```sh
+brew install --cask axonopsworkbench-beta
+```
+
+and for the daily internal builds (used for testing and development purposes) use
+
+```sh
+brew install --cask axonopsworkbench-internal
 ```
 
 ## Tidying up between beta release installs

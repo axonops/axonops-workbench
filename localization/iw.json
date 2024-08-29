@@ -45,7 +45,7 @@
       "binaries check": "בדיקת בינאריים",
       "ca certificate file": "קובץ תעודת CA",
       "cancel": "בטל",
-      "cassandra cluster name": "שם קלאסטר",
+      "connection name": "שם החיבור",
       "cassandra data center": "מרכז נתונים",
       "cassandra host name": "שם מארח Cassandra",
       "cassandra® credentials": "אישורי Cassandra®",

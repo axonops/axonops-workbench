@@ -1,0 +1,104 @@
+name: Build MacOS Intel
+
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build on ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          # X86
+          - os: macos-13
+            target: Macos
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
+        run: |
+          mkdir -p main/bin
+          for binary in cqlsh-410 cqlsh-407 keys_generator; do
+            curl -fL ${CQLSH_GITHUB_URL}/${binary}-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
+            mv main/bin/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}
+            mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
+          done
+        env:
+          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.6.0' }}"
+
+      - name: Setup Python v3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install python dependencies
+        run:  pip3 install -r requirements.txt
+
+      - name: Setup Node.js v16.20.2
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16.20.2
+
+      - name: Clear npm cache
+        run: npm cache clean --force
+
+      - name: Get credits and add them to the database
+        run: |
+          cd get_credits
+          npm cache clean --force
+          npm i
+          npm rebuild
+          node get_credits.js
+        
+      - name: Install AxonOps Developer Workbench dependencies
+        run: npm i
+
+      - name: Pack AxonOps Developer Workbench
+        run: |
+          if [ "$(uname -m)" == "aarch64" ] && [ "$(uname -s)" == "Linux" ]; then
+            sudo apt-get -y install ruby
+            sudo gem install dotenv -v 2.8.1
+            sudo gem instal fpm
+            export USE_SYSTEM_FPM=true
+          fi
+
+          if [ "$(uname -s )" == "Darwin" ]; then
+            npm run pkg
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
+          CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
+
+      - name: Setup temporary installer signing keychain
+        uses: apple-actions/import-codesign-certs@v3
+        with: 
+          p12-file-base64: ${{ secrets.CSC_INSTALLER_LINK }}
+          p12-password: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
+
+      - name: Sign the Apple pkg
+        run: |
+          pkg_name=$(ls -1 dist/*.pkg)
+          mv $pkg_name dist/Unsigned-${pkg_name}
+
+          productsign --sign "Developer ID Installer: AXONOPS Limited (UJ776LUP23)" dist/Unsigned-${pkg_name} $pkg_name
+          rm -f  dist/Unsigned-${pkg_name}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: |
+            dist/*.pkg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

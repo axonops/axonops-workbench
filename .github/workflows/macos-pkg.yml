@@ -73,7 +73,7 @@ jobs:
           fi
 
           if [ "$(uname -s )" == "Darwin" ]; then
-            npm run pkg
+            npm run mac:pkg
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

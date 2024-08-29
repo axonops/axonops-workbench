@@ -2,6 +2,10 @@ name: Build MacOS Intel
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - 103-bug-mac-pkg-installer-is-not-signed-properly
+
 
 defaults:
   run:

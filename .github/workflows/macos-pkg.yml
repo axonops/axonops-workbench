@@ -6,7 +6,6 @@ on:
     branches:
       - 103-bug-mac-pkg-installer-is-not-signed-properly
 
-
 defaults:
   run:
     shell: bash
@@ -25,6 +24,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Setup temporary installer signing keychain
+        uses: apple-actions/import-codesign-certs@v3
+        if: ${{ startsWith(runner.os, 'macos') }}
+        with:
+          p12-file-base64: ${{ secrets.CSC_INSTALLER_LINK }}
+          p12-password: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
+
       - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
         run: |
           mkdir -p main/bin
@@ -42,7 +48,7 @@ jobs:
           python-version: 3.12
 
       - name: Install python dependencies
-        run:  pip3 install -r requirements.txt
+        run: pip3 install -r requirements.txt
 
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4
@@ -59,7 +65,7 @@ jobs:
           npm i
           npm rebuild
           node get_credits.js
-        
+
       - name: Install AxonOps Developer Workbench dependencies
         run: npm i
 
@@ -85,21 +91,18 @@ jobs:
           CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
           CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
 
-      - name: Setup temporary installer signing keychain
-        uses: apple-actions/import-codesign-certs@v3
-        with: 
-          p12-file-base64: ${{ secrets.CSC_INSTALLER_LINK }}
-          p12-password: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
 
       - name: Sign the Apple pkg
+        if: ${{ startsWith(runner.os, 'macos') }}
         run: |
-          set -x
-          pkg_name=$(ls -1 dist/*.pkg)
-          mv $pkg_name Unsigned-Workbench.pkg
+          for pkg_name in $(ls -1 dist/*.pkg); do
+            pkg_name=$(ls -1 dist/*.pkg)
+            mv $pkg_name Unsigned-Workbench.pkg
 
-          productsign --sign "Developer ID Installer: AXONOPS Limited (UJ776LUP23)" Unsigned-Workbench.pkg $pkg_name
-          rm -f Unsigned-Workbench.pkg
-          xcrun notarytool submit $pkg_name --apple-id $APPLE_ID --team-id $APPLE_TEAM_ID --password $APPLE_APP_SPECIFIC_PASSWORD --wait
+            productsign --sign "Developer ID Installer: AXONOPS Limited (UJ776LUP23)" Unsigned-Workbench.pkg $pkg_name
+            rm -f Unsigned-Workbench.pkg
+            xcrun notarytool submit $pkg_name --apple-id $APPLE_ID --team-id $APPLE_TEAM_ID --password $APPLE_APP_SPECIFIC_PASSWORD --wait
+          done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}

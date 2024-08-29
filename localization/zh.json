@@ -45,7 +45,7 @@
       "binaries check": "二进制检查",
       "ca certificate file": "CA 证书文件",
       "cancel": "取消",
-      "cassandra cluster name": "Cassandra集群名称",
+      "connection name": "连接名称",
       "cassandra data center": "Cassandra数据中心",
       "cassandra host name": "Cassandra 主机名",
       "cassandra® credentials": "Cassandra® 凭据",

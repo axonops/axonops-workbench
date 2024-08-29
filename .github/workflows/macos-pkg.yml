@@ -1,4 +1,4 @@
-name: Build MacOS Intel
+name: Build and Sign MacOS
 
 on:
   workflow_dispatch:

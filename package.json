@@ -102,6 +102,7 @@
     "mac:arm64": "electron-builder --mac dmg zip --publish never --arm64",
     "mac:zip": "electron-builder --mac zip --publish never",
     "mac:pkg": "electron-builder --mac pkg --publish never",
+    "mac:mas": "electron-builder --mac mas --publish never",
     "postinstall": "electron-builder install-app-deps"
   },
   "repository": "https://github.com/axonops/axonops-workbench-cassandra",

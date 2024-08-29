@@ -93,11 +93,12 @@ jobs:
 
       - name: Sign the Apple pkg
         run: |
+          set -x
           pkg_name=$(ls -1 dist/*.pkg)
-          mv $pkg_name dist/Unsigned-${pkg_name}
+          mv $pkg_name Unsigned-Workbench.pkg
 
-          productsign --sign "Developer ID Installer: AXONOPS Limited (UJ776LUP23)" dist/Unsigned-${pkg_name} $pkg_name
-          rm -f  dist/Unsigned-${pkg_name}
+          productsign --sign "Developer ID Installer: AXONOPS Limited (UJ776LUP23)" Unsigned-Workbench.pkg $pkg_name
+          rm -f Unsigned-Workbench.pkg
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4

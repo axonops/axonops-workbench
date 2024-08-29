@@ -45,7 +45,7 @@
       "binaries check": "binaries check",
       "ca certificate file": "ca certificate file",
       "cancel": "cancel",
-      "cassandra cluster name": "cassandra cluster name",
+      "connection name": "connection name",
       "cassandra data center": "cassandra data center",
       "cassandra host name": "cassandra host name",
       "cassandra® credentials": "cassandra® credentials",

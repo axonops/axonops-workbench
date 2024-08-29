@@ -45,7 +45,7 @@
       "binaries check": "Comprobación de binarios",
       "ca certificate file": "Archivo de certificado de CA",
       "cancel": "Cancelar",
-      "cassandra cluster name": "Nombre del clúster de Cassandra",
+      "connection name": "Nombre de conexión",
       "cassandra data center": "Centro de datos de Cassandra",
       "cassandra host name": "Nombre de host de Cassandra",
       "cassandra® credentials": "Credenciales de Cassandra®",

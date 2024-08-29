@@ -48,7 +48,7 @@
       "basic": "أساسي",
       "binaries check": "فحص الملفات التنفيذية",
       "cancel": "إلغاء",
-      "cassandra cluster name": "اسم العنقود",
+      "connection name": "اسم الاتصال",
       "cassandra data center": "مركز البيانات",
       "cassandra host name": "اسم المضيف",
       "change the editors view": "تغيير طريقة عرض المحرر",

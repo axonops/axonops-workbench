@@ -1,7 +1,7 @@
 {
   "name": "axonops-workbench",
   "title": "AxonOps™ Workbench",
-  "version": "beta-1.0.0-20240827",
+  "version": "0.1.1-internal-20240830",
   "author": {
     "name": "AxonOps",
     "email": "info@axonops.com"
@@ -98,8 +98,9 @@
     "snap": "electron-builder --linux snap --publish never",
     "linux": "electron-builder --linux tar.gz deb rpm --publish never",
     "linux:arm64": "electron-builder --linux tar.gz deb rpm --publish never --arm64",
-    "mac": "electron-builder --mac dmg zip --publish never --x64",
-    "mac:arm64": "electron-builder --mac dmg zip --publish never --arm64",
+    "mac": "electron-builder --mac dmg zip pkg --publish never --x64",
+    "mac:mas": "electron-builder --mac dmg zip pkg --publish never",
+    "mac:arm64": "electron-builder --mac dmg zip pkg --publish never --arm64",
     "mac:zip": "electron-builder --mac zip --publish never",
     "mac:pkg": "electron-builder --mac pkg --publish never",
     "postinstall": "electron-builder install-app-deps"

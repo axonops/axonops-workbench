@@ -211,16 +211,18 @@ jobs:
 
       - name: Make changes to Homebrew
         run: |
-          set -x
           VERSION=$GITHUB_REF_NAME
           case $VERSION in
             *internal*)
+              NAME=axonopsworkbench-internal
               CONFIG_FILE=Casks/axonopsworkbench-internal.rb
               ;;
             *beta*)
+              NAME=axonopsworkbench-beta
               CONFIG_FILE=Casks/axonopsworkbench-beta.rb
               ;;
             *)
+              NAME=axonopsworkbench
               CONFIG_FILE=Casks/axonopsworkbench.rb
               ;;
           esac
@@ -235,6 +237,7 @@ jobs:
           sed -i "s/%SHA_ARM%/$SHA_ARM/g" $CONFIG_FILE
           sed -i "s/%SHA_AMD%/$SHA_AMD/g" $CONFIG_FILE
           sed -i "s/%VERSION%/${VERSION}/g" $CONFIG_FILE
+          sed -i "s/cask \"axonopsworkbench\" do/cask \"${NAME}\" do/g" $CONFIG_FILE
           git add $CONFIG_FILE
           if [ $(git status --porcelain | wc -l) -eq "0" ]; then
             echo "No changes to commit"
@@ -271,7 +274,7 @@ jobs:
           fetch-depth: 0
           ssh-key: ${{ secrets.CHOCO_SSH_KEY }}
 
-      - name: Make changes to Homebrew
+      - name: Make changes to chocolatey
         run: |
           set -x
           VERSION=$GITHUB_REF_NAME
@@ -321,17 +324,41 @@ jobs:
       - name: "Set up Cloud SDK"
         uses: "google-github-actions/setup-gcloud@v1"
 
-      - name: "Use gcloud CLI"
-        run: "gcloud info"
+      - name: "Set runtime variables"
+        run: |
+          PUBLISH="yes"
+          DEBIAN_ARCHS="amd64"
+          REDHAT_ARCHS="x86_64"
+          case $VERSION in
+            *internal*)
+              PUBLISH="no"
+              REPO_SUFFIX="-beta"
+              ;;
+            *beta*)
+              REPO_SUFFIX="-beta"
+              ;;
+            *)
+              REPO_SUFFIX=""
+              ;;
+          esac
+          echo "REPO=$REPO" >> $GITHUB_ENV
+          echo "DEBIAN_ARCHS=$DEBIAN_ARCHS" >> $GITHUB_ENV
+          echo "REDHAT_ARCHS=$REDHAT_ARCHS" >> $GITHUB_ENV
 
       - name: Push Debian package
+        if: env.PUBLISH == 'yes'
         run: |
-          curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-amd64.deb"
-          gcloud config set project axonops-public
-          gcloud artifacts apt upload axonops-apt-beta --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-amd64.deb
+          for arch in ${{ env.DEBIAN_ARCHS }}; do
+            curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-${arch}.deb"
+            gcloud config set project axonops-public
+            gcloud artifacts apt upload axonops-apt-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-${arch}.deb
+          done
 
       - name: Push RedHat package
+        if: env.PUBLISH == 'yes'
         run: |
-          curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-x86_64.rpm"
-          gcloud config set project axonops-public
-          gcloud artifacts yum upload axonops-yum-beta --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-x86_64.rpm
+          for arch in ${{ env.REDHAT_ARCHS }}; do
+            curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-${arch}.rpm"
+            gcloud config set project axonops-public
+            gcloud artifacts yum upload axonops-yum-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-${arch}.rpm
+          done

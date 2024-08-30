@@ -218,7 +218,7 @@
       "query tracing result with session ID of [b]$data[/b] has been copied to the clipboard, the size is $data": "el resultado del seguimiento de la consulta con el ID de sesión de [b]$data[/b] se ha copiado en el portapapeles, el tamaño es $data",
       "query tracing": "Seguimiento de consultas",
       "quit": "renunciar",
-      "refresh clusters": "Clústeres de actualización",
+      "refresh clusters": "Actualizar Clústeres",
       "refresh connections": "Actualizar conexiones",
       "refresh metadata": "Actualizar metadatos",
       "refresh variables": "Actualizar variables",

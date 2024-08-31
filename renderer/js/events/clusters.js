@@ -1925,9 +1925,10 @@
                                       targetName,
                                       // Get the target's keyspace's name - if it's a table -
                                       keyspaceName,
+                                      tableName,
                                       // Get the target's type - cluster, keyspace or table -
                                       nodeType
-                                    ] = getAttributes(clickedNode, ['name', 'keyspace', 'type'])
+                                    ] = getAttributes(clickedNode, ['name', 'keyspace', 'table', 'type'])
 
                                     // Define the scope to be passed with the request
                                     scope = `keyspace>${nodeType == 'keyspace' ? targetName : keyspaceName}${nodeType != 'keyspace' ? 'table>' + targetName : ''}`
@@ -1935,6 +1936,21 @@
                                     // If the node type is cluster then only `cluster` is needed as a scope
                                     if (nodeType == 'cluster')
                                       scope = 'cluster'
+
+                                    // If the node type is an index
+                                    try {
+                                      if (nodeType != 'index')
+                                        throw 0
+
+                                      // Add the keyspace
+                                      scope = `keyspace>${keyspaceName}`
+
+                                      // Add the index's table
+                                      scope += `table>${tableName}`
+
+                                      // And finally add the index itself
+                                      scope += `index>${targetName}`
+                                    } catch (e) {}
 
                                     // Send a request to the main thread regards pop-up a menu
                                     IPCRenderer.send('show-context-menu', JSON.stringify([{
@@ -2895,6 +2911,18 @@
                              */
                             event.stopPropagation()
                           }
+
+                          // Hande `CTRL+R`
+                          try {
+                            if (!(ctrlKey && key.toLowerCase() == 'r'))
+                              throw 0
+
+                            // Call the inner function
+                            preventEvent()
+
+                            // Return `false` to make sure the handler of xtermjs won't be executed
+                            return false
+                          } catch (e) {}
 
                           /**
                            * Handle the terminal's buffer clearing process on Windows

@@ -169,6 +169,7 @@
       "logging system": "מערכת רישום",
       "logging": "רישום",
       "logout": "התנתק",
+      "mandatory field": "שדה חובה",
       "maximum number": "מספר מקסימלי",
       "metadata for the cluster [b]$data[/b] has been copied to the clipboard, the size is $data": "מטא-נתונים עבור הקלאסטר [b]$data[/b] הועתקו ללוח, הגודל הוא $data",
       "missing variables": "משתנים חסרים",

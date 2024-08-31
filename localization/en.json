@@ -169,6 +169,7 @@
       "logging system": "logging system",
       "logging": "logging",
       "logout": "logout",
+      "mandatory field": "mandatory field",
       "maximum number": "maximum number",
       "metadata for the cluster [b]$data[/b] has been copied to the clipboard, the size is $data": "metadata for the cluster [b]$data[/b] has been copied to the clipboard, the size is $data",
       "missing variables": "missing variables",

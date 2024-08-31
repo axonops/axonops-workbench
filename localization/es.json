@@ -169,6 +169,7 @@
       "logging system": "Sistema de registro",
       "logging": "Registro",
       "logout": "Cerrar sesión",
+      "mandatory field": "campo obligatorio",
       "maximum number": "Número máximo",
       "metadata for the cluster [b]$data[/b] has been copied to the clipboard, the size is $data": "Los metadatos del clúster [b]$data[/b] se han copiado en el portapapeles, el tamaño es $data",
       "missing variables": "Variables faltantes",

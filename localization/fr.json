@@ -169,6 +169,7 @@
       "logging system": "système de journalisation",
       "logging": "journalisation",
       "logout": "déconnexion",
+      "mandatory field": "champ obligatoire",
       "maximum number": "nombre maximum",
       "metadata for the cluster [b]$data[/b] has been copied to the clipboard, the size is $data": "les métadonnées du cluster [b]$data[/b] ont été copiées dans le presse-papiers, la taille est de $data",
       "missing variables": "variables manquantes",

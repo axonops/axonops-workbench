@@ -836,3 +836,12 @@ div.resolve-variables {
 .monaco-sash {
   z-index: 1 !important;
 }
+
+span.badge.badge-secondary.mandatory {
+  float: right;
+  height: 15px;
+  position: relative;
+  top: 7px;
+  left: 0;
+  opacity: 0.7;
+}

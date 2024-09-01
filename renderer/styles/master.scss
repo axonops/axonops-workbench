@@ -1451,6 +1451,10 @@ div.body {
                           margin-left: 5px;
                         }
                       }
+
+                      &[info="axonops"] {
+                        animation-delay: 0.9s;
+                      }
                     }
                   }
                 }
@@ -2168,6 +2172,10 @@ div.body {
                     div.text {
                       margin-left: 5px;
                     }
+                  }
+
+                  &[info="axonops"] {
+                    animation-delay: 0.9s;
                   }
                 }
               }

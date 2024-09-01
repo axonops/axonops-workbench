@@ -225,7 +225,8 @@
          * For docker/sandbox projects, an additional info is added `number of nodes`
          * By default, it's empty
          */
-        let numOfNodesInfo = ''
+        let numOfNodesInfo = '',
+          isAxonOpsInstalled = ''
 
         try {
           // If the current cluster is not a docker/sandbox project then skip this try-catch block
@@ -241,11 +242,20 @@
             <div class="text">${cluster.nodes}</div>
             <div class="_placeholder" hidden></div>
           </div>`
+
+          isAxonOpsInstalled = `
+          <div class="info" info="axonops">
+            <div class="title">AxonOps™</span>
+              <ion-icon name="right-arrow-filled"></ion-icon>
+            </div>
+            <div class="text"><ion-icon class="axonops-status ${cluster.axonops}" name="${cluster.axonops == true ? 'check' : 'close'}"></ion-icon></div>
+            <div class="_placeholder" hidden></div>
+          </div>`
         } catch (e) {}
 
         // Cluster UI element structure
         let element = `
-            <div class="cluster" data-name="${cluster.name}" data-folder="${cluster.folder}" data-id="${clusterID}" data-workspace-id="${workspaceID}" data-host="${cluster.host}" data-datacenter="${cluster.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-workarea="false" ${secrets} ${credentials}>
+            <div class="cluster" data-name="${cluster.name}" data-folder="${cluster.folder}" data-id="${clusterID}" data-workspace-id="${workspaceID}" data-host="${cluster.host}" data-datacenter="${cluster.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-axonops-installed="${cluster.axonops || 'unknown'}" data-workarea="false" ${secrets} ${credentials}>
               <div class="header">
                 <div class="title cluster-name">${cluster.name}</div>
                 <div class="cluster-info">
@@ -263,7 +273,7 @@
                     <div class="text">${isSandbox ? 'v' + cluster.cassandraVersion : ''}</div>
                     <div class="_placeholder" ${isSandbox ? 'hidden' : '' }></div>
                   </div>
-                  <div class="info" info="data-center">
+                  <div class="info" info="data-center" ${isSandbox ? 'hidden' : ''}>
                     <div class="title"><span mulang="data center" capitalize></span>
                       <ion-icon name="right-arrow-filled"></ion-icon>
                     </div>
@@ -271,6 +281,7 @@
                     <div class="_placeholder" ${isSandbox ? 'hidden' : '' }></div>
                   </div>
                   ${numOfNodesInfo}
+                  ${isAxonOpsInstalled}
                 </div>
               </div>
               ${!isSandbox ? footerStructure.nonSandbox : footerStructure.sandbox}
@@ -633,15 +644,15 @@
                       throw 0
 
                     // Define the content of the AxonOps™ tab to be added
-                    axonopsTab = `
-                    <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps™" capitalize data-title="AxonOps™">
-                      <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${axonopsContentID}" role="tab" aria-selected="true">
-                        <span class="icon">
-                          <ion-icon name="axonops"></ion-icon>
-                        </span>
-                        <span class="title">AxonOps™</span>
-                      </a>
-                    </li>`
+                    if (getAttributes(clusterElement, 'data-axonops-installed') === 'true') {
+                      axonopsTab = `
+                      <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps™" capitalize data-title="AxonOps™">
+                        <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${axonopsContentID}" role="tab" aria-selected="true">
+                          <span class="icon"><ion-icon name="axonops"></ion-icon></span>
+                          <span class="title">AxonOps™</span>
+                        </a>
+                      </li>`
+                    }
 
                     // Define the content of the bash session tab to be added
                     bashSessionTab = `
@@ -667,7 +678,7 @@
                               <div class="status" data-tippy="tooltip" data-mdb-placement="left" data-mulang="analyzing status" capitalize-first data-title="Analyzing status">
                                 <ion-icon name="unknown"></ion-icon>
                               </div>
-                              <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps™ in browser" capitalize-first data-title="Open AxonOps™ in browser">
+                              <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps™ in browser" capitalize-first data-title="Open AxonOps™ in browser" ${getAttributes(clusterElement, 'data-axonops-installed') !== 'true' ? 'hidden' : ''}>
                                 <ion-icon name="globe"></ion-icon>
                               </div>
                               <div class="connection-status">

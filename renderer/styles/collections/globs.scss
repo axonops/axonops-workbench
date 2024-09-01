@@ -845,3 +845,17 @@ span.badge.badge-secondary.mandatory {
   left: 0;
   opacity: 0.7;
 }
+
+ion-icon.axonops-status {
+  margin-right: -3px;
+  opacity: 0.85;
+
+  &.false {
+    font-size: 160%;
+  }
+
+  &.true {
+    font-size: 125%;
+    margin-left: 2px;
+  }
+}

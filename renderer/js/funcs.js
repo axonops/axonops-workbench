@@ -1242,7 +1242,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               value = options[option]
 
             // Don't show `CDC` option if its value is `NULL`
-            if (text.toLowerCase() == 'cdc' && value.toLowerCase() == 'null')
+            if (`${text}`.toLowerCase() == 'cdc' && `${value}`.toLowerCase() == 'null')
               return
 
             // If the value is one of the defined values in the array, then set the value to `NULL`

@@ -30,7 +30,7 @@
     }],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
-      "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
+      "icon": "./renderer/assets/images/axonops-icon-256x256.png",
       "target": [
         "nsis",
         "zip"

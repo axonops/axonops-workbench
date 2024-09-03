@@ -3,7 +3,8 @@ name: Update Package Version
 on:
   push:
     tags:
-      - '1.0.0-test*'
+      - '*internal*'
+      - '*beta*'
 
 jobs:
   update-version:

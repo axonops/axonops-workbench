@@ -1,7 +1,7 @@
 {
   "name": "axonops-workbench",
   "title": "AxonOps™ Workbench",
-  "version": "0.1.1-internal-20240903",
+  "version": "0.1.1",
   "author": {
     "name": "AxonOps",
     "email": "info@axonops.com"
@@ -25,9 +25,11 @@
       "main/bin",
       "config"
     ],
-    "publish": [{
-      "provider": "github"
-    }],
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",

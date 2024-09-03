@@ -27,7 +27,6 @@ jobs:
           az account show
           az keyvault certificate create --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME --policy @az_vault_policy.json
           az keyvault certificate pending show --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME --query csr -o tsv > cert.csr
-          az keyvault certificate merge --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME --file signed_cert.cer
           az keyvault secret download --file cert.pfx --encoding base64 --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME
       env:
         AZURE_KEYVAULT_NAME: ${{ secrets.AZURE_KEYVAULT_NAME }}

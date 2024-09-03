@@ -1,0 +1,30 @@
+# File: .github/workflows/workflow.yml
+
+on:
+  push:
+    branches:
+      - 43-feat-add-signing-of-windows-builds-to-the-github-pipeline
+
+name: AzureCLISample
+
+jobs:
+
+  build-and-deploy:
+    runs-on: windows-latest
+    steps:
+
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Azure CLI script
+      uses: azure/cli@v2
+      with:
+        azcliversion: latest
+        inlineScript: |
+          az account show
+          az keyvault secret download --vault-name $AZURE_KEYVAULT_NAME --name AZURE_KEYVAULT_CERT_NAME --file workbench.pfx
+      env:
+        AZURE_KEYVAULT_NAME: ${{ secrets.AZURE_KEYVAULT_NAME }}
+        AZURE_KEYVAULT_CERT_NAME: ${{ secrets.AZURE_KEYVAULT_CERT_NAME }}

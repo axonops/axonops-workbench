@@ -1,7 +1,7 @@
 {
   "name": "axonops-workbench",
   "title": "AxonOps™ Workbench",
-  "version": "0.1.1-internal-20240903",
+  "version": "0.1.1-internal-20240902",
   "author": {
     "name": "AxonOps",
     "email": "info@axonops.com"
@@ -30,7 +30,7 @@
     }],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
-      "icon": "./renderer/assets/images/axonops-icon-256x256.png",
+      "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
       "target": [
         "nsis",
         "zip"
@@ -50,7 +50,7 @@
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
-      "icon": "./renderer/assets/images/axonops-icon-512x512.png",
+      "icon": "./renderer/assets/images/axonops-icon-512x512.ico",
       "category": "public.app-category.developer-tools",
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"

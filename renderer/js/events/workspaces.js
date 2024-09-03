@@ -601,7 +601,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                     ] = getAttributes(workspaceElement, ['data-name', 'data-color', 'data-folder-path'])
 
                   // Change the dialog's title
-                  $(`${dialog}`).find('h5').text(`${I18next.capitalize(I18next.t('edit workspace'))} ${workspaceName}`)
+                  $(`${dialog}`).find('h5').text(`${I18next.capitalize(I18next.t('workspace settings'))} ${workspaceName}`)
 
                   // Change the workspace's ID to the current one, and add the `edit` attribute to the dialog
                   $(`${dialog}`).attr('data-edit-workspace-id', workspaceID)
@@ -906,7 +906,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             name.parent().addClass('mdc-text-field--invalid')
 
             // Show feedback to the user
-            showToast(I18next.capitalize(I18next.t('edit workspace')), I18next.capitalizeFirstLetter(I18next.t('please provide a valid and unique name for the workspace')) + '.', 'failure')
+            showToast(I18next.capitalize(I18next.t('workspace settings')), I18next.capitalizeFirstLetter(I18next.t('please provide a valid and unique name for the workspace')) + '.', 'failure')
 
             // Skip the upcoming code
             return
@@ -924,7 +924,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
           // If an active cluster has been found then end the process
           if (foundActiveCluster)
-            return showToast(I18next.capitalize(I18next.t('edit workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('one cluster or more in the workspace [b]$data[/b] are having an active workarea, please make sure to close the workarea before attempting to edit the workspace again', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
+            return showToast(I18next.capitalize(I18next.t('workspace settings')), I18next.capitalizeFirstLetter(I18next.replaceData('one cluster or more in the workspace [b]$data[/b] are having an active workarea, please make sure to close the workarea before attempting to edit the workspace again', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
 
           // Attempt to Update the workspace
           Modules.Workspaces.updateWorkspace({
@@ -935,10 +935,10 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           }).then((status) => {
             // Failed to update the workspace
             if (!status)
-              return showToast(I18next.capitalize(I18next.t('edit workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update workspace [b]$data[/b]', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
+              return showToast(I18next.capitalize(I18next.t('workspace settings')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update workspace [b]$data[/b]', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
 
             // Show feedback to the user about the success of the update process
-            showToast(I18next.capitalize(I18next.t('edit workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('workspace [b]$data[/b] has been successfully updated', [getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
+            showToast(I18next.capitalize(I18next.t('workspace settings')), I18next.capitalizeFirstLetter(I18next.replaceData('workspace [b]$data[/b] has been successfully updated', [getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
 
             // Click the close button
             $(`${dialog}`).find('button.btn-close').click()

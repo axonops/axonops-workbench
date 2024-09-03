@@ -5470,10 +5470,10 @@
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
-                  return showToast(I18next.capitalize(I18next.t('edit cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('this cluster [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                  return showToast(I18next.capitalize(I18next.t('cluster settings')), I18next.capitalizeFirstLetter(I18next.replaceData('this cluster [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                 // Change the dialog's title
-                $(`${dialog}`).find('h5.modal-title').text(`${I18next.capitalize(I18next.t('edit cluster'))} ${getAttributes(clusterElement, 'data-name')}`)
+                $(`${dialog}`).find('h5.modal-title').text(`${I18next.capitalize(I18next.t('cluster settings'))} ${getAttributes(clusterElement, 'data-name')}`)
 
                 // Update the workspace's name badge
                 $(`${dialog}`).find('div.modal-header span.badge.badge-secondary').text(getWorkspaceName(workspaceID))
@@ -5506,7 +5506,7 @@
 
                 // If the app wasn't able to get the target cluster then give feedback to the user and stop the editing process
                 if (currentCluster == undefined)
-                  return showToast(I18next.capitalize(I18next.t('edit cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('unable to locate cluster [b]$data[/b] workspace folder', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                  return showToast(I18next.capitalize(I18next.t('cluster settings')), I18next.capitalizeFirstLetter(I18next.replaceData('unable to locate cluster [b]$data[/b] workspace folder', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                 // Define this variable as a copy of the cluster's object before starting the edit
                 editedClusterObject = currentCluster

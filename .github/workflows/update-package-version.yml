@@ -1,0 +1,19 @@
+name: Update Package Version
+
+on:
+  push:
+    tags:
+      - 'v1.0.0-test*'
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Update version in package.json
+        uses: phips28/gh-action-bump-version@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag-prefix: 'v'

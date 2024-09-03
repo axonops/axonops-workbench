@@ -11,11 +11,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: main
+          ref: test-version
       
       - name: Update version in package.json
-        uses: phips28/gh-action-bump-version@master
+        run: |
+          VERSION=$GITHUB_REF_NAME
+          sed -i 's/"version": "[^"]*"/"version": "'"$VERSION"'"/' package.json
+          git add package.json
+          if [ $(git status --porcelain | wc -l) -eq "0" ]; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git --no-pager diff
+          git commit -m "Changes made by GitHub Actions [skip ci]"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag-prefix: ''

@@ -18,13 +18,14 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: Download certificates policy
+      run: echo ${{ secrets.AZURE_KEYVAULT_POLICY }} > az_vault_policy.json
+
     - name: Azure CLI script
       uses: azure/cli@v2
       with:
         azcliversion: latest
         inlineScript: |
-          echo ${{ secrets.AZURE_KEYVAULT_POLICY }} > az_vault_policy.json
-          az account show
           az keyvault certificate create --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME --policy @az_vault_policy.json
           az keyvault certificate pending show --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME --query csr -o tsv > cert.csr
           az keyvault secret download --file cert.pfx --encoding base64 --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME

@@ -28,5 +28,6 @@ jobs:
           fi
           git --no-pager diff
           git commit -m "Changes made by GitHub Actions [skip ci]"
+          git push origin test-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

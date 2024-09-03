@@ -9,26 +9,48 @@ name: AzureCLISample
 
 jobs:
 
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  sign:
+    runs-on: windows-latest
     steps:
+      - name: Install AzureSignTool
+        run: dotnet tool install --no-cache --global AzureSignTool --version 4.0.1
 
-    - name: Azure Login
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Download certificates policy
-      run: echo ${{ secrets.AZURE_KEYVAULT_POLICY }} > az_vault_policy.json
+      - name: Azure token
+        run: |
+          $az_token=$(az account get-access-token --scope https://vault.azure.net/.default --query accessToken --output tsv)
+          echo "::add-mask::$az_token"
+          echo "AZ_TOKEN=$az_token" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-    - name: Azure CLI script
-      uses: azure/cli@v2
-      with:
-        azcliversion: latest
-        inlineScript: |
-          az keyvault certificate create --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME --policy @az_vault_policy.json
-          az keyvault certificate pending show --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME --query csr -o tsv > cert.csr
-          az keyvault secret download --file cert.pfx --encoding base64 --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME
-      env:
-        AZURE_KEYVAULT_NAME: ${{ secrets.AZURE_KEYVAULT_NAME }}
-        AZURE_KEYVAULT_CERT_NAME: ${{ secrets.AZURE_KEYVAULT_CERT_NAME }}
+      - name: Build signed installer
+        run: '"%programfiles(x86)%\Inno Setup 6\iscc.exe" /Ssigntool="azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -s $f" installer.iss'
+        shell: cmd
+
+
+  # build-and-deploy:
+  #   runs-on: ubuntu-latest
+  #   steps:
+
+  #   - name: Azure Login
+  #     uses: azure/login@v2
+  #     with:
+  #       creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+  #   - name: Download certificates policy
+  #     run: echo ${{ secrets.AZURE_KEYVAULT_POLICY }} > az_vault_policy.json
+
+  #   - name: Azure CLI script
+  #     uses: azure/cli@v2
+  #     with:
+  #       azcliversion: latest
+  #       inlineScript: |
+  #         az keyvault certificate create --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME --policy @az_vault_policy.json
+  #         az keyvault certificate pending show --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME --query csr -o tsv > cert.csr
+  #         az keyvault secret download --file cert.pfx --encoding base64 --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME
+  #     env:
+  #       AZURE_KEYVAULT_NAME: ${{ secrets.AZURE_KEYVAULT_NAME }}
+  #       AZURE_KEYVAULT_CERT_NAME: ${{ secrets.AZURE_KEYVAULT_CERT_NAME }}

@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: test-version
+          ref: main
       
       - name: Update version in package.json
         run: |
@@ -29,6 +29,6 @@ jobs:
           fi
           git --no-pager diff
           git commit -m "Changes made by GitHub Actions [skip ci]"
-          git push origin test-version
+          git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

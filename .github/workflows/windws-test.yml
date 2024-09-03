@@ -28,7 +28,8 @@ jobs:
           curl -LO https://github.com/axonops/axonops-workbench-cassandra/releases/download/0.1.1-internal-20240830/AxonOps.Workbench-0.1.1-internal-20240830-win-x64.exe
 
       - name: Build signed installer
-        run: '"%programfiles(x86)%\Inno Setup 6\iscc.exe" /Ssigntool="azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -s $f" AxonOps.Workbench-0.1.1-internal-20240830-win-x64.exe'
+        run: |
+          "%programfiles(x86)%\Inno Setup 6\iscc.exe" /Ssigntool="azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v AxonOps.Workbench-0.1.1-internal-20240830-win-x64.exe"
         shell: cmd
 
 

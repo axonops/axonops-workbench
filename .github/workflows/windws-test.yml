@@ -10,7 +10,7 @@ name: AzureCLISample
 jobs:
 
   build-and-deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
 
     - name: Azure Login
@@ -23,8 +23,12 @@ jobs:
       with:
         azcliversion: latest
         inlineScript: |
+          echo ${{ secrets.AZURE_KEYVAULT_POLICY }} > az_vault_policy.json
           az account show
-          az keyvault secret download --vault-name $AZURE_KEYVAULT_NAME --name AZURE_KEYVAULT_CERT_NAME --file workbench.pfx
+          az keyvault certificate create --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME --policy @az_vault_policy.json
+          az keyvault certificate pending show --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME --query csr -o tsv > cert.csr
+          az keyvault certificate merge --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME --file signed_cert.cer
+          az keyvault secret download --file cert.pfx --encoding base64 --vault-name $AZURE_KEYVAULT_NAME --name $AZURE_KEYVAULT_CERT_NAME
       env:
         AZURE_KEYVAULT_NAME: ${{ secrets.AZURE_KEYVAULT_NAME }}
         AZURE_KEYVAULT_CERT_NAME: ${{ secrets.AZURE_KEYVAULT_CERT_NAME }}

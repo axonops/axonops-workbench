@@ -25,9 +25,6 @@ We welcome your feedback, so feel free to discuss any ideas you have https://git
 ## Built in SSH tunneling
 <img width="981" alt="Screenshot 2024-08-23 at 07 50 46" src="https://github.com/user-attachments/assets/d26aee76-c34a-4495-a89b-85896e2590e5">
 
-# Notice
-Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation or its subsidiaries in Canada, the United States and/or other countries. The Apache Software Foundation has no affiliation with and does not endorse or review AxonOps Workbench.
-
 ## Download and install
 
 Browse to the [releases](https://github.com/axonops/axonops-workbench-cassandra/releases) and select the package for your Operating System. We prebuild distributions for
@@ -103,4 +100,8 @@ npm run win
 ```
 
 See the `packages.json` for other build options.
+
+***
+
+*Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation or its subsidiaries in Canada, the United States and/or other countries.*
 

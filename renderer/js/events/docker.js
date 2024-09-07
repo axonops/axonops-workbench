@@ -68,6 +68,7 @@
         numOfNodes = parseInt($('input#numOfNodes').val()),
         // Get whether the project should be started once it's created or not
         immediateProjectRun = $(`${dialog}`).find(`input#immediateProjectRun`).prop('checked'),
+        installAxonOps = $(`${dialog}`).find(`input#installAxonOps`).prop('checked'),
         // Get the minimum and maximum number of Cassandra®'s nodes in the project
         [minNumOfNodes, maxNumOfNodes] = getAttributes($('input#numOfNodes'), ['min', 'max'])
 
@@ -87,7 +88,7 @@
       let dockerObject = new Modules.Docker.DockerCompose()
 
       // Create the Docker compose YAML file
-      dockerObject.createDockerComposeYAML(cassandraVersion, numOfNodes).then((project) => {
+      dockerObject.createDockerComposeYAML(cassandraVersion, installAxonOps, numOfNodes).then((project) => {
         // If a name has been given then adopt it
         if (manipulateText(dockerProjectName).length != 0)
           project.name = dockerProjectName

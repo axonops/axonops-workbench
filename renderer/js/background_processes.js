@@ -107,7 +107,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
       IPCRenderer.on(`ssh-tunnel:create`, async (_, data) => {
         // Add log for this request
         try {
-          addLog(`Create an SSH tunnel to connect with cluster`, 'network')
+          addLog(`Create an SSH tunnel to activate connection`, 'network')
         } catch (e) {}
 
         // Get the app's config
@@ -326,7 +326,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
         // Add log for this process
         try {
-          addLog(`Close an SSH tunnel that associated with the cluster of ID/defined-port '${clusterID}'`, 'network')
+          addLog(`Close an SSH tunnel that associated with the connection of ID/defined-port '${clusterID}'`, 'network')
         } catch (e) {}
 
         try {
@@ -349,7 +349,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
               // Add log for this process
               try {
-                addLog(`The SSH tunnel which associated with cluster of ID/defined-port '${clusterID}' has been closed`)
+                addLog(`The SSH tunnel which associated with connection of ID/defined-port '${clusterID}' has been closed`)
               } catch (e) {}
             } catch (e) {
               try {
@@ -371,7 +371,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
           sshTunnelsObjects[clusterID].object.close()
 
           // Add log for this process
-          addLog(`The SSH tunnel which associated with cluster of ID/defined-port '${clusterID}' has been closed.`)
+          addLog(`The SSH tunnel which associated with connection of ID/defined-port '${clusterID}' has been closed.`)
         } catch (e) {
           try {
             errorLog(e, 'SSH tunnel')

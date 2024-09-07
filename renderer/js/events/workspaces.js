@@ -224,7 +224,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                  */
                 {
                   // Define the suitable key based on the type of the workspace
-                  let tooltipAddContent = activeWorkspaceID == 'workspace-sandbox' ? 'add local cluster' : 'add cluster'
+                  let tooltipAddContent = activeWorkspaceID == 'workspace-sandbox' ? 'add local cluster' : 'add connection'
 
                   // Update the tooltip's content
                   tooltips.addClusterActionButton.setContent(I18next.capitalize(I18next.t(tooltipAddContent)))
@@ -255,15 +255,15 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   })
                 }
 
-                // {
-                //   let actionsButtonsContainer = $('div.body div.right div.content-info div._right div._actions._for-clusters'),
-                //     isLocalClustersWorkspace = workspaceID == 'workspace-sandbox'
-                //
-                //   actionsButtonsContainer.find('div.action[action="add"]').find('span[mulang]').attr('mulang', isLocalClustersWorkspace ? 'add cluster' : 'add connection')
-                //   actionsButtonsContainer.find('div.action[action="refresh"]').find('span[mulang]').attr('mulang', isLocalClustersWorkspace ? 'refresh clusters' : 'refresh connections')
-                //
-                //   Modules.Localization.applyLanguageSpecific(actionsButtonsContainer.find('span[mulang]'))
-                // }
+                {
+                  let actionsButtonsContainer = $('div.body div.right div.content-info div._right div._actions._for-clusters'),
+                    isLocalClustersWorkspace = workspaceID == 'workspace-sandbox'
+
+                  actionsButtonsContainer.find('div.action[action="add"]').find('span[mulang]').attr('mulang', isLocalClustersWorkspace ? 'add cluster' : 'add connection')
+                  actionsButtonsContainer.find('div.action[action="refresh"]').find('span[mulang]').attr('mulang', isLocalClustersWorkspace ? 'refresh clusters' : 'refresh connections')
+
+                  Modules.Localization.applyLanguageSpecific(actionsButtonsContainer.find('span[mulang]'))
+                }
 
                 // Apply the workspace's color on the UI
                 setUIColor(getAttributes(workspaceElement, 'data-color'))
@@ -676,7 +676,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
                       // If the workspace has cluster(s) then stop the deletion process
                       if (workspace.clusters != undefined && workspace.clusters.length != 0)
-                        return showToast(I18next.capitalize(I18next.t('delete workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('to delete a workspace, it must be empty and doesn\'t have any clusters in it, make sure to delete all clusters inside the workspace [b]$data[/b] before attempting to delete it again', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
+                        return showToast(I18next.capitalize(I18next.t('delete workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('to delete a workspace, it must be empty and doesn\'t have any connections in it, make sure to delete all connections inside the workspace [b]$data[/b] before attempting to delete it again', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
 
                       // Request to delete the workspace, and wait for the result
                       Modules.Workspaces.deleteWorkspace(workspace, workspaces, response.checked).then((result) => {
@@ -924,7 +924,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
           // If an active cluster has been found then end the process
           if (foundActiveCluster)
-            return showToast(I18next.capitalize(I18next.t('workspace settings')), I18next.capitalizeFirstLetter(I18next.replaceData('one cluster or more in the workspace [b]$data[/b] are having an active workarea, please make sure to close the workarea before attempting to edit the workspace again', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
+            return showToast(I18next.capitalize(I18next.t('workspace settings')), I18next.capitalizeFirstLetter(I18next.replaceData('one connection or more in the workspace [b]$data[/b] are having an active workarea, please make sure to close the workarea before attempting to edit the workspace again', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
 
           // Attempt to Update the workspace
           Modules.Workspaces.updateWorkspace({
@@ -1352,7 +1352,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         // Read the directory's items
         let content = await FS.readdirSync(folderPath),
           // The given directory is actually a workspace's directory if `clusters.json` file has been found
-          isValidWorkspace = content.some((item) => item == 'clusters.json')
+          isValidWorkspace = content.some((item) => item == 'connections.json')
 
         // If the given directory is not a valid workspace then ignore it and skip this try-catch block
         if (!isValidWorkspace)
@@ -1472,7 +1472,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         setTimeout(() => {
           try {
             // Attempt to get the workspace's clusters' manifest
-            let clusters = FS.readFileSync(Path.join(workspace.path, 'clusters.json'), 'utf8')
+            let clusters = FS.readFileSync(Path.join(workspace.path, 'connections.json'), 'utf8')
 
             // Convert the manifest to a JSON object
             clusters = JSON.parse(clusters)

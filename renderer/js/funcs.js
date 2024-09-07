@@ -2576,7 +2576,7 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
 
   // Add log about this process
   try {
-    addLog(`Get all pre and post-connection scripts of ${clusterID != null ? 'cluster #' + clusterID + ' in ' : ' a cluster about to be added/updated in '}${workspace}`, 'process')
+    addLog(`Get all pre and post-connection scripts of ${clusterID != null ? 'connection #' + clusterID + ' in ' : ' a connection about to be added/updated in '}${workspace}`, 'process')
   } catch (e) {}
 
   // Check pre and post-connection scripts
@@ -2641,7 +2641,7 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
   // Add log if scripts have been found
   if (scripts.length != 0)
     try {
-      addLog(`Pre and post-connection scripts of ${clusterID != null ? 'cluster #' + clusterID + ' in ' : ' a cluster about to be added/updated in '}${workspace} are (${JSON.stringify(scripts)})`, 'process')
+      addLog(`Pre and post-connection scripts of ${clusterID != null ? 'connection #' + clusterID + ' in ' : ' a connection about to be added/updated in '}${workspace} are (${JSON.stringify(scripts)})`, 'process')
     } catch (e) {}
 
   // Return the final result
@@ -3742,7 +3742,7 @@ let closeAllWorkareas = () => {
         return showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of local cluster [b]$data[/b] is being terminated`, [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
       // Otherwise, show this toast
-      showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of cluster [b]$data[/b] in workspace [b]$data[/b] has been successfully closed`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
+      showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of connection [b]$data[/b] in workspace [b]$data[/b] has been successfully closed`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
     } catch (e) {}
   })
 }
@@ -3810,7 +3810,7 @@ let copyStatement = (button) => {
     Clipboard.writeText(content)
   } catch (e) {
     try {
-      errorLog(e, 'clusters')
+      errorLog(e, 'connections')
     } catch (e) {}
   }
 

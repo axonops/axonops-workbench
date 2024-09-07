@@ -43,10 +43,10 @@
         clustersContainer.html('')
 
       // Add or remove the `empty` class based on the number of saved clusters
-      let isNoClusters = clusters.length <= 0
+      let areNoClusters = clusters.length <= 0
 
       // Toggle the `empty` class
-      setTimeout(() => parentClusterContainer.toggleClass('empty', isNoClusters), isNoClusters ? 200 : 10)
+      setTimeout(() => parentClusterContainer.toggleClass('empty', areNoClusters), areNoClusters ? 200 : 10)
 
       handleContentInfo('clusters', workspaceElement)
 
@@ -75,7 +75,7 @@
           cluster.host = `127.0.0.1:${cluster.ports.cassandra}`
         } catch (e) {
           try {
-            errorLog(e, 'clusters')
+            errorLog(e, 'connections')
           } catch (e) {}
         }
 
@@ -147,7 +147,7 @@
           secrets += secretsInfo.sshPassphrase != undefined ? `data-ssh-passphrase="${secretsInfo.sshPassphrase}" ` : ''
         } catch (e) {
           try {
-            errorLog(e, 'clusters')
+            errorLog(e, 'connections')
           } catch (e) {}
         }
 
@@ -166,7 +166,7 @@
           credentials += cluster.info.credentials.ssh != undefined ? ` data-credentials-ssh="true"` : ''
         } catch (e) {
           try {
-            errorLog(e, 'clusters')
+            errorLog(e, 'connections')
           } catch (e) {}
         }
 
@@ -186,15 +186,15 @@
               </button>
             </div>
             <div class="actions">
-              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the cluster folder"
-                data-mulang="open the cluster folder" capitalize-first>
+              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the connection folder"
+                data-mulang="open the connection folder" capitalize-first>
                 <ion-icon name="folder-open"></ion-icon>
               </div>
-              <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${settingsBtnID}" data-mdb-ripple-color="dark" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="cluster settings" capitalize-first
-                data-title="Cluster settings">
+              <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${settingsBtnID}" data-mdb-ripple-color="dark" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="connection settings" capitalize-first
+                data-title="Connection settings">
                 <ion-icon name="cog"></ion-icon>
               </div>
-              <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete cluster" data-mulang="delete cluster"
+              <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete connection" data-mulang="delete connection"
                 capitalize-first>
                 <ion-icon name="trash"></ion-icon>
               </div>
@@ -343,12 +343,12 @@
 
                 // Add log for this request
                 try {
-                  addLog(`Request to test connection with the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                  addLog(`Request to test the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                 } catch (e) {}
 
                 // If the cluster has an active work area and the process to be executed is not disconnecting with the cluster then stop the process and show feedback to the user
                 if (hasWorkarea == 'true' && !isProcessDisconnect)
-                  return showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('this cluster [b]$data[/b] has an active work area, make sure to close its work area before attempting to test connection with it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                  return showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to test it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                 // Handle if the process is disconnecting with the cluster
                 if (isProcessDisconnect)
@@ -480,7 +480,7 @@
                   let maximumRunningClusters = parseInt(config.get('limit', 'cqlsh')),
                     // Get the number of currently running clusters
                     numRunningClusters = $(`div[content="workarea"] div.workarea[cluster-id*="cluster-"]`).length,
-                    // Get the number of currently attempt to connect with clusters
+                    // Get the number of currently attempt to activate connections
                     numAttemptingClusters = $(`div[content="clusters"] div.clusters-container div.cluster[data-id*="cluster-"].test-connection`).length
 
                   // Make sure the maximum number is valid, or adopt the default value `10`
@@ -488,12 +488,12 @@
 
                   // Add log for this request
                   try {
-                    addLog(`Request to connect with the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                    addLog(`Request to connect '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                   } catch (e) {}
 
                   // If the currently running clusters are more than or equal to the maximum allowed number and this is not the sandbox workspace then end the process and show feedback to the user
                   if (([numRunningClusters, numAttemptingClusters]).some((num) => num >= maximumRunningClusters) && !isSandbox)
-                    return showToast(I18next.capitalize(I18next.t('connect with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of clusters which allowed to be connected to simultaneously is [b]$data[/b]', [maximumRunningClusters])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limit can be changed from the app\'s settings in the limits section')) + `.`, 'failure')
+                    return showToast(I18next.capitalize(I18next.t('activate connection')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of connectinos which allowed to be active simultaneously is [b]$data[/b]', [maximumRunningClusters])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limit can be changed from the app\'s settings in the limits section')) + `.`, 'failure')
 
                   // Point at the work areas content's container
                   let content = $('div.body div.right div.content div[content="workarea"]'),
@@ -563,7 +563,7 @@
                       throw 0
 
                     // Show feedback to the user
-                    showToast(I18next.capitalize(I18next.t('unable to create workarea')), I18next.capitalizeFirstLetter(I18next.replaceData('connection with cluster [b]$data[/b] seems not pre-established or has been lost. please attempt to test connection with it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                    showToast(I18next.capitalize(I18next.t('unable to create workarea')), I18next.capitalizeFirstLetter(I18next.replaceData('connection [b]$data[/b] seems not pre-established or has been lost. please attempt to test that connection', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                     // Skip the upcoming code
                     return
@@ -1399,7 +1399,7 @@
 
                     // Add log
                     try {
-                      addLog(`CQLSH session created for the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
+                      addLog(`CQLSH session created for the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
                     } catch (e) {}
 
                     /**
@@ -1563,7 +1563,7 @@
                                     Clipboard.writeText(resultBeautified)
                                   } catch (e) {
                                     try {
-                                      errorLog(e, 'clusters')
+                                      errorLog(e, 'connections')
                                     } catch (e) {}
                                   }
 
@@ -1634,7 +1634,7 @@
                                 }
                               } catch (e) {
                                 try {
-                                  errorLog(e, 'clusters')
+                                  errorLog(e, 'connections')
                                 } catch (e) {}
                               }
 
@@ -1657,7 +1657,7 @@
                                 }
                               } catch (e) {
                                 try {
-                                  errorLog(e, 'clusters')
+                                  errorLog(e, 'connections')
                                 } catch (e) {}
                               }
 
@@ -1756,7 +1756,7 @@
                             })
 
 
-                            showToast(I18next.t('connect with cluster'), `Failed to finalize the creation of the work area as the connection has been lost with cluster ${getAttributes(clusterElement, 'data-name')}. Consider to close this workarea and test connection with cluster before trying again.`, 'failure')
+                            showToast(I18next.t('activate connection'), I18next.capitalizeFirstLetter(I18next.replaceData(`failed to finalize the creation of the work area as the connection [b]$data[/b] has been lost. Consider to close this workarea and test the connection before trying again`, [getAttributes(clusterElement, 'data-name')]) + '.'), 'failure')
 
                             return
                           } catch (e) {}
@@ -2162,7 +2162,7 @@
                                     })
                                   } catch (e) {
                                     try {
-                                      errorLog(e, 'clusters')
+                                      errorLog(e, 'connections')
                                     } catch (e) {}
                                   }
 
@@ -2170,13 +2170,13 @@
                                   setTimeout(() => metadataContent.parent().removeClass('loading'), 150)
                                 } catch (e) {
                                   try {
-                                    errorLog(e, 'clusters')
+                                    errorLog(e, 'connections')
                                   } catch (e) {}
                                 }
                               })
                             } catch (e) {
                               try {
-                                errorLog(e, 'clusters')
+                                errorLog(e, 'connections')
                               } catch (e) {}
                             }
                           }
@@ -2333,7 +2333,7 @@
                                       Clipboard.writeText(contentBeautified)
                                     } catch (e) {
                                       try {
-                                        errorLog(e, 'clusters')
+                                        errorLog(e, 'connections')
                                       } catch (e) {}
                                     }
 
@@ -2629,7 +2629,7 @@
                                               Clipboard.writeText(contentBeautified)
                                             } catch (e) {
                                               try {
-                                                errorLog(e, 'clusters')
+                                                errorLog(e, 'connections')
                                               } catch (e) {}
                                             }
 
@@ -2859,7 +2859,7 @@
                               throw 0
 
                             // Show feedback to the user
-                            terminalPrintMessage(terminal, 'info', `Work area for the cluster ${getAttributes(clusterElement, 'data-name')} will be closed in few seconds`)
+                            terminalPrintMessage(terminal, 'info', `Work area for the connection ${getAttributes(clusterElement, 'data-name')} will be closed in few seconds`)
 
                             // Pause the print of output from the Pty instance
                             isSessionPaused = true
@@ -3037,7 +3037,7 @@
                       })
                     } catch (e) {
                       try {
-                        errorLog(e, 'clusters')
+                        errorLog(e, 'connections')
                       } catch (e) {}
                     }
                     // End of handling the app's terminal
@@ -3232,7 +3232,7 @@
                             throw 0
 
                           // Show it in the interactive terminal
-                          addBlock($(`#_${cqlshSessionContentID}_container`), getRandomID(10), `Work area for the cluster ${getAttributes(clusterElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral')
+                          addBlock($(`#_${cqlshSessionContentID}_container`), getRandomID(10), `Work area for the connection ${getAttributes(clusterElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral')
 
                           // Pause the print of output from the Pty instance
                           isSessionPaused = true
@@ -3817,7 +3817,7 @@
                       }
                     } catch (e) {
                       try {
-                        errorLog(e, 'clusters')
+                        errorLog(e, 'connections')
                       } catch (e) {}
                     }
                     // End of handling the bash session's terminal
@@ -3838,12 +3838,12 @@
                             Clipboard.writeText(metadataBeautified)
                           } catch (e) {
                             try {
-                              errorLog(e, 'clusters')
+                              errorLog(e, 'connections')
                             } catch (e) {}
                           }
 
                           // Give feedback to the user
-                          showToast(I18next.capitalize(I18next.t('copy metadata')), I18next.capitalizeFirstLetter(I18next.replaceData('metadata for the cluster [b]$data[/b] has been copied to the clipboard, the size is $data', [getAttributes(clusterElement, 'data-name'), metadataSize])) + '.', 'success')
+                          showToast(I18next.capitalize(I18next.t('copy metadata')), I18next.capitalizeFirstLetter(I18next.replaceData('metadata for the cluster connected to by [b]$data[/b] has been copied to the clipboard, the size is $data', [getAttributes(clusterElement, 'data-name'), metadataSize])) + '.', 'success')
                         })
 
                         // Refresh the tree view
@@ -3863,7 +3863,7 @@
 
                           // Add log about this refreshing process
                           try {
-                            addLog(`Request to refresh the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                            addLog(`Request to refresh the metadata of the cluster connected to by '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                           } catch (e) {}
 
                           // Reset the metadata trigger
@@ -3994,7 +3994,7 @@
                               $(this).removeAttr('disabled').removeClass('disabled refreshing')
                             } catch (e) {
                               try {
-                                errorLog(e, 'clusters')
+                                errorLog(e, 'connections')
                               } catch (e) {}
                             }
                           })
@@ -4052,7 +4052,7 @@
 
                           // Add log a about the request
                           try {
-                            addLog(`Request to save a schema snapshot of the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                            addLog(`Request to save a schema snapshot of the metadata of the cluster connected to by '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                           } catch (e) {}
 
                           // Minimize the size of the metadata by compression
@@ -4087,7 +4087,7 @@
                           Modules.Clusters.getSnapshots(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(clusterElement, 'data-folder')), (snapshots) => {
                             // If there are no saved snapshots then show feedback to the user and skip the upcoming code
                             if (snapshots.length <= 0)
-                              return showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('there are no saved schema snapshots for the cluster [b]$data[/b], attempt first to save one', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
+                              return showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('there are no saved schema snapshots related to the connection [b]$data[/b], attempt first to save one', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
 
                             // Reset some elements' state in the dialog
                             try {
@@ -4147,7 +4147,7 @@
                                   try {
                                     // Add log about this loading process
                                     try {
-                                      addLog(`Request to load a schema snapshot in path '${snapshotPath}' related to the metadata of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                      addLog(`Request to load a schema snapshot in path '${snapshotPath}' related to the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                                     } catch (e) {}
 
                                     // Read the snapshot's content
@@ -4187,7 +4187,7 @@
                                     $('div.modal#loadSnapshot').find('button.btn-close').click()
                                   } catch (e) {
                                     try {
-                                      errorLog(e, 'clusters')
+                                      errorLog(e, 'connections')
                                     } catch (e) {}
 
                                     // If any error has occurred then show feedback to the user about the failure
@@ -4204,7 +4204,7 @@
                                       if (err) {
                                         // Add error log
                                         try {
-                                          errorLog(e, 'clusters')
+                                          errorLog(e, 'connections')
                                         } catch (e) {}
 
                                         // Show feedback to the user
@@ -4237,7 +4237,7 @@
 
                                   // Add log about this deletion process
                                   try {
-                                    addLog(`Request to delete a snapshot in path '${snapshotPath}' related to the metadata of cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                    addLog(`Request to delete a snapshot in path '${snapshotPath}' related to the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                                   } catch (e) {}
 
                                   // If no need for confirmation then call the deletion function and skip the upcoming code
@@ -4311,7 +4311,7 @@
                         $(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).on('click', (event, moveToWorkspace = true) => {
                           // Add log for this action
                           try {
-                            addLog(`Request to close/refresh the work area of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                            addLog(`Request to close/refresh the work area of the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                           } catch (e) {}
 
                           // Ask the user for credentials again if they're required
@@ -4391,7 +4391,7 @@
                             setTimeout(() => $(`button[button-id="${startProjectBtnID}"]`).children('span').attr('mulang', 'start').text(I18next.t('start')))
                           } catch (e) {
                             try {
-                              errorLog(e, 'clusters')
+                              errorLog(e, 'connections')
                             } catch (e) {}
                           }
 
@@ -4509,7 +4509,7 @@
                                   throw 0
 
                                 // Show feedback to the user about starting the execution process
-                                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection with cluster [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
+                                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
 
                                 // Execute the post-connection scripts in order
                                 executeScript(0, scripts.post, (executionResult) => {
@@ -4528,11 +4528,11 @@
                                     executionFeedback = `. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`
 
                                     // Show feedback to the user
-                                    setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts with cluster [b]$data[/b]', [I18next.t('post'), getAttributes(clusterElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
+                                    setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('post'), getAttributes(clusterElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
                                   } catch (e) {
                                     // Show success feedback to the user if the error is `0` code
                                     if (e == 0)
-                                      setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts with cluster [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
+                                      setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
                                   }
                                 })
                               } catch (e) {}
@@ -4664,7 +4664,7 @@
                             }
                           } catch (e) {
                             try {
-                              errorLog(e, 'clusters')
+                              errorLog(e, 'connections')
                             } catch (e) {}
                           }
 
@@ -4709,7 +4709,7 @@
 
                                 // Add log about this action
                                 try {
-                                  addLog(`Switch to the work area of the cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                  addLog(`Switch to the work area of the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                                 } catch (e) {}
 
                                 // Set the workspace's color on the UI
@@ -4759,7 +4759,7 @@
                       })
                     } catch (e) {
                       try {
-                        errorLog(e, 'clusters')
+                        errorLog(e, 'connections')
                       } catch (e) {}
                     }
 
@@ -4912,7 +4912,7 @@
                                 return
 
                               // Show feedback to the user
-                              showToast(I18next.capitalize(I18next.replaceData(`connection with cluster $data lost`, [getAttributes(clusterElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection with cluster [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'warning')
+                              showToast(I18next.capitalize(I18next.replaceData(`connection $data lost`, [getAttributes(clusterElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'warning')
 
                               // Update the associated flag in order to not show that feedback in this checking cycle
                               isLostConnectionToastShown = true
@@ -4933,7 +4933,7 @@
                               isLostConnectionToastShown = false
 
                               // Show feedback to the user
-                              showToast(I18next.capitalize(I18next.replaceData(`connection with cluster $data restored`, [getAttributes(clusterElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection with cluster [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
+                              showToast(I18next.capitalize(I18next.replaceData(`connection $data restored`, [getAttributes(clusterElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
                             } catch (e) {}
                           })
                         }
@@ -5034,7 +5034,7 @@
                                 setTimeout(() => icon.attr('name', 'copy-solid'), 150);
                               } catch (e) {
                                 try {
-                                  errorLog(e, 'clusters')
+                                  errorLog(e, 'connections')
                                 } catch (e) {}
                               }
 
@@ -5217,7 +5217,7 @@
                         clusterElement.attr('data-cassandra-version', currentProject[0].cassandraVersion)
                       } catch (e) {
                         try {
-                          errorLog(e, 'clusters')
+                          errorLog(e, 'connections')
                         } catch (e) {}
                       }
 
@@ -5444,7 +5444,7 @@
                 })
               } catch (e) {
                 try {
-                  errorLog(e, 'clusters')
+                  errorLog(e, 'connections')
                 } catch (e) {}
               }
 
@@ -5470,10 +5470,10 @@
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
-                  return showToast(I18next.capitalize(I18next.t('cluster settings')), I18next.capitalizeFirstLetter(I18next.replaceData('this cluster [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                  return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                 // Change the dialog's title
-                $(`${dialog}`).find('h5.modal-title').text(`${I18next.capitalize(I18next.t('cluster settings'))} ${getAttributes(clusterElement, 'data-name')}`)
+                $(`${dialog}`).find('h5.modal-title').text(`${I18next.capitalize(I18next.t('connection settings'))} ${getAttributes(clusterElement, 'data-name')}`)
 
                 // Update the workspace's name badge
                 $(`${dialog}`).find('div.modal-header span.badge.badge-secondary').text(getWorkspaceName(workspaceID))
@@ -5485,7 +5485,7 @@
                 })
 
                 // Change the primary button's text
-                $(`button#addCluster`).text(I18next.t('update cluster'))
+                $(`button#addCluster`).text(I18next.t('update connection'))
 
                 $('div.modal#addEditClusterDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
 
@@ -5506,7 +5506,7 @@
 
                 // If the app wasn't able to get the target cluster then give feedback to the user and stop the editing process
                 if (currentCluster == undefined)
-                  return showToast(I18next.capitalize(I18next.t('cluster settings')), I18next.capitalizeFirstLetter(I18next.replaceData('unable to locate cluster [b]$data[/b] workspace folder', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                  return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('unable to locate the workspace folder of connection [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                 // Define this variable as a copy of the cluster's object before starting the edit
                 editedClusterObject = currentCluster
@@ -5574,7 +5574,7 @@
                     })
                   } catch (e) {
                     try {
-                      errorLog(e, 'clusters')
+                      errorLog(e, 'connections')
                     } catch (e) {}
                   }
 
@@ -5670,7 +5670,7 @@
                           })
                         } catch (e) {
                           try {
-                            errorLog(e, 'clusters')
+                            errorLog(e, 'connections')
                           } catch (e) {}
                         }
 
@@ -5690,7 +5690,7 @@
                           })
                         } catch (e) {
                           try {
-                            errorLog(e, 'clusters')
+                            errorLog(e, 'connections')
                           } catch (e) {}
                         }
 
@@ -5709,7 +5709,7 @@
                       })
                     } catch (e) {
                       try {
-                        errorLog(e, 'clusters')
+                        errorLog(e, 'connections')
                       } catch (e) {}
                     }
                   } else {
@@ -5776,11 +5776,11 @@
               // Clicks the delete button
               $(`div.btn[button-id="${deleteBtnID}"]`).click(function() {
                 // Define the confirm's text
-                let confirmText = I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the cluster [b]$data[/b] in the workspace [b]$data[/b]?', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]))
+                let confirmText = I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the connection [b]$data[/b] in the workspace [b]$data[/b]?', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]))
 
                 // Add log
                 try {
-                  addLog(`Request to delete local cluster ${getAttributes(clusterElement, ['data-name', 'data-id'])}`, 'action')
+                  addLog(`Request to delete ${isSandbox ? 'local cluster' : 'connection'} ${getAttributes(clusterElement, ['data-name', 'data-id'])}`, 'action')
                 } catch (e) {}
 
                 // If the current workspace is sandbox then change the text
@@ -5832,7 +5832,7 @@
                   Modules.Clusters.deleteCluster(getWorkspaceFolderPath(workspaceID), getAttributes(clusterElement, 'data-folder'), clusterID, (result) => {
                     // If the deletion process failed then show feedback to the user and skip the upcoming code
                     if (!result)
-                      return showToast(I18next.capitalize(I18next.t('delete cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete cluster [b]$data[/b] in workspace [b]$data[/b], please check that it\'s exists, and the app has permission to access the workspace folder', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
+                      return showToast(I18next.capitalize(I18next.t('delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete connection [b]$data[/b] in workspace [b]$data[/b], please check that it\'s exists, and the app has permission to access the workspace folder', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
 
                     /**
                      * The cluster has successfully been deleted
@@ -5867,7 +5867,7 @@
                     $(document).trigger('getWorkspaces')
 
                     // Show feedback to the user
-                    showToast(I18next.capitalize(I18next.t('delete cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('cluster [b]$data[/b] in workspace [b]$data[/b] has been successfully deleted', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
+                    showToast(I18next.capitalize(I18next.t('delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData('connection [b]$data[/b] in workspace [b]$data[/b] has been successfully deleted', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
                   }, response.checked)
                 }, false, 'keep the associated files in the system')
               })
@@ -5965,7 +5965,7 @@
                   IPCRenderer.send(`ssh-tunnel:terminate`, sshTunnelCreationRequestID)
 
                   // Show success feedback to the user
-                  showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData('the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), 'success')
+                  showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData('the testing process for the connection [b]$data[/b] in workspace [b]$data[/b] has been terminated with success', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), 'success')
                 } catch (e) {}
 
                 // Send request to the main thread to terminate the current ongoing connection test process
@@ -5976,7 +5976,7 @@
 
                 // Once the termination status is received
                 if (!isSSHTunnelNeeded)
-                  IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with cluster [b]$data[/b] in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with cluster [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), status ? 'success' : 'failure'))
+                  IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the testing process for the connection [b]$data[/b] in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the testing process of connection [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), status ? 'success' : 'failure'))
               })
             })
             // End of handling the `click` events for actions buttons
@@ -6060,7 +6060,7 @@
                   })
                 } catch (e) {
                   try {
-                    errorLog(e, 'clusters')
+                    errorLog(e, 'connections')
                   } catch (e) {}
                 }
 
@@ -6117,7 +6117,7 @@
                   })
                 } catch (e) {
                   try {
-                    errorLog(e, 'clusters')
+                    errorLog(e, 'connections')
                   } catch (e) {}
                 }
 
@@ -6192,7 +6192,7 @@
                 })
               } catch (e) {
                 try {
-                  errorLog(e, 'clusters')
+                  errorLog(e, 'connections')
                 } catch (e) {}
               }
             }
@@ -6200,7 +6200,7 @@
           // End of the process when appending a cluster in the container
         } catch (e) {
           try {
-            errorLog(e, 'clusters')
+            errorLog(e, 'connections')
           } catch (e) {}
         }
       })
@@ -6255,7 +6255,7 @@
           throw 0
 
         // Show feedback to the user about not finding the target cluster
-        showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong while attempt to test connection with cluster [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
+        showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
 
         setTimeout(() => {
           // Enable the `TEST CONNECTION` button
@@ -6289,7 +6289,7 @@
           throw 0
 
         // Show feedback to the user about having sensitive data in the `cqlsh.rc` file
-        showToast(I18next.capitalize(I18next.t('test connection with cluster')), `<code>cqlsh.rc</code> ${I18next.t('content for this connection contains a sensitive data (username, password and alike), please consider to remove them before attempting to connect again')}.`, 'failure')
+        showToast(I18next.capitalize(I18next.t('test connection')), `<code>cqlsh.rc</code> ${I18next.t('content for this connection contains a sensitive data (username, password and alike), please consider to remove them before attempting to connect again')}.`, 'failure')
 
         // Enable the `CONNECT` button
         testConnectionBtn.removeAttr('disabled')
@@ -6429,7 +6429,7 @@
                 allDataCentersStr = allDataCentersStr.slice(1, allDataCentersStr.length - 1).replace(/\"/g, '').split(',').join('[/code], [code]')
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
+                showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
 
                 // Enable or disable the save button based on the test's result
                 $('#addCluster').attr('disabled', 'disabled')
@@ -6454,7 +6454,7 @@
                 let error = result.error.trim().length != 0 ? `, ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('test connection with cluster')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to connect with cluster [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]))}${error}.`, 'failure')
+                showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to activate connection [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]))}${error}.`, 'failure')
               } catch (e) {}
 
               // Close the SSH tunnel if it exists
@@ -6508,7 +6508,7 @@
                   throw 0
 
                 // Show feedback to the user about starting the execution process
-                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection with cluster [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
+                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
 
                 // Execute the post-connection scripts in order
                 executeScript(0, scripts.post, (executionResult) => {
@@ -6527,11 +6527,11 @@
                     executionFeedback = `. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`
 
                     // Show feedback to the user
-                    setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts with cluster [b]$data[/b]', [I18next.t('post'), getAttributes(clusterElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
+                    setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('post'), getAttributes(clusterElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
                   } catch (e) {
                     // Show success feedback to the user if the error is `0` code
                     if (e == 0)
-                      setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts with cluster [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
+                      setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
                   }
                 })
               } catch (e) {}
@@ -6558,7 +6558,7 @@
 
               // If the provided data center is not the same as the one connected with then show feedback to the user
               if (dataCenter != result.datacenter)
-                showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData(`the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]`, [dataCenter, result.datacenter]) + '.'), 'warning')
+                showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData(`the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]`, [dataCenter, result.datacenter]) + '.'), 'warning')
             } catch (e) {}
 
             // Show data center
@@ -6588,7 +6588,7 @@
             } catch (e) {}
 
             // Show success feedback to the user
-            showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('test connection with cluster [b]$data[/b] in workspace [b]$data[/b] has finished with success, you can now connect with it and start a session', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
+            showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('test connection [b]$data[/b] in workspace [b]$data[/b] has finished with success, you can now connect with it and start a session', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
 
             setTimeout(() => {
               // Enable the `CONNECT` button
@@ -6623,14 +6623,14 @@
           setTimeout(() => clusterElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
           // Show feedback to the user about starting the execution process
-          setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('pre-connection scripts are being executed before starting the connection with cluster [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
+          setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('pre-connection scripts are being executed before starting with connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
 
           // Execute the pre-connection scripts with order
           executeScript(0, scripts.pre, (executionResult) => {
             // All scripts have been executed successfully; thus start the connection test process
             if (executionResult.status == 0) {
               // Show a success feedback to the user
-              setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts with cluster [b]$data[/b] have been successfully executed', [I18next.t('pre'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
+              setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('pre'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
 
               // Start the connection test process
               startTestConnection(sshCreation)
@@ -6651,7 +6651,7 @@
               info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
 
             // Show feedback to the user
-            setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts with cluster [b]$data[/b]', [I18next.t('pre'), getAttributes(clusterElement, 'data-name')]))}. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`, 'failure'), 50)
+            setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('pre'), getAttributes(clusterElement, 'data-name')]))}. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`, 'failure'), 50)
 
             // Call the error feedback function
             errorVisualFeedback()
@@ -6719,7 +6719,7 @@
           // If the SSH client doesn't exist
           if (!exists) {
             // Show feedback to the user
-            showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.t('SSH client has to be installed and accessible in order to establish SSH tunnel, please make sure to install it on your machine') + '.', 'failure')
+            showToast(I18next.capitalize(I18next.t('test connection')), I18next.t('SSH client has to be installed and accessible in order to establish SSH tunnel, please make sure to install it on your machine') + '.', 'failure')
 
             // Call the error's visual feedback function
             errorVisualFeedback()
@@ -6738,7 +6738,7 @@
           // Check that the username is at least, and maybe password values are valid
           if (([sshUsername, sshPassword, sshPassphrase].every((secret) => secret == undefined || secret.trim().length <= 0))) {
             // If not then stop the test process and show feedback to the user
-            showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.t('SSH tunnel can\'t be established without passing at least a username, please check given info before attempting to connect again') + '.', 'failure')
+            showToast(I18next.capitalize(I18next.t('test connection')), I18next.t('SSH tunnel can\'t be established without passing at least a username, please check given info before attempting to connect again') + '.', 'failure')
 
             // Call the error's visual feedback function
             errorVisualFeedback()
@@ -6818,7 +6818,7 @@
                * Show feedback to the user
                */
               if (!creationResult.terminated)
-                showToast(I18next.capitalize(I18next.t('test connection with cluster')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to establish an SSH tunnel for cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')]))}</b>. ${creationResult.error}.`, 'failure')
+                showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to establish an SSH tunnel for connection [b]$data[/b]', [getAttributes(clusterElement, 'data-name')]))}</b>. ${creationResult.error}.`, 'failure')
 
               // Call the error's visual feedback function
               errorVisualFeedback(creationResult.terminated)
@@ -7213,7 +7213,7 @@
 
               // Add log about this request
               try {
-                addLog(`Request to test connection with cluster that could be added/updated`, 'action')
+                addLog(`Request to test connection that could be added/updated`, 'action')
               } catch (e) {}
 
               // Attempt to close the created SSH tunnel - if exists -
@@ -7251,7 +7251,7 @@
                   basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.t('to test connection, host name is the only required field to be provided')) + '.', 'failure')
+                showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t('to test connection, host name is the only required field to be provided')) + '.', 'failure')
 
                 // Skip the upcoming code - end the connection test process -
                 return
@@ -7285,7 +7285,7 @@
                   throw 0
 
                 // Show feedback to the user about having sensitive data in the `cqlsh.rc` config file's content
-                showToast(I18next.capitalize(I18next.t('test connection with cluster')), `<code>cqlsh.rc</code> ${I18next.t('content for this connection contains a sensitive data (username, password and alike), please consider to remove them before attempting to connect again')}.`, 'failure')
+                showToast(I18next.capitalize(I18next.t('test connection')), `<code>cqlsh.rc</code> ${I18next.t('content for this connection contains a sensitive data (username, password and alike), please consider to remove them before attempting to connect again')}.`, 'failure')
 
                 // Enable the `TEST CONNECTION` button
                 button.add('#switchEditor').removeAttr('disabled', 'disabled')
@@ -7313,7 +7313,7 @@
 
                 // Check if username has been given but without password nor private key path
                 if (ssh.username.trim().length != 0 && ([ssh.password, ssh.privatekey].every((secret) => secret.trim().length <= 0)))
-                  return showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('username [code]$data[/code] has been provided for creating an SSH tunnel without providing neither a password nor private key, please consider to provide one of them and try again', [ssh.username])) + '.', 'failure')
+                  return showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('username [code]$data[/code] has been provided for creating an SSH tunnel without providing neither a password nor private key, please consider to provide one of them and try again', [ssh.username])) + '.', 'failure')
 
                 // If both username and (password or private key) have been provided then an SSH tunnel should be created
                 sshTunnel = ssh.username.trim().length != 0 && ([ssh.password, ssh.privatekey].some((secret) => secret.trim().length != 0))
@@ -7408,7 +7408,7 @@
                           await FS.unlinkSync(tempConfigFile)
                         } catch (e) {
                           try {
-                            errorLog(e, 'clusters')
+                            errorLog(e, 'connections')
                           } catch (e) {}
                         }
 
@@ -7475,7 +7475,7 @@
                         await FS.unlinkSync(tempConfigFile)
                       } catch (e) {
                         try {
-                          errorLog(e, 'clusters')
+                          errorLog(e, 'connections')
                         } catch (e) {}
                       }
 
@@ -7533,7 +7533,7 @@
                           allDataCentersStr = allDataCentersStr.slice(1, allDataCentersStr.length - 1).replace(/\"/g, '').split(',').join('[/code], [code]')
 
                           // Show feedback to the user
-                          showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
+                          showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
 
                           // Enable or disable the save button based on the test's result
                           $('#addCluster').attr('disabled', 'disabled')
@@ -7548,7 +7548,7 @@
                           let error = result.error.trim().length != 0 ? ` ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
 
                           // Show feedback to the user
-                          showToast(I18next.capitalize(I18next.t('test connection with cluster')), `${I18next.capitalizeFirstLetter(I18next.t('failed to connect with cluster'))}${error}${executionFeedback}.`, 'failure')
+                          showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('failed to activate connection'))}${error}${executionFeedback}.`, 'failure')
 
                           // Skip the upcoming code
                           throw 0
@@ -7565,7 +7565,7 @@
 
                           // If the provided data center is not the same as the one connected with then show feedback to the user
                           if (dataCenter != result.datacenter)
-                            showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.capitalizeFirstLetter(I18next.replaceData(`the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]`, [dataCenter, result.datacenter]) + '.'), 'warning')
+                            showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData(`the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]`, [dataCenter, result.datacenter]) + '.'), 'warning')
                         } catch (e) {}
 
                         /**
@@ -7589,7 +7589,7 @@
                         } catch (e) {}
 
                         // Show feedback to the user
-                        showToast(I18next.capitalize(I18next.t('test connection with cluster')), `${I18next.capitalizeFirstLetter(I18next.t('successfully connected with the cluster'))}, ${I18next.capitalizeFirstLetter(suffix)}${executionFeedback}.`, 'success')
+                        showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('connection test has finished with success'))}, ${I18next.capitalizeFirstLetter(suffix)}${executionFeedback}.`, 'success')
 
                         // Refresh workspaces - to ensure synchronization with the latest data -
                         $(document).trigger('refreshWorkspaces')
@@ -7598,7 +7598,7 @@
                       // Check if there are post-connection scripts to be executed after the connection attempt
                       if (scripts.post.length != 0) {
                         // Show feedback to the user about starting the execution process
-                        setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.t('post-connection scripts are being executed after closing the connection with the cluster, you\'ll be notified once the process is finished')) + '.'), 50)
+                        setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.t('post-connection scripts are being executed after closing the connection, you\'ll be notified once the process is finished')) + '.'), 50)
 
                         // Request to execute the post-connection scripts
                         executeScript(0, scripts.post, (executionResult) => {
@@ -7607,7 +7607,7 @@
                            * Show the success feedback to the user and skip the upcoming code
                            */
                           if (executionResult.status == 0)
-                            return setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts with the cluster have been successfully executed', [I18next.t('post')])) + '.', 'success'), 50)
+                            return setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of the connection have been successfully executed', [I18next.t('post')])) + '.', 'success'), 50)
 
                           /**
                            * There's an issue with one or more script
@@ -7624,7 +7624,7 @@
                           executionFeedback = `${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}`
 
                           // Show feedback to the user
-                          setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts with the cluster', [I18next.t('post')]))}. ${executionFeedback}`, 'failure'), 50)
+                          setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of the connection', [I18next.t('post')]))}. ${executionFeedback}`, 'failure'), 50)
                         })
                       }
                     })
@@ -7653,7 +7653,7 @@
                     throw 0
 
                   // Show feedback to the user the about failure to create a necessary temp file for the connection test process
-                  showToast(I18next.capitalize(I18next.t('test connection with cluster')), `${I18next.capitalizeFirstLetter(I18next.t('failed to complete the test process, please check the privileges of the app to read/write'))}.`, 'failure')
+                  showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('failed to complete the test process, please check the privileges of the app to read/write'))}.`, 'failure')
 
                   // Disable the `SAVE CLUSTER` button
                   $('#addCluster').attr('disabled', 'disabled')
@@ -7677,7 +7677,7 @@
                 checkSSH((exists) => {
                   // If the SSH client doesn't exist then end the process and show feedback to the user
                   if (!exists)
-                    return showToast(I18next.capitalize(I18next.t('test connection with cluster')), I18next.t('SSH client has to be installed and accessible in order to establish SSH tunnel, please make sure to install it on your machine') + '.', 'failure')
+                    return showToast(I18next.capitalize(I18next.t('test connection')), I18next.t('SSH client has to be installed and accessible in order to establish SSH tunnel, please make sure to install it on your machine') + '.', 'failure')
 
                   // Define the essential SSH tunnel creation info
                   ssh.host = $('[info-section="none"][info-key="ssh-host"]').val() || hostname
@@ -7722,7 +7722,7 @@
 
                     // Show feedback to the user
                     if (!creationResult.terminated)
-                      showToast(I18next.capitalize(I18next.t('test connection with cluster')), `${I18next.capitalizeFirstLetter(I18next.t('failed to establish an SSH tunnel for the cluster'))}. ${creationResult.error}.`, 'failure')
+                      showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('failed to establish an SSH tunnel for the connection'))}. ${creationResult.error}.`, 'failure')
                   })
                 })
               }
@@ -7734,7 +7734,7 @@
                   throw 0
 
                 // Show feedback to the user about starting the execution process
-                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.t('pre-connection scripts are being executed before starting the connection with the cluster, you\'ll be notified once the process is finished')) + '.'), 50)
+                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.t('pre-connection scripts are being executed before starting the connection, you\'ll be notified once the process is finished')) + '.'), 50)
 
                 // Request to execute the pre-connection script(s)
                 executeScript(0, scripts.pre, (executionResult) => {
@@ -7744,7 +7744,7 @@
                    */
                   if (executionResult.status == 0) {
                     // Show success feedback to the uers
-                    setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts with the cluster have been successfully executed', [I18next.t('pre')])) + '.', 'success'), 50)
+                    setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of the connection have been successfully executed', [I18next.t('pre')])) + '.', 'success'), 50)
 
                     // If there's no need to create an SSH tunnel then directly call the `afterSSHProcess` function
                     if (!sshTunnel)
@@ -7769,7 +7769,7 @@
                     info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
 
                   // Show feedback to the user
-                  setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts with the cluster', [I18next.t('pre')]))}. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}`, 'failure'), 50)
+                  setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of the connection', [I18next.t('pre')]))}. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}`, 'failure'), 50)
 
                   // Remove the test connection class
                   dialogElement.removeClass('test-connection enable-terminate-process')
@@ -7811,7 +7811,7 @@
                 IPCRenderer.send(`ssh-tunnel:terminate`, sshTunnelCreationRequestID)
 
                 // Show success feedback to the user
-                showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData('the connection test with the cluster to be added/edited in workspace [b]$data[/b] has been terminated with success', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), 'success')
+                showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData('the testing process of the connection to be added/edited in workspace [b]$data[/b] has been terminated with success', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), 'success')
               } catch (e) {}
 
               // Send request to the main thread to terminate the current ongoing connection test process
@@ -7824,7 +7824,7 @@
 
               // Once the termination status is received
               if (!isSSHTunnelNeeded)
-                IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the connection test with the cluster to be added/edited in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the connection test process with the cluster to be added/edited in workspace [b]$data[/b]', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), status ? 'success' : 'failure'))
+                IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the testing process of the connection to be added/edited in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the testing process of the connection to be added/edited in workspace [b]$data[/b]', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), status ? 'success' : 'failure'))
             })
           }
 
@@ -7853,7 +7853,7 @@
 
               // Add log about this request
               try {
-                addLog(`Request to add/edit new cluster after successful connection test`, 'action')
+                addLog(`Request to add/edit new connection after a successful test`, 'action')
               } catch (e) {}
 
               try {
@@ -7872,7 +7872,7 @@
                   basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('add cluster')), I18next.capitalizeFirstLetter(I18next.t('to save a cluster, a unique valid name is required to be provided')) + '.', 'failure')
+                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('to save a connection, a unique valid name is required to be provided')) + '.', 'failure')
 
                 // Skip the upcoming code - terminate the cluster's saving/updating process -
                 return
@@ -7900,7 +7900,7 @@
                 button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('add cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('a cluster is already exists with the given name [b]$data[/b] in workspace [b]$data[/b], please provide a unique valid name', [clusterName, getWorkspaceName(workspaceID)])) + '.', 'failure')
+                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.replaceData('a connection is already exists with the given name [b]$data[/b] in workspace [b]$data[/b], please provide a unique valid name', [clusterName, getWorkspaceName(workspaceID)])) + '.', 'failure')
 
                 // Skip the upcoming code - terminate the saving/updating process -
                 return
@@ -7941,7 +7941,7 @@
                     throw 0
 
                   // Show feedback to the user about the failure
-                  showToast(I18next.capitalize(I18next.t('add cluster')), `${I18next.capitalizeFirstLetter(I18next.t(editingMode ? 'failed to update the cluster' : 'failed to save the new cluster'))}.`, 'failure')
+                  showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), `${I18next.capitalizeFirstLetter(I18next.t(editingMode ? 'failed to update the connection' : 'failed to save the new connection'))}.`, 'failure')
 
                   // Skip the upcoming code - end the process -
                   return
@@ -7952,7 +7952,7 @@
                  *
                  * Show feedback to the user
                  */
-                showToast(I18next.capitalize(I18next.t('add cluster')), `${I18next.capitalizeFirstLetter(I18next.t(editingMode ? 'the cluster has been updated successfully' : 'the new cluster has been saved successfully'))}.`, 'success')
+                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), `${I18next.capitalizeFirstLetter(I18next.t(editingMode ? 'the connection has been successfully updated' : 'the new connection has been successfully saved'))}.`, 'success')
 
                 // Click the close button
                 $(`${dialog}-right`).parent().parent().find('button.btn-close').click()
@@ -8073,7 +8073,7 @@
                     })
                   } catch (e) {
                     try {
-                      errorLog(e, 'clusters')
+                      errorLog(e, 'connections')
                     } catch (e) {}
                   }
 
@@ -8184,7 +8184,7 @@
                 }
               } catch (e) {
                 try {
-                  errorLog(e, 'clusters')
+                  errorLog(e, 'connections')
                 } catch (e) {}
               }
 
@@ -8211,7 +8211,7 @@
                 finalCluster.ssh.dstPort = $('[info-section="none"][info-key="ssh-dest-port"]').val() || $('[info-section="connection"][info-key="port"]').val()
               } catch (e) {
                 try {
-                  errorLog(e, 'clusters')
+                  errorLog(e, 'connections')
                 } catch (e) {}
               }
 
@@ -8598,11 +8598,11 @@
           throw 0
 
         // Reset everything and make sure the `creation mode` is properly back
-        $(`${dialog}`).find('h5.modal-title').text(I18next.capitalize(I18next.t('add cluster')))
+        $(`${dialog}`).find('h5.modal-title').text(I18next.capitalize(I18next.t('add connection')))
         $(`${dialog}`).removeAttr('data-edit-workspace-id data-edit-cluster-id')
 
         $(`${dialog} button#addCluster`).attr('disabled', 'disabled')
-        $(`${dialog} button#addCluster`).text(I18next.capitalize(I18next.t('add cluster')))
+        $(`${dialog} button#addCluster`).text(I18next.capitalize(I18next.t('add connection')))
 
         $('div.modal#addEditClusterDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
 

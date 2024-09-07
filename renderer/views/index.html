@@ -315,13 +315,13 @@
             <div class="action" action="add" onclick="$('button#addClusterAction').click()">
               <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
                 <ion-icon name="plus"></ion-icon>
-                <span mulang="add cluster"></span>
+                <span mulang="add connection"></span>
               </button>
             </div>
             <div class="action" action="refresh" onclick="$('button#refreshClustersAction').click()">
               <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
                 <ion-icon name="refresh"></ion-icon>
-                <span mulang="refresh clusters"></span>
+                <span mulang="refresh connections"></span>
               </button>
             </div>
           </div>
@@ -419,14 +419,14 @@
               <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addClusterProcess').click()"></lottie-player>
               <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addSandboxProjectProcess').click()" for-sandbox></lottie-player>
               <div class="message">
-                <span no-clusters-message mulang="no cluster connections added to the workspace [b]$data[/b] yet, why not add one?" capitalize-first></span>
+                <span no-clusters-message mulang="no connections added to the workspace [b]$data[/b] yet, why not add one?" capitalize-first></span>
               </div>
               <div class="message" for-sandbox>
                 <span mulang="no local clusters created yet, why not create one?" capitalize-first></span>
               </div>
               <div class="button">
                 <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#addEditClusterDialog" id="addClusterProcess">
-                  <span mulang="add cluster"></span>
+                  <span mulang="add connection"></span>
                 </button>
                 <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#createSandboxProjectDialog" for-sandbox id="addSandboxProjectProcess">
                   <span mulang="create local cluster"></span>
@@ -446,14 +446,14 @@
 
             <!-- Add a new cluster action -->
             <div class="action" action="add">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add cluster" capitalize data-title="Add Cluster" id="addClusterAction">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add connection" capitalize data-title="Add Connection" id="addClusterAction">
                 <ion-icon name="plus"></ion-icon>
               </button>
             </div>
 
             <!-- Refresh clusters' list action -->
             <div class="action" action="refresh">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh clusters" capitalize data-title="Refresh Clusters" id="refreshClustersAction">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title="Refresh Connections" id="refreshClustersAction">
                 <ion-icon name="refresh"></ion-icon>
               </button>
             </div>
@@ -552,7 +552,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
-              <span mulang="add cluster" capitalize></span>
+              <span mulang="add connection" capitalize></span>
             </h5>
             <span class="badge badge-secondary"></span>
             <button type="button" class="btn-close" data-mdb-dismiss="modal"></button>
@@ -848,7 +848,7 @@
                 <span mulang="test connection"></span>
               </button>
               <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" disabled id="addCluster">
-                <span mulang="add cluster"></span>
+                <span mulang="add connection"></span>
               </button>
             </div>
           </div>
@@ -1216,7 +1216,7 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" style="font-size: 1.15rem;"><span mulang="cluster" capitalize></span>
+            <h5 class="modal-title" style="font-size: 1.15rem;"><span mulang="connection" capitalize></span>
               <cluster-name></cluster-name>
               <credentials-info></credentials-info> <span mulang="credentials" capitalize></span>
             </h5>
@@ -1470,7 +1470,7 @@
                       <th width="30%"><span mulang="name" capitalize></span></th>
                       <th width="20%"><span mulang="color" capitalize></span></th>
                       <th width="30%"><span mulang="checks" capitalize></span></th>
-                      <th width="15%"><span mulang="clusters" capitalize></span></th>
+                      <th width="15%"><span mulang="connections" capitalize></span></th>
                     </tr>
                   </thead>
                   <tbody>

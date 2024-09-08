@@ -944,7 +944,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
    */
   let buildTreeViewForChild = (parentID, childID, text, object, icon = null, parentType = '') => {
     // Define the parent's type
-    let setParentType = icon || parentType
+    let setParentType = icon || `${parentType}`
 
     // Define the child's structure
     let structure = {
@@ -963,18 +963,38 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
     if (icon != null)
       structure.icon = normalizePath(Path.join(extraIconsPath, `${icon}.png`))
 
+    // Add the parent's ID
+    structure.a_attr = {
+      'parent': `${parentID}`
+    }
+
+    try {
+      if (text != `Index`)
+        throw 0
+
+      structure.a_attr.table = parentType.table || null
+    } catch (e) {}
+
     try {
       // If the child is not any of the defined types then skip this try-catch block
-      if (['Keyspace', 'Table', 'View'].every((type) => text != type))
+      if (['Keyspace', 'Table', 'View', 'Index'].every((type) => text != type))
         throw 0
 
       // Set an `a_attr` attribute with important sub-attributes
       structure.a_attr = {
+        ...structure.a_attr,
         'allow-right-context': 'true',
         'name': object.name,
-        'type': `${text}`.toLowerCase(),
-        'keyspace': parentType
+        'type': `${text}`.toLowerCase()
       }
+
+      try {
+        structure.a_attr.keyspace = parentType.keyspace
+      } catch (e) {}
+
+      try {
+        structure.a_attr.table = parentType.table
+      } catch (e) {}
     } catch (e) {}
 
     /**
@@ -1059,6 +1079,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       tablesID
     ] = getRandomID(30, 2)
 
+    let indexesInfo = []
+
     // Build tree view for the keyspace
     buildTreeViewForChild(keyspacesID, keyspaceID, `Keyspace`, keyspace, 'keyspace')
 
@@ -1079,9 +1101,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       // Get random IDs for all upcoming children
       let [
         tableID,
-        clusteringKeysID,
         primaryKeysID,
         partitionKeysID,
+        clusteringKeysID,
         columnsID,
         triggersID,
         viewsID,
@@ -1092,113 +1114,210 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
        * Build a tree view for the table
        * For the `parentType` parameter set it to be the table's keyspace's name; to set a correct scope for getting a CQL description
        */
-      buildTreeViewForChild(tablesID, tableID, `Table`, table, 'table', keyspace.name)
-
-      // Loop through the table's children, starting from the clustering keys
-      let clusteringKeysStructure = {
-        id: clusteringKeysID,
-        parent: tableID,
-        text: `Clustering Keys (<span>${table.clustering_key.length}</span>)`,
-        type: 'default',
-        icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
-      }
-
-      treeStructure.core.data.push(clusteringKeysStructure)
-
-      // Loop through clustering keys
-      table.clustering_key.forEach((clusteringKey) => {
-        // Get a random ID for the key
-        let clusteringKeyID = getRandomID(30)
-
-        // Build tree view for the key
-        buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'key')
+      buildTreeViewForChild(tablesID, tableID, `Table`, table, 'table', {
+        keyspace: keyspace.name
       })
-      // End of table's clustering keys
 
       // Table's primary keys
-      let primaryKeysStructure = {
-        id: primaryKeysID,
-        parent: tableID,
-        text: `Primary Keys (<span>${table.primary_key.length}</span>)`,
-        type: 'default',
-        icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+      {
+        let primaryKeysStructure = {
+          id: primaryKeysID,
+          parent: tableID,
+          text: `Primary Keys (<span>${table.primary_key.length}</span>)`,
+          type: 'default',
+          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+        }
+
+        treeStructure.core.data.push(primaryKeysStructure)
+
+        // Loop through primary keys
+        table.primary_key.forEach((primaryKey) => {
+          // Get a random ID for the key
+          let primaryKeyID = getRandomID(30)
+
+          // Build tree view for the key
+          buildTreeViewForChild(primaryKeysID, primaryKeyID, `Key`, primaryKey, 'key')
+        })
       }
-
-      treeStructure.core.data.push(primaryKeysStructure)
-
-      // Loop through primary keys
-      table.primary_key.forEach((primaryKey) => {
-        // Get a random ID for the key
-        let primaryKeyID = getRandomID(30)
-
-        // Build tree view for the key
-        buildTreeViewForChild(primaryKeysID, primaryKeyID, `Key`, primaryKey, 'key')
-      })
-      // End of table's primary keys
 
       // Table's partition keys
-      let partitionKeysStructure = {
-        id: partitionKeysID,
-        parent: tableID,
-        text: `Partition Keys (<span>${table.partition_key.length}</span>)`,
-        type: 'default',
-        icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+      {
+        let partitionKeysStructure = {
+          id: partitionKeysID,
+          parent: tableID,
+          text: `Partition Keys (<span>${table.partition_key.length}</span>)`,
+          type: 'default',
+          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+        }
+
+        treeStructure.core.data.push(partitionKeysStructure)
+
+        // Loop through keys
+        table.partition_key.forEach((partitionKey) => {
+          // Get a random ID for the key
+          let partitionKeyID = getRandomID(30)
+
+          // Build tree view for the key
+          buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'key', 'partitionKeys')
+        })
       }
 
-      treeStructure.core.data.push(partitionKeysStructure)
+      // Loop through the table's children, starting from the clustering keys
+      {
+        let clusteringKeysStructure = {
+          id: clusteringKeysID,
+          parent: tableID,
+          text: `Clustering Keys (<span>${table.clustering_key.length}</span>)`,
+          type: 'default',
+          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+        }
 
-      // Loop through keys
-      table.partition_key.forEach((partitionKey) => {
-        // Get a random ID for the key
-        let partitionKeyID = getRandomID(30)
+        treeStructure.core.data.push(clusteringKeysStructure)
 
-        // Build tree view for the key
-        buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'key', 'partitionKeys')
-      })
-      // End of table's partition keys
+        // Loop through clustering keys
+        table.clustering_key.forEach((clusteringKey) => {
+          // Get a random ID for the key
+          let clusteringKeyID = getRandomID(30)
 
-      // Table's triggers
-      let triggersStructure = {
-        id: triggersID,
-        parent: tableID,
-        text: `Triggers (<span>${table.triggers.length}</span>)`,
-        type: 'default',
-        icon: normalizePath(Path.join(extraIconsPath, 'trigger.png'))
+          // Build tree view for the key
+          buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'key')
+        })
       }
-
-      treeStructure.core.data.push(triggersStructure)
-
-      // Loop through triggers
-      table.triggers.forEach((trigger) => {
-        // Get a random ID for the trigger
-        let triggerID = getRandomID(30)
-
-        // Build a tree view for the trigger
-        buildTreeViewForChild(triggersID, triggerID, `Trigger`, trigger, 'trigger')
-      })
 
       // Table's columns
-      let columnsStructure = {
-        id: columnsID,
-        parent: tableID,
-        text: `Columns (<span>${table.columns.length}</span>)`,
-        type: 'default',
-        icon: normalizePath(Path.join(extraIconsPath, 'column.png'))
+      {
+        let columnsStructure = {
+          id: columnsID,
+          parent: tableID,
+          text: `Columns (<span>${table.columns.length}</span>)`,
+          type: 'default',
+          icon: normalizePath(Path.join(extraIconsPath, 'column.png'))
+        }
+
+        treeStructure.core.data.push(columnsStructure)
+
+        // Loop through columns
+        table.columns.forEach((column) => {
+          // Get rid of `is_reversed` attribute
+          delete column.is_reversed
+
+          // Get a random ID for the column
+          let columnID = getRandomID(30)
+
+          // Build a tree view for the column
+          buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
+        })
       }
 
-      treeStructure.core.data.push(columnsStructure)
+      // Display the `Options` node/leaf if there is at least one option available for the current table
+      try {
+        // If the current table does not have an `options` attribute, then skip this try-catch block
+        if (table.options == undefined || Object.keys(table.options).length <= 0)
+          throw 0
 
-      // Loop through columns
-      table.columns.forEach((column) => {
-        // Get rid of `is_reversed` attribute
-        delete column.is_reversed
+        /**
+         * Options' container that will be under the table overall container
+         * Get a random ID for the options' parent/container node
+         */
+        let optionsID = getRandomID(30),
+          // Define the node/leaf structure
+          optionsStructure = {
+            id: optionsID,
+            parent: tableID, // Under the current table
+            text: `Options`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'options.png'))
+          }
 
-        // Get a random ID for the column
-        let columnID = getRandomID(30)
+        // Append the options' parent/container to the tree structure
+        treeStructure.core.data.push(optionsStructure)
 
-        // Build a tree view for the column
-        buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
-      })
+        // Define an inner function to handle the appending process of options to the tree structure
+        let appendOptions = (options, parentID) => {
+          // Loop through the passed `options`
+          Object.keys(options).forEach((option) => {
+            // Manipulate the option's key/text
+            let text = I18next.capitalize(`${option}`.replace(/\_/g, ' ')),
+              // Get the option's value
+              value = options[option]
+
+            // Don't show `CDC` option if its value is `NULL`
+            if (`${text}`.toLowerCase() == 'cdc' && `${value}`.toLowerCase() == 'null')
+              return
+
+            // If the value is one of the defined values in the array, then set the value to `NULL`
+            value = [undefined, null].includes(value) ? 'NULL' : value
+
+            try {
+              /**
+               * Handle if the option's value is actually a JSON object that has other sub-options
+               * If the option's value is not an object, then skip this try-catch block
+               */
+              if (typeof value != 'object')
+                throw 0
+
+              // Get a random ID for the current parent's options node
+              let parentOptionsID = getRandomID(30),
+                // Define the node/leaf structure
+                parentOptionsStructure = {
+                  id: parentOptionsID,
+                  parent: parentID, // Under the options' container node
+                  text: `${text}`,
+                  type: 'default',
+                  icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
+                }
+
+              // Push the node
+              treeStructure.core.data.push(parentOptionsStructure)
+
+              // Make a recursive call to the same function
+              return appendOptions(value, parentOptionsID)
+            } catch (e) {}
+
+            /**
+             * Reaching here means the current option's value is not an object
+             * Get a random ID for the option's node
+             */
+            let optionID = getRandomID(30),
+              // Define the node/leaf structure
+              optionStructure = {
+                id: optionID,
+                parent: parentID, // Under the options' node
+                text: `${text}: <span>${value}</span>`,
+                type: 'default',
+                icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
+              }
+
+            // Push the node
+            treeStructure.core.data.push(optionStructure)
+          })
+        }
+
+        // Initial call to the inner function
+        appendOptions(table.options, optionsID)
+      } catch (e) {}
+
+      // Table's triggers
+      {
+        let triggersStructure = {
+          id: triggersID,
+          parent: tableID,
+          text: `Triggers (<span>${table.triggers.length}</span>)`,
+          type: 'default',
+          icon: normalizePath(Path.join(extraIconsPath, 'trigger.png'))
+        }
+
+        treeStructure.core.data.push(triggersStructure)
+
+        // Loop through triggers
+        table.triggers.forEach((trigger) => {
+          // Get a random ID for the trigger
+          let triggerID = getRandomID(30)
+
+          // Build a tree view for the trigger
+          buildTreeViewForChild(triggersID, triggerID, `Trigger`, trigger, 'trigger')
+        })
+      }
 
       // Show a `Views` node/leaf if the current table has at least one view
       try {
@@ -1237,7 +1356,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
            * Build a tree view for the current view
            * For the `parentType` parameter set it to be the view's keyspace's name; to set a correct scope for getting a CQL description
            */
-          buildTreeViewForChild(viewsID, viewID, `View`, view, 'table', keyspace.name)
+          buildTreeViewForChild(viewsID, viewID, `View`, view, 'table', {
+            keyspace: keyspace.name
+          })
 
           // Loop through the view's children, starting from the clustering keys
           let clusteringKeysStructure = {
@@ -1337,8 +1458,17 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             kindID
           ] = getRandomID(30, 2)
 
+          indexesInfo.push({
+            name: index.name,
+            keyspace: keyspace.name,
+            table: table.name
+          })
+
           // Build a tree view for the current UDT
-          buildTreeViewForChild(indexesID, indexID, `Index`, index, 'index')
+          buildTreeViewForChild(indexesID, indexID, `Index`, index, 'index', {
+            keyspace: keyspace.name,
+            table: table.name
+          })
 
           // Push the index's kind's tree view's node structure
           treeStructure.core.data.push({
@@ -1348,94 +1478,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             type: 'default'
           })
         })
-      } catch (e) {}
-
-      // Display the `Options` node/leaf if there is at least one option available for the current table
-      try {
-        // If the current table does not have an `options` attribute, then skip this try-catch block
-        if (table.options == undefined || Object.keys(table.options).length <= 0)
-          throw 0
-
-        /**
-         * Options' container that will be under the table overall container
-         * Get a random ID for the options' parent/container node
-         */
-        let optionsID = getRandomID(30),
-          // Define the node/leaf structure
-          optionsStructure = {
-            id: optionsID,
-            parent: tableID, // Under the current table
-            text: `Options`,
-            type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'options.png'))
-          }
-
-        // Append the options' parent/container to the tree structure
-        treeStructure.core.data.push(optionsStructure)
-
-        // Define an inner function to handle the appending process of options to the tree structure
-        let appendOptions = (options, parentID) => {
-          // Loop through the passed `options`
-          Object.keys(options).forEach((option) => {
-            // Manipulate the option's key/text
-            let text = I18next.capitalize(`${option}`.replace(/\_/g, ' ')),
-              // Get the option's value
-              value = options[option]
-
-            // Don't show `CDC` option if its value is `NULL`
-            if (text.toLowerCase() == 'cdc' && value.toLowerCase() == 'null')
-              return
-
-            // If the value is one of the defined values in the array, then set the value to `NULL`
-            value = [undefined, null].includes(value) ? 'NULL' : value
-
-            try {
-              /**
-               * Handle if the option's value is actually a JSON object that has other sub-options
-               * If the option's value is not an object, then skip this try-catch block
-               */
-              if (typeof value != 'object')
-                throw 0
-
-              // Get a random ID for the current parent's options node
-              let parentOptionsID = getRandomID(30),
-                // Define the node/leaf structure
-                parentOptionsStructure = {
-                  id: parentOptionsID,
-                  parent: parentID, // Under the options' container node
-                  text: `${text}`,
-                  type: 'default',
-                  icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
-                }
-
-              // Push the node
-              treeStructure.core.data.push(parentOptionsStructure)
-
-              // Make a recursive call to the same function
-              return appendOptions(value, parentOptionsID)
-            } catch (e) {}
-
-            /**
-             * Reaching here means the current option's value is not an object
-             * Get a random ID for the option's node
-             */
-            let optionID = getRandomID(30),
-              // Define the node/leaf structure
-              optionStructure = {
-                id: optionID,
-                parent: parentID, // Under the options' node
-                text: `${text}: <span>${value}</span>`,
-                type: 'default',
-                icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
-              }
-
-            // Push the node
-            treeStructure.core.data.push(optionStructure)
-          })
-        }
-
-        // Initial call to the inner function
-        appendOptions(table.options, optionsID)
       } catch (e) {}
     })
 
@@ -1581,11 +1623,21 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Get random IDs for the current index and its kind/type
         let [
           indexID,
-          kindID
-        ] = getRandomID(30, 2)
+          kindID,
+          relatedTableID
+        ] = getRandomID(30, 3)
+
+        let indexInfo = {}
+
+        try {
+          indexInfo = indexesInfo.find((_index) => _index.name == index.name && _index.keyspace == keyspace.name)
+        } catch (e) {}
 
         // Build a tree view for the current UDT
-        buildTreeViewForChild(indexesID, indexID, `Index`, index, 'index')
+        buildTreeViewForChild(indexesID, indexID, `Index`, index, 'index', {
+          keyspace: keyspace.name,
+          table: indexInfo.table
+        })
 
         // Push the index's kind's tree view's node structure
         treeStructure.core.data.push({
@@ -1593,6 +1645,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           parent: indexID,
           text: `Kind: <span>${I18next.capitalizeFirstLetter(index.kind.toLowerCase())}</span>`,
           type: 'default'
+        })
+
+        treeStructure.core.data.push({
+          id: relatedTableID,
+          parent: indexID,
+          text: `Table: ${indexInfo.table}`,
+          type: 'default',
+          icon: normalizePath(Path.join(extraIconsPath, 'table.png'))
         })
       })
     } catch (e) {}
@@ -2516,7 +2576,7 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
 
   // Add log about this process
   try {
-    addLog(`Get all pre and post-connection scripts of ${clusterID != null ? 'cluster #' + clusterID + ' in ' : ' a cluster about to be added/updated in '}${workspace}`, 'process')
+    addLog(`Get all pre and post-connection scripts of ${clusterID != null ? 'connection #' + clusterID + ' in ' : ' a connection about to be added/updated in '}${workspace}`, 'process')
   } catch (e) {}
 
   // Check pre and post-connection scripts
@@ -2581,7 +2641,7 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
   // Add log if scripts have been found
   if (scripts.length != 0)
     try {
-      addLog(`Pre and post-connection scripts of ${clusterID != null ? 'cluster #' + clusterID + ' in ' : ' a cluster about to be added/updated in '}${workspace} are (${JSON.stringify(scripts)})`, 'process')
+      addLog(`Pre and post-connection scripts of ${clusterID != null ? 'connection #' + clusterID + ' in ' : ' a connection about to be added/updated in '}${workspace} are (${JSON.stringify(scripts)})`, 'process')
     } catch (e) {}
 
   // Return the final result
@@ -3682,7 +3742,7 @@ let closeAllWorkareas = () => {
         return showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of local cluster [b]$data[/b] is being terminated`, [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
 
       // Otherwise, show this toast
-      showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of cluster [b]$data[/b] in workspace [b]$data[/b] has been successfully closed`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
+      showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of connection [b]$data[/b] in workspace [b]$data[/b] has been successfully closed`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
     } catch (e) {}
   })
 }
@@ -3750,7 +3810,7 @@ let copyStatement = (button) => {
     Clipboard.writeText(content)
   } catch (e) {
     try {
-      errorLog(e, 'clusters')
+      errorLog(e, 'connections')
     } catch (e) {}
   }
 

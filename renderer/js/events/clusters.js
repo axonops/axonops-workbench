@@ -2393,12 +2393,13 @@
                               return
                             } catch (e) {}
 
-                            // Get the detected output of each statement
-                            let detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:OUTPUT:COMPLETED:ALL/gm)
 
                             // If no output has been detected then skip this try-catch block
-                            if (detectedOutput == null)
+                            if (!finalContent.includes('KEYWORD:OUTPUT:COMPLETED:ALL'))
                               throw 0
+
+                            // Get the detected output of each statement
+                            let detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:OUTPUT:COMPLETED:ALL/gm)
 
                             // Handle all statements and their output
                             try {

@@ -2153,6 +2153,23 @@ jQuery.fn.extend({
   resume: function(animation) {
     // Trigger the animation process again with the remaining time
     $(this).animate(animation.properties, $(this).data('remaining-duration'), animation.complete)
+  },
+  /**
+   * Check if the element is "actually" visible
+   * The function will check its opacity, visibility, and display values
+   *
+   * This function can be called by any jQuery element
+   * @Example: $('body').isVisible() // true
+   *
+   * @Return: {boolean} whether or not the element is visible
+   */
+  isVisible: function() {
+    return $(this)[0].checkVisibility({
+      checkOpacity: true,
+      checkVisibilityCSS: true,
+      checkDisplayNone: true,
+      checkContentVisibility: true
+    })
   }
 })
 

@@ -214,6 +214,7 @@ jobs:
             dist/*.exe
             dist/*.tar.gz
             dist/*.nsis
+            dist/*.msi
             dist/*.sha256sum
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

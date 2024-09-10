@@ -6005,8 +6005,8 @@
                   version = getAttributes(clusterElement, 'data-latest-cassandra-version') || getAttributes(clusterElement, 'data-cassandra-version')
 
                 // Print the host and Apache Cassandra®'s version in the terminal
-                terminalPrintMessage(readLine, 'info', `Connecting with host ${getAttributes(clusterElement, 'data-host')}`)
-                terminalPrintMessage(readLine, 'info', `Detected Apache Cassandra® version is ${version}`)
+                // terminalPrintMessage(readLine, 'info', `Connecting with host ${getAttributes(clusterElement, 'data-host')}`)
+                // terminalPrintMessage(readLine, 'info', `Detected Apache Cassandra® version is ${version}`)
 
                 // Show it in the interactive terminal
                 addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Connecting with host ${getAttributes(clusterElement, 'data-host')}.`, null, true, 'neutral')
@@ -6049,7 +6049,7 @@
                           throw 0
 
                         // Print message in the terminal
-                        terminalPrintMessage(readLine, 'warn', 'SSL is not enabled, the connection is not encrypted and is being transmitted in the clear')
+                        // terminalPrintMessage(readLine, 'warn', 'SSL is not enabled, the connection is not encrypted and is being transmitted in the clear')
 
                         // Show it in the interactive terminal
                         addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `SSL is not enabled, the connection is not encrypted and is being transmitted in the clear.`, null, true, 'warning')
@@ -6070,7 +6070,7 @@
 
                 // Show feedback to the user when the connection is established through the SSH tunnel
                 if (sshTunnelsObjects[clusterID] != null) {
-                  terminalPrintMessage(readLine, 'info', 'The connection is encrypted and transmitted through an SSH tunnel')
+                  // terminalPrintMessage(readLine, 'info', 'The connection is encrypted and transmitted through an SSH tunnel')
 
                   // Show it in the interactive terminal
                   addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `The connection is encrypted and transmitted through an SSH tunnel.`, null, true, 'neutral')
@@ -6113,7 +6113,7 @@
 
                     // If the username is `cassandra` then warn the user about that
                     if (usernameDecrypted == 'cassandra') {
-                      terminalPrintMessage(readLine, 'warn', 'This connection is using the default `cassandra` user')
+                      // terminalPrintMessage(readLine, 'warn', 'This connection is using the default `cassandra` user')
 
                       // Show it in the interactive terminal
                       addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), 'This connection is using the default `cassandra` user.', null, true, 'warning')

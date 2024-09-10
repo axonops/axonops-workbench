@@ -1077,12 +1077,38 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
     let [
       keyspaceID,
       tablesID
-    ] = getRandomID(30, 2)
-
-    let indexesInfo = []
+    ] = getRandomID(30, 2),
+      indexesInfo = []
 
     // Build tree view for the keyspace
     buildTreeViewForChild(keyspacesID, keyspaceID, `Keyspace`, keyspace, 'keyspace')
+
+    try {
+      let replicationStrategy = JSON.parse(repairJSON(keyspace.replication_strategy)),
+        replicationStrategyID = getRandomID(30)
+
+      // Tables' container that will be under the keyspace container
+      let replicationStrategyStructure = {
+        id: replicationStrategyID,
+        parent: keyspaceID, // Under the current keyspace
+        text: `Replication Strategy`,
+        type: 'default',
+        icon: normalizePath(Path.join(extraIconsPath, 'replication_strategy.png'))
+      }
+
+      // Append the tables' container to the tree structure
+      treeStructure.core.data.push(replicationStrategyStructure); // This semicolon is critical here
+
+      Object.keys(replicationStrategy).forEach((key) => {
+        treeStructure.core.data.push({
+          id: getRandomID(30),
+          parent: replicationStrategyID,
+          text: `${key}: ${replicationStrategy[key]}`,
+          type: 'default',
+          icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
+        })
+      })
+    } catch (e) {}
 
     // Tables' container that will be under the keyspace container
     let tablesStructure = {

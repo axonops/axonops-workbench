@@ -118,7 +118,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 data-folder-path="${workspace.defaultPath ? 'default' : workspace.path}" style="box-shadow: inset 0px 0px 0 3px #161719, inset 0px 0px 0 4px rgb(${color} / 50%);">
                 <ion-icon name="sandbox" ${!isSandbox ? 'hidden' : '' }></ion-icon>
                 <div class="header">
-                  <div class="title workspace-name">${workspace.name}</div>
+                  <div class="title workspace-name">${isSandbox ? '<span mulang="local clusters" capitalize></span>' : workspace.name}</div>
                   <div class="_clusters"></div>
                 </div>
                 <div class="footer">
@@ -133,7 +133,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                       <ion-icon name="folder-open"></ion-icon>
                     </div>
                     <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${workspaceID}" button-id="${settingsBtnID}" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Workspace settings"
-                      data-mulang="workspace settings" capitalize-first ${isSandbox ? 'hidden' : '' }>
+                      data-mulang="workspace settings" capitalize-first>
                       <ion-icon name="cog"></ion-icon>
                     </div>
                     <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${workspaceID}" button-id="${deleteBtnID}" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete workspace"
@@ -610,6 +610,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   $(`button#addWorkspace`).text(I18next.t('update workspace'))
                   $(`button#addWorkspace`).removeAttr('disabled')
 
+                  $('input#workspaceName').parent().toggle(workspaceID != 'workspace-sandbox')
+
                   try {
                     // Point at the workspace's name input field
                     let workspaceNameElement = $('input#workspaceName'),
@@ -754,6 +756,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         $(`${dialog}`).removeAttr('data-edit-workspace-id')
         $(`${dialog} button#addWorkspace`).attr('disabled', 'disabled')
         $(`${dialog} button#addWorkspace`).text(I18next.t('add workspace'))
+
+        $('input#workspaceName').parent().show()
 
         // Define the inputs' IDs in the dialog and reset them
         let inputsIDs = ['workspaceName', 'workspaceColor', 'workspacePath']

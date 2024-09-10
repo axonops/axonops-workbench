@@ -3293,6 +3293,9 @@
 
                           // Handle when the statement is `SELECT` but there's no `JSON` after it
                           try {
+                            if (!(Modules.Consts.CQLRegexPatterns.Select.Patterns.some((pattern) => pattern.test(statement))))
+                              throw 0
+
                             // Regex pattern to match 'SELECT' not followed by 'JSON'
                             let pattern = /\bselect\b(?!\s+json\b)/gi
 

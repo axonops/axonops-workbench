@@ -29,5 +29,6 @@ jobs:
 
       - name: Build signed installer
         run: |
+          echo ${{ secrets.AZURE_KEY_VAULT_URI }}
           azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v AxonOps.Workbench-0.1.1-internal-20240830-win-x64.exe
         shell: cmd

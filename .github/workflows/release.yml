@@ -58,6 +58,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
+          cache: "pip-${{ runner.os }}"
 
       - name: Install python dependencies
         run: pip3 install -r requirements.txt
@@ -66,7 +67,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 16.20.2
-          cache: 'npm'
+          cache: 'npm-${{ runner.os }}'
 
       # - name: Clear npm cache
       #   run: npm cache clean --force

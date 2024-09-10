@@ -266,7 +266,7 @@ jobs:
             exit 0
           fi
           git --no-pager diff
-          git commit -m "Changes made by GitHub Actions"
+          git commit -m "Changes made by GitHub Actions [skip ci]"
           git tag $VERSION
         env:
           GITHUB_URL: https://github.com/axonops/axonops-workbench-cassandra/releases/download/

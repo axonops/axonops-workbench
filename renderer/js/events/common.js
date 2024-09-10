@@ -857,7 +857,7 @@
         } catch (e) {}
 
         // The updating process failed, show feedback to the user
-        return showToast(I18next.capitalize(I18next.t('ignore cluster credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+        return showToast(I18next.capitalize(I18next.t('ignore connection credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the connection [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
       }
     })
   })
@@ -905,7 +905,7 @@
        */
       case 'auth': {
         if (([credentialsArray.authusername, credentialsArray.authpassword]).some((secret) => secret.trim().length <= 0))
-          return showToast(I18next.capitalize(I18next.t('cluster credentials')), I18next.capitalizeFirstLetter(I18next.t('please provide a valid authentication credentials')) + '.', 'failure')
+          return showToast(I18next.capitalize(I18next.t('connection credentials')), I18next.capitalizeFirstLetter(I18next.t('please provide a valid authentication credentials')) + '.', 'failure')
         break
       }
       /**
@@ -914,7 +914,7 @@
        */
       case 'ssh': {
         if (([credentialsArray.sshusername, credentialsArray.sshpassword, credentialsArray.sshpassphrase]).every((secret) => secret.trim().length <= 0))
-          return showToast(I18next.capitalize(I18next.t('cluster credentials')), I18next.capitalizeFirstLetter(I18next.t('please provide a valid ssh credentials')) + '.', 'failure')
+          return showToast(I18next.capitalize(I18next.t('connection credentials')), I18next.capitalizeFirstLetter(I18next.t('please provide a valid ssh credentials')) + '.', 'failure')
         break
       }
       /**
@@ -923,7 +923,7 @@
        */
       case '': {
         if ((([credentialsArray.authusername, credentialsArray.authpassword]).some((secret) => secret.trim().length <= 0)) || (([credentialsArray.sshusername, credentialsArray.sshpassword, credentialsArray.sshpassphrase]).every((secret) => secret.trim().length <= 0)))
-          return showToast(I18next.capitalize(I18next.t('cluster credentials')), I18next.capitalizeFirstLetter(I18next.t('please provide a valid credentials for both sections')) + '.', 'failure')
+          return showToast(I18next.capitalize(I18next.t('connection credentials')), I18next.capitalizeFirstLetter(I18next.t('please provide a valid credentials for both sections')) + '.', 'failure')
         break
       }
     }
@@ -1050,7 +1050,7 @@
             } catch (e) {}
 
             // The updating process failed, show feedback to the user
-            showToast(I18next.capitalize(I18next.t('save cluster credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+            showToast(I18next.capitalize(I18next.t('save connection credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the connection [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
             // Enable the proceed button again
             $(this).removeAttr('disabled')
@@ -1098,4 +1098,38 @@
       selectElement.attr('hidden-value', $(this).attr('hidden-value'))
     })
   })
+}
+
+{
+  setInterval(() => {
+    $('lottie-player').each(function() {
+      let lottieElement = $(this)
+
+      try {
+        // The lottie element is not visible
+        if (lottieElement.isVisible())
+          throw 0
+
+        if (lottieElement.data('is-stopped') != 'true')
+          lottieElement.data({
+            'last-state': `${lottieElement[0].currentState}`,
+            'is-stopped': 'true'
+          })
+
+        lottieElement[0].stop()
+      } catch (e) {
+        // The lottie element is visible
+        try {
+          let lastState = lottieElement.data('last-state') || 'stopped'
+
+          if (lastState == 'stopped')
+            return
+
+          lottieElement.data('is-stopped', 'false')
+
+          lottieElement[0].play()
+        } catch (e) {}
+      }
+    })
+  }, 500)
 }

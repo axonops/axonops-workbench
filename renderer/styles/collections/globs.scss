@@ -836,3 +836,26 @@ div.resolve-variables {
 .monaco-sash {
   z-index: 1 !important;
 }
+
+span.badge.badge-secondary.mandatory {
+  float: right;
+  height: 15px;
+  position: relative;
+  top: 7px;
+  left: 0;
+  opacity: 0.7;
+}
+
+ion-icon.axonops-status {
+  margin-right: -3px;
+  opacity: 0.85;
+
+  &.false {
+    font-size: 160%;
+  }
+
+  &.true {
+    font-size: 125%;
+    margin-left: 2px;
+  }
+}

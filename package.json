@@ -25,9 +25,11 @@
       "main/bin",
       "config"
     ],
-    "publish": [{
-      "provider": "github"
-    }],
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
@@ -50,7 +52,7 @@
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
-      "icon": "./renderer/assets/images/axonops-icon-512x512.png",
+      "icon": "./renderer/assets/images/axonops-icon-512x512.icns",
       "category": "public.app-category.developer-tools",
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"

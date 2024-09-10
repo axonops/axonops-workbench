@@ -85,9 +85,6 @@
     "dmg": {
       "sign": false
     },
-    "msi": {
-      "onClick": false
-    },
     "nsis": {
       "onClick": false
     }

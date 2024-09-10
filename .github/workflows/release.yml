@@ -73,6 +73,8 @@ jobs:
 
       - name: Get credits and add them to the database
         run: |
+          export ELECTRON_BUILDER_CACHE=${GITHUB_WORKSPACE}/electron-${{ runner.os }}
+          echo "ELECTRON_BUILDER_CACHE=${ELECTRON_BUILDER_CACHE}" >> $GITHUB_ENV
           cd get_credits
           npm cache clean --force
           npm i

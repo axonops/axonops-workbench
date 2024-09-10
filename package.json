@@ -37,13 +37,7 @@
         "nsis",
         "msi"
       ],
-      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
-      "msi": {
-        "onClick": false
-      },
-      "nsis": {
-        "onClick": false
-      }
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },
     "linux": {
       "icon": "./renderer/assets/images/",
@@ -90,6 +84,12 @@
     },
     "dmg": {
       "sign": false
+    },
+    "msi": {
+      "onClick": false
+    },
+    "nsis": {
+      "onClick": false
     }
   },
   "scripts": {

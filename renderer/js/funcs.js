@@ -639,7 +639,7 @@ let repairJSON = (json) => {
     json = `${json}`.replace(/[^\x20-\x7E{}[\]:,"']/g, '')
       // Remove some added chars from the cqlsh tool and terminal
       .replace(/1C/g, '')
-      .replace(/u\'/g, "'")
+      .replace(/u\\'/g, "'")
       .replace(/\(\)/g, "''")
       // Remove an added bracket to the `keyspace_name` attribute that can lead to an error
       .replace(/\'\:\[\'keyspace_name\'/g, "':'keyspace_name'")

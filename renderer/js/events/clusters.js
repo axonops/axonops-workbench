@@ -2245,14 +2245,19 @@
                             finalContent = blocksOutput[data.blockID]
 
                             // Get the identifiers detected in the statements
-                            let statementsIdentifiers = []
+                            let statementsIdentifiers = [],
+                              statementsNextIdentifiers = []
 
                             try {
                               // Get the detected identifiers
-                              statementsIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[(.+)\]/i)[1].split(',')
+                              statementsIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[(.*?)\]/i)[1].split(',')
+
+                              statementsNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[(.*?)\]/i)[1].split(',')
 
                               // Manipulate them
                               statementsIdentifiers = statementsIdentifiers.map((identifier) => identifier.trim())
+
+                              statementsNextIdentifiers = statementsNextIdentifiers.map((identifier) => identifier.trim())
                             } catch (e) {}
 
                             // Handle if the statement's execution process has stopped
@@ -2429,7 +2434,8 @@
                                   loopIndex = loopIndex + 1
 
                                   // Point at the current identifier
-                                  let statementIdentifier = statementsIdentifiers[loopIndex]
+                                  let statementIdentifier = statementsIdentifiers[loopIndex],
+                                    statementsNextIdentifier = statementsNextIdentifiers[loopIndex]
 
                                   // Avoid infinite loops with zero-width matches
                                   if (matches.index === statementOutputRegex.lastIndex)
@@ -2448,6 +2454,10 @@
                                     // Refresh the latest metadata based on specific actions and only if no erorr has occurred
                                     try {
                                       if (['alter', 'create', 'drop'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound)) {
+                                        // Make sure the statement is not about specific actions
+                                        if (['role', 'user'].some((identifier) => statementsNextIdentifier.toLowerCase().indexOf(identifier) != -1))
+                                          throw 0
+
                                         // Make sure to clear the previous timeout
                                         try {
                                           clearTimeout(refreshMetadataTimeout)
@@ -3299,11 +3309,8 @@
 
                           // Handle when the statement is `SELECT` but there's no `JSON` after it
                           try {
-                            if (!(Modules.Consts.CQLRegexPatterns.Select.Patterns.some((pattern) => pattern.test(statement))))
-                              throw 0
-
                             // Regex pattern to match 'SELECT' not followed by 'JSON'
-                            let pattern = /\bselect\b(?!\s+json\b)/gi
+                            let pattern = /(?:^|\;\s*)\bselect\b(?!\s+json\b)/gi
 
                             // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
                             statement = statement.replace(pattern, 'SELECT JSON')

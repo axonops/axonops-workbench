@@ -1071,6 +1071,22 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
     } catch (e) {}
   }
 
+  let sortItemsAlphabetically = (array, sortBy) => {
+    try {
+      array.sort((a, b) => {
+        if (`${a[sortBy]}`.toLowerCase() < `${b[sortBy]}`.toLowerCase())
+          return -1
+
+        if (`${a[sortBy]}`.toLowerCase() > `${b[sortBy]}`.toLowerCase())
+          return 1
+
+        return 0
+      })
+    } catch (e) {}
+  }
+
+  sortItemsAlphabetically(metadata.keyspaces, 'name')
+
   // Loop through the keyspaces
   metadata.keyspaces.forEach((keyspace) => {
     // Get a unique ID for the current keyspace, and an ID for its tables' container
@@ -1121,6 +1137,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
     // Append the tables' container to the tree structure
     treeStructure.core.data.push(tablesStructure)
+
+    sortItemsAlphabetically(keyspace.tables, 'name')
 
     // Loop through every table in the keyspace
     keyspace.tables.forEach((table) => {
@@ -1221,6 +1239,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         }
 
         treeStructure.core.data.push(columnsStructure)
+
+        sortItemsAlphabetically(table.columns, 'name')
 
         // Loop through columns
         table.columns.forEach((column) => {

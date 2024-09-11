@@ -848,6 +848,12 @@
                                 <div class="container-footer">
                                   <div class="top">
                                     <div class="history-items"></div>
+                                    <div class="history-items-clear-all">
+                                      <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                                        <ion-icon name="trash"></ion-icon>
+                                        <span mulang="clear all statements"></span>
+                                      </button>
+                                    </div>
                                     <div class="history">
                                       <button class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
                                         <ion-icon name="history"></ion-icon>
@@ -4951,6 +4957,7 @@
                     {
                       // Point at the history items' container
                       let historyItemsContainer = $(this).find('div.history-items'),
+                        historyItemsClearAllButton = $(this).find('div.history-items-clear-all'),
                         // Point at the history show button
                         historyBtn = $(this).find('div.history').find('button.btn'),
                         // Get the current saved items
@@ -5082,7 +5089,7 @@
                         }
 
                         // Show the history items' container
-                        historyItemsContainer.addClass('show')
+                        historyItemsContainer.add(historyItemsClearAllButton).addClass('show')
 
                         // If a backdrop element already rendered then skip the upcoming code
                         if ($('body').find('div.backdrop').length > 0)
@@ -5099,9 +5106,23 @@
                             $(this).remove()
 
                             // Hide the history items' container
-                            historyItemsContainer.removeClass('show')
+                            historyItemsContainer.add(historyItemsClearAllButton).removeClass('show')
                           })
                         }))
+                      })
+
+                      historyItemsClearAllButton.find('button').click(function() {
+                        try {
+                          Store.set(clusterID, [])
+
+                          // Click the backdrop element to close the history items' container
+                          $(`div.backdrop:last`).click()
+
+                          // Disable the history button
+                          historyBtn.attr('disabled', 'disabled')
+
+                          showToast(I18next.capitalize(I18next.t('clear all statements')), I18next.capitalizeFirstLetter(I18next.replaceData('all history statements for connection [b]$data[/b] have been successfully cleared', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                        } catch (e) {}
                       })
                     }
                   }))

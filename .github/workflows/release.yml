@@ -66,7 +66,7 @@ jobs:
       - name: Setup Node.js v16.20.2
         uses: actions/setup-node@v4
         with:
-          node-version: 16.20.2
+          node-version: 20.17.0
           cache: 'npm'
 
       # - name: Clear npm cache

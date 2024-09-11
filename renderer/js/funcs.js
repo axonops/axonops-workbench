@@ -698,13 +698,38 @@ let convertJSONToTable = (json, isExpandOn = false) => {
     json = `${json}`.split('\n')
   }
 
+  let stringJSON = '',
+    foundJSON = []
+
+  try {
+    if (OS.platform() != 'win32')
+      throw 0
+
+    json.forEach((record) => {
+      stringJSON += `${record}`;
+
+      try {
+        let match = `${stringJSON}`.match(
+          /\{[\s\S]+\}/gm
+        )
+
+        if (match == null)
+          return
+
+        foundJSON.push(match[0]);
+
+        stringJSON = stringJSON.replace(/\{[\s\S]+\}/gm, '')
+      } catch (e) {}
+    })
+  } catch (e) {}
+
   try {
     // Convert each record/row to JSON object inside array
-    let jsonObject = json.map((item) => {
+    let jsonObject = [...(foundJSON.length != 0 ? foundJSON : json)].map((item) => {
       let finalItem = item
 
       try {
-        finalItem = JSON.parse(item)
+        finalItem = JSON.parse(repairJSON(item))
       } catch (e) {}
 
       return finalItem

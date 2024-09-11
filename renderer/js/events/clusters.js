@@ -3310,10 +3310,10 @@
                           // Handle when the statement is `SELECT` but there's no `JSON` after it
                           try {
                             // Regex pattern to match 'SELECT' not followed by 'JSON'
-                            let pattern = /(?:^|\;\s*)\bselect\b(?!\s+json\b)/gi
+                            let pattern = /((?:^|\;\s*)\bselect\b(?!\s+json\b))/gi
 
                             // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
-                            statement = statement.replace(pattern, 'SELECT JSON')
+                            statement = statement.replace(pattern, '$1 JSON')
                           } catch (e) {}
 
                           // Send the command to the main thread to be executed

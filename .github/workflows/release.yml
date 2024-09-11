@@ -225,7 +225,7 @@ jobs:
   release-brew:
     runs-on: ubuntu-latest
     needs: [build]
-    if: ${{ !cancelled() && (success() || failure() || needs.build.result == 'skipped') }}
+    if: ${{ !cancelled() && success() }}
 
     steps:
       - uses: actions/checkout@v4

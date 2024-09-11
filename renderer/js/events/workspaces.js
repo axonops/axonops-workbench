@@ -133,7 +133,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                       <ion-icon name="folder-open"></ion-icon>
                     </div>
                     <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${workspaceID}" button-id="${settingsBtnID}" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Workspace settings"
-                      data-mulang="workspace settings" capitalize-first>
+                      data-mulang="workspace settings" capitalize-first ${isSandbox ? 'hidden' : '' }>
                       <ion-icon name="cog"></ion-icon>
                     </div>
                     <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${workspaceID}" button-id="${deleteBtnID}" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete workspace"
@@ -610,7 +610,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   $(`button#addWorkspace`).text(I18next.t('update workspace'))
                   $(`button#addWorkspace`).removeAttr('disabled')
 
-                  $('input#workspaceName').parent().toggle(workspaceID != 'workspace-sandbox')
+                  // $('input#workspaceName').parent().toggle(workspaceID != 'workspace-sandbox')
 
                   try {
                     // Point at the workspace's name input field
@@ -757,7 +757,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         $(`${dialog} button#addWorkspace`).attr('disabled', 'disabled')
         $(`${dialog} button#addWorkspace`).text(I18next.t('add workspace'))
 
-        $('input#workspaceName').parent().show()
+        // $('input#workspaceName').parent().show()
 
         // Define the inputs' IDs in the dialog and reset them
         let inputsIDs = ['workspaceName', 'workspaceColor', 'workspacePath']

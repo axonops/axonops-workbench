@@ -1955,7 +1955,7 @@ div.body {
                   opacity: 0.75;
 
                   &.sandbox {
-                    width: 53.34px;
+                    width: 26.67px;
                   }
 
                   div.action {
@@ -1980,6 +1980,12 @@ div.body {
               &.inaccessible {
                 filter: grayscale(1) brightness(0.8);
                 pointer-events: none;
+
+                div.actions {
+                  div.action:not([action="delete"]) {
+                    opacity: 0.45;
+                  }
+                }
 
                 button {
                   background: #505050 !important;

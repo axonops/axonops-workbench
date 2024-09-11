@@ -63,7 +63,7 @@ jobs:
       - name: Install python dependencies
         run: pip3 install -r requirements.txt
 
-      - name: Setup Node.js v16.20.2
+      - name: Setup Node.js v20.17.0
         uses: actions/setup-node@v4
         with:
           node-version: 20.17.0

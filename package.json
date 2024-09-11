@@ -1,7 +1,11 @@
 {
   "name": "axonops-workbench",
   "title": "AxonOps™ Workbench",
+<<<<<<< HEAD
   "version": "0.1.1-internal-20240911-02",
+=======
+  "version": "0.1.1-internal-20240911-01",
+>>>>>>> origin/main
   "author": {
     "name": "AxonOps",
     "email": "info@axonops.com"

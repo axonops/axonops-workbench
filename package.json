@@ -1,7 +1,7 @@
 {
   "name": "axonops-workbench",
   "title": "AxonOps™ Workbench",
-  "version": "1.0.0-beta-20240905",
+  "version": "0.1.1-internal-20240910-04",
   "author": {
     "name": "AxonOps",
     "email": "info@axonops.com"
@@ -14,6 +14,12 @@
   "maintainers": [
     "info@axonops.com"
   ],
+  "nsis": {
+    "onClick": false
+  },
+  "msi": {
+    "onClick": false
+  },
   "build": {
     "icon": "./renderer/assets/images/axonops-icon-256x256.png",
     "copyright": "©2024 AxonOps Limited",
@@ -35,7 +41,7 @@
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
       "target": [
         "nsis",
-        "zip"
+        "msi"
       ],
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
     },

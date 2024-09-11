@@ -52,12 +52,13 @@ jobs:
             mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
           done
         env:
-          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.6.0' }}"
+          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.8.0' }}"
 
       - name: Setup Python v3.12
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
+          cache: "pip"
 
       - name: Install python dependencies
         run: pip3 install -r requirements.txt
@@ -66,12 +67,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 16.20.2
+          cache: 'npm'
 
-      - name: Clear npm cache
-        run: npm cache clean --force
+      # - name: Clear npm cache
+      #   run: npm cache clean --force
 
       - name: Get credits and add them to the database
         run: |
+          export ELECTRON_BUILDER_CACHE=${GITHUB_WORKSPACE}/electron-${{ runner.os }}
+          echo "ELECTRON_BUILDER_CACHE=${ELECTRON_BUILDER_CACHE}" >> $GITHUB_ENV
           cd get_credits
           npm cache clean --force
           npm i
@@ -162,7 +166,8 @@ jobs:
       - name: Build signed installer
         if: runner.os == 'Windows'
         run: |
-          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v AxonOps.Workbench-%GITHUB_REF_NAME%-win-x64.exe
+          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps Workbench-%GITHUB_REF_NAME%-win-x64.exe"
+          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps Workbench-%GITHUB_REF_NAME%-win-x64.msi"
         shell: cmd
 
       # Ensure this task is right before the Upload
@@ -181,7 +186,7 @@ jobs:
             done
           ;;
           MINGW64*)
-            FILES=$(ls -1 *.exe)
+            FILES=$(ls -1 *.exe *.msi)
             for f in $FILES; do
               sha256sum $f > ${f}.sha256sum
             done
@@ -210,6 +215,7 @@ jobs:
             dist/*.exe
             dist/*.tar.gz
             dist/*.nsis
+            dist/*.msi
             dist/*.sha256sum
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

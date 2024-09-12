@@ -52,7 +52,7 @@ jobs:
             mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
           done
         env:
-          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.8.0' }}"
+          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.10.0' }}"
 
       - name: Setup Python v3.12
         uses: actions/setup-python@v5

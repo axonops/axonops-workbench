@@ -13,9 +13,19 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Setup Node.js v20.17.0
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.17.0
+        cache: 'npm'
+
+    - name: Install AxonOps Developer Workbench dependencies
+      run: npm i
+
     - name: Run Trivy vulnerability scanner in fs mode
       uses: aquasecurity/trivy-action@0.20.0
       with:
         scan-type: 'fs'
         scan-ref: '.'
+        format: table
         #trivy-config: trivy.yaml

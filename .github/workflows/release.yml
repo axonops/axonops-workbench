@@ -15,16 +15,16 @@ jobs:
     strategy:
       matrix:
         include:
-          # - os: [self-hosted, linux, X64]
-          #   target: Linux
+          - os: [self-hosted, linux, X64]
+            target: Linux
 
-          # # M1
-          # - os: macos-14
-          #   target: Macos
+          # M1
+          - os: macos-14
+            target: Macos
 
-          # # X86
-          # - os: macos-13
-          #   target: Macos
+          # X86
+          - os: macos-13
+            target: Macos
 
           - os: windows-latest
             target: Windows

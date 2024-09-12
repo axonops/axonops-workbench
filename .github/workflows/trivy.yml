@@ -5,6 +5,7 @@ on:
     - main
     - disable-auto-run
   pull_request:
+
 jobs:
   build:
     name: Trivy Scans

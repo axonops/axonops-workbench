@@ -15,10 +15,16 @@
     "info@axonops.com"
   ],
   "nsis": {
-    "onClick": false
+    "onClick": false,
+    "runAfterFinish": false,
+    "allowToChangeInstallationDirectory": true,
+    "installerIcon": "renderer/assets/images/axonops-icon-256x256.ico",
+    "license": "LICENSE",
+    "include": "resources/uninstaller.nsh"
   },
   "msi": {
-    "onClick": false
+    "onClick": false,
+    "runAfterFinish": false
   },
   "build": {
     "icon": "./renderer/assets/images/axonops-icon-256x256.png",

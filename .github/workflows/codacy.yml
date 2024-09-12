@@ -54,11 +54,11 @@ jobs:
           # This will handover control about PR rejection to the GitHub side
           max-allowed-issues: 2147483647
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: codacy-sarif-results
-          path: results.sarif
+      # https://github.com/microsoft/infersharpaction/issues/51
+      - name: Hack report to remove wrong line numbers
+        run: |
+          sed -i 's/"startLine":0/"startLine":1/g' results.sarif
+          sed -i 's/"startColumn":0/"startColumn":1/g' results.sarif
 
       # Upload the SARIF file generated in the previous step
       - name: Upload SARIF results file

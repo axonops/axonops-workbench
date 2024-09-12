@@ -26,7 +26,7 @@ jobs:
     - name: Run trivy
       run: |
         curl -LO https://github.com/aquasecurity/trivy/releases/download/v0.55.1/trivy_0.55.1_Linux-64bit.deb
-        dpkg -i trivy_0.55.1_Linux-64bit.deb
+        sudo dpkg -i trivy_0.55.1_Linux-64bit.deb
         trivy fs --format json --output trivy-results.json --severity HIGH,CRITICAL --ignore-unfixed .
 
     - uses: actions/upload-artifact@v4

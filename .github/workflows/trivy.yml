@@ -27,7 +27,7 @@ jobs:
       with:
         scan-type: 'fs'
         scan-ref: '.'
-        format: table
+        format: sarif
         severity: 'CRITICAL,HIGH'
         output: 'trivy-results.sarif'
         #trivy-config: trivy.yaml

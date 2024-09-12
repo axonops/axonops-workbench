@@ -43,12 +43,14 @@ jobs:
         run: |
           mkdir -p main/bin
           for binary in cqlsh-410 cqlsh-407 keys_generator; do
-            curl -fL ${CQLSH_GITHUB_URL}/${binary}-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
+            curl -fL ${CQLSH_GITHUB_URL}/${CQLSH_BUILD_VERSION}/${binary}-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
             mv main/bin/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}
             mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
           done
+          sed -i "s/%CQLSH_VERSION%/$CQLSH_BUILD_VERSION/g" renderer/views/index.html
         env:
-          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download/0.10.0' }}"
+          CQLSH_BUILD_VERSION: "0.10.0"
+          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download' }}"
 
       - name: Setup Python v3.12
         uses: actions/setup-python@v5

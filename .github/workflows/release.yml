@@ -35,13 +35,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Check if package.json has the right version
+      - name: Change the package.json version to match the tag
         run: |
-          grep -q "\"version\": \"${{ github.ref_name }}\"" package.json
-          if [ $? -ne 0 ]; then
-            echo "Error: package.json does not have the right version"
-            exit 1
-          fi
+          sed -i 's/"version": "[^"]*"/"version": "'"$GITHUB_REF_NAME"'"/' package.json
 
       - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
         run: |

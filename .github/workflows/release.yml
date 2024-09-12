@@ -37,7 +37,8 @@ jobs:
 
       - name: Change the package.json version to match the tag
         run: |
-          sed -i.bak 's/"version": "[^"]*"/"version": "'"$GITHUB_REF_NAME"'"/' package.json
+          cp package.json package.json.bak
+          cat package.json.bak | sed 's/"version": "[^"]*"/"version": "'"$GITHUB_REF_NAME"'"/' > package.json
           rm -f package.json.bak
 
 

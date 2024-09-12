@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: Trivy Scans
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -36,7 +36,13 @@ jobs:
       with:
         name: trivy-scan
         path: 'trivy-results.json'
-        
+
+    - name: Debug
+      run: |
+        ls -l
+        uname -a
+        cat 'trivy-results.json'
+
     # # Upload the SARIF file generated in the previous step
     # - name: Upload SARIF results file
     #   uses: github/codeql-action/upload-sarif@v3

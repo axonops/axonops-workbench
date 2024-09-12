@@ -86,7 +86,6 @@
     "nsis": {
       "runAfterFinish": false,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": true,
       "installerIcon": "./renderer/assets/images/axonops-icon-256x256.ico",
       "license": "LICENSE",
       "include": "resources/uninstaller.nsh"

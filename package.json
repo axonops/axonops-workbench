@@ -14,20 +14,6 @@
   "maintainers": [
     "info@axonops.com"
   ],
-  "nsis": {
-    "onClick": false,
-    "runAfterFinish": false,
-    "perMachine": false,
-    "allowToChangeInstallationDirectory": true,
-    "installerIcon": "./renderer/assets/images/axonops-icon-256x256.ico",
-    "license": "LICENSE",
-    "include": "resources/uninstaller.nsh"
-  },
-  "msi": {
-    "onClick": false,
-    "perMachine": false,
-    "runAfterFinish": false
-  },
   "build": {
     "icon": "./renderer/assets/images/axonops-icon-256x256.png",
     "copyright": "©2024 AxonOps Limited",
@@ -96,6 +82,18 @@
     },
     "dmg": {
       "sign": false
+    },
+    "nsis": {
+      "runAfterFinish": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "./renderer/assets/images/axonops-icon-256x256.ico",
+      "license": "LICENSE",
+      "include": "resources/uninstaller.nsh"
+    },
+    "msi": {
+      "perMachine": false,
+      "runAfterFinish": false
     }
   },
   "scripts": {

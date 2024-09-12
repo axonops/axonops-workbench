@@ -27,11 +27,16 @@ jobs:
       with:
         scan-type: 'fs'
         scan-ref: '.'
-        format: table
-        severity: 'CRITICAL,HIGH'
-        output: 'trivy-results.sarif'
+        format: json
+        severity: 'CRITICAL,HIGH,MEDIUM'
+        output: 'trivy-results.json'
         #trivy-config: trivy.yaml
 
+    - uses: actions/upload-artifact@v4
+      with:
+        name: trivy-scan
+        path: 'trivy-results.json'
+        
     # # Upload the SARIF file generated in the previous step
     # - name: Upload SARIF results file
     #   uses: github/codeql-action/upload-sarif@v3

@@ -55,10 +55,10 @@ jobs:
           max-allowed-issues: 2147483647
 
       - name: Upload Artifacts
-        uses: softprops/action-gh-release@v2
+        uses: actions/upload-artifact@v4
         with:
-          files: |
-            results.sarif
+          name: codacy-sarif-results
+          path: results.sarif
 
       # Upload the SARIF file generated in the previous step
       - name: Upload SARIF results file

@@ -17,13 +17,15 @@
   "nsis": {
     "onClick": false,
     "runAfterFinish": false,
+    "perMachine": false,
     "allowToChangeInstallationDirectory": true,
-    "installerIcon": "renderer/assets/images/axonops-icon-256x256.ico",
+    "installerIcon": "./renderer/assets/images/axonops-icon-256x256.ico",
     "license": "LICENSE",
     "include": "resources/uninstaller.nsh"
   },
   "msi": {
     "onClick": false,
+    "perMachine": false,
     "runAfterFinish": false
   },
   "build": {

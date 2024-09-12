@@ -2,7 +2,7 @@ name: Release Workbench
 
 on:
   release:
-    types: [created, published]
+    types: [published]
 
 defaults:
   run:

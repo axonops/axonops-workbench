@@ -37,8 +37,7 @@ jobs:
 
       - name: Change the package.json version to match the tag
         run: |
-          cp package.json package.json.bak
-          cat package.json.bak | sed 's/"version": "[^"]*"/"version": "'"$GITHUB_REF_NAME"'"/' > package.json
+          sed -i.bak 's/"version": "[^"]*"/"version": "'"$GITHUB_REF_NAME"'"/' package.json && rm package.json.bak
           rm -f package.json.bak
 
 
@@ -50,7 +49,8 @@ jobs:
             mv main/bin/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}
             mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
           done
-          sed -i "s/%CQLSH_VERSION%/$CQLSH_BUILD_VERSION/g" renderer/views/index.html
+          sed -i.bak "s/%CQLSH_VERSION%/$CQLSH_BUILD_VERSION/g" renderer/views/index.html
+          rm -f renderer/views/index.html.bak
         env:
           CQLSH_BUILD_VERSION: "0.10.0"
           CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download' }}"

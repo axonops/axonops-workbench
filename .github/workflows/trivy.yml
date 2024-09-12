@@ -7,7 +7,7 @@ on:
   pull_request:
 jobs:
   build:
-    name: Build
+    name: Trivy Scans
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout code
@@ -28,4 +28,12 @@ jobs:
         scan-type: 'fs'
         scan-ref: '.'
         format: table
+        severity: 'CRITICAL,HIGH'
+        output: 'trivy-results.sarif'
         #trivy-config: trivy.yaml
+
+    # # Upload the SARIF file generated in the previous step
+    # - name: Upload SARIF results file
+    #   uses: github/codeql-action/upload-sarif@v3
+    #   with:
+    #     sarif_file: results.sarif

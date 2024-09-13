@@ -1,0 +1,1506 @@
+<!--
+/*
+ * © 2024 AxonOps Limited. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Those files are the bootstrap for the entire app -->
+  <link rel="stylesheet" href="../styles/master.css">
+  <script src="../js/init.js"></script>
+</head>
+
+<body>
+  <!-- The body container
+  Contains all essential elements of the UI
+  The body is separated into left and right sides, a hidden area to show extra features like the AI assistant, and different modals/dialogs -->
+  <div class="body">
+    <!-- The left side -->
+    <div class="main left">
+      <div class="content">
+        <div class="logo">
+          <img src="../assets/images/axonops-logo-no-border.png">
+        </div>
+
+        <!-- Workspaces switcher -->
+        <div class="switch-workspaces">
+          <!-- Arrows to go up and down and show more active workspaces -->
+          <div class="more-workspaces">
+            <div class="buttons">
+              <!-- Goes down and show hidden active workspaces -->
+              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" navigation="down">
+                <ion-icon name="arrow-down"></ion-icon>
+              </button>
+              <!-- Goes up and shows hidden active workspaces -->
+              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" navigation="up">
+                <ion-icon name="arrow-up"></ion-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Fixed, back to the workspaces' list -->
+          <div class="workspace" home>
+            <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="right" data-mdb-html="true" data-title="Workspaces" data-mulang="workspaces" capitalize>
+              <ion-icon name="home"></ion-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Clusters switcher -->
+        <div class="switch-clusters">
+          <!-- Arrows to go up and down and show more active clusters -->
+          <div class="more-clusters">
+            <div class="buttons">
+              <!-- Goes down and show hidden active clusters -->
+              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" navigation="down">
+                <ion-icon name="arrow-down"></ion-icon>
+              </button>
+              <!-- Goes up and shows hidden active clusters -->
+              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" navigation="up">
+                <ion-icon name="arrow-up"></ion-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigate between different sections in the app -->
+        <div class="navigation">
+          <!-- Sections which alike in purpose or content are grouped in `group` -->
+          <div class="group">
+            <!-- The AI assistant
+            Users can ask questions about Apache Cassandra®, AxonOps™, and related topics -->
+            <div class="item" action="ai" data-tippy="tooltip" data-mdb-placement="right" data-mulang="AI assistant" data-title="AI Assistant" capitalize>
+              <div class="sub-content btn" data-mdb-ripple-color="dark">
+                <ion-icon name="brain"></ion-icon>
+              </div>
+              <!-- The AI assistant is answering a question -->
+              <div class="answering">
+                <lottie-player src="../assets/lottie/answering.json" background="transparent" autoplay loop speed="1.75"></lottie-player>
+              </div>
+            </div>
+
+            <!-- Help and app's documentation
+            It is an offline documentation that users can browse easily and search for unclear topics -->
+            <div class="item" action="help" data-tippy="tooltip" data-mdb-placement="right" data-mulang="help and documentation" capitalize data-title="Help and Documentation">
+              <div class="sub-content btn" data-mdb-ripple-color="dark">
+                <ion-icon name="help"></ion-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- The app's settings -->
+          <div class="group">
+            <div class="item" action="notifications-center" data-tippy="tooltip" data-mdb-placement="right" data-mulang="notifications center" capitalize data-title="Notifications Center">
+              <div class="sub-content btn" data-mdb-ripple-color="dark">
+                <div class="notify">
+                  <lottie-player src="../assets/lottie/notification.json" background="transparent" loop></lottie-player>
+                </div>
+              </div>
+            </div>
+            <div class="item" action="settings" data-tippy="tooltip" data-mdb-placement="right" data-mulang="settings" capitalize data-title="Settings">
+              <div class="sub-content btn" data-mdb-ripple-color="dark">
+                <ion-icon name="cog"></ion-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- The app's settings -->
+          <div class="group">
+            <div class="item" action="about" data-tippy="tooltip" data-mdb-placement="right" data-mulang="about" capitalize data-title="About">
+              <div class="sub-content btn" data-mdb-ripple-color="dark">
+                <ion-icon name="about"></ion-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- More options/sections
+          For example: close all connections with clusters, restart the app -->
+          <div class="group">
+            <div class="item" action="more">
+              <div class="dropdown dropend more-actions">
+                <div class="sub-content btn" id="dropdownMenuButton" data-mdb-ripple-color="dark" data-mdb-toggle="dropdown" aria-expanded="false">
+                  <ion-icon name="more-h"></ion-icon>
+                </div>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <li>
+                    <h6 class="dropdown-header">
+                      <span class="badge badge-secondary">
+                        <span mulang="actions" capitalize></span>
+                      </span>
+                    </h6>
+                  </li>
+                  <li>
+                    <a class="dropdown-item disabled" href="#" action="closeWorkareas"><span mulang="close all active work areas" capitalize-first></span></a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" action="restartApp"><span mulang="restart" capitalize></span></a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" action="quitApp"><span mulang="quit" capitalize></span></a>
+                  </li>
+                  <li>
+                    <hr class="dropdown-divider">
+                  </li>
+                  <li>
+                    <h6 class="dropdown-header">
+                      <span class="badge badge-secondary"><span mulang="view" capitalize></span></span>
+                    </h6>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" action="zoomIn"><span mulang="zoom in" capitalize-first></span> <span for-kbd><kbd ctrl>CTRL</kbd><kbd style="margin:0px 5px;">SHIFT</kbd><kbd>+</kbd></span></a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" action="zoomOut"><span mulang="zoom out" capitalize-first></span> <span for-kbd><kbd ctrl>CTRL</kbd><kbd style="margin:0px 5px;">SHIFT</kbd><kbd>-</kbd></span></a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" action="zoomReset"><span mulang="zoom reset" capitalize-first></span> <span for-kbd><kbd ctrl>CTRL</kbd><kbd style="margin:0px 5px;">SHIFT</kbd><kbd digit>0</kbd></span></a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#" action="toggleFullscreen"><span mulang="toggle fullscreen" capitalize-first></span> <kbd>F11</kbd></a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- The hidden area
+    Some of the features are set in this container like AI Assistant and Notifications Center -->
+    <div class="main hidden-area">
+      <!-- The AI assistant container where the user can benefit from this feature
+      The content is separated into three parts:
+      First is the questions and their answers' container
+      Second is the question text area and ask button container
+      And finally, the loading container -->
+      <div class="content ai-assistant not-initialized">
+        <div class="loading-page">
+          <l-square size="30" stroke="3" stroke-length="0.25" bg-opacity="0.1" speed="0.9" color="#777777"></l-square>
+        </div>
+
+        <!-- Integrate the AxonOps™ AI using `webview` tag -->
+        <!-- <webview style="height: calc(100% - 30px); bottom: auto;" class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups preload="../js/axonops_ai_webview.js"></webview> -->
+        <webview style="height: calc(100% - 30px); bottom: auto;" class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups></webview>
+
+        <div class="more-list-bg"></div>
+
+        <div class="webview-navigation">
+          <div class="nav" action="back">
+            <button type="button" class="btn btn-tertiary btn-sm disabled" data-mdb-ripple-color="light">
+              <ion-icon name="arrow-up"></ion-icon> <span mulang="back" capitalize></span>
+            </button>
+          </div>
+          <div class="nav" action="more">
+            <button type="button" class="btn btn-tertiary btn-sm" style="padding-right: 20px;" data-mdb-ripple-color="light">
+              <ion-icon name="more-h"></ion-icon> <span mulang="more" capitalize></span>
+            </button>
+          </div>
+          <div class="nav" action="forward">
+            <button type="button" class="btn btn-tertiary btn-sm disabled" data-mdb-ripple-color="light">
+              <ion-icon name="arrow-up"></ion-icon> <span mulang="forward" capitalize></span>
+            </button>
+          </div>
+        </div>
+        <div class="webview-more-actions">
+          <div class="nav" action="refresh">
+            <button type="button" class="btn btn-tertiary btn-sm" data-mdb-ripple-color="light">
+              <ion-icon name="refresh"></ion-icon> <span mulang="refresh" capitalize></span>
+            </button>
+          </div>
+          <div class="nav" action="logout">
+            <button type="button" class="btn btn-tertiary btn-sm" data-mdb-ripple-color="light">
+              <ion-icon name="logout"></ion-icon> <span mulang="logout" capitalize></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- The loading container of the AI Assistant
+        The app waits for authentication from the server in which AI assistant has been deployed in -->
+        <div class="loading">
+          <div class="animate-hide">
+            <div class="sub-content">
+              <lottie-player src="../assets/lottie/brain.json" background="transparent" autoplay loop></lottie-player>
+              <div class="loading-text">
+                <span mulang="AI assistant is being initialized"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Saved questions are being loaded -->
+        <div class="loading-questions">
+          <lottie-player src="../assets/lottie/loading-questions.json" background="transparent" autoplay loop speed="0.8"></lottie-player>
+        </div>
+      </div>
+
+      <!-- The notifications center where missed notifications/toasts can be found here -->
+      <div class="content notifications-center _empty">
+        <!-- The container of all missed notifications -->
+        <div class="notifications-container" style="text-align: left;"></div>
+
+        <!-- Empty state; there's no missed notification -->
+        <div class="empty">
+          <div class="animate-hide">
+            <div class="sub-content">
+              <lottie-player src="../assets/lottie/empty-notifications.json" background="transparent" autoplay loop></lottie-player>
+              <div class="message">
+                <span mulang="there are no notifications to check" capitalize-first></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- The right side -->
+    <div class="main right hide-content-info">
+      <div class="content-info">
+        <div class="_left">
+          <div class="_main" onclick="$('div.body div.left div.content div.switch-workspaces div.workspace.workspace[home]').click()">
+            <div class="icon">
+              <ion-icon name="workspaces"></ion-icon>
+            </div>
+            <div class="text">
+              <span mulang="workspaces" capitalize></span>
+            </div>
+          </div>
+          <div class="_arrow">
+            <ion-icon name="arrow-up"></ion-icon>
+          </div>
+          <div class="_cluster">
+            <div class="_color">
+            </div>
+            <div class="text"></div>
+          </div>
+        </div>
+
+        <div class="_right">
+          <div class="_actions _for-workspaces show">
+            <div class="action" action="add" onclick="$('button#addWorkspaceAction').click()">
+              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                <ion-icon name="plus"></ion-icon>
+                <span mulang="add workspace"></span>
+              </button>
+            </div>
+            <div class="action" action="refresh" onclick="$('button#refreshWorkspacesAction').click()">
+              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                <ion-icon name="refresh"></ion-icon>
+                <span mulang="refresh workspaces"></span>
+              </button>
+            </div>
+            <div class="action" action="import" onclick="$('button#importWorkspacesAction').click()">
+              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                <ion-icon name="import"></ion-icon>
+                <span mulang="import workspaces"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="_actions _for-clusters">
+            <div class="action" action="add" onclick="$('button#addClusterAction').click()">
+              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                <ion-icon name="plus"></ion-icon>
+                <span mulang="add connection"></span>
+              </button>
+            </div>
+            <div class="action" action="refresh" onclick="$('button#refreshClustersAction').click()">
+              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                <ion-icon name="refresh"></ion-icon>
+                <span mulang="refresh connections"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- The content is separated into:
+      Workspaces section
+      Clusters section
+      And finally the work area of each active cluster -->
+      <div class="content">
+        <!-- Workspaces section -->
+        <div content="workspaces">
+          <!-- The workspaces' container
+          Here all workspaces are listed as a `workspace` element -->
+          <div class="workspaces-container"></div>
+
+          <!-- Empty element
+          Indicates the emptiness of workspaces' container -->
+          <div class="empty">
+            <div class="sub-content">
+              <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addWorkspaceProcess').click()"></lottie-player>
+              <div class="message">
+                <span mulang="it’s so empty here, why not add a workspace?" capitalize-first></span>
+              </div>
+              <div class="button">
+                <div class="for-workspaces buttons">
+                  <button type="button" class="btn btn-primary btn-dark" id="addWorkspaceProcess" data-mdb-toggle="modal" data-mdb-target="#addEditWorkspaceDialog">
+                    <ion-icon name="plus"></ion-icon>
+                    <span mulang="add workspace"></span>
+                  </button>
+                  <div class="import-workspaces-btn-container">
+                    <button type="button" class="btn btn-secondary btn-dark" data-mdb-toggle="modal" data-mdb-target="#importWorkspaces" id="importWorkspacesProcess">
+                      <ion-icon name="import"></ion-icon>
+                      <span mulang="import workspaces"></span>
+                    </button>
+                  </div>
+                </div>
+                <div class="or">
+                  <span class="badge badge-secondary">
+                    <span mulang="or" uppercase></span>
+                  </span>
+                </div>
+                <div class="sandbox-btn-container">
+                  <button type="button" class="btn btn-secondary btn-dark" data-mdb-toggle="modal" data-mdb-target="#createSandboxProjectDialog" id="createSandboxProjectProcess">
+                    <ion-icon name="sandbox"></ion-icon>
+                    <span mulang="create local cluster"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- The workspaces section's actions -->
+          <div class="section-actions" hidden>
+            <!-- The main action; which shows up the two main actions -->
+            <div class="main">
+              <button type="button" class="btn btn-secondary btn-lg btn-floating btn-dark" onclick="$(this).parent().parent().toggleClass('show')">
+                <ion-icon name="cogs"></ion-icon>
+              </button>
+            </div>
+
+            <!-- Add a new workspace action -->
+            <div class="action" action="add">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add workspace" capitalize data-title="Add Workspace" id="addWorkspaceAction">
+                <ion-icon name="plus"></ion-icon>
+              </button>
+            </div>
+
+            <!-- Import workspaces action -->
+            <div class="action" action="import">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="import workspaces" capitalize data-title="Import Workspaces" id="importWorkspacesAction">
+                <ion-icon name="import"></ion-icon>
+              </button>
+            </div>
+
+            <!-- Refresh workspaces' list action -->
+            <div class="action" action="refresh">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh workspace" capitalize data-title="Refresh Workspaces" id="refreshWorkspacesAction">
+                <ion-icon name="refresh"></ion-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Clusters section (hidden by default) -->
+        <div content="clusters" hidden>
+          <!-- The clusters' container
+          Here all clusters - associated with workspaces - are listed as `cluster` element -->
+          <div class="clusters-container"></div>
+
+          <!-- Empty element
+          Indicates the emptiness of clusters' container -->
+          <div class="empty">
+            <div class="sub-content">
+              <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addClusterProcess').click()"></lottie-player>
+              <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addSandboxProjectProcess').click()" for-sandbox></lottie-player>
+              <div class="message">
+                <span no-clusters-message mulang="no connections added to the workspace [b]$data[/b] yet, why not add one?" capitalize-first></span>
+              </div>
+              <div class="message" for-sandbox>
+                <span mulang="no local clusters created yet, why not create one?" capitalize-first></span>
+              </div>
+              <div class="button">
+                <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#addEditClusterDialog" id="addClusterProcess">
+                  <span mulang="add connection"></span>
+                </button>
+                <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#createSandboxProjectDialog" for-sandbox id="addSandboxProjectProcess">
+                  <span mulang="create local cluster"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- The clusters section's actions -->
+          <div class="section-actions" hidden>
+            <!-- The main action's button; which shows up the two main actions -->
+            <div class="main">
+              <button type="button" class="btn btn-secondary btn-lg btn-floating btn-dark" onclick="$(this).parent().parent().toggleClass('show')">
+                <ion-icon name="cogs"></ion-icon>
+              </button>
+            </div>
+
+            <!-- Add a new cluster action -->
+            <div class="action" action="add">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add connection" capitalize data-title="Add Connection" id="addClusterAction">
+                <ion-icon name="plus"></ion-icon>
+              </button>
+            </div>
+
+            <!-- Refresh clusters' list action -->
+            <div class="action" action="refresh">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title="Refresh Connections" id="refreshClustersAction">
+                <ion-icon name="refresh"></ion-icon>
+              </button>
+            </div>
+
+            <!-- Refresh clusters' list action -->
+            <!-- <div class="action" action="clean">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh clusters" capitalize data-title="Refresh Clusters">
+                <ion-icon name="clean"></ion-icon>
+              </button>
+            </div> -->
+          </div>
+        </div>
+
+        <!-- Cluster's workarea section (hidden by default) -->
+        <div content="workarea" hidden></div>
+      </div>
+    </div>
+
+    <!-- All dialogs/modals in the app
+    Workspace's dialog; used for adding and editing -->
+    <div class="modal top fade" id="addEditWorkspaceDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <span mulang="add workspace" capitalize></span>
+            </h5>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-outline form-white margin-bottom">
+              <ion-icon name class="trailing"></ion-icon>
+              <input type="text" class="form-control form-icon-trailing form-control-lg" id="workspaceName">
+              <label class="form-label">
+                <span mulang="workspace name" capitalize-first></span>
+              </label>
+              <div class="valid-feedback"></div>
+              <div class="invalid-feedback"></div>
+            </div>
+            <div class="row">
+              <div class="col-md-11">
+                <div class="form-outline form-white margin-bottom notch-no-radius">
+                  <ion-icon name class="trailing"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" id="workspaceColor">
+                  <label class="form-label">
+                    <span mulang="workspace color" capitalize-first></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                </div>
+                <input type="text" class="coloris" id="workspaceColorHidden" data-coloris>
+              </div>
+              <div class="col-md-1 flex col-add-border">
+                <div class="preview-color">
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-11">
+                <div class="form-outline form-white margin-bottom sm notch-no-radius">
+                  <ion-icon name class="trailing"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" tabindex="-1" id="workspacePath" style="overflow: hidden; text-overflow: ellipsis;">
+                  <label class="form-label">
+                    <span mulang="workspace path" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                  <div class="clickable" for-input="workspacePath" data-empty-not-allowed="true" data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000"></div>
+                </div>
+              </div>
+              <div class="col-md-1 flex col-add-border">
+                <div class="icon-button" style="top: auto; left: 3px;">
+                  <div class="action btn btn-tertiary reset-path" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="set default path" capitalize-first data-title="Set default path" data-action="defaultPath"
+                    data-reference="workspace">
+                    <ion-icon name="undo"></ion-icon>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal">
+              <span mulang="close"></span>
+            </button>
+            <button type="button" class="btn btn-primary btn-dark btn-sm" id="addWorkspace" disabled>
+              <span mulang="add workspace"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cluster's dialog; used for adding and editing -->
+    <div class="modal top fade" id="addEditClusterDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <span mulang="add connection" capitalize></span>
+            </h5>
+            <span class="badge badge-secondary"></span>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="side-left">
+              <div class="sections">
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="basic">
+                    <span mulang="basic" capitalize></span>
+                    <div class="invalid-inputs"></div>
+                  </div>
+                </div>
+                <div class="seperator">
+                  <span class="badge badge-primary">
+                    <span mulang="optional" capitalize></span>
+                  </span>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="authentication">
+                    <span mulang="authentication" capitalize></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="ssh-tunnel">
+                    <span mulang="SSH tunnel" capitalize></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="ssl">
+                    <span mulang="SSL configuration" capitalize></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="side-right">
+              <div class="modal-section" section="basic">
+                <div class="form-outline form-white margin-bottom">
+                  <ion-icon name class="trailing"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="none" info-key="clusterName">
+                  <label class="form-label">
+                    <span mulang="connection name" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                  <div class="form-helper">
+                    <span mulang="example" capitalize></span>: Main Cluster
+                  </div>
+                </div>
+                <div class="form-outline form-white margin-bottom">
+                  <ion-icon name class="trailing"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="none" info-key="datacenter">
+                  <label class="form-label">
+                    <span mulang="cassandra data center" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                  <div class="form-helper">
+                    <span mulang="example" capitalize></span>: datacenter1
+                  </div>
+                </div>
+                <div class="form-outline form-white margin-bottom">
+                  <ion-icon name class="trailing"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="connection" info-key="hostname">
+                  <label class="form-label">
+                    <span mulang="cassandra host name" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                  <div class="form-helper">
+                    <span mulang="example" capitalize></span>: 192.168.0.10 <span mulang="mandatory field" class="badge badge-secondary mandatory" capitalize-first></span>
+                  </div>
+                </div>
+                <div class="form-outline form-white margin-bottom">
+                  <ion-icon name class="trailing"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="connection" info-key="port">
+                  <label class="form-label">
+                    <span mulang="port" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                  <div class="form-helper">
+                    <span mulang="default" capitalize></span>: 9042 <span mulang="mandatory field" class="badge badge-secondary mandatory" capitalize-first></span>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-section" section="authentication" hidden>
+                <div class="form-outline form-white margin-bottom file" data-mulang="cassandra® credentials" capitalize file-info="Cassandra® Credentials" role="file-selector" file-name="-">
+                  <input data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000" type="text" class="form-control form-icon-trailing form-control-lg" info-section="authentication" info-key="credentials" readonly>
+                </div>
+                <div class="form-outline form-white margin-bottom">
+                  <ion-icon name class="trailing"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="none" info-key="username">
+                  <label class="form-label">
+                    <span mulang="username" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                  <div class="form-helper">
+                    <span mulang="example" capitalize></span>: cassandra
+                  </div>
+                </div>
+                <div class="form-outline form-white margin-bottom">
+                  <div class="reveal-password">
+                    <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                      <ion-icon name="eye-opened"></ion-icon>
+                    </div>
+                  </div>
+                  <input type="password" class="form-control form-control-lg" info-section="none" info-key="password">
+                  <label class="form-label">
+                    <span mulang="password" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-check margin-bottom" style="margin-top: -10px;">
+                  <input class="form-check-input" type="checkbox" value id="saveAuthCredentials" checked>
+                  <label class="form-check-label" for="saveAuthCredentials">
+                    <span mulang="save authentication credentials locally" capitalize-first></span>.
+                  </label>
+                </div>
+              </div>
+              <div class="modal-section" section="ssh-tunnel" hidden>
+                <div class="row">
+                  <div class="col-md-8 right-padding">
+                    <div class="form-outline form-white margin-bottom">
+                      <input type="text" class="form-control form-control-lg" info-section="none" info-key="ssh-host">
+                      <label class="form-label">
+                        <span mulang="host" capitalize></span>
+                      </label>
+                      <div class="valid-feedback"></div>
+                      <div class="invalid-feedback"></div>
+                      <div class="form-helper">
+                        <span mulang="default" capitalize></span>: <span mulang="connection host name" capitalize></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4 left-padding">
+                    <div class="form-outline form-white margin-bottom">
+                      <input type="text" class="form-control form-control-lg" info-section="none" info-key="ssh-port">
+                      <label class="form-label">
+                        <span mulang="port" capitalize></span>
+                      </label>
+                      <div class="valid-feedback"></div>
+                      <div class="invalid-feedback"></div>
+                      <div class="form-helper">
+                        <span mulang="default" capitalize></span>: 22
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6 right-padding">
+                    <div class="form-outline form-white margin-bottom">
+                      <input type="text" class="form-control form-control-lg" info-section="none" info-key="ssh-username">
+                      <label class="form-label">
+                        <span mulang="username" capitalize></span>
+                      </label>
+                      <div class="valid-feedback"></div>
+                      <div class="invalid-feedback"></div>
+                    </div>
+                  </div>
+                  <div class="col-md-6 left-padding">
+                    <div class="form-outline form-white margin-bottom">
+                      <div class="reveal-password">
+                        <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                          <ion-icon name="eye-opened"></ion-icon>
+                        </div>
+                      </div>
+                      <input type="password" class="form-control form-control-lg" info-section="none" info-key="ssh-password">
+                      <label class="form-label">
+                        <span mulang="password" capitalize></span>
+                      </label>
+                      <div class="valid-feedback"></div>
+                      <div class="invalid-feedback"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-7 right-padding">
+                    <div class="form-outline form-white margin-bottom file" data-mulang="private key file" capitalize file-info="Private Key File" role="file-selector" file-name="-">
+                      <input data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000" type="text" class="form-control form-icon-trailing form-control-lg" info-section="none" info-key="ssh-privatekey" readonly>
+                    </div>
+                  </div>
+                  <div class="col-md-5 left-padding">
+                    <div class="form-outline form-white margin-bottom">
+                      <div class="reveal-password">
+                        <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                          <ion-icon name="eye-opened"></ion-icon>
+                        </div>
+                      </div>
+                      <input type="password" class="form-control form-control-lg" info-section="none" info-key="ssh-passphrase">
+                      <label class="form-label">
+                        <span mulang="passphrase" capitalize></span>
+                      </label>
+                      <div class="valid-feedback"></div>
+                      <div class="invalid-feedback"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-8 right-padding">
+                    <div class="form-outline form-white margin-bottom">
+                      <input type="text" class="form-control form-control-lg" info-section="none" info-key="ssh-dest-addr">
+                      <label class="form-label">
+                        <span mulang="destination address" capitalize></span>
+                      </label>
+                      <div class="valid-feedback"></div>
+                      <div class="invalid-feedback"></div>
+                      <div class="form-helper">
+                        <span mulang="default" capitalize></span>: 127.0.0.1
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4 left-padding">
+                    <div class="form-outline form-white margin-bottom">
+                      <input type="text" class="form-control form-control-lg" info-section="none" info-key="ssh-dest-port">
+                      <label class="form-label">
+                        <span mulang="destination port" capitalize></span>
+                      </label>
+                      <div class="valid-feedback"></div>
+                      <div class="invalid-feedback"></div>
+                      <div class="form-helper">
+                        <span mulang="default" capitalize></span>: <span mulang="connection port" capitalize></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-check margin-bottom">
+                  <input class="form-check-input" type="checkbox" value id="saveSSHCredentials" checked>
+                  <label class="form-check-label" for="saveSSHCredentials">
+                    <span mulang="save SSH credentials locally" capitalize-first></span>.
+                  </label>
+                </div>
+              </div>
+              <div class="modal-section" section="ssl" hidden>
+                <div class="form-outline form-white margin-bottom file" role="file-selector" file-name="-" data-mulang="CA certificate file" capitalize file-info="CA Certificate File">
+                  <input data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000" type="text" class="form-control form-icon-trailing form-control-lg" info-section="ssl" info-key="certfile" readonly>
+                </div>
+                <div class="form-outline form-white margin-bottom file" role="file-selector" file-name="-" data-mulang="client key file" capitalize file-info="Client Key File">
+                  <input data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000" type="text" class="form-control form-icon-trailing form-control-lg" info-section="ssl" info-key="userkey" readonly>
+                </div>
+                <div class="form-outline form-white margin-bottom file" role="file-selector" file-name="-" data-mulang="client certificate file" capitalize file-info="Client Certificate File">
+                  <input data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000" type="text" class="form-control form-icon-trailing form-control-lg" info-section="ssl" info-key="usercert" readonly>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-check form-switch form-white margin-bottom">
+                      <input class="form-check-input checkbox-checked" type="checkbox" role="switch" info-section="connection" info-key="ssl" default-value="false" id="_V1KYvEUU">
+                      <label class="form-check-label" for="_V1KYvEUU">
+                        <span mulang="enable connection with SSL" capitalize-first></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-check form-switch form-white margin-bottom" style="float: right;">
+                      <input class="form-check-input checkbox-checked" type="checkbox" role="switch" checked info-section="ssl" info-key="validate" default-value="true" id="_8oQQyBuL">
+                      <label class="form-check-label" for="_8oQQyBuL">
+                        <span mulang="validate files" capitalize-first></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="editor-container">
+              <div class="editor"></div>
+            </div>
+            <div class="test-connection">
+              <div class="sub-content">
+                <l-pinwheel class="ldr change-color" size="70" stroke="4" speed="0.6" color="#dfdfdf"></l-pinwheel>
+              </div>
+            </div>
+            <div class="terminate-process">
+              <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" id="terminateConnectionTestProcess" data-tippy="tooltip" data-mdb-placement="right" data-title="Terminate the process" data-mulang="terminate the process"
+                capitalize-first>
+                <ion-icon name="close"></ion-icon>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="float-left">
+              <button type="button" class="btn btn-secondary btn-dark btn-sm" id="switchEditor">
+                <ion-icon name="switch"></ion-icon>
+                <span mulang="switch editor"></span>
+              </button>
+              <button type="button" class="btn btn-sm btn-tertiary expand-editor" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-mulang="expand editor" capitalize data-title="Expand editor" id="expandEditor">
+                <ion-icon name="expand"></ion-icon>
+              </button>
+            </div>
+            <div class="float-right">
+              <button type="button" class="btn btn-secondary btn-dark btn-sm" id="testConnectionCluster">
+                <span mulang="test connection"></span>
+              </button>
+              <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" disabled id="addCluster">
+                <span mulang="add connection"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sandbox's dialog; used for creating a docker project -->
+    <div class="modal top fade" id="createSandboxProjectDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <span mulang="create local cluster" capitalize></span>
+            </h5>
+            <span class="badge badge-secondary"></span>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-outline form-white margin-bottom">
+              <ion-icon name class="trailing"></ion-icon>
+              <input type="text" class="form-control form-icon-trailing form-control-lg" id="dockerProjectName">
+              <label class="form-label">
+                <span mulang="local cluster name" capitalize></span> (<span mulang="optional" capitalize></span>)
+              </label>
+              <div class="valid-feedback"></div>
+              <div class="invalid-feedback"></div>
+            </div>
+            <div class="form-outline form-white" style="margin-bottom: 25px; z-index: 2;">
+              <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+              <input type="text" class="form-control form-icon-trailing form-control-lg" style="background-color: inherit; cursor: pointer;" id="apacheCassandraVersion" value="4.1" readonly>
+              <label class="form-label">
+                Apache Cassandra® <span mulang="version" capitalize></span>
+              </label>
+              <div class="valid-feedback"></div>
+              <div class="invalid-feedback"></div>
+            </div>
+            <div class="dropdown" for-select="apacheCassandraVersion">
+              <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" value="4.0">4.0</a></li>
+                <li><a class="dropdown-item" href="#" value="4.1">4.1 (<span mulang="default" capitalize></span>)</a></li>
+                <li><a class="dropdown-item" href="#" value="5.0">5.0</a></li>
+              </ul>
+            </div>
+            <div class="form-outline form-white" style="margin-bottom: 25px;">
+              <label class="form-label" style="color: #fbfbfb;">
+                <span mulang="cassandra® nodes" capitalize></span> (<span mulang="default" capitalize></span> 3)
+              </label>
+              <div class="range" style="opacity:0.9">
+                <input type="range" class="form-range" min="1" max="20" value="3" id="numOfNodes">
+                <div class="default-value"></div>
+              </div>
+            </div>
+            <div class="form-check" style="margin-bottom: 10px;">
+              <input class="form-check-input" type="checkbox" value id="installAxonOps" checked>
+              <label class="form-check-label" for="installAxonOps">
+                <span mulang="install AxonOps™ within the local cluster" capitalize-first></span>.
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value id="immediateProjectRun">
+              <label class="form-check-label" for="immediateProjectRun">
+                <span mulang="run the local cluster once created" capitalize-first></span>.
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary btn-dark btn-sm" data-refresh="false" id="createDockerProject">
+              <span mulang="create local cluster"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- App's settings dialog -->
+    <div class="modal top fade" id="appSettings" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <span mulang="app settings" capitalize></span>
+            </h5>
+            <span class="badge badge-secondary"></span>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="side-left">
+              <div class="sections">
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="variables">
+                    <span mulang="variables" capitalize></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="security">
+                    <span mulang="security" capitalize></span>/<span mulang="logging" capitalize></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="languages">
+                    <span mulang="languages" capitalize></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="features">
+                    <span mulang="features" capitalize></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="limitation">
+                    <span mulang="limits" capitalize></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="side-right">
+              <div class="modal-section" section="variables">
+                <button type="button" id="updateVariables" hidden></button>
+                <div class="sub-header">
+                  <a action="refresh" check="true" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" id="refreshVariables">
+                    <ion-icon name="refresh"></ion-icon> <span mulang="refresh variables" capitalize></span>
+                  </a>
+                  <a action="delete" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" id="deleteSelectedVariables">
+                    <ion-icon name="trash"></ion-icon> <span mulang="delete selected variables" capitalize></span>
+                  </a>
+                  <a action="add" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" id="addNewVariable">
+                    <ion-icon name="plus"></ion-icon> <span mulang="add variable" capitalize></span>
+                  </a>
+                </div>
+                <div class="variables-list empty">
+                  <div class="content"></div>
+                  <div class="empty">
+                    <div class="sub-content">
+                      <lottie-player src="../assets/lottie/empty-variables.json" background="transparent" autoplay loop speed="0.5"></lottie-player>
+                      <div class="message no-select">
+                        <span mulang="no added variables, yet" capitalize-first></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-section" section="security" hidden>
+                <div class="row flex margin-bottom" id="contentProtectionContainer">
+                  <div class="col-md-4">
+                    <div>
+                      <span mulang="protect app content" capitalize></span>:
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="contentProtection" no-color>
+                      <label class="form-check-label" for="contentProtection">
+                        <span mulang="protect app content from being captured" capitalize-first></span>.
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="row flex margin-bottom">
+                  <div class="col-md-4">
+                    <div>
+                      <span mulang="logging system" capitalize></span>:
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="loggingSystem" no-color>
+                      <label class="form-check-label" for="loggingSystem">
+                        <span mulang="log info, actions, processes and related" capitalize-first></span>.
+                      </label>
+                    </div>
+                    <div class="small-hint no-select">
+                      <small>
+                        <span mulang="this update needs an app restart" capitalize-first></span>.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-section" section="languages" hidden>
+                <div class="row flex">
+                  <div class="col-md-4">
+                    <div style="margin-bottom: 25px;">
+                      <span mulang="display language" capitalize></span>:
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="form-outline form-white" style="margin-bottom: 25px; z-index: 2;">
+                      <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                      <input type="text" class="form-control form-icon-trailing form-control-lg" style="background-color: inherit; cursor: pointer;" id="languageUI" value="English" hidden-value="en" readonly>
+                      <label class="form-label">
+                        <span mulang="language" capitalize></span>
+                      </label>
+                      <div class="valid-feedback"></div>
+                      <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="dropdown" for-select="languageUI">
+                      <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                      <ul class="dropdown-menu"></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-section" section="appearance" hidden>
+                <div style="margin-bottom: 30px;margin-left: 10px;opacity: 0.7;">
+                  <span class="badge badge-secondary" style="opacity: 0.9;">
+                    <span mulang="terminal" capitalize></span>
+                  </span>
+                </div>
+                <div class="row flex">
+                  <div class="col-md-4">
+                    <div style="margin-bottom: 25px;">
+                      <span mulang="font" capitalize></span>:
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="form-outline form-white" style="margin-bottom: 25px; z-index: 2;">
+                      <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                      <input type="text" class="form-control form-icon-trailing form-control-lg" style="background-color: inherit; cursor: pointer;" id="terminalFont" value="Default" hidden-value="default" readonly>
+                      <label class="form-label"><span mulang="font" capitalize></span></label>
+                    </div>
+                    <div class="dropdown" for-select="terminalFont">
+                      <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <a class="dropdown-item" style="font-family:'Terminal', monospace;" href="#" value="Default" hidden-value="default">Default</a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item" style="font-family:'Terminal', monospace;" href="#" value="System" hidden-value="system">System</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-section" section="limitation" hidden>
+                <div style="margin-bottom: 30px;margin-left: 10px;opacity: 0.7;">
+                  <span class="badge badge-secondary" style="opacity: 0.9;">
+                    <span mulang="allowed running instances" capitalize></span>
+                  </span>
+                </div>
+                <div class="row flex margin-bottom">
+                  <div class="col-md-4">
+                    <span mulang="CQLSH sessions" capitalize></span>:
+                  </div>
+                  <div class="col-md-8">
+                    <div class="form-outline form-white">
+                      <input type="number" class="form-control form-control-lg" id="maxNumCQLSHSessions">
+                      <label for="maxNumCQLSHSessions" class="form-label">
+                        <span mulang="maximum number" capitalize></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="row flex margin-bottom">
+                  <div class="col-md-4">
+                    <span mulang="local clusters" capitalize></span>:
+                  </div>
+                  <div class="col-md-8">
+                    <div class="form-outline form-white">
+                      <input type="number" class="form-control form-control-lg" id="maxNumSandboxProjects">
+                      <label for="maxNumSandboxProjects" class="form-label">
+                        <span mulang="maximum number" capitalize></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-section" section="features" hidden>
+                <div class="row flex margin-bottom flex-advanced">
+                  <div class="col-md-3">
+                    <div>
+                      <span mulang="local clusters" capitalize></span>:
+                    </div>
+                  </div>
+                  <div class="col-md-9">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="sandboxProjects" no-color>
+                      <label class="form-check-label" style="display: inline;" for="sandboxProjects">
+                        <span mulang="create and run Cassandra® nodes in isolated containers" capitalize-first></span>.
+                      </label>
+                    </div>
+                    <div class="small-hint no-select">
+                      <small>
+                        <span mulang="this update needs an app restart" capitalize-first></span>.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="float-right">
+              <button type="button" class="btn btn-primary btn-dark btn-sm" id="saveSettings">
+                <span mulang="save settings"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Load Snaptshot's dialog for the current active cluster - if there is an active one - -->
+    <div class="modal top fade" id="loadSnapshot" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <span mulang="load schema snapshot" capitalize></span>
+            </h5>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
+              <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+              <input type="text" class="form-control form-icon-trailing form-control-lg">
+              <label class="form-label">
+                <span mulang="search" capitalize></span>
+              </label>
+            </div>
+            <div class="actions-multiple">
+              <a action="select" check="true" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false">
+                <ion-icon name="checkbox"></ion-icon> <span mulang="toggle selections" capitalize></span>
+              </a>
+              <a action="delete" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false">
+                <ion-icon name="trash"></ion-icon> <span mulang="delete selected snapshots" capitalize></span>
+              </a>
+            </div>
+            <!-- Here all snapshots related to the active cluster will be listed as `snapshot` -->
+            <div class="snapshots"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Hidden button to show and hide the snapshot's dialog -->
+    <button type="button" data-mdb-toggle="modal" data-mdb-target="#loadSnapshot" id="showLoadSnapshotDialog" hidden></button>
+
+    <!-- General purpose dialog -->
+    <div class="modal top fade" id="generalPurposeDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-body"></div>
+          <div class="form-check margin-bottom" style="margin: var(--mdb-modal-padding);display: flex;flex-direction: row;flex-wrap: nowrap;align-items: flex-start;justify-content: flex-start;align-content: flex-start;margin-top: 0px; display:none;">
+            <input class="form-check-input" type="checkbox" id="_VCC8RIhj">
+            <label class="form-check-label" for="_VCC8RIhj" style="width: 90%;">
+              <span mulang="" capitalize-first></span>.
+            </label>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal">
+              <span mulang="cancel"></span>
+            </button>
+            <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color">
+              <span mulang="confirm"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ask for cluster's credentials -->
+    <div class="modal top fade" id="clusterCredentials" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" style="font-size: 1.15rem;"><span mulang="connection" capitalize></span>
+              <cluster-name></cluster-name>
+              <credentials-info></credentials-info> <span mulang="credentials" capitalize></span>
+            </h5>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="side-left">
+              <div class="sections">
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="authentication">
+                    DB <span mulang="authentication"></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="ssh-tunnel">
+                    <span mulang="SSH tunnel"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="side-right">
+              <div class="modal-section" section="authentication">
+                <div class="form-outline form-white margin-bottom">
+                  <input type="text" class="form-control form-control-lg" id="realtimeCredentialsAuthUsername">
+                  <label class="form-label">
+                    <span mulang="username" capitalize></span>
+                  </label>
+                  <div class="form-helper">
+                    <span mulang="example" capitalize></span>: cassandra
+                  </div>
+                </div>
+                <div class="form-outline form-white margin-bottom">
+                  <div class="reveal-password">
+                    <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                      <ion-icon name="eye-opened"></ion-icon>
+                    </div>
+                  </div>
+                  <input type="password" class="form-control form-control-lg" id="realtimeCredentialsAuthPassword">
+                  <label class="form-label">
+                    <span mulang="password" capitalize></span>
+                  </label>
+                </div>
+                <div class="form-check margin-bottom" style="margin-top: -10px;">
+                  <input class="form-check-input" type="checkbox" id="confirmSaveAuthCredentials">
+                  <label class="form-check-label" for="confirmSaveAuthCredentials">
+                    <span mulang="save authentication credentials locally" capitalize-first></span>.
+                  </label>
+                </div>
+              </div>
+              <div class="modal-section" section="ssh-tunnel">
+                <div class="form-outline form-white margin-bottom">
+                  <input type="text" class="form-control form-control-lg" id="realtimeCredentialsSSHUsername">
+                  <label class="form-label">
+                    <span mulang="username" capitalize></span>
+                  </label>
+                </div>
+                <div class="form-outline form-white margin-bottom">
+                  <div class="reveal-password">
+                    <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                      <ion-icon name="eye-opened"></ion-icon>
+                    </div>
+                  </div>
+                  <input type="password" class="form-control form-control-lg" id="realtimeCredentialsSSHPassword">
+                  <label class="form-label">
+                    <span mulang="password" capitalize></span>
+                  </label>
+                </div>
+                <div class="form-outline form-white margin-bottom">
+                  <div class="reveal-password">
+                    <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                      <ion-icon name="eye-opened"></ion-icon>
+                    </div>
+                  </div>
+                  <input type="password" class="form-control form-control-lg" id="realtimeCredentialsSSHPassphrase">
+                  <label class="form-label">
+                    <span mulang="passphrase" capitalize></span>
+                  </label>
+                </div>
+                <div class="form-check margin-bottom" style="margin-top: -10px;">
+                  <input class="form-check-input" type="checkbox" id="confirmSaveSSHCredentials">
+                  <label class="form-check-label" for="confirmSaveSSHCredentials">
+                    <span mulang="save SSH credentials locally" capitalize-first></span>.
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="float-left">
+              <button type="button" class="btn btn-secondary btn-dark btn-sm" id="ignoreCredentials">
+                <span mulang="ignore credentials"></span>
+              </button>
+            </div>
+            <div class="float-right">
+              <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" id="realtimeCredentialsProceed">
+                <span mulang="proceed"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button type="button" data-mdb-toggle="modal" data-mdb-target="#clusterCredentials" id="showClusterCredentialsDialog" hidden></button>
+
+    <!-- App's about dialog -->
+    <div class="modal top fade" id="appAbout" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <span mulang="about" capitalize></span>
+            </h5>
+            <span class="badge badge-secondary"></span>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="side-left">
+              <div class="sections">
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="about">
+                    <span mulang="about" capitalize></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="notices">
+                    <span mulang="notices" capitalize></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="credits">
+                    <span mulang="credits" capitalize></span>
+                  </div>
+                </div>
+                <div class="seperator">
+                  <span class="badge badge-primary">
+                    <span mulang="external links" capitalize></span>
+                  </span>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" link="https://docs.axonops.com/workbench/cassandra/license">
+                    <span mulang="app license (EULA)" capitalize></span>
+                    <ion-icon name="external-link"></ion-icon>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" link="https://axonops.com/privacy">
+                    <span mulang="privacy statement" capitalize></span>
+                    <ion-icon name="external-link"></ion-icon>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" link="https://cassandra.apache.org">
+                    <span mulang="about apache cassandra®" capitalize></span>
+                    <ion-icon name="external-link"></ion-icon>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" link="https://axonops.com">
+                    <span mulang="about AxonOps™" capitalize></span>
+                    <ion-icon name="external-link"></ion-icon>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="side-right">
+              <div class="modal-section" section="about" style="position: relative;">
+                <center style="position: absolute;inset: 0;margin: auto;">
+                  <div class="all-content" style="position: absolute;inset: 0;margin: auto;width: fit-content;height: fit-content;">
+                    <div class="icon" style="height: 160px;width: 160px;position: relative;">
+                      <img src="../assets/images/axonops-logo-no-border.png" style="position: absolute;inset: 0;margin: auto;height: -webkit-fill-available;">
+                    </div>
+                    <div class="info" style="font-family: 'Brand', 'Main', 'Minor', 'SimplifiedChinese', sans-serif;">
+                      <div id="apptitle" style="font-size: 150%;margin-top: 15px;"></div>
+                      <div id="appversion" class="badge badge-secondary" style="padding-top: 6px;margin-top: 20px;"></div>
+                      <div id="cqlshversion" class="badge badge-secondary" style="padding-top: 6px;margin-top: 20px;">cqlsh %CQLSH_VERSION%</div>
+                      <div class="app-info-actions">
+                        <button id="copyReleaseVersion" type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the version" data-mulang="copy the release version"
+                          capitalize-first>
+                          <ion-icon name="copy"></ion-icon>
+                        </button>
+                        <button id="releaseNotes" type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Release notes" data-mulang="release notes" capitalize-first>
+                          <ion-icon name="external-link"></ion-icon>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </center>
+              </div>
+              <div class="modal-section" section="notices" hidden>
+                <div class="notice">
+                  Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation (<span class="link"><span
+                      class="content">http://www.apache.org/</span>
+                    <ion-icon name="external-link"></ion-icon>
+                  </span>) or its subsidiaries in Canada, the United States and/or other countries.
+                </div>
+              </div>
+              <div class="modal-section" section="cassandra-license" hidden>
+                <div class="notice">
+                  <pre license="Apache2"></pre>
+                </div>
+              </div>
+              <div class="modal-section" section="credits" hidden></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal top fade" id="importWorkspaces" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <span mulang="import workspaces" capitalize></span>
+            </h5>
+            <span class="badge badge-secondary"></span>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="side-left" hidden>
+              <div class="sections">
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="phase-1">
+                    <span mulang="select workspaces" capitalize></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg disabled" data-mdb-ripple-color="dark" section="phase-2">
+                    <span mulang="validate data" capitalize></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="side-right" style="width:100%;">
+              <div class="modal-section" section="phase-1">
+                <div class="drag-drop-workspaces">
+                  <div class="lottie-container">
+                    <lottie-player src="../assets/lottie/empty-workspaces.json" background="transparent" autoplay loop speed="1"></lottie-player>
+                  </div>
+                  <div class="hint">
+                    <span mulang="drag and drop or click to select workspace(s)" capitalize-first></span>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-section" section="phase-2" hidden>
+                <table id="importWorkspacesValidate" class="table align-middle mb-0" style="background: transparent;">
+                  <thead class="bg-light">
+                    <tr>
+                      <th width="5%">
+                        <input class="form-check-input" type="checkbox" id="importWorkspacesCheckbox">
+                      </th>
+                      <th width="30%"><span mulang="name" capitalize></span></th>
+                      <th width="20%"><span mulang="color" capitalize></span></th>
+                      <th width="30%"><span mulang="checks" capitalize></span></th>
+                      <th width="15%"><span mulang="connections" capitalize></span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="float-left">
+              <button type="button" class="btn btn-danger btn-sm" id="importWorkspacesReset" disabled>
+                <span mulang="reset"></span>
+              </button>
+            </div>
+            <div class="float-right">
+              <button type="button" class="btn btn-primary btn-dark btn-sm" id="importWorkspacesFinish" disabled>
+                <span mulang="import"></span>
+              </button>
+              <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal" onclick="setTimeout(() => $('#importWorkspacesReset').click(), 1000)" hidden>
+                <span mulang="close"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- The container of all toasts and pinned toasts elements -->
+  <div class="toast-container"></div>
+  <div class="pinned-toast-container"></div>
+</body>

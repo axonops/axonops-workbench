@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ❓ Questions, discussions on features & non-issue related topics
+    url: https://github.com/axonops/axonops-workbench-cassandra/discussions
+    about: Please use the AxonOps Workbench Discussions forum for discussing new features, questions an non-issue related topics.

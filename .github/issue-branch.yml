@@ -1,0 +1,14 @@
+# It's used to override the default behaviour
+# You don't need this file if you are ok with the default behaviour
+
+mode: immediate # immediate create a new branch after creating the issue
+autoLinkIssue: true # automatically link your pull request to the issue
+autoCloseIssue: true # automaticaly close the issue after merging the pull request
+openPR: false # automatically open a pull request after creating the issue
+branchName: '${issue.number}-${issue.title}'
+defaultBranch: 'main'
+branches: # How you want your branch name to be based on the issue label
+  - label: enhancement
+    prefix: feature/
+  - label: bug
+    prefix: bugfix/

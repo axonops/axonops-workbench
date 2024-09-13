@@ -1,0 +1,393 @@
+name: Release Workbench
+
+on:
+  release:
+    types: [published]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build on ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: [self-hosted, linux, X64]
+            target: Linux
+
+          # M1
+          - os: macos-14
+            target: Macos
+
+          # X86
+          - os: macos-13
+            target: Macos
+
+          - os: windows-latest
+            target: Windows
+
+          # - os: "[self-hosted, linux, ARM64]"
+          #   target: Linux
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Change the package.json version to match the tag
+        run: |
+          sed -i.bak 's/"version": "[^"]*"/"version": "'"$GITHUB_REF_NAME"'"/' package.json && rm package.json.bak
+          rm -f package.json.bak
+
+
+      - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
+        run: |
+          mkdir -p main/bin
+          for binary in cqlsh-410 cqlsh-407 keys_generator; do
+            curl -fL ${CQLSH_GITHUB_URL}/${CQLSH_BUILD_VERSION}/${binary}-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
+            mv main/bin/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}
+            mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
+          done
+          sed -i.bak "s/%CQLSH_VERSION%/$CQLSH_BUILD_VERSION/g" renderer/views/index.html
+          rm -f renderer/views/index.html.bak
+        env:
+          CQLSH_BUILD_VERSION: "0.10.0"
+          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download' }}"
+
+      - name: Setup Python v3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: "pip"
+
+      - name: Install python dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Setup Node.js v20.17.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.17.0
+          cache: 'npm'
+
+      # - name: Clear npm cache
+      #   run: npm cache clean --force
+
+      - name: Get credits and add them to the database
+        run: |
+          export ELECTRON_BUILDER_CACHE=${GITHUB_WORKSPACE}/electron-${{ runner.os }}
+          echo "ELECTRON_BUILDER_CACHE=${ELECTRON_BUILDER_CACHE}" >> $GITHUB_ENV
+          cd get_credits
+          npm cache clean --force
+          npm i
+          npm rebuild
+          node get_credits.js
+
+      - name: Install AxonOps Developer Workbench dependencies
+        run: npm i
+
+      # - name: Install Snapcraft
+      #   uses: samuelmeuli/action-snapcraft@v2
+      #   if: ${{ runner.os != 'Windows' }}
+
+      - name: Pack AxonOps Developer Workbench
+        run: |
+          if [ "$(uname -m)" == "aarch64" ] && [ "$(uname -s)" == "Linux" ]; then
+            sudo apt-get -y install ruby
+            sudo gem install dotenv -v 2.8.1
+            sudo gem instal fpm
+            export USE_SYSTEM_FPM=true
+          fi
+
+          if [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "arm64" ]; then
+            npm run mac:arm64
+          elif [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "x86_64" ]; then
+            npm run mac
+          fi
+          export CSC_IDENTITY_AUTO_DISCOVERY=false
+          if [ "$(uname -s )" == "Linux" ]; then
+            npm run linux
+          fi
+          if [[ "$(uname -s)" =~ "MINGW64" ]]; then
+            unset CSC_KEY_PASSWORD
+            unset CSC_LINK
+            npm run win
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
+          CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
+
+      - name: Setup temporary installer signing keychain
+        uses: apple-actions/import-codesign-certs@v3
+        if: ${{ startsWith(runner.os, 'macos') }}
+        with:
+          p12-file-base64: ${{ secrets.CSC_INSTALLER_LINK }}
+          p12-password: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
+
+      - name: Sign the Apple pkg
+        if: ${{ startsWith(runner.os, 'macos') }}
+        run: |
+          for pkg_name in $(ls -1 dist/*.pkg); do
+            mv $pkg_name Unsigned-Workbench.pkg
+
+            productsign --sign "Developer ID Installer: AXONOPS Limited (UJ776LUP23)" Unsigned-Workbench.pkg $pkg_name
+            rm -f Unsigned-Workbench.pkg
+            xcrun notarytool submit $pkg_name --apple-id $APPLE_ID --team-id $APPLE_TEAM_ID --password $APPLE_APP_SPECIFIC_PASSWORD --wait
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      - name: Azure login
+        if: runner.os == 'Windows'
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install AzureSignTool
+        if: runner.os == 'Windows'
+        run: dotnet tool install --no-cache --global AzureSignTool --version 4.0.1
+
+      - name: Azure token to use with AzureSignTool
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $az_token=$(az account get-access-token --scope https://vault.azure.net/.default --query accessToken --output tsv)
+          echo "::add-mask::$az_token"
+          echo "AZ_TOKEN=$az_token" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build signed installer
+        if: runner.os == 'Windows'
+        run: |
+          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps Workbench-%GITHUB_REF_NAME%-win-x64.exe"
+          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps Workbench-%GITHUB_REF_NAME%-win-x64.msi"
+        shell: cmd
+
+      # Ensure this task is right before the Upload
+      - name: Create checksum files
+        run: |
+          SAVEIFS=$IFS
+          IFS=$(echo -en "\n\b")
+
+          cd dist
+
+          case "$(uname -s)" in
+          Darwin)
+            FILES=$(ls -1 *.dmg *.zip *.pkg)
+            for f in $FILES; do
+              shasum -a 256 $f > ${f}.sha256sum
+            done
+          ;;
+          MINGW64*)
+            FILES=$(ls -1 *.exe *.msi)
+            for f in $FILES; do
+              sha256sum $f > ${f}.sha256sum
+            done
+          ;;
+          Linux)
+            FILES=$(ls -1 *.tar.gz *.deb *.rpm)
+            for f in $FILES; do
+              sha256sum $f > ${f}.sha256sum
+            done
+          ;;
+          esac
+
+          IFS=$SAVEIFS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.zip
+            dist/*.pkg
+            dist/*.dmg
+            dist/*.deb
+            dist/*.rpm
+            dist/*.exe
+            dist/*.tar.gz
+            dist/*.nsis
+            dist/*.msi
+            dist/*.sha256sum
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# Release choco and brew
+
+  release-brew:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ !cancelled() && success() }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          repository: axonops/homebrew-repository
+          path: homebrew
+          persist-credentials: true
+          fetch-depth: 0
+          ssh-key: ${{ secrets.BREW_SSH_KEY }}
+
+      - name: Make changes to Homebrew
+        run: |
+          VERSION=$GITHUB_REF_NAME
+          case $VERSION in
+            *internal*)
+              NAME=axonopsworkbench-internal
+              CONFIG_FILE=Casks/axonopsworkbench-internal.rb
+              ;;
+            *beta*)
+              NAME=axonopsworkbench-beta
+              CONFIG_FILE=Casks/axonopsworkbench-beta.rb
+              ;;
+            *)
+              NAME=axonopsworkbench
+              CONFIG_FILE=Casks/axonopsworkbench.rb
+              ;;
+          esac
+          cd homebrew
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          # Get the sha256sum
+          SHA_ARM=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-mac-arm64.zip.sha256sum | awk '{print $1}')
+          SHA_AMD=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-mac-x64.zip.sha256sum | awk '{print $1}')
+          # Update versions
+          cp $TEMPLATE $CONFIG_FILE
+          sed -i "s/%SHA_ARM%/$SHA_ARM/g" $CONFIG_FILE
+          sed -i "s/%SHA_AMD%/$SHA_AMD/g" $CONFIG_FILE
+          sed -i "s/%VERSION%/${VERSION}/g" $CONFIG_FILE
+          sed -i "s/cask \"axonopsworkbench\" do/cask \"${NAME}\" do/g" $CONFIG_FILE
+          git add $CONFIG_FILE
+          if [ $(git status --porcelain | wc -l) -eq "0" ]; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git --no-pager diff
+          git commit -m "Changes made by GitHub Actions [skip ci]"
+          git tag $VERSION
+        env:
+          GITHUB_URL: https://github.com/axonops/axonops-workbench-cassandra/releases/download/
+          TEMPLATE: Casks/axonopsworkbench.rb.tmpl
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          directory: homebrew
+          repository: axonops/homebrew-repository
+          ssh: true
+          tags: true
+
+  release-choco:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ !cancelled() && success() }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          repository: axonops/chocolatey
+          path: chocolatey
+          persist-credentials: true
+          fetch-depth: 0
+          ssh-key: ${{ secrets.CHOCO_SSH_KEY }}
+
+      - name: Make changes to chocolatey
+        run: |
+          set -x
+          VERSION=$GITHUB_REF_NAME
+          cd chocolatey
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          # Get the sha256sum
+          SHA_AMD=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-win-x64.exe.sha256sum | awk '{print $1}')
+          # Update versions
+          cp $TEMPLATE $CONFIG_FILE
+          sed -i "s/%SHA_AMD%/$SHA_AMD/g" $CONFIG_FILE
+          sed -i "s/%VERSION%/${VERSION}/g" $CONFIG_FILE
+          sed -i "s%<version>.*</version>%<version>${VERSION}</version>%g" axonopsworkbench.nuspec
+          git add .
+          if [ $(git status --porcelain | wc -l) -eq "0" ]; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git --no-pager diff
+          git commit -m "Changes made by GitHub Actions"
+          git tag $VERSION
+        env:
+          GITHUB_URL: https://github.com/axonops/axonops-workbench-cassandra/releases/download/
+          TEMPLATE: tools/chocolateyinstall.ps1.tmpl
+          CONFIG_FILE: tools/chocolateyinstall.ps1
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          directory: chocolatey
+          repository: axonops/chocolatey
+          ssh: true
+          tags: true
+
+  release-debian-redhat:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ !cancelled() && success() }}
+
+    steps:
+      - id: "auth"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
+
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
+
+      - name: "Set runtime variables"
+        run: |
+          PUBLISH="yes"
+          DEBIAN_ARCHS="amd64"
+          REDHAT_ARCHS="x86_64"
+          case $VERSION in
+            *internal*)
+              PUBLISH="no"
+              REPO_SUFFIX="-beta"
+              ;;
+            *beta*)
+              REPO_SUFFIX="-beta"
+              ;;
+            *)
+              REPO_SUFFIX=""
+              ;;
+          esac
+          echo "REPO=$REPO" >> $GITHUB_ENV
+          echo "DEBIAN_ARCHS=$DEBIAN_ARCHS" >> $GITHUB_ENV
+          echo "REDHAT_ARCHS=$REDHAT_ARCHS" >> $GITHUB_ENV
+
+      - name: Push Debian package
+        if: env.PUBLISH == 'yes'
+        run: |
+          for arch in ${{ env.DEBIAN_ARCHS }}; do
+            curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-${arch}.deb"
+            gcloud config set project axonops-public
+            gcloud artifacts apt upload axonops-apt-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-${arch}.deb
+          done
+
+      - name: Push RedHat package
+        if: env.PUBLISH == 'yes'
+        run: |
+          for arch in ${{ env.REDHAT_ARCHS }}; do
+            curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-${arch}.rpm"
+            gcloud config set project axonops-public
+            gcloud artifacts yum upload axonops-yum-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-${arch}.rpm
+          done

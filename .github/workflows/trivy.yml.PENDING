@@ -1,0 +1,43 @@
+name: Trivy Scan
+on:
+  pull_request:
+
+jobs:
+  build:
+    name: Trivy Scans
+    runs-on: ubuntu-22.04
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Python v3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.12
+
+    - name: Setup Node.js v20.17.0
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.17.0
+
+    - name: Run Trivy vulnerability scanner in fs mode
+      uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8 # 0.24.0
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: json
+        severity: 'CRITICAL,HIGH,MEDIUM'
+        output: 'trivy-results.json'
+        github-pat: ${{ secrets.GITHUB_TOKEN }}
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: trivy-scan
+        path: 'trivy-results.json'
+
+    # # Upload the SARIF file generated in the previous step
+    # - name: Upload SARIF results file
+    #   uses: github/codeql-action/upload-sarif@v3
+    #   with:
+    #     sarif_file: 'trivy-results.sarif'

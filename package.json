@@ -1,7 +1,7 @@
 {
   "name": "axonops-workbench",
   "title": "AxonOps™ Workbench",
-  "version": "0.1.1-internal-20240912-05",
+  "version": "0.1.1-internal-20240913-01",
   "author": {
     "name": "AxonOps",
     "email": "info@axonops.com"
@@ -14,12 +14,6 @@
   "maintainers": [
     "info@axonops.com"
   ],
-  "nsis": {
-    "onClick": false
-  },
-  "msi": {
-    "onClick": false
-  },
   "build": {
     "icon": "./renderer/assets/images/axonops-icon-256x256.png",
     "copyright": "©2024 AxonOps Limited",
@@ -70,9 +64,6 @@
       "extraFiles": [
         "./resources/workbenchcassandra.provisionprofile"
       ],
-      "notarize": {
-        "teamId": "UJ776LUP23"
-      },
       "binaries": [
         "main/bin/cqlsh-407/cqlsh-407",
         "main/bin/cqlsh-410/cqlsh-410",
@@ -88,6 +79,17 @@
     },
     "dmg": {
       "sign": false
+    },
+    "nsis": {
+      "runAfterFinish": false,
+      "perMachine": false,
+      "installerIcon": "./renderer/assets/images/axonops-icon-256x256.ico",
+      "license": "LICENSE",
+      "include": "resources/uninstaller.nsh"
+    },
+    "msi": {
+      "perMachine": false,
+      "runAfterFinish": false
     }
   },
   "scripts": {
@@ -115,7 +117,7 @@
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",
     "electron": "^27.3.11",
-    "electron-builder": "^24.13.3",
+    "electron-builder": "^25.0.5",
     "license-checker": "^25.0.1"
   },
   "optionalDependencies": {

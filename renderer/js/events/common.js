@@ -1133,3 +1133,20 @@
     })
   }, 500)
 }
+
+{
+  $('button#showMoreAbout').click(function() {
+    let isSlideUp = $(this).hasClass('slideUp'),
+      rightSide = $('div.modal#appAbout div.modal-body div.side-right')
+
+    $(this).toggleClass('slideUp', !isSlideUp)
+
+    $('div#moreAbout').slideToggle(300, function() {
+      try {
+        rightSide.animate({
+          scrollTop: rightSide.get(0).scrollHeight
+        }, 250)
+      } catch (e) {}
+    })
+  })
+}

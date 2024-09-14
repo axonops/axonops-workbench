@@ -259,7 +259,7 @@ $(document).on('initialize', () => {
   })
 
   // Update the web view element `src` with the AI Assistant's server URL
-  webviewAIAssistant.attr('src', Modules.Consts.AIAssistantServer)
+  webviewAIAssistant.attr('src', Modules.Consts.URLS.AIAssistantServer)
 
   // Show/hide the loading spinner based on the status
   webviewAIAssistant
@@ -310,7 +310,7 @@ $(document).on('initialize', () => {
   })
 
   // Logout from the AxonOps AI Chat
-  buttons.logout.click(() => webviewAIAssistant.attr('src', `${(new URL(Modules.Consts.AIAssistantServer)).origin}/logout`))
+  buttons.logout.click(() => webviewAIAssistant.attr('src', `${(new URL(Modules.Consts.URLS.AIAssistantServer)).origin}/logout`))
 
   // Check and enable/disable the back/forward buttons based on the status
   setInterval(() => {
@@ -1136,8 +1136,46 @@ $(document).on('initialize', () => {
           let areBinariesExist = binaries.every((binary) => `${data}`.search(binary))
 
           // Skip the upcoming code if all of them exist
-          if (areBinariesExist)
+          try {
+            if (!areBinariesExist)
+              throw 0
+
+            // If the host is Windows then change the binary call format
+            let binCall = (OS.platform() == 'win32') ? 'cqlsh-407.exe' : './cqlsh-407',
+              // Define the cqlsh tool's directory
+              binDirectory = `&& cd "cqlsh-407" && `
+
+            // Switch to the single-file mode
+            try {
+              if (!FS.lstatSync(Path.join(CWD, `cqlsh-407`)).isDirectory())
+                binDirectory = '&&'
+            } catch (e) {}
+
+            Terminal.run(`cd "${binariesPath}" ${binDirectory} ${binCall} --cversion=1`, (err, data, stderr) => {
+              if (!(data != undefined && minifyText(data).length != 0)) {
+                $('div#moreAbout div[data-version="binaries"]').hide()
+                return
+              }
+
+              try {
+                import(Path.join(__dirname, '..', '..', 'node_modules', 'url-join', 'lib', 'url-join.js')).then((module) => {
+                  let releaseLink = module.default(Modules.Consts.URLS.Binaries, 'releases', 'tag', data)
+
+                  $('div#moreAbout div[data-version="binaries"] button').click(() => {
+                    try {
+                      Open(releaseLink)
+                    } catch (e) {}
+                  })
+                })
+              } catch (e) {}
+
+              $('div#moreAbout div[data-version="binaries"] span').text(data)
+            })
+
             return
+          } catch (e) {}
+
+          $('div#moreAbout div[data-version="binaries"]').hide()
 
           // Show feedback to the user if one of the binaries is missing
           showToast(I18next.capitalize(I18next.t(`binaries check`)), I18next.capitalizeFirstLetter(I18next.t(`it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app`)) + '.', 'failure')
@@ -1261,7 +1299,7 @@ $(document).on('initialize', () => {
 
     try {
       import(Path.join(__dirname, '..', '..', 'node_modules', 'url-join', 'lib', 'url-join.js')).then((module) => {
-        let releaseLink = module.default(AppInfo.repository, 'releases', 'tag', AppInfo.version)
+        let releaseLink = module.default(Modules.Consts.URLS.Workbench, 'releases', 'tag', AppInfo.version)
 
         $('button#releaseNotes').click(() => {
           try {
@@ -1303,6 +1341,26 @@ $(document).on('initialize', () => setTimeout(() => {
     IPCRenderer.send('loaded')
   })
 }, 2000))
+
+
+// Send the `loaded` event to the main thread, and show the `About` dialog/modal
+$(document).on('initialize', () => setTimeout(() => {
+  $('div#moreAbout').children('div[data-version]:not([data-version="binaries"])').each(function() {
+    try {
+      let version = process.versions[$(this).attr('data-version')]
+
+      if (version == undefined) {
+        $(this).hide()
+        throw 0
+      }
+
+      $(this).children('span').text(version)
+    } catch (e) {}
+  })
+}, 3000))
+
+
+
 
 // Once the UI is ready, get all workspaces
 $(document).ready(() => IPCRenderer.on('windows-shown', () => $(document).trigger('getWorkspaces')))

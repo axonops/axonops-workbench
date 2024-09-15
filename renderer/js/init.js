@@ -1152,7 +1152,11 @@ $(document).on('initialize', () => {
             } catch (e) {}
 
             Terminal.run(`cd "${binariesPath}" ${binDirectory} ${binCall} --cversion=1`, (err, data, stderr) => {
-              if (!(data != undefined && minifyText(data).length != 0)) {
+              try {
+                data = minifyText(manipulateOutput(data))
+              } catch (e) {}
+
+              if (!(data != undefined && `${data}`.length != 0)) {
                 $('div#moreAbout div[data-version="binaries"]').hide()
                 return
               }

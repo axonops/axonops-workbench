@@ -601,26 +601,28 @@
 
     // Listen to key presses in relation to the more options/settings shortcuts
     setTimeout(() => {
-      tinyKeys.tinykeys(window, {
-        "$mod+Shift+Equal": () => actionButton.filter('[action="zoomIn"]').click(),
-        "$mod+Shift+Minus": () => actionButton.filter('[action="zoomOut"]').click(),
-        "$mod+Shift+Digit0": () => actionButton.filter('[action="zoomReset"]').click()
-      })
-
-      if (OS.platform() == 'darwin')
+      try {
         tinyKeys.tinykeys(window, {
-          "$mod+Shift+BracketRight": () => actionButton.filter('[action="zoomIn"]').click(),
-          "$mod+Shift+Slash": () => actionButton.filter('[action="zoomOut"]').click(),
-          "$mod+Shift+Digit9": () => actionButton.filter('[action="zoomReset"]').click()
+          "$mod+Shift+Equal": () => actionButton.filter('[action="zoomIn"]').click(),
+          "$mod+Shift+Minus": () => actionButton.filter('[action="zoomOut"]').click(),
+          "$mod+Shift+Digit0": () => actionButton.filter('[action="zoomReset"]').click()
         })
 
-      if (OS.platform() == 'win32') {
-        tinyKeys.tinykeys(window, {
-          "$mod+Shift+Digit9": () => actionButton.filter('[action="zoomReset"]').click()
-        })
-        $(`a[action="zoomReset"]`).find('kbd[digit]').text('9')
-      }
-    }, 1000)
+        if (OS.platform() == 'darwin')
+          tinyKeys.tinykeys(window, {
+            "$mod+Shift+BracketRight": () => actionButton.filter('[action="zoomIn"]').click(),
+            "$mod+Shift+Slash": () => actionButton.filter('[action="zoomOut"]').click(),
+            "$mod+Shift+Digit9": () => actionButton.filter('[action="zoomReset"]').click()
+          })
+
+        if (OS.platform() == 'win32') {
+          tinyKeys.tinykeys(window, {
+            "$mod+Shift+Digit9": () => actionButton.filter('[action="zoomReset"]').click()
+          })
+          $(`a[action="zoomReset"]`).find('kbd[digit]').text('9')
+        }
+      } catch (e) {}
+    }, 5000)
 
     $(document).on('keydown', function(e) {
       // F11 for toggling fullscreen mode

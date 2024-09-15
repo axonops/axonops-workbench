@@ -3291,7 +3291,7 @@
                              * Maximum allowed statements to be saved are 30 for each cluster
                              * When this value is exceeded the oldest statement should be removed
                              */
-                            if (history.length >= 30)
+                            if (history.length > 50)
                               history.pop()
 
                             // Add the statement at the very beginning of the array
@@ -4982,7 +4982,7 @@
                         savedHistoryItems = Store.get(clusterID) || []
 
                         // Reverse the array; to make the last saved item the first one in the list
-                        savedHistoryItems.reverse()
+                        // savedHistoryItems.reverse()
 
                         // Define index to be set for each history item
                         let index = 0

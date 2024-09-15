@@ -957,7 +957,7 @@
                                     </span>
                                   </div>
                                   <div class="actions">
-                                    <span class="refresh btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
+                                    <span class="refresh btn btn-secondary btn-dark btn-sm" ${isSandbox ? 'style="bottom: 0px;"' : ''} data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
                                       data-id="${refreshDifferentiationBtnID}">
                                       <ion-icon name="refresh"></ion-icon>
                                     </span>

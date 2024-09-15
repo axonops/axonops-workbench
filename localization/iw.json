@@ -262,6 +262,7 @@
       "settings have been successfully saved": "ההגדרות נשמרו בהצלחה",
       "settings": "הגדרות",
       "show differentiation": "הצג בידול",
+      "show more": "להראות יותר",
       "snapshot suffix": "סיומת תצלום בזק",
       "some settings have been successfully saved, however, an error has occurred with variables, $data": "הגדרות מסוימות נשמרו בהצלחה, עם זאת, אירעה שגיאה עם משתנים, $data",
       "something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file": "משהו השתבש בעת ניסיון לבדוק את החיבור [b]$data[/b] בסביבת עבודה [b]$data[/b], לרוב מדובר בבעיה בקובץ <code>cqlsh.rc</code>",

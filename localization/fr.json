@@ -262,6 +262,7 @@
       "settings have been successfully saved": "Les paramètres ont été enregistrés avec succès",
       "settings": "Paramètres",
       "show differentiation": "Différenciation de l’écran",
+      "show more": "Afficher plus",
       "snapshot suffix": "suffixe d’instantané",
       "some settings have been successfully saved, however, an error has occurred with variables, $data": "Certains paramètres ont été enregistrés avec succès, cependant, une erreur s’est produite avec les variables, $data",
       "something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file": "Quelque chose s’est mal passé lors de la tentative de test de connexion [b]$data[/b] dans l’espace de travail [b]$data[/b], il s’agit principalement d’un problème avec <code>le fichier cqlsh.rc</code>",

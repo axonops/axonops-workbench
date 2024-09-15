@@ -262,6 +262,7 @@
       "settings have been successfully saved": "settings have been successfully saved",
       "settings": "settings",
       "show differentiation": "show differentiation",
+      "show more": "show more",
       "snapshot suffix": "snapshot suffix",
       "some settings have been successfully saved, however, an error has occurred with variables, $data": "some settings have been successfully saved, however, an error has occurred with variables, $data",
       "something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file": "something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file",

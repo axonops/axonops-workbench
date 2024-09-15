@@ -261,6 +261,7 @@
       "settings have been successfully saved": "تم حفظ الإعدادات بنجاح",
       "settings": "الإعدادات",
       "show differentiation": "إظهار الفرق",
+      "show more": "إظهار المزيد",
       "snapshot suffix": "لاحقة اللقطة",
       "some settings have been successfully saved, however, an error has occurred with variables, $data": "تم حفظ بعض الإعدادات بنجاح، مع ذلك، لقد حدث خطأ يتعلق بالمتغيرات، $data",
       "something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file": "لقد حدث خطأ أثناء محاولة تجربة الاتصال [b]$data[/b] في مساحة العمل [b]$data[/b]، يبدو أنها مشكلة في ملف الإعدادات <code>cqlsh.rc</code> الخاص بالاتصال",

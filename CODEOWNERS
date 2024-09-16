@@ -1,4 +1,4 @@
 # These owners will be the default owners for everything in the repo.
-*           @digiserg @millerjp
-*.js        @mhmdkrmabd
-.github/*   @digiserg
+*           @digiserg @millerjp @rgooding @brainJamStark
+*.js        @mhmdkrmabd @digiserg @millerjp @rgooding @brainJamStark
+.github/*   @digiserg @digiserg @rgooding @brainJamStark

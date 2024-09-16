@@ -1981,6 +1981,12 @@ div.body {
                 filter: grayscale(1) brightness(0.8);
                 pointer-events: none;
 
+                div.actions {
+                  div.action:not([action="delete"]) {
+                    opacity: 0.45;
+                  }
+                }
+
                 button {
                   background: #505050 !important;
                   color: #9f9f9f !important;
@@ -3163,6 +3169,44 @@ div.tab-content {
             align-items: flex-start;
             justify-content: flex-start;
 
+            div.history-items-clear-all {
+              position: absolute;
+              bottom: 110px;
+              left: calc(50% + 15px);
+              border: 0;
+              outline: 0;
+              opacity: 0;
+              pointer-events: none;
+              transform: translateX(-10px);
+              transition: all 0.4s ease-in-out;
+
+              button {
+                background: rgb(38, 38, 38);
+                padding-left: 5px;
+                padding-right: 5px;
+                color: inherit;
+
+                ion-icon {
+                  font-size: 125%;
+                  vertical-align: middle;
+                  position: relative;
+                  bottom: 1px;
+                }
+              }
+
+              &.show {
+                pointer-events: all;
+                animation: {
+                  name: show-question;
+                  duration: 0.5s;
+                  delay: 0.2s;
+                  timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                  fill-mode: forwards;
+                }
+                z-index: 4;
+              }
+            }
+
             div.history-items {
               background: #262626;
               position: absolute;
@@ -3172,7 +3216,7 @@ div.tab-content {
               outline: 0;
               font-family: 'Terminal', monospace;
               width: 50%;
-              max-height: 320px;
+              max-height: 510px;
               overflow-y: scroll;
               border-radius: 7px;
               padding: 5px 0;
@@ -3202,7 +3246,7 @@ div.tab-content {
                 height: 40px;
                 padding: 0 10px;
                 margin: 5px;
-                font-size: 95%;
+                font-size: 85% !important;
                 border-radius: 5px;
                 flex-wrap: nowrap;
                 position: relative;
@@ -4425,6 +4469,73 @@ div.app-info-actions {
 
         &[name="external-link"] {
           opacity: 0.50;
+        }
+      }
+    }
+  }
+}
+
+button#showMoreAbout {
+  color: inherit;
+  margin: 8px 0;
+  padding: 6px 10px 6px 5px;
+
+  ion-icon {
+    font-size: 145%;
+    transition: all 0.15s ease-in-out;
+  }
+
+  &.slideUp {
+    ion-icon {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+div#moreAbout {
+  background: #201f23;
+  font-family: 'Terminal', monospace;
+  font-size: 75%;
+  text-align: left;
+  padding: 5px;
+  border-radius: 7px;
+  width: 100%;
+  display: none;
+
+  div[data-version] {
+    &:first-letter {
+      text-transform: capitalize;
+    }
+
+    button {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      overflow: hidden;
+      position: relative;
+      bottom: 2px;
+
+      ion-icon {
+        position: absolute;
+        inset: 0;
+        margin: auto !important;
+        font-size: 120% !important;
+        color: #e3e3e3;
+        opacity: 0.8;
+        transition: opacity 0.2s ease-in-out;
+
+        &[name="external-link"] {
+          opacity: 0.65;
+        }
+      }
+
+      &:hover {
+        ion-icon {
+          opacity: 0.65;
+
+          &[name="external-link"] {
+            opacity: 0.50;
+          }
         }
       }
     }

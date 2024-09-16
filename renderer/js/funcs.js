@@ -639,7 +639,7 @@ let repairJSON = (json) => {
     json = `${json}`.replace(/[^\x20-\x7E{}[\]:,"']/g, '')
       // Remove some added chars from the cqlsh tool and terminal
       .replace(/1C/g, '')
-      .replace(/u\'/g, "'")
+      .replace(/u\\'/g, "'")
       .replace(/\(\)/g, "''")
       // Remove an added bracket to the `keyspace_name` attribute that can lead to an error
       .replace(/\'\:\[\'keyspace_name\'/g, "':'keyspace_name'")
@@ -698,13 +698,41 @@ let convertJSONToTable = (json, isExpandOn = false) => {
     json = `${json}`.split('\n')
   }
 
+  let stringJSON = '',
+    foundJSON = []
+
+  try {
+    if (OS.platform() != 'win32')
+      throw 0
+
+    json.forEach((record) => {
+      stringJSON += `${record}`;
+
+      try {
+        let match = `${stringJSON}`.match(
+          /\{[\s\S]+\}/gm
+        )
+
+        if (match == null)
+          return
+
+        foundJSON.push(match[0]);
+
+        stringJSON = stringJSON.replace(/\{[\s\S]+\}/gm, '')
+      } catch (e) {}
+    })
+  } catch (e) {}
+
   try {
     // Convert each record/row to JSON object inside array
-    let jsonObject = json.map((item) => {
+    let jsonObject = [...(foundJSON.length != 0 ? foundJSON : json)].map((item) => {
       let finalItem = item
 
       try {
-        finalItem = JSON.parse(item)
+        if (typeof finalItem === 'object')
+          throw 0
+
+        finalItem = JSON.parse(repairJSON(item))
       } catch (e) {}
 
       return finalItem
@@ -1071,18 +1099,60 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
     } catch (e) {}
   }
 
+  let sortItemsAlphabetically = (array, sortBy) => {
+    try {
+      array.sort((a, b) => {
+        if (`${a[sortBy]}`.toLowerCase() < `${b[sortBy]}`.toLowerCase())
+          return -1
+
+        if (`${a[sortBy]}`.toLowerCase() > `${b[sortBy]}`.toLowerCase())
+          return 1
+
+        return 0
+      })
+    } catch (e) {}
+  }
+
+  sortItemsAlphabetically(metadata.keyspaces, 'name')
+
   // Loop through the keyspaces
   metadata.keyspaces.forEach((keyspace) => {
     // Get a unique ID for the current keyspace, and an ID for its tables' container
     let [
       keyspaceID,
       tablesID
-    ] = getRandomID(30, 2)
-
-    let indexesInfo = []
+    ] = getRandomID(30, 2),
+      indexesInfo = []
 
     // Build tree view for the keyspace
     buildTreeViewForChild(keyspacesID, keyspaceID, `Keyspace`, keyspace, 'keyspace')
+
+    try {
+      let replicationStrategy = JSON.parse(repairJSON(keyspace.replication_strategy)),
+        replicationStrategyID = getRandomID(30)
+
+      // Tables' container that will be under the keyspace container
+      let replicationStrategyStructure = {
+        id: replicationStrategyID,
+        parent: keyspaceID, // Under the current keyspace
+        text: `Replication Strategy`,
+        type: 'default',
+        icon: normalizePath(Path.join(extraIconsPath, 'replication_strategy.png'))
+      }
+
+      // Append the tables' container to the tree structure
+      treeStructure.core.data.push(replicationStrategyStructure); // This semicolon is critical here
+
+      Object.keys(replicationStrategy).forEach((key) => {
+        treeStructure.core.data.push({
+          id: getRandomID(30),
+          parent: replicationStrategyID,
+          text: `${key}: ${replicationStrategy[key]}`,
+          type: 'default',
+          icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
+        })
+      })
+    } catch (e) {}
 
     // Tables' container that will be under the keyspace container
     let tablesStructure = {
@@ -1095,6 +1165,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
     // Append the tables' container to the tree structure
     treeStructure.core.data.push(tablesStructure)
+
+    sortItemsAlphabetically(keyspace.tables, 'name')
 
     // Loop through every table in the keyspace
     keyspace.tables.forEach((table) => {
@@ -1195,6 +1267,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         }
 
         treeStructure.core.data.push(columnsStructure)
+
+        sortItemsAlphabetically(table.columns, 'name')
 
         // Loop through columns
         table.columns.forEach((column) => {

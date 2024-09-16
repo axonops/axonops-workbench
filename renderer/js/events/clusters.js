@@ -848,6 +848,12 @@
                                 <div class="container-footer">
                                   <div class="top">
                                     <div class="history-items"></div>
+                                    <div class="history-items-clear-all">
+                                      <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                                        <ion-icon name="trash"></ion-icon>
+                                        <span mulang="clear all statements"></span>
+                                      </button>
+                                    </div>
                                     <div class="history">
                                       <button class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
                                         <ion-icon name="history"></ion-icon>
@@ -951,7 +957,7 @@
                                     </span>
                                   </div>
                                   <div class="actions">
-                                    <span class="refresh btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
+                                    <span class="refresh btn btn-secondary btn-dark btn-sm" ${isSandbox ? 'style="bottom: 0px;"' : ''} data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
                                       data-id="${refreshDifferentiationBtnID}">
                                       <ion-icon name="refresh"></ion-icon>
                                     </span>
@@ -2239,14 +2245,19 @@
                             finalContent = blocksOutput[data.blockID]
 
                             // Get the identifiers detected in the statements
-                            let statementsIdentifiers = []
+                            let statementsIdentifiers = [],
+                              statementsNextIdentifiers = []
 
                             try {
                               // Get the detected identifiers
-                              statementsIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[(.+)\]/i)[1].split(',')
+                              statementsIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[(.*?)\]/i)[1].split(',')
+
+                              statementsNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[(.*?)\]/i)[1].split(',')
 
                               // Manipulate them
                               statementsIdentifiers = statementsIdentifiers.map((identifier) => identifier.trim())
+
+                              statementsNextIdentifiers = statementsNextIdentifiers.map((identifier) => identifier.trim())
                             } catch (e) {}
 
                             // Handle if the statement's execution process has stopped
@@ -2423,7 +2434,8 @@
                                   loopIndex = loopIndex + 1
 
                                   // Point at the current identifier
-                                  let statementIdentifier = statementsIdentifiers[loopIndex]
+                                  let statementIdentifier = statementsIdentifiers[loopIndex],
+                                    statementsNextIdentifier = statementsNextIdentifiers[loopIndex]
 
                                   // Avoid infinite loops with zero-width matches
                                   if (matches.index === statementOutputRegex.lastIndex)
@@ -2442,6 +2454,10 @@
                                     // Refresh the latest metadata based on specific actions and only if no erorr has occurred
                                     try {
                                       if (['alter', 'create', 'drop'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound)) {
+                                        // Make sure the statement is not about specific actions
+                                        if (['role', 'user'].some((identifier) => statementsNextIdentifier.toLowerCase().indexOf(identifier) != -1))
+                                          throw 0
+
                                         // Make sure to clear the previous timeout
                                         try {
                                           clearTimeout(refreshMetadataTimeout)
@@ -3275,7 +3291,7 @@
                              * Maximum allowed statements to be saved are 30 for each cluster
                              * When this value is exceeded the oldest statement should be removed
                              */
-                            if (history.length >= 30)
+                            if (history.length > 50)
                               history.pop()
 
                             // Add the statement at the very beginning of the array
@@ -3294,10 +3310,10 @@
                           // Handle when the statement is `SELECT` but there's no `JSON` after it
                           try {
                             // Regex pattern to match 'SELECT' not followed by 'JSON'
-                            let pattern = /\bselect\b(?!\s+json\b)/gi
+                            let pattern = /((?:^|\;\s*)\bselect\b(?!\s+json\b))/gi
 
                             // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
-                            statement = statement.replace(pattern, 'SELECT JSON')
+                            statement = statement.replace(pattern, '$1 JSON')
                           } catch (e) {}
 
                           // Send the command to the main thread to be executed
@@ -4948,6 +4964,7 @@
                     {
                       // Point at the history items' container
                       let historyItemsContainer = $(this).find('div.history-items'),
+                        historyItemsClearAllButton = $(this).find('div.history-items-clear-all'),
                         // Point at the history show button
                         historyBtn = $(this).find('div.history').find('button.btn'),
                         // Get the current saved items
@@ -4965,7 +4982,7 @@
                         savedHistoryItems = Store.get(clusterID) || []
 
                         // Reverse the array; to make the last saved item the first one in the list
-                        savedHistoryItems.reverse()
+                        // savedHistoryItems.reverse()
 
                         // Define index to be set for each history item
                         let index = 0
@@ -5079,7 +5096,7 @@
                         }
 
                         // Show the history items' container
-                        historyItemsContainer.addClass('show')
+                        historyItemsContainer.add(historyItemsClearAllButton).addClass('show')
 
                         // If a backdrop element already rendered then skip the upcoming code
                         if ($('body').find('div.backdrop').length > 0)
@@ -5096,9 +5113,23 @@
                             $(this).remove()
 
                             // Hide the history items' container
-                            historyItemsContainer.removeClass('show')
+                            historyItemsContainer.add(historyItemsClearAllButton).removeClass('show')
                           })
                         }))
+                      })
+
+                      historyItemsClearAllButton.find('button').click(function() {
+                        try {
+                          Store.set(clusterID, [])
+
+                          // Click the backdrop element to close the history items' container
+                          $(`div.backdrop:last`).click()
+
+                          // Disable the history button
+                          historyBtn.attr('disabled', 'disabled')
+
+                          showToast(I18next.capitalize(I18next.t('clear all statements')), I18next.capitalizeFirstLetter(I18next.replaceData('all history statements for connection [b]$data[/b] have been successfully cleared', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                        } catch (e) {}
                       })
                     }
                   }))
@@ -6002,8 +6033,8 @@
                   version = getAttributes(clusterElement, 'data-latest-cassandra-version') || getAttributes(clusterElement, 'data-cassandra-version')
 
                 // Print the host and Apache Cassandra®'s version in the terminal
-                terminalPrintMessage(readLine, 'info', `Connecting with host ${getAttributes(clusterElement, 'data-host')}`)
-                terminalPrintMessage(readLine, 'info', `Detected Apache Cassandra® version is ${version}`)
+                // terminalPrintMessage(readLine, 'info', `Connecting with host ${getAttributes(clusterElement, 'data-host')}`)
+                // terminalPrintMessage(readLine, 'info', `Detected Apache Cassandra® version is ${version}`)
 
                 // Show it in the interactive terminal
                 addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Connecting with host ${getAttributes(clusterElement, 'data-host')}.`, null, true, 'neutral')
@@ -6046,7 +6077,7 @@
                           throw 0
 
                         // Print message in the terminal
-                        terminalPrintMessage(readLine, 'warn', 'SSL is not enabled, the connection is not encrypted and is being transmitted in the clear')
+                        // terminalPrintMessage(readLine, 'warn', 'SSL is not enabled, the connection is not encrypted and is being transmitted in the clear')
 
                         // Show it in the interactive terminal
                         addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `SSL is not enabled, the connection is not encrypted and is being transmitted in the clear.`, null, true, 'warning')
@@ -6067,7 +6098,7 @@
 
                 // Show feedback to the user when the connection is established through the SSH tunnel
                 if (sshTunnelsObjects[clusterID] != null) {
-                  terminalPrintMessage(readLine, 'info', 'The connection is encrypted and transmitted through an SSH tunnel')
+                  // terminalPrintMessage(readLine, 'info', 'The connection is encrypted and transmitted through an SSH tunnel')
 
                   // Show it in the interactive terminal
                   addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `The connection is encrypted and transmitted through an SSH tunnel.`, null, true, 'neutral')
@@ -6110,7 +6141,7 @@
 
                     // If the username is `cassandra` then warn the user about that
                     if (usernameDecrypted == 'cassandra') {
-                      terminalPrintMessage(readLine, 'warn', 'This connection is using the default `cassandra` user')
+                      // terminalPrintMessage(readLine, 'warn', 'This connection is using the default `cassandra` user')
 
                       // Show it in the interactive terminal
                       addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), 'This connection is using the default `cassandra` user.', null, true, 'warning')

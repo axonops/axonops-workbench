@@ -262,6 +262,7 @@
       "settings have been successfully saved": "A configuración gardouse con éxito",
       "settings": "Configuración",
       "show differentiation": "mostrar diferenciación",
+      "show more": "mostrar máis",
       "snapshot suffix": "Sufixo Snapshot",
       "some settings have been successfully saved, however, an error has occurred with variables, $data": "Algunhas configuracións gardáronse con éxito, con todo, produciuse un erro con variables, $data",
       "something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file": "Algo saíu mal mentres intentaba probar a conexión [b]$data[/b] no espazo de traballo [b]$data[/b], principalmente é un problema co ficheiro <code>cqlsh.rc</code>.",

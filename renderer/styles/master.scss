@@ -3216,7 +3216,7 @@ div.tab-content {
               outline: 0;
               font-family: 'Terminal', monospace;
               width: 50%;
-              max-height: 320px;
+              max-height: 510px;
               overflow-y: scroll;
               border-radius: 7px;
               padding: 5px 0;
@@ -4469,6 +4469,73 @@ div.app-info-actions {
 
         &[name="external-link"] {
           opacity: 0.50;
+        }
+      }
+    }
+  }
+}
+
+button#showMoreAbout {
+  color: inherit;
+  margin: 8px 0;
+  padding: 6px 10px 6px 5px;
+
+  ion-icon {
+    font-size: 145%;
+    transition: all 0.15s ease-in-out;
+  }
+
+  &.slideUp {
+    ion-icon {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+div#moreAbout {
+  background: #201f23;
+  font-family: 'Terminal', monospace;
+  font-size: 75%;
+  text-align: left;
+  padding: 5px;
+  border-radius: 7px;
+  width: 100%;
+  display: none;
+
+  div[data-version] {
+    &:first-letter {
+      text-transform: capitalize;
+    }
+
+    button {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      overflow: hidden;
+      position: relative;
+      bottom: 2px;
+
+      ion-icon {
+        position: absolute;
+        inset: 0;
+        margin: auto !important;
+        font-size: 120% !important;
+        color: #e3e3e3;
+        opacity: 0.8;
+        transition: opacity 0.2s ease-in-out;
+
+        &[name="external-link"] {
+          opacity: 0.65;
+        }
+      }
+
+      &:hover {
+        ion-icon {
+          opacity: 0.65;
+
+          &[name="external-link"] {
+            opacity: 0.50;
+          }
         }
       }
     }

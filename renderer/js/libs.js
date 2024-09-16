@@ -64,11 +64,6 @@ const OS = require('os'),
   HEXToRGB = require('hex-to-rgb'),
   // Convert ANSI escaped text streams to html
   ANSIToHTML = require('ansi-to-html'),
-  /**
-   * Search for substrings in a string by using N-API and boyer-moore-magiclen
-   * It has been implemented within the function `String.prototype.search(needle)`
-   */
-  FSS = require('fast-string-search'),
   // Return the absolute system-dependant path for the place where the app should store its data for the current user
   AppData = require('appdata-path'),
   /**

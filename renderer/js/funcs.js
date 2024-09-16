@@ -729,6 +729,9 @@ let convertJSONToTable = (json, isExpandOn = false) => {
       let finalItem = item
 
       try {
+        if (typeof finalItem === 'object')
+          throw 0
+
         finalItem = JSON.parse(repairJSON(item))
       } catch (e) {}
 

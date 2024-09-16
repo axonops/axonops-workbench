@@ -262,6 +262,7 @@
       "settings have been successfully saved": "设置已成功保存",
       "settings": "设置",
       "show differentiation": "显示差异化",
+      "show more": "显示更多",
       "snapshot suffix": "快照后缀",
       "some settings have been successfully saved, however, an error has occurred with variables, $data": "某些设置已成功保存，但是，变量发生错误，$data",
       "something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file": "尝试在工作区 [b]$data[/b] 中测试连接 [b]$data[/b] 时出错，主要是 <code>cqlsh.rc</code> 文件的问题",

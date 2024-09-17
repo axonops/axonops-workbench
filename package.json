@@ -66,6 +66,9 @@
       "extraFiles": [
         "./resources/workbenchcassandra.provisionprofile"
       ],
+      "notarize": {
+        "teamId": "UJ776LUP23"
+      },
       "binaries": [
         "main/bin/cqlsh-407/cqlsh-407",
         "main/bin/cqlsh-410/cqlsh-410",

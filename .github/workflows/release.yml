@@ -68,10 +68,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20.17.0
-          cache: 'npm'
 
-      # - name: Clear npm cache
-      #   run: npm cache clean --force
+      - name: Clear npm cache
+        run: npm cache clean --force
 
       - name: Get credits and add them to the database
         run: |

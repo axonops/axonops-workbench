@@ -2075,7 +2075,7 @@ let suggestionSearch = (needle, haystack) => {
  * @Return: {boolean} the given needle is in the haystack or not
  */
 String.prototype.search = function(needle) {
-  return this.indexOf(needle).length != 0
+  return this.indexOf(needle) != -1
 }
 
 // Extend the jQuery library capabilities by adding new functions to objects

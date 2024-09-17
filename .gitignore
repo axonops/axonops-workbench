@@ -28,3 +28,4 @@ main/bin/*
 **/__pycache__
 
 .env
+package-lock.json

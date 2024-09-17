@@ -1273,10 +1273,23 @@ $(document).on('initialize', () => {
 })
 
 /*
- * Whether or not the content protection should be shown in the app's settings
- * This feature is hidden from Linux platform only
+ * Whether or not the content protection - and other features - should be shown in the app's settings
+ * Those features are disabled on Linux
  */
-$(document).on('initialize', () => $(`div.row#contentProtectionContainer`).toggle(OS.platform() != 'linux'))
+$(document).on('initialize', () => {
+  let isPlatformLinux = OS.platform() == 'linux'
+
+  try {
+    if (!isPlatformLinux)
+      throw 0
+
+    // Hide the content protection feature
+    $(`div.row#contentProtectionContainer`).hide()
+
+    // NOTE: In case we've faced the multi-selection bug on Linux we can enable this line
+    // setTimeout(() => $('span[selection-feautre]').hide();$('div.modal-section div.drag-drop-workspaces').unbind('click').css('cursor', 'default'), 1000)
+  } catch (e) {}
+})
 
 
 $(document).on('initialize', () => {

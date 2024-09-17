@@ -117,7 +117,7 @@
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",
     "electron": "^31.6.0",
-    "electron-builder": "^25.0.5",
+    "electron-builder": "^24.13.3",
     "license-checker": "^25.0.1"
   },
   "optionalDependencies": {

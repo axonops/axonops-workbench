@@ -69,13 +69,8 @@ jobs:
         with:
           node-version: 20.17.0
 
-      - name: Clear npm cache
-        run: npm cache clean --force
-
       - name: Get credits and add them to the database
         run: |
-          export ELECTRON_BUILDER_CACHE=${GITHUB_WORKSPACE}/electron-${{ runner.os }}
-          echo "ELECTRON_BUILDER_CACHE=${ELECTRON_BUILDER_CACHE}" >> $GITHUB_ENV
           cd get_credits
           npm cache clean --force
           npm i
@@ -83,7 +78,9 @@ jobs:
           node get_credits.js
 
       - name: Install AxonOps Developer Workbench dependencies
-        run: npm i
+        run: |
+          npm cache clean --force
+          npm i
 
       # - name: Install Snapcraft
       #   uses: samuelmeuli/action-snapcraft@v2

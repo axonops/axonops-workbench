@@ -36,6 +36,7 @@ services:
       elasticsearch:
         condition: service_healthy
     image: registry.axonops.com/axonops-public/axonops-docker/axon-server:latest
+    pull_policy: always
     environment:
       - ELASTIC_HOSTS=http://elasticsearch:9200
     healthcheck:
@@ -50,6 +51,7 @@ services:
       axon-server:
         condition: service_healthy
     image: registry.axonops.com/axonops-public/axonops-docker/axon-dash:latest
+    pull_policy: always
     command: >
       /bin/sh -c "sed -i 's|private_endpoints.*|private_endpoints: http://axon-server:8080|' /etc/axonops/axon-dash.yml && /usr/share/axonops/axon-dash --appimage-extract-and-run"
     ports:
@@ -63,6 +65,7 @@ services:
 
   cassandra-0:
     image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
+    pull_policy: always
     hostname: cassandra-0
     restart: unless-stopped
     volumes:
@@ -96,6 +99,7 @@ services:
       cassandra-0:
         condition: service_healthy
     image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
+    pull_policy: always
     hostname: cassandra-1
     restart: unless-stopped
     volumes:
@@ -129,6 +133,7 @@ services:
       cassandra-1:
         condition: service_healthy
     image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
+    pull_policy: always
     hostname: cassandra-2
     restart: unless-stopped
     volumes:

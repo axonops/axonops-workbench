@@ -65,7 +65,6 @@ services:
 
   cassandra-0:
     image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
-    pull_policy: always
     hostname: cassandra-0
     restart: unless-stopped
     volumes:
@@ -99,7 +98,6 @@ services:
       cassandra-0:
         condition: service_healthy
     image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
-    pull_policy: always
     hostname: cassandra-1
     restart: unless-stopped
     volumes:
@@ -133,7 +131,6 @@ services:
       cassandra-1:
         condition: service_healthy
     image: registry.axonops.com/axonops-public/axonops-docker/cassandra:{version}
-    pull_policy: always
     hostname: cassandra-2
     restart: unless-stopped
     volumes:

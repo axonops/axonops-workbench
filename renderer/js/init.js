@@ -1391,8 +1391,8 @@ $(document).on('initialize', () => setTimeout(() => {
 $(document).on('checkForUpdates', function(e, manualCheck = false) {
   IPCRenderer.invoke('check-app-format').then((info) => {
     try {
-      // if (!info.devMode)
-      throw 0
+      if (!info.devMode)
+        throw 0
 
       if (manualCheck)
         showToast(I18next.capitalize(I18next.t('check for updates')), I18next.capitalizeFirstLetter(I18next.t(`in the development mode it's not allowed to check for updates. This feature is is only available in the production mode any its different formats`) + '.'), 'failure')

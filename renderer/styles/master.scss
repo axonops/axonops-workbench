@@ -2522,7 +2522,7 @@ div.tab-content {
         div.metadata-content {
           position: relative;
           width: calc(100% - 15px);
-          height: calc(100% - 20px);
+          height: calc(100% - 45px);
           background: #1e1e1e;
           margin: 10px;
           border-radius: 8px;
@@ -2551,7 +2551,7 @@ div.tab-content {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            height: 9px;
+            vertical-align: middle;
           }
         }
 

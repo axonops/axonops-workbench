@@ -1000,3 +1000,189 @@ div.modal-section {
     }
   }
 }
+
+div.modal#appUpdate {
+  div.modal-header {
+    div.icon {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      vertical-align: middle;
+      position: relative;
+
+      lottie-player {
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        transform: scale(1.9);
+        margin-top: 1px;
+      }
+    }
+  }
+
+  div.modal-body {
+    padding: var(--mdb-modal-padding) !important;
+    font-size: 90%;
+
+    div.card {
+      box-shadow: none;
+      margin-top: 10px;
+      background: #373737;
+
+      &:not(:first-of-type) {
+        margin-top: 30px;
+      }
+
+      &.fit-content {
+        width: fit-content;
+      }
+
+      div.card-body {
+        padding: 6px;
+
+        div.content-title {
+          width: fit-content;
+          background: #424242;
+          margin-bottom: -7px;
+          position: relative;
+          bottom: 17px;
+          padding: 0 7px;
+          border-radius: 5px;
+          font-weight: 500;
+          left: 5px;
+        }
+
+        p {
+          margin-bottom: 0;
+        }
+
+        div.changelog-content {
+          overflow: hidden;
+          overflow-y: scroll;
+          max-height: 250px;
+
+          * {
+            font-size: 95%;
+          }
+
+          a {
+            width: 95%;
+            display: inline-block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all 0.15s ease-in-out;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+        }
+
+        div.asset {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          align-items: center;
+          align-content: center;
+          background: #282828;
+          height: 30px;
+          border-radius: 5px;
+          padding: 0 7px;
+          justify-content: space-between;
+          position: relative;
+          overflow: hidden;
+          transition: 0.2s ease-in-out;
+          font-size: 95%;
+
+          div.name {
+            width: calc(100% - 110px);
+          }
+
+          div.size {
+            width: 90px;
+          }
+
+          div.icon {
+            width: 20px;
+          }
+
+          span.button {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+          }
+
+          ion-icon {
+            font-size: 130%;
+            vertical-align: middle;
+            position: relative;
+            bottom: 1px;
+            filter: invert(0.4);
+            transition: 0.2s ease-in-out;
+            transition-delay: 0.1s;
+          }
+
+          &:hover {
+            background: rgba(40,40,40,.65);
+
+            ion-icon {
+              filter: invert(0.15);
+            }
+          }
+
+          &:not(:first-of-type) {
+            margin-top: 7px;
+          }
+        }
+      }
+
+      &[content="version"] {
+        ion-icon[name="arrow-up"] {
+          transform: rotate(90deg);
+          vertical-align: middle;
+          font-size: 130%;
+        }
+      }
+
+      &[content="assets"] {
+        div.content-title {
+          ion-icon {
+            vertical-align: middle;
+            font-size: 120%;
+            transform: translateY(-1px);
+
+            &[name*="windows"] {
+              transform: translateY(-1px);
+            }
+
+            &[name*="darwin"] {
+              transform: translateY(-2px);
+            }
+          }
+        }
+      }
+
+      span.badge:last-of-type {
+        position: relative;
+        overflow: hidden;
+        vertical-align: middle;
+        padding-right: 22px;
+
+        span.btn {
+          position: absolute;
+          inset: 0;
+          margin: auto;
+        }
+
+        ion-icon {
+          font-size: 130%;
+          position: absolute;
+          right: 6px;
+          bottom: 2px;
+          margin: auto;
+        }
+      }
+    }
+  }
+}

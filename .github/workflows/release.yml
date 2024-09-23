@@ -108,6 +108,7 @@ jobs:
           export CSC_IDENTITY_AUTO_DISCOVERY=false
           if [ "$(uname -s )" == "Linux" ]; then
             npm run linux
+            echo "LINUX_TGZ_PATH=dist/AxonOps.Workbench-${GITHUB_REF_NAME}-linux-x64.tar.gz" >> $GITHUB_ENV
           fi
           if [[ "$(uname -s)" =~ "MINGW64" ]]; then
             unset CSC_KEY_PASSWORD
@@ -150,7 +151,7 @@ jobs:
       - name: Attest Build Provenance for TGZ
         uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940 # v1.0.0
         with:
-          subject-path: "dist/AxonOps.Workbench-${GITHUB_REF_NAME}-linux-x64.tar.gz"
+          subject-path: "${LINUX_TGZ_PATH}"
 
       - name: Azure login
         if: runner.os == 'Windows'

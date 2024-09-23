@@ -957,20 +957,20 @@
                                     </span>
                                   </div>
                                   <div class="actions">
-                                    <span class="refresh btn btn-secondary btn-dark btn-sm" ${isSandbox ? 'style="bottom: 0px;"' : ''} data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
+                                    <span class="refresh btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
                                       data-id="${refreshDifferentiationBtnID}">
                                       <ion-icon name="refresh"></ion-icon>
                                     </span>
                                     <span class="save-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Save a schema snapshot" data-mulang="save a schema snapshot" capitalize-first
-                                      data-id="${saveSnapshotBtnID}" ${isSandbox ? 'hidden' : '' }>
+                                      data-id="${saveSnapshotBtnID}">
                                       <ion-icon name="save-floppy"></ion-icon>
                                     </span>
                                     <span class="load-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Load a schema snapshot" data-mulang="load a schema snapshot" capitalize-first
-                                      data-id="${loadSnapshotBtnID}" ${isSandbox ? 'hidden' : '' }>
+                                      data-id="${loadSnapshotBtnID}">
                                       <ion-icon name="upload"></ion-icon>
                                     </span>
                                     <span class="snapshots-folder btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Open the schema snapshot folder" data-mulang="open the schema snapshot folder" capitalize-first
-                                      data-id="${openSnapshotsFolderBtnID}" ${isSandbox ? 'hidden' : '' }>
+                                      data-id="${openSnapshotsFolderBtnID}">
                                       <ion-icon name="folder-open-outline"></ion-icon>
                                     </span>
                                     <span class="change-view btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Change the editors view" data-mulang="change the editors view" capitalize-first
@@ -980,7 +980,7 @@
                                   </div>
                                 </div>
                                 <span class="badge badge-secondary new"><span mulang="new" capitalize></span><span class="new-metadata-time" data-id="${newMetadataTimeID}" data-time></span></span>
-                                <div class="save-snapshot-suffix" data-id="${saveSnapshotSuffixContainerID}" ${isSandbox ? 'hidden' : '' }>
+                                <div class="save-snapshot-suffix" data-id="${saveSnapshotSuffixContainerID}">
                                   <div class="time"></div>
                                   <div class="form-outline form-white margin-bottom">
                                     <input type="text" class="form-control form-icon-trailing form-control-lg">
@@ -4084,8 +4084,11 @@
                           // Finally add the `.json` extension
                           snapshotName = `${snapshotName}.json`
 
+                          let workspacePath = getWorkspaceFolderPath(workspaceID),
+                            filePath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(clusterElement, 'data-folder'), 'snapshots', snapshotName)
+
                           // Write the snapshot file in the default snapshots folder of the cluster
-                          FS.writeFile(Path.join(workspaceFolderPath, getAttributes(clusterElement, 'data-folder'), 'snapshots', snapshotName), metadata, (err) => {
+                          FS.writeFile(filePath, metadata, (err) => {
                             // Click the backdrop element; to hide the snapshot's container
                             $('div.backdrop').click()
 
@@ -4100,8 +4103,11 @@
 
                         // Load a saved snapshot
                         $(`span.btn[data-id="${loadSnapshotBtnID}"]`).click(function() {
+                          let workspacePath = getWorkspaceFolderPath(workspaceID),
+                            folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(clusterElement, 'data-folder'))
+
                           // Get all saved snapshots of the cluster
-                          Modules.Clusters.getSnapshots(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(clusterElement, 'data-folder')), (snapshots) => {
+                          Modules.Clusters.getSnapshots(folderPath, (snapshots) => {
                             // If there are no saved snapshots then show feedback to the user and skip the upcoming code
                             if (snapshots.length <= 0)
                               return showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('there are no saved schema snapshots related to the connection [b]$data[/b], attempt first to save one', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
@@ -4291,7 +4297,12 @@
                         })
 
                         // Open the snapshots' folder
-                        $(`span.btn[data-id="${openSnapshotsFolderBtnID}"]`).click(() => Open(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(clusterElement, 'data-folder'), 'snapshots')))
+                        $(`span.btn[data-id="${openSnapshotsFolderBtnID}"]`).click(() => {
+                          let workspacePath = getWorkspaceFolderPath(workspaceID),
+                            folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(clusterElement, 'data-folder'), 'snapshots')
+
+                          Open(folderPath)
+                        })
 
                         // Change the editors view - vertical and horizontal -
                         $(`span.btn[data-id="${changeViewBtnID}"]`).click(function() {

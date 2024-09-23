@@ -148,11 +148,6 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
-      - name: Attest Build Provenance for TGZ
-        uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940 # v1.0.0
-        with:
-          subject-path: "dist/*.tar.gz"
-
       - name: Azure login
         if: runner.os == 'Windows'
         uses: azure/login@v2
@@ -227,6 +222,20 @@ jobs:
             dist/*.sha256sum
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Attest Build Provenance for TGZ
+        uses: actions/attest-build-provenance@897ed5eab6ed058a474202017ada7f40bfa52940 # v1.0.0
+        with:
+          subject-path: |
+            dist/*.zip
+            dist/*.pkg
+            dist/*.dmg
+            dist/*.deb
+            dist/*.rpm
+            dist/*.exe
+            dist/*.tar.gz
+            dist/*.nsis
+            dist/*.msi
 
 # Release choco and brew
 

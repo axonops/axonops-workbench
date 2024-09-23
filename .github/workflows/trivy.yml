@@ -12,11 +12,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Merge both requirements.txt
-        run: |
-          cat v6.*/requirements.txt > requirements-dev.txt
-          sort -u -o requirements.txt requirements-dev.txt
-
       - name: Run Trivy vulnerability scanner in repo mode
         uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8 # 0.24.0
         with:

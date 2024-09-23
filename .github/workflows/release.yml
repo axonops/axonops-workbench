@@ -11,7 +11,8 @@ defaults:
 permissions:
   id-token: write
   attestations: write
-  contents: read
+  contents: write
+  packages: write
 
 jobs:
   build:

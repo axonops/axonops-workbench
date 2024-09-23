@@ -13,6 +13,8 @@ permissions:
   attestations: write
   contents: write
   packages: write
+  pull-requests: read
+  deployments: read
 
 jobs:
   build:

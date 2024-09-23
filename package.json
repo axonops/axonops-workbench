@@ -30,14 +30,14 @@
         "provider": "github"
       }
     ],
-    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
       "target": [
         "nsis",
         "msi"
       ],
-      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+      "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "linux": {
       "icon": "./renderer/assets/images/",
@@ -49,7 +49,7 @@
         "Keywords": "cassandra;axonops;development;workbench",
         "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench.png"
       },
-      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+      "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
       "icon": "./renderer/assets/images/axonops-icon-512x512.icns",

@@ -281,8 +281,8 @@
                     <div class="title"><span mulang="data center" capitalize></span>
                       <ion-icon name="right-arrow-filled"></ion-icon>
                     </div>
-                    <div class="text">${isSandbox ? 'datacenter1' : ''}</div>
-                    <div class="_placeholder" ${isSandbox ? 'hidden' : '' }></div>
+                    <div class="text"></div>
+                    <div class="_placeholder"></div>
                   </div>
                   ${numOfNodesInfo}
                   ${isAxonOpsInstalled}
@@ -1661,9 +1661,9 @@
                       isEmptyLineFound = false,
                       isConnectionLost = false
 
-                      try {
-                        IPCRenderer.removeAllListeners(`pty:data:${clusterID}`)
-                      } catch (e) {}
+                    try {
+                      IPCRenderer.removeAllListeners(`pty:data:${clusterID}`)
+                    } catch (e) {}
 
                     // Listen to data sent from the pty instance which are fetched from the cqlsh tool
                     IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
@@ -5167,6 +5167,8 @@
                         } catch (e) {}
                       })
                     }
+
+                    setTimeout(() => setUIColor(getAttributes(workspaceElement, 'data-color')))
                   }))
                 })
               })
@@ -5466,7 +5468,12 @@
                                 updatePinnedToast(pinnedToastID, true, true)
 
                                 // Update the data center title
-                                clusterElement.attr('data-datacenter', 'datacenter1')
+                                clusterElement.find('div[info="data-center"]').children('div._placeholder').hide()
+
+                                try {
+                                  clusterElement.attr('data-datacenter', `${status.datacenter}` || 'datacenter1')
+                                  clusterElement.find('div[info="data-center"]').children('div.text').text(`${status.datacenter}`)
+                                } catch (e) {}
 
                                 setTimeout(() => {
                                   // Click the hidden `CONNECT` button

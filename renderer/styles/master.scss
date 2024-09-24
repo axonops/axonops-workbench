@@ -1034,6 +1034,7 @@ div.body {
 
       div[content] {
         @include position();
+        background: inherit;
 
         div.section-actions {
           @include position(absolute, auto, 0, 0, auto);

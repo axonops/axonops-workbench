@@ -37,7 +37,9 @@ jobs:
 
       - name: Change the package.json version to match the tag
         run: |
-          sed -i.bak 's/"version": "[^"]*"/"version": "'"$GITHUB_REF_NAME"'"/' package.json && rm package.json.bak
+          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          sed -i.bak 's/"version": "[^"]*"/"version": "'"$VERSION"'"/' package.json && rm package.json.bak
           rm -f package.json.bak
 
 
@@ -163,8 +165,8 @@ jobs:
       - name: Build signed installer
         if: runner.os == 'Windows'
         run: |
-          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps Workbench-%GITHUB_REF_NAME%-win-x64.exe"
-          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps Workbench-%GITHUB_REF_NAME%-win-x64.msi"
+          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps Workbench-%VERSION%-win-x64.exe"
+          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps Workbench-%VERSION%-win-x64.msi"
         shell: cmd
 
       # Ensure this task is right before the Upload
@@ -236,7 +238,8 @@ jobs:
 
       - name: Make changes to Homebrew
         run: |
-          VERSION=$GITHUB_REF_NAME
+          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           case $VERSION in
             *internal*)
               NAME=axonopsworkbench-internal
@@ -301,8 +304,8 @@ jobs:
 
       - name: Make changes to chocolatey
         run: |
-          set -x
-          VERSION=$GITHUB_REF_NAME
+          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           cd chocolatey
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
@@ -374,16 +377,16 @@ jobs:
         if: env.PUBLISH == 'yes'
         run: |
           for arch in ${{ env.DEBIAN_ARCHS }}; do
-            curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-${arch}.deb"
+            curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.deb"
             gcloud config set project axonops-public
-            gcloud artifacts apt upload axonops-apt-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-${arch}.deb
+            gcloud artifacts apt upload axonops-apt-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$VERSION-linux-${arch}.deb
           done
 
       - name: Push RedHat package
         if: env.PUBLISH == 'yes'
         run: |
           for arch in ${{ env.REDHAT_ARCHS }}; do
-            curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$GITHUB_REF_NAME/AxonOps.Workbench-$GITHUB_REF_NAME-linux-${arch}.rpm"
+            curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.rpm"
             gcloud config set project axonops-public
-            gcloud artifacts yum upload axonops-yum-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$GITHUB_REF_NAME-linux-${arch}.rpm
+            gcloud artifacts yum upload axonops-yum-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$VERSION-linux-${arch}.rpm
           done

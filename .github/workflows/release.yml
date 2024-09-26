@@ -1,17 +1,40 @@
 name: Release Workbench
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
 
 defaults:
   run:
     shell: bash
 
 jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            AxonOps Workbench new release. See
+            https://github.com/axonops/axonops-workbench-cassandra/releases/tag/${{ github.ref_name }}
+          draft: false
+          prerelease: true
+
   build:
     name: Build on ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
+    needs: [release]
     strategy:
       matrix:
         include:

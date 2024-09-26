@@ -1,0 +1,72 @@
+name: build
+on:
+  push:
+    branches:
+      - 457-feat-generate-a-software-bill-of-materials-sbom-as-part-of-the-build-process
+  pull_request:
+jobs:
+  release-brew:
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          repository: axonops/homebrew-repository
+          path: homebrew
+          persist-credentials: true
+          fetch-depth: 0
+          ssh-key: ${{ secrets.BREW_SSH_KEY }}
+
+      - name: Make changes to Homebrew
+        run: |
+          set -x
+          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          #echo "VERSION=$VERSION" >> $GITHUB_ENV
+          case $VERSION in
+            *internal*)
+              NAME=axonopsworkbench-internal
+              CONFIG_FILE=Casks/axonopsworkbench-internal.rb
+              ;;
+            *beta*)
+              NAME=axonopsworkbench-beta
+              CONFIG_FILE=Casks/axonopsworkbench-beta.rb
+              ;;
+            *)
+              NAME=axonopsworkbench
+              CONFIG_FILE=Casks/axonopsworkbench.rb
+              ;;
+          esac
+          cd homebrew
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          # Get the sha256sum
+          SHA_ARM=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-mac-arm64.zip.sha256sum | awk '{print $1}')
+          SHA_AMD=$(curl -sfL ${GITHUB_URL}/${VERSION}/AxonOps.Workbench-${VERSION}-mac-x64.zip.sha256sum | awk '{print $1}')
+          # Update versions
+          cp $TEMPLATE $CONFIG_FILE
+          sed -i "s/%SHA_ARM%/$SHA_ARM/g" $CONFIG_FILE
+          sed -i "s/%SHA_AMD%/$SHA_AMD/g" $CONFIG_FILE
+          sed -i "s/%VERSION%/${VERSION}/g" $CONFIG_FILE
+          sed -i "s/cask \"axonopsworkbench\" do/cask \"${NAME}\" do/g" $CONFIG_FILE
+          git add $CONFIG_FILE
+          if [ $(git status --porcelain | wc -l) -eq "0" ]; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git --no-pager diff
+          git commit -m "Changes made by GitHub Actions [skip ci]"
+          git tag $VERSION
+        env:
+          GITHUB_URL: https://github.com/axonops/axonops-workbench-cassandra/releases/download/
+          TEMPLATE: Casks/axonopsworkbench.rb.tmpl
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          directory: homebrew
+          repository: axonops/homebrew-repository
+          ssh: true
+          tags: true

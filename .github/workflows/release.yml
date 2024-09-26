@@ -202,6 +202,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create SBOM with CycloneDX
+        uses: CycloneDX/gh-node-module-generatebom@v1
+        with:
+          output: "./dist/axonops-workbench-${{ github.VERSION }}.bom.xml"
+
       - name: Upload Artifacts
         uses: softprops/action-gh-release@v2
         with:
@@ -216,6 +221,7 @@ jobs:
             dist/*.nsis
             dist/*.msi
             dist/*.sha256sum
+            dist/*.bom.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

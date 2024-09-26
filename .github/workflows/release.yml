@@ -276,7 +276,7 @@ jobs:
       - name: Make changes to Homebrew
         run: |
           VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          #echo "VERSION=$VERSION" >> $GITHUB_ENV
           case $VERSION in
             *internal*)
               NAME=axonopsworkbench-internal
@@ -342,7 +342,7 @@ jobs:
       - name: Make changes to chocolatey
         run: |
           VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          #echo "VERSION=$VERSION" >> $GITHUB_ENV
           cd chocolatey
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
@@ -394,6 +394,7 @@ jobs:
           PUBLISH="yes"
           DEBIAN_ARCHS="amd64"
           REDHAT_ARCHS="x86_64"
+          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
           case $VERSION in
             *internal*)
               PUBLISH="no"
@@ -413,6 +414,7 @@ jobs:
       - name: Push Debian package
         if: env.PUBLISH == 'yes'
         run: |
+          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
           for arch in ${{ env.DEBIAN_ARCHS }}; do
             curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.deb"
             gcloud config set project axonops-public
@@ -422,6 +424,7 @@ jobs:
       - name: Push RedHat package
         if: env.PUBLISH == 'yes'
         run: |
+          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
           for arch in ${{ env.REDHAT_ARCHS }}; do
             curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.rpm"
             gcloud config set project axonops-public

@@ -17,19 +17,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Create release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            AxonOps Workbench new release. See
-            https://github.com/axonops/axonops-workbench-cassandra/releases/tag/${{ github.ref_name }}
-          draft: false
-          prerelease: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref_name }}
+        run: |
+          OPTIONS=""
+          if [[ $GITHUB_REF_NAME == *"internal"* ]] || [[ $GITHUB_REF_NAME == *"beta"* ]]; then
+            OPTIONS="--draft"
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="Release for ${GITHUB_REF_NAME}" \
+              --generate-notes $OPTIONS
 
   build:
     name: Build on ${{ matrix.target }}

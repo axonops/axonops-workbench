@@ -234,10 +234,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create SBOM xml
+        uses: CycloneDX/gh-node-module-generatebom@v1
+        with:
+          path: './'
+          output: 'dist/workbench.bom.xml'
+
       - name: Upload Artifacts
         uses: softprops/action-gh-release@v2
         with:
           files: |
+            dist/workbench.bom.xml
             dist/*.zip
             dist/*.pkg
             dist/*.dmg
@@ -265,17 +272,6 @@ jobs:
         uses: anchore/sbom-action/publish-sbom@v0
         with:
           sbom-artifact-match: ".*\\.spdx$"
-
-      - name: Create SBOM xml
-        uses: CycloneDX/gh-node-module-generatebom@v1
-        with:
-          path: './'
-          output: 'dist/workbench.bom.xml'
-
-      - name: Upload SBOM Artifacts
-        uses: softprops/action-gh-release@v2
-        with:
-          files: 'dist/workbench.bom.xml'
 
 # Release choco and brew
   release-brew:

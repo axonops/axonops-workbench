@@ -225,16 +225,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate SBOM
-        uses: anchore/sbom-action@v0
-        with:
-          artifact-name: sbom.spdx
-
-      - name: Publish SBOM
-        uses: anchore/sbom-action/publish-sbom@v0
-        with:
-          sbom-artifact-match: ".*\\.spdx$"
-
       - name: Upload Artifacts
         uses: softprops/action-gh-release@v2
         with:
@@ -252,8 +242,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-# Release choco and brew
+  generate-sbom:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ !cancelled() && success() }}
+    steps:
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          artifact-name: sbom.spdx
 
+      - name: Publish SBOM
+        uses: anchore/sbom-action/publish-sbom@v0
+        with:
+          sbom-artifact-match: ".*\\.spdx$"
+
+# Release choco and brew
   release-brew:
     runs-on: ubuntu-latest
     needs: [build]

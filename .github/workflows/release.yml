@@ -367,7 +367,7 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           # Get the sha256sum
-          SHA_AMD=$(curl -sfL ${GITHUB_URL}/v${VERSION}/AxonOps.Workbench-${VERSION}-win-x64.exe.sha256sum | awk '{print $1}')
+          SHA_AMD=$(curl -sfL ${GITHUB_URL}/v${VERSION}/AxonOps.Workbench-${VERSION}-win-x64.msi.sha256sum | awk '{print $1}')
           # Update versions
           cp $TEMPLATE $CONFIG_FILE
           sed -i "s/%SHA_AMD%/$SHA_AMD/g" $CONFIG_FILE

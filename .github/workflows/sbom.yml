@@ -2,7 +2,7 @@ name: build
 on:
   push:
     branches:
-      - 457-feat-gen…uild-process
+      - 457-feat-generate-a-software-bill-of-materials-sbom-as-part-of-the-build-process
 jobs:
   sbom:
     name: Create SBOM

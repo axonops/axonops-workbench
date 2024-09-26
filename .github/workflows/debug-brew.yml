@@ -21,8 +21,9 @@ jobs:
       - name: Make changes to Homebrew
         run: |
           set -x
-          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
-          #echo "VERSION=$VERSION" >> $GITHUB_ENV
+          if [[ "$VERSION" == "" ]]; then
+            VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          fi
           case $VERSION in
             *internal*)
               NAME=axonopsworkbench-internal

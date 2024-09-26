@@ -275,8 +275,10 @@ jobs:
 
       - name: Make changes to Homebrew
         run: |
-          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
-          #echo "VERSION=$VERSION" >> $GITHUB_ENV
+          set -x
+          if [[ "$VERSION" == "" ]]; then
+            VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          fi
           case $VERSION in
             *internal*)
               NAME=axonopsworkbench-internal
@@ -341,7 +343,9 @@ jobs:
 
       - name: Make changes to chocolatey
         run: |
-          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          if [[ "$VERSION" == "" ]]; then
+            VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          fi
           #echo "VERSION=$VERSION" >> $GITHUB_ENV
           cd chocolatey
           git config user.name "GitHub Actions"
@@ -391,6 +395,9 @@ jobs:
 
       - name: "Set runtime variables"
         run: |
+          if [[ "$VERSION" == "" ]]; then
+            VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          fi
           PUBLISH="yes"
           DEBIAN_ARCHS="amd64"
           REDHAT_ARCHS="x86_64"
@@ -414,7 +421,9 @@ jobs:
       - name: Push Debian package
         if: env.PUBLISH == 'yes'
         run: |
-          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          if [[ "$VERSION" == "" ]]; then
+            VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          fi
           for arch in ${{ env.DEBIAN_ARCHS }}; do
             curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.deb"
             gcloud config set project axonops-public
@@ -424,7 +433,9 @@ jobs:
       - name: Push RedHat package
         if: env.PUBLISH == 'yes'
         run: |
-          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          if [[ "$VERSION" == "" ]]; then
+            VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          fi
           for arch in ${{ env.REDHAT_ARCHS }}; do
             curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.rpm"
             gcloud config set project axonops-public

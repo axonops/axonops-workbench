@@ -82,6 +82,8 @@ const OS = require('os'),
   Tabulator = require('tabulator-tables'),
   // Sanitize a string to be safe for use as a file name; by removing directory paths and invalid characters
   Sanitize = require('sanitize-filename'),
+  // Promise based HTTP client for the browser and node.js
+  Axios = require('axios'),
   /**
    * An implementation of PHP `strip_tags` in Node.js
    * Used for stripping HTML tags from a given string

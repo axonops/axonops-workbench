@@ -30,14 +30,14 @@
         "provider": "github"
       }
     ],
-    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
       "target": [
         "nsis",
         "msi"
       ],
-      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+      "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "linux": {
       "icon": "./renderer/assets/images/",
@@ -49,7 +49,7 @@
         "Keywords": "cassandra;axonops;development;workbench",
         "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench.png"
       },
-      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+      "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
       "icon": "./renderer/assets/images/axonops-icon-512x512.icns",
@@ -134,6 +134,7 @@
     "ansi-to-html": "^0.7.2",
     "appdata-path": "^1.0.0",
     "autosize": "^6.0.1",
+    "axios": "^1.7.7",
     "better-sqlite3": "^11.1.2",
     "byte-size": "^8.1.1",
     "chart.js": "^4.3.0",
@@ -162,7 +163,7 @@
     "marked": "^13.0.2",
     "material-components-web": "^14.0.0",
     "material-icons": "^1.13.1",
-    "monaco-editor": "^0.34.1",
+    "monaco-editor": "^0.46.0",
     "node-cmd": "^5.0.0",
     "node-gyp": "^10.1.0",
     "node-machine-id": "^1.1.12",

@@ -127,6 +127,15 @@
             </div>
           </div>
 
+          <div class="group" style="display:none;">
+            <div class="item" action="update" data-tippy="tooltip" data-mdb-placement="right" data-mulang="a new update is available" capitalize-first data-title="A new update is available">
+              <div class="sub-content btn" data-mdb-ripple-color="dark" style="position:relative;">
+                <div class="circle"></div>
+                <ion-icon name="arrow-up-circle" style="color: white;"></ion-icon>
+              </div>
+            </div>
+          </div>
+
           <!-- More options/sections
           For example: close all connections with clusters, restart the app -->
           <div class="group">
@@ -964,6 +973,11 @@
                     <span mulang="limits" capitalize></span>
                   </div>
                 </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="updates">
+                    <span mulang="updates" capitalize></span>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="side-right">
@@ -1130,6 +1144,82 @@
                       <input class="form-check-input" type="checkbox" id="sandboxProjects" no-color>
                       <label class="form-check-label" style="display: inline;" for="sandboxProjects">
                         <span mulang="create and run Cassandra® nodes in isolated containers" capitalize-first></span>.
+                      </label>
+                    </div>
+                    <div class="small-hint no-select">
+                      <small>
+                        <span mulang="this update needs an app restart" capitalize-first></span>.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+                <div class="row flex margin-bottom flex-advanced">
+                  <div class="col-md-3">
+                    <div>
+                      <span mulang="basic session" capitalize></span>:
+                    </div>
+                  </div>
+                  <div class="col-md-9">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="basicCQLSH" no-color>
+                      <label class="form-check-label" style="display: inline;" for="basicCQLSH">
+                        <span mulang="create terminal for a basic cqlsh session" capitalize-first></span>.
+                      </label>
+                    </div>
+                    <div class="small-hint no-select">
+                      <small>
+                        <span mulang="this update will applied to the upcoming active connections" capitalize-first></span>.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-section" section="updates" hidden>
+                <div style="margin-bottom: 30px;margin-left: 10px;opacity: 0.7;">
+                  <span class="badge badge-secondary" style="opacity: 0.9;">
+                    <span mulang="check for updates" capitalize></span>
+                  </span>
+                </div>
+                <div class="row flex margin-bottom flex-advanced">
+                  <div class="col-md-3" style="width: fit-content; margin-right: 15px;">
+                    <button id="checkNowForUpdates" type="button" class="btn btn-secondary btn-sm" data-mdb-ripple-color="dark" style="transform: scale(0.9);">
+                      <span mulang="check now"></span>
+                      <l-momentum size="15" speed="0.7" color="#262626" style="position: relative; bottom: 3px; right: -4px;"></l-momentum>
+                    </button>
+                    <span class="vertical-seperator"></span>
+                  </div>
+                  <div class="col-md-9 btn btn-primiary btn-sm btn-rounded" data-mdb-ripple-color="dark" check-result>
+                    <span mulang="you've the latest version" capitalize-first></span>
+                    <ion-icon name="expand-2"></ion-icon>
+                  </div>
+                </div>
+                <div style="margin-bottom: 30px;margin-left: 10px;opacity: 0.7;">
+                  <span class="badge badge-secondary" style="opacity: 0.9;">
+                    <span mulang="related settings" capitalize></span>
+                  </span>
+                </div>
+                <div class="row flex margin-bottom flex-advanced">
+                  <div class="col-md-12">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="checkForUpdatesOnLanuch" no-color>
+                      <label class="form-check-label" style="display: inline;" for="checkForUpdatesOnLanuch">
+                        <span mulang="check for updates on lanuch" capitalize-first></span>.
+                      </label>
+                    </div>
+                    <div class="small-hint no-select">
+                      <small>
+                        <span mulang="this update needs an app restart" capitalize-first></span>.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row flex margin-bottom flex-advanced" hidden>
+                  <div class="col-md-12">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="autoUpdateWithNotification" no-color>
+                      <label class="form-check-label" style="display: inline;" for="autoUpdateWithNotification">
+                        <span mulang="auto update with notification" capitalize-first></span>.
                       </label>
                     </div>
                     <div class="small-hint no-select">
@@ -1391,7 +1481,6 @@
                     <div class="info" style="font-family: 'Brand', 'Main', 'Minor', 'SimplifiedChinese', sans-serif;">
                       <div id="apptitle" style="font-size: 150%;margin-top: 15px;"></div>
                       <div id="appversion" class="badge badge-secondary" style="padding-top: 6px;margin-top: 20px;"></div>
-                      <div id="cqlshversion" class="badge badge-secondary" style="padding-top: 6px;margin-top: 20px;">cqlsh %CQLSH_VERSION%</div>
                       <div class="app-info-actions">
                         <button id="copyReleaseVersion" type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the version" data-mulang="copy the release version"
                           capitalize-first>
@@ -1407,7 +1496,7 @@
                       </button>
                       <div id="moreAbout">
                         <div data-version="binaries">
-                          binaries v<span>0.1.1</span>
+                          cqlsh v<span>0.1.1</span>
                           <button type="button" class="btn btn-tertiary open-link" data-mdb-ripple-color="light">
                             <ion-icon name="external-link"></ion-icon>
                           </button>
@@ -1518,6 +1607,75 @@
               </button>
               <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal" onclick="setTimeout(() => $('#importWorkspacesReset').click(), 1000)" hidden>
                 <span mulang="close"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal top fade" id="appUpdate" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <div class="icon">
+                <lottie-player src="../assets/lottie/update.json" background="transparent" autoplay loop speed="1.1"></lottie-player>
+              </div>
+              <span mulang="a new update is available" capitalize></span>
+            </h5>
+            <span class="badge badge-secondary"></span>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="card fit-content" content="version">
+              <div class="card-body">
+                <div class="content-title">
+                  <span mulang="version" capitalize></span>
+                </div>
+                <span class="badge rounded-pill badge-secondary" current>
+                  <span class="version"></span>
+                </span>
+                <ion-icon name="arrow-up"></ion-icon>
+                <span class="badge rounded-pill badge-primary" new>
+                  <span class="version"></span>
+                  <ion-icon name="external-link"></ion-icon>
+                  <span class="button btn btn-tertiary" data-mdb-ripple-color="dark"></span>
+                </span>
+              </div>
+            </div>
+            <div class="card" content="changelog">
+              <div class="card-body">
+                <div class="content-title">
+                  <span mulang="changelog" capitalize></span>
+                </div>
+                <div class="changelog-content">
+                </div>
+              </div>
+            </div>
+            <div class="card" content="assets">
+              <div class="card-body">
+                <div class="content-title">
+                  <span mulang="download assets" capitalize></span>
+                  <ion-icon name="assets-linux"></ion-icon>
+                </div>
+              </div>
+            </div>
+            <div class="card" content="info">
+              <div class="card-body">
+                <div class="content-title">
+                  <span mulang="info" capitalize></span>
+                </div>
+                <div class="package-manager-info">
+                  <span></span>.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer" style="justify-content: space-between;">
+            <div>
+              <button type="button" class="btn btn-primary btn-dark btn-sm" id="dismissUpdate">
+                <span mulang="dismiss this update"></span>
               </button>
             </div>
           </div>

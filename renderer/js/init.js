@@ -735,7 +735,7 @@ $(document).on('initialize', () => {
   // ldrs.js
   {
     let ldrsPath = Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js'),
-      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square']
+      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'momentum']
 
     try {
       import(ldrsPath).then((loaders) => usedLoaders.forEach((loader) => loaders[loader].register()))
@@ -1300,6 +1300,8 @@ $(document).on('initialize', () => {
     // Set the app's name and version
     (['title', 'version']).forEach((info) => document.getElementById(`app${info}`).innerHTML = AppInfo[info])
 
+    $('div.modal#appUpdate').find('span.badge[current] span.version').text(`${AppInfo.version}`)
+
     $('button#copyReleaseVersion').click(() => {
       // Copy the result to the clipboard
       try {
@@ -1359,7 +1361,6 @@ $(document).on('initialize', () => setTimeout(() => {
   })
 }, 2000))
 
-
 // Send the `loaded` event to the main thread, and show the `About` dialog/modal
 $(document).on('initialize', () => setTimeout(() => {
   $('div#moreAbout').children('div[data-version]:not([data-version="binaries"])').each(function() {
@@ -1374,10 +1375,203 @@ $(document).on('initialize', () => setTimeout(() => {
       $(this).children('span').text(version)
     } catch (e) {}
   })
+
+  Modules.Config.getConfig((config) => {
+    // Whether or not the copyright notice is acknowledged already
+    let isCheckingForUpdatesEnabled = config.get('updates', 'checkForUpdates') == 'true'
+
+    // If it's not then skip the upcoming code - the app won't be loaded till the checkbox is checked -
+    if (!isCheckingForUpdatesEnabled)
+      return
+
+    $(document).ready(() => setTimeout(() => $(document).trigger('checkForUpdates'), 3000))
+  })
 }, 3000))
 
+$(document).on('checkForUpdates', function(e, manualCheck = false) {
+  IPCRenderer.invoke('check-app-format').then((info) => {
+    try {
+      if (!info.devMode)
+        throw 0
+
+      if (manualCheck)
+        showToast(I18next.capitalize(I18next.t('check for updates')), I18next.capitalizeFirstLetter(I18next.t(`in the development mode it's not allowed to check for updates. This feature is is only available in the production mode any its different formats`) + '.'), 'failure')
+
+      $('button#checkNowForUpdates').removeClass('checking disabled')
+      $(`div[check-result]`).removeClass('show')
+
+      return
+    } catch (e) {}
 
 
+    Modules.Config.getConfig((config) => {
+      let isCheckingForUpdatesEnabled = config.get('updates', 'checkForUpdates') == 'true',
+        isAutoUpdateEnabled = config.get('updates', 'autoUpdate') == 'true',
+        appUpdateModal = $('div.modal#appUpdate'),
+        ignoreTheUpdate = false
+
+      if (!isCheckingForUpdatesEnabled && !manualCheck)
+        return
+
+      Modules.Update.checkForUpdates((result) => {
+        try {
+          ignoreTheUpdate = !result.updateAvailable || (result.dismissed && !manualCheck),
+            checkResult = result.updateAvailable ? `there's a new update!` : `you've the latest version`
+
+          try {
+            if (!manualCheck)
+              throw 0
+
+            setTimeout(() => {
+              $(`div[check-result]`).children('span').attr('mulang', checkResult)
+
+              $(`div[check-result]`).toggleClass('btn-primary', result.updateAvailable).toggleClass('btn-secondary', !result.updateAvailable)
+
+              $('button#checkNowForUpdates').removeClass('checking disabled')
+
+              $(`div[check-result]`).addClass('show')
+
+              $(`div[check-result]`).find('ion-icon').toggle(result.updateAvailable)
+
+              setTimeout(() => Modules.Localization.applyLanguageSpecific($(`div[check-result]`).children('span')))
+            }, 500)
+          } catch (e) {}
+
+          appUpdateModal.find('span.badge[new] span.version').text(`${result.releaseInfo.name}`)
+
+          try {
+            let infoPM = appUpdateModal.find('div.package-manager-info span'),
+              detectedFormats = Object.keys(info).filter((format) => info[format]),
+              relatedPM = {
+                macOSAppStore: 'App ' + I18next.t('store'),
+                windowsStore: 'Windows ' + I18next.t('store'),
+                linuxSnap: 'Snap',
+                linuxFlatpak: 'Flathub'
+              }
+
+            if (detectedFormats.length <= 0)
+              throw 0
+
+            $('div.card[content="info"]').show()
+
+            infoPM.html(I18next.capitalizeFirstLetter(I18next.replaceData(`you can dismiss this notification and check [b]$data[/b] and see if the update is available there`, [relatedPM[detectedFormats[0]]])) + '.')
+          } catch (e) {
+            $('div.card[content="info"]').hide()
+          }
+
+          appUpdateModal.find('span.badge[new]').unbind('click').click(() => {
+            try {
+              Open(`${result.releaseInfo.html_url}`)
+            } catch (e) {}
+          })
+
+          try {
+            let changeLog = `${result.releaseInfo.body}`
+
+            changeLog = changeLog.trim()
+
+            changeLog = Marked.parse(changeLog)
+
+            appUpdateModal.find('div.changelog-content').html(`${changeLog}`).show(function() {
+              $(this).find('br').remove()
+
+              $(this).find('li').each(function() {
+                let text = $(this).text()
+                text = `${text}`.replace(/\s*in\s*https.+/gi, '')
+
+                $(this).text(`${text}.`)
+              })
+
+              $(this).find('a').show(function() {
+                let href = `${$(this).attr('href')}`
+
+                $(this).attr({
+                  'href': '#',
+                  'open-href': `${href}`
+                })
+              }).click(function() {
+                try {
+                  Open($(this).attr('open-href'))
+                } catch (e) {}
+              })
+            })
+          } catch (e) {}
+
+          try {
+            let platform = OS.platform(),
+              architectures = [...(OS.arch() == 'x64' ? ['x64', 'amd64'] : [OS.arch()])],
+              assetPlatform = (platform == 'win32') ? 'win' : (platform == 'darwin' ? 'mac' : platform),
+              assets = result.releaseInfo.assets.filter((asset) => minifyText(asset.name).includes(assetPlatform) && !`${asset.name}`.search('sha256')) || [],
+              assetsContainer = appUpdateModal.find(`div.card[content="assets"] div.card-body`)
+
+            let filterdAssets = [...assets]
+
+            assets = assets.filter((asset) => architectures.some((arch) => minifyText(asset.name).includes(arch)))
+
+            if (assets.length <= 0)
+              assets = filterdAssets
+
+            appUpdateModal.find(`div.card[content="assets"]`).find(`ion-icon`).attr('name', `assets-${platform}`)
+
+            assets = assets.map((asset) => {
+              asset.name = `${asset.name}`.replace(/^.*?(\d+)/gi, '$1')
+
+              return {
+                url: asset.browser_download_url,
+                size: asset.size,
+                name: asset.name
+              }
+            })
+
+            if (assets.length != 0)
+              assetsContainer.find('div.asset').remove()
+
+            for (let asset of assets) {
+              let element = `
+                  <div class="asset" download-url="${asset.url}">
+                    <div class="name">
+                      ${asset.name}
+                    </div>
+                    <div class="size">
+                      (${ByteSize(asset.size)})
+                    </div>
+                    <div class="icon">
+                      <ion-icon name="download"></ion-icon>
+                    </div>
+                    <span class="button btn btn-tertiary" data-mdb-ripple-color="light"></span>
+                  </div>`
+
+              assetsContainer.append($(element).click(function() {
+                Open(`${$(this).attr('download-url')}`)
+              }))
+            }
+          } catch (e) {}
+
+          $('button#dismissUpdate').unbind('click').click(function() {
+            try {
+              Store.set('dismissUpdate', `${result.releaseInfo.name}`)
+
+              showToast(I18next.capitalize(I18next.t('dismiss update')), I18next.capitalizeFirstLetter(I18next.replaceData('the update with the specific version [b]$data[/b] has been dismissed, however, you can still reach this update from the settings section', [result.releaseInfo.name])) + '.', 'success')
+
+              getElementMDBObject(appUpdateModal, 'Modal').hide()
+
+              setTimeout(() => $('div.body div.left div.content div.navigation div.group div.item[action="update"]').parent().slideUp(300), 250)
+            } catch (e) {}
+          })
+
+          if (ignoreTheUpdate)
+            throw 0
+
+          setTimeout(() => {
+            $('div.body div.left div.content div.navigation div.group div.item[action="update"]').parent().slideDown(300)
+
+            setTimeout(() => getElementMDBObject(appUpdateModal, 'Modal').show(), 500)
+          }, 500)
+        } catch (e) {}
+      })
+    })
+  })
+})
 
 // Once the UI is ready, get all workspaces
 $(document).ready(() => IPCRenderer.on('windows-shown', () => $(document).trigger('getWorkspaces')))

@@ -907,6 +907,27 @@ App.on('second-instance', () => {
       popUpMenu.popup(views.main)
     })
   }
+
+  // Check whether or not the current app's format supported by the auto update process
+  IPCMain.handle('check-app-format', () => {
+    let info = {}
+
+    try {
+      info = {
+        devMode: !App.isPackaged,
+        macOSAppStore: process.mas,
+        windowsStore: process.windowsStore,
+        linuxSnap: process.env.SNAP || process.env.SNAP_REVISION,
+        linuxFlatpak: process.env.FLATPAK_ID
+      }
+
+      Object.keys(info).forEach((format) => {
+        info[format] = info[format] || false
+      })
+    } catch (e) {}
+
+    return info
+  })
 }
 
 /**

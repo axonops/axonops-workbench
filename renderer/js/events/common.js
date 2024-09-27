@@ -436,6 +436,9 @@
         contentProtection = await Keytar.findPassword('AxonOpsWorkbenchContentProtection') || false,
         loggingEnabled = config.get('security', 'loggingEnabled'),
         sandboxProjectsEnabled = config.get('features', 'sandboxProjects'),
+        basicCQLSHEnabled = config.get('features', 'basicCQLSH'),
+        checkForUpdates = config.get('updates', 'checkForUpdates'),
+        autoUpdate = config.get('updates', 'autoUpdate'),
         displayLanguage = config.get('ui', 'language')
 
       // Add log for this action
@@ -460,8 +463,13 @@
       // Check the logging system
       $('input#loggingSystem[type="checkbox"]').prop('checked', loggingEnabled == 'true')
 
+      $('input#checkForUpdatesOnLanuch[type="checkbox"]').prop('checked', checkForUpdates == 'true')
+      $('input#autoUpdateWithNotification[type="checkbox"]').prop('checked', autoUpdate == 'true')
+
       // Check the sandbox projects
       $('input#sandboxProjects[type="checkbox"]').prop('checked', sandboxProjectsEnabled == 'true')
+
+      $('input#basicCQLSH[type="checkbox"]').prop('checked', basicCQLSHEnabled == 'true')
 
       /**
        * Check the chosen display language - whether it's valid or not -
@@ -497,6 +505,34 @@
 
     // Show it when click the associated icon
     $(`${selector}[action="about"]`).click(() => aboutModal.show())
+  }
+
+  {
+    let appUpdateModal = getElementMDBObject($('#appUpdate'), 'Modal')
+
+    // Show it when click the associated icon
+    $(`${selector}[action="update"]`).click(() => appUpdateModal.show())
+
+    $("#appUpdate")[0].addEventListener('hidden.mdb.modal', () => $('#appSettings').css('z-index', '1055'))
+
+    $("#appUpdate")[0].addEventListener('show.mdb.modal', () => $('#appSettings').css('z-index', '1'))
+
+    $('button#checkNowForUpdates').click(function() {
+      $(this).addClass('checking disabled')
+
+      $(`div[check-result]`).removeClass('show')
+
+      Store.remove('dismissUpdate')
+
+      $(document).trigger('checkForUpdates', true)
+    })
+
+    $(`div[check-result]`).click(function() {
+      if ($(this).hasClass('btn-secondary'))
+        return
+
+      appUpdateModal.show()
+    })
   }
 
   // Handle the click of items in more options/settings menu
@@ -690,9 +726,12 @@
         loggingEnabled = $('input#loggingSystem[type="checkbox"]').prop('checked'),
         // Check the sandbox projects enable/disable status
         sandboxProjectsEnabled = $('input#sandboxProjects[type="checkbox"]').prop('checked'),
+        basicCQLSHEnabled = $('input#basicCQLSH[type="checkbox"]').prop('checked'),
         // Get the maximum allowed running instances
         maxNumCQLSHSessions = $('input#maxNumCQLSHSessions').val(),
         maxNumSandboxProjects = $('input#maxNumSandboxProjects').val(),
+        checkForUpdatesOnLanuch = $('input#checkForUpdatesOnLanuch[type="checkbox"]').prop('checked'),
+        autoUpdateWithNotification = $('input#autoUpdateWithNotification[type="checkbox"]').prop('checked'),
         // Get chosen display language and if it's from right to left
         [chosenDisplayLanguage, languageRTL] = getAttributes($('input#languageUI'), ['hidden-value', 'rtl'])
 
@@ -718,9 +757,12 @@
           Keytar.setPassword('AxonOpsWorkbenchContentProtection', 'value', `${contentProtection}`)
           config.set('security', 'loggingEnabled', loggingEnabled)
           config.set('features', 'sandboxProjects', sandboxProjectsEnabled)
+          config.set('features', 'basicCQLSH', basicCQLSHEnabled)
           config.set('limit', 'cqlsh', maxNumCQLSHSessions)
           config.set('limit', 'sandbox', maxNumSandboxProjects)
           config.set('ui', 'language', chosenDisplayLanguage)
+          config.set('updates', 'checkForUpdates', checkForUpdatesOnLanuch)
+          config.set('updates', 'autoUpdate', autoUpdateWithNotification)
 
           // Set the updated settings
           Modules.Config.setConfig(config)

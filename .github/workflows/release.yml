@@ -33,7 +33,7 @@ jobs:
         run: |
           OPTIONS=""
           if [[ $GITHUB_REF_NAME == *"internal"* ]] || [[ $GITHUB_REF_NAME == *"beta"* ]]; then
-            OPTIONS="--draft"
+            OPTIONS="--prerelease"
           fi
           gh release create "$GITHUB_REF_NAME" \
               --repo="$GITHUB_REPOSITORY" \

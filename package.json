@@ -62,10 +62,7 @@
       "type": "distribution",
       "entitlements": "./resources/entitlements.mac.plist",
       "entitlementsInherit": "./resources/entitlements.mac.plist",
-      "provisioningProfile": "./resources/workbenchcassandra.provisionprofile",
-      "extraFiles": [
-        "./resources/workbenchcassandra.provisionprofile"
-      ],
+      "provisioningProfile": "./resources/MacAppStore.provisionprofile",
       "notarize": {
         "teamId": "UJ776LUP23"
       },
@@ -109,9 +106,10 @@
     "snap": "electron-builder --linux snap --publish never",
     "linux": "electron-builder --linux tar.gz deb rpm --publish never",
     "linux:arm64": "electron-builder --linux tar.gz deb rpm --publish never --arm64",
-    "mac": "electron-builder --mac dmg zip pkg --publish never --x64",
-    "mac:mas": "electron-builder --mac dmg zip pkg --publish never",
-    "mac:arm64": "electron-builder --mac dmg zip pkg --publish never --arm64",
+    "mac": "electron-builder --mac dmg zip pkg mas --publish onTag --x64",
+    "mac:mas:dev": "electron-builder --mac mas-dev --publish never",
+    "mac:mas": "electron-builder --mac mas",
+    "mac:arm64": "electron-builder --mac dmg zip pkg mas --publish onTag --arm64",
     "mac:zip": "electron-builder --mac zip --publish never",
     "mac:pkg": "electron-builder --mac pkg --publish never",
     "postinstall": "electron-builder install-app-deps"

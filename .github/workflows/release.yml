@@ -234,17 +234,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create SBOM xml
-        uses: CycloneDX/gh-node-module-generatebom@v1
-        with:
-          path: './'
-          output: 'dist/workbench.bom.xml'
-
       - name: Upload Artifacts
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/workbench.bom.xml
             dist/*.zip
             dist/*.pkg
             dist/*.dmg
@@ -263,6 +256,20 @@ jobs:
     needs: [build]
     if: ${{ !cancelled() && success() }}
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js v20.17.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.17.0
+
+      - name: Create SBOM xml
+        uses: CycloneDX/gh-node-module-generatebom@v1
+        with:
+          path: './'
+          output: 'workbench.bom.xml'
+
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
@@ -272,6 +279,13 @@ jobs:
         uses: anchore/sbom-action/publish-sbom@v0
         with:
           sbom-artifact-match: ".*\\.spdx$"
+
+      - name: Upload Artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: 'workbench.bom.xml'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 # Release choco and brew
   release-brew:

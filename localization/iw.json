@@ -358,7 +358,7 @@
       "validate data": "אימות נתונים",
       "validate files": "אימות קבצים",
       "variable name": "שם משתנה",
-      "variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters": "למשתנה או יותר אין שם או ערך חוקיים, ודא ששמות וערכים ייחודיים מסופקים עבור כל משתנה וששם המשתנה הוא רק ספרות ואותיות",
+      "variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters, underscore symbol [code]_[/code] is allowed": "למשתנה או יותר אין שם או ערך חוקיים, ודא ששמות וערכים ייחודיים מסופקים עבור כל משתנה ושם המשתנה הוא רק ספרות ואותיות, סימן קו תחתון [code]_[/code] מותר",
       "variable value": "ערך משתנה",
       "variables have been refreshed": "המשתנים עברו רענון",
       "variables": "משתנים",

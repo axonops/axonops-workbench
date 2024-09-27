@@ -358,7 +358,7 @@
       "validate data": "Valider les données",
       "validate files": "Valider les fichiers",
       "variable name": "Nom de la variable",
-      "variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters": "variable ou plus n’ont pas de nom ou de valeur valide, assurez-vous que des noms et des valeurs uniques sont fournis pour chaque variable et que le nom de la variable n’est composé que de chiffres et de lettres",
+      "variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters, underscore symbol [code]_[/code] is allowed": "une ou plusieurs variables n'ont pas de nom ou de valeur valide, assurez-vous que des noms et des valeurs uniques sont fournis pour chaque variable et que le nom de la variable ne contient que des chiffres et des lettres, le symbole de soulignement [code]_[/code] est autorisé",
       "variable value": "Valeur de la variable",
       "variables have been refreshed": "Les variables ont été actualisées",
       "variables": "Variables",

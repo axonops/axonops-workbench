@@ -101,7 +101,6 @@
         tempWorkspaces = [], // Temp array that will hold the selected workspaces
         variableNewValue = valueInput.val() // Save the variable's new value
 
-
       try {
         // Reset the viewing state of the nested variables
         if (resolveVariables.find('ion-icon').attr('name') != 'eye-closed')
@@ -126,12 +125,15 @@
         selectedWorkspaces = selectedWorkspaces.map((workspace) => workspace.id)
 
       // Make sure both name and value for the current variable/row are not empty
-      if ([nameInput.val(), variableNewValue].some((val) => `${val}`.trim().length <= 0) || !(/^\d*[a-zA-Z][a-zA-Z\d]*$/g.test(`${nameInput.val()}`))) {
+      if ([nameInput.val(), variableNewValue].some((val) => `${val}`.trim().length <= 0) || !(/^\d*[a-zA-Z_][a-zA-Z\d_]*$/g.test(`${nameInput.val()}`))) {
         // If not, show feedback to the user
-        failureMessage = I18next.capitalizeFirstLetter(I18next.t('variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters'))
+        failureMessage = I18next.capitalizeFirstLetter(I18next.t('variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters, underscore symbol [code]_[/code] is allowed'))
 
         // By setting the `collision` value to true the process will be stopped entirely
         collision = true
+
+        // Show feedback to the user
+        row.find('input[type="text"]').addClass('is-invalid')
 
         // Return `false` to stop the loop of `each` row
         return false
@@ -170,6 +172,9 @@
 
         // Show feedback to the user
         failureMessage = I18next.capitalizeFirstLetter(I18next.replaceData('a collision has been detected in variable $data, please consider to $data to prevent that collision', [inValue ? ' <b>' + collision[0].name + '</b> and <b>' + collision[1].name + '</b>' : ' <b>' + collision[0].name + '</b>', I18next.t(inValue ? 'change their values' : 'adjust the variable scope')]))
+
+        // Show feedback to the user
+        row.find('input[type="text"]').addClass('is-invalid')
 
         // Return `false` to stop the loop of `each` row
         return false
@@ -671,6 +676,9 @@
           }
         })
       })
+
+      // Reset the `invalid` feedback
+      setTimeout(() => $(this).find('input[type="text"]').on('input click focus', () => $(this).find('input[type="text"]').removeClass('is-invalid')))
 
       // Apply the chosen language on the UI element after being fully loaded
       setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))

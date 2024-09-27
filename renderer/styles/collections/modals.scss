@@ -183,6 +183,12 @@ div.modal {
               overflow-y: scroll;
               @include scrollbar(#2c2c2c, #262626);
 
+              div.variable {
+                input[type="text"] {
+                  margin-bottom: 0 !important;
+                }
+              }
+
               div.content {
                 padding: 5px 0;
 

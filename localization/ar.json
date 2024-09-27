@@ -357,7 +357,7 @@
       "validate data": "التحقق من صحة البيانات",
       "validate files": "التحقق من صفحة الملفات",
       "variable name": "اسم المتغير",
-      "variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters": "متغير أو أكثر ليس لديهم اسم أو قيمة صالحة، تأكد من صحة الأسماء والقيم المقدمة للمتغيرات وأن الأسماء تحتوي فقط على أرقام وحروف إنجليزية",
+      "variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters, underscore symbol [code]_[/code] is allowed": "متغير أو أكثر ليس لديهم اسم أو قيمة صالحة، تأكد من صحة الأسماء والقيم المقدمة للمتغيرات وأن الأسماء تحتوي فقط على أرقام وحروف إنجليزية، يُسمح باستخدام الشرطة سفلية [code]_[/code]",
       "variable value": "قيمة المتغير",
       "variables have been refreshed": "لقد تم تحديث المتغيرات",
       "variables": "المتغيرات",

@@ -358,7 +358,7 @@
       "validate data": "validate data",
       "validate files": "validate files",
       "variable name": "variable name",
-      "variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters": "variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters",
+      "variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters, underscore symbol [code]_[/code] is allowed": "variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters, underscore symbol [code]_[/code] is allowed",
       "variable value": "variable value",
       "variables have been refreshed": "variables have been refreshed",
       "variables": "variables",

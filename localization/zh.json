@@ -358,7 +358,7 @@
       "validate data": "验证数据",
       "validate files": "验证文件",
       "variable name": "变量名称",
-      "variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters": "变量或多个变量没有有效的名称或值，请确保为每个变量提供唯一的名称和值，并且变量名称仅包含数字和字母",
+      "variable or more are not having a valid name or value, make sure unique names and values are provided for each variable and the variable name is only digits and letters, underscore symbol [code]_[/code] is allowed": "一个或多个变量没有有效的名称或值，[b]请确保为每个变量提供唯一的名称和值，并且变量名只能是数字和字母，允许使用下划线符号 [code]_[/code]",
       "variable value": "变量值",
       "variables have been refreshed": "变量已刷新",
       "variables": "变量",

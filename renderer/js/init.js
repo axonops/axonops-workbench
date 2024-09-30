@@ -1447,14 +1447,15 @@ $(document).on('checkForUpdates', function(e, manualCheck = false) {
                 windowsStore: 'Windows ' + I18next.t('store'),
                 linuxSnap: 'Snap',
                 linuxFlatpak: 'Flathub'
-              }
+              },
+              detectedPM = `${relatedPM[detectedFormats[0]]}`
 
-            if (detectedFormats.length <= 0)
+            if (detectedFormats.length <= 0 || detectedPM == 'undefined')
               throw 0
 
             $('div.card[content="info"]').show()
 
-            infoPM.html(I18next.capitalizeFirstLetter(I18next.replaceData(`you can dismiss this notification and check [b]$data[/b] and see if the update is available there`, [relatedPM[detectedFormats[0]]])) + '.')
+            infoPM.html(I18next.capitalizeFirstLetter(I18next.replaceData(`you can dismiss this notification and check [b]$data[/b] and see if the update is available there`, [detectedPM])) + '.')
           } catch (e) {
             $('div.card[content="info"]').hide()
           }
@@ -1494,6 +1495,8 @@ $(document).on('checkForUpdates', function(e, manualCheck = false) {
                   Open($(this).attr('open-href'))
                 } catch (e) {}
               })
+
+              $(this).parent().parent().toggle(minifyText($(this).html()).length > 0)
             })
           } catch (e) {}
 

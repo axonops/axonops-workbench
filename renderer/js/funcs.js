@@ -877,8 +877,7 @@ let convertTableToTabulator = (json, container, callback) => {
           }
         })
 
-        // Return the created Tabulator object
-        callback(tabulatorTable)
+        tabulatorTable.on('columnsLoaded', () => callback(tabulatorTable))
       })
     } catch (e) {
       // Return `null` as a critical error has occured
@@ -993,7 +992,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Increase the counter
         numOfFoundSystemKeyspaces += 1
       } catch (e) {}
-      
+
       // Define the child's structure
       let structure = {
         id: childID,
@@ -3627,6 +3626,18 @@ let setUIColor = (workspaceColor) => {
     if (!tinyColor.isValid())
       return
 
+    // For highlight cql statements
+    let mainColor = tinyColor.isDark() ? TinyColor(invertColor(tinyColor.toHex())) : tinyColor,
+      highlightColors = mainColor.monochromatic().map((color) => {
+        color = color.isDark() ? TinyColor(invertColor(color.toHex())) : color
+
+        return `#${color.toHex()}`
+      })
+
+    highlightColors[0] = tinyColor.isDark() ? tinyColor.lighten(25) : tinyColor
+
+    highlightColors[0] = `#${highlightColors[0].toHex()}`
+
     // Define the stylesheet that will be applied
     let stylesheet = `
         <style id="uicolor">
@@ -3651,6 +3662,14 @@ let setUIColor = (workspaceColor) => {
           .tabulator .tabulator-footer .tabulator-page.active{background:${backgroundColor.hover} !important;color: ${textColor} !important}
           .colored-box-shadow{box-shadow: 0px 0px 20px 1px ${backgroundColor.hover.replace('70%', '40%')} !important;}
           :root {--workspace-background-color:${backgroundColor.default};}
+
+          .hljs-title, .hljs-name { color: ${highlightColors[1]}; }
+          .hljs-number, .hljs-symbol, .hljs-literal, .hljs-deletion, .hljs-link { color: ${highlightColors[2]}; }
+          .hljs-string, .hljs-doctag, .hljs-addition, .hljs-regexp, .hljs-selector-attr, .hljs-selector-pseudo { color: ${highlightColors[3]}; }
+          .hljs-attribute, .hljs-code, .hljs-selector-id { color: ${highlightColors[4]}; }
+          .hljs-keyword, .hljs-selector-tag, .hljs-bullet, .hljs-tag { color: ${highlightColors[0]}; }
+          .hljs-subst, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: ${highlightColors[5]}; }
+          .hljs-type, .hljs-built_in, .hljs-quote, .hljs-section, .hljs-selector-class { color: ${highlightColors[4]}; }
         </style>`
 
     // Append the stylesheet

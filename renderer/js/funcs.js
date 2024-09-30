@@ -3797,14 +3797,14 @@ let calcSwitchersAllowedHeight = () => {
 }
 
 /**
- * Set the right symbol `®` to "Apache Cassandra"
+ * Set the right symbol `®` to "Apache Cassandra®"
  *
  * @Parameters:
  * {string} `text` the text which the `®` symbol will be added to where Cassandra is located
  *
  * @Return: {string} final manipulated text
  */
-let setApacheCassandraRightSymbol = (text) => `${text}`.replace(/Cassandra/gm, 'Cassandra')
+let setApacheCassandraRightSymbol = (text) => `${text}`.replace(/Cassandra/gm, 'Cassandra®')
 
 /**
  * Add a new log text in the current logging session

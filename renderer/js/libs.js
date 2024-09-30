@@ -62,6 +62,7 @@ const OS = require('os'),
   TinyColor = require('tinycolor2'),
   // Convert a color's value from HEX to RGB
   HEXToRGB = require('hex-to-rgb'),
+  Highlight = require('highlight.js/lib/core'),
   // Convert ANSI escaped text streams to html
   ANSIToHTML = require('ansi-to-html'),
   // Return the absolute system-dependant path for the place where the app should store its data for the current user

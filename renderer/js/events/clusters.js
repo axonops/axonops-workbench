@@ -1297,9 +1297,19 @@
                       // Hide the emptiness class as there's at least one block now
                       sessionContainer.parent().find(`div.empty-statements`).removeClass('show')
 
-                      let finalInfoContent = (type == 'neutral' ? 'info' : type)
+                      let finalInfoContent = (type == 'neutral' ? 'info' : type),
+                        statementText = `${isOnlyInfo ? finalInfoContent : statement}`
 
                       finalInfoContent = `<span mulang="${finalInfoContent}" capitalize></span>`
+
+                      try {
+                        if (isOnlyInfo)
+                          throw 0
+
+                        statementText = Highlight.highlight(statementText, {
+                          language: 'cql'
+                        }).value
+                      } catch (e) {}
 
                       // The statement's block UI structure
                       let element = `
@@ -1308,7 +1318,7 @@
                                 <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
                                   <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
                                 </span>
-                                <div class="text"><pre>${isOnlyInfo ? finalInfoContent : statement}</pre></div>
+                                <div class="text"><pre>${statementText}</pre></div>
                                 <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
                                   <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
                                     data-mulang="copy the statement" capitalize-first>
@@ -1359,6 +1369,15 @@
                         if (callback != null)
                           callback($(this))
 
+                        // Scroll to the very bottom of the session's container
+                        setTimeout(() => {
+                          try {
+                            $(this).parent().animate({
+                              scrollTop: $(this).parent().get(0).scrollHeight
+                            }, 100)
+                          } catch (e) {}
+                        }, 250)
+
                         // Skip the upcoming code if the block is not an info
                         if (!isOnlyInfo)
                           return
@@ -1384,15 +1403,6 @@
                             } catch (e) {}
                           })
                         })
-
-                        // Scroll to the very bottom of the session's container
-                        setTimeout(() => {
-                          try {
-                            $(this).parent().animate({
-                              scrollTop: $(this).parent().get(0).scrollHeight
-                            }, 100)
-                          } catch (e) {}
-                        }, 200)
 
                         // Apply the chosen language on the UI element after being fully loaded
                         setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
@@ -2331,12 +2341,11 @@
                                   scrollTop: blockElement.parent().get(0).scrollHeight
                                 }, 100)
                               } catch (e) {}
-                            }, 100)
+                            }, 500)
                           }))
 
                           return
                         } catch (e) {}
-
 
                         // If no output has been detected then skip this try-catch block
                         if (!finalContent.includes('KEYWORD:OUTPUT:COMPLETED:ALL'))
@@ -2401,27 +2410,42 @@
                                   }
                                 } catch (e) {}
 
+                                let isOutputHighlighted = false
+
+                                try {
+                                  isOutputHighlighted = (['desc', 'describe'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound))
+                                } catch (e) {}
+
+                                try {
+                                  if (!isOutputHighlighted)
+                                    throw 0
+
+                                  match = Highlight.highlight(match, {
+                                    language: 'cql'
+                                  }).value
+                                } catch (e) {}
+
                                 // The sub output structure UI
                                 let element = `
-                                         <div class="sub-output ${isErrorFound ? 'error' : ''} ${isOutputInfo ? 'info': ''}">
-                                           <div class="sub-output-content"></div>
-                                           <div class="sub-actions" hidden>
-                                             <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block" data-mulang="download the block" capitalize-first>
-                                               <ion-icon name="download"></ion-icon>
-                                             </div>
-                                             <div class="download-options">
-                                               <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
-                                                 <ion-icon name="csv"></ion-icon>
-                                               </div>
-                                               <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
-                                                 <ion-icon name="pdf"></ion-icon>
-                                               </div>
-                                             </div>
-                                             <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Trace the query" data-mulang="trace the query" capitalize-first>
-                                               <ion-icon name="query-tracing"></ion-icon>
-                                             </div>
-                                           </div>
-                                         </div>`
+                                   <div class="sub-output ${isErrorFound ? 'error' : ''} ${isOutputInfo ? 'info': ''}">
+                                     <div class="sub-output-content"></div>
+                                     <div class="sub-actions" hidden>
+                                       <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block" data-mulang="download the block" capitalize-first>
+                                         <ion-icon name="download"></ion-icon>
+                                       </div>
+                                       <div class="download-options">
+                                         <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                           <ion-icon name="csv"></ion-icon>
+                                         </div>
+                                         <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                           <ion-icon name="pdf"></ion-icon>
+                                         </div>
+                                       </div>
+                                       <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Trace the query" data-mulang="trace the query" capitalize-first>
+                                         <ion-icon name="query-tracing"></ion-icon>
+                                       </div>
+                                     </div>
+                                   </div>`
 
                                 outputContainer.children('div.executing').hide()
 
@@ -2681,6 +2705,13 @@
                                       }
                                     })
                                   }
+
+                                  try {
+                                    if (OS.platform() != 'win32')
+                                      throw 0
+
+                                    match = match.replace(/\n(?![^<]*<\/span>)/gim, '')
+                                  } catch (e) {}
 
                                   // Manipulate the content
                                   match = match.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)

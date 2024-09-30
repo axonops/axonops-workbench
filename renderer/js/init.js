@@ -1052,6 +1052,12 @@ $(document).on('initialize', () => {
     })
   }
 
+  {
+    loadStyleSheet(Path.join(__dirname, '..', '..', 'node_modules', 'highlight.js', 'styles', 'hybrid.css'))
+
+    setTimeout(() => Highlight.registerLanguage('cql', require(Path.join(__dirname, '..', '..', 'renderer', 'js', 'cql_highlight.js'))))
+  }
+
   // TippyJS
   {
     let tippyPath = Path.join(__dirname, '..', 'js', 'external', 'tippyjs')

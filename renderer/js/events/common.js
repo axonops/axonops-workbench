@@ -437,6 +437,7 @@
         loggingEnabled = config.get('security', 'loggingEnabled'),
         sandboxProjectsEnabled = config.get('features', 'sandboxProjects'),
         basicCQLSHEnabled = config.get('features', 'basicCQLSH'),
+        assistantAIEnabled = config.get('features', 'AIAssistant'),
         checkForUpdates = config.get('updates', 'checkForUpdates'),
         autoUpdate = config.get('updates', 'autoUpdate'),
         displayLanguage = config.get('ui', 'language')
@@ -470,6 +471,8 @@
       $('input#sandboxProjects[type="checkbox"]').prop('checked', sandboxProjectsEnabled == 'true')
 
       $('input#basicCQLSH[type="checkbox"]').prop('checked', basicCQLSHEnabled == 'true')
+
+      $('input#enableAIAssistant[type="checkbox"]').prop('checked', assistantAIEnabled == 'true')
 
       /**
        * Check the chosen display language - whether it's valid or not -
@@ -727,6 +730,7 @@
         // Check the sandbox projects enable/disable status
         sandboxProjectsEnabled = $('input#sandboxProjects[type="checkbox"]').prop('checked'),
         basicCQLSHEnabled = $('input#basicCQLSH[type="checkbox"]').prop('checked'),
+        assistantAIEnabled = $('input#enableAIAssistant[type="checkbox"]').prop('checked'),
         // Get the maximum allowed running instances
         maxNumCQLSHSessions = $('input#maxNumCQLSHSessions').val(),
         maxNumSandboxProjects = $('input#maxNumSandboxProjects').val(),
@@ -758,6 +762,7 @@
           config.set('security', 'loggingEnabled', loggingEnabled)
           config.set('features', 'sandboxProjects', sandboxProjectsEnabled)
           config.set('features', 'basicCQLSH', basicCQLSHEnabled)
+          config.set('features', 'AIAssistant', assistantAIEnabled)
           config.set('limit', 'cqlsh', maxNumCQLSHSessions)
           config.set('limit', 'sandbox', maxNumSandboxProjects)
           config.set('ui', 'language', chosenDisplayLanguage)

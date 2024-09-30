@@ -334,7 +334,7 @@ $(document).on('initialize', async () => getMachineID().then((id) => {
   // Add the first set of logs
   setTimeout(() => {
     try {
-      addLog(`AxonOps™ Workbench has loaded all components and is ready to be used`)
+      addLog(`AxonOps Workbench has loaded all components and is ready to be used`)
       addLog(`This machine has a unique ID of '${machineID}'`, 'env')
     } catch (e) {}
   }, 1000)

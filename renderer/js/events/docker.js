@@ -62,14 +62,14 @@
        * Get the project's name - optional -
        */
       let dockerProjectName = $(`${dialog}`).find(`input#dockerProjectName`).val(),
-        // Get the preferred Cassandra® version
+        // Get the preferred Cassandra version
         cassandraVersion = $(`${dialog}`).find(`input#apacheCassandraVersion`).val(),
-        // Get the number of Cassandra®'s nodes in the project
+        // Get the number of Cassandra's nodes in the project
         numOfNodes = parseInt($('input#numOfNodes').val()),
         // Get whether the project should be started once it's created or not
         immediateProjectRun = $(`${dialog}`).find(`input#immediateProjectRun`).prop('checked'),
         installAxonOps = $(`${dialog}`).find(`input#installAxonOps`).prop('checked'),
-        // Get the minimum and maximum number of Cassandra®'s nodes in the project
+        // Get the minimum and maximum number of Cassandra's nodes in the project
         [minNumOfNodes, maxNumOfNodes] = getAttributes($('input#numOfNodes'), ['min', 'max'])
 
       // Parse the minimum and maximum values to integer
@@ -81,7 +81,7 @@
 
       // Add log about the project's attributes
       try {
-        addLog(`The local cluster attributes are: [Cassandra® version: ${cassandraVersion}, Number of nodes: ${numOfNodes}]`)
+        addLog(`The local cluster attributes are: [Cassandra version: ${cassandraVersion}, Number of nodes: ${numOfNodes}]`)
       } catch (e) {}
 
       // Create a Docker instance/object
@@ -93,10 +93,10 @@
         if (manipulateText(dockerProjectName).length != 0)
           project.name = dockerProjectName
 
-        // Set Cassandra®'s version
+        // Set Cassandra's version
         project.cassandraVersion = cassandraVersion
 
-        // Set the number of Cassandra®'s nodes in the project
+        // Set the number of Cassandra's nodes in the project
         project.nodes = numOfNodes
 
         // Save the Docker project
@@ -106,7 +106,7 @@
             return showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to save the local cluster')) + '.', 'failure')
 
           // Successfully saved the project
-          showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster with Apache Cassandra® v$data has been successfully created and saved', [cassandraVersion])) + '.', 'success')
+          showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster with Apache Cassandra v$data has been successfully created and saved', [cassandraVersion])) + '.', 'success')
 
           // Either `refresh` or `get` workspaces based on the state of the process
           $(document).trigger(getAttributes($(this), 'data-refresh') == 'false' ? 'getWorkspaces' : 'refreshWorkspaces')

@@ -15,7 +15,7 @@
  */
 
 /**
- * Handle communication between the AxonOps™ AI Assistant webview and the app
+ * Handle communication between the AxonOps AI Assistant webview and the app
  * This file is a preload for the webview
  *
  * Once the content of the webview is loaded

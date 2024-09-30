@@ -1,6 +1,6 @@
 {
   "name": "axonops-workbench",
-  "title": "AxonOps™ Workbench",
+  "title": "AxonOps Workbench",
   "version": "0.1.1-internal-20240913-01",
   "author": {
     "name": "AxonOps",
@@ -8,7 +8,7 @@
   },
   "main": "main/main.js",
   "license": "Apache-2.0",
-  "description": "AxonOps™ Workbench",
+  "description": "AxonOps Workbench",
   "productName": "AxonOps Workbench",
   "companyName": "AxonOps Limited",
   "maintainers": [
@@ -42,7 +42,7 @@
       "category": "Development",
       "desktop": {
         "Name": "AxonOps Workbench",
-        "Common": "AxonOps™ Workbench",
+        "Common": "AxonOps Workbench",
         "Terminal": false,
         "Keywords": "cassandra;axonops;development;workbench",
         "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench.png"

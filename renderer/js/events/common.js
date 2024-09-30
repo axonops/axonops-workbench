@@ -62,7 +62,7 @@
 
       /**
        * Check if there's at least one visible opened sandbox project
-       * This process is done because the sandbox project has extra tabs - AxonOps™ -; so the app's window's width should be wider
+       * This process is done because the sandbox project has extra tabs - AxonOps -; so the app's window's width should be wider
        */
       let existsAxonopsTab = $('div.cluster-tabs ul.nav.nav-tabs li.axonops-tab').filter(':visible').length > 0
 

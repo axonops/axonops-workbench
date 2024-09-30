@@ -43,7 +43,7 @@ window.onload = () => {
       (['title', 'version']).forEach((info) => document.getElementById(info).innerHTML = AppInfo[info])
     } catch (e) {}
 
-    // Handle the Cassandra®'s copyright acknowledgement
+    // Handle the Cassandra's copyright acknowledgement
     {
       // Point at the intro's overall elements container
       let container = document.querySelector('center'),

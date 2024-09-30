@@ -17,7 +17,7 @@
   "build": {
     "icon": "./renderer/assets/images/axonops-icon-256x256.png",
     "copyright": "©2024 AxonOps Limited",
-    "appId": "com.axonops.workbench",
+    "appId": "com.axonops.workbench.cassandra",
     "compression": "maximum",
     "asarUnpack": "**/*.node",
     "extraResources": [

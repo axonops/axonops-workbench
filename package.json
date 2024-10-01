@@ -1,6 +1,6 @@
 {
   "name": "axonops-workbench",
-  "title": "AxonOps™ Workbench",
+  "title": "AxonOps Workbench",
   "version": "0.1.1-internal-20240913-01",
   "author": {
     "name": "AxonOps",
@@ -8,7 +8,7 @@
   },
   "main": "main/main.js",
   "license": "Apache-2.0",
-  "description": "AxonOps™ Workbench",
+  "description": "AxonOps Workbench",
   "productName": "AxonOps Workbench",
   "companyName": "AxonOps Limited",
   "maintainers": [
@@ -17,7 +17,7 @@
   "build": {
     "icon": "./renderer/assets/images/axonops-icon-256x256.png",
     "copyright": "©2024 AxonOps Limited",
-    "appId": "com.axonops.workbench",
+    "appId": "com.axonops.workbench.cassandra",
     "compression": "maximum",
     "asarUnpack": "**/*.node",
     "extraResources": [
@@ -25,11 +25,9 @@
       "main/bin",
       "config"
     ],
-    "publish": [
-      {
-        "provider": "github"
-      }
-    ],
+    "publish": [{
+      "provider": "github"
+    }],
     "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
@@ -44,7 +42,7 @@
       "category": "Development",
       "desktop": {
         "Name": "AxonOps Workbench",
-        "Common": "AxonOps™ Workbench",
+        "Common": "AxonOps Workbench",
         "Terminal": false,
         "Keywords": "cassandra;axonops;development;workbench",
         "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench.png"
@@ -147,6 +145,7 @@
     "extract-string": "^1.0.2",
     "fs-extra": "^11.1.1",
     "hex-to-rgb": "^1.0.1",
+    "highlight.js": "^11.10.0",
     "i18next": "^22.4.9",
     "id-16": "^1.0.5",
     "jquery": "^3.6.3",

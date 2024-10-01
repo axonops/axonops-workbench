@@ -62,7 +62,7 @@
 
       /**
        * Check if there's at least one visible opened sandbox project
-       * This process is done because the sandbox project has extra tabs - AxonOps™ -; so the app's window's width should be wider
+       * This process is done because the sandbox project has extra tabs - AxonOps -; so the app's window's width should be wider
        */
       let existsAxonopsTab = $('div.cluster-tabs ul.nav.nav-tabs li.axonops-tab').filter(':visible').length > 0
 
@@ -434,6 +434,7 @@
       let maxNumCQLSHSessions = config.get('limit', 'cqlsh'),
         maxNumSandboxProjects = config.get('limit', 'sandbox'),
         contentProtection = await Keytar.findPassword('AxonOpsWorkbenchContentProtection') || false,
+        assistantAIEnabled = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || true,
         loggingEnabled = config.get('security', 'loggingEnabled'),
         sandboxProjectsEnabled = config.get('features', 'sandboxProjects'),
         basicCQLSHEnabled = config.get('features', 'basicCQLSH'),
@@ -457,6 +458,11 @@
       // Check the content protection status
       $('input#contentProtection[type="checkbox"]').prop('checked', `${contentProtection}` == 'true').attr({
         'data-initial-status': `${contentProtection}`,
+        'data-authenticated': 'false'
+      })
+
+      $('input#enableAIAssistant[type="checkbox"]').prop('checked', `${assistantAIEnabled}` == 'true').attr({
+        'data-initial-status': `${assistantAIEnabled}`,
         'data-authenticated': 'false'
       })
 
@@ -727,6 +733,7 @@
         // Check the sandbox projects enable/disable status
         sandboxProjectsEnabled = $('input#sandboxProjects[type="checkbox"]').prop('checked'),
         basicCQLSHEnabled = $('input#basicCQLSH[type="checkbox"]').prop('checked'),
+        assistantAIEnabled = $('input#enableAIAssistant[type="checkbox"]').prop('checked'),
         // Get the maximum allowed running instances
         maxNumCQLSHSessions = $('input#maxNumCQLSHSessions').val(),
         maxNumSandboxProjects = $('input#maxNumSandboxProjects').val(),
@@ -750,6 +757,11 @@
         'data-authenticated': 'false'
       })
 
+      $('input#enableAIAssistant[type="checkbox"]').attr({
+        'data-initial-status': `${assistantAIEnabled}`,
+        'data-authenticated': 'false'
+      })
+
       try {
         // Get the current app's config/settings
         Modules.Config.getConfig((config) => {
@@ -758,6 +770,7 @@
           config.set('security', 'loggingEnabled', loggingEnabled)
           config.set('features', 'sandboxProjects', sandboxProjectsEnabled)
           config.set('features', 'basicCQLSH', basicCQLSHEnabled)
+          Keytar.setPassword('AxonOpsWorkbenchAIAssistant', 'value', `${assistantAIEnabled}`)
           config.set('limit', 'cqlsh', maxNumCQLSHSessions)
           config.set('limit', 'sandbox', maxNumSandboxProjects)
           config.set('ui', 'language', chosenDisplayLanguage)
@@ -786,12 +799,12 @@
   })
 
   // Attempt to change the `content protection` checkbox status
-  $('input#contentProtection[type="checkbox"]').change(function(event) {
+  $('input#contentProtection[type="checkbox"]').add($('input#enableAIAssistant[type="checkbox"]')).change(function(event) {
     // Get both; the initial status and whether or not the user has passed the authentication process
     [initialStatus, isAuthenticated] = getAttributes($(this), ['data-initial-status', 'data-authenticated'])
 
     // Based on the given result the process may be skipped and no need for an authentication process
-    if (initialStatus == 'false' || isAuthenticated != 'false')
+    if (initialStatus == ($(this).is($('input#enableAIAssistant[type="checkbox"]')) ? 'true' : 'false') || isAuthenticated != 'false')
       return
 
     // Get the new/updated status

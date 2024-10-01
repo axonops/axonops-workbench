@@ -877,8 +877,7 @@ let convertTableToTabulator = (json, container, callback) => {
           }
         })
 
-        // Return the created Tabulator object
-        callback(tabulatorTable)
+        tabulatorTable.on('columnsLoaded', () => callback(tabulatorTable))
       })
     } catch (e) {
       // Return `null` as a critical error has occured
@@ -959,6 +958,15 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       }
     }
 
+  // Get a random ID for the system's keyspaces container
+  let systemKeyspacesParentID = getRandomID(30),
+    /**
+     * Count the number of found system keyspaces in the connected to cluster
+     *
+     * This is a better approach in long term than hardcoding the number
+     */
+    numOfFoundSystemKeyspaces = 0
+
   /**
    * Inner function to build a child's leaf and append it to the tree view
    *
@@ -971,148 +979,159 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
    * {string} `?parentType` the child's parent type - partition, clustering, etc... -
    */
   let buildTreeViewForChild = (parentID, childID, text, object, icon = null, parentType = '') => {
-    // Define the parent's type
-    let setParentType = icon || `${parentType}`
+      // Define the parent's type
+      let setParentType = icon || `${parentType}`
 
-    // Define the child's structure
-    let structure = {
-      id: childID,
-      parent: parentID,
-      text: `<span>${object.name}</span>`,
-      type: 'default',
-      parentType: setParentType
-    }
+      try {
+        if (!(Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == object.name)))
+          throw 0
 
-    // If the title needs to be added then do this addition as a prefix
-    if (!ignoreTitles)
-      structure.text = `${text}: ${structure.text}`
+        // Update the parent's ID to be the `System Keyspaces` node
+        parentID = systemKeyspacesParentID
 
-    // If an icon has been passed then add it to the leaf's structure
-    if (icon != null)
-      structure.icon = normalizePath(Path.join(extraIconsPath, `${icon}.png`))
+        // Increase the counter
+        numOfFoundSystemKeyspaces += 1
+      } catch (e) {}
 
-    // Add the parent's ID
-    structure.a_attr = {
-      'parent': `${parentID}`
-    }
+      // Define the child's structure
+      let structure = {
+        id: childID,
+        parent: parentID,
+        text: `<span>${object.name}</span>`,
+        type: 'default',
+        parentType: setParentType
+      }
 
-    try {
-      if (text != `Index`)
-        throw 0
+      // If the title needs to be added then do this addition as a prefix
+      if (!ignoreTitles)
+        structure.text = `${text}: ${structure.text}`
 
-      structure.a_attr.table = parentType.table || null
-    } catch (e) {}
+      // If an icon has been passed then add it to the leaf's structure
+      if (icon != null)
+        structure.icon = normalizePath(Path.join(extraIconsPath, `${icon}.png`))
 
-    try {
-      // If the child is not any of the defined types then skip this try-catch block
-      if (['Keyspace', 'Table', 'View', 'Index'].every((type) => text != type))
-        throw 0
-
-      // Set an `a_attr` attribute with important sub-attributes
+      // Add the parent's ID
       structure.a_attr = {
-        ...structure.a_attr,
-        'allow-right-context': 'true',
-        'name': object.name,
-        'type': `${text}`.toLowerCase()
+        'parent': `${parentID}`
       }
 
       try {
-        structure.a_attr.keyspace = parentType.keyspace
+        if (text != `Index`)
+          throw 0
+
+        structure.a_attr.table = parentType.table || null
       } catch (e) {}
 
       try {
-        structure.a_attr.table = parentType.table
-      } catch (e) {}
-    } catch (e) {}
+        // If the child is not any of the defined types then skip this try-catch block
+        if (['Keyspace', 'Table', 'View', 'Index'].every((type) => text != type))
+          throw 0
 
-    /**
-     * If the child is a table or view then make sure to set the `parentType` to empty
-     * Not doing this would lead to incorrect structure
-     */
-    if (['Table', 'View'].some((type) => type == text))
-      parentType = ''
-
-    // Push the structure into the overall tree structure
-    treeStructure.core.data.push(structure)
-
-    try {
-      /**
-       * Check if the child has one or more of these attributes
-       *
-       * Define the attributes' names
-       */
-      let attributes = ['virtual', 'durable_writes', 'is_static', 'is_reversed']
-
-      if (parentType == 'partitionKeys')
-        attributes = `${attributes}`.slice(0, -2)
-
-      // Loop through them all
-      attributes.forEach((attribute) => {
-        // If the child doesn't have this attribute then skip it and move to the next one
-        if (object[attribute] == undefined)
-          return
-
-        // Otherwise, define that attribute's structure
-        let structure = {
-          id: getRandomID(30),
-          parent: childID,
-          text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: <span class="material-icons for-treeview">${object[attribute] ? 'check' : 'close'}</span>`,
-          type: 'default'
+        // Set an `a_attr` attribute with important sub-attributes
+        structure.a_attr = {
+          ...structure.a_attr,
+          'allow-right-context': 'true',
+          'name': object.name,
+          'type': `${text}`.toLowerCase()
         }
 
-        // Some changes would be applied if the current attribute is `virtual`
         try {
-          // If the attribute is not `virtual` then skip this try-catch block
-          if (attribute != 'virtual')
-            throw 0
-
-          // Add the `virtual` attribute value as sub attribute in the structure
-          structure.virtualValue = object[attribute] ? true : false
-
-          // If the `virtual` value is `true` then it should be shown to the user
-          if (structure.virtualValue)
-            throw 0
-
-          // Otherwise, hide the node which indicate's the node `virtual` value as it's `false` by default
-          structure.state = {
-            hidden: true
-          }
+          structure.a_attr.keyspace = parentType.keyspace
         } catch (e) {}
 
-        // Display the `is_static` attribute only if it's `true`
-        if (attribute == 'is_static' && !object[attribute])
-          return
+        try {
+          structure.a_attr.table = parentType.table
+        } catch (e) {}
+      } catch (e) {}
 
-        // Append that attribute to the child
-        treeStructure.core.data.push(structure)
-      })
-    } catch (e) {}
+      /**
+       * If the child is a table or view then make sure to set the `parentType` to empty
+       * Not doing this would lead to incorrect structure
+       */
+      if (['Table', 'View'].some((type) => type == text))
+        parentType = ''
 
-    // Check if the child has a CQL type
-    try {
-      // If the child doesn't have a cql_type attribute then skip this try-catch block
-      if (object.cql_type == undefined)
-        throw 0
+      // Push the structure into the overall tree structure
+      treeStructure.core.data.push(structure)
 
-      // Otherwise, add the type to the node's text
-      structure.text = `${structure.text}: <span>${EscapeHTML(object.cql_type)}</span>`
-    } catch (e) {}
-  }
+      try {
+        /**
+         * Check if the child has one or more of these attributes
+         *
+         * Define the attributes' names
+         */
+        let attributes = ['virtual', 'durable_writes', 'is_static', 'is_reversed']
 
-  let sortItemsAlphabetically = (array, sortBy) => {
-    try {
-      array.sort((a, b) => {
-        if (`${a[sortBy]}`.toLowerCase() < `${b[sortBy]}`.toLowerCase())
-          return -1
+        if (parentType == 'partitionKeys')
+          attributes = `${attributes}`.slice(0, -2)
 
-        if (`${a[sortBy]}`.toLowerCase() > `${b[sortBy]}`.toLowerCase())
-          return 1
+        // Loop through them all
+        attributes.forEach((attribute) => {
+          // If the child doesn't have this attribute then skip it and move to the next one
+          if (object[attribute] == undefined)
+            return
 
-        return 0
-      })
-    } catch (e) {}
-  }
+          // Otherwise, define that attribute's structure
+          let structure = {
+            id: getRandomID(30),
+            parent: childID,
+            text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: <span class="material-icons for-treeview">${object[attribute] ? 'check' : 'close'}</span>`,
+            type: 'default'
+          }
 
+          // Some changes would be applied if the current attribute is `virtual`
+          try {
+            // If the attribute is not `virtual` then skip this try-catch block
+            if (attribute != 'virtual')
+              throw 0
+
+            // Add the `virtual` attribute value as sub attribute in the structure
+            structure.virtualValue = object[attribute] ? true : false
+
+            // If the `virtual` value is `true` then it should be shown to the user
+            if (structure.virtualValue)
+              throw 0
+
+            // Otherwise, hide the node which indicate's the node `virtual` value as it's `false` by default
+            structure.state = {
+              hidden: true
+            }
+          } catch (e) {}
+
+          // Display the `is_static` attribute only if it's `true`
+          if (attribute == 'is_static' && !object[attribute])
+            return
+
+          // Append that attribute to the child
+          treeStructure.core.data.push(structure)
+        })
+      } catch (e) {}
+
+      // Check if the child has a CQL type
+      try {
+        // If the child doesn't have a cql_type attribute then skip this try-catch block
+        if (object.cql_type == undefined)
+          throw 0
+
+        // Otherwise, add the type to the node's text
+        structure.text = `${structure.text}: <span>${EscapeHTML(object.cql_type)}</span>`
+      } catch (e) {}
+    },
+    sortItemsAlphabetically = (array, sortBy) => {
+      try {
+        array.sort((a, b) => {
+          if (`${a[sortBy]}`.toLowerCase() < `${b[sortBy]}`.toLowerCase())
+            return -1
+
+          if (`${a[sortBy]}`.toLowerCase() > `${b[sortBy]}`.toLowerCase())
+            return 1
+
+          return 0
+        })
+      } catch (e) {}
+    }
+
+  // Sort keyspaces alphabetically
   sortItemsAlphabetically(metadata.keyspaces, 'name')
 
   // Loop through the keyspaces
@@ -1982,6 +2001,21 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       } catch (e) {}
     } catch (e) {}
   })
+
+  // Add the system's keyspaces container node
+  try {
+    // Define the structure
+    let systemKeyspacesStructure = {
+      id: systemKeyspacesParentID,
+      parent: keyspacesID,
+      text: `System Keyspaces (<span>${numOfFoundSystemKeyspaces}</span>)`,
+      type: 'default',
+      icon: normalizePath(Path.join(extraIconsPath, 'keyspaces.png'))
+    }
+
+    // Push the `System Keyspaces` node
+    treeStructure.core.data.unshift(systemKeyspacesStructure)
+  } catch (e) {}
 
   /**
    * Create a `Virtual Keyspaces` if needed and push the related nodes under it
@@ -3592,6 +3626,18 @@ let setUIColor = (workspaceColor) => {
     if (!tinyColor.isValid())
       return
 
+    // For highlight cql statements
+    let mainColor = tinyColor.isDark() ? TinyColor(invertColor(tinyColor.toHex())) : tinyColor,
+      highlightColors = mainColor.monochromatic().map((color) => {
+        color = color.isDark() ? TinyColor(invertColor(color.toHex())) : color
+
+        return `#${color.toHex()}`
+      })
+
+    highlightColors[0] = tinyColor.isDark() ? tinyColor.lighten(25) : tinyColor
+
+    highlightColors[0] = `#${highlightColors[0].toHex()}`
+
     // Define the stylesheet that will be applied
     let stylesheet = `
         <style id="uicolor">
@@ -3616,6 +3662,14 @@ let setUIColor = (workspaceColor) => {
           .tabulator .tabulator-footer .tabulator-page.active{background:${backgroundColor.hover} !important;color: ${textColor} !important}
           .colored-box-shadow{box-shadow: 0px 0px 20px 1px ${backgroundColor.hover.replace('70%', '40%')} !important;}
           :root {--workspace-background-color:${backgroundColor.default};}
+
+          .hljs-title, .hljs-name { color: ${highlightColors[1]}; }
+          .hljs-number, .hljs-symbol, .hljs-literal, .hljs-deletion, .hljs-link { color: ${highlightColors[2]}; }
+          .hljs-string, .hljs-doctag, .hljs-addition, .hljs-regexp, .hljs-selector-attr, .hljs-selector-pseudo { color: ${highlightColors[3]}; }
+          .hljs-attribute, .hljs-code, .hljs-selector-id { color: ${highlightColors[4]}; }
+          .hljs-keyword, .hljs-selector-tag, .hljs-bullet, .hljs-tag { color: ${highlightColors[0]}; }
+          .hljs-subst, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: ${highlightColors[5]}; }
+          .hljs-type, .hljs-built_in, .hljs-quote, .hljs-section, .hljs-selector-class { color: ${highlightColors[4]}; }
         </style>`
 
     // Append the stylesheet
@@ -3746,7 +3800,7 @@ let calcSwitchersAllowedHeight = () => {
  * Set the right symbol `®` to "Apache Cassandra®"
  *
  * @Parameters:
- * {string} `text` the text which the `®` symbol will be added to where Cassandra® is located
+ * {string} `text` the text which the `®` symbol will be added to where Cassandra is located
  *
  * @Return: {string} final manipulated text
  */

@@ -264,28 +264,16 @@ jobs:
         with:
           node-version: 20.17.0
 
-      - name: Create SBOM xml
-        uses: CycloneDX/gh-node-module-generatebom@v1
-        with:
-          path: './'
-          output: 'workbench.bom.xml'
-
-      - name: Generate SBOM
+      - name: Generate SBOM 1/2
         uses: anchore/sbom-action@v0
         with:
-          artifact-name: sbom.spdx
+          artifact-name: sbom.spdx.json
 
-      - name: Publish SBOM
-        uses: anchore/sbom-action/publish-sbom@v0
+      - name: Generate SBOM 2/2
+        uses: anchore/sbom-action@v0
         with:
-          sbom-artifact-match: ".*\\.spdx$"
-
-      - name: Upload Artifacts
-        uses: softprops/action-gh-release@v2
-        with:
-          files: 'workbench.bom.xml'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          artifact-name: sbom.cyclonedx.json
+          format: cyclonedx-json
 
 # Release choco and brew
   release-brew:

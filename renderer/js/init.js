@@ -225,107 +225,106 @@ $(document).on('initialize', () => {
 
 // Handle the AI Assistant initialization process
 $(document).on('initialize', () => {
-  Modules.Config.getConfig((config) => {
-    try {
-      setTimeout(() => {
-        // If the saved language is invalid, the chosen language will be `English`
-        let isAIAssistantEnabled = config.get('features', 'AIAssistant') == 'true' && Modules.Consts.EnableAIAssistant
+  try {
+    setTimeout(async () => {
+      // If the saved language is invalid, the chosen language will be `English`
+      let adminOption = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || true,
+        isAIAssistantEnabled = `${adminOption}` == 'true' && Modules.Consts.EnableAIAssistant
 
-        /**
-         * Whether or not the AI assistant feature should be available
-         * This is determined by a constant in the `Consts` module
-         */
-        $(`div.body div.left div.content div.navigation div.group div.item[action="ai"]`).add('div.ai-assistant-answers-limitation').toggle(isAIAssistantEnabled)
+      /**
+       * Whether or not the AI assistant feature should be available
+       * This is determined by a constant in the `Consts` module
+       */
+      $(`div.body div.left div.content div.navigation div.group div.item[action="ai"]`).add('div.ai-assistant-answers-limitation').toggle(isAIAssistantEnabled)
 
-        /**
-         * Load the AI Assistant webview
-         *
-         * If there's no need to do this this skip this try-catch block
-         */
-        if (!isAIAssistantEnabled)
-          return
+      /**
+       * Load the AI Assistant webview
+       *
+       * If there's no need to do this this skip this try-catch block
+       */
+      if (!isAIAssistantEnabled)
+        return
 
-        // Point at the hidden area
-        let hiddenAreaElement = $('div.main.hidden-area'),
-          // Point at the web view element
-          webviewAIAssistant = $('webview#ai_assistant_webview'),
-          // Point at the web view's navigation's container
-          webviewNavigationContainer = hiddenAreaElement.find('div.webview-navigation'),
-          // Point at the container of the extra actions
-          webviewMoreActionsContainer = hiddenAreaElement.find('div.webview-more-actions'),
-          // Point at the loading element
-          loadingPage = hiddenAreaElement.find('div.loading-page')
+      // Point at the hidden area
+      let hiddenAreaElement = $('div.main.hidden-area'),
+        // Point at the web view element
+        webviewAIAssistant = $('webview#ai_assistant_webview'),
+        // Point at the web view's navigation's container
+        webviewNavigationContainer = hiddenAreaElement.find('div.webview-navigation'),
+        // Point at the container of the extra actions
+        webviewMoreActionsContainer = hiddenAreaElement.find('div.webview-more-actions'),
+        // Point at the loading element
+        loadingPage = hiddenAreaElement.find('div.loading-page')
 
-        // Point at different buttons related to the hidden area
-        let buttons = {}; // This semicolon is critical here
+      // Point at different buttons related to the hidden area
+      let buttons = {}; // This semicolon is critical here
 
-        // Define the names, loop and point at the buttons
-        ['back', 'forward', 'more', 'refresh', 'logout'].forEach((button) => {
-          buttons[button] = webviewNavigationContainer.add(webviewMoreActionsContainer).find(`div.nav[action="${button}"] button`)
-        })
+      // Define the names, loop and point at the buttons
+      ['back', 'forward', 'more', 'refresh', 'logout'].forEach((button) => {
+        buttons[button] = webviewNavigationContainer.add(webviewMoreActionsContainer).find(`div.nav[action="${button}"] button`)
+      })
 
-        // Update the web view element `src` with the AI Assistant's server URL
-        webviewAIAssistant.attr('src', Modules.Consts.URLS.AIAssistantServer)
+      // Update the web view element `src` with the AI Assistant's server URL
+      webviewAIAssistant.attr('src', Modules.Consts.URLS.AIAssistantServer)
 
-        // Show/hide the loading spinner based on the status
-        webviewAIAssistant
-          .on('did-start-loading', () => loadingPage.addClass('show'))
-          .on('did-stop-loading', () => loadingPage.removeClass('show'))
+      // Show/hide the loading spinner based on the status
+      webviewAIAssistant
+        .on('did-start-loading', () => loadingPage.addClass('show'))
+        .on('did-stop-loading', () => loadingPage.removeClass('show'))
 
-        // Go back one page
-        buttons.back.click(() => {
-          try {
-            webviewAIAssistant[0].goBack()
-          } catch (e) {}
-        })
+      // Go back one page
+      buttons.back.click(() => {
+        try {
+          webviewAIAssistant[0].goBack()
+        } catch (e) {}
+      })
 
-        // Go forward one page
-        buttons.forward.click(() => {
-          try {
-            webviewAIAssistant[0].goForward()
-          } catch (e) {}
-        })
+      // Go forward one page
+      buttons.forward.click(() => {
+        try {
+          webviewAIAssistant[0].goForward()
+        } catch (e) {}
+      })
 
-        // Click the `more` button
-        buttons.more.click(() => {
-          // Show/hide the more actions container
-          $(webviewMoreActionsContainer).toggleClass('show')
+      // Click the `more` button
+      buttons.more.click(() => {
+        // Show/hide the more actions container
+        $(webviewMoreActionsContainer).toggleClass('show')
 
-          // Show the transparent background which prevent interacting with the webview
-          $('div.body div.hidden-area div.content div.more-list-bg').show()
+        // Show the transparent background which prevent interacting with the webview
+        $('div.body div.hidden-area div.content div.more-list-bg').show()
 
-          setTimeout(() => {
-            // When clicking outside the more actions container
-            $(webviewMoreActionsContainer).oneClickOutside({
-              callback: () => {
-                // Hide the container
-                $(webviewMoreActionsContainer).removeClass('show')
+        setTimeout(() => {
+          // When clicking outside the more actions container
+          $(webviewMoreActionsContainer).oneClickOutside({
+            callback: () => {
+              // Hide the container
+              $(webviewMoreActionsContainer).removeClass('show')
 
-                // Hide the transparent background
-                $('div.body div.hidden-area div.content div.more-list-bg').hide()
-              }
-            })
-          }, 500)
-        })
-
-        // Refresh the entire webview
-        buttons.refresh.click(() => {
-          try {
-            webviewAIAssistant[0].reloadIgnoringCache()()
-          } catch (e) {}
-        })
-
-        // Logout from the AxonOps AI Chat
-        buttons.logout.click(() => webviewAIAssistant.attr('src', `${(new URL(Modules.Consts.URLS.AIAssistantServer)).origin}/logout`))
-
-        // Check and enable/disable the back/forward buttons based on the status
-        setInterval(() => {
-          buttons.back.toggleClass('disabled', !webviewAIAssistant[0].canGoBack())
-          buttons.forward.toggleClass('disabled', !webviewAIAssistant[0].canGoForward())
+              // Hide the transparent background
+              $('div.body div.hidden-area div.content div.more-list-bg').hide()
+            }
+          })
         }, 500)
       })
-    } catch (e) {}
-  })
+
+      // Refresh the entire webview
+      buttons.refresh.click(() => {
+        try {
+          webviewAIAssistant[0].reloadIgnoringCache()()
+        } catch (e) {}
+      })
+
+      // Logout from the AxonOps AI Chat
+      buttons.logout.click(() => webviewAIAssistant.attr('src', `${(new URL(Modules.Consts.URLS.AIAssistantServer)).origin}/logout`))
+
+      // Check and enable/disable the back/forward buttons based on the status
+      setInterval(() => {
+        buttons.back.toggleClass('disabled', !webviewAIAssistant[0].canGoBack())
+        buttons.forward.toggleClass('disabled', !webviewAIAssistant[0].canGoForward())
+      }, 500)
+    })
+  } catch (e) {}
 })
 
 // Get the unique machine's ID and set it to be used across the app
@@ -335,7 +334,7 @@ $(document).on('initialize', async () => getMachineID().then((id) => {
   // Add the first set of logs
   setTimeout(() => {
     try {
-      addLog(`AxonOps™ Workbench has loaded all components and is ready to be used`)
+      addLog(`AxonOps Workbench has loaded all components and is ready to be used`)
       addLog(`This machine has a unique ID of '${machineID}'`, 'env')
     } catch (e) {}
   }, 1000)

@@ -3800,7 +3800,7 @@ let calcSwitchersAllowedHeight = () => {
  * Set the right symbol `®` to "Apache Cassandra®"
  *
  * @Parameters:
- * {string} `text` the text which the `®` symbol will be added to where Cassandra® is located
+ * {string} `text` the text which the `®` symbol will be added to where Cassandra is located
  *
  * @Return: {string} final manipulated text
  */

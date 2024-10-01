@@ -15,7 +15,7 @@
  */
 
 /**
- * Handle communication between the AxonOps™ agent webview and the app
+ * Handle communication between the AxonOps agent webview and the app
  * This file is a preload for the webview
  *
  * Once the content of the webview is loaded
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     IPCRenderer = require('electron').ipcRenderer
 
-  // Add a reload button in the left menu-side of the AxonOps™ agent
+  // Add a reload button in the left menu-side of the AxonOps agent
   setTimeout(() => {
     // Point at the side menu
     let container = $('div.\\:sideMenu > div'),

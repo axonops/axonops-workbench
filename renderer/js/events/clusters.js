@@ -2410,6 +2410,13 @@
                                   }
                                 } catch (e) {}
 
+                                try {
+                                  if (!(['select'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1)))
+                                    throw 0
+
+                                  noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span> - <span mulang="no data found" capitalize-first></span>.</no-output>'
+                                } catch (e) {}
+
                                 let isOutputHighlighted = false
 
                                 try {
@@ -2726,7 +2733,7 @@
 
                                   // Reaching here and has a `json` keyword in the output means there's no record/row to be shown
                                   if (match.includes('[json]') || StripTags(match).length <= 0)
-                                    match = '<no-output><span mulang="CQL statement executed" capitalize-first></span>.</no-output>'
+                                    match = noOutputElement
 
                                   // Set the final content and make sure the localization process is updated
                                   outputElement.find('div.sub-output-content').html(`<pre>${match}</pre>`).show(function() {

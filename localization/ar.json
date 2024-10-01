@@ -200,6 +200,7 @@
       "no added variables, yet": "لا توجد متغيرات مضافة بعد",
       "no checked workspaces have been detected, please consider to check at least one workspace": "لا يتم اكتشاف تحديد أي من مساحات العمل، من فضلك تأكد من تحديد مساحة عمل واحدة على الأقل",
       "no connections added to the workspace [b]$data[/b] yet, why not add one?": "لا توجد عناقيد اتصالات في مساحة العمل [b]$data[/b]، لماذا لا نضيف واحداً؟",
+      "no data found": "لم يتم العثور على بيانات",
       "no local clusters created yet, why not create one?": "لم يتم إضافة عناقيد محلية بعد، لماذا لا نضيف واحداً؟",
       "no query has been traced yet": "لم يتم تتبع أي استعلام بعد",
       "no valid workspace folder has been found among the provided ones": "لم يتم إيجاد مجلد مساحة عامل صالح بين العناصر المقدمة",

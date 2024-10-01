@@ -201,6 +201,7 @@
       "no added variables, yet": "Todavía no se han añadido variables",
       "no checked workspaces have been detected, please consider to check at least one workspace": "No se han detectado espacios de trabajo verificados, considere verificar al menos un espacio de trabajo",
       "no connections added to the workspace [b]$data[/b] yet, why not add one?": "Todavía no se han agregado conexiones al espacio de trabajo [b]$data[/b], ¿por qué no agregar una?",
+      "no data found": "No se encontraron datos",
       "no local clusters created yet, why not create one?": "Todavía no se han creado clústeres locales, ¿por qué no crear uno?",
       "no query has been traced yet": "Todavía no se ha rastreado ninguna consulta",
       "no valid workspace folder has been found among the provided ones": "No se ha encontrado ninguna carpeta de espacio de trabajo válida entre las proporcionadas",

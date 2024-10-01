@@ -59,7 +59,7 @@
         "dmg",
         "zip",
         "pkg",
-        "mas"
+        "mas-dev"
       ],
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
@@ -78,10 +78,11 @@
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "mas": {
-      "entitlements": "./resources/entitlements.mac.plist",
-      "entitlementsInherit": "./resources/entitlements.mac.plist",
+      "entitlements": "./resources/entitlements.mas.plist",
+      "entitlementsInherit": "./resources/entitlements.inherit.mas.plist",
       "provisioningProfile": "./resources/MacAppStore.provisionprofile",
       "artifactName": "AxonOps.Workbench-${version}-mas-${os}-${arch}.${ext}",
+      "minimumSystemVersion": "12.0.0",
       "target": [
         "pkg"
       ]
@@ -119,8 +120,9 @@
     "snap": "electron-builder --linux snap --publish never",
     "linux": "electron-builder --linux tar.gz deb rpm --publish never",
     "linux:arm64": "electron-builder --linux tar.gz deb rpm --publish never --arm64",
-    "mac": "electron-builder --mac --publish onTag --x64",
-    "mac:arm64": "electron-builder --mac --publish onTag --arm64",
+    "mac": "electron-builder --mac --publish never --x64",
+    "mac:mas": "electron-builder --mac mas-dev --publish never --arm64",
+    "mac:arm64": "electron-builder --mac --publish never --arm64",
     "mac:zip": "electron-builder --mac zip --publish never",
     "mac:pkg": "electron-builder --mac pkg --publish never",
     "postinstall": "electron-builder install-app-deps"

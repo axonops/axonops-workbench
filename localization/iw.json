@@ -201,6 +201,7 @@
       "no added variables, yet": "עדיין לא נוספו משתנים",
       "no checked workspaces have been detected, please consider to check at least one workspace": "לא זוהו סביבות עבודה מסומנות, אנא שקול לבדוק לפחות סביבת עבודה אחת",
       "no connections added to the workspace [b]$data[/b] yet, why not add one?": "לא נוספו חיבורים לסביבת העבודה [b]$data[/b] עדיין, מדוע לא להוסיף אחד?",
+      "no data found": "לא נמצאו נתונים",
       "no local clusters created yet, why not create one?": "עדיין לא נוצרו אשכולות מקומיים, למה לא ליצור אחד?",
       "no query has been traced yet": "טרם אותרה שאילתה",
       "no valid workspace folder has been found among the provided ones": "לא נמצאה תיקיית סביבת עבודה חוקית בין אלה שסופקו",

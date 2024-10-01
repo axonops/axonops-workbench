@@ -201,6 +201,7 @@
       "no added variables, yet": "尚未添加变量",
       "no checked workspaces have been detected, please consider to check at least one workspace": "未检测到选中的工作区，请考虑至少检查一个工作区",
       "no connections added to the workspace [b]$data[/b] yet, why not add one?": "尚未向工作区 [b]$data[/b] 添加任何连接，为什么不添加一个呢？",
+      "no data found": "未找到数据",
       "no local clusters created yet, why not create one?": "尚未创建本地集群，为什么不创建一个呢？",
       "no query has been traced yet": "尚未找到 query",
       "no valid workspace folder has been found among the provided ones": "在提供的工作区文件夹中未找到有效的工作区文件夹",

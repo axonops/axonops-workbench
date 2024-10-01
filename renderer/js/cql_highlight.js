@@ -43,29 +43,15 @@ function cql(hljs) {
     }]
   }
 
-  const LITERALS = [
-    "true",
-    "false",
-    "null",
-    "on",
-    "off"
-  ]
+  const LITERALS = ['true', 'false', 'null', 'on', 'off']
 
-  const TYPES = [
-    'ascii', 'bigint', 'blob', 'boolean', 'counter', 'date', 'decimal', 'double', 'duration', 'float', 'inet', 'int', 'smallint', 'time', 'timestamp', 'timeuuid', 'tinyint', 'uuid', 'varint', 'list', 'map', 'set', 'frozen', 'tuple', 'frozen<list>', 'frozen<map>', 'frozen<set>', 'materialized view', 'static', 'counter column', 'primary key'
-  ]
+  const TYPES = ['ascii', 'bigint', 'blob', 'boolean', 'counter', 'date', 'decimal', 'double', 'duration', 'float', 'inet', 'int', 'smallint', 'time', 'timestamp', 'timeuuid', 'tinyint', 'uuid', 'varint', 'list', 'map', 'set', 'frozen', 'tuple', 'frozen<list>', 'frozen<map>', 'frozen<set>', 'materialized view', 'static', 'counter column', 'primary key']
 
-  const RESERVED_WORDS = [
-    'add', 'aggregate', 'all', 'alter', 'analyze', 'and', 'apply', 'as', 'ascii', 'batch', 'begin', 'bigint', 'blob', 'boolean', 'by', 'columnfamily', 'contains', 'create', 'delete', 'desc', 'describe', 'distinct', 'double', 'drop', 'expand', 'filtering', 'from', 'grant', 'group', 'having', 'if', 'in', 'increment', 'insert', 'int', 'keyspace', 'keyspaces', 'tables', 'limit', 'list', 'map', 'materialized', 'modify', 'order', 'primary', 'revoke', 'select', 'set', 'static', 'table', 'text', 'timeuuid', 'timestamp', 'truncate', 'uuid', 'varint', 'where', 'with', 'using', 'tracing', 'consistency', 'frozen', 'counter', 'on', 'off', 'like', 'then', 'else', 'when', 'case', 'end', 'returning'
-  ]
+  const RESERVED_WORDS = ['add', 'aggregate', 'all', 'allow', 'alter', 'analyze', 'and', 'apply', 'as', 'asc', 'ascii', 'authorize', 'batch', 'begin', 'bigint', 'blob', 'boolean', 'by', 'capture', 'case', 'columnfamily', 'consistency', 'contains', 'copy', 'counter', 'create', 'delete', 'desc', 'describe', 'distinct', 'double', 'drop', 'else', 'end', 'entries', 'execute', 'exit', 'expand', 'filtering', 'from', 'frozen', 'full', 'grant', 'group', 'having', 'if', 'in', 'increment', 'index', 'infinity', 'insert', 'int', 'into', 'is', 'keyspace', 'keyspaces', 'like', 'limit', 'list', 'map', 'materialized', 'modify', 'nan', 'norecursive', 'not', 'null', 'of', 'off', 'on', 'or', 'order', 'paging', 'primary', 'rename', 'returning', 'revoke', 'schema', 'select', 'set', 'show', 'source', 'static', 'table', 'tables', 'text', 'then', 'timestamp', 'timeuuid', 'to', 'token', 'tracing', 'truncate', 'unlogged', 'update', 'use', 'using', 'uuid', 'varint', 'view', 'when', 'where', 'with']
 
-  const RESERVED_FUNCTIONS = [
-    'count', 'sum', 'avg', 'min', 'max', 'abs', 'ceil', 'floor', 'round', 'concat', 'lower', 'upper', 'substring', 'trim', 'now', 'dateof', 'to_timestamp', 'extract', 'to_date', 'uuid', 'timeuuid'
-  ]
+  const RESERVED_FUNCTIONS = ['count', 'sum', 'avg', 'min', 'max', 'abs', 'ceil', 'floor', 'round', 'concat', 'lower', 'upper', 'substring', 'trim', 'now', 'dateof', 'to_timestamp', 'extract', 'to_date', 'uuid', 'timeuuid']
 
-  const COMBOS = [
-    'create keyspace', 'create table', 'create index', 'create view', 'create function', 'create aggregate', 'create type', 'create trigger', 'create materialized view', 'alter keyspace', 'alter table', 'alter index', 'alter view', 'alter function', 'alter aggregate', 'alter type', 'alter trigger', 'drop keyspace', 'drop table', 'drop index', 'drop view', 'drop function', 'drop aggregate', 'drop type', 'drop trigger', 'drop materialized view', 'select from', 'insert into', 'update set', 'delete from', 'batch insert', 'batch update', 'use keyspace', 'describe table', 'list indexes', 'tracing on', 'tracing off', 'expand on', 'expand off', 'consistency level'
-  ]
+  const COMBOS = ['create keyspace', 'create table', 'create index', 'create view', 'create function', 'create aggregate', 'create type', 'create trigger', 'create materialized view', 'alter keyspace', 'alter table', 'alter index', 'alter view', 'alter function', 'alter aggregate', 'alter type', 'alter trigger', 'drop keyspace', 'drop table', 'drop index', 'drop view', 'drop function', 'drop aggregate', 'drop type', 'drop trigger', 'drop materialized view', 'select from', 'insert into', 'update set', 'delete from', 'batch insert', 'batch update', 'use keyspace', 'describe table', 'list indexes', 'tracing on', 'tracing off', 'expand on', 'expand off', 'consistency level']
 
   const FUNCTIONS = RESERVED_FUNCTIONS
 
@@ -74,12 +60,12 @@ function cql(hljs) {
   ].filter((keyword) => !RESERVED_FUNCTIONS.includes(keyword))
 
   const VARIABLE = {
-    className: "variable",
+    className: 'variable',
     begin: /@[a-z0-9][a-z0-9_]*/,
   }
 
   const OPERATOR = {
-    className: "operator",
+    className: 'operator',
     begin: /[-+*/=%^~]|&&?|\|\|?|!=?|<(?:=>?|<|>)?|>[>=]?/,
     relevance: 0,
   }

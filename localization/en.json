@@ -201,6 +201,7 @@
       "no added variables, yet": "no added variables, yet",
       "no checked workspaces have been detected, please consider to check at least one workspace": "no checked workspaces have been detected, please consider to check at least one workspace",
       "no connections added to the workspace [b]$data[/b] yet, why not add one?": "no connections added to the workspace [b]$data[/b] yet, why not add one?",
+      "no data found": "no data found",
       "no local clusters created yet, why not create one?": "no local clusters created yet, why not create one?",
       "no query has been traced yet": "no query has been traced yet",
       "no valid workspace folder has been found among the provided ones": "no valid workspace folder has been found among the provided ones",

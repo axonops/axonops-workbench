@@ -201,6 +201,7 @@
       "no added variables, yet": "Sen variables engadidas, aínda",
       "no checked workspaces have been detected, please consider to check at least one workspace": "Non se detectaron espazos de traballo verificados, considere comprobar polo menos un espazo de traballo",
       "no connections added to the workspace [b]$data[/b] yet, why not add one?": "Non hai conexións engadidas ao espazo de traballo [b]$data[/b] aínda, por que non engadir unha?",
+      "no data found": "tsis pom cov ntaub ntawv",
       "no local clusters created yet, why not create one?": "Aínda non se crearon clústeres locais, por que non crear un?",
       "no query has been traced yet": "Aínda non se trazou ningunha consulta",
       "no valid workspace folder has been found among the provided ones": "Non se atopou cartafol de espazo de traballo válido entre os proporcionados",

@@ -55,6 +55,12 @@
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"
       },
+      "target": [
+        "dmg",
+        "zip",
+        "pkg",
+        "mas"
+      ],
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "type": "distribution",
@@ -70,6 +76,15 @@
         "main/bin/keys_generator/keys_generator"
       ],
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
+    },
+    "mas": {
+      "entitlements": "./resources/entitlements.mac.plist",
+      "entitlementsInherit": "./resources/entitlements.mac.plist",
+      "provisioningProfile": "./resources/MacAppStore.provisionprofile",
+      "artifactName": "AxonOps.Workbench-${version}-mas-${os}-${arch}.${ext}",
+      "target": [
+        "pkg"
+      ]
     },
     "deb": {
       "depends": [
@@ -104,10 +119,8 @@
     "snap": "electron-builder --linux snap --publish never",
     "linux": "electron-builder --linux tar.gz deb rpm --publish never",
     "linux:arm64": "electron-builder --linux tar.gz deb rpm --publish never --arm64",
-    "mac": "electron-builder --mac dmg zip pkg mas --publish onTag --x64",
-    "mac:mas:dev": "electron-builder --mac mas-dev --publish never",
-    "mac:mas": "electron-builder --mac mas",
-    "mac:arm64": "electron-builder --mac dmg zip pkg mas --publish onTag --arm64",
+    "mac": "electron-builder --mac --publish onTag --x64",
+    "mac:arm64": "electron-builder --mac --publish onTag --arm64",
     "mac:zip": "electron-builder --mac zip --publish never",
     "mac:pkg": "electron-builder --mac pkg --publish never",
     "postinstall": "electron-builder install-app-deps"

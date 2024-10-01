@@ -688,12 +688,6 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                         return
                       }
 
-                      for (let cluster of clusters) {
-                        try {
-                          await Modules.Clusters.deleteCluster(getWorkspaceFolderPath(workspaceID, true), cluster.folder, cluster.info.id, null, response.checked)
-                        } catch (e) {}
-                      }
-
                       // Get all workspaces
                       Modules.Workspaces.getWorkspaces().then((workspaces) => {
                         // Get the current workspace by its ID

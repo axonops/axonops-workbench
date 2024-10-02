@@ -1,11 +1,11 @@
-<img src="https://github.com/axonops/axonops-workbench-cassandra/assets/163300/0732fa17-37c5-4509-9595-a4163337680e" width="30" height="30"> THIS IS IN BETA FOR FIRST RELEASE
+<img src="https://github.com/axonops/axonops-workbench/assets/163300/0732fa17-37c5-4509-9595-a4163337680e" width="30" height="30"> THIS IS IN BETA FOR FIRST RELEASE
 =======
 
 # AxonOps™ Workbench for Apache Cassandra®
 
 AxonOps Workbench for Apache Cassandra is a desktop application built for Cassandra DB developers and DBAs. Seamlessly connect and interact with Apache Cassandra clusters while enjoying a host of innovative enhancements and exciting features. Stay tuned for its highly anticipated first official release!
 
-We welcome your feedback, so feel free to discuss any ideas you have https://github.com/axonops/axonops-workbench-cassandra/discussions/categories/ideas or raise issues any issues (https://github.com/axonops/axonops-workbench-cassandra/issues/new/choose)
+We welcome your feedback, so feel free to discuss any ideas you have https://github.com/axonops/axonops-workbench/discussions/categories/ideas or raise issues any issues (https://github.com/axonops/axonops-workbench/issues/new/choose)
 
 ## New CQL Console
 <img width="1709" alt="Screenshot 2024-08-23 at 07 45 40" src="https://github.com/user-attachments/assets/fc95976e-30f9-4760-ada9-1eb4711bfe73">
@@ -27,7 +27,7 @@ We welcome your feedback, so feel free to discuss any ideas you have https://git
 
 ## Download and install
 
-Browse to the [releases](https://github.com/axonops/axonops-workbench-cassandra/releases) and select the package for your Operating System. We prebuild distributions for
+Browse to the [releases](https://github.com/axonops/axonops-workbench/releases) and select the package for your Operating System. We prebuild distributions for
 
 - OSX (Intel and Apple chips)
 - Linux (RedHat, Debian and others)

@@ -940,7 +940,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           {
             'id': getRandomID(30),
             'parent': '#',
-            'text': `Partitioner: <span>${metadata.partitioner}</span>`,
+            'text': `Partitioner: <span>${metadata.partitioner.replace(/.+\.(.+)/gi, '$1')}</span>`,
             'type': 'default',
           },
           {
@@ -1070,6 +1070,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           // If the child doesn't have this attribute then skip it and move to the next one
           if (object[attribute] == undefined)
             return
+
+          // For `durable_writes`, it should be displayed if its value is only `false`
+          if (attribute == 'durable_writes' && object[attribute] != 'false')
+            return
+
 
           // Otherwise, define that attribute's structure
           let structure = {

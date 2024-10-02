@@ -266,7 +266,7 @@
   // Clicks the help/documentation button
   $(`${selector}[action="help"]`).click(() => {
     // Open the documentation's web page
-    Open('https://docs.axonops.com')
+    Open('https://axonops.com/docs/')
 
     // Add log for this action
     try {

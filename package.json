@@ -114,7 +114,7 @@
     "mac:pkg": "electron-builder --mac pkg --publish never",
     "postinstall": "electron-builder install-app-deps"
   },
-  "repository": "https://github.com/axonops/axonops-workbench-cassandra",
+  "repository": "https://github.com/axonops/axonops-workbench",
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",
     "electron": "^31.6.0",

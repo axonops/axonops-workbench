@@ -918,7 +918,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           let nameExists = allWorkspaces.find((workspace) => manipulateText(workspace.name) == manipulateText(name.val()) && workspace.id != workspaceID)
 
           // If the name exists, or the name is invalid
-          if (nameExists != undefined || name.val().trim().length <= 0 || Sanitize(name.val()).length <= 0) {
+          if (nameExists != undefined || name.val().trim().length <= 0 || Sanitize(minifyText(name.val())).length <= 0) {
             // Add `invalid` class for the name input field
             name.parent().addClass('mdc-text-field--invalid')
 

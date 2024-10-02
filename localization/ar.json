@@ -310,6 +310,7 @@
       "the connection has been successfully updated": "لقد تم تحديث الاتصال بنجاح",
       "the current release version has been successfully copied to the clipboard": "تم نسخ نسخة الإصدار الحالي إلى الحافظة بنجاح",
       "the detected version of Apache Cassandra is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered": "إن نسخة Apache Cassandra هي [b]$data[/b]، قد تحدث بعض السلوكيات غير المرغوبة ومشاكل توافق",
+      "the given name seems invalid, please provide a unique valid name": "يبدو أن الاسم المُعطى للاتصال غير صالح، يُرجى إعطاء اسم صالح ومميز للاتصال",
       "the importing process has finished, results for the workspaces are: $data": "لقد انتهت عملية الاستيراد، نتائج مساحات العمل: $data",
       "the local cluster [b]$data[/b] has been successfully deleted": "لقد تم حذف العنقود المحلي [b]$data[/b] بنجاح",
       "the local cluster [b]$data[/b] has been successfully stopped": "لقد تم إيقاف العنقود المحلي [b]$data[/b] بنجاح",

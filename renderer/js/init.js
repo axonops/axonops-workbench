@@ -722,7 +722,7 @@ $(document).on('initialize', () => {
     setTimeout(() => {
       Coloris({
         alpha: false,
-        clearButton: true,
+        clearButton: false,
         clearLabel: I18next.capitalize(I18next.t('clear')),
         themeMode: 'dark',
         swatches: ['#E53935', '#F4511E', '#FF8A80', '#FB8C00', '#FFB300', '#FFD180', '#FDD835', '#FFFF8D', '#C0CA33', '#43A047', '#7CB342', '#B9F6CA', '#00897B', '#1E88E5', '#039BE5', '#00ACC1', '#84FFFF', '#80D8FF', '#3949AB', '#5E35B1', '#8E24AA', '#B388FF', '#6D4C41', '#546E7A']

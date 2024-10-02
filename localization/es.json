@@ -311,6 +311,7 @@
       "the connection has been successfully updated": "La conexión se ha actualizado correctamente",
       "the current release version has been successfully copied to the clipboard": "La versión actual se ha copiado correctamente en el portapapeles",
       "the detected version of Apache Cassandra is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered": "la versión detectada de Apache Cassandra es [b]$data[/b], se pueden encontrar comportamientos no deseados y problemas de compatibilidad",
+      "the given name seems invalid, please provide a unique valid name": "El nombre dado parece inválido, proporcione un nombre válido y único",
       "the importing process has finished, results for the workspaces are: $data": "El proceso de importación ha finalizado, los resultados de los espacios de trabajo son: $data",
       "the local cluster [b]$data[/b] has been successfully deleted": "El clúster local [b]$data[/b] se ha eliminado correctamente",
       "the local cluster [b]$data[/b] has been successfully stopped": "El clúster local [b]$data[/b] se ha detenido correctamente",

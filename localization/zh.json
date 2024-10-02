@@ -311,6 +311,7 @@
       "the connection has been successfully updated": "连接已成功更新",
       "the current release version has been successfully copied to the clipboard": "当前发行版已成功复制到剪贴板",
       "the detected version of Apache Cassandra is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered": "检测到的 Apache Cassandra 版本为 [b]$data[/b]，则可能会遇到不需要的行为和兼容性问题",
+      "the given name seems invalid, please provide a unique valid name": "给定的名称似乎无效，请提供一个唯一有效的名称",
       "the importing process has finished, results for the workspaces are: $data": "导入过程已完成，工作区的结果是：$data",
       "the local cluster [b]$data[/b] has been successfully deleted": "已成功删除本地群集 [b]$data[/b]",
       "the local cluster [b]$data[/b] has been successfully stopped": "已成功停止本地群集 [b]$data[/b]",

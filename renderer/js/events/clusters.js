@@ -7095,6 +7095,9 @@
             let input = $(this), // Point at the current input
               workspaceID = getActiveWorkspaceID() // Get the active workspace's ID
 
+            // Remove any visual feedback about having an invalid value
+            input.removeClass('is-invalid')
+
             // Ignore the input field if it is not associated with a section in the `cqlsh.rc` config file
             if (getAttributes(input, 'info-section') == 'none')
               return
@@ -7118,9 +7121,6 @@
 
             // Convert final value to string
             value = `${value}`
-
-            // Remove any visual feedback about having an invalid value
-            input.removeClass('is-invalid')
 
             // Inner function to update the editor's content
             let update = async () => {
@@ -8014,6 +8014,20 @@
                  * `editedClusterObject` is a global object that is updated with every attempt to edit/update a cluster
                  */
                 extraCondition = editingMode ? clusterName != editedClusterObject.name : true
+
+              try {
+                if (Sanitize(minifyText(clusterName)).length > 0)
+                  throw 0
+
+                // Enable the buttons in the footer
+                button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
+
+                // Show feedback to the user
+                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('the given name seems invalid, please provide a unique valid name')) + '.', 'failure')
+
+                // Skip the upcoming code - terminate the saving/updating process -
+                return
+              } catch (e) {}
 
               try {
                 // If there's no duplication then skip this try-catch block

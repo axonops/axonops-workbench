@@ -662,7 +662,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 $(`div.btn[button-id="${deleteBtnID}"]`).click(() => {
                   // Add log about this deletion request
                   try {
-                    addLog(`Request to delete the workspace '${getAttributes(workspaceElement, ['data-name', 'data-id'])}'`, 'action')
+                    addLog(`Request to delete the workspace '${workspaceID}'`, 'action')
                   } catch (e) {}
 
                   // Open the confirmation dialog and wait for the response
@@ -671,51 +671,64 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                     if (!response.confirmed)
                       return
 
-                    // Get all workspaces
-                    Modules.Workspaces.getWorkspaces().then((workspaces) => {
-                      // Get the current workspace by its ID
-                      let workspace = workspaces.find((workspace) => workspace.id == workspaceID)
+                    Modules.Clusters.getClusters(workspaceID).then(async function(clusters) {
+                      for (let cluster of clusters) {
+                        let clusterElement = $(`div.body div.right div.content div[content="clusters"] div.clusters-container div.clusters[workspace-id="${workspaceID}"] div.cluster[data-id="${cluster.info.id}"`)
 
-                      // If the workspace has cluster(s) then stop the deletion process
-                      if (workspace.clusters != undefined && workspace.clusters.length != 0)
-                        return showToast(I18next.capitalize(I18next.t('delete workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('to delete a workspace, it must be empty and doesn\'t have any connections in it, make sure to delete all connections inside the workspace [b]$data[/b] before attempting to delete it again', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
+                        if (clusterElement.length <= 0)
+                          continue
 
-                      // Request to delete the workspace, and wait for the result
-                      Modules.Workspaces.deleteWorkspace(workspace, workspaces, response.checked).then((result) => {
-                        // Failed to delete the workspace
-                        if (!result)
-                          return showToast(I18next.capitalize(I18next.t('delete workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to delete workspace [b]$data[/b]', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
+                        let clusterWorkarea = $(`div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-id')}"]`)
 
-                        // Successfully deleted
-                        showToast(I18next.capitalize(I18next.t('delete workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('workspace [b]$data[/b] has been successfully deleted', [getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
+                        if (clusterWorkarea.length <= 0)
+                          continue
 
-                        // Remove the target workspace element
-                        $(`div.workspace[data-id="${workspace.id}"]`).remove()
+                        showToast(I18next.capitalize(I18next.t('delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to delete the workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
 
-                        // Remove the workspace from the switcher
-                        try {
-                          // Point at the switchers' container
-                          let switchersContainer = $(`div.body div.left div.content div.switch-workspaces`),
-                            // Point at the workspace's switcher
-                            workspaceSwitcher = switchersContainer.children(`div.workspace[_workspace-id="${workspaceID}"]`)
+                        return
+                      }
 
-                          // If there's no switcher for the workspace then skip this try-catch block
-                          if (workspaceSwitcher.length <= 0)
-                            throw 0
+                      // Get all workspaces
+                      Modules.Workspaces.getWorkspaces().then((workspaces) => {
+                        // Get the current workspace by its ID
+                        let workspace = workspaces.find((workspace) => workspace.id == workspaceID)
 
-                          // Remove the switcher
-                          workspaceSwitcher.remove()
+                        Modules.Workspaces.deleteWorkspace(workspace, workspaces, response.checked).then((result) => {
+                          // Failed to delete the workspace
+                          if (!result)
+                            return showToast(I18next.capitalize(I18next.t('delete workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to delete workspace [b]$data[/b]', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
 
-                          // Update the container's view
-                          updateSwitcherView('workspaces')
+                          // Successfully deleted
+                          showToast(I18next.capitalize(I18next.t('delete workspace')), I18next.capitalizeFirstLetter(I18next.replaceData('workspace [b]$data[/b] has been successfully deleted', [getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
 
-                          // If there're no left switchers then hide the container
-                          if (switchersContainer.children('div.workspace:not([home])').length <= 0)
-                            switchersContainer.removeClass('show')
-                        } catch (e) {}
+                          // Remove the target workspace element
+                          $(`div.workspace[data-id="${workspace.id}"]`).remove()
 
-                        // Refresh the workspaces' list
-                        $(document).trigger('refreshWorkspaces')
+                          // Remove the workspace from the switcher
+                          try {
+                            // Point at the switchers' container
+                            let switchersContainer = $(`div.body div.left div.content div.switch-workspaces`),
+                              // Point at the workspace's switcher
+                              workspaceSwitcher = switchersContainer.children(`div.workspace[_workspace-id="${workspaceID}"]`)
+
+                            // If there's no switcher for the workspace then skip this try-catch block
+                            if (workspaceSwitcher.length <= 0)
+                              throw 0
+
+                            // Remove the switcher
+                            workspaceSwitcher.remove()
+
+                            // Update the container's view
+                            updateSwitcherView('workspaces')
+
+                            // If there're no left switchers then hide the container
+                            if (switchersContainer.children('div.workspace:not([home])').length <= 0)
+                              switchersContainer.removeClass('show')
+                          } catch (e) {}
+
+                          // Refresh the workspaces' list
+                          $(document).trigger('refreshWorkspaces')
+                        })
                       })
                     })
                   }, false, 'keep the associated files in the system')

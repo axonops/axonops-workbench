@@ -264,28 +264,16 @@ jobs:
         with:
           node-version: 20.17.0
 
-      - name: Create SBOM xml
-        uses: CycloneDX/gh-node-module-generatebom@v1
-        with:
-          path: './'
-          output: 'workbench.bom.xml'
-
-      - name: Generate SBOM
+      - name: Generate SBOM 1/2
         uses: anchore/sbom-action@v0
         with:
-          artifact-name: sbom.spdx
+          artifact-name: sbom.spdx.json
 
-      - name: Publish SBOM
-        uses: anchore/sbom-action/publish-sbom@v0
+      - name: Generate SBOM 2/2
+        uses: anchore/sbom-action@v0
         with:
-          sbom-artifact-match: ".*\\.spdx$"
-
-      - name: Upload Artifacts
-        uses: softprops/action-gh-release@v2
-        with:
-          files: 'workbench.bom.xml'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          artifact-name: sbom.cyclonedx.json
+          format: cyclonedx-json
 
 # Release choco and brew
   release-brew:
@@ -344,7 +332,7 @@ jobs:
           git commit -m "Changes made by GitHub Actions [skip ci]"
           git tag $VERSION
         env:
-          GITHUB_URL: https://github.com/axonops/axonops-workbench-cassandra/releases/download/
+          GITHUB_URL: https://github.com/axonops/axonops-workbench/releases/download/
           TEMPLATE: Casks/axonopsworkbench.rb.tmpl
 
       - name: Push changes
@@ -396,7 +384,7 @@ jobs:
           git commit -m "Changes made by GitHub Actions"
           git tag $VERSION
         env:
-          GITHUB_URL: https://github.com/axonops/axonops-workbench-cassandra/releases/download/
+          GITHUB_URL: https://github.com/axonops/axonops-workbench/releases/download/
           TEMPLATE: tools/chocolateyinstall.ps1.tmpl
           CONFIG_FILE: tools/chocolateyinstall.ps1
 
@@ -455,7 +443,7 @@ jobs:
             VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
           fi
           for arch in ${{ env.DEBIAN_ARCHS }}; do
-            curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/v$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.deb"
+            curl -sLO "https://github.com/axonops/axonops-workbench/releases/download/v$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.deb"
             gcloud config set project axonops-public
             gcloud artifacts apt upload axonops-apt-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$VERSION-linux-${arch}.deb
           done
@@ -467,7 +455,7 @@ jobs:
             VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
           fi
           for arch in ${{ env.REDHAT_ARCHS }}; do
-            curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/v$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.rpm"
+            curl -sLO "https://github.com/axonops/axonops-workbench/releases/download/v$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.rpm"
             gcloud config set project axonops-public
             gcloud artifacts yum upload axonops-yum-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$VERSION-linux-${arch}.rpm
           done

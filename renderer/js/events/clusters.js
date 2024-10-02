@@ -5595,7 +5595,7 @@
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
-                  return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                  return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                 // Change the dialog's title
                 $(`${dialog}`).find('h5.modal-title').text(`${I18next.capitalize(I18next.t('connection settings'))} ${getAttributes(clusterElement, 'data-name')}`)
@@ -5919,11 +5919,11 @@
                     return
 
                   // Get the project/cluster work area
-                  let clusterWorkarea = $(`div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-folder')}"]`)
+                  let clusterWorkarea = $(`div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-id')}"]`)
 
                   // If there's a work area already then stop the deletion process
                   if (clusterWorkarea.length != 0)
-                    return showToast(I18next.capitalize(I18next.t('delete local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('there\'s an active work area for the local cluster [b]$data[/b], please consider to close it before attempting to delete the local cluster again', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                    return showToast(I18next.capitalize(I18next.t(isSandbox ? 'delete local cluster' : 'delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData(isSandbox ? 'there\'s an active work area for the local cluster [b]$data[/b], please consider to close it before attempting to delete the local cluster again' : 'this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                   try {
                     // If the current workspace is not the sandbox then skip this try-catch block

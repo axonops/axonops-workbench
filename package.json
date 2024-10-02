@@ -17,7 +17,7 @@
   "build": {
     "icon": "./renderer/assets/images/axonops-icon-256x256.png",
     "copyright": "©2024 AxonOps Limited",
-    "appId": "com.axonops.workbench.cassandra",
+    "appId": "com.axonops.workbench",
     "compression": "maximum",
     "asarUnpack": "**/*.node",
     "extraResources": [
@@ -44,7 +44,7 @@
         "Name": "AxonOps Workbench",
         "Common": "AxonOps Workbench",
         "Terminal": false,
-        "Keywords": "cassandra;axonops;development;workbench",
+        "Keywords": "cassandra;axonops;development;workbench;kafka;dba",
         "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench.png"
       },
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
@@ -66,7 +66,7 @@
       "type": "distribution",
       "entitlements": "./resources/entitlements.mac.plist",
       "entitlementsInherit": "./resources/entitlements.mac.plist",
-      "provisioningProfile": "./resources/MacAppStore.provisionprofile",
+      "provisioningProfile": "./resources/WorkbenchDevelopment.provisionprofile",
       "notarize": {
         "teamId": "UJ776LUP23"
       },
@@ -78,6 +78,7 @@
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "mas": {
+      "icon": "./renderer/assets/images/axonops.icns",
       "entitlements": "./resources/entitlements.mas.plist",
       "entitlementsInherit": "./resources/entitlements.inherit.mas.plist",
       "provisioningProfile": "./resources/MacAppStore.provisionprofile",
@@ -121,7 +122,7 @@
     "linux": "electron-builder --linux tar.gz deb rpm --publish never",
     "linux:arm64": "electron-builder --linux tar.gz deb rpm --publish never --arm64",
     "mac": "electron-builder --mac --publish never --x64",
-    "mac:mas": "electron-builder --mac mas-dev --publish never --arm64",
+    "mac:mas": "electron-builder --mac mas --publish never --arm64",
     "mac:arm64": "electron-builder --mac --publish never --arm64",
     "mac:zip": "electron-builder --mac zip --publish never",
     "mac:pkg": "electron-builder --mac pkg --publish never",

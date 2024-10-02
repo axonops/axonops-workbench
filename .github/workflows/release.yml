@@ -249,6 +249,7 @@ jobs:
             dist/*.msi
             dist/*.sha256sum
             dist/mas-arm64/*.pkg
+            dist/mas-dev-arm64/*.pkg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -1690,7 +1690,6 @@
                       if (isConnectionLost)
                         return
 
-
                       try {
                         if (!((['connectionerror:', ',last_host']).some((keyword) => minifyText(allOutput).includes(keyword))))
                           throw 0
@@ -7095,6 +7094,9 @@
             let input = $(this), // Point at the current input
               workspaceID = getActiveWorkspaceID() // Get the active workspace's ID
 
+            // Remove any visual feedback about having an invalid value
+            input.removeClass('is-invalid')
+
             // Ignore the input field if it is not associated with a section in the `cqlsh.rc` config file
             if (getAttributes(input, 'info-section') == 'none')
               return
@@ -7118,9 +7120,6 @@
 
             // Convert final value to string
             value = `${value}`
-
-            // Remove any visual feedback about having an invalid value
-            input.removeClass('is-invalid')
 
             // Inner function to update the editor's content
             let update = async () => {
@@ -8016,6 +8015,20 @@
                 extraCondition = editingMode ? clusterName != editedClusterObject.name : true
 
               try {
+                if (Sanitize(minifyText(clusterName)).length > 0)
+                  throw 0
+
+                // Enable the buttons in the footer
+                button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
+
+                // Show feedback to the user
+                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('the given name seems invalid, please provide a unique valid name')) + '.', 'failure')
+
+                // Skip the upcoming code - terminate the saving/updating process -
+                return
+              } catch (e) {}
+
+              try {
                 // If there's no duplication then skip this try-catch block
                 if ([undefined, null].includes(exists) || !extraCondition)
                   throw 0
@@ -8208,6 +8221,12 @@
                   editedClusterObject = newEditedCluster
                 } catch (e) {}
 
+                // Refresh clusters for the currently active workspace
+                $(document).trigger('refreshClusters', workspaceID)
+
+                // Get workspaces; to sync with newly added/updated clusters
+                $(document).trigger('getWorkspaces')
+
                 {
                   setTimeout(() => {
                     let clusterElement = $(`div.clusters-container div.cluster[data-id="${finalCluster.info.id}"]`),
@@ -8220,6 +8239,34 @@
                       testConnectionBtn = clusterElement.children('div.footer').children('div.button').children('button.test-connection'),
                       // Point at the status element - the flashing circle at the top right -
                       statusElement = clusterElement.children('div.status')
+
+
+                    try {
+                      if (!secrets[0])
+                        throw 0
+
+                      getKey('public', (key) => {
+                        try {
+                          // If the received key is valid to be used then skip this try-catch block
+                          if (key.length <= 0)
+                            throw 0
+
+                          for (secret of secrets) {
+                            if (typeof secret !== 'object')
+                              continue
+
+                            try {
+                              if (`${secret.value}`.length <= 0)
+                                throw 0
+
+                              let value = encrypt(key, secret.value)
+
+                              clusterElement.attr(`data-${secret.name.toLowerCase().replace('ssh', 'ssh-')}`, value)
+                            } catch (e) {}
+                          }
+                        } catch (e) {}
+                      })
+                    } catch (e) {}
 
                     try {
                       if (tempClusterID == null)
@@ -8271,12 +8318,6 @@
                     })
                   }, 1000)
                 }
-
-                // Refresh clusters for the currently active workspace
-                $(document).trigger('refreshClusters', workspaceID)
-
-                // Get workspaces; to sync with newly added/updated clusters
-                $(document).trigger('getWorkspaces')
               }
               // End of the inner function to do processes after saving/updating cluster
 
@@ -8342,6 +8383,30 @@
               // Determine the proper function to be called based on whether the current mode is `edit` or not
               let clustersCallFunction = editingMode ? Modules.Clusters.updateCluster : Modules.Clusters.saveCluster
 
+              /**
+               * Encrypt all provided secrets - for Apache Cassandra and SSH -
+               *
+               * Create an array of names and values of the secrets
+               */
+              let secrets = [{
+                  name: 'username',
+                  value: username
+                }, {
+                  name: 'password',
+                  value: password
+                }, {
+                  name: 'sshUsername',
+                  value: sshUsername
+                }, {
+                  name: 'sshPassword',
+                  value: sshPassword
+                },
+                {
+                  name: 'sshPassphrase',
+                  value: sshPassphrase
+                }
+              ]
+
               try {
                 // If there's no need to wait for the encryption process then skip this try-catch block
                 if (!waitForEncryption)
@@ -8363,30 +8428,6 @@
                     // Stop the process; as something is not correct with the generator tool
                     return
                   } catch (e) {}
-
-                  /**
-                   * Encrypt all provided secrets - for Apache Cassandra and SSH -
-                   *
-                   * Create an array of names and values of the secrets
-                   */
-                  let secrets = [{
-                      name: 'username',
-                      value: username
-                    }, {
-                      name: 'password',
-                      value: password
-                    }, {
-                      name: 'sshUsername',
-                      value: sshUsername
-                    }, {
-                      name: 'sshPassword',
-                      value: sshPassword
-                    },
-                    {
-                      name: 'sshPassphrase',
-                      value: sshPassphrase
-                    }
-                  ]
 
                   // Values will be saved in the `secrets` object
                   finalCluster.info.secrets = [],
@@ -8429,7 +8470,7 @@
                   clustersCallFunction(workspaceID, finalCluster).then((status) => postProcess(status, editingMode ? {
                     ...savedSecrets,
                     ...finalCluster.info.credentials
-                  } : null))
+                  } : [true, ...secrets]))
                 })
 
                 // Skip the upcoming code

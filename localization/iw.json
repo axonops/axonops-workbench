@@ -311,6 +311,7 @@
       "the connection has been successfully updated": "החיבור עודכן בהצלחה",
       "the current release version has been successfully copied to the clipboard": "גירסת ההפצה הנוכחית הועתקה בהצלחה ללוח",
       "the detected version of Apache Cassandra is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered": "הגרסה שזוהתה של Apache Cassandra היא [b]$data[/b], ייתכן שתיתקל בבעיות התנהגות ותאימות לא רצויות",
+      "the given name seems invalid, please provide a unique valid name": "השם הפרטי נראה לא חוקי, אנא ספק שם חוקי ייחודי",
       "the importing process has finished, results for the workspaces are: $data": "תהליך הייבוא הסתיים, התוצאות עבור סביבות העבודה הן: $data",
       "the local cluster [b]$data[/b] has been successfully deleted": "האשכול המקומי [b]$data[/b] נמחק בהצלחה",
       "the local cluster [b]$data[/b] has been successfully stopped": "האשכול המקומי [b]$data[/b] הופסק בהצלחה",

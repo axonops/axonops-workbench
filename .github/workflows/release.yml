@@ -32,7 +32,7 @@ jobs:
           tag: ${{ github.ref_name }}
         run: |
           OPTIONS=""
-          if [[ $GITHUB_REF_NAME == *"internal"* ]] || [[ $GITHUB_REF_NAME == *"beta"* ]]; then
+          if [[ $GITHUB_REF_NAME == *"internal"* ]]; then
             OPTIONS="--prerelease"
           fi
           gh release create "$GITHUB_REF_NAME" \

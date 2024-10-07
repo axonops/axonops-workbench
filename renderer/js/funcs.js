@@ -896,7 +896,6 @@ let convertTableToTabulator = (json, container, callback) => {
  * @Return: {object} a valid tree structure to be rendered
  */
 let buildTreeview = (metadata, ignoreTitles = false) => {
-  console.log(metadata);
   /**
    * Due to the way JSTree is coded, there's an issue with the paths in Windows
    * To solve this issue, this inner function replaces the backward slashes
@@ -1155,7 +1154,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
     try {
       if (keyspace.replication_strategy == undefined)
         throw 0
-      
+
       let replicationStrategy = JSON.parse(repairJSON(keyspace.replication_strategy)),
         replicationStrategyID = getRandomID(30)
 

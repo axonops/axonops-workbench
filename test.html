@@ -1,0 +1,1688 @@
+<h2>1. Intro Window</h2>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> At the first launch, you should see a checkbox.</p>
+<img src="assets/1.png"></blockquote>
+<ul>
+<li><p>1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Check the check box to proceed.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The intro window has been destroyed, and the main window has been displayed.</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The checkbox disappeared in the next launch.</p>
+</li>
+</ul>
+<h2>2. Main Window</h2>
+<h3>2.1 Add Workspace Process</h3>
+<blockquote>
+<img title="" src="assets/2.1.1.png" alt=""></blockquote>
+<ul>
+<li><p>2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the &quot;<strong>ADD WORKSPACE</strong>&quot; button <em>#1</em>, or the &quot;<strong>+</strong>&quot; button at the center of the window <em>#2</em>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A related dialog (2.1.2) has been displayed when clicked the &quot;<strong>ADD WORKSPACE</strong>&quot; button.</li>
+<li><input disabled="" type="checkbox"> 2.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Same behavior for the &quot;<strong>+</strong>&quot; button.</li>
+</ul>
+</li>
+<li><p>2.1.2 <strong><u>Add Workspace Dialog</u></strong>.</p>
+<blockquote>
+<img src="assets/2.1.2.png"></blockquote>
+<ul>
+<li><p>2.1.2.1 <strong><u>Input fields, Icons and Buttons</u></strong>:</p>
+<ul>
+<li><p>2.1.2.1.1 &quot;<strong>Workspace Name</strong>&quot; text field:</p>
+<blockquote>
+<img src="assets/2.1.2.1.1.png"></blockquote>
+<ul>
+<li><p>2.1.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Invalid cases that should not be accepted:</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Only whitespaces.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Duplicated name with other workspace (case insensitive).</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> To perform this test you should click &quot;ADD WORKSPACE&quot; button and get an error.</p>
+</blockquote>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.1.1.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Only symbols that will be deleted during the sanitization process (such as <code>|</code>, and <code>/</code>), so the workspace&#39;s folder name will be empty.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> To perform this test you should click &quot;ADD WORKSPACE&quot; button and get an error.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Otherwise, the name should be accepted - no red border covering the input field -.</p>
+</li>
+</ul>
+</li>
+<li><p>2.1.2.1.2 &quot;<strong>Workspace Color</strong>&quot; text field:</p>
+<blockquote>
+<img src="assets/2.1.2.1.2.png"></blockquote>
+<ul>
+<li><p>2.1.2.1.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the text field or focus on it.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A color picker dialog has been displayed.</p>
+<blockquote>
+<img src="assets/2.1.2.1.2.1.1.png"></blockquote>
+</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A color must be set, there&#39;s no way to let the text field empty.</p>
+</li>
+</ul>
+</li>
+<li><p>2.1.2.1.3 &quot;<strong>Workspace Path</strong>&quot; text field and its <strong>Icon</strong>:</p>
+<blockquote>
+<img src="assets/2.1.2.1.3.png"></blockquote>
+<ul>
+<li><p>2.1.2.1.3.1 <strong>The text field</strong> <em>#1</em>.</p>
+<ul>
+<li><p>2.1.2.1.3.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the text field.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.3.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A directory selection dialog has been displayed.</p>
+<blockquote>
+<img src="assets/2.1.2.1.3.1.1.png"></blockquote>
+</li>
+</ul>
+</li>
+<li><p>2.1.2.1.3.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Invalid cases that should not be accepted:</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.3.1.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Inaccessible path for any reason.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> To perform this test you should click &quot;ADD WORKSPACE&quot; button and get an error.</p>
+</blockquote>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.3.1.1.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Path where there&#39;s a folder with the same name as the workspace&#39;s folder - after the sanitization process -.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> To perform this test you should click &quot;ADD WORKSPACE&quot; button and get an error.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.3.1.1.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Otherwise, the path should be accepted.</p>
+</li>
+</ul>
+</li>
+<li><p>2.1.2.1.3.2 &quot;<strong>Set default path</strong>&quot; icon <em>#2</em>.</p>
+<ul>
+<li><p>2.1.2.1.3.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Related to test (2.1.2.1.3.1), change the default directory to something else.</p>
+</li>
+<li><p>2.1.2.1.3.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the icon #2.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.1.2.1.3.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The path has been reverted to the default one.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.1.2.1.4 <strong><u>Footer buttons</u></strong>.</p>
+<blockquote>
+<img src="assets/2.1.2.1.4.png"></blockquote>
+<ul>
+<li><p>2.1.2.1.4.1 &quot;<strong>CLOSE</strong>&quot; button <em>#1</em>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.4.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The related dialog was hidden when you clicked this button.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.4.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Same behvior as the <code>X</code> icon at the top right of the dialog.</p>
+</li>
+</ul>
+</li>
+<li><p>2.1.2.1.4.2 &quot;<strong>ADD WORKSPACE</strong>&quot; button <em>#2</em>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.4.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Clicking this button caused to create a workspace with success feedback.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.1.4.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> In case there&#39;s an invalid input, an error feedback showed up.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.1.2.2 <strong><u>Add bunch of workspaces</u></strong>.</p>
+<blockquote>
+<img src="assets/2.1.2.2.png"></blockquote>
+<ul>
+<li><p>2.1.2.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">  After finshing the test (2.1.2), add about 3-4 workspaces.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> For the upcoming tests, make sure to change the default path of one workspace at least.</p>
+</blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> 2.1.2.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All workspaces have been added with success feedback.</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.1.2.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After adding the first workspace with success, the view has been changed and the workspace has been displayed as a card - as the image in embedded under this test -.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> After adding the first workspace, you can click the &quot;<strong>ADD WORKSPACE</strong>&quot; button at the top right side of the window <img src="assets/2.1.2.2_2.png"></p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>2.2 Processes Of An Added Workspace</h3>
+<blockquote>
+<img src="assets/2.2.png"></blockquote>
+<ul>
+<li><p>2.2.1 &quot;<strong>Workspace folder</strong>&quot; button.</p>
+<ul>
+<li><p>2.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the button with folder icon - first one from left side - <img src="assets/2.2.1.1.png"> for any added workspace.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> File explorer opened pointing at the workspace&#39;s folder.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.2.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All workspaces folders - espcially with custom path - have been opened with success.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.2.2 &quot;<strong>Workspace settings</strong>&quot; button.</p>
+<ul>
+<li><p>2.2.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the button cog icon - second one from left side - <img src="assets/2.2.2.1.png"> for any added workspace.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.2.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> An associated dialog should be shown.</li>
+</ul>
+</li>
+<li><p>2.2.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Attempt to change the name, color and path of a workspace - all at once, or separately -.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.2.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Conditions of adding a workspace should be applied in this case too.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.2.3 &quot;<strong>Delete workspace</strong>&quot; button.</p>
+<blockquote>
+<img src="assets/2.2.3.png"></blockquote>
+<ul>
+<li><p>2.2.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the button with trash icon - third one from left side - <img src="assets/2.2.3.1.png"> for any added workspace.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.2.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A related - confirmation - dialog has been displayed.</li>
+</ul>
+</li>
+<li><p>2.2.3.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the &quot;<strong>CANCEL</strong>&quot; button <em>#2</em>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.2.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Nothing should happen, the deletion process has been neglected.</li>
+</ul>
+</li>
+<li><p>2.2.3.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the &quot;<strong>CONFIRM</strong>&quot; button <em>#3</em>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.2.3.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The related workspace has been deleted and its card has been removed from the UI.</li>
+</ul>
+</li>
+<li><p>2.2.3.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the button with trash icon of another workspace.</p>
+<ul>
+<li><p>2.2.3.4.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Check the checkbox <em>#1</em> then click the &quot;<strong>CONFIRM</strong>&quot; button <em>#3</em>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.2.3.4.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The related workspace has been deleted and its card has been removed from the UI, in addation, its files has been kept in the system.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> The workspace&#39;s folder has been changed by adding a prefix <code>_DEL_{randomStr}</code>, example <code>DEV 2_DEL_fa4b8</code>.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>2.3 Add Connection Process</h3>
+<ul>
+<li><p>2.3.1 Click the &quot;<strong>ENTER</strong>&quot; button for any added workspace.</p>
+<blockquote>
+<img src="assets/2.3.1.png"></blockquote>
+<ul>
+<li><p>2.3.1.1 The view has been changed.</p>
+<blockquote>
+<img title="" src="assets/2.3.1.1.png" alt=""></blockquote>
+</li>
+<li><p>2.3.1.2 Click the &quot;<strong>ADD CONNECTION</strong>&quot; button <em>#1</em>, or the &quot;<strong>+</strong>&quot; button at the center of the window <em>#2</em>, or the &quot;<strong>ADD CONNECTION</strong>&quot; button <em>#3</em> at the top right side of the window.</p>
+<ul>
+<li><p>2.3.1.2.1 A related dialog (2.3.2) has been displayed when clicked the &quot;<strong>ADD CONNECTION</strong>&quot; button of both <em>#1</em> or <em>#3</em>.</p>
+</li>
+<li><p>2.3.1.2.2 Same behavior for the &quot;<strong>+</strong>&quot; button.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.3.2 <strong><u>Add Connection Dialog</u></strong>.</p>
+<blockquote>
+<img src="assets/2.3.2.png"></blockquote>
+<ul>
+<li><p>2.3.2.1 <strong><u>Input fields, Icons and Buttons</u></strong>:</p>
+<ul>
+<li><p>2.3.2.1 <strong><u>&quot;Basic&quot; section</u></strong>.</p>
+<ul>
+<li><p>2.3.2.1.1 &quot;<strong>Connection Name</strong>&quot; text field:</p>
+<blockquote>
+<img src="assets/2.3.2.1.1.png"></blockquote>
+<ul>
+<li><p>2.3.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Invalid cases that should not be accepted:</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Only whitespaces.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> To perform this test you should click &quot;ADD CONNECTION&quot; button and get an error.</p>
+</blockquote>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.1.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Duplicated name with other connection in the same workspace (case insensitive).</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> To perform this test you should click &quot;ADD CONNECTION&quot; button and get an error.</p>
+</blockquote>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.1.1.1.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Only symbols that will be deleted during the sanitization process (such as <code>|</code>, and <code>/</code>), so the connection&#39;s folder name will be empty.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> To perform this test you should click &quot;ADD CONNECTION&quot; button and get an error.</p>
+</blockquote>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.1.1.1.4 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Otherwise, the name should be accepted.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.3.2.1.2 &quot;<strong>Cassandra Data Center</strong>&quot; text field:</p>
+<blockquote>
+<img src="assets/2.3.2.1.2.png"></blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This field can be left empty without stopping the testing/adding process.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.1.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> When adding a data center that doesn&#39;t exist, an error should been shown.</p>
+<blockquote>
+<img src="assets/2.3.2.1.2.2.png"></blockquote>
+</li>
+</ul>
+</li>
+<li><p>2.3.2.1.3 &quot;<strong>Cassandra Host Name</strong>&quot; text field:</p>
+<blockquote>
+<img src="assets/2.3.2.1.3.png"></blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> 2.3.2.1.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This field can&#39;t be left empty.</li>
+</ul>
+</li>
+<li><p>2.3.2.1.4 &quot;<strong>Port</strong>&quot; text field:</p>
+<blockquote>
+<img src="assets/2.3.2.1.4.png"></blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> 2.3.2.1.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This field can&#39;t be left empty.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.3.2.2 <strong><u>&quot;Authentication&quot; section</u></strong>.</p>
+<blockquote>
+<img src="assets/2.3.2.2.png"></blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> When keeping the checkbox <em>#1</em> checked, credentials should be saved in the OS keychain.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> To perform this test you should add a connection, then attempt to edit that connection to see if authentication credentials are filled up automaticlly in the fields.</p>
+</blockquote>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> When unchecking the checkbox <em>#1</em>, credentials should not be saved in the OS keychain, and a dialog will show up with each test/connect process.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> To perform this test you should add a connection, then attempt to either test or activate that connection.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>2.3.2.3 <strong><u>&quot;SSH Tunnel&quot; section</u></strong>.</p>
+<blockquote>
+<img src="assets/2.3.2.3.png"></blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> When keeping the checkbox <em>#1</em> checked, credentials should be saved in the OS keychain.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> To perform this test you should add a connection, then attempt to edit that connection to see if authentication credentials are filled up automaticlly in the fields.</p>
+</blockquote>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> When unchecking the checkbox <em>#1</em>, credentials should not be saved in the OS keychain, and a dialog will show up with each test/connect process.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> To perform this test you should add a connection, then attempt to either test or activate that connection.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>2.3.2.4 &quot;<strong>SWITCH EDITR</strong>&quot; button.</p>
+<blockquote>
+<img src="assets/2.3.2.4.png"></blockquote>
+<ul>
+<li><p>2.3.2.4.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the button <em>#1</em> in the dialog&#39;s footer section.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.4.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The view in the dailog changed to an editor.</p>
+<blockquote>
+<img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> 
+
+<ul>
+<li><p>To expand the editor, click the expand icon <img src="assets/2.3.2.4.1.1.png"> beside the button <em>#1</em>, click the icon again to shrink the editor.</p>
+</li>
+<li><p>You can also zoom-in and out the editor using CTRL and the mouse wheel.</p>
+</li>
+</ul>
+</blockquote>
+</li>
+<li><p>2.3.2.4.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Attempt to change any value in the editor like; <code>hostname</code> under <code>[connection]</code> section.</p>
+<blockquote>
+<img src="assets/2.3.2.4.1.2.png"></blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> 2.3.2.4.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The change should be implemented in the UI, in the &quot;<strong>Basic</strong>&quot; section (2.3.2.1) for &quot;<strong>Cassandra Host Name</strong>&quot; text field (2.3.2.1.3).</li>
+</ul>
+</li>
+<li><p>2.3.2.4.1.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Attempt to paste a cqlsh.rc content.</p>
+<ul>
+<li><p>2.3.2.4.1.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> For a valid <code>cqlsh.rc</code> file you have, attempt to paste it entirely in the editor.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.3.2.4.1.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All values that have assicated UI elements their value should be updated as well.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.3.2.4.1.4 Pre and post connection scripts.</p>
+<blockquote>
+<img src="assets/2.3.2.4.1.4.png"></blockquote>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> This feature allows to execute scripts, or any executable in either pre or post connection phase. Added scripts should return <code>0</code>; which indicate success, any other returned value will be considered to be failure.</p>
+<ul>
+<li><p>While focusing on the editor, press CTRL+F to search inside it.</p>
+</li>
+<li><p>Look for <code>[preconnect]</code> and <code>[postconnect]</code> sections, and have a look at the description.</p>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><p><img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> 2.3.2.4.1.4.1 Add scripts/executables/bat files paths to be executed in the pre-connection phase.</p>
+</li>
+<li><p><img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> 2.3.2.4.1.4.2 Add scripts/executables/bat files paths to be executed in the post-connection phase.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.3.2.5 &quot;<strong>TEST CONNECTION</strong>&quot; button.</p>
+<blockquote>
+<img src="assets/2.3.2.5.png"></blockquote>
+<ul>
+<li><p>2.3.2.5.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After finishing previous tests, click the button <em>#1</em> in the dialog&#39;s footer section.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.5.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A spinner <em>#1</em> showed up, and an <code>X</code> button <em>#2</em> showed up after a short time.</p>
+<blockquote>
+<img src="assets/2.3.2.5.1.1.png"></blockquote>
+<ul>
+<li><p>2.3.2.5.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the <code>X</code> button <em>#2</em>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.3.2.5.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The test process has been terminated, a feedback message showed up.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.5.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> On failure, an error showed up with details about the cause of it.</p>
+<blockquote>
+<img src="assets/2.3.2.5.1.2.png"></blockquote>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.5.1.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> On success, the button &quot;<strong>ADD CONNECTION</strong>&quot; <em>#1</em> enabled now, and a sucess message <em>#2</em> showed up.</p>
+<blockquote>
+<img src="assets/2.3.2.5.1.3.png"></blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.3.2.6 &quot;<strong>ADD CONNECTION</strong>&quot; button.</p>
+<blockquote>
+<img title="" src="assets/2.3.2.6.png" alt=""></blockquote>
+<ul>
+<li><p>2.3.2.6.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After finshing the test (2.3.2.5) with success, the button #1 should be enabled, click it.</p>
+<ul>
+<li><p>2.3.2.6.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> On success.</p>
+<blockquote>
+<img src="assets/2.3.2.6.1.1.png"></blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.6.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The connection has been added under the current active workspace.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.6.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The added connection is ready to be activated - green glowing circle, cassandra version and data center are known and provided -.</p>
+</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.3.2.6.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> On failure, an error showed up with details about the cause of it.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.3.3 <strong><u>Add bunch of connections</u></strong>.</p>
+<blockquote>
+<img src="assets/2.3.3.png"></blockquote>
+<ul>
+<li><p>2.3.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After finshing the test (2.3.2), add about 3-4 connections.</p>
+<blockquote>
+<p> <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> We can add the same connection info - except changing its name, related to test () -.</p>
+</blockquote>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.3.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All connections have been added with success feedback.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.3.3.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After adding the first connection with success, the view has been changed and the connection has been displayed as a card - as the image in embedded under this test -.</p>
+<blockquote>
+<p> <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After adding the first connection, you can click the &quot;<strong>ADD CONNECTION</strong>&quot; button at the top right side of the window <img src="assets/2.3.3.3.png">.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<h3>2.4 Processes Of An Added Connection</h3>
+<blockquote>
+<img src="assets/2.3.2.6.1.1.png"></blockquote>
+<ul>
+<li><p>2.4.1 &quot;<strong>Connection folder</strong>&quot; button.</p>
+<ul>
+<li><p>2.4.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the button with folder icon - first one from left side - <img src="assets/2.2.1.1.png"> for any added connection.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> File explorer opened pointing at the connection&#39;s folder.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.2 &quot;<strong>Connection settings</strong>&quot; button.</p>
+<ul>
+<li><p>2.4.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the button cog icon - second one from left side - <img src="assets/2.2.2.1.png"> for any added connection.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> An associated dialog should be shown.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.2.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Conditions of adding a connection should be applied in this case too.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.5 &quot;<strong>Delete connection</strong>&quot; button.</p>
+<blockquote>
+<img src="assets/2.4.5.png"></blockquote>
+<ul>
+<li><p>2.4.5.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the button with trash icon third one from left side - <img src="assets/2.2.3.1.png"> for any added connection.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.5.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A related - confirmation - dialog has been displayed.</li>
+</ul>
+</li>
+<li><p>2.4.5.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the &quot;<strong>CANCEL</strong>&quot; button <em>#2</em>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.5.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Nothing should happen, the deletion process has been neglected.</li>
+</ul>
+</li>
+<li><p>2.4.5.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the &quot;<strong>CONFIRM</strong>&quot; button <em>#3</em>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.5.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The related connection has been deleted and its card has been removed from the UI.</li>
+</ul>
+</li>
+<li><p>2.4.5.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the button with trash icon of another connection.</p>
+<ul>
+<li><p>2.4.5.4.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Check the checkbox <em>#1</em> then click the &quot;<strong>CONFIRM</strong>&quot; button <em>#3</em>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.5.4.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The related connection has been deleted and its card has been removed from the UI, in addation, its files has been kept in the system.</p>
+<blockquote>
+<p>The connection&#39;s folder has been changed by adding a prefix <code>_DEL_{randomStr}</code>, example <code>Main_DEL_fa4b8</code>.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.6 &quot;<strong>TEST CONNECTION</strong>&quot; button.</p>
+<blockquote>
+<img src="assets/2.4.6.png"></blockquote>
+<ul>
+<li><p>2.4.6.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the button #1 of any added connection.</p>
+<ul>
+<li><p>2.4.6.1.1 Related to tests (2.3.2.2.2) and (2.3.2.3.2), a related dialog would show up.</p>
+<blockquote>
+<img src="assets/2.4.6.1.1.png"></blockquote>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.6.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Changes happend in the UI - a spinner <em>#1</em> showed up, and an <code>X</code> button <em>#2</em> showed up after a short time..</p>
+<blockquote>
+<img title="" src="assets/2.4.6.1.2.png" alt=""></blockquote>
+<ul>
+<li><p>2.4.6.1.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the <code>X</code> button <em>#2</em>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.6.1.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The test process has been terminated, a feedback message showed up.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.6.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The test process finished with feedback - of sccuess or failure -.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.7 &quot;<strong>CONNECT</strong>&quot; button.</p>
+<blockquote>
+<img src="assets/2.4.7.png"></blockquote>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> After finshing test (2.4.6) with success, activating the connection will immediatly create a work area, otherwise, when clicking the button &quot;CONNECT&quot; it&#39;ll automaticlly test the connection first, then activate it.</p>
+</blockquote>
+<ul>
+<li><p><img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> 2.4.7.1 Click the button <em>#1</em> of any added connection.</p>
+<blockquote>
+<img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;">
+- As mentioned in the info card, in case this is the first attempt to connect after adding the connection, or after a successful connection test the workbench will immedailty attempt to create a work area.
+
+<ul>
+<li>Otherwise, clicking this button will cause the same behavior in test (2.4.6.1), then it&#39;ll create a work area.</li>
+</ul>
+</blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.7.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After a succesful connection test - either automaticlly related to test (2.4.6) or manually -, a work area showed up.</p>
+<blockquote>
+<img src="assets/2.4.7.1.1.png"></blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4>2.4.1 Active Connection Workarea</h4>
+<blockquote>
+<img src="assets/2.4.1.png"></blockquote>
+<blockquote>
+<p>This test assumes that test (2.4.6) and (2.4.7) were finished with success.</p>
+</blockquote>
+<ul>
+<li><p>2.4.1.1 <u>&quot;<strong>Connection Info Card</strong>&quot; <em>#1</em></u>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Hostname, Cassandra version and the data center are correctly provided.</p>
+</li>
+<li><p>2.4.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The lock icon at the top right side of the card <img src="assets/2.4.1.1.2.png">.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> In case SSL is not enabled, it&#39;s an opened-lock with tooltip &quot;<em>SSL is not enabled</em>&quot;.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.1.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> In case SSL is enabled, it&#39;s a colored closed-lock with tooltip &quot;<em>SSL is enabled</em>&quot;.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.2 <u>&quot;<strong>Metadata Tree View</strong>&quot; <em>#2</em></u>.</p>
+<ul>
+<li><p>2.4.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> <strong><u>Info about the connected-to cluster/node are shown correctly</u></strong>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Cluster name and the partitioner.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> List of all keyspaces - virtual and system keyspaces are grouped together under Virtual Keyspaces (<code>${numberOfVirtualKeyspaces}</code>) and <em>System Keyspaces (<code>${numberOfSystemKeyspaces}</code>)</em>  respectively.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All tables inside each keyspace.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.2.1.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All associated tables&#39; data like keys, columns, options, triggers if any, and alike.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.2.2 <strong><u>Metadata Tree View Actions</u></strong>.</p>
+<blockquote>
+<img src="assets/2.4.1.2.2.png"></blockquote>
+<ul>
+<li><p>2.4.1.2.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the copy icon <em>#1</em>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The entire metadata has been copied to the clipboard as JSON string, the workbench showed a feedback of success with the size of the copied JSON string.</p>
+<blockquote>
+<img src="assets/2.4.1.2.2.1.1.png"></blockquote>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.2.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the refresh icon <em>#2</em>.</p>
+<blockquote>
+<img src="assets/2.4.1.2.2.2.png"></blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The loader has been shown again.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.2.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All metadata actions were disabled during the refresh process.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.2.2.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The tree view has been rendered again.</p>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.2.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the search icon <em>#3</em>.</p>
+<ul>
+<li><p>2.4.1.2.2.2.1 An input field showed up at the top of the tree view.</p>
+<blockquote>
+<img src="assets/2.4.1.2.2.2.1.png"></blockquote>
+<ul>
+<li><p>2.4.1.2.2.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Attempt to search for something, like <code>frozen</code>.</p>
+<blockquote>
+<img src="assets/2.4.1.2.2.2.1.1.png"></blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.2.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The tree has been filtered.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.2.2.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The number of search results <em>#1</em> and the ID of the current result <em>#1</em> are displayed on the right side of the input field.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.2.2.1.1.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Up and down arrows <em>#2</em> are displayed on the right side of the input field to navigate between results.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.2.2.1.1.4 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Results are highlighted well and distinguishable <em>#3</em>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.2.2.1.1.5 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All results are correct - the search string certainly exists in the highlighted nodes - <em>#3</em>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.2.2.2.1.1.6 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Search is case insensitive.</p>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.2.2.2.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Clear the input field.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.2.2.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All nodes are now displayed with no filter.</li>
+</ul>
+</li>
+<li><p>2.4.1.2.2.2.1.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the search icon again and search for something.</p>
+<ul>
+<li><p>2.4.1.2.2.2.1.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the search icon again wthiout clearing the field.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.2.2.2.1.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All nodes are now displayed with no filter.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.2.3 <strong><u>Resize the left side of the workarea</u></strong>.</p>
+<ul>
+<li><p>2.4.1.2.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Move the mouse closer to the left edge of the workspace.</p>
+<blockquote>
+<img src="assets/2.4.1.2.3.gif"></blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> 2.4.1.2.3.1.1 The left side has been resized as expected.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3 <u>&quot;<strong>Workarea Sections</strong>&quot; <em>#3</em></u>.</p>
+<ul>
+<li><p>2.4.1.3.1 &quot;<strong><u>CQLSH Session</u></strong>&quot; Section.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.png"></blockquote>
+<blockquote>
+<img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;">
+
+<ul>
+<li><p>#1: The workarea&#39;s different sections, we can navigate to any section via its tab.</p>
+</li>
+<li><p>#2: The search area in the &quot;CQLSH SESSION&quot; section, here we can search for specific string in the output #3.</p>
+</li>
+<li><p>#3: The blocks&#39; container, where all output of the current session are shown here as blocks, the block consist of:</p>
+<ul>
+<li><p>#5 The header: Either title, or cql statement(s).</p>
+</li>
+<li><p>#6 The body: The content of the block, either plain text, or rendered tables and objects.</p>
+</li>
+<li><p>#7: Actions: different block&#39;s actions like delete, copy, query tracing, download and more.</p>
+</li>
+</ul>
+</li>
+<li><p>#4: Execution area: where we type and execute cql statements or cqlsh commands, and browser statements history.</p>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><p>2.4.1.3.1.1 &quot;<strong><u>Execution Area</u></strong>&quot; <em>#4</em>.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.1.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> <strong><u>Execute simple statement like <code>tracing on</code></u></strong>.</p>
+<blockquote>
+<img title="" src="assets/2.4.1.3.1.1.1.gif" alt=""></blockquote>
+<ul>
+<li><p>2.4.1.3.1.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Focus on the input field in the execution area.</p>
+</li>
+<li><p>2.4.1.3.1.1.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Start typing <code>t</code> letter.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">  Suggestions feature has been started.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.1.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Type <code>tr</code> letters:</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.1.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">  <code>truncate</code> word is suggested by the workbench to be auto typed.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.1.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click <code>TAB</code>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.1.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">  The word <code>truncate</code> has been auto typed.</p>
+</li>
+<li><p>2.4.1.3.1.1.1.4.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click <code>TAB</code> key again.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.1.4.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">  The word <code>tracing</code> has been auto typed.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.1.5 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click <code>TAB</code> key multiple times.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.1.5.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">  The workbench cycled throw the two suggestions.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.1.6 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Continue with typing <code>tracing on</code>, now either click <code>ENTER</code> key, or the execution button at the right side of the area.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.1.1.6.png"></blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.1.6.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The statement has been executed and the input field has been cleared <em>#3</em>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.1.6.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The statement is syntax highlighted.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.1.6.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A new block showed up at the bottom of the blocks&#39; container <em>#1</em>.</p>
+<ul>
+<li><p>2.4.1.3.1.1.1.6.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Hover the mouse closer to the block&#39;s statement.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.1.1.6.3.1.gif"></blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.1.6.3.1.1 A copy icon showed up at the bottom right side of the statement.<ul>
+<li>2.4.1.3.1.1.1.6.3.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the icon.<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.1.6.3.1.1.1.1 The statement has been copied to the clipboard.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.1.6.4 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The history button at the left side of the input field has been enabled <em>#2</em>.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> <strong><u>Execute statement with records like <code>select * from system_views.clients;</code></u></strong>.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.1.2.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.1.1.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Type the statement <code>select * from system_views.client</code>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Without typing a semicolon at the end <code>;</code>, the execution button still disabled and we can&#39;t execute the statement.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench detects which statements need a semicolon and which not.</p>
+</blockquote>
+</li>
+<li><p>2.4.1.3.1.1.2.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Type <code>;</code> at the end and execute the statement.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The statement has been executed and the input field has been cleared.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The statement is syntax highlighted <em>#1</em>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.2.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A new block showed up at the bottom of the blocks&#39; container.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.2.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench atuomaticlly scrolled to the bottom of the container.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.2.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Inside the block a table has been rendered containing the related table&#39;s columns and records <em>#2</em>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.2.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> By typing inside the text fields of any column, records have been filtered <em>#3</em>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.2.3.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The order of the columns have been changed by dragging and dropping them.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.2.3.2.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The order of records have been changed by clicking the right side arrow inside headers <em>#4</em>.</p>
+</li>
+<li><p>2.4.1.3.1.1.2.1.2.3.2.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the download icon at the bottom right of the container <em>#5</em>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.2.3.2.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Two options showed up to download the table as either <em>CSV</em> or <em>PDF</em> formats <em>#5</em>.</p>
+</li>
+<li><p>2.4.1.3.1.1.2.1.2.3.2.4.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Download the table in both formats.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.2.1.2.3.2.4.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Both formats are fine and incorrupted.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.2.1.2.3.3 &quot;Query Tracing&quot; feature.</p>
+<ul>
+<li><p>2.4.1.3.1.1.2.1.2.3.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the tracing icon at the bottom right of the container <em>#6</em>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.2.3.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Tab &quot;Query Tracing&quot; is now the active one, the section has been changed to query tracing results.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.1.2.1.2.3.3.png"></blockquote>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.2.3.3.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The tracing results of the statement/query <code>select * from system_views.clients;</code> is showed up.</p>
+<ul>
+<li><p>2.4.1.3.1.1.2.1.2.3.3.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the header badge at the top left side of the block <em>#1</em>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.2.1.2.3.3.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The view has been minized to charts only.</p>
+</li>
+<li><p>2.4.1.3.1.1.2.1.2.3.3.3.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the header badge again <em>#1</em>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.2.1.2.3.3.3.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The view has been reverted to its normal state again.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.2.1.2.3.3.3.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the copy button at the top right side of the activities table <em>#2</em>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.2.1.2.3.3.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The table has been copied to the clipboard in JSON string format.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> <strong><u>Execute bunch of statements with different cases</u></strong>.</p>
+<ul>
+<li><p>2.4.1.3.1.1.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Execute two statements in one action like <code>SELECT * FROM system_schema.keyspaces; select * from system_views.clients;</code>.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.1.3.1.png"></blockquote>
+<blockquote>
+<img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">
+
+<p>Statements can be executed line by line instead of one line - make sure to click SHIFT+ENTER to add new line in the input field -, like:</p>
+<pre><code class="language-sql">SELECT * FROM system_schema.keyspaces;
+select * from system_views.clients;
+</code></pre>
+</blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Both statements have been executed, and a new block showed up with two outputs <em>#1</em>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.3.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A new right side badge showed up with <code>2 statements</code> phrase <em>#2</em>.</p>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.3.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Execute three statements in one action like <code>SELECT * FROM system_schema.keyspaces; select * from system.peers; select * from system_views.clients;</code>.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.1.3.2.png"></blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The three statements have been executed, and a new block showed up with three outputs <em>#1</em>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.3.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The output of the second statement <code>select * from system.peers;</code> is &quot;CQL statement executed - No data found&quot; <em>#2</em>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.3.2.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A new right side badge showed up with <code>3 statements</code> phrase <em>#3</em>.</p>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.3.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Execute invalid statement that would interrupt the execution flow like <code>not_valid&#39;;</code>.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.1.3.3.png"></blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.3.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The statement has been executed, and a new block showed up.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.3.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After a short time, an <code>X</code> button <em>#1</em> showed up with pinned tooltip <em>#2</em> about an interruption of the execution flow.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.3.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Without clicking the button <em>#1</em>, there&#39;s no way to run further statements or interact freely in the enhanced terminal.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.3.3.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After clicking the button <em>#1</em>, the infitie loader has been removed from the block and an info message showed up, and the interruption has been handled.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.1.3.3.2.2.png"></blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.3.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Execute three statements in one action and one of them is invalid.</p>
+<ul>
+<li><p>2.4.1.3.1.1.3.4.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Execute all of them in one line like <code>SELECT * FROM system_schema.keyspaces; invalid&#39;; select * from system.peers;</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.3.4.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> None of them have been executed, the entire execution process has been considered to be invalid.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.3.4.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Execute them and put each one in line like:</p>
+<pre><code class="language-sql">SELECT * FROM system_schema.keyspaces;
+invalid&#39;;
+select * from system.peers;
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.3.4.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The first one has been executed, then the execution flow stopped.<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.3.4.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After clicking the <code>X</code> button the info message showed up at the bottom of the block.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.3.4.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Change the order of the statements by putting the invalid statement at first, like:</p>
+<pre><code class="language-sql">invalid&#39;;
+SELECT * FROM system_schema.keyspaces;
+select * from
+</code></pre>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.3.4.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> None of them have been executed, the entire execution process has been considered to be invalid.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.3.4.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Change the order of the statemeents again by putting the invalid statement at last, like:</p>
+<pre><code class="language-sql">SELECT * FROM system_schema.keyspaces;
+select * from
+invalid&#39;;
+</code></pre>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.3.4.5 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The first and second statements have been executed, then the execution flow stopped.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.3.4.5.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After clicking the <code>X</code> button the info message showed up at the bottom of the block.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">
+
+<p>&quot;Invalid&quot; descitpion in Cassandra context refers to different states, here, however, it refers to statement that causes the execution flow to be stopped waiting for interaction from the user, in cqlsh tool those kind of statements causes this:</p>
+<img src="assets/2.4.1.3.1.1.3.4.png">
+
+<p>This is different from an &quot;invalid&quot; statement that might return an error like attempting to select from a table that doesn&#39;t exist, in this case the execution flow won&#39;t be interrupted, and actually if we executed <code>invalid;</code> without the single quote then this statement would be considered to be invalid but won&#39;t cause an execution flow interruption.</p>
+</blockquote>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The behavior of executing statements while there&#39;s an invalid input is different on Windows from Linux and macOS; mostly, on Windows the execution flow will be interrupted regardless the position or order of the invalid statement, in other words, if we have multiple statements and one of them is invalid, none of them would be executed, and it doesn&#39;t matter its order.</p>
+</blockquote>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.3.5 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> <strong>Windows users only</strong>: The mentioned behavior is confirmed.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> <strong><u>Create new keyspace and table</u></strong>.</p>
+<ul>
+<li><p>2.4.1.3.1.1.4.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Create new keyspace statement like <code>CREATE KEYSPACE test1 WITH replication = {&#39;class&#39;: &#39;SimpleStrategy&#39;, &#39;replication_factor&#39;: &#39;1&#39;} AND durable_writes = true;</code>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.4.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A new block showed up at the bottom of the container with output <code>CQL statement executed</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.4.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The metadata tree view has been refreshed automaticlly.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.4.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The created keyspace <code>test1</code> exists in the tree view.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.4.1.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Re-execute the same statement.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.4.1.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A new block showed up with error output like <code>AlreadyExists: Keyspace &#39;test1&#39; already exists</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.4.1.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The tree view hasn&#39;t been refreshed this time.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.4.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Create new table statement like <code>CREATE TABLE test1.test_table (id timeuuid PRIMARY KEY, num int);</code>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.4.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A new block showed up at the bottom of the container with output <code>CQL statement executed</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.4.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The metadta tree view has been refreshed automaticlly.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.4.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The created table <code>test_table</code> in keyspace <code>test1</code> exists in the tree view.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.4.2.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Re-execute the same statement.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.4.2.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A new block showed up with error output like <code>AlreadyExists: Table &#39;test1.test_table&#39; already exists</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.4.2.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The tree view hasn&#39;t been refreshed this time.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.5 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> <strong><u>History Statements</u></strong>.</p>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> As many statements have been executed, the connection should have many history statements as well.</p>
+</blockquote>
+<ul>
+<li><p>2.4.1.3.1.1.5.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the history icon at the left side of the execution area.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.1.5.1.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.1.1.5.1.1 A list showed up contains statements that have been executed.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.1.5.1.1.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.1.1.5.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the area #3, or area #2 around the icons - the background color will be changed indicating a possible click -.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.1.5.1.1.1.gif"></blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.5.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The statement has been filled in the input text automtaiclly.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.5.1.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The list has been hidden.</p>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.5.1.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Open the list again, and click the copy icon #1 for any statement.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.5.1.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The statement has been copied to the clipboard.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.5.1.1.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The list hasn&#39;t been hidden, it still displayed.</p>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.5.1.1.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the trash icon #2 for any statement.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.5.1.1.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The statement has been deleted from the list.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.5.1.1.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the button #4 at the bottom right side of the list.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.5.1.1.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The list has been hidden as all statements have been deleted.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.1.5.1.1.4.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The history icon has been disabled.</p>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.1.5.1.1.5 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Execute any statement like <code>expand on</code>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.1.5.1.1.5.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The history icon has been enabled again.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.2 &quot;<strong><u>Blocks Search Area</u></strong>&quot; <em>#2</em>.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.2.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.1.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click or focus on the search input field #1.</p>
+<ul>
+<li><p>2.4.1.3.1.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Type something to search for in the blocks, like <code>tracing</code>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Blocks have been filtered with success.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.2.1.1.1.png"></blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.2.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Clear the text inside the input field.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All blocks are visible again.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.3 &quot;<strong><u>Blocks Container</u></strong>&quot; <em>#3</em>.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.3.png"></blockquote>
+<blockquote>
+<p><img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Most actions and processes of this area of the CQLSH session have been tested within test (2.4.1.3.1.1), in this test we&#39;ll attempt to cover the general, unrelated remaining actions and processes.</p>
+</blockquote>
+<ul>
+<li><p>2.4.1.3.1.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Copy block.</p>
+<ul>
+<li><p>2.4.1.3.1.3.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the copy icon #1 of any created block.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.3.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The output has been copied to the clipboard in JSON string format.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.3.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Delete block.</p>
+<ul>
+<li><p>2.4.1.3.1.3.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the trash icon of any created block.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.1.3.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The block has been deleted.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.1.3.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Delete all created block.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.1.3.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The blocks&#39; container is empty now and there&#39;s an icon with message indicates that.</p>
+<blockquote>
+<img src="assets/2.4.1.3.1.3.2.2.1.png"></blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.2 &quot;<strong><u>CQL Description</u></strong>&quot; Section.</p>
+<blockquote>
+<img src="assets/2.4.1.3.2.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the tab <em>#1</em>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A new section has been shown instead of the CQLSH session, the section is empty, with endless animated element <em>#2</em> and a clear hint <em>#3</em> at the bottom.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Back to the metadata tree view (2.4.1.2).</p>
+<blockquote>
+<img src="assets/2.4.1.3.2.2.gif"></blockquote>
+<ul>
+<li><p>2.4.1.3.2.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Right mouse click at nodes like the entire cluster, any keyspace, table, and index. For example, right click the <code>Cluster: {Name}</code> node.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.2.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A right-click context menu showed up.</p>
+<ul>
+<li><p>2.4.1.3.2.2.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the menu&#39;s item <code>Get CQL Description</code>.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.2.2.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A spinner showed up at the left side of the node.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.2.2.1.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> An editor showed up in the <code>CQL Description</code> section with the cql description of the entire cluster.</p>
+<blockquote>
+<img src="assets/2.4.1.3.2.2.1.1.1.2.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.2.2.1.1.1.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the <code>Expand Editor</code> button <em>#1</em>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.2.2.1.1.1.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The editor has been shrinked and took nearly half of the section&#39;s view.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.2.2.1.1.1.2.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the button <em>#1</em> again.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.2.2.1.1.1.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The editor reverted to its previous height.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.2.2.1.1.1.2.1.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Now back to the &quot;CQLSH Session&quot; section (2.4.1.3.1).</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.2.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Expand the <code>Keyspaces (${numOfKeyspaces})</code> node.</p>
+<blockquote>
+<img src="assets/2.4.1.3.2.2.2.gif"></blockquote>
+<ul>
+<li><p>2.4.1.3.2.2.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Right mouse click at any keyspace - you might need to expand either <code>Virtual Keyspaces</code> or <code>System Keyspaces</code> node -.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.2.2.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A spinner showed up at the left side of the node.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.2.2.2.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench automaticlly navigated to the <code>CQL Description</code> section.</p>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.2.2.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Expand any keyspace like <code>system</code> keyspace under <code>System Keyspaces</code> node.</p>
+<ul>
+<li><p>2.4.1.3.2.2.2.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Expand its <code>Table (${numOfTables})</code> node.</p>
+<ul>
+<li><p>2.4.1.3.2.2.2.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Attempt to right click and get the CQL description of multiple tables at the same time.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.2.2.2.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The cql description of all tables have been succesffuly fetched and rendered.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.2 &quot;<strong><u>Query Tracing</u></strong>&quot; Section.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This section&#39;s processes have been tested under (2.4.1.3.1.1.2.1.2.3.3), confirm if it&#39;s has been passed with its sub tests.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3 &quot;<strong><u>Scheme Diff</u></strong>&quot; Section.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the tab <em>#1</em>.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A new section has been shown, two editors with metadata content - JSON string format - in both.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Back to the &quot;CQLSH Session&quot; section (2.4.1.3.1).</p>
+<ul>
+<li><p>2.4.1.3.3.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Create a new keyspace statement like <code>CREATE KEYSPACE test2 WITH replication = {&#39;class&#39;: &#39;SimpleStrategy&#39;, &#39;replication_factor&#39;: &#39;1&#39;} AND durable_writes = true;</code>.</p>
+<ul>
+<li><p>2.4.1.3.3.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Back to the &quot;Scheme Diff&quot; section.</p>
+<ul>
+<li><p>2.4.1.3.3.2.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> At the bottom center of the section, click the refresh icon #2.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.3.2.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The icon has been spinned.</p>
+</li>
+<li><p>2.4.1.3.3.2.1.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Changes happened in the section.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.3.2.1.1.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The badge #3 has been updated from <code>0</code> to <code>1</code>.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.3.2.1.1.1.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Changes navigation arrows are enabled.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.2.1.1.1.2.1.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.3.2.1.1.1.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the badge.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.2.1.1.1.2.1.1.gif"></blockquote>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.3.2.1.1.1.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> List showed up with one change - the start line of the change and it&#39;s content are clear -.</p>
+<ul>
+<li><p>2.4.1.3.3.2.1.1.1.2.1.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click that change.</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.3.2.1.1.1.2.1.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Both editors scrolled down automatcilly to the the target line.</p>
+</li>
+<li><p><input disabled="" type="checkbox"> 
+2.4.1.3.3.2.1.1.1.2.1.1.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The difference between the versions of the metadata is clear.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.2.1.1.1.2.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the badge again.</p>
+<ul>
+<li><input disabled="" type="checkbox"> 2.4.1.3.3.2.1.1.1.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The list has been hidden.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3 &quot;<strong><u>Scheme Snapshots</u></strong>&quot;.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.3.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.3.3.1 <strong><u>Save a snapshot</u></strong>.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.3.1.gif"></blockquote>
+<ul>
+<li><p>2.4.1.3.3.3.1.1 Click the disk icon #1 <img src="assets/2.4.1.3.3.3.1.1-2.png">.</p>
+<ul>
+<li><p>2.4.1.3.3.3.1.1.1 A related mini dialog showed up at the bottom of the window - as shown in the embedded GIF image -.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.3.1.1.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.3.3.1.1.1.1 Click the button #1 without adding a suffix #2.</p>
+<ul>
+<li>2.4.1.3.3.3.1.1.1.1.1 The snapshot has been saved - a success feedback message showed up -.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.1.1.2 Click the icon #1 again <img src="assets/2.4.1.3.3.3.1.1-2.png" alt="">.</p>
+<ul>
+<li><p>2.4.1.3.3.3.1.1.2.1 Save the snapshot with any suffix.</p>
+<ul>
+<li>2.4.1.3.3.3.1.1.2.1.1 The snapshot has been saved - a success feedback message showed up -.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.2 <strong><u>List and load saved snapshots</u></strong>.</p>
+<ul>
+<li><p>2.4.1.3.3.3.2.1 Click the load icon #2 <img src="assets/2.4.1.3.3.3.2.1.png">.</p>
+<ul>
+<li><p>2.4.1.3.3.3.2.1.1 A related dialog showed up at the top of the window.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.3.2.1.1.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.3.3.2.1.1.1 There are two snapshots; the newest one with suffix is the first one in the list from top.</p>
+<ul>
+<li><p>2.4.1.3.3.3.2.1.1.1.1 Click the load icon #1 for any of the saved snapshots.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.3.2.1.1.1.1.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.3.3.2.1.1.1.1.1 The dialog has been closed automaitclly.</p>
+</li>
+<li><p>2.4.1.3.3.3.2.1.1.1.1.2 The saved snapshot has been loaded in the &quot;previous&quot; left editor #1.</p>
+</li>
+<li><p>2.4.1.3.3.3.2.1.1.1.1.3 Diff check has been autaomticlly tirggered, no changes has been detected now #2.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.2.2 Click the load icon #2 <img src="assets/2.4.1.3.3.3.2.1.png"> again.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.3.2.2.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.3.3.2.2.1 The related dialog showed up again at the top of the window.</p>
+</li>
+<li><p>2.4.1.3.3.3.2.2.2 Click the trash icon for any of the saved snapshots.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.3.2.2.2.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.3.3.2.2.2.1 Click the &quot;CANCEL&quot; button #1.</p>
+<ul>
+<li>2.4.1.3.3.3.2.2.2.1.1 Nothing should happen, the deletion process has been neglected.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.2.2.2.2 Click the trash icon again.</p>
+<ul>
+<li><p>2.4.1.3.3.3.2.2.2.2.1 Check the checkbox #2 and click the &quot;CONFIRM&quot; button #3.</p>
+<ul>
+<li><p>2.4.1.3.3.3.2.2.2.2.1.1 The snapshot has been deleted.</p>
+<ul>
+<li><p>2.4.1.3.3.3.2.2.2.2.1.1.1 Success message showed up.</p>
+</li>
+<li><p>2.4.1.3.3.3.2.2.2.2.1.1.2 The snapshot has been deleted from the list.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.3 <strong><u>Open saved snapshots folder</u></strong>.</p>
+<ul>
+<li><p>Click the folder icon #3 <img src="assets/2.4.1.3.3.3.3.png">.</p>
+<ul>
+<li><p>File explorer opened pointing at the save snapshots&#39; folder for the current conncetion.</p>
+<ul>
+<li><p>There are two snapshots, one of them is the deleted one with suffix <code>DEL_{randomString}</code>.</p>
+<blockquote>
+<p>As we checked to keep the associated files in the system, the snapshot file has been kept in the folder.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.4 <strong><u>Further tests for snapshots</u></strong>.</p>
+<ul>
+<li><p>2.4.1.3.3.3.4.1 Create new table in the added keyspace <code>test2</code>.</p>
+<ul>
+<li><p>2.4.1.3.3.3.4.1.1 From the metadata tree view (2.4.1.2), look for the keyspace <code>test1</code>, table <code>test_table</code> should be under <code>Tables</code> node of the keyspace based on test (2.4.1.3.1.1.4.2).</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.3.4.1.1.gif"></blockquote>
+<ul>
+<li><p>2.4.1.3.3.3.4.1.1.1 Right click on the table <code>test_table</code>, and get its cql description (2.4.1.3.2).</p>
+<ul>
+<li><p>2.4.1.3.3.3.4.1.1.1.1 The workbench atuaomaticlly navigated to the &quot;CQL Description&quot; Section.</p>
+</li>
+<li><p>2.4.1.3.3.3.4.1.1.1.2 Copy the description to be used later on.</p>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.4.1.1.2 Back to the &quot;<strong><u>CQLSH Session</u></strong>&quot; section (2.4.1.3.1).</p>
+<ul>
+<li><p>2.4.1.3.3.3.4.1.1.2.1 Paste the description in the execution input field, and execute it.</p>
+<ul>
+<li>2.4.1.3.3.3.4.1.1.2.1.1 An error showed like <code>AlreadyExists: Table &#39;test1.test_table&#39; already exists</code>.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.4.1.1.2.2 Click the history icon (2.4.1.3.1.1.5.1).</p>
+<ul>
+<li>2.4.1.3.3.3.4.1.1.2.2.1 Click the statement to be filled in the execution input field.<ul>
+<li>2.4.1.3.3.3.4.1.1.2.2.1.1 The statement has been filled in the field.</li>
+</ul>
+</li>
+<li>2.4.1.3.3.3.4.1.1.2.2.2 Change <code>test1</code> to be <code>test2</code>, execute the statement again.<ul>
+<li>2.4.1.3.3.3.4.1.1.2.2.2.1 The output is like <code>CQL statement executed</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.4.1.1.3 Back to the &quot;Scheme Diff&quot; section.</p>
+<ul>
+<li><p>2.4.1.3.3.3.4.1.1.3.1 Click the refresh icon <img src="assets/2.4.1.3.3.3.4.1.1.3.1.png">.</p>
+<ul>
+<li>2.4.1.3.3.3.4.1.1.3.1.1 New change has been detected.</li>
+<li>2.4.1.3.3.3.4.1.1.3.1.2 Click the disk icon again and save the new snapshot.<ul>
+<li>2.4.1.3.3.3.4.1.1.3.1.2.1 The new snapshot has been saved.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.4.1.1.3.2 Click the load icon again.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.3.4.1.1.3.2.png"></blockquote>
+<ul>
+<li><p>2.4.1.3.3.3.4.1.1.3.2.1 Check the checkboxes of both snapshots #1.</p>
+<ul>
+<li>2.4.1.3.3.3.4.1.1.3.2.1.1 New buttons showed up #2 and #3.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.4.1.1.3.2.2 Click the button #2.</p>
+<ul>
+<li>2.4.1.3.3.3.4.1.1.3.2.2.1 Checkboxes check state has been toggled.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.4.1.1.3.2.2.1 Check the checkboxes again #1.</p>
+<ul>
+<li><p>2.4.1.3.3.3.4.1.1.3.2.2.1.1 Click the button #3.</p>
+<ul>
+<li><p>2.4.1.3.3.3.4.1.1.3.2.2.1.1.1 A confirmation dialog showed up.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.3.4.1.1.3.2.2.1.1.1.png"></blockquote>
+<ul>
+<li>2.4.1.3.3.3.4.1.1.3.2.2.1.1.1.1 Click the &quot;<strong>CANCEL</strong>&quot; button <em>#1</em>.<ul>
+<li>2.4.1.3.3.3.4.1.1.3.2.2.1.1.1.1.1 Nothing should happen, the deletion process has been neglected.</li>
+</ul>
+</li>
+<li>2.4.1.3.3.3.4.1.1.3.2.2.1.1.1.2 Click the button #3 again.<ul>
+<li>2.4.1.3.3.3.4.1.1.3.2.2.1.1.1.2.1 Check the checkbox <em>#2</em> then click the &quot;<strong>CONFIRM</strong>&quot; button <em>#3</em>.<ul>
+<li>2.4.1.3.3.3.4.1.1.3.2.2.1.1.1.2.1.1 Snapshots have been deleted with success - feedback shown -.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.4.1.1.3.3 Click the load icon again.</p>
+<blockquote>
+<img src="assets/2.4.1.3.3.3.4.1.1.3.3.1.png"></blockquote>
+<ul>
+<li>2.4.1.3.3.3.4.1.1.3.3.1 Warning feedback showed up telling that there&#39;re no saved snapshots.</li>
+</ul>
+</li>
+<li><p>2.4.1.3.3.3.4.1.1.3.4 Click the folder icon <img src="assets/2.4.1.3.3.3.4.1.1.3.4.png">.</p>
+<ul>
+<li><p>2.4.1.3.3.3.4.1.1.3.4.1 File explorer opened pointing at the save snapshots&#39; folder for the current conncetion.</p>
+<ul>
+<li>2.4.1.3.3.3.4.1.1.3.4.1.1 Deleted snapshots are still present in the system with suffix <code>DEL_{randomString}</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.4.1.3.4 &quot;<strong><u>Close Workarea</u></strong>&quot;.</p>
+<blockquote>
+<img src="assets/2.4.1.3.4.png"></blockquote>
+<blockquote>
+<ul>
+<li><p>After doing decent number of tests for the work area, time to close it/decaticate the connection.</p>
+</li>
+<li><p>There are many ways to close the active workarea and decaticate the connection.</p>
+<ul>
+<li><p>One is the close button <code>X</code> in the connection&#39;s work area (2.4.1.3) #1.</p>
+</li>
+<li><p>Two by right mouse click the connection&#39;s switcher in the left panel and choose to close the work area - there&#39;re many upcoming tests for this part of the workbench -.</p>
+</li>
+<li><p>Three is by choosing to close all active work areas at once #3.</p>
+</li>
+<li><p>Four is by clicking the &quot;DISCONNECT&quot; button in the connection&#39;s card.</p>
+<blockquote>
+<img src="assets/2.4.1.3.4-2.gif"></blockquote>
+</li>
+<li><p>Under this test, the process will about the <code>X</code> button #1.</p>
+</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><p>2.4.1.3.4.1 In the connection&#39;s work area (2.4.1.3), click the close button <code>X</code> at the top right side of the worka area.</p>
+<blockquote>
+<img src="assets/2.4.1.3.4.1.png"></blockquote>
+<ul>
+<li><p>The work area has been closed.</p>
+</li>
+<li><p>The workbench automaticlly naviagted to the connection&#39;s related workspace.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>2.5 Addtional Features</h3>
+<ul>
+<li><p>2.5.1 &quot;<strong><u>Local Clusters</u></strong>&quot; feature.</p>
+<blockquote>
+<img src="assets/2.5.1.png"></blockquote>
+<ul>
+<li>Click the &quot;ENTER&quot; button #1.</li>
+</ul>
+</li>
+</ul>

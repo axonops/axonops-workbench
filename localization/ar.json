@@ -346,7 +346,7 @@
       "time": "الوقت",
       "to delete a workspace, it must be empty and doesn't have any connections in it, make sure to delete all connections inside the workspace [b]$data[/b] before attempting to delete it again": "لحذف مساحة عمل، يجب أن يكون فارغاً بحيث لا يحتوي على أي اتصال، تأكد من حذف جميع الاتصالات داخل مساحة العمل [b]$data[/b] قبل محاولة حذفه مرة أخرى",
       "to save a connection, a unique valid name is required to be provided": "لحفظ اتصال، يجب أن يكون الاسم المقدم صالح ومميز",
-      "to test connection, host name is the only required field to be provided": "لاختبار الاتصال، اسم المضيف هو الحقل الوحيد المطلوب",
+      "to test connection, host name and port are the only required fields to be provided": "لاختبار الاتصال، اسم المضيف والمنفذ هما الحقلان الوحيدان المطلوبان",
       "toggle fullscreen": "تبديل ملء الشاشة",
       "toggle selections": "تبديل المحدد",
       "trace the query": "تتبع الاستعلام",

@@ -347,7 +347,7 @@
       "time": "Tempo",
       "to delete a workspace, it must be empty and doesn't have any connections in it, make sure to delete all connections inside the workspace [b]$data[/b] before attempting to delete it again": "Para eliminar un espazo de traballo, debe estar baleiro e non ten conexións nel, asegúrese de eliminar todas as conexións dentro do espazo de traballo [b]$data[/b] antes de intentar borralo de novo",
       "to save a connection, a unique valid name is required to be provided": "Para gardar unha conexión, requírese que se proporcione un nome único válido",
-      "to test connection, host name is the only required field to be provided": "Para probar a conexión, o nome do hóspede é o único campo necesario para ser proporcionado.",
+      "to test connection, host name and port are the only required fields to be provided": "para probar a conexión, o nome de host e o porto son os únicos campos obrigatorios que se deben proporcionar",
       "toggle fullscreen": "Toggle Fullscreen",
       "toggle selections": "Seleccións de alternancia",
       "trace the query": "Trazar a consulta",

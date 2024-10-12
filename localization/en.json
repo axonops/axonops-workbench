@@ -347,7 +347,7 @@
       "time": "time",
       "to delete a workspace, it must be empty and doesn't have any connections in it, make sure to delete all connections inside the workspace [b]$data[/b] before attempting to delete it again": "to delete a workspace, it must be empty and doesn't have any connections in it, make sure to delete all connections inside the workspace [b]$data[/b] before attempting to delete it again",
       "to save a connection, a unique valid name is required to be provided": "to save a connection, a unique valid name is required to be provided",
-      "to test connection, host name is the only required field to be provided": "to test connection, host name is the only required field to be provided",
+      "to test connection, host name and port are the only required fields to be provided": "to test connection, host name and port are the only required fields to be provided",
       "toggle fullscreen": "toggle fullscreen",
       "toggle selections": "toggle selections",
       "trace the query": "trace the query",

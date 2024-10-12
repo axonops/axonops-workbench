@@ -4129,6 +4129,10 @@
                             metadata = JSON.stringify(JSON.parse(metadata))
                           } catch (e) {}
 
+                          try {
+                            suffix = Sanitize(suffix)
+                          } catch (e) {}
+
                           // If there's a suffix then add it to the name
                           if (suffix.trim().length != 0)
                             snapshotName = `${snapshotName}_${suffix}`
@@ -4335,10 +4339,13 @@
                                 // Select the snapshot to be deleted
                                 $(this).find('a[action="multiple"] input').change(function() {
                                   // Get the number of selected snapshots
-                                  let checkedSnapshots = snapshotsContainer.find('div.snapshot').find('a[action="multiple"] input').filter(':checked')
+                                  let checkedSnapshots = snapshotsContainer.find('div.snapshot').find('a[action="multiple"] input').filter(':checked'),
+                                    unCheckedSnapshots = snapshotsContainer.find('div.snapshot').find('a[action="multiple"] input').filter(':not(:checked)')
 
                                   // Show/hide the actions for multiple snapshots based on the number of selected ones
                                   $('#loadSnapshot div.actions-multiple').toggleClass('show', checkedSnapshots.length != 0)
+
+                                  $('#loadSnapshot').find('div.actions-multiple').find('a[action="select"]').attr('check', unCheckedSnapshots.length > 0 ? 'true' : 'false')
                                 })
                               }))
                             })
@@ -7355,8 +7362,10 @@
                  */
                 hostname = cqlshValues.connection.hostname
 
+                port = cqlshValues.connection.port
+
                 // If the hostname is empty or only whitespaces then skip this try-catch block
-                if (hostname.trim().length <= 0)
+                if (hostname.trim().length <= 0 || `${cqlshValues.connection.port}`.length <= 0)
                   throw 0
               } catch (e) {
                 /**
@@ -7364,7 +7373,11 @@
                  *
                  * Add `invalid` class to the `hostname` input field
                  */
-                $('[info-section="connection"][info-key="hostname"]').addClass('is-invalid')
+                if (`${cqlshValues.connection.port}`.length <= 0)
+                  $('[info-section="connection"][info-key="port"]').addClass('is-invalid')
+
+                if (hostname.trim().length <= 0)
+                  $('[info-section="connection"][info-key="hostname"]').addClass('is-invalid')
 
                 // Point at the basic section navigation button in the dialog
                 let basicSectionBtn = dialogElement.find('div.btn[section="basic"]')
@@ -7374,7 +7387,7 @@
                   basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t('to test connection, host name is the only required field to be provided')) + '.', 'failure')
+                showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t('to test connection, host name and port are the only required fields to be provided')) + '.', 'failure')
 
                 // Skip the upcoming code - end the connection test process -
                 return

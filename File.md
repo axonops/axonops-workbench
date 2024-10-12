@@ -105,7 +105,7 @@
         
         - [ ] 2.1.2.1.4.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> In case there's an invalid input, an error feedback showed up.
   
-  - 2.1.2.2 **<u>Add bunch of workspaces</u>**.
+  - 2.1.2.2 **<u>Add a bunch of workspaces</u>**.
     
     > <img src="assets/2.1.2.2.png">
     
@@ -177,7 +177,7 @@
   
   - 2.3.1.2 Click the "**ADD CONNECTION**" button *#1*, or the "**+**" button at the center of the window *#2*, or the "**ADD CONNECTION**" button *#3* at the top right side of the window.
     
-    - 2.3.1.2.1 A related dialog (#2.3.2) has been displayed when clicked the "**ADD CONNECTION**" button of both *#1*, or *#3*.
+    - 2.3.1.2.1 A related dialog (#2.3.2) has been displayed after clicking the "**ADD CONNECTION**" button of both *#1*, or *#3*.
     
     - 2.3.1.2.2 Same behavior for the "**+**" button.
 
@@ -333,7 +333,7 @@
         
         - [ ] 2.3.2.6.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> On failure, an error showed up with details about the cause of it.
 
-- 2.3.3 **<u>Add bunch of connections</u>**.
+- 2.3.3 **<u>Add a bunch of connections</u>**.
   
   > <img src="assets/2.3.3.png">
   
@@ -399,7 +399,7 @@
       
       > <img src="assets/2.4.6.1.1.png">
       
-      - [ ] 2.4.6.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> When clicked the button "IGNORE CREDENTIALS" #1, the workbench has considered the connection to be credential-free, and it won't ask about credentials in the next test/connect.
+      - [ ] 2.4.6.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> after clicking the button "IGNORE CREDENTIALS" #1, the workbench has considered the connection to be credential-free, and it won't ask about credentials in the next test/connect.
       - [ ] 2.4.6.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> When clicking the button "PROCEED" #2 - after providing the necessary credentials -, the test (#2.4.5.2.1) has started.
       - [ ] 2.4.6.1.1.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> When checkbox #3 is checked then the button "PROCESSED" #2 is clicked. The workbench won't ask about credentials in the next test/connect.
     
@@ -1158,4 +1158,190 @@
   
   > <img src="assets/2.5.1.png">
   
-  - 2.5.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "**ENTER**" button #1.
+  - 2.5.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "**ENTER**" button *#1*.
+    
+    - [ ] 2.5.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The view has been changed.
+      
+      > <img src="assets/2.5.1.1.1.png">
+      
+      - 2.5.1.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "**ADD LOCAL CLUSTER**" button *#1*, or the "**+**" button at the center of the window *#2*, or the "**ADD CLUSTER**" button *#3* at the top right side of the window.
+        
+        - 2.5.1.1.1.1.1 A related dialog (#2.5.1.2) has been displayed after clicking the "**ADD CONNECTION**" button of both *#1*, or *#3*.
+        
+        - [ ] 2.5.1.1.1.1.2 Same behavior for the "**+**" button.
+  
+  - 2.5.1.2 **<u>Add Local Cluster Dialog</u>**.
+    
+    > <img src="assets/2.5.1.2.png">
+    
+    - 2.5.1.2.1 **<u>Input fields, and Buttons</u>**.
+      
+      - 2.5.1.2.1.1 "**Local Cluster Name**" text field (optional).
+        
+        > <img src="assets/2.5.1.2.1.1.png">
+        
+        - [ ] 2.5.1.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This field can be left empty - it's optional -.
+        
+        - [ ] 2.5.1.2.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This field doesn't have restrictions regarding its value - no restrictions for the name of the local cluster -.
+      
+      - 2.5.1.2.1.2 "**Apache Cassandra Version**" select field.
+        
+        > <img src="assets/2.5.1.2.1.2.png">
+        
+        - [ ] 2.5.1.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The default version is `v5.0`.
+        
+        - 2.5.1.2.1.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the field.
+          
+          - [ ] 2.5.1.2.1.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A dropdown list menu showed up.
+            
+            - 2.5.1.2.1.2.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click different versions (`v4.1` and `v4.0`).
+              
+              > <img src="assets/2.5.1.2.1.2.2.1.1.gif">"
+              
+              - [ ] 2.5.1.2.1.2.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The clicked versions have been selected.
+      
+      - 2.5.1.2.1.3 "**Cassandra Nodes**" range field.
+        
+        > <img src="assets/2.5.1.2.1.3.png">
+        
+        - [ ] 2.5.1.2.1.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The default number of nodes is **3**.
+        
+        - 2.5.1.2.1.3.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click and drag from left to right.
+          
+          > <img src="assets/2.5.1.2.1.3.2.gif">
+          
+          - [ ] 2.5.1.2.1.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Minimum number of nodes is **1**.
+          
+          - [ ] 2.5.1.2.1.3.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Maximum number of nodes is **20**.
+          
+          - [ ] 2.5.1.2.1.3.2.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The tooltip shows the correct selected number of nodes <img src="assets/2.5.1.2.1.3.2.3.png">.
+      
+      - 2.5.1.2.1.4 "**Install AxonOps**" checkbox field.
+        
+        - [ ] 2.5.1.2.1.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This checkbox is checked by default.
+      
+      - 2.5.1.2.1.5 "**Run cluster once created**" checkbox field.
+        
+        - [ ] 2.5.1.2.1.5.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This checkbox is unchecked by default.
+      
+      - 2.5.1.2.1.6 "**CREATE LOCAL CLUSTER**" button.
+        
+        > <img src="assets/2.5.1.2.1.6.png">
+        
+        - 2.5.1.2.1.6.1 **<u>Add a bunch of local clusters</u>**.
+          
+          - 2.5.1.2.1.6.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Create a local cluster without a name, Cassandra version is **v5.0**, the number of nodes is **2**, AxonOps would be installed, and it won't run once it's created, after that click the button "**CREATE LOCAL CLUSTER**".
+            
+            > <img src="assets/2.5.1.2.1.6.1.1_2.png">
+            
+            - [ ] 2.5.1.2.1.6.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The view has been changed, the created local cluster has been displayed as a card with info `[Host: 127.0.0.1:{randomPort}, Cassandra: v5.0, Nodes: 2, AxonOps: ✓]`.
+            
+            > <img title="" src="assets/info.png" alt="" width="25" style="display:inline-block;position:relative;top:5px;"> After adding the first local cluster, you can click the "**ADD CLUSTER**" button at the top right side of the window <img src="assets/2.5.1.2.1.6.1.1.1.png">.
+          
+          - 2.5.1.2.1.6.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Create a local cluster with a name, Cassandra version is **v4.1**, the number of nodes is **3**, AxonOps wouldn't be installed, and it won't run once it's created.
+            
+            > <img src="assets/2.5.1.2.1.6.1.2.png">
+            
+            - [ ] 2.5.1.2.1.6.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The list should be refreshed, a local cluster showed up with info: `[Host: 127.0.0.1:{randomPort}, Cassandra: v4.1, Nodes: 3, AxonOps: ×]`.
+          
+          - 2.5.1.2.1.6.1.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Create a local cluster without a name, Cassandra version is **v4.0**, the number of nodes is **1**, AxonOps would be installed, and it will run once it's created.
+            
+            > <img src="assets/2.5.1.2.1.6.1.3.png">
+            
+            - [ ] 2.5.1.2.1.6.1.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The list should be refreshed, a local cluster showed up with info: `[Host: 127.0.0.1:{randomPort}, Cassandra: v4.0 Nodes: 1, AxonOps: ✓]`.
+            
+            - [ ] 2.5.1.2.1.6.1.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This local cluster has been automatically started.
+              
+              > <img src="assets/2.5.1.2.1.6.1.3.2.png">
+              
+              - [ ] 2.5.1.2.1.6.1.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A pinned toast showed up at the bottom left side of the window.
+                
+                > <img src="assets/2.5.1.2.1.6.1.3.2.1.png">
+                
+                - [ ] 2.5.1.2.1.6.1.3.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The pinned toast is showing the starting/up progress as expected (images downloading if any, started/waiting status of containers).
+              
+              - [ ] 2.5.1.2.1.6.1.3.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Once the starting process is finished, a work area has been created and automatically navigated to.
+                
+                - [ ] 2.5.1.2.1.6.1.3.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workarea looks the same as a workarea of a connection, with the addition of:
+                  
+                  > <img src="assets/2.5.1.2.1.6.1.3.2.2.1.png">
+                  
+                  - [ ] 2.5.1.2.1.6.1.3.2.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> "**Bash Session**" *#1* (#2.5.1.3.1) and "**AxonOps**" *#2* (#2.5.1.3.2) sections.
+                  
+                  - [ ] 2.5.1.2.1.6.1.3.2.2.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> In the work area's info card - at the top left of the work area -, a globe icon *#3* is shown instead of the lock - which indicates if SSL is enabled or not - in the top right side of the card.
+  
+  - 2.5.1.3 **<u>Local Cluster Workarea</u>**.
+    
+    > ![](assets/2.5.1.2.1.6.1.3.2.2.1.png)
+    
+    - 2.5.1.3.1 "**Bash Session**" section.
+      
+      - 2.5.1.3.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "**Bash Session**" tab *#1*.
+        
+        - [ ] 2.5.1.3.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The section has been changed in the workarea to a terminal.
+          
+          - [ ] 2.5.1.3.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The prompt is `root@cassandra-0:/#` and it's pointing at the root directory `/`.
+          
+          - [ ] 2.5.1.3.1.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> There's an ability to interact freely with the Bash instance via the UI terminal except for a set of restrictions.
+            
+            - [ ] 2.5.1.3.1.1.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Set restrictions:
+              
+              - 2.5.1.3.1.1.1.2.1.1 <kbd>CTRL</kbd>+<kbd>D</kbd> shortcut is disabled - to prevent the ability to terminate the session -.
+              
+              - [ ] 2.5.1.3.1.1.1.2.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> There's no way to execute the `exit` command.
+      
+      - 2.5.1.3.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Extra tests.
+        
+        - 2.5.1.3.1.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Execute the commands `ls`, `whoami` and `nodetool info`.
+          
+          > <img src="assets/2.5.1.3.1.2.1.png">
+          
+          - [ ] 2.5.1.3.1.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All commands have been executed with success.
+        
+        - [ ] 2.5.1.3.1.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Press shortcuts like <kbd>CTRL</kbd> with keys <kbd>A</kbd>, <kbd>E</kbd>, <kbd>W</kbd>, and<kbd>U</kbd>.
+          
+          - [ ] 2.5.1.3.1.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Common Bash shortcuts are working as expected.
+    
+    - 2.5.1.3.2 "**AxonOps**" section.
+      
+      - 2.5.1.3.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "**AxonOps**" tab *#2*.
+        
+        - [ ] 2.5.1.3.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The section has been changed in the workarea to the AxonOps dashboard.
+          
+          > <img src="assets/2.5.1.3.2.1.1.gif">
+          
+          - [ ] 2.5.1.3.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> In the left side of the dashboard, a reload icon has been injected by the workbench.
+            
+            > <img src="assets/2.5.1.3.2.1.1.1.png">
+            
+            - 2.5.1.3.2.1.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the icon.
+              
+              - [ ] 2.5.1.3.2.1.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The AxonOps dashboard has been reloaded.
+    
+    - 2.5.1.3.3 **Stop local clusters**.
+      
+      > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> To ensure consistency, stopping local clusters is the same as closing a regular workarea (#2.4.1.3.4).
+      
+      - 2.5.1.3.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Related to test (#2.4.1.3.4), perform the same actions.
+        
+        - [ ] 2.5.1.3.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The local cluster has been stopped/downed.
+      
+      - 2.5.1.3.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Exclusive behaviors for local clusters.
+        
+        > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench detects and handles the local cluster's Docker project in the background in many ways and scenarios.
+        
+        - 2.5.1.3.3.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Quit the workbench while the local cluster is running.   
+          
+          - [ ] 2.5.1.3.3.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench has executed a stop/down command for the local cluster.
+        
+        - 2.5.1.3.3.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Quit the workbench while the local cluster is being stopped.
+          
+          - [ ] 2.5.1.3.3.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Nothing should happen, the stopping process will continue till it's finished.
+        
+        - 2.5.1.3.3.2.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Attempt to start a local cluster that is already running/being stopped.
+          
+          - [ ] 2.5.1.3.3.2.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench showed feedback about the status of the local cluster.
+          
+          - [ ] 2.5.1.3.3.2.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench executed a stop/down command for the local cluster, and showed a poinned toast for that process.
+          
+          - [ ] 2.5.1.3.3.2.3.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Once the command is finished, or the local cluster's pending process has finished, we are able to start the local cluster.

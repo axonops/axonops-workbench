@@ -59,26 +59,33 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         try {
           document.querySelector('div[data-id="reloadWebView"]').addEventListener('click', () => {
-            console.log("CLICKED");
             IPCRenderer.sendToHost(`reload-webview`)
           })
         } catch (e) {}
       }, 1000)
     } catch (e) {}
 
-    $(`#__next > div > div.pagesIndex__inner > div.termsAndConditions > div.\\:flex\\:center\\:between > div:nth-child(2) > button`).click(() => {
-      setTimeout(() => {
-        document.querySelector('div.\\:sideMenu > div').insertAdjacentHTML('beforeend', element)
-
-        setTimeout(() => {
+    let checkForTheSideMenuTimeout,
+      checkForTheSideMenu = () => {
+        checkForTheSideMenuTimeout = setTimeout(() => {
           try {
-            document.querySelector('div[data-id="reloadWebView"]').addEventListener('click', () => {
-              console.log("CLICKED");
-              IPCRenderer.sendToHost(`reload-webview`)
+            document.querySelector('div.\\:sideMenu > div').insertAdjacentHTML('beforeend', element)
+
+            setTimeout(() => {
+              try {
+                document.querySelector('div[data-id="reloadWebView"]').addEventListener('click', () => {
+                  console.log("CLICKED");
+                  IPCRenderer.sendToHost(`reload-webview`)
+                })
+              } catch (e) {}
             })
           } catch (e) {}
-        })
-      }, 1000)
-    })
+
+          if (document.querySelector('div.\\:sideMenu > div') == null)
+            checkForTheSideMenu()
+        }, 1000)
+      }
+
+    $(`#__next > div > div.pagesIndex__inner > div.termsAndConditions > div.\\:flex\\:center\\:between > div:nth-child(2) > button`).click(() => checkForTheSideMenu())
   }, 1000)
 })

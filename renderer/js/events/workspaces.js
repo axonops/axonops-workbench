@@ -1584,9 +1584,15 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                         } catch (e) {}
                       })
                     })
+
+                    // Apply the chosen language on the UI element after being fully loaded
+                    setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
                   }))
                 })
               })
+
+              // Apply the chosen language on the UI element after being fully loaded
+              setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
             }))
           } catch (e) {}
 
@@ -1596,6 +1602,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           // Show the next phase in the dialog
           setTimeout(() => $('div.modal#importWorkspaces').find('div.btn[section="phase-2"]').removeClass('disabled').click())
         })
+
+        // Apply the chosen language on the UI element after being fully loaded
+        setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
       }))
 
       setTimeout(() => healthChecks(workspace, workspaceIndex, savedWorkspaces, workspaceChecksID, importWorkspacesCheckboxInputID, $(`input#_${workspaceNameInputID}`)))

@@ -347,7 +347,7 @@
       "time": "时间",
       "to delete a workspace, it must be empty and doesn't have any connections in it, make sure to delete all connections inside the workspace [b]$data[/b] before attempting to delete it again": "要删除工作区，它必须为空且没有任何连接，请确保在尝试再次删除工作区 [b]$data[/b] 之前删除工作区内的所有连接",
       "to save a connection, a unique valid name is required to be provided": "要保存连接，需要提供唯一的有效名称",
-      "to test connection, host name is the only required field to be provided": "要测试连接，Host Name 是唯一需要提供的必填字段",
+      "to test connection, host name and port are the only required fields to be provided": "要测试连接，只需提供主机名和端口",
       "toggle fullscreen": "切换全屏",
       "toggle selections": "切换选择",
       "trace the query": "跟踪查询",

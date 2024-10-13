@@ -1134,7 +1134,7 @@
     >   
     >   - One is the close button `X` in the connection's work area (#2.4.1.3) *#1*.
     >   
-    >   - Two by right mouse click the connection's switcher in the left panel and choose to close the work area - there are many upcoming tests for this part of the workbench -.
+    >   - Two by right mouse click the connection's switcher in the left panel (#2.6) and choose to close the work area - there are many upcoming tests for this part of the workbench -.
     >   
     >   - Three is by choosing to close all active work areas at once *#3*.
     >   
@@ -1474,11 +1474,11 @@
   
   - 2.6.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Enter as many workspaces as possible.
     
-    - [ ] 2.6.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All entered workspaces have been added - their switcher - under the workspaces home icon.
+    - [ ] 2.6.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All entered workspaces have been added - their switchers - under the workspaces home icon.
       
       > <img src="assets/2.6.1.2.1.png">
       
-      - 2.6.1.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Hover over any workspace.
+      - 2.6.1.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Hover on any workspace.
         
         > ![](assets/2.6.1.2.1.1.1.gif)
         
@@ -1509,3 +1509,75 @@
         - [ ] 2.6.1.3.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Both arrows work as expected.
       
       - [ ] 2.6.1.3.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The number of visible workspaces is changeable based on the available height.
+
+- 2.6.2 "**<u>Connections Switchers</u>**".
+  
+  - [ ] 2.6.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> By default, the connections' switchers are hidden as we didn't activate any yet.
+    
+    > <img src="assets/2.6.2.1.png">
+  
+  - 2.6.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Related to the test (#2.4.7), activate as many connections as possible.
+    
+    > <img src="assets/2.6.2.2.gif">
+    
+    - [ ] 2.6.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All activated connections have been added - their switchers -.
+    
+    - 2.6.2.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Hover on any connection.
+      
+      - [ ] 2.6.2.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A tooltip with the connection's name and its hostname showed up.
+        
+        > <img src="assets/2.6.2.2.2.1.gif">
+    
+    - 2.6.2.2.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Left mouse click any connection.
+      
+      > <img src="assets/2.6.2.2.3.gif">
+      
+      - [ ] 2.6.2.2.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench entered the clicked connection's workarea.
+      
+      - [ ] 2.6.2.2.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The top header has been hidden.
+    
+    - 2.6.2.2.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Right mouse click any connection.
+      
+      > <img src="assets/2.6.2.2.4.gif">
+      
+      - [ ] 2.6.2.2.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A right-click context menu showed up.
+        
+        - 2.6.2.2.4.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click "**Close Workarea (Disconnect)**" menu item.
+          
+          - [ ] 2.6.2.2.4.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workarea of the connection has been closed, connection deactivated.
+  
+  - 2.6.2.2.5 Further tests.
+    
+    - 2.6.2.2.5.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Perform the same test (#2.6.1.3) for the connections' switchers.
+      
+      - [ ] 2.6.2.2.5.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The test and its sub-tests have been passed.
+    
+    - 2.6.2.2.5.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Enter an active connection's work area via its mini card.
+      
+      > <img src="assets/2.6.2.2.5.2.gif">
+      
+      - 2.6.2.2.5.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the workspace's home icon <img src="assets/2.6.2.2.5.2.1.png">.
+      
+      - [ ] 2.6.2.2.5.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> For a workspace that has added connections, for each connection there's a mini card - grayed out square - that represents it.
+        
+        > <img src="assets/2.6.2.2.5.2.2.png">
+        
+        - 2.6.2.2.5.2.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Hover over one of those mini cards.
+          
+          - [ ] 2.6.2.2.5.2.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A connection's name and its hostname showed up in a tooltip.
+        
+        - [ ] 2.6.2.2.5.2.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> For an active connection, the color of its mini card turned into the workspace's color *#1*.
+          
+          - 2.6.2.2.5.2.2.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the colored mini card.
+            
+            - [ ] 2.6.2.2.5.2.2.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench automatically navigated to its workarea.
+    
+    - 2.6.2.2.5.3 A further test for the workspace deletion process.
+      
+      > <img src="assets/2.6.2.2.5.3.gif">
+      
+      - 2.6.2.2.5.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Related to the test (#2.2.3), attempt to delete a workspace that has an active connection.
+        
+        - [ ] 2.6.2.2.5.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The deletion process failed, and an error message showed up.
+          
+          > <img src="assets/2.6.2.2.5.3.1.1.png">

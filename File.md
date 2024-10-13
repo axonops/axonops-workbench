@@ -1342,6 +1342,104 @@
           
           - [ ] 2.5.1.3.3.2.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench showed feedback about the status of the local cluster.
           
-          - [ ] 2.5.1.3.3.2.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench executed a stop/down command for the local cluster, and showed a poinned toast for that process.
+          - [ ] 2.5.1.3.3.2.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench executed a stop/down command for the local cluster, and showed a pinned toast for that process.
           
           - [ ] 2.5.1.3.3.2.3.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Once the command is finished, or the local cluster's pending process has finished, we are able to start the local cluster.
+
+- 2.5.2 "**<u>Import Workspaces</u>**" feature.
+
+> <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">
+> 
+> - This feature allows us to import workspaces - deleted, or from other machines - with their added connections into our workbench.
+> 
+> - We can select - Windows and macOS -, or drag and drop many folders, the workbench will analyze them and extract folders that are a valid workspace.
+>   
+>   - We can then select which workspaces to be imported, and which connections inside workspaces to be imported as well.
+
+> <img src="assets/2.5.2.png">
+
+- 2.5.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "**IMPORT WORKSPACES**" button *#1*.
+  
+  - [ ] 2.5.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A related dialog (#2.5.2.2) has been displayed.
+
+- 2.5.2.2 **Import Workspaces Dialog**.
+  
+  > <img src="assets/2.5.2.2.png">
+  
+  > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> To perform tests for this feature, we need valid workspaces' folders, based on the test (#2.2.3), we should have deleted workspaces, we can use them in this test.
+  > 
+  > <img src="assets/2.5.2.2-2.png">
+  
+  - 2.5.2.2.1 **Add workspaces' folders**.
+    
+    - 2.5.2.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Hover on the area *#1* and then click it.
+      
+      > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This test is only for Windows and macOS, for Linux, drag-and-drop (#2.5.2.2.1.2) is the available way to add folders.
+      
+      - [ ] 2.5.2.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> On hover, the color and border size have been changed.
+      
+      - [ ] 2.5.2.2.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> On click, a folders selector dialog showed up.
+        
+        - 2.5.2.2.1.1.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Select invalid folders - any folders except a valid workspace folder -.
+          
+          > <img src="assets/2.5.2.2.1.1.2.1.gif">
+          
+          - [ ] 2.5.2.2.1.1.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench showed an error feedback regards not finding a valid workspace folder.
+      
+      - 2.5.2.2.1.1.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the area *#1* again.
+        
+        - 2.5.2.2.1.1.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Select and provide multiple folders, among them at least one valid workspace folder.
+    
+    - 2.5.2.2.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Drag multiple folders and drop them in the area *#1*.
+      
+      > <img src="assets/2.5.2.2.1.2.gif">
+      
+      - [ ] 2.5.2.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Dropped folders have been analyzed, the workbench detected valid and invalid ones.
+    
+    - [ ] 2.5.2.2.1.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Either by select, or drag-and-drop, the workbench detected valid workspaces, the view has changed to a list of detected workspaces.
+      
+      > <img src="assets/2.5.2.2.1.3.png">
+      
+      > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">
+      > 
+      > - Detected workspaces and their connections are listed as shown in the embedded image.
+      > 
+      > - We can change the name and color of each workspace.
+      > 
+      > - For the "**Checks**" column, the workbench performs two checks.
+      >   
+      >   - One for a name duplication with another workspace.
+      >     
+      >     - The workspace would be an already added one, or among the current list to be imported.
+      >   
+      >   - Two is for a missing variable - which will be tested in the upcoming tests -.
+      
+      - 2.5.2.2.1.3.1 **<u>Tests for the importing process</u>**.
+        
+        - 2.5.2.2.1.3.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Uncheck all workspaces *#1*, then click the "**Import**" button *2#*.
+          
+          > <img src="assets/2.5.2.2.1.3.1.1.png">
+          
+          - [ ] 2.5.2.2.1.3.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The importing process failed and an error message showed up.
+            
+            > <img src="assets/2.5.2.2.1.3.1.1.1.png">
+        
+        - 2.5.2.2.1.3.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Clear the "**Name**" text field for one or all workspaces.
+          
+          > <img src="assets/2.5.2.2.1.3.1.2.png">
+          
+          - [ ] 2.5.2.2.1.3.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This has been considerd to be invalid - the checkbox for the empty-name workspace has been disabled, and the name text field border's color changed to red -.
+        
+        - 2.5.2.2.1.3.1.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Type the same name for two workspaces or more.
+          
+          > <img src="assets/2.5.2.2.1.3.1.3.png">
+          
+          - [ ] 2.5.2.2.1.3.1.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This has been considered to be a name duplication.
+        
+        - 2.5.2.2.1.3.1.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Check all workspaces, and their connections, then click the "**IMPORT**" button #2.
+          
+          > <img src="assets/2.5.2.2.1.3.1.4.gif">
+          
+          - [ ] 2.5.2.2.1.3.1.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The importing process has been finished, feedback message showed up with the importing state of each selected workspace.
+          
+          - [ ] 2.5.2.2.1.3.1.4.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The imported workspaces' cards showed up in the list.

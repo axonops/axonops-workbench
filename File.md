@@ -1466,7 +1466,7 @@
 > 
 > 7. And "More Options and Actions" list.
 
-- 2.6.1 "**<u>Workspaces Switchers</u>**".
+- 2.6.1 "**<u>Workspaces Switchers</u>**" *#2*.
   
   - [ ] 2.6.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> By default, the workspaces' switchers are hidden as we're in the workspaces' home already.
     
@@ -1510,7 +1510,7 @@
       
       - [ ] 2.6.1.3.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The number of visible workspaces is changeable based on the available height.
 
-- 2.6.2 "**<u>Connections Switchers</u>**".
+- 2.6.2 "**<u>Connections Switchers</u>**" *#3*.
   
   - [ ] 2.6.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> By default, the connections' switchers are hidden as we didn't activate any yet.
     
@@ -1581,3 +1581,63 @@
         - [ ] 2.6.2.2.5.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The deletion process failed, and an error message showed up.
           
           > <img src="assets/2.6.2.2.5.3.1.1.png">
+
+- 2.6.3 "**AI Assistant**" *#4*.
+  
+  > <img src="assets/2.6.3.gif">
+  
+  - 2.6.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the related icon in the left panel <img src="assets/2.6.3.1.png">.
+    
+    - [ ] 2.6.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A hidden area showed up.
+    
+    > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> You might need to sign in at the first time.
+    
+    - [ ] 2.6.3.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> You're able to create a new chat and interact freely with the AI feature provided by AxonOps.
+    
+    - 2.6.3.1.3 **Test the actions in the footer of the hidden area**.
+      
+      > <img src="assets/2.6.3.1.3.png">
+      
+      - 2.6.3.1.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "Back" button #1.
+        
+        - [ ] 2.6.3.1.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> In the hidden area, the workbench moved backward one step.
+        
+        - [ ] 2.6.3.1.3.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The "Forward" button #2 has been enabled.
+      
+      - 2.6.3.1.3.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "Forward" button #2.
+        
+        - [ ] 2.6.3.1.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> In the hidden area, the workbench moved forward one step.
+        
+        - [ ] 2.6.3.1.3.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The "Forward" button #2 has been disabled.
+      
+      - 2.6.3.1.3.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "More" button #3.
+        
+        - [ ] 2.6.3.1.3.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A list showed up with two more actions.
+        
+        - 2.6.3.1.3.3.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "Refresh" button #4.
+          
+          - [ ] 2.6.3.1.3.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The current page has been refreshed.
+        
+        - 2.6.3.1.3.3.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "Logout" button #5.
+          
+          - [ ] 2.6.3.1.3.3.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> In the hidden area, the workbench redirected to the login page, and login credentials have been flushed.
+
+- 2.6.4 "**Help and Documentation**" *#4*.
+  
+  > <img src="assets/2.6.4.gif">
+  
+  - 2.6.4.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the help icon in the left panel.
+    
+    > <img src="assets/2.6.4.1.png">
+    
+    - [ ] 2.6.4.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The default browser opened with the `docs` page of AxonOps.
+
+- 2.6.5 "**Notifications Center**" *#5*.
+  
+  > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">
+  > 
+  > - This feature helps to get all toasts that have been shown while the workbench window is not focused on.
+  > 
+  > - The time of showing the toast is shown in the toast's footer in a readable format ("Now", "A minute ago", and so on).
+  
+  > <img src="assets/2.6.5.gif">

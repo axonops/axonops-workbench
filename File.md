@@ -1638,6 +1638,24 @@
   > 
   > - This feature helps to get all toasts that have been shown while the workbench window is not focused on.
   > 
-  > - The time of showing the toast is shown in the toast's footer in a readable format ("Now", "A minute ago", and so on).
+  > - The time of showing the toast is shown in the toast's footer in a readable format ("Just Now", "A minute ago", and so on).
   
   > <img src="assets/2.6.5.gif">
+  
+  - 2.6.5.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the notifications icon <img src="assets/2.6.5.1.png">.
+    
+    - [ ] 2.6.5.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A hidden area showed up.
+    
+    - 2.6.5.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the icon ![](assets/2.6.5.1.png) again to hide the area.
+  
+  - 2.6.5.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Related to the test (#2.4.6), test a connection while the workbench's window is not being focused on.
+    
+    > <img src="assets/2.6.5.2.gif">
+    
+    - [ ] <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The result of the test has been shown as a toast.
+    
+    - [ ] <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The notifications icon has been changed and animated.
+    
+    - <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the notifications icon ![](assets/2.6.5.1.png) again.
+      
+      - [ ] <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The test connection's result toast is listed.

@@ -1443,3 +1443,69 @@
           - [ ] 2.5.2.2.1.3.1.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The importing process has been finished, feedback message showed up with the importing state of each selected workspace.
           
           - [ ] 2.5.2.2.1.3.1.4.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The imported workspaces' cards showed up in the list.
+
+### 2.6 Left Side Panel
+
+> <img src="assets/2.6.png"?>
+
+> <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">
+> 
+> The left side panel of the workbench consists of the following:
+> 
+> 1. The AxonOps logo.
+> 
+> 2. The workspaces home, and workspaces that have been visited in the current session.
+> 
+> 3. The currently active connections workareas.
+> 
+> 4. The "AI Assistant" and "Help and Documentation" sections.
+> 
+> 5. The "Notifications Center" and "Settings" sections.
+> 
+> 6. The "About" section.
+> 
+> 7. And "More Options and Actions" list.
+
+- 2.6.1 "**<u>Workspaces Switchers</u>**".
+  
+  - [ ] 2.6.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> By default, the workspaces' switchers are hidden as we're in the workspaces' home already.
+    
+    > <img src="assets/2.6.1.1.png">
+  
+  - 2.6.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Enter as many workspaces as possible.
+    
+    - [ ] 2.6.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All entered workspaces have been added - their switcher - under the workspaces home icon.
+      
+      > <img src="assets/2.6.1.2.1.png">
+      
+      - 2.6.1.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Hover over any workspace.
+        
+        > ![](assets/2.6.1.2.1.1.1.gif)
+        
+        - [ ] 2.6.1.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A tooltip with the workspace's name showed up.
+      
+      - 2.6.1.2.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click any workspace.
+        
+        - [ ] 2.6.1.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench entered the clicked workspace.
+          
+          > <img src="assets/2.6.1.2.1.2.1.gif">
+        
+        - [ ] 2.6.1.2.1.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The actions' buttons at the top right side of the workbench changed based on the workspace and the current section <img src="assets/2.6.1.2.1.2.2-2.png">.
+          
+          > <img src="assets/2.6.1.2.1.2.2.gif">
+  
+  - 2.6.1.3 Further tests.
+    
+    - 2.6.1.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Enter as many workspaces as possible.
+    
+    - 2.6.1.3.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Attempt to change the window's height of the workbench.
+      
+      > <img src="assets/2.6.1.3.2.gif">
+      
+      - [ ] 2.6.1.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Up and down arrows showed up at the bottom of the workspaces switchers.
+        
+        > <img src="assets/2.6.1.3.2.1.png">
+        
+        - [ ] 2.6.1.3.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Both arrows work as expected.
+      
+      - [ ] 2.6.1.3.2.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The number of visible workspaces is changeable based on the available height.

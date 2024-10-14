@@ -1783,9 +1783,91 @@
           - [ ] 2.6.6.2.1.5.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The connection in a workspace out of the scope doesn't have the variable in its `cqlsh.rc` file.
           
           - [ ] 2.6.6.2.1.5.4.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The connection in a workspace in the scope still has the variable in its `cqlsh.rc` file.
+      
+      - 2.6.6.2.1.6 **Create nested variables**.
+        
+        > <img src="assets/2.6.6.2.1.6.gif">
+        
+        - 2.6.6.2.1.6.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Back to the app's settings, then the "**Variables**" section.
+        
+        - 2.6.6.2.1.6.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Add a new variable, choose its name and value, then click the "**SAVE SETTINGS**" button.
+        
+        - 2.6.6.2.1.6.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Add another variable, and inside its value add the added variable from the previous action, in format `${variableName}`, for example, the previously added variable's name is `n_var`, and this new variable's value is `${n_var}123`.
           
-      - 2.6.6.2.1.6 Create nested variables.
+          - 2.6.6.2.1.6.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "**SAVE SETTINGS**" button.
+            
+            - [ ] 2.6.6.2.1.6.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The new variable's value has an eye icon.
+              
+              > <img src="assets/2.6.6.2.1.6.3.1.1.png">
+              
+              - 2.6.6.2.1.6.3.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the icon.
+                
+                - [ ] 2.6.6.2.1.6.3.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The variable's value has been handled and the nested variable converted to its value.
+        
+        - 2.6.6.2.1.6.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Now similar to the test (#2.6.6.2.1.2), check the `cqlsh.rc` content for a connection which added in a workspace in the scope.
+          
+          - [ ] 2.6.6.2.1.6.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> It has variables in its content, either the parent variable with nested variables or the nested variables.
+            
+            > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> In some cases - based on the order of creation -, the nested variable will be applied in the next launch, however, this shouldn't affect the variables process -.
       
       - 2.6.6.2.1.7 Delete variables.
+        
+        - 2.6.6.2.1.7.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Back to the app's settings, then the "**Variables**" section.
+        
+        - 2.6.6.2.1.7.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> For one variable, click its trash icon.
+          
+          > <img src="assets/2.6.6.2.1.7.2.png">
+        
+        - 2.6.6.2.1.7.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> For the rest, check their checkboxes *#1*.
+          
+          > <img src="assets/2.6.6.2.1.7.3.png">
+          
+          - 2.6.6.2.1.7.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A new button *#2* showed up, click it.
+            
+            > <img src="assets/2.6.6.2.1.7.3.1.png">
+            
+            - [ ] 2.6.6.2.1.7.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All variables have been deleted.
+          
+          - 2.6.6.2.1.7.3.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "**SAVE SETTINGS**" button.
+        
+        - 2.6.6.2.1.7.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Now similar to the test (#2.6.6.2.1.2), check the `cqlsh.rc` content of a connection that has a variable.
+          
+          > <img src="assets/2.6.6.2.1.7.4.png">
+          
+          - [ ] 2.6.6.2.1.7.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All variables have been deleted, their names have been replaced with their value.
       
-      - 2.6.6.2.1.8 Further tests.
+      - 2.6.6.2.1.8 **<u>Further tests</u>**.
+        
+        - 2.6.6.2.1.8.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Try to add a variable without a name or a value.
+          
+          - [ ] 2.6.6.2.1.8.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The border of input fields of both; the name and the value has been changed to red.
+            
+            > <img src="assets/2.6.6.2.1.8.1.1.png">
+        
+        - 2.6.6.2.1.8.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Add three variables, two of them have the same name but they don't have the same scope.
+          
+          > <img src="assets/2.6.6.2.1.8.2.png">
+          
+          - [ ] 2.6.6.2.1.8.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The variables have been saved with success.
+        
+        - 2.6.6.2.1.8.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> For the variables with the same name, try to intersect their scope - cause a collision -; for one of the variables, select a workspace exists in the scope of the other variable.
+          
+          > <img src="assets/2.6.6.2.1.8.3.png">
+          
+          - [ ] 2.6.6.2.1.8.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench has detected the intersection, and the saving process failed with a warning message.
+            
+            > <img src="assets/2.6.6.2.1.8.3.1.png">
+            
+            - 2.6.6.2.1.8.3.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "**Refresh Variables**" button <img src="assets/2.6.6.2.1.8.3.1.1.png">.
+              
+              - [ ] 2.6.6.2.1.8.3.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All latest changes have been neglected, back to the stabilization state.
+        
+        - 2.6.6.2.1.8.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> For the third variable, if its scope is not 'All workspaces' then change it and save the new settings.
+          
+          - 2.6.6.2.1.8.4.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Change the value of the third variable to the value of one of the other two variables.
+            
+            > <img src="assets/2.6.6.2.1.8.4.1.png">
+            
+            - [ ] 2.6.6.2.1.8.4.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench has detected a value duplication, the saving process failed with a warning message.
+              
+              > <img src="assets/2.6.6.2.1.8.4.1.1.png">

@@ -2946,7 +2946,7 @@ invalid'<span class="token punctuation">;</span></code></pre>
 <ul>
 <li><p>One is the close button <code>X</code> in the connection's work area (#2.4.1.3) <em>#1</em>.</p>
 </li>
-<li><p>Two by right mouse click the connection's switcher in the left panel and choose to close the work area - there are many upcoming tests for this part of the workbench -.</p>
+<li><p>Two by right mouse click the connection's switcher in the left panel (#2.6) and choose to close the work area - there are many upcoming tests for this part of the workbench -.</p>
 </li>
 <li><p>Three is by choosing to close all active work areas at once <em>#3</em>.</p>
 </li>
@@ -3266,13 +3266,684 @@ invalid'<span class="token punctuation">;</span></code></pre>
 <ul>
 <li class="task-list-item"><input disabled="" type="checkbox"> <p>2.5.1.3.3.2.3.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The workbench showed feedback about the status of the local cluster.</p>
 </li>
-<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.5.1.3.3.2.3.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The workbench executed a stop/down command for the local cluster, and showed a poinned toast for that process.</p>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.5.1.3.3.2.3.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The workbench executed a stop/down command for the local cluster, and showed a pinned toast for that process.</p>
 </li>
 <li class="task-list-item"><input disabled="" type="checkbox"> <p>2.5.1.3.3.2.3.3 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> Once the command is finished, or the local cluster's pending process has finished, we are able to start the local cluster.</p>
 </li>
 </ul>
 </li>
 </ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.5.2 "<strong><u>Import Workspaces</u></strong>" feature.</p>
+</li>
+</ul>
+<blockquote>
+<img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/info.png" title="">
+
+<ul>
+<li><p>This feature allows us to import workspaces - deleted, or from other machines - with their added connections into our workbench.</p>
+</li>
+<li><p>We can select - Windows and macOS -, or drag and drop many folders, the workbench will analyze them and extract folders that are a valid workspace.</p>
+<ul>
+<li>We can then select which workspaces to be imported, and which connections inside workspaces to be imported as well.</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<blockquote>
+<img src="assets/2.5.2.png">
+</blockquote>
+<ul>
+<li><p>2.5.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the "<strong>IMPORT WORKSPACES</strong>" button <em>#1</em>.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.5.2.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> A related dialog (#2.5.2.2) has been displayed.</li>
+</ul>
+</li>
+<li><p>2.5.2.2 <strong>Import Workspaces Dialog</strong>.</p>
+<blockquote>
+<img src="assets/2.5.2.2.png">
+</blockquote>
+<blockquote>
+<p><img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/info.png" title=""> To perform tests for this feature, we need valid workspaces' folders, based on the test (#2.2.3), we should have deleted workspaces, we can use them in this test.</p>
+<img src="assets/2.5.2.2-2.png">
+</blockquote>
+<ul>
+<li><p>2.5.2.2.1 <strong>Add workspaces' folders</strong>.</p>
+<ul>
+<li><p>2.5.2.2.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Hover on the area <em>#1</em> and then click it.</p>
+<blockquote>
+<p><img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/info.png" title=""> This test is only for Windows and macOS, for Linux, drag-and-drop (#2.5.2.2.1.2) is the available way to add folders.</p>
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.5.2.2.1.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> On hover, the color and border size have been changed.</p>
+</li>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.5.2.2.1.1.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> On click, a folders selector dialog showed up.</p>
+<ul>
+<li><p>2.5.2.2.1.1.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Select invalid folders - any folders except a valid workspace folder -.</p>
+<blockquote>
+<img src="assets/2.5.2.2.1.1.2.1.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.5.2.2.1.1.2.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The workbench showed an error feedback regards not finding a valid workspace folder.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>2.5.2.2.1.1.3 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the area <em>#1</em> again.</p>
+<ul>
+<li>2.5.2.2.1.1.3.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Select and provide multiple folders, among them at least one valid workspace folder.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.5.2.2.1.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Drag multiple folders and drop them in the area <em>#1</em>.</p>
+<blockquote>
+<img src="assets/2.5.2.2.1.2.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.5.2.2.1.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> Dropped folders have been analyzed, the workbench detected valid and invalid ones.</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.5.2.2.1.3 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> Either by select, or drag-and-drop, the workbench detected valid workspaces, the view has changed to a list of detected workspaces.</p>
+<blockquote>
+<img src="assets/2.5.2.2.1.3.png">
+</blockquote>
+<blockquote>
+<img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/info.png" title="">
+
+<ul>
+<li><p>Detected workspaces and their connections are listed as shown in the embedded image.</p>
+</li>
+<li><p>We can change the name and color of each workspace.</p>
+</li>
+<li><p>For the "<strong>Checks</strong>" column, the workbench performs two checks.</p>
+<ul>
+<li><p>One for a name duplication with another workspace.</p>
+<ul>
+<li>The workspace would be an already added one, or among the current list to be imported.</li>
+</ul>
+</li>
+<li><p>Two is for a missing variable - which will be tested in the upcoming tests -.</p>
+</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><p>2.5.2.2.1.3.1 <strong><u>Tests for the importing process</u></strong>.</p>
+<ul>
+<li><p>2.5.2.2.1.3.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Uncheck all workspaces <em>#1</em>, then click the "<strong>Import</strong>" button <em>2#</em>.</p>
+<blockquote>
+<img src="assets/2.5.2.2.1.3.1.1.png">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.5.2.2.1.3.1.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The importing process failed and an error message showed up.</p>
+<blockquote>
+<img src="assets/2.5.2.2.1.3.1.1.1.png">
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>2.5.2.2.1.3.1.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Clear the "<strong>Name</strong>" text field for one or all workspaces.</p>
+<blockquote>
+<img src="assets/2.5.2.2.1.3.1.2.png">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.5.2.2.1.3.1.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> This has been considerd to be invalid - the checkbox for the empty-name workspace has been disabled, and the name text field border's color changed to red -.</li>
+</ul>
+</li>
+<li><p>2.5.2.2.1.3.1.3 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Type the same name for two workspaces or more.</p>
+<blockquote>
+<img src="assets/2.5.2.2.1.3.1.3.png">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.5.2.2.1.3.1.3.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> This has been considered to be a name duplication.</li>
+</ul>
+</li>
+<li><p>2.5.2.2.1.3.1.4 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Check all workspaces, and their connections, then click the "<strong>IMPORT</strong>" button #2.</p>
+<blockquote>
+<img src="assets/2.5.2.2.1.3.1.4.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.5.2.2.1.3.1.4.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The importing process has been finished, feedback message showed up with the importing state of each selected workspace.</p>
+</li>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.5.2.2.1.3.1.4.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The imported workspaces' cards showed up in the list.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 class="atx" id="26-left-side-panel">2.6 Left Side Panel</h3>
+<blockquote>
+<p>&lt;img src="assets/2.6.png"?&gt;</p>
+</blockquote>
+<blockquote>
+<img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/info.png" title="">
+
+<p>The left side panel of the workbench consists of the following:</p>
+<ol>
+<li><p>The AxonOps logo.</p>
+</li>
+<li><p>The workspaces home, and workspaces that have been visited in the current session.</p>
+</li>
+<li><p>The currently active connections workareas.</p>
+</li>
+<li><p>The "AI Assistant" and "Help and Documentation" sections.</p>
+</li>
+<li><p>The "Notifications Center" and "Settings" sections.</p>
+</li>
+<li><p>The "About" section.</p>
+</li>
+<li><p>And "More Options and Actions" list.</p>
+</li>
+</ol>
+</blockquote>
+<ul>
+<li><p>2.6.1 "<strong><u>Workspaces Switchers</u></strong>" <em>#2</em>.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> By default, the workspaces' switchers are hidden as we're in the workspaces' home already.</p>
+<blockquote>
+<img src="assets/2.6.1.1.png">
+</blockquote>
+</li>
+</ul>
+<ul>
+<li><p>2.6.1.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Enter as many workspaces as possible.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.1.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> All entered workspaces have been added - their switchers - under the workspaces home icon.</p>
+<blockquote>
+<img src="assets/2.6.1.2.1.png">
+</blockquote>
+<ul>
+<li><p>2.6.1.2.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Hover on any workspace.</p>
+<blockquote>
+<p><img alt="" src="assets/2.6.1.2.1.1.1.gif"></p>
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.1.2.1.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> A tooltip with the workspace's name showed up.</li>
+</ul>
+</li>
+<li><p>2.6.1.2.1.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click any workspace.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.1.2.1.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The workbench entered the clicked workspace.</p>
+<blockquote>
+<img src="assets/2.6.1.2.1.2.1.gif">
+</blockquote>
+</li>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.1.2.1.2.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The actions' buttons at the top right side of the workbench changed based on the workspace and the current section <img src="assets/2.6.1.2.1.2.2-2.png">.</p>
+<blockquote>
+<img src="assets/2.6.1.2.1.2.2.gif">
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.1.3 Further tests.</p>
+<ul>
+<li><p>2.6.1.3.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Enter as many workspaces as possible.</p>
+</li>
+<li><p>2.6.1.3.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Attempt to change the window's height of the workbench.</p>
+<blockquote>
+<img src="assets/2.6.1.3.2.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.1.3.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> Up and down arrows showed up at the bottom of the workspaces switchers.</p>
+<blockquote>
+<img src="assets/2.6.1.3.2.1.png">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.1.3.2.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> Both arrows work as expected.</li>
+</ul>
+</li>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.1.3.2.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The number of visible workspaces is changeable based on the available height.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.2 "<strong><u>Connections Switchers</u></strong>" <em>#3</em>.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> By default, the connections' switchers are hidden as we didn't activate any yet.</p>
+<blockquote>
+<img src="assets/2.6.2.1.png">
+</blockquote>
+</li>
+</ul>
+<ul>
+<li><p>2.6.2.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Related to the test (#2.4.7), activate as many connections as possible.</p>
+<blockquote>
+<img src="assets/2.6.2.2.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.2.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> All activated connections have been added - their switchers -.</p>
+</li>
+</ul>
+<ul>
+<li><p>2.6.2.2.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Hover on any connection.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.2.2.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> A tooltip with the connection's name and its hostname showed up.</p>
+<blockquote>
+<img src="assets/2.6.2.2.2.1.gif">
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>2.6.2.2.3 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Left mouse click any connection.</p>
+<blockquote>
+<img src="assets/2.6.2.2.3.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.2.2.3.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The workbench entered the clicked connection's workarea.</p>
+</li>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.2.2.3.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The top header has been hidden.</p>
+</li>
+</ul>
+</li>
+<li><p>2.6.2.2.4 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Right mouse click any connection.</p>
+<blockquote>
+<img src="assets/2.6.2.2.4.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.2.2.4.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> A right-click context menu showed up.</p>
+<ul>
+<li><p>2.6.2.2.4.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click "<strong>Close Workarea (Disconnect)</strong>" menu item.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.2.2.4.1.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The workarea of the connection has been closed, connection deactivated.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.2.2.5 Further tests.</p>
+<ul>
+<li><p>2.6.2.2.5.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Perform the same test (#2.6.1.3) for the connections' switchers.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.2.2.5.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The test and its sub-tests have been passed.</li>
+</ul>
+</li>
+<li><p>2.6.2.2.5.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Enter an active connection's work area via its mini card.</p>
+<blockquote>
+<img src="assets/2.6.2.2.5.2.gif">
+</blockquote>
+<ul>
+<li><p>2.6.2.2.5.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the workspace's home icon <img src="assets/2.6.2.2.5.2.1.png">.</p>
+</li>
+</ul>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.2.2.5.2.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> For a workspace that has added connections, for each connection there's a mini card - grayed out square - that represents it.</p>
+<blockquote>
+<img src="assets/2.6.2.2.5.2.2.png">
+</blockquote>
+<ul>
+<li><p>2.6.2.2.5.2.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Hover over one of those mini cards.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.2.2.5.2.2.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> A connection's name and its hostname showed up in a tooltip.</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.2.2.5.2.2.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> For an active connection, the color of its mini card turned into the workspace's color <em>#1</em>.</p>
+<ul>
+<li><p>2.6.2.2.5.2.2.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the colored mini card.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.2.2.5.2.2.2.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The workbench automatically navigated to its workarea.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.2.2.5.3 A further test for the workspace deletion process.</p>
+<blockquote>
+<img src="assets/2.6.2.2.5.3.gif">
+</blockquote>
+<ul>
+<li><p>2.6.2.2.5.3.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Related to the test (#2.2.3), attempt to delete a workspace that has an active connection.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.2.2.5.3.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The deletion process failed, and an error message showed up.</p>
+<blockquote>
+<img src="assets/2.6.2.2.5.3.1.1.png">
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.3 "<strong>AI Assistant</strong>" <em>#4</em>.</p>
+<blockquote>
+<img src="assets/2.6.3.gif">
+</blockquote>
+<ul>
+<li><p>2.6.3.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the related icon in the left panel <img src="assets/2.6.3.1.png">.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.3.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> A hidden area showed up.</li>
+</ul>
+<blockquote>
+<p><img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/info.png" title=""> You might need to sign in at the first time.</p>
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.3.1.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> You're able to create a new chat and interact freely with the AI feature provided by AxonOps.</p>
+</li>
+</ul>
+<ul>
+<li><p>2.6.3.1.3 <strong>Test the actions in the footer of the hidden area</strong>.</p>
+<blockquote>
+<img src="assets/2.6.3.1.3.png">
+</blockquote>
+<ul>
+<li><p>2.6.3.1.3.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the "Back" button #1.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.3.1.3.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> In the hidden area, the workbench moved backward one step.</p>
+</li>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.3.1.3.1.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The "Forward" button #2 has been enabled.</p>
+</li>
+</ul>
+</li>
+<li><p>2.6.3.1.3.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the "Forward" button #2.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.3.1.3.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> In the hidden area, the workbench moved forward one step.</p>
+</li>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.3.1.3.2.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The "Forward" button #2 has been disabled.</p>
+</li>
+</ul>
+</li>
+<li><p>2.6.3.1.3.3 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the "More" button #3.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.3.1.3.3.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> A list showed up with two more actions.</p>
+</li>
+</ul>
+<ul>
+<li><p>2.6.3.1.3.3.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the "Refresh" button #4.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.3.1.3.3.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The current page has been refreshed.</li>
+</ul>
+</li>
+<li><p>2.6.3.1.3.3.3 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the "Logout" button #5.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.3.1.3.3.3.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> In the hidden area, the workbench redirected to the login page, and login credentials have been flushed.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.4 "<strong>Help and Documentation</strong>" <em>#4</em>.</p>
+<blockquote>
+<img src="assets/2.6.4.gif">
+</blockquote>
+<ul>
+<li><p>2.6.4.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the help icon in the left panel.</p>
+<blockquote>
+<img src="assets/2.6.4.1.png">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.4.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The default browser opened with the <code>docs</code> page of AxonOps.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.5 "<strong>Notifications Center</strong>" <em>#5</em>.</p>
+<blockquote>
+<img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/info.png" title="">
+
+<ul>
+<li><p>This feature helps to get all toasts that have been shown while the workbench window is not focused on.</p>
+</li>
+<li><p>The time of showing the toast is shown in the toast's footer in a readable format ("Just Now", "A minute ago", and so on).</p>
+</li>
+</ul>
+</blockquote>
+<blockquote>
+<img src="assets/2.6.5.gif">
+</blockquote>
+<ul>
+<li><p>2.6.5.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the notifications icon <img src="assets/2.6.5.1.png">.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.5.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> A hidden area showed up.</p>
+</li>
+</ul>
+<ul>
+<li><p>2.6.5.1.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the icon <img alt="" src="assets/2.6.5.1.png"> again to hide the area.</p>
+</li>
+</ul>
+</li>
+<li><p>2.6.5.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Related to the test (#2.4.6), test a connection while the workbench's window is not being focused on.</p>
+<blockquote>
+<img src="assets/2.6.5.2.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p><img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The result of the test has been shown as a toast.</p>
+</li>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p><img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The notifications icon has been changed and animated.</p>
+</li>
+</ul>
+<ul>
+<li><p><img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the notifications icon <img alt="" src="assets/2.6.5.1.png"> again.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The test connection's result toast is listed.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.6 "<strong>Settings</strong>" <em>#5</em>.</p>
+<blockquote>
+<img src="assets/2.6.6.png">
+</blockquote>
+<ul>
+<li><p>2.6.6.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the settings icon <img src="assets/2.6.6.1.png">.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.6.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> A related dialog (#2.6.6.2) showed up.</li>
+</ul>
+</li>
+<li><p>2.6.6.2 "<strong>App Settings</strong>" dialog.</p>
+<ul>
+<li><p>2.6.6.2.1 "<strong>Variables</strong>" section.</p>
+<blockquote>
+<img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/info.png" title="">
+
+<ul>
+<li><p>The variables feature is an innovative way to handle <code>cqlsh.rc</code> values for multiple connections in one action, it's also a useful method to hide data with variables.</p>
+</li>
+<li><p>In the workbench, we can replace specific values in the <code>cqlsh.rc</code> files with variables, we can add as many variables as we want.</p>
+</li>
+<li><p>We can also nest variables - variable inside variable, and so on -, and we can finally define the scope of the variable - in which workspace(s) should the variable be seen and replace its value with its name -.</p>
+<ul>
+<li>The workbench has the ability to detect and prevent variables' collisions.</li>
+</ul>
+</li>
+<li><p>When importing a workspace, or in case the workbench has detected an undefined variable in one of the <code>cqlsh.rc</code> files, it'll be shown in the section with a missing value to be provided.</p>
+</li>
+</ul>
+</blockquote>
+<blockquote>
+<img src="assets/2.6.6.2.1.png">
+</blockquote>
+<ul>
+<li><p>2.6.6.2.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the "<strong>+ Add Variable</strong>" button <em>#1</em>.</p>
+<blockquote>
+<img src="assets/2.6.6.2.1.1.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.6.2.1.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The button "<strong>Refresh Variables</strong>" <em>#2</em> showed up.</p>
+</li>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.6.2.1.1.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The element #3 showed up.</p>
+<blockquote>
+<p><img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/info.png" title=""> Each variable has its name, value, and scope to be defined.</p>
+</blockquote>
+<ul>
+<li><p>2.6.6.2.1.1.2.1 "Variable Name" text field.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.6.2.1.1.2.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> Only English letters, digits, and underscores are allowed.</p>
+<blockquote>
+<p><img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/info.png" title=""> To perform this test you'll need to click the "SAVE SETTINGS" button #4 and get a warning message.</p>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li><p>2.6.6.2.1.1.2.1.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Type any name you like that follow the rules.</p>
+</li>
+</ul>
+</li>
+<li><p>2.6.6.2.1.1.3 "Variable Value" text field.</p>
+<ul>
+<li><p>2.6.6.2.1.1.3.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Choose a value that exists in the <code>cqlsh.rc</code> file; like the set port or hostname.</p>
+<blockquote>
+<p><img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/info.png" title=""> You can set the variable's value to be a part of a value, for example, the hostname of a connection is <code>127.0.0.1</code>, the variable's value can be <code>127</code>, or even <code>0.0</code>.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>2.6.6.2.1.1.4 "Variabe Scope" badges.</p>
+<ul>
+<li><p>2.6.6.2.1.1.4.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Try to click one workspace, then multiple workspaces.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.6.2.1.1.4.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The workbench has allowed to select multiple workspaces.</li>
+</ul>
+</li>
+<li><p>2.6.6.2.1.1.4.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Try to click all workspaces - except the "All Workspaces" badge.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.6.2.1.1.4.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The workbench automatically selected the "All Workspaces" badge.</p>
+<ul>
+<li>2.6.6.2.1.1.4.2.1.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Keep this badge selected.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.6.2.1.1.5 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Now click the "SAVE SETTINGS" button #4.</p>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.6.2.1.1.5.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> A success message showed up.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.6.2.1.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Related to the test (#2.4.2), enter a workspace that has a connection, click the settings icon of that connection, switch the editor, and check the value you've set to be replaced with the variable.</p>
+<blockquote>
+<img src="assets/2.6.6.2.1.2.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.6.2.1.2.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The value has been changed to the variable's name in the format <code>${variableName}</code>, for example <code>${test}</code>.</p>
+<blockquote>
+<img src="assets/2.6.6.2.1.2.1.png">
+</blockquote>
+</li>
+</ul>
+</li>
+<li><p>2.6.6.2.1.3 Change the variable's name.</p>
+<ul>
+<li><p>2.6.6.2.1.3.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Back to the app's settings, then the "Variables" section.</p>
+<ul>
+<li><p>2.6.6.2.1.3.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Change the name of the variable to something else, for example from <code>test</code> to <code>test2</code>.</p>
+</li>
+<li><p>2.6.6.2.1.3.3 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the "SAVE SETTINGS" button.</p>
+<blockquote>
+<img src="assets/2.6.6.2.1.3.3.gif">
+</blockquote>
+</li>
+<li><p>2.6.6.2.1.3.4 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Now similar to the test (#2.6.6.2.1.2), check the <code>cqlsh.rc</code> content of a connection.</p>
+<blockquote>
+<img src="assets/2.6.6.2.1.3.4.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.6.2.1.3.4.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The variable's name has been changed from the old one to the new one.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.6.2.1.4 Change the variable's value.</p>
+<ul>
+<li><p>2.6.6.2.1.4.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Back to the app's settings, then the "Variables" section.</p>
+<ul>
+<li><p>2.6.6.2.1.4.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Change the value of the variable to something else, for example from <code>192</code> to <code>168</code>.</p>
+</li>
+<li><p>2.6.6.2.1.4.3 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the "SAVE SETTINGS" button.</p>
+<blockquote>
+<img src="assets/2.6.6.2.1.4.3.gif">
+</blockquote>
+</li>
+<li><p>2.6.6.2.1.4.4 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Now similar to the test (#2.6.6.2.1.2), check the <code>cqlsh.rc</code> content of a connection.</p>
+<blockquote>
+<img src="assets/2.6.6.2.1.4.4.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> 2.6.6.2.1.4.4.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The old value of the variable has been reverted, the new value has been replaced with the variable's name.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.6.2.1.5 Change the variable's scope.</p>
+<ul>
+<li><p>2.6.6.2.1.5.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Back to the app's settings, then the "Variables" section.</p>
+</li>
+<li><p>2.6.6.2.1.5.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Change the scope of the variable to something else, for example from all workspaces to just one or two.</p>
+</li>
+<li><p>2.6.6.2.1.5.3 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Click the "SAVE SETTINGS" button.</p>
+<blockquote>
+<img src="assets/2.6.6.2.1.5.3.gif">
+</blockquote>
+</li>
+<li><p>2.6.6.2.1.5.4 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/action.png" title=""> Now similar to the test (#2.6.6.2.1.2), check the <code>cqlsh.rc</code> content of two connections; one in a workspace out of the new scope, and one in a workspace in the scope.</p>
+<blockquote>
+<img src="assets/2.6.6.2.1.5.4.gif">
+</blockquote>
+<ul>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.6.2.1.5.4.1 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The connection in a workspace out of the scope doesn't have the variable in its <code>cqlsh.rc</code> file.</p>
+</li>
+<li class="task-list-item"><input disabled="" type="checkbox"> <p>2.6.6.2.1.5.4.2 <img style="display:inline-block;position:relative;top:5px;" width="22" alt="" src="assets/behavior.png" title=""> The connection in a workspace in the scope still has the variable in its <code>cqlsh.rc</code> file.</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>2.6.6.2.1.6 Create nested variables.</p>
+</li>
+<li><p>2.6.6.2.1.7 Delete variables.</p>
+</li>
+<li><p>2.6.6.2.1.8 Further tests.</p>
 </li>
 </ul>
 </li>

@@ -1871,3 +1871,85 @@
             - [ ] 2.6.6.2.1.8.4.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench has detected a value duplication, the saving process failed with a warning message.
               
               > <img src="assets/2.6.6.2.1.8.4.1.1.png">
+    
+    - 2.6.6.2.2 "**Security/Logging**" section.
+    
+    - 2.6.6.2.3 "**Languages**" section.
+    
+    - 2.6.6.2.4 "**Features**" section.
+    
+    - 2.6.6.2.5 "**Limits**" section.
+    
+    - 2.6.6.2.6 "**Updates**" section.
+      
+      > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This section needs to release new builds on GitHub, it'll be tested separately.
+
+- 2.6.7 "**About**" *#6*.
+  
+  > <img src="assets/2.6.7.png">
+  
+  - [ ] <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All observed links in the dialog are clickable and can be redirected to in the default browser.
+
+- 2.6.8 "**More options and actions**" *#7*.
+  
+  > <img src="assets/2.6.8.png">
+  
+  - 2.6.8.1 "**Close all active work areas**" action *#1*.
+    
+    - 2.6.8.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> To test this action, activate connections (#2.4.7) and start local clusters as much as possible.
+      
+      - [ ] 2.6.8.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> With at least one active workarea, the action has been enabled.
+        
+        - 2.6.8.1.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click that action now.
+          
+          - [ ] 2.6.8.1.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A confirmation dialog showed up.
+            
+            > <img src="assets/2.6.8.1.1.1.1.1.png">
+            
+            - 2.6.8.1.1.1.1.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "CANCEL" button #1.
+              
+              - [ ] 2.6.8.1.1.1.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Nothing should happen, the stopping/closing process has been neglected.
+            
+            - 2.6.8.1.1.1.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "CONFIRM" button #2.
+              
+              - [ ] 2.6.8.1.1.1.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> All workareas have been closed, connections have been deactivated and local clusters are being stopped/downed.
+  
+  - 2.6.8.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> "**Restart**" action *#2*.
+    
+    - [ ] 2.6.8.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After clicking this action, the workbench has been restarted with success.
+  
+  - 2.6.8.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> "**Quit**" action *#3*.
+    
+    - [ ] 2.6.8.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After clicking this action, the workbench has been terminated/quitted with success.
+  
+  - 2.6.8.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> "**Zoom In***" action *#4*.
+    
+    > <img src="assets/2.6.8.4.gif">
+    
+    - [ ] 2.6.8.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After clicking this action, the window's view zoom level has been increased as expected.
+    
+    - [ ] 2.6.8.4.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The shortcut for this action works as expected.
+  
+  - 2.6.8.5 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> "**Zoom Out**" action *#5*.
+    
+    > <img src="assets/2.6.8.5.gif">
+    
+    - [ ] 2.6.8.5.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After clicking this action, the window's view zoom level has been decreased as expected.
+    
+    - [ ] 2.6.8.5.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The shortcut for this action works as expected.
+  
+  - 2.6.8.6 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> "**Zoom Reset**" action *#6*.
+    
+    > <img src="assets/2.6.8.6.gif">
+    
+    - [ ] 2.6.8.6.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After clicking this action, the window's view zoom level has been reseted to the default value as expected.
+    
+    - [ ] 2.6.8.6.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The shortcut for this action works as expected.
+  
+  - 2.6.8.7 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> "**Toggle Fullscreen**" action *#7*.
+    
+    > <img src="assets/2.6.8.7.gif">
+    
+    - [ ] 2.6.8.7.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After clicking this action - then click it again -, the window has entered/exited the fullscreen mode as expected.
+    
+    - [ ] 2.6.8.7.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The shortcut for this action works as expected.

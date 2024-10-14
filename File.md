@@ -1875,6 +1875,16 @@
     - 2.6.6.2.2 "**Security/Logging**" section.
     
     - 2.6.6.2.3 "**Languages**" section.
+      
+      > <img src="assets/2.6.6.2.3.gif">
+      
+      - 2.6.6.2.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the dropdown menu, select any language then click the "**SAVE SETTINGS**" button.
+        
+        - [ ] 2.6.6.2.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The selected language has been immediately applied to the UI.
+      
+      - 2.6.6.2.3.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Change the language from English to any other language, quit the app, and run it again.
+        
+        - [ ] 2.6.6.2.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The selected language has been applied rather than the default English language.
     
     - 2.6.6.2.4 "**Features**" section.
     
@@ -1894,7 +1904,7 @@
           
           - [ ] 2.6.6.2.5.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench showed an error message about attempting to exceed the set limit.
       
-      - 2.6.6.2.5.2 "**Local Clusters**" limit #2.
+      - 2.6.6.2.5.2 "**Local Clusters**" limit *#2*.
         
         > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> By default, it's allowed to run only 1 local cluster and no more at the same time.
         

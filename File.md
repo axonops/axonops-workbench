@@ -1882,11 +1882,11 @@
       
       > <img src="assets/2.6.6.2.5.png">
       
-      - 2.6.6.2.5.1 "CQLSH Sessions" limit #1.
+      - 2.6.6.2.5.1 "**CQLSH Sessions**" limit *#1*.
         
         > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> By default, it's allowed to activate 10 connection/CQLSH sessions at the same time.
         
-        - 2.6.6.2.5.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Change the value to something else - like `1` -, then click the "SAVE SETTINGS" button #3.
+        - 2.6.6.2.5.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Change the value to something else - like `1` -, then click the "**SAVE SETTINGS**" button *#3*.
         
         - 2.6.6.2.5.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Now activate one connection, then attempt to activate another one.
           
@@ -1894,7 +1894,7 @@
           
           - [ ] 2.6.6.2.5.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench showed an error message about attempting to exceed the set limit.
       
-      - 2.6.6.2.5.2 "Local Clusters" limit #2.
+      - 2.6.6.2.5.2 "**Local Clusters**" limit #2.
         
         > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> By default, it's allowed to run only 1 local cluster and no more at the same time.
         

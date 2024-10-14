@@ -1873,6 +1873,48 @@
               > <img src="assets/2.6.6.2.1.8.4.1.1.png">
     
     - 2.6.6.2.2 "**Security/Logging**" section.
+      
+      > <img src="assets/2.6.6.2.2.png">
+      
+      - 2.6.6.2.2.1 "**Protect App Content**" option *#1*.
+        
+        > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This option is only for Windows and macOS, it should not be available nor visible on Linux machines.
+        
+        - 2.6.6.2.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Check this option *#1* and click the "**SAVE SETTINGS**" button.
+          
+          > <img src="assets/2.6.6.2.2.1.1.png">
+        
+        - 2.6.6.2.2.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Using a screenshot or video recording tool, attempt to capture the content of the workbench's window.
+          
+          - [ ] 2.6.6.2.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The tool wasn't able to capture the content of the workbench's window.
+            
+            > <img src="assets/2.6.6.2.2.1.2.1.gif">
+        
+        - 2.6.6.2.2.1.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Now attempt to uncheck the option to disable it.
+          
+          - [ ] 2.6.6.2.2.1.3.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> On macOS, the workbench asks for sudo/root priviliges, and admin privliges on Windows.
+            
+            > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> For protecting the workbench's content option, it can be enabled without the need for root/admin privileges, however, if the case is disabling it, the workbench will ask for root/admin privileges - changing the user's control settings may cause to not ask for admin privileges on Windows -.
+      
+      - 2.6.6.2.2.2 "**Logging System**" option *#2*.
+        
+        - 2.6.6.2.2.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Check this option *#2* and click the "**SAVE SETTINGS**" button.
+          
+          > <img src="assets/2.6.6.2.2.2.1.png">
+          
+          > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This update needs an app restart, quit the workbench, and run it again.
+          
+          > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">
+          >
+          > - For Linux, the logs directory would be `/home/{user}/.config/AxonOps Workbench/logs`.
+          > 
+          > - For macOS, it would be `~/Library/Logs/AxonOps Workbench/`.
+          > 
+          > - For Windows, it would be `%USERPROFILE%\AppData\Roaming\AxonOps Workbench\logs`.
+          > 
+          > - In case the folder wasn't found, a folder that contains `axonops` in its name should be the one for logs.
+          
+          - [ ] <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After the new launch, the logging system has started, and a file has been found in the logs directory.
     
     - 2.6.6.2.3 "**Languages**" section.
       
@@ -1950,7 +1992,7 @@
               
               > <img src="assets/2.6.6.2.4.3.3.1.1.gif">
               
-              > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> For the AI Assistant feature, it can be disabled without the need for root/admin privileges, however, if the case is enabling it, the workbench will ask for root/admin privileges.
+              > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> For the AI Assistant feature, it can be disabled without the need for root/admin privileges, however, if the case is enabling it, the workbench will ask for root/admin privileges - changing the user's control settings may cause to not ask for admin privliges on Windows -.
     
     - 2.6.6.2.5 "**Limits**" section.
       

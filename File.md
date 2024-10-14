@@ -1174,6 +1174,8 @@
     
     > <img src="assets/2.5.1.2.png">
     
+    > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> In case `docker` is not installed on the machine, the workbench will throw an error once the "CREATE LOCAL CLUSTER" button is clicked.
+    
     - 2.5.1.2.1 **<u>Input fields, and Buttons</u>**.
       
       - 2.5.1.2.1.1 "**Local Cluster Name**" text field (optional).
@@ -1905,7 +1907,7 @@
           > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This update needs an app restart, quit the workbench, and run it again.
           
           > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">
-          >
+          > 
           > - For Linux, the logs directory would be `/home/{user}/.config/AxonOps Workbench/logs`.
           > 
           > - For macOS, it would be `~/Library/Logs/AxonOps Workbench/`.

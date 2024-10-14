@@ -292,20 +292,19 @@ $(document).on('initialize', () => {
         $(webviewMoreActionsContainer).toggleClass('show')
 
         // Show the transparent background which prevent interacting with the webview
-        $('div.body div.hidden-area div.content div.more-list-bg').show()
+        $('div.body div.hidden-area div.content div.more-list-bg').toggle()
 
-        setTimeout(() => {
-          // When clicking outside the more actions container
-          $(webviewMoreActionsContainer).oneClickOutside({
-            callback: () => {
-              // Hide the container
-              $(webviewMoreActionsContainer).removeClass('show')
+        // When clicking outside the more actions container
+        $(webviewMoreActionsContainer).oneClickOutside({
+          callback: () => {
+            // Hide the container
+            $(webviewMoreActionsContainer).removeClass('show')
 
-              // Hide the transparent background
-              $('div.body div.hidden-area div.content div.more-list-bg').hide()
-            }
-          })
-        }, 500)
+            // Hide the transparent background
+            $('div.body div.hidden-area div.content div.more-list-bg').hide()
+          },
+          calledFromClickInsideHandler: true
+        })
       })
 
       // Refresh the entire webview
@@ -1169,7 +1168,7 @@ $(document).on('initialize', () => {
 
             // Switch to the single-file mode
             try {
-              if (!FS.lstatSync(Path.join(CWD, `cqlsh-407`)).isDirectory())
+              if (!FS.lstatSync(Path.join(binariesPath, `cqlsh-407`)).isDirectory())
                 binDirectory = '&&'
             } catch (e) {}
 
@@ -1309,7 +1308,10 @@ $(document).on('initialize', () => {
     $(`div.row#contentProtectionContainer`).hide()
 
     // NOTE: In case we've faced the multi-selection bug on Linux we can enable this line
-    // setTimeout(() => $('span[selection-feautre]').hide();$('div.modal-section div.drag-drop-workspaces').unbind('click').css('cursor', 'default'), 1000)
+    setTimeout(() => {
+      $('span[selection-feautre]').hide()
+      $('div.modal-section div.drag-drop-workspaces').unbind('click').css('cursor', 'default')
+    }, 1000)
   } catch (e) {}
 })
 

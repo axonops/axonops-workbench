@@ -1659,3 +1659,133 @@
     - <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the notifications icon ![](assets/2.6.5.1.png) again.
       
       - [ ] <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The test connection's result toast is listed.
+
+- 2.6.6 "**Settings**" *#5*.
+  
+  > <img src="assets/2.6.6.png">
+  
+  - 2.6.6.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the settings icon <img src="assets/2.6.6.1.png">.
+    
+    - [ ] 2.6.6.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A related dialog (#2.6.6.2) showed up.
+  
+  - 2.6.6.2 "**App Settings**" dialog.
+    
+    - 2.6.6.2.1 "**Variables**" section.
+      
+      > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;">
+      > 
+      > - The variables feature is an innovative way to handle `cqlsh.rc` values for multiple connections in one action, it's also a useful method to hide data with variables.
+      > 
+      > - In the workbench, we can replace specific values in the `cqlsh.rc` files with variables, we can add as many variables as we want.
+      > 
+      > - We can also nest variables - variable inside variable, and so on -, and we can finally define the scope of the variable - in which workspace(s) should the variable be seen and replace its value with its name -.
+      >   
+      >   - The workbench has the ability to detect and prevent variables' collisions.
+      > 
+      > - When importing a workspace, or in case the workbench has detected an undefined variable in one of the `cqlsh.rc` files, it'll be shown in the section with a missing value to be provided.
+      
+      > <img src="assets/2.6.6.2.1.png">
+      
+      - 2.6.6.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "**+ Add Variable**" button *#1*.
+        
+        > <img src="assets/2.6.6.2.1.1.gif">
+        
+        - [ ] 2.6.6.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The button "**Refresh Variables**" *#2* showed up.
+        
+        - [ ] 2.6.6.2.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The element #3 showed up.
+          
+          > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Each variable has its name, value, and scope to be defined.
+          
+          - 2.6.6.2.1.1.2.1 "Variable Name" text field.
+            
+            - [ ] 2.6.6.2.1.1.2.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Only English letters, digits, and underscores are allowed.
+              
+              > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> To perform this test you'll need to click the "SAVE SETTINGS" button #4 and get a warning message.
+            
+            - 2.6.6.2.1.1.2.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Type any name you like that follow the rules.
+          
+          - 2.6.6.2.1.1.3 "Variable Value" text field.
+            
+            - 2.6.6.2.1.1.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Choose a value that exists in the `cqlsh.rc` file; like the set port or hostname.
+              
+              > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> You can set the variable's value to be a part of a value, for example, the hostname of a connection is `127.0.0.1`, the variable's value can be `127`, or even `0.0`.
+          
+          - 2.6.6.2.1.1.4 "Variabe Scope" badges.
+            
+            - 2.6.6.2.1.1.4.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Try to click one workspace, then multiple workspaces.
+              
+              - [ ] 2.6.6.2.1.1.4.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench has allowed to select multiple workspaces.
+            
+            - 2.6.6.2.1.1.4.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Try to click all workspaces - except the "All Workspaces" badge.
+              
+              - [ ] 2.6.6.2.1.1.4.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench automatically selected the "All Workspaces" badge.
+                
+                - 2.6.6.2.1.1.4.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Keep this badge selected.
+          
+          - 2.6.6.2.1.1.5 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Now click the "SAVE SETTINGS" button #4.
+            
+            - [ ] 2.6.6.2.1.1.5.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> A success message showed up.
+      
+      - 2.6.6.2.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Related to the test (#2.4.2), enter a workspace that has a connection, click the settings icon of that connection, switch the editor, and check the value you've set to be replaced with the variable.
+        
+        > <img src="assets/2.6.6.2.1.2.gif">
+        
+        - [ ] 2.6.6.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The value has been changed to the variable's name in the format `${variableName}`, for example `${test}`.
+          
+          > <img src="assets/2.6.6.2.1.2.1.png">
+      
+      - 2.6.6.2.1.3 Change the variable's name.
+        
+        - 2.6.6.2.1.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Back to the app's settings, then the "Variables" section.
+          
+          - 2.6.6.2.1.3.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Change the name of the variable to something else, for example from `test` to `test2`.
+          
+          - 2.6.6.2.1.3.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "SAVE SETTINGS" button.
+            
+            > <img src="assets/2.6.6.2.1.3.3.gif">
+          
+          - 2.6.6.2.1.3.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Now similar to the test (#2.6.6.2.1.2), check the `cqlsh.rc` content of a connection.
+            
+            > <img src="assets/2.6.6.2.1.3.4.gif">
+            
+            - [ ] 2.6.6.2.1.3.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The variable's name has been changed from the old one to the new one.
+      
+      - 2.6.6.2.1.4 Change the variable's value.
+        
+        - 2.6.6.2.1.4.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Back to the app's settings, then the "Variables" section.
+          
+          - 2.6.6.2.1.4.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Change the value of the variable to something else, for example from `192` to `168`.
+          
+          - 2.6.6.2.1.4.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "SAVE SETTINGS" button.
+            
+            > <img src="assets/2.6.6.2.1.4.3.gif">
+          
+          - 2.6.6.2.1.4.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Now similar to the test (#2.6.6.2.1.2), check the `cqlsh.rc` content of a connection.
+            
+            > <img src="assets/2.6.6.2.1.4.4.gif">
+            
+            - [ ] 2.6.6.2.1.4.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The old value of the variable has been reverted, the new value has been replaced with the variable's name.
+      
+      - 2.6.6.2.1.5 Change the variable's scope.
+        
+        - 2.6.6.2.1.5.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Back to the app's settings, then the "Variables" section.
+        
+        - 2.6.6.2.1.5.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Change the scope of the variable to something else, for example from all workspaces to just one or two.
+        
+        - 2.6.6.2.1.5.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "SAVE SETTINGS" button.
+          
+          > <img src="assets/2.6.6.2.1.5.3.gif">
+        
+        - 2.6.6.2.1.5.4 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Now similar to the test (#2.6.6.2.1.2), check the `cqlsh.rc` content of two connections; one in a workspace out of the new scope, and one in a workspace in the scope.
+          
+          > <img src="assets/2.6.6.2.1.5.4.gif">
+          
+          - [ ] 2.6.6.2.1.5.4.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The connection in a workspace out of the scope doesn't have the variable in its `cqlsh.rc` file.
+          
+          - [ ] 2.6.6.2.1.5.4.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The connection in a workspace in the scope still has the variable in its `cqlsh.rc` file.
+          
+      - 2.6.6.2.1.6 Create nested variables.
+      
+      - 2.6.6.2.1.7 Delete variables.
+      
+      - 2.6.6.2.1.8 Further tests.

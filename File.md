@@ -1887,6 +1887,70 @@
         - [ ] 2.6.6.2.3.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The selected language has been applied rather than the default English language.
     
     - 2.6.6.2.4 "**Features**" section.
+      
+      > <img src="assets/2.6.6.2.4.png">
+      
+      - 2.6.6.2.4.1 "**Local Clusters**" feature *#1*.
+        
+        - 2.6.6.2.4.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Uncheck this feature *#1* and click the "**SAVE SETTINGS**" button.
+          
+          > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This update needs an app restart, quit the workbench, and run it again.
+          
+          > <img src="assets/2.6.6.2.4.1.1.png">
+        
+        - [ ] 2.6.6.2.4.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After the new launch, the "Local Clusters" card has disappeared; no way to use the local clusters feature now.
+          
+          > <img src="assets/2.6.6.2.4.1.2.png">
+      
+      - 2.6.6.2.4.2 "**Basic Session**" feature *#2*.
+        
+        - 2.6.6.2.4.2.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Check this feature *#2* and click the "**SAVE SETTINGS**" button.
+          
+          > <img src="assets/2.6.6.2.4.2.1.png">
+        
+        - 2.6.6.2.4.2.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After saving the new settings, either activate any connection or start a local cluster.
+          
+          - [ ] 2.6.6.2.4.2.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> In the workarea, a button showed up in the "CQLSH Session" section called "SWITCH TERMINAL".
+            
+            > <img src="assets/2.6.6.2.4.2.2.1.png">
+            
+            - 2.6.6.2.4.2.2.1.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click that new button.
+              
+              - [ ] 2.6.6.2.4.2.2.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The view has changed to a basic terminal similar to the test (#2.5.1.3.1).
+                
+                - [ ] 2.6.6.2.4.2.2.1.1.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> You can freely interact with the basic terminal, and execute cql statements and cqlsh commands.
+                
+                - [ ] 2.6.6.2.4.2.2.1.1.1.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The set restrictions in the test (#2.5.1.3.1) are applied to this terminal too.
+                
+                - [ ] 2.6.6.2.4.2.2.1.1.1.3 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The basic terminal is not connected to the enhanced terminal - the default terminal -.
+                
+                - [ ] 2.6.6.2.4.2.2.1.1.1.4 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Executing the command `quit` or `exit` has caused to close the work area and disconnect or stop/down the local cluster.
+            
+            - 2.6.6.2.4.2.2.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "SWITCH TERMINAL" again.
+              
+              - [ ] 2.6.6.2.4.2.2.1.2.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Now back to the default enhanced terminal.
+      
+      - 2.6.6.2.4.3 "**AI Assistant**" feature *#3*.
+        
+        - 2.6.6.2.4.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Uncheck this feature *#3* and click the "**SAVE SETTINGS**" button.
+          
+          > <img src="assets/2.6.6.2.4.3.1.png">
+          > 
+          > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> This update needs an app restart, quit the workbench, and run it again.
+        
+        - [ ] 2.6.6.2.4.3.2 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> After the new launch, the "AI Assistant" button in the left panel has been disappeared; no way to use this feature now.
+          
+          > <img src="assets/2.6.6.2.4.3.2.png">
+        
+        - 2.6.6.2.4.3.3 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Back to the feature in the "Features" section.
+          
+          - 2.6.6.2.4.3.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Attempt to check it again to enable it.
+            
+            - [ ] 2.6.6.2.4.3.3.1.1 <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The workbench asks for sudo/root authentication on Linux and macOS, and administrative confirmation on Windows.
+              
+              > <img src="assets/2.6.6.2.4.3.3.1.1.gif">
+              
+              > <img title="" src="assets/info.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> For the AI Assistant feature, it can be disabled without the need for root/admin privileges, however, if the case is enabling it, the workbench will ask for root/admin privileges.
     
     - 2.6.6.2.5 "**Limits**" section.
       

@@ -90,6 +90,12 @@ global.FS = require('fs-extra')
 global.Path = require('path')
 
 /**
+ * Node.js OS module
+ * Used for operating system-related utilities and properties
+ */
+global.OS = require('os')
+
+/**
  * Import extra modules needed in the main thread
  *
  * Node.js URL module
@@ -792,24 +798,40 @@ App.on('second-instance', () => {
 
   // Request to get the public key from the keys generator tool
   IPCMain.on('public-key:get', (_, id) => {
-    // Define the bin folder path
-    // let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
-    let binFolder = Path.join((extraResourcesPath != null ? Path.join(__dirname, '..', '..', 'main') : Path.join(__dirname)), 'bin', 'keys_generator')
+    let runKeysGenerator = () => {
+      // Define the bin folder path
+      // let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
+      let binFolder = Path.join((extraResourcesPath != null ? Path.join(__dirname, '..', '..', 'main') : Path.join(__dirname)), 'bin', 'keys_generator')
 
-    // Switch to the single-file mode
+      // Switch to the single-file mode
+      try {
+        if (!FS.lstatSync(binFolder).isDirectory())
+          binFolder = Path.join(binFolder, '..')
+      } catch (e) {}
+
+      // Run the keys generator tool
+      let binCall = `./keys_generator`
+
+      // If the host is Windows
+      binCall = (process.platform == 'win32') ? `keys_generator.exe` : binCall
+
+      // Execute the command, get the public key, and send it to the renderer thread
+      Terminal.run(`cd "${binFolder}" && ${binCall}`, (err, publicKey, stderr) => views.main.webContents.send(`public-key:${id}`, (err || stderr) ? '' : publicKey))
+    }
+
     try {
-      if (!FS.lstatSync(binFolder).isDirectory())
-        binFolder = Path.join(binFolder, '..')
+      if (OS.platform() != 'darwin') {
+        runKeysGenerator()
+        throw 0
+      }
+
+      Modules.Pty.runKeysGenerator((publicKey) => {
+        if (publicKey != null)
+          return views.main.webContents.send(`public-key:${id}`, publicKey)
+
+        runKeysGenerator()
+      })
     } catch (e) {}
-
-    // Run the keys generator tool
-    let binCall = `./keys_generator`
-
-    // If the host is Windows
-    binCall = (process.platform == 'win32') ? `keys_generator.exe` : binCall
-
-    // Execute the command, get the public key, and send it to the renderer thread
-    Terminal.run(`cd "${binFolder}" && ${binCall}`, (err, publicKey, stderr) => views.main.webContents.send(`public-key:${id}`, (err || stderr) ? '' : publicKey))
   })
 
   /**

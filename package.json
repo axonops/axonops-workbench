@@ -156,7 +156,7 @@
     "json-beautify": "^1.1.1",
     "json-to-table": "^4.2.1",
     "jsonfile": "^6.1.0",
-    "jsonrepair": "^3.0.2",
+    "jsonrepair": "^3.8.1",
     "keytar": "^7.9.0",
     "ldrs": "^1.0.2",
     "marked": "^13.0.2",

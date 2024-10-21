@@ -167,19 +167,19 @@
 
 ### 2.3 Add Connection Process
 
-- 2.3.1 Click the "**ENTER**" button for any added workspace.
+- 2.3.1 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "**ENTER**" button for any added workspace.
   
   > <img src="assets/2.3.1.png">
   
-  - 2.3.1.1 The view has been changed.
+  - 2.3.1.1 [ ] <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> The view has been changed.
     
     > <img title="" src="assets/2.3.1.1.png" alt="">
   
-  - 2.3.1.2 Click the "**ADD CONNECTION**" button *#1*, or the "**+**" button at the center of the window *#2*, or the "**ADD CONNECTION**" button *#3* at the top right side of the window.
+  - 2.3.1.2 <img title="" src="assets/action.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> Click the "**ADD CONNECTION**" button *#1*, or the "**+**" button at the center of the window *#2*, or the "**ADD CONNECTION**" button *#3* at the top right side of the window.
     
-    - 2.3.1.2.1 A related dialog (#2.3.2) has been displayed after clicking the "**ADD CONNECTION**" button of both *#1*, or *#3*.
+    - [ ] <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> 2.3.1.2.1 A related dialog (#2.3.2) has been displayed after clicking the "**ADD CONNECTION**" button of both *#1*, or *#3*.
     
-    - 2.3.1.2.2 Same behavior for the "**+**" button.
+    - [ ] <img title="" src="assets/behavior.png" alt="" width="22" style="display:inline-block;position:relative;top:5px;"> 2.3.1.2.2 Same behavior for the "**+**" button.
 
 - 2.3.2 **<u>Add Connection Dialog</u>**.
   

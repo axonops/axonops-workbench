@@ -1550,6 +1550,9 @@ $(document).on('checkForUpdates', function(e, manualCheck = false) {
               }
             })
 
+            assetsContainer.toggle(assets.length != 0)
+
+
             if (assets.length != 0)
               assetsContainer.find('div.asset').remove()
 
@@ -1576,7 +1579,7 @@ $(document).on('checkForUpdates', function(e, manualCheck = false) {
 
           $('button#dismissUpdate').unbind('click').click(function() {
             try {
-              Store.set('dismissUpdate', `${result.releaseInfo.name}`)
+              Store.set('dismissUpdate', `${result.releaseInfo.tag_name}`)
 
               showToast(I18next.capitalize(I18next.t('dismiss update')), I18next.capitalizeFirstLetter(I18next.replaceData('the update with the specific version [b]$data[/b] has been dismissed, however, you can still reach this update from the settings section', [result.releaseInfo.name])) + '.', 'success')
 

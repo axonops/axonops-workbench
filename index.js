@@ -26,7 +26,7 @@ FS.readFile(Path.join(__dirname, 'File.md'), async (err, data) => {
 	contentHTML = `${style}<article class="markdown-body">${contentHTML}</article>`
 
 	contentHTML = contentHTML.replace(/disabled="" type="checkbox">/gi, `class="failed" type="checkbox"> <input class="passed" type="checkbox">`)
-		.replace(/(\d+\.\d*)+\s+/gi, `<a id="_$1" href="#_$1">$1</a>`)
+		.replace(/\d+(?:\.\d+)+\s+/gi, `<a id="_$1" href="#_$1">$1</a>`)
 		.replace(/\(\#(\d+\.\d*)+\)/gi, `(<a href="#_$1">#$1</a>)`)
 
 	contentHTML = `${contentHTML}${js}`

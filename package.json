@@ -178,7 +178,7 @@
     "stripchar": "^1.2.1",
     "sudo-prompt": "^9.2.1",
     "systeminformation": "^5.18.2",
-    "tabulator-tables": "^6.2.1",
+    "tabulator-tables": "^6.3.0",
     "tinycolor2": "^1.6.0",
     "tinykeys": "^2.1.0",
     "tree-kill": "^1.2.2",

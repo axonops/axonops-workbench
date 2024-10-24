@@ -5526,6 +5526,14 @@
                                   // Update the button's text to be `ENTER`
                                   setTimeout(() => $(this).children('span').attr('mulang', 'enter').text(I18next.t('enter')), 1000)
 
+                                  try {
+                                    setTimeout(() => {
+                                      let lastButton = clusterElement.find('button').filter(':last')
+
+                                      lastButton.toggle(minifyText(lastButton.text()).length > 0)
+                                    }, 1000)
+                                  } catch (e) {}
+
                                   setTimeout(() => {
                                     // Call the post function
                                     startPostProcess(true)

@@ -254,7 +254,7 @@ jobs:
   generate-sbom:
     runs-on: ubuntu-latest
     needs: [build]
-    if: ${{ !cancelled() && success() }}
+    if: ${{ !cancelled() && success() && !contains(github.ref, 'internal') }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -279,7 +279,7 @@ jobs:
   release-brew:
     runs-on: ubuntu-latest
     needs: [build]
-    if: ${{ !cancelled() && success() }}
+    if: ${{ !cancelled() && success() && !contains(github.ref, 'internal') }}
 
     steps:
       - uses: actions/checkout@v4
@@ -347,7 +347,7 @@ jobs:
   release-choco:
     runs-on: ubuntu-latest
     needs: [build]
-    if: ${{ !cancelled() && success() }}
+    if: ${{ !cancelled() && success() && !contains(github.ref, 'internal') }}
 
     steps:
       - uses: actions/checkout@v4

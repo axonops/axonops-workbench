@@ -941,7 +941,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
           // If an active cluster has been found then end the process
           if (foundActiveCluster)
-            return showToast(I18next.capitalize(I18next.t('workspace settings')), I18next.capitalizeFirstLetter(I18next.replaceData('one connection or more in the workspace [b]$data[/b] are having an active workarea, please make sure to close the workarea before attempting to edit the workspace again', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
+            return showToast(I18next.capitalize(I18next.t('workspace settings')), I18next.capitalizeFirstLetter(I18next.replaceData('one connection or more in the workspace [b]$data[/b] is open, please make sure to close the connections before attempting to edit the workspace', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
 
           // Attempt to Update the workspace
           Modules.Workspaces.updateWorkspace({

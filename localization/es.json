@@ -208,7 +208,7 @@
       "nodes": "Nodos",
       "notices": "Avisos",
       "notifications center": "Centro de notificaciones",
-      "one connection or more in the workspace [b]$data[/b] are having an active workarea, please make sure to close the workarea before attempting to edit the workspace again": "Una conexión o más en el espacio de trabajo [b]$data[/b] tienen un área de trabajo activa, asegúrese de cerrar el área de trabajo antes de intentar editar el espacio de trabajo nuevamente",
+      "one connection or more in the workspace [b]$data[/b] is open, please make sure to close the connections before attempting to edit the workspace": "Una conexión o más en el espacio de trabajo [b]$data[/b] tienen un área de trabajo activa, asegúrese de cerrar el área de trabajo antes de intentar editar el espacio de trabajo nuevamente",
       "open AxonOps in browser": "abrir AxonOps en el™ navegador",
       "open the connection folder": "Abra la carpeta Conexión",
       "open the local cluster folder": "Abra la carpeta del clúster local",

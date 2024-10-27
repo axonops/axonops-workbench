@@ -208,7 +208,7 @@
       "nodes": "节点",
       "notices": "通知",
       "notifications center": "通知中心",
-      "one connection or more in the workspace [b]$data[/b] are having an active workarea, please make sure to close the workarea before attempting to edit the workspace again": "工作区 [b]$data[/b] 中的一个或多个连接具有活动的工作区，请确保在再次尝试编辑工作区之前关闭工作区",
+      "one connection or more in the workspace [b]$data[/b] is open, please make sure to close the connections before attempting to edit the workspace": "工作区 [b]$data[/b] 中的一个或多个连接具有活动的工作区，请确保在再次尝试编辑工作区之前关闭工作区",
       "open AxonOps in browser": "在浏览器中打开 AxonOps",
       "open the connection folder": "打开 Connection 文件夹",
       "open the local cluster folder": "打开 Local Cluster 文件夹",

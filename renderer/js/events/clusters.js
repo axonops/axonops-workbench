@@ -4834,7 +4834,7 @@
 
                                 // Send a request to the main thread regards pop-up a menu
                                 IPCRenderer.send('show-context-menu', JSON.stringify([{
-                                  label: I18next.capitalize(I18next.t('close workarea (disconnect)')),
+                                  label: I18next.capitalize(I18next.t('close connection')),
                                   click: `() => views.main.webContents.send('workarea:close', {
                                       btnID: '${closeWorkareaBtnID}'
                                     })`

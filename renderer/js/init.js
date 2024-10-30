@@ -1342,7 +1342,7 @@ $(document).on('initialize', () => {
 
     try {
       import(Path.join(__dirname, '..', '..', 'node_modules', 'url-join', 'lib', 'url-join.js')).then((module) => {
-        let releaseLink = module.default(Modules.Consts.URLS.Workbench, 'releases', 'tag', AppInfo.version)
+        let releaseLink = module.default(Modules.Consts.URLS.Workbench, 'releases', 'tag', `v${AppInfo.version}`)
 
         $('button#releaseNotes').click(() => {
           try {

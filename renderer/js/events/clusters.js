@@ -3247,7 +3247,11 @@
                               })
 
                               // Clear the screen again but with the prompt this time
-                              setTimeout(() => terminal.clear(), 1000)
+                              setTimeout(() => {
+                                try {
+                                  terminal.clear()
+                                } catch (e) {}
+                              }, 1000)
                             })
 
                             // Update the attribute; to not perform this process again
@@ -3366,6 +3370,10 @@
 
                             // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
                             statement = statement.replace(pattern, '$1 JSON')
+                          } catch (e) {}
+
+                          try {
+                            statement = statement.trim()
                           } catch (e) {}
 
                           // Send the command to the main thread to be executed
@@ -4834,7 +4842,7 @@
 
                                 // Send a request to the main thread regards pop-up a menu
                                 IPCRenderer.send('show-context-menu', JSON.stringify([{
-                                  label: I18next.capitalize(I18next.t('close connection')),
+                                  label: I18next.capitalizeFirstLetter(`${I18next.t('close work area')} (${I18next.t('disconnect')})`),
                                   click: `() => views.main.webContents.send('workarea:close', {
                                       btnID: '${closeWorkareaBtnID}'
                                     })`
@@ -5528,10 +5536,12 @@
 
                                   try {
                                     setTimeout(() => {
-                                      let lastButton = clusterElement.find('button').filter(':last')
+                                      let clusterButtons = clusterElement.find('button')
 
-                                      lastButton.toggle(minifyText(lastButton.text()).length > 0)
-                                    }, 1000)
+                                      clusterButtons.each(function() {
+                                        $(this).toggle(minifyText($(this).text()).length > 0)
+                                      })
+                                    }, 2000)
                                   } catch (e) {}
 
                                   setTimeout(() => {

@@ -132,7 +132,7 @@ center {
 
     label {
       margin-left: -7px;
-      padding-left: 7px;
+      padding-left: 10px;
     }
 
     div.hint {
@@ -179,6 +179,10 @@ center {
       }
     }
   }
+}
+
+input[type="checkbox"] {
+  transform: translateX(5px) translateY(-2px) scale(0.85);
 }
 
 .no-select {

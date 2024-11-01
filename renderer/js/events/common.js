@@ -673,6 +673,24 @@
 
       actionButton.filter('[action="toggleFullscreen"]').click()
     })
+
+    $(document).on('keydown', function(e) {
+      // CTRL+L to clear the enhanced terminal
+      if (!e.ctrlKey || e.keyCode != 76)
+        return
+
+      let interactiveTerminal = $(`div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"] div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-content`)
+
+      if (interactiveTerminal.length <= 0)
+        return
+
+      try {
+        if (!interactiveTerminal.is(':visible'))
+          throw 0
+
+        interactiveTerminal.children('div.block').find('div.actions div.btn[action="delete"]').click()
+      } catch (e) {}
+    })
   }
 }
 

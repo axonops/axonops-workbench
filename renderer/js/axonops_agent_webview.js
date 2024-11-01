@@ -74,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
               try {
                 document.querySelector('div[data-id="reloadWebView"]').addEventListener('click', () => {
-                  console.log("CLICKED");
                   IPCRenderer.sendToHost(`reload-webview`)
                 })
               } catch (e) {}

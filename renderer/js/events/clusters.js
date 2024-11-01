@@ -3301,6 +3301,18 @@
                         setTimeout(() => statementInputField.val('').trigger('input').focus().attr('style', null))
 
                         try {
+                          let isClearCommand = (['clear', 'cls']).some((command) => statement.startsWith(minifyText(command)))
+
+                          if (!isClearCommand)
+                            throw 0
+
+
+                          sessionContainer.children('div.block').find('div.actions div.btn[action="delete"]').click()
+
+                          return
+                        } catch (e) {}
+
+                        try {
                           if (!((['quit', 'exit']).some((command) => minifyText(statement).startsWith(minifyText(command)))))
                             throw 0
 
@@ -3416,8 +3428,9 @@
                             isCQLSHCommand = Modules.Consts.CQLSHCommands.some((command) => minifiedStatement.startsWith(minifyText(command))),
                             // Whether or not the statement is quitting the cqlsh session
                             isQuitCommand = (['quit', 'exit']).some((command) => minifiedStatement.startsWith(minifyText(command))),
+                            isClearCommand = (['clear', 'cls']).some((command) => minifiedStatement.startsWith(minifyText(command))),
                             // Decide whether or not the execution button should be disabled
-                            isExecutionButtonDisabled = minifiedStatement.length <= 0 || ((!isCQLSHCommand && !isQuitCommand) && !minifiedStatement.endsWith(';'))
+                            isExecutionButtonDisabled = minifiedStatement.length <= 0 || ((!isCQLSHCommand && !isQuitCommand && !isClearCommand) && !minifiedStatement.endsWith(';'))
 
                           // Disable/enable the execution button
                           executeBtn.attr('disabled', isExecutionButtonDisabled ? '' : null)

@@ -903,13 +903,44 @@
                 <li><a class="dropdown-item" href="#" value="4.0">4.0</a></li>
               </ul>
             </div>
-            <div class="form-outline form-white" style="margin-bottom: 25px;">
+            <div class="form-outline form-white" style="margin-bottom: 15px;">
               <label class="form-label" style="color: #fbfbfb;">
                 <span mulang="cassandra nodes" capitalize></span> (<span mulang="default" capitalize></span> 3)
               </label>
               <div class="range" style="opacity:0.9">
                 <input type="range" class="form-range" min="1" max="20" value="3" id="numOfNodes">
                 <div class="default-value"></div>
+              </div>
+            </div>
+            <div class="form-outline form-white" id="selectContainersManagementTool">
+              <label class="form-label" style="color: #fbfbfb;">
+                <span mulang="containers management tool" capitalize></span>
+                <ion-icon name="info-circle-outline" class="management-tools-hint-icon localclusters-dialog"></ion-icon>
+              </label>
+              <input type="text" hidden>
+              <div class="management-tools-hint localclusters-dialog">
+                <span mulang="workbench leverages containerization to operate local clusters. We offer support for both Podman and Docker. Please select your preferred tool and follow the detailed setup instructions provided" capitalize-first></span>
+                <span class="link"><span mulang="here"></span>
+                  <ion-icon name="external-link"></ion-icon>
+                </span>.
+              </div>
+              <div class="management-tools localclusters-dialog">
+                <div class="tool" tool="podman">
+                  <div class="icon">
+                    <ion-icon name="podman"></ion-icon>
+                  </div>
+                  <div class="title">
+                    Podman
+                  </div>
+                </div>
+                <div class="tool" tool="docker">
+                  <div class="icon">
+                    <ion-icon name="docker"></ion-icon>
+                  </div>
+                  <div class="title">
+                    Docker
+                  </div>
+                </div>
               </div>
             </div>
             <div class="form-check" style="margin-bottom: 10px;">
@@ -1150,6 +1181,44 @@
                       <small>
                         <span mulang="this update needs an app restart" capitalize-first></span>.
                       </small>
+                    </div>
+                  </div>
+                </div>
+                <div class="row flex margin-bottom more-margin flex-advanced for-management-tools-settings">
+                  <div class="col-md-3">
+                  </div>
+                  <div class="col-md-9">
+                    <div class="form-outline form-white" id="selectContainersManagementToolSettings">
+                      <label class="form-label" style="color: #fbfbfb;">
+                        <span mulang="containers management tool" capitalize></span>
+                        <ion-icon name="info-circle-outline" class="management-tools-hint-icon settings-dialog"></ion-icon>
+                      </label>
+                      <input type="text" hidden>
+                      <div class="management-tools-hint settings-dialog">
+                        <span mulang="workbench leverages containerization to operate local clusters. We offer support for both Podman and Docker. Please select your preferred tool and follow the detailed setup instructions provided"
+                          capitalize-first></span>
+                        <span class="link"><span mulang="here"></span>
+                          <ion-icon name="external-link"></ion-icon>
+                        </span>.
+                      </div>
+                      <div class="management-tools settings-dialog">
+                        <div class="tool" tool="podman">
+                          <div class="icon">
+                            <ion-icon name="podman"></ion-icon>
+                          </div>
+                          <div class="title">
+                            Podman
+                          </div>
+                        </div>
+                        <div class="tool" tool="docker">
+                          <div class="icon">
+                            <ion-icon name="docker"></ion-icon>
+                          </div>
+                          <div class="title">
+                            Docker
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1537,8 +1606,8 @@
               </div>
               <div class="modal-section" section="notices" hidden>
                 <div class="notice">
-                  AxonOps is a registered trademark of AxonOps Limited. Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation (<span class="link"><span
-                      class="content">http://www.apache.org/</span>
+                  AxonOps is a registered trademark of AxonOps Limited. Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache
+                  Software Foundation (<span class="link"><span class="content">http://www.apache.org/</span>
                     <ion-icon name="external-link"></ion-icon>
                   </span>) or its subsidiaries in Canada, the United States and/or other countries.
                 </div>

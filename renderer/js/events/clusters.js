@@ -5379,10 +5379,45 @@
                       showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
 
                       // Check the existence of Docker in the machine
-                      Modules.Docker.checkDockerCompose((dockerExists, userGroup) => {
+                      Modules.Docker.checkDockerCompose((dockerExists, userGroup, selectedManagementTool) => {
+                        try {
+                          if (['docker', 'podman'].some((tool) => `${selectedManagementTool}` == tool))
+                            throw 0
+
+                          showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('a containers management tool should be selected before using the local clusters feature, please consider to select either Podman or Docker before attempting to create a local cluster')) + '.', 'failure')
+
+                          startPostProcess()
+
+                          return
+                        } catch (e) {}
+
+
+                        // If `podman` is the selected management tool then check if the host is Linux Ubuntu
+                        try {
+                          if (selectedManagementTool != 'podman')
+                            throw 0
+
+                          if (!isHostUbuntu())
+                            throw 0
+
+                          showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.t(`Linux distributions based on Ubuntu often face compatibility issues with Podman containers management tool. Switching to Docker is highly recommended for better compatibility`)) + '.', 'failure')
+
+                          startPostProcess()
+
+                          return
+                        } catch (e) {}
+
                         // If Docker doesn't exist then show feedback to the user and skip the upcoming code
                         if (!dockerExists) {
-                          showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('local clusters feature requires [code]docker compose[/code] or [code]docker-compose[/code] tool to be installed, please make sure it\'s installed and accessible before attempting to create a local cluster')) + '.', 'failure')
+                          if (selectedManagementTool != 'podman')
+                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('local clusters feature with Docker management tool requires either [code]docker compose[/code] or [code]docker-compose[/code] to be installed, please make sure at least one of them is installed and accessible before attempting to $data', [I18next.t('start local cluster')])) + '.', 'failure')
+
+                          try {
+                            if (selectedManagementTool != 'podman')
+                              throw 0
+
+                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData(`local clusters feature with Podman management tool requires [code]podman-compose[/code] to be installed, please make sure it's installed and accessible before attempting to $data`, [I18next.t('start local cluster')])) + '.', 'failure')
+                          } catch (e) {}
 
                           startPostProcess()
 
@@ -5391,7 +5426,7 @@
 
                         // If the current user is not in the `docker` group
                         if (!userGroup) {
-                          showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('local clusters feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again')) + '.', 'failure')
+                          showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.t('local clusters feature with Docker management tool requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again')) + '.', 'failure')
 
                           startPostProcess()
 

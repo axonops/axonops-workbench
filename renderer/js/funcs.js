@@ -3970,3 +3970,23 @@ let copyStatement = (button) => {
   // Give feedback to the user
   showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
 }
+
+let isHostUbuntu = () => {
+  if (OS.platform() != 'linux')
+    return false
+
+  try {
+    let command = Terminal.runSync('(dpkg --list | less -S) | grep ubuntu-')
+
+    if (command.err || command.stderr)
+      return false
+
+    try {
+      return minifyText(command.data).includes('ubuntu')
+    } catch (e) {
+      return false
+    }
+  } catch (e) {
+    return false
+  }
+}

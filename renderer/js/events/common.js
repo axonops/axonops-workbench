@@ -437,6 +437,7 @@
         assistantAIEnabled = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || true,
         loggingEnabled = config.get('security', 'loggingEnabled'),
         sandboxProjectsEnabled = config.get('features', 'sandboxProjects'),
+        containersManagementTool = config.get('features', 'containersManagementTool'),
         basicCQLSHEnabled = config.get('features', 'basicCQLSH'),
         checkForUpdates = config.get('updates', 'checkForUpdates'),
         autoUpdate = config.get('updates', 'autoUpdate'),
@@ -474,6 +475,15 @@
 
       // Check the sandbox projects
       $('input#sandboxProjects[type="checkbox"]').prop('checked', sandboxProjectsEnabled == 'true')
+
+      $('div.management-tools.settings-dialog div.tool').removeClass('selected')
+
+      try {
+        containersManagementTool = (['docker', 'podman'].some((tool) => `${containersManagementTool}` == `${tool}`)) ? containersManagementTool : 'none'
+      } catch (e) {}
+
+      $(`div.management-tools.settings-dialog div.tool[tool="${containersManagementTool}"]`).addClass('selected')
+
 
       $('input#basicCQLSH[type="checkbox"]').prop('checked', basicCQLSHEnabled == 'true')
 
@@ -758,7 +768,8 @@
         checkForUpdatesOnLanuch = $('input#checkForUpdatesOnLanuch[type="checkbox"]').prop('checked'),
         autoUpdateWithNotification = $('input#autoUpdateWithNotification[type="checkbox"]').prop('checked'),
         // Get chosen display language and if it's from right to left
-        [chosenDisplayLanguage, languageRTL] = getAttributes($('input#languageUI'), ['hidden-value', 'rtl'])
+        [chosenDisplayLanguage, languageRTL] = getAttributes($('input#languageUI'), ['hidden-value', 'rtl']),
+        containersManagementTool = 'none'
 
       // Set RTL class if the language needs that
       $('body').toggleClass('rtl', languageRTL == 'true')
@@ -781,6 +792,15 @@
       })
 
       try {
+        let selectedManagementTool = $('div.management-tools.settings-dialog div.tool.selected').attr('tool')
+
+        if (selectedManagementTool == undefined)
+          throw 0
+
+        containersManagementTool = selectedManagementTool
+      } catch (e) {}
+
+      try {
         // Get the current app's config/settings
         Modules.Config.getConfig((config) => {
           // Update settings
@@ -788,6 +808,7 @@
           config.set('security', 'loggingEnabled', loggingEnabled)
           config.set('features', 'sandboxProjects', sandboxProjectsEnabled)
           config.set('features', 'basicCQLSH', basicCQLSHEnabled)
+          config.set('features', 'containersManagementTool', containersManagementTool)
           Keytar.setPassword('AxonOpsWorkbenchAIAssistant', 'value', `${assistantAIEnabled}`)
           config.set('limit', 'cqlsh', maxNumCQLSHSessions)
           config.set('limit', 'sandbox', maxNumSandboxProjects)
@@ -1223,5 +1244,32 @@
         }, 250)
       } catch (e) {}
     })
+  })
+}
+
+{
+  $(`ion-icon.management-tools-hint-icon.settings-dialog`).click(function() {
+    let isClicked = `${$(this).attr('name')}`.includes('outline')
+
+    try {
+      if (isClicked)
+        throw 0
+
+      $(this).attr('name', 'info-circle-outline')
+
+      $('div.management-tools-hint.settings-dialog').slideUp(350)
+
+      return
+    } catch (e) {}
+
+    $(this).attr('name', 'info-circle')
+
+    $('div.management-tools-hint.settings-dialog').slideDown(350)
+  })
+
+  $('div.management-tools.settings-dialog div.tool[tool]').click(function() {
+    $('div.management-tools.settings-dialog div.tool').removeClass('selected')
+
+    $(this).addClass('selected')
   })
 }

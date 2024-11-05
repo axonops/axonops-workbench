@@ -1306,57 +1306,57 @@
                         if (isOnlyInfo)
                           throw 0
 
-                        statementText = Highlight.highlight(statementText, {
+                        statementText = Highlight.highlight(removeComments(statementText, true), {
                           language: 'cql'
                         }).value
                       } catch (e) {}
 
                       // The statement's block UI structure
                       let element = `
-                            <div class="block show" data-id="${blockID}">
-                              <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
-                                <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
-                                  <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
-                                </span>
-                                <div class="text"><pre>${statementText}</pre></div>
-                                <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
-                                  <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
-                                    data-mulang="copy the statement" capitalize-first>
-                                    <ion-icon name="copy-solid"></ion-icon>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="info-badges">
-                                <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
-                                <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
-                              </div>
-                              <div class="output">
-                                <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
-                                ${isOnlyInfo ? statement : ''}
-                              </div>
-                              <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
-                                <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
-                                  data-mulang="download the block" capitalize-first hidden>
-                                  <ion-icon name="download"></ion-icon>
-                                </div>
-                                <div class="download-options">
-                                  <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
-                                    <ion-icon name="csv"></ion-icon>
-                                  </div>
-                                  <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
-                                    <ion-icon name="pdf"></ion-icon>
-                                  </div>
-                                </div>
-                                <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
-                                  data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
-                                  <ion-icon name="copy-solid"></ion-icon>
-                                </div>
-                                <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
-                                  data-mulang="delete the block" capitalize-first>
-                                  <ion-icon name="trash"></ion-icon>
-                                </div>
-                              </div>
-                            </div>`
+                             <div class="block show" data-id="${blockID}">
+                               <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
+                                 <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
+                                   <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
+                                 </span>
+                                 <div class="text"><pre>${statementText}</pre></div>
+                                 <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
+                                   <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
+                                     data-mulang="copy the statement" capitalize-first>
+                                     <ion-icon name="copy-solid"></ion-icon>
+                                   </div>
+                                 </div>
+                               </div>
+                               <div class="info-badges">
+                                 <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
+                                 <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
+                               </div>
+                               <div class="output">
+                                 <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
+                                 ${isOnlyInfo ? statement : ''}
+                               </div>
+                               <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
+                                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
+                                   data-mulang="download the block" capitalize-first hidden>
+                                   <ion-icon name="download"></ion-icon>
+                                 </div>
+                                 <div class="download-options">
+                                   <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                     <ion-icon name="csv"></ion-icon>
+                                   </div>
+                                   <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                     <ion-icon name="pdf"></ion-icon>
+                                   </div>
+                                 </div>
+                                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
+                                   data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
+                                   <ion-icon name="copy-solid"></ion-icon>
+                                 </div>
+                                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
+                                   data-mulang="delete the block" capitalize-first>
+                                   <ion-icon name="trash"></ion-icon>
+                                 </div>
+                               </div>
+                             </div>`
 
                       // Append the block and hide it - till and output is received -
                       sessionContainer.append($(element).show(function() {
@@ -3362,6 +3362,8 @@
                             if (history.length > 50)
                               history.pop()
 
+                            statement = removeComments(statement, true)
+
                             // Add the statement at the very beginning of the array
                             history.unshift(statement)
 
@@ -3420,7 +3422,7 @@
                         // Enable and disable the execution button based set conditions
                         {
                           // Minify the statement
-                          let minifiedStatement = minifyText(statement),
+                          let minifiedStatement = minifyText(removeComments(statement, true)),
                             /**
                              * Whether or not the statement is a CQLSH command
                              * In this case, the statement doesn't need semi colon `;` at the end
@@ -4627,7 +4629,7 @@
                                       throw 0
 
                                     // Show feedback to the user about the script which failed
-                                    let info = `${I18next.t('script "$data" didn\'t return the success code <code>0</code>, but')} <code>${executionResult.status}</code>.`
+                                    let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
 
                                     if (status == -1000)
                                       info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
@@ -5456,7 +5458,7 @@
                             if (!feedback.status || isStartingProcessTerminated) {
                               // Show failure feedback to the user if the process hasn't been terminated
                               if (!isStartingProcessTerminated)
-                                showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the local cluster [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                                showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the local cluster [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` : ''), 'failure')
 
                               // Call the post function
                               startPostProcess()
@@ -6443,7 +6445,7 @@
           throw 0
 
         // Show feedback to the user about not finding the target cluster
-        showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
+        showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with [code]cqlsh.rc[/code] file', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
 
         setTimeout(() => {
           // Enable the `TEST CONNECTION` button
@@ -6706,7 +6708,7 @@
                       throw 0
 
                     // Show feedback to the user about the script which failed
-                    let info = `${I18next.t('script "$data" didn\'t return the success code <code>0</code>, but')} <code>${executionResult.status}</code>.`
+                    let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
 
                     if (status == -1000)
                       info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
@@ -6840,7 +6842,7 @@
              *
              * Define the feedback info
              */
-            let info = `${I18next.t('script "$data" didn\'t return the success code <code>0</code>, but')} <code>${executionResult.status}</code>`
+            let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>`
 
             // `-1000` error code means the app couldn't find the script in the given path
             if (status == -1000)
@@ -7816,7 +7818,7 @@
                            *
                            * Define the feedback info
                            */
-                          let info = `${I18next.t('script "$data" didn\'t return the success code <code>0</code>, but')} <code>${executionResult.status}</code>.`
+                          let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
 
                           // `-1000` error code means the app couldn't find the script in the given path
                           if (status == -1000)
@@ -7964,7 +7966,7 @@
                    *
                    * Define the feedback info
                    */
-                  let info = `${I18next.t('script "$data" didn\'t return the success code <code>0</code>, but')} <code>${executionResult.status}</code>.`
+                  let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
 
                   // `-1000` error code means the app couldn't find the script in the given path
                   if (status == -1000)

@@ -393,6 +393,16 @@ div.toast[toast-id] {
   }
 }
 
+div.toast-body {
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 150px;
+    font-size: 98% !important;
+    display: inline-flex;
+  }
+}
+
 div.terminate-process {
   position: absolute;
   inset: 0;

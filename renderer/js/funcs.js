@@ -3990,3 +3990,19 @@ let isHostUbuntu = () => {
     return false
   }
 }
+
+let removeComments = (statement, trim = false) => {
+  let result = `${statement}`
+
+  try {
+    result = result.replace(/(?=(?:[^\\'\\"]*(?:\\'|\\")[^\\'\\"]*(?:\\'|\\"))*[^\\'\\"]*$)(^|[^"'])\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
+      .replace(/(?=(?:[^\\'\\"]*(?:\\'|\\")[^\\'\\"]*(?:\\'|\\"))*[^\\'\\"]*$)(^|[^"'])(^|[^"'])--.*$/gm, '$1') // Remove `--` comments
+      .replace(/(?=(?:[^\\'\\"]*(?:\\'|\\")[^\\'\\"]*(?:\\'|\\"))*[^\\'\\"]*$)(^|[^"'])(^|[^"'])\/\/.*$/gm, "$1") // Remove `//` comments
+
+    if (trim)
+      result = result.trim()
+
+  } catch (e) {}
+
+  return result
+}

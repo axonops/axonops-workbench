@@ -408,7 +408,7 @@ div.body {
             div.toast-header {
               padding: 5px 0.65rem;
             }
-            
+
             div.toast-header {
               span.toast-type {
                 width: 20px;
@@ -1464,6 +1464,10 @@ div.body {
                       &[info="axonops"] {
                         animation-delay: 0.9s;
                       }
+
+                      &[info="management-tool"] {
+                        animation-delay: 1s;
+                      }
                     }
                   }
                 }
@@ -2191,6 +2195,10 @@ div.body {
 
                   &[info="axonops"] {
                     animation-delay: 0.9s;
+                  }
+
+                  &[info="management-tool"] {
+                    animation-delay: 1s;
                   }
                 }
               }
@@ -4748,7 +4756,23 @@ div.row.for-management-tools-settings {
 
 div#selectContainersManagementTool {
   margin-bottom: 25px;
-  display: none;
+
+  &.show-selected {
+    div.management-tools-hint,
+    ion-icon.management-tools-hint-icon {
+      display: none !important;
+    }
+
+    div.tool.selected {
+      box-shadow: inset 0 0 0 1px rgba(59, 113, 202, 0.80) !important;
+    }
+
+    div.tool:not(.selected) {
+      filter: grayscale(1);
+      opacity: 0.5;
+    }
+    pointer-events: none;
+  }
 }
 /**
 * Import right-to-left style

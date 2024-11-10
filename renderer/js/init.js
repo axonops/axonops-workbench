@@ -1366,24 +1366,41 @@ $(document).on('initialize', () => {
 })
 
 // Send the `loaded` event to the main thread, and show the `About` dialog/modal
-$(document).on('initialize', () => setTimeout(() => {
+$(document).on('initialize', () => {
   /**
    * Handle whether or not the `About` dialog should be shown
    *
    * Get the app's config
    */
-  Modules.Config.getConfig((config) => {
-    // Whether or not the copyright notice is acknowledged already
-    let isCopyrightAcknowledged = config.get('security', 'cassandraCopyrightAcknowledged') == 'true'
+  let getConfigToLoad = () => {
+    setTimeout(() => {
+      Modules.Config.getConfig((config) => {
+        // Whether or not the copyright notice is acknowledged already
+        let isCopyrightAcknowledged = config.get('security', 'cassandraCopyrightAcknowledged') == 'true'
 
-    // If it's not then skip the upcoming code - the app won't be loaded till the checkbox is checked -
-    if (!isCopyrightAcknowledged)
-      return
+        // If it's not then skip the upcoming code - the app won't be loaded till the checkbox is checked -
+        if (!isCopyrightAcknowledged)
+          return getConfigToLoad()
 
-    // Send the event
-    IPCRenderer.send('loaded')
-  })
-}, 2000))
+        // Send the event
+        IPCRenderer.send('initialized')
+      })
+    }, 1500)
+  }
+
+  try {
+    if (OS.platform() != 'darwin')
+      return getConfigToLoad()
+
+    getKey('public', (key) => {
+      getKey('private', (key) => {
+        IPCRenderer.send('pty:cqlsh:initialize')
+
+        IPCRenderer.on('pty:cqlsh:initialize:finished', () => getConfigToLoad())
+      })
+    })
+  } catch (e) {}
+})
 
 // Send the `loaded` event to the main thread, and show the `About` dialog/modal
 $(document).on('initialize', () => setTimeout(() => {

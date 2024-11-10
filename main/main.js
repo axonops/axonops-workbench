@@ -420,29 +420,48 @@ App.on('ready', () => {
       } catch (e) {}
     } catch (e) {}
   })
+  let status = {
+    initialized: false,
+    loaded: false
+  }
 
   // Once a `loaded` event is received from the main view
   IPCMain.on('loaded', () => {
-    // Trigger after 1s of loading the main view
-    setTimeout(() => {
-      // Destroy the intro view/window entirely
-      try {
-        views.intro.destroy()
-      } catch (e) {}
-
-      // Show the main view/window and maximize it
-      try {
-        views.main.show()
-        views.main.maximize()
-      } catch (e) {}
-
-      /**
-       * Send a `shown` status to the main view
-       * This will tell the app to load workspaces
-       */
-      setTimeout(() => views.main.webContents.send('windows-shown'), 100)
-    }, 2000)
+    status.loaded = true
   })
+
+  IPCMain.on('initialized', () => {
+    status.initialized = true
+  })
+
+  let checkStatus = () => {
+    setTimeout(() => {
+      if (!status.loaded || !status.initialized)
+        return checkStatus()
+
+      // Trigger after 1s of loading the main view
+      setTimeout(() => {
+        // Destroy the intro view/window entirely
+        try {
+          views.intro.destroy()
+        } catch (e) {}
+
+        // Show the main view/window and maximize it
+        try {
+          views.main.show()
+          views.main.maximize()
+        } catch (e) {}
+
+        /**
+         * Send a `shown` status to the main view
+         * This will tell the app to load workspaces
+         */
+        setTimeout(() => views.main.webContents.send('windows-shown'), 100)
+      }, 800)
+    }, 900)
+  }
+
+  checkStatus()
 
   // Set the menu bar to `null`; so it won't be created
   Menu.setApplicationMenu(null)
@@ -651,6 +670,8 @@ App.on('second-instance', () => {
         IPCMain
       })
     })
+
+    IPCMain.on('pty:cqlsh:initialize', () => Modules.Pty.initializeCQLSH(views.main))
   }
 
   /**

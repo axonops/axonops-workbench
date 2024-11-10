@@ -403,7 +403,10 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   let [r, g, b] = HEXToRGB(getAttributes(workspaceElement, 'data-color'))
 
                   // Trigger the `getClusters` event for the current workspace
-                  $(document).trigger('getClusters', workspaceID)
+                  $(document).trigger('getClusters', {
+                    workspaceID,
+                    containersManagementTool: config.get('features', 'containersManagementTool') || 'none'
+                  })
 
                   // Add the workspace to the workspaces' switcher in the left side
                   try {

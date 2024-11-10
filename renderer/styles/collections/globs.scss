@@ -870,6 +870,27 @@ ion-icon.axonops-status {
   }
 }
 
+ion-icon.management-tool {
+  vertical-align: middle;
+  margin-left: 5px;
+
+  &[name="docker-plain"] {
+    font-size: 230%;
+    opacity: 0.7;
+  }
+
+  &[name="podman-plain"] {
+    font-size: 190%;
+  }
+
+  &[name="unknown"] {
+    font-size: 300%;
+    transform: scale(0.55);
+    margin-left: -2px;
+    margin-right: -5px;
+  }
+}
+
 .json-literal,
 .json-string {
   color: #e3e3e3;

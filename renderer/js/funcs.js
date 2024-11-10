@@ -4006,3 +4006,20 @@ let removeComments = (statement, trim = false) => {
 
   return result
 }
+
+let updateContainersManagementToolUI = (tool, getConfig = false) => {
+  let update = () => {
+    $(`ion-icon.management-tool[name]`).attr('name', ['docker', 'podman'].some((_tool) => `${tool}` == _tool) ? `${tool}-plain` : 'unknown')
+  }
+
+  if (!getConfig)
+    return update()
+
+  Modules.Config.getConfig((config) => {
+    try {
+      tool = config.get('features', 'containersManagementTool') || 'none'
+    } catch (e) {}
+
+    update()
+  })
+}

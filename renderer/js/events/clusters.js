@@ -21,9 +21,11 @@
    * `getClusters` will remove all clusters in the UI and fetch them all over again from the workspace folder
    * `refreshClusters` will keep the current clusters in the UI, and just add clusters that are not in the UI already
    */
-  $(document).on('getClusters refreshClusters', function(e, workspaceID) {
-    // To determine if the event is `getClusters` or `refreshClusters`
-    const event = e.type,
+  $(document).on('getClusters refreshClusters', function(e, passedData) {
+    // Save the given workspace ID
+    const workspaceID = passedData.workspaceID,
+      // To determine if the event is `getClusters` or `refreshClusters`
+      event = e.type,
       // Point at the element of the associated workspace element in the UI
       workspaceElement = $(`div.workspaces-container div.workspace[data-id="${workspaceID}"]`),
       // Point at the parent of all clusters container
@@ -36,6 +38,9 @@
       // Set the suitable function to get clusters/projects based on the type of the workspace
       moduleGetFunction = !isSandbox ? Modules.Clusters.getClusters : Modules.Docker.getProjects
 
+    let clustersCounter = 0,
+      clustersIndex = 0
+
     // Get all clusters/projects saved in the workspace
     moduleGetFunction(workspaceID).then((clusters) => {
       // Clean the container if the event is `get` clusters
@@ -44,6 +49,8 @@
 
       // Add or remove the `empty` class based on the number of saved clusters
       let areNoClusters = clusters.length <= 0
+
+      clustersCounter = clusters.length
 
       // Toggle the `empty` class
       setTimeout(() => parentClusterContainer.toggleClass('empty', areNoClusters), areNoClusters ? 200 : 10)
@@ -60,6 +67,8 @@
       // Loop through all fetched clusters
       clusters.forEach((cluster, currentIndex) => {
         try {
+          clustersIndex = currentIndex
+
           // If the current workspace is not the docker/sandbox then skip this try-catch block
           if (!isSandbox)
             throw 0
@@ -230,7 +239,8 @@
          * By default, it's empty
          */
         let numOfNodesInfo = '',
-          isAxonOpsInstalled = ''
+          isAxonOpsInstalled = '',
+          managementTool = ''
 
         try {
           // If the current cluster is not a docker/sandbox project then skip this try-catch block
@@ -253,6 +263,19 @@
               <ion-icon name="right-arrow-filled"></ion-icon>
             </div>
             <div class="text"><ion-icon class="axonops-status ${cluster.axonops}" name="${cluster.axonops == true ? 'check' : 'close'}"></ion-icon></div>
+            <div class="_placeholder" hidden></div>
+          </div>`
+
+          let containersManagementTool = passedData.containersManagementTool || 'none'
+
+          containersManagementTool = ['docker', 'podman'].some((tool) => containersManagementTool == tool) ? `${containersManagementTool}-plain` : 'unknown'
+
+          managementTool = `
+          <div class="info" info="management-tool">
+            <div class="title">Tool</span>
+              <ion-icon name="right-arrow-filled"></ion-icon>
+            </div>
+            <div class="text"><ion-icon class="management-tool" name="${containersManagementTool}"></ion-icon></div>
             <div class="_placeholder" hidden></div>
           </div>`
         } catch (e) {}
@@ -286,6 +309,7 @@
                   </div>
                   ${numOfNodesInfo}
                   ${isAxonOpsInstalled}
+                  ${managementTool}
                 </div>
               </div>
               ${!isSandbox ? footerStructure.nonSandbox : footerStructure.sandbox}
@@ -2503,12 +2527,26 @@
                                   let jsonString = '',
                                     // Define the tabulator object if one is created
                                     tabulatorObject = null,
-                                    connectionLost = `${match}`.indexOf('NoHostAvailable:') != -1
+                                    connectionLost = `${match}`.indexOf('NoHostAvailable:') != -1,
+                                    isJSONKeywordFound = statementsNextIdentifier.toLowerCase().indexOf('json') != -1
+
+                                  try {
+                                    if (!isJSONKeywordFound)
+                                      throw 0
+
+                                    outputElement.find('div.sub-actions').attr('hidden', null)
+
+                                    outputElement.find('div.sub-actions').css('width', '30px')
+
+                                    outputElement.find('div.sub-actions').children('div.sub-action[sub-action="download"]').hide()
+
+                                    outputElement.addClass('actions-shown')
+                                  } catch (e) {}
 
                                   // Handle if the content has JSON string
                                   try {
                                     // If the statement is not `SELECT` then don't attempt to render a table
-                                    if (statementIdentifier.toLowerCase().indexOf('select') <= -1 || connectionLost)
+                                    if (statementIdentifier.toLowerCase().indexOf('select') <= -1 || isJSONKeywordFound || connectionLost)
                                       throw 0
 
                                     // Deal with the given output as JSON string by default
@@ -2731,7 +2769,7 @@
                                   match = (new ANSIToHTML()).toHtml(match)
 
                                   // Reaching here and has a `json` keyword in the output means there's no record/row to be shown
-                                  if (match.includes('[json]') || StripTags(match).length <= 0)
+                                  if (StripTags(match).length <= 0)
                                     match = noOutputElement
 
                                   // Set the final content and make sure the localization process is updated
@@ -3378,13 +3416,13 @@
                           }
 
                           // Handle when the statement is `SELECT` but there's no `JSON` after it
-                          try {
-                            // Regex pattern to match 'SELECT' not followed by 'JSON'
-                            let pattern = /((?:^|\;\s*)\bselect\b(?!\s+json\b))/gi
-
-                            // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
-                            statement = statement.replace(pattern, '$1 JSON')
-                          } catch (e) {}
+                          // try {
+                          //   // Regex pattern to match 'SELECT' not followed by 'JSON'
+                          //   let pattern = /((?:^|\;\s*)\bselect\b(?!\s+json\b))/gi
+                          //
+                          //   // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
+                          //   statement = statement.replace(pattern, '$1 JSON')
+                          // } catch (e) {}
 
                           try {
                             statement = statement.trim()
@@ -6020,7 +6058,9 @@
                       projectsContainer.children(`div.cluster[data-workspace-id="${workspaceID}"][data-folder="${getAttributes(clusterElement, 'data-folder')}"]`).remove()
 
                       // Refresh projects' list
-                      $(document).trigger('refreshClusters', workspaceID)
+                      $(document).trigger('refreshClusters', {
+                        workspaceID
+                      })
                     })
 
                     // Skip the upcoming code - no need to execute it if the workspace is the sandbox -
@@ -6060,7 +6100,9 @@
                     $(`div.clusters div.cluster[data-id="${clusterID}"]`).remove()
 
                     // Refresh clusters' list
-                    $(document).trigger('refreshClusters', workspaceID)
+                    $(document).trigger('refreshClusters', {
+                      workspaceID
+                    })
 
                     // Refresh workspaces' list
                     $(document).trigger('getWorkspaces')
@@ -6395,6 +6437,17 @@
       })
     })
     // End of getting all saved clusters/projects
+
+    let innerUpdateContainersManagementTool = () => {
+      setTimeout(() => {
+        if ((clustersIndex + 1) < clustersCounter)
+          return innerUpdateContainersManagementTool()
+
+        setTimeout(() => updateContainersManagementToolUI('unknown', true), 500)
+      }, 100)
+    }
+
+    innerUpdateContainersManagementTool()
 
     /**
      * Define different inner functions that are used only in this event file, and in the current events handler
@@ -8303,7 +8356,9 @@
                 } catch (e) {}
 
                 // Refresh clusters for the currently active workspace
-                $(document).trigger('refreshClusters', workspaceID)
+                $(document).trigger('refreshClusters', {
+                  workspaceID
+                })
 
                 // Get workspaces; to sync with newly added/updated clusters
                 $(document).trigger('getWorkspaces')
@@ -8922,7 +8977,9 @@
     // Clicks the refresh button
     $(`${selector}[action="refresh"] button`).click(function() {
       // Refresh clusters' list
-      $(document).trigger('refreshClusters', getActiveWorkspaceID())
+      $(document).trigger('refreshClusters', {
+        workspaceID: getActiveWorkspaceID()
+      })
 
       // Call the inner function
       clickParentButton(this)

@@ -83,8 +83,10 @@ window.onload = () => {
           setTimeout(() => container.classList.add('show-notice'), 1500)
 
           // If the copyright notice is already acknowledgement then skip this try-catch block
-          if (isAcknowledged)
+          if (isAcknowledged) {
+            setTimeout(() => IPCRenderer.send('loaded'), 1000)
             throw 0
+          }
 
           // Now show the notice
           setTimeout(() => container.classList.add('show-checkbox'), 2000)

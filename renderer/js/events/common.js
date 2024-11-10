@@ -437,7 +437,7 @@
         assistantAIEnabled = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || true,
         loggingEnabled = config.get('security', 'loggingEnabled'),
         sandboxProjectsEnabled = config.get('features', 'sandboxProjects'),
-        containersManagementTool = config.get('features', 'containersManagementTool'),
+        containersManagementTool = config.get('features', 'containersManagementTool') || 'none',
         basicCQLSHEnabled = config.get('features', 'basicCQLSH'),
         checkForUpdates = config.get('updates', 'checkForUpdates'),
         autoUpdate = config.get('updates', 'autoUpdate'),
@@ -818,6 +818,8 @@
 
           // Set the updated settings
           Modules.Config.setConfig(config)
+
+          updateContainersManagementToolUI(containersManagementTool)
 
           // Show feedback to the user
           setTimeout(() => {

@@ -171,7 +171,9 @@
               $(document).trigger(getAttributes($(this), 'data-refresh') == 'false' ? 'getWorkspaces' : 'refreshWorkspaces')
 
               // Refresh clusters
-              $(document).trigger('refreshClusters', 'workspace-sandbox')
+              $(document).trigger('refreshClusters', {
+                workspaceID: 'workspace-sandbox'
+              })
 
               // Click the close button of the dialog
               $(`${dialog}`).find('button.btn-close').click()
@@ -246,11 +248,16 @@
 
   $("#createSandboxProjectDialog")[0].addEventListener('show.mdb.modal', () => {
     Modules.Config.getConfig((config) => {
-      let selectedManagementTool = config.get('features', 'containersManagementTool')
+      let selectedManagementTool = config.get('features', 'containersManagementTool'),
+        isToolSelected = ['docker', 'podman'].some((tool) => selectedManagementTool == `${tool}`)
 
-      $('div#selectContainersManagementTool').toggle(!(['docker', 'podman'].some((tool) => selectedManagementTool == `${tool}`)))
+      $('div#selectContainersManagementTool').toggleClass('show-selected', isToolSelected)
 
       $('div.management-tools.localclusters-dialog div.tool').removeClass('selected')
+
+      $('div.management-tools.localclusters-dialog div.tool[tool="docker"]').toggleClass('selected', isToolSelected && `${selectedManagementTool}` == 'docker')
+
+      $('div.management-tools.localclusters-dialog div.tool[tool="podman"]').toggleClass('selected', isToolSelected && `${selectedManagementTool}` == 'podman')
     })
   })
 }

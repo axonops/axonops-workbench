@@ -2556,7 +2556,7 @@ let encrypt = (publicKey, text) => {
   try {
     // Create a public RSA object
     let public = new NodeRSA(publicKey, 'public', {
-      encryptionScheme: 'pkcs1'
+      encryptionScheme: 'pkcs1_oaep'
     })
 
     // Encrypt the given text
@@ -2591,7 +2591,7 @@ let decrypt = (privateKey, text) => {
   try {
     // Create a private RSA object
     let private = new NodeRSA(privateKey, 'private', {
-      encryptionScheme: 'pkcs1'
+      encryptionScheme: 'pkcs1_oaep'
     })
 
     // Decrypt the given text

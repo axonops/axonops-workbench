@@ -1149,7 +1149,7 @@ $(document).on('initialize', () => {
         // Define the path to all binaries
         let binariesPath = Path.join((extraResourcesPath != null ? Path.join(appPath) : Path.join(__dirname, '..', '..')), 'main', 'bin'),
           // Define binaries to be checked
-          binaries = ['cqlsh-407', 'cqlsh-410', 'keys_generator']
+          binaries = ['cqlsh', 'keys_generator']
 
         // Check their existence
         Terminal.run(`cd "${binariesPath}" && ${OS.platform() == 'win32' ? 'dir' : 'ls'}`, (err, data, stderr) => {
@@ -1162,13 +1162,13 @@ $(document).on('initialize', () => {
               throw 0
 
             // If the host is Windows then change the binary call format
-            let binCall = (OS.platform() == 'win32') ? 'cqlsh-407.exe' : './cqlsh-407',
+            let binCall = (OS.platform() == 'win32') ? 'cqlsh.exe' : './cqlsh',
               // Define the cqlsh tool's directory
-              binDirectory = `&& cd "cqlsh-407" && `
+              binDirectory = `&& cd "cqlsh" && `
 
             // Switch to the single-file mode
             try {
-              if (!FS.lstatSync(Path.join(binariesPath, `cqlsh-407`)).isDirectory())
+              if (!FS.lstatSync(Path.join(binariesPath, `cqlsh`)).isDirectory())
                 binDirectory = '&&'
             } catch (e) {}
 

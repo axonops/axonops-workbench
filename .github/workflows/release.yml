@@ -78,7 +78,7 @@ jobs:
       - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
         run: |
           mkdir -p main/bin
-          for binary in cqlsh-410 cqlsh-407 keys_generator; do
+          for binary in cqlsh keys_generator; do
             curl -fL ${CQLSH_GITHUB_URL}/${CQLSH_BUILD_VERSION}/${binary}-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
             mv main/bin/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}
             mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
@@ -86,7 +86,7 @@ jobs:
           sed -i.bak "s/%CQLSH_VERSION%/$CQLSH_BUILD_VERSION/g" renderer/views/index.html
           rm -f renderer/views/index.html.bak
         env:
-          CQLSH_BUILD_VERSION: "0.13.2"
+          CQLSH_BUILD_VERSION: "0.14.0"
           CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download' }}"
 
       - name: Setup Python v3.12

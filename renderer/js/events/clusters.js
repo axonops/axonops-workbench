@@ -1937,13 +1937,27 @@
 
                                 // Send a request to the main thread regards pop-up a menu
                                 IPCRenderer.send('show-context-menu', JSON.stringify([{
-                                  label: I18next.capitalize(I18next.t('get CQL description')),
-                                  click: `() => views.main.webContents.send('cql-desc:get', {
-                                        clusterID: '${getAttributes(clusterElement, 'data-id')}',
-                                        scope: '${scope}',
-                                        tabID: '${cqlDescriptionContentID}',
-                                        nodeID: '${getAttributes(clickedNode, 'id')}'
-                                      })`
+                                  label: I18next.capitalizeFirstLetter(I18next.t('get CQL description')),
+                                  submenu: [{
+                                      label: I18next.capitalizeFirstLetter(I18next.t('display in the work area')),
+                                      click: `() => views.main.webContents.send('cql-desc:get', {
+                                            clusterID: '${getAttributes(clusterElement, 'data-id')}',
+                                            scope: '${scope}',
+                                            tabID: '${cqlDescriptionContentID}',
+                                            nodeID: '${getAttributes(clickedNode, 'id')}'
+                                          })`
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('save it as a text file')),
+                                      click: `() => views.main.webContents.send('cql-desc:get', {
+                                            clusterID: '${getAttributes(clusterElement, 'data-id')}',
+                                            scope: '${scope}',
+                                            tabID: '${cqlDescriptionContentID}',
+                                            nodeID: '${getAttributes(clickedNode, 'id')}',
+                                            saveAsFile: true
+                                          })`
+                                    },
+                                  ]
                                 }]))
                               })
 
@@ -9085,6 +9099,52 @@
 
         // Update the flag
         isDescriptionFetched = true
+
+        try {
+          if (data.saveAsFile == undefined)
+            throw 0
+
+          // keyspace_cyclingtable_products_2024-11-14_203041
+          let descriptionScope = data.scope.replace(/>/gm, '-').replace('table-', '-table-'),
+            descriptionFileName = Sanitize(`${descriptionScope}-${formatTimestamp(new Date().getTime(), true)}.cql`).replace(/\s+/gm, '_') || 'cql_desc.cql'
+
+          let dialogID = getRandomID(5),
+            dialogData = {
+              id: dialogID,
+              title: I18next.capitalize(I18next.t('save CQL description')),
+              properties: ['showHiddenFiles', 'createDirectory', 'promptToCreate'],
+              defaultPath: descriptionFileName,
+              type: 'showSaveDialog'
+            }
+
+          IPCRenderer.send('dialog:create', dialogData)
+
+          IPCRenderer.on(`dialog:${dialogID}`, (_, path) => {
+            path = `${path}`
+
+            try {
+              if (path.length <= 0)
+                throw 0
+
+              if (!pathIsAccessible(Path.join(path, '..'))) {
+                showToast(I18next.capitalize(I18next.t('save CQL description')), I18next.capitalizeFirstLetter(I18next.t('the selected path is inaccessible and can\'t be used, please make sure you have read/write permissions')) + '.', 'failure')
+
+                throw 0
+              }
+
+              let descriptionSize = ByteSize(ValueSize(description))
+
+              FS.writeFile(path, description, (err) => {
+                if (err)
+                  return showToast(I18next.capitalize(I18next.t('save CQL description')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to save the CQL description')) + `. ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${err}` + '.', 'failure')
+
+                showToast(I18next.capitalize(I18next.t('save CQL description')), I18next.capitalizeFirstLetter(I18next.replaceData('the cql description has been successfully saved as a text file, the size is $data', [descriptionSize])) + '.', 'success')
+              })
+            } catch (e) {}
+          })
+
+          return
+        } catch (e) {}
 
         // The CQL description's tab's container is not empty now, and make sure to clear the empty the search input field
         cqlDescriptionsTabContent.removeClass('_empty').find('input').val('').trigger('input')

@@ -913,7 +913,20 @@ App.on('second-instance', () => {
    */
   {
     // Define a variable to hold the last request's timestamp
-    let lastRequestTimestamp = 0
+    let lastRequestTimestamp = 0,
+      handleItems = (items) => {
+        for (let item of items) {
+          if (item.submenu != undefined)
+            handleItems(item.submenu)
+
+          try {
+            // Use `eval` to convert the click's content from string format to actual function
+            try {
+              item.click = eval(item.click)
+            } catch (e) {}
+          } catch (e) {}
+        }
+      }
 
     // Received a request to show a right-click context-menu
     IPCMain.on('show-context-menu', (_, items) => {
@@ -935,6 +948,9 @@ App.on('second-instance', () => {
 
       // Loop through each menu item
       for (let item of items) {
+        if (item.submenu != undefined)
+          handleItems(item.submenu)
+
         try {
           // Use `eval` to convert the click's content from string format to actual function
           try {

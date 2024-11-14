@@ -86,7 +86,7 @@ jobs:
           sed -i.bak "s/%CQLSH_VERSION%/$CQLSH_BUILD_VERSION/g" renderer/views/index.html
           rm -f renderer/views/index.html.bak
         env:
-          CQLSH_BUILD_VERSION: "0.14.0"
+          CQLSH_BUILD_VERSION: "0.14.1"
           CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download' }}"
 
       - name: Setup Python v3.12

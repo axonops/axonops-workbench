@@ -2976,6 +2976,12 @@ div.tab-content {
                     background: var(--mdb-info);
                   }
                 }
+
+                div.sub-output-content {
+                  pre {
+                    white-space: pre-wrap;
+                  }
+                }
               }
 
               div.executing {
@@ -3178,6 +3184,8 @@ div.tab-content {
         div.container-footer {
           height: 100px;
           margin-top: 20px;
+          box-shadow: 0 -10px 20px 10px #17181a;
+          position: relative;
 
           div.top {
             display: flex;
@@ -3966,6 +3974,10 @@ div.dropdown[for-select] {
   bottom: 46px;
   margin-bottom: -21.59px;
   z-index: 1;
+
+  &.adjust {
+    bottom: 70px;
+  }
 
   button {
     opacity: 0;

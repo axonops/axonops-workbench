@@ -626,6 +626,7 @@
                     cqlshSessionContentID,
                     cqlshSessionSearchInputID,
                     cqlshSessionStatementInputID,
+                    executeStatementBtnID,
                     bashSessionContentID,
                     terminalContainerID,
                     terminalBashContainerID,
@@ -655,7 +656,7 @@
                     // Restart and close the work area
                     restartWorkareaBtnID,
                     closeWorkareaBtnID
-                  ] = getRandomID(20, 30)
+                  ] = getRandomID(20, 31)
 
                   /**
                    * Define tabs that shown only to sandbox projects
@@ -909,7 +910,7 @@
                                        </div>
                                      </div>
                                      <div class="execute">
-                                       <button class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
+                                       <button id="_${executeStatementBtnID}" class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
                                          <ion-icon name="send"></ion-icon>
                                          <l-reuleaux size="20" stroke="2" stroke-length="0.25" bg-opacity="0.25" speed="0.8" color="white"></l-reuleaux>
                                        </button>
@@ -1863,6 +1864,10 @@
                               // Disable the selection feature of a tree node
                               jsTreeObject.disableSelection()
 
+                              try {
+                                jsTreeObject.unbind('contextmenu')
+                              } catch (e) {}
+
                               /**
                                * Create a listener to the event `contextmenu`
                                * This event `contextmenu` is customized for the JSTree plugin
@@ -1935,8 +1940,15 @@
                                   scope += `index>${targetName}`
                                 } catch (e) {}
 
-                                // Send a request to the main thread regards pop-up a menu
-                                IPCRenderer.send('show-context-menu', JSON.stringify([{
+                                try {
+                                  $('#actionsKeyspace').attr('data-keyspaces', `${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}`)
+                                } catch (e) {}
+
+                                try {
+                                  $('#generalPurposeDialog').attr('data-keyspacename', `${targetName}`)
+                                } catch (e) {}
+
+                                let contextMenu = [{
                                   label: I18next.capitalizeFirstLetter(I18next.t('get CQL description')),
                                   submenu: [{
                                       label: I18next.capitalizeFirstLetter(I18next.t('display in the work area')),
@@ -1958,7 +1970,75 @@
                                           })`
                                     },
                                   ]
-                                }]))
+                                }]
+
+                                try {
+                                  if (nodeType != 'cluster' && nodeType != 'keyspace')
+                                    throw 0
+
+                                  contextMenu = contextMenu.concat([{
+                                      type: 'separator'
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('actions')),
+                                      enabled: false
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('create keyspace')),
+                                      action: 'create',
+                                      click: `() => views.main.webContents.send('create-keyspace', {
+                                        datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`
+                                    }
+                                  ])
+                                } catch (e) {}
+
+                                try {
+                                  if (nodeType != 'keyspace' || clickedNode.attr('data-is-virtual') != null)
+                                    throw 0
+
+                                  let keyspaceInfo = metadata.keyspaces.find((keyspace) => keyspace.name == targetName),
+                                    isSystemKeyspace = Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == keyspaceInfo.name)
+
+                                  try {
+                                    $('#actionsKeyspace').attr('data-keyspace-info', `${JSON.stringify(keyspaceInfo)}`)
+                                  } catch (e) {}
+
+                                  let replicationStrategy = JSON.parse(repairJSON(`${keyspaceInfo.replication_strategy}`) || `{}`)
+
+                                  if (replicationStrategy.class == 'LocalStrategy' && isSystemKeyspace)
+                                    throw 0
+
+                                  contextMenu = contextMenu.concat([{
+                                      label: I18next.capitalizeFirstLetter(I18next.t('alter keyspace')),
+                                      action: 'alter',
+                                      click: `() => views.main.webContents.send('alter-keyspace', {
+                                        datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('drop keyspace')),
+                                      action: 'drop',
+                                      click: `() => views.main.webContents.send('drop-keyspace', {
+                                        tabID: '_${cqlshSessionContentID}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`
+                                    }
+                                  ])
+
+                                  if (isSystemKeyspace)
+                                    contextMenu = contextMenu.filter((item) => item.action != 'drop')
+                                } catch (e) {}
+
+                                // Send a request to the main thread regards pop-up a menu
+                                IPCRenderer.send('show-context-menu', JSON.stringify(contextMenu))
                               })
 
                               // Handle the search feature in the metadata tree view
@@ -2226,18 +2306,24 @@
 
                         // Get the identifiers detected in the statements
                         let statementsIdentifiers = [],
-                          statementsNextIdentifiers = []
+                          statementsStNextIdentifiers = [],
+                          statementsNdNextIdentifiers = []
 
                         try {
                           // Get the detected identifiers
                           statementsIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[(.*?)\]/i)[1].split(',')
-
-                          statementsNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[(.*?)\]/i)[1].split(',')
-
                           // Manipulate them
                           statementsIdentifiers = statementsIdentifiers.map((identifier) => identifier.trim())
+                        } catch (e) {}
 
-                          statementsNextIdentifiers = statementsNextIdentifiers.map((identifier) => identifier.trim())
+                        try {
+                          statementsStNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[(.*?)\]/i)[1].split(',')
+                          statementsStNextIdentifiers = statementsStNextIdentifiers.map((identifier) => identifier.trim())
+                        } catch (e) {}
+
+                        try {
+                          statementsNdNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[.*?\]\[(.*?)\]/i)[1].split(',')
+                          statementsNdNextIdentifiers = statementsNdNextIdentifiers.map((identifier) => identifier.trim())
                         } catch (e) {}
 
                         // Handle if the statement's execution process has stopped
@@ -2414,7 +2500,8 @@
 
                               // Point at the current identifier
                               let statementIdentifier = statementsIdentifiers[loopIndex],
-                                statementsNextIdentifier = statementsNextIdentifiers[loopIndex]
+                                statementsStNextIdentifier = statementsStNextIdentifiers[loopIndex],
+                                statementsNdNextIdentifier = statementsNdNextIdentifiers[loopIndex]
 
                               // Avoid infinite loops with zero-width matches
                               if (matches.index === statementOutputRegex.lastIndex)
@@ -2434,7 +2521,7 @@
                                 try {
                                   if (['alter', 'create', 'drop'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound)) {
                                     // Make sure the statement is not about specific actions
-                                    if (['role', 'user'].some((identifier) => statementsNextIdentifier.toLowerCase().indexOf(identifier) != -1))
+                                    if (['role', 'user'].some((identifier) => statementsStNextIdentifier.toLowerCase().indexOf(identifier) != -1))
                                       throw 0
 
                                     // Make sure to clear the previous timeout
@@ -2452,6 +2539,13 @@
                                     throw 0
 
                                   noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span> - <span mulang="no data found" capitalize-first></span>.</no-output>'
+                                } catch (e) {}
+
+                                try {
+                                  if (`${statementIdentifier}`.toLowerCase() != 'begin' || !([statementsStNextIdentifier, statementsNdNextIdentifier].some((identifier) => `${identifier}`.toLowerCase() == 'batch')))
+                                    throw 0
+
+                                  noOutputElement = '<no-output>Batch <span mulang="CQL statement executed" capitalize-first></span>.</no-output>'
                                 } catch (e) {}
 
                                 let isOutputHighlighted = false
@@ -2542,7 +2636,7 @@
                                     // Define the tabulator object if one is created
                                     tabulatorObject = null,
                                     connectionLost = `${match}`.indexOf('NoHostAvailable:') != -1,
-                                    isJSONKeywordFound = statementsNextIdentifier.toLowerCase().indexOf('json') != -1
+                                    isJSONKeywordFound = statementsStNextIdentifier.toLowerCase().indexOf('json') != -1
 
                                   try {
                                     if (!isJSONKeywordFound)
@@ -9286,10 +9380,13 @@
           setTimeout(() => {
             // Create an editor for the description
             let descriptionEditor = monaco.editor.create($(`#_${editorContainerID}`)[0], {
-              value: OS.EOL + OS.EOL + `${description}`,
+              value: `${description}`,
               language: 'sql', // Set the content's language
               minimap: {
                 enabled: true
+              },
+              padding: {
+                top: 35
               },
               readOnly: true,
               glyphMargin: false,
@@ -9350,10 +9447,438 @@
         }))
       })
     })
+
+    IPCRenderer.on('create-keyspace', (_, data) => {
+      let actionsKeyspaceModal = getElementMDBObject($('#actionsKeyspace'), 'Modal')
+
+      $('#actionsKeyspace').find('h5.modal-title').children('span').attr('mulang', 'create keyspace').text(I18next.capitalize(I18next.t('create keyspace')))
+
+      $('#actionsKeyspace').attr('data-state', null)
+
+      $('input#keyspaceReplicationStrategy').attr('data-datacenters', `${data.datacenters}`)
+
+      $('button#executeActionStatement').attr({
+        'data-tab-id': `${data.tabID}`,
+        'data-textarea-id': `${data.textareaID}`,
+        'data-btn-id': `${data.btnID}`
+      })
+
+      $('input#keyspaceReplicationStrategy').attr('disabled', null).css('background-color', 'inherit')
+
+      $('input#keyspaceReplicationStrategy').parent().children('ion-icon.trailing').show()
+
+      $('input#keyspaceName').val('').trigger('input')
+
+      $('input#keyspaceReplicationStrategy').val('NetworkTopologyStrategy').trigger('input')
+
+      $('input#keyspaceReplicationFactorSimpleStrategy').val(1).trigger('input')
+
+      $('input#keyspaceDurableWrites').prop('checked', true)
+
+      $('#actionsKeyspace').removeClass('show-editor')
+
+      actionsKeyspaceModal.show()
+    })
+
+    IPCRenderer.on('alter-keyspace', (_, data) => {
+      let actionsKeyspaceModal = getElementMDBObject($('#actionsKeyspace'), 'Modal'),
+        metadataInfo = JSON.parse(repairJSON($('#actionsKeyspace').attr('data-keyspace-info')))
+
+      try {
+        metadataInfo.replication_strategy = JSON.parse(repairJSON(metadataInfo.replication_strategy))
+      } catch (e) {}
+
+      $('#actionsKeyspace').find('h5.modal-title').children('span').attr('mulang', 'alter keyspace').text(I18next.capitalize(I18next.t('alter keyspace')))
+
+      $('#actionsKeyspace').attr('data-state', 'alter')
+
+      $('input#keyspaceReplicationStrategy').attr('data-datacenters', `${data.datacenters}`)
+
+      $('button#executeActionStatement').attr({
+        'data-tab-id': `${data.tabID}`,
+        'data-textarea-id': `${data.textareaID}`,
+        'data-btn-id': `${data.btnID}`
+      })
+
+      $('input#keyspaceName').val(`${metadataInfo.name}`).trigger('input')
+
+      $('input#keyspaceReplicationStrategy').val(`${metadataInfo.replication_strategy.class}`).trigger('input')
+
+      try {
+        if (`${metadataInfo.replication_strategy.class}` != 'SimpleStrategy')
+          throw 0
+
+        $('#actionsKeyspace').attr('data-rf', `${metadataInfo.replication_strategy.replication_factor}`)
+
+        $('input#keyspaceReplicationFactorSimpleStrategy').val(metadataInfo.replication_strategy.replication_factor).trigger('input')
+
+        $('#actionsKeyspace').attr('data-datacenters-rf', null)
+
+        $('input#keyspaceReplicationStrategy').attr('disabled', null).css('background-color', 'inherit')
+
+        $('input#keyspaceReplicationStrategy').parent().children('ion-icon.trailing').show()
+      } catch (e) {}
+
+      try {
+        if (`${metadataInfo.replication_strategy.class}` != 'NetworkTopologyStrategy')
+          throw 0
+
+        $('#actionsKeyspace').attr('data-datacenters-rf', `${JSON.stringify(metadataInfo.replication_strategy)}`)
+
+        $('#actionsKeyspace').attr('data-rf', null)
+
+        $('input#keyspaceReplicationStrategy').attr('disabled', '').css('background-color', '')
+
+        $('input#keyspaceReplicationStrategy').parent().children('ion-icon.trailing').hide()
+      } catch (e) {}
+
+      $('input#keyspaceDurableWrites').prop('checked', metadataInfo.durable_writes)
+
+      $('#actionsKeyspace').removeClass('show-editor')
+
+      actionsKeyspaceModal.show()
+    })
+
+    IPCRenderer.on('drop-keyspace', (_, data) => {
+      let keyspaceName = $('#generalPurposeDialog').attr('data-keyspacename')
+
+      if (minifyText(keyspaceName).length <= 0)
+        return
+
+      openDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the keyspace [b]$data[/b]? This action can't be undo`, [keyspaceName])) + '.', (confirmed) => {
+        if (!confirmed)
+          return
+
+        try {
+          getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
+        } catch (e) {}
+
+        let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+
+        try {
+          activeWorkarea.find('div.terminal-container').hide()
+          activeWorkarea.find('div.interactive-terminal-container').show()
+        } catch (e) {}
+
+        try {
+          let statementInputField = $(`textarea#${data.textareaID}`)
+          statementInputField.val(`DROP KEYSPACE ${keyspaceName};`)
+          statementInputField.trigger('input').focus()
+          AutoSize.update(statementInputField[0])
+        } catch (e) {}
+
+        try {
+          setTimeout(() => $(`button#${data.btnID}`).click(), 100)
+        } catch (e) {}
+      })
+    })
   }
 
   // Handle the request of closing a cluster's work area
   {
     IPCRenderer.on('workarea:close', (_, data) => $(`div.btn[data-id="${data.btnID}"]`).trigger('click', false))
+  }
+
+  {
+    setTimeout(() => {
+      // Define the scroll value, by default, the current scroll value is `0` - at the top of the dialog -
+      let scrollValue = 0,
+        dialogElement = $(`div.modal#actionsKeyspace`),
+        actionEditor = monaco.editor.getEditors().find((editor) => dialogElement.find('div.action-editor div.editor div.monaco-editor').is(editor.getDomNode())),
+        updateActionStatus = () => {
+          let replicationStrategy = $('input#keyspaceReplicationStrategy').val(),
+            keyspaceName = $('input#keyspaceName').val(),
+            durableWrites = $('input#keyspaceDurableWrites').prop('checked'),
+            replication = {},
+            isAlterState = $('div.modal#actionsKeyspace').attr('data-state')
+
+          isAlterState = isAlterState != null && isAlterState == 'alter'
+
+          try {
+            if (dialogElement.find('.is-invalid:not(.ignore-invalid)').length <= 0)
+              throw 0
+
+            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+          } catch (e) {}
+
+          try {
+            if (minifyText(replicationStrategy) != 'simplestrategy')
+              throw 0
+
+            let replicationFactor = $('input#keyspaceReplicationFactorSimpleStrategy').val()
+
+            replication.class = 'SimpleStrategy'
+            replication.replication_factor = replicationFactor
+          } catch (e) {}
+
+          try {
+            if (minifyText(replicationStrategy) != 'networktopologystrategy')
+              throw 0
+
+            let replicationFactor = $('input#keyspaceReplicationFactorSimpleStrategy').val()
+
+            replication.class = 'NetworkTopologyStrategy'
+
+            let dataCenters = dialogElement.find('div[for-strategy="NetworkTopologyStrategy"]').children('div.data-centers').find('div.data-center')
+
+            for (let dataCenter of dataCenters) {
+              dataCenter = $(dataCenter)
+              let rf = dataCenter.find('input[type="number"]').val()
+
+              if (rf <= 0)
+                continue
+
+              replication[dataCenter.attr('data-datacenter')] = rf
+            }
+          } catch (e) {}
+
+          let statement = `${isAlterState ? 'ALTER' : 'CREATE'} KEYSPACE ${keyspaceName}` + OS.EOL + `WITH replication = ${JSON.stringify(replication).replace(/"/gm, "'")}` + OS.EOL + `AND durable_writes = ${durableWrites};`
+
+          try {
+            actionEditor.setValue(statement)
+          } catch (e) {}
+        }
+
+      $('input#keyspaceName').on('input', function() {
+        let keyspaces = [],
+          keyspaceName = $(this).val(),
+          isNameDuplicated = false,
+          isNameInvalid = false,
+          invalidFeedback = $(this).parent().children('div.invalid-feedback'),
+          isAlterState = $('div.modal#actionsKeyspace').attr('data-state')
+
+        isAlterState = isAlterState != null && isAlterState == 'alter'
+
+
+        $(this).attr('disabled', isAlterState ? '' : null)
+        $(this).parent().toggleClass('invalid-warning', isAlterState)
+        $(this).toggleClass('is-invalid ignore-invalid', isAlterState)
+
+        try {
+          if (!isAlterState)
+            throw 0
+
+          invalidFeedback.find('span').attr('mlang', 'the keyspace name can\'t be altered').text(I18next.capitalizeFirstLetter(I18next.t('the keyspace name can\'t be altered')))
+
+          dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+
+          return
+        } catch (e) {}
+
+
+        try {
+          keyspaces = JSON.parse($('#actionsKeyspace').attr('data-keyspaces'))
+        } catch (e) {}
+
+        try {
+          if (keyspaces.length <= 0)
+            throw 0
+
+          isNameDuplicated = keyspaces.some((keyspace) => `${keyspace}` == `${keyspaceName}`)
+
+          if (isAlterState && isNameDuplicated && (keyspaceName == $('div.modal#actionsKeyspace').attr('data-keyspacename')))
+            isNameDuplicated = false
+
+          if (isNameDuplicated)
+            invalidFeedback.find('span').attr('mlang', 'provided name is already in use').text(I18next.capitalizeFirstLetter(I18next.t('provided name is already in use')))
+        } catch (e) {}
+
+        try {
+          if (`${keyspaceName}`.length <= 0)
+            throw 0
+
+          isNameInvalid = `${keyspaceName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
+
+          if (isNameInvalid)
+            invalidFeedback.find('span').attr('mlang', 'provided name is invalid, only alphanumeric and underscores are allowed').text(I18next.capitalizeFirstLetter(I18next.t('provided name is invalid, only alphanumeric and underscores are allowed')))
+        } catch (e) {}
+
+        $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid)
+
+        dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 ? '' : null)
+
+        updateActionStatus()
+      })
+
+      $('input#keyspaceReplicationStrategy').on('input', function() {
+        let replicationStrategy = $(this).val(),
+          isAlterState = $('div.modal#actionsKeyspace').attr('data-state')
+
+        isAlterState = isAlterState != null && isAlterState == 'alter'
+
+        setTimeout(() => {
+          dialogElement.find('div[for-strategy]').hide()
+
+          let networkTopologyContainer = dialogElement.find('div[for-strategy="NetworkTopologyStrategy"]'),
+            simpleStrategyContainer = dialogElement.find('div[for-strategy="SimpleStrategy"]'),
+            dataCentersContainer = networkTopologyContainer.children('div.data-centers'),
+            dataCenters = []
+
+          try {
+            dataCenters = JSON.parse($(this).attr('data-datacenters'))
+          } catch (e) {}
+
+          $(this).parent().find('div.invalid-feedback span[mulang][capitalize-first]').attr('mulang', 'SimpleStrategy is intended for development purposes only').text(I18next.capitalizeFirstLetter(I18next.t('SimpleStrategy is intended for development purposes only')))
+
+          $(this).parent().css('margin-bottom', '50px')
+
+          try {
+            if (minifyText(replicationStrategy) == minifyText('simplestrategy'))
+              throw 0
+
+            $(this).removeClass('is-invalid')
+
+            $('input#keyspaceReplicationFactorSimpleStrategy').val(1).trigger('input')
+
+            try {
+              dataCentersContainer.children('div.row.data-center').remove()
+
+              let dataCentersRF = {}
+
+              try {
+                if (isAlterState)
+                  dataCentersRF = JSON.parse($('div.modal#actionsKeyspace').attr('data-datacenters-rf'))
+              } catch (e) {}
+
+              for (let datacenter of dataCenters) {
+                let replicationFactor = parseInt(dataCentersRF[datacenter.datacenter]) || 0
+
+                try {
+                  if (!isAlterState || dataCenters.length > 1 || dataCentersRF.class == 'NetworkTopologyStrategy')
+                    throw 0
+
+                  replicationFactor = parseInt($('div.modal#actionsKeyspace').attr('data-rf')) || 0
+                } catch (e) {}
+
+                let element = `
+                    <div class="data-center row" data-datacenter="${datacenter.datacenter}">
+                      <div class="col-md-7">${datacenter.datacenter}: ${datacenter.address}</div>
+                      <div class="col-md-5">
+                        <div class="form-outline form-white">
+                          <input type="number" class="form-control" style="margin-bottom: 0;" value="${replicationFactor}" min="0">
+                          <label class="form-label">
+                            <span mulang="replication factor" capitalize></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>`
+                dataCentersContainer.append($(element).show(function() {
+                  let dataCenter = $(this)
+
+                  setTimeout(() => {
+                    dataCenter.find('input').each(function() {
+                      getElementMDBObject($(this))
+                    })
+
+                    dataCenter.find('input[type="number"]').on('input', function() {
+                      let rf = parseInt($(this).val()),
+                        isInvalid = isNaN(rf) || rf < 0
+
+                      $(this).toggleClass('is-invalid', isInvalid)
+
+                      if (minifyText($('input#keyspaceName').val()).length <= 0)
+                        return
+
+                      dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+                    })
+                  })
+
+                  setTimeout(() => Modules.Localization.applyLanguageSpecific(dataCenter.find('span[mulang], [data-mulang]')))
+                }))
+              }
+            } catch (e) {}
+
+            networkTopologyContainer.show()
+
+            updateActionStatus()
+
+            return
+          } catch (e) {}
+
+          setTimeout(() => $(this).addClass('is-invalid'), 250)
+
+          try {
+            if (!isAlterState)
+              throw 0
+
+            $('input#keyspaceReplicationFactorSimpleStrategy').val(parseInt($('div.modal#actionsKeyspace').attr('data-rf')) || 1)
+
+            $(`div.modal#actionsKeyspace`).find('div.data-center').find('input[type="number"]').val(0).trigger('input')
+
+            if (dataCenters.length > 1) {
+              $(this).parent().find('div.invalid-feedback span[mulang][capitalize-first]').attr('mulang', 'avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully').text(I18next.capitalizeFirstLetter(I18next.t('avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully')))
+
+              $(this).parent().css('margin-bottom', '70px')
+            }
+          } catch (e) {}
+
+          dialogElement.find('div[for-strategy="SimpleStrategy"]').show()
+
+          updateActionStatus()
+        }, 150)
+      })
+
+      $('input#keyspaceReplicationFactorSimpleStrategy').on('input', function() {
+        let rf = parseInt($(this).val()),
+          isInvalid = isNaN(rf) || rf < 1
+
+        $('input#keyspaceReplicationFactorSimpleStrategy').toggleClass('is-invalid', isInvalid)
+
+        if (minifyText($('input#keyspaceName').val()).length <= 0)
+          return
+
+        dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+      })
+
+      // Clicks the `SWITCH TO EDITOR` button
+      dialogElement.find('button.switch-editor').click(function() {
+        // Point at the dialog's content element
+        let dialogBody = dialogElement.find('div.modal-body'),
+          // Determine if the editor is visible/shown or not
+          editorShown = dialogElement.hasClass('show-editor')
+
+        // Add the `show-editor` class if it is not added, otherwise it'll be removed
+        dialogElement.toggleClass('show-editor', !editorShown)
+
+        // Update the current scroll value if the editor is not shown already, otherwise, keep the current saved value
+        scrollValue = !editorShown ? dialogBody[0].scrollTop : scrollValue
+
+        // Either scroll to the last saved position if the editor is visible, or scroll to the top of the dialog for the editor before showing it
+        dialogBody[0].scrollTo(0, editorShown ? scrollValue : 0)
+
+        // Update the editor's layout
+        $(window.visualViewport).trigger('resize')
+
+        updateActionStatus()
+      })
+
+      $('button#executeActionStatement').click(function() {
+        try {
+          getElementMDBObject($(`a.nav-link.btn[href="#${$(this).attr('data-tab-id')}"]`), 'Tab').show()
+        } catch (e) {}
+
+        let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+
+        try {
+          activeWorkarea.find('div.terminal-container').hide()
+          activeWorkarea.find('div.interactive-terminal-container').show()
+        } catch (e) {}
+
+        try {
+          let statementInputField = $(`textarea#${$(this).attr('data-textarea-id')}`)
+          statementInputField.val(actionEditor.getValue())
+          statementInputField.trigger('input').focus()
+          AutoSize.update(statementInputField[0])
+        } catch (e) {}
+
+        try {
+          setTimeout(() => $(`button#${$(this).attr('data-btn-id')}`).click(), 100)
+        } catch (e) {}
+
+        try {
+          setTimeout(() => getElementMDBObject($('#actionsKeyspace'), 'Modal').hide(), 50)
+        } catch (e) {}
+      })
+    }, 5000)
   }
 }

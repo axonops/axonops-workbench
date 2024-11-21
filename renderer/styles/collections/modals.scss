@@ -424,18 +424,6 @@ div.modal {
       }
     }
 
-    div.modal-footer {
-      display: block;
-
-      div.float-left {
-        float: left;
-      }
-
-      div.float-right {
-        float: right;
-      }
-    }
-
     &.test-connection {
       div.modal-content {
         div.modal-body {
@@ -1189,6 +1177,91 @@ div.modal#appUpdate {
           margin: auto;
         }
       }
+    }
+  }
+}
+
+div.modal#actionsKeyspace {
+  div.action-editor {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    z-index: 2;
+    opacity: 0;
+    pointer-events: none;
+
+    div.editor {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+    }
+  }
+
+  &.show-editor {
+    div.modal-body {
+      overflow: hidden;
+
+      div.action-editor {
+        pointer-events: all;
+        opacity: 1;
+      }
+    }
+  }
+
+  div[for-strategy="SimpleStrategy"] {
+    display: none;
+  }
+
+  div[for-strategy="NetworkTopologyStrategy"] {
+    div.data-centers {
+      margin-top: 10px;
+      margin-bottom: 20px;
+
+      div.data-center {
+        background: #353535;
+        padding: 8px 9px;
+        border-radius: 7px;
+        margin-bottom: 10px;
+        font-size: 90%;
+        display: flex;
+        flex-direction: row;
+        align-content: center;
+        flex-wrap: nowrap;
+        align-items: center;
+
+        div.col-md-7 {
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
+        }
+
+        div.col-md-5 {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          align-content: center;
+          align-items: center;
+          justify-content: flex-start;
+
+          div.range {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}
+
+div.modal {
+  div.modal-footer {
+    display: block;
+
+    div.float-left {
+      float: left;
+    }
+
+    div.float-right {
+      float: right;
     }
   }
 }

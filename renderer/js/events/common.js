@@ -871,7 +871,7 @@
   // Show/hide the languages' list once the associated input is focused on/out
   setTimeout(() => {
     // Define the app's settings model selector path
-    let dialog = 'div.modal#appSettings'
+    let dialog = 'div.modal#appSettings, div.modal#actionsKeyspace'
 
     // Loop through the dropdown element of each select element
     $(`${dialog}`).find('div.dropdown[for-select]').each(function() {
@@ -880,8 +880,21 @@
         // Point at the associated input field
         input = $(`${dialog}`).find(`input#${$(this).attr('for-select')}`)
 
+
       // Once the associated select element is being focused then show the dropdown element and vice versa
-      input.on('focus', () => selectDropdown.show()).on('focusout', () => setTimeout(() => selectDropdown.hide(), 100))
+      input.on('focus', () => {
+        try {
+          input.parent().find('div.invalid-feedback').addClass('transparent-color')
+        } catch (e) {}
+
+        selectDropdown.show()
+      }).on('focusout', () => setTimeout(() => {
+        try {
+          input.parent().find('div.invalid-feedback').removeClass('transparent-color')
+        } catch (e) {}
+
+        selectDropdown.hide()
+      }, 100))
 
       // Once the parent `form-outline` is clicked trigger the `focus` event
       input.parent().click(() => input.trigger('focus'))
@@ -1273,5 +1286,21 @@
     $('div.management-tools.settings-dialog div.tool').removeClass('selected')
 
     $(this).addClass('selected')
+  })
+}
+
+{
+  setTimeout(() => {
+    // Point at the list container
+    let keyspaceReplicationStrategyContainer = $(`div.dropdown[for-select="keyspaceReplicationStrategy"] ul.dropdown-menu`)
+
+    // Once one of the items is clicked
+    keyspaceReplicationStrategyContainer.find('a').click(function() {
+      // Point at the input field related to the list
+      let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)
+
+      // Update the input's value
+      selectElement.val($(this).attr('value')).trigger('input')
+    })
   })
 }

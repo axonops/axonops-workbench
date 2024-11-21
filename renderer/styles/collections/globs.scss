@@ -900,3 +900,18 @@ ion-icon.management-tool {
 .hljs {
   color: #e3e3e3;
 }
+
+.form-outline.invalid-warning .form-control.is-invalid~.form-notch div {
+  border-color: #dc904c;
+}
+
+.form-outline.invalid-warning .form-control.is-invalid~.form-label,
+.form-outline.invalid-warning .invalid-feedback:not(.transparent-color),
+.was-validated .form-outline.invalid-warning .form-control:invalid~.form-label {
+  color: #dc904c !important;
+}
+
+div.invalid-feedback.transparent-color {
+  color: transparent !important;
+  pointer-events: none;
+}

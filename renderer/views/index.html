@@ -1771,6 +1771,91 @@
         </div>
       </div>
     </div>
+
+    <div class="modal top fade" id="actionsKeyspace" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <span mulang="create keyspace" capitalize></span>
+            </h5>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="action-elements">
+              <div class="form-outline form-white margin-bottom">
+                <input type="text" class="form-control form-control-lg" id="keyspaceName">
+                <label class="form-label">
+                  <span mulang="keyspace name" capitalize-first></span>
+                </label>
+                <div class="valid-feedback"></div>
+                <div class="invalid-feedback">
+                  <span mulang capitalize-first></span>.
+                </div>
+              </div>
+              <div class="form-outline form-white invalid-warning" style="margin-bottom: 50px; z-index: 2;">
+                <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                <input type="text" class="form-control form-icon-trailing form-control-lg ignore-invalid" style="cursor: pointer;" id="keyspaceReplicationStrategy" value="NetworkTopologyStrategy" readonly>
+                <label class="form-label">
+                  <span mulang="keyspace replication strategy" capitalize></span>
+                </label>
+                <div class="valid-feedback"></div>
+                <div class="invalid-feedback"><span mulang="warning" capitalize></span>: <span mulang="SimpleStrategy is intended for development purposes only" capitalize-first></span>.</div>
+              </div>
+              <div class="dropdown adjust" for-select="keyspaceReplicationStrategy">
+                <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#" value="NetworkTopologyStrategy">NetworkTopologyStrategy</a></li>
+                  <li><a class="dropdown-item" href="#" value="SimpleStrategy">SimpleStrategy</a></li>
+                </ul>
+              </div>
+              <div for-strategy="SimpleStrategy">
+                <div class="form-outline form-white margin-bottom replication-factor">
+                  <input type="number" class="form-control form-control-lg" min="1" value="1" id="keyspaceReplicationFactorSimpleStrategy">
+                  <label class="form-label">
+                    <span mulang="replication factor" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"><span mulang="replication factor must be a positive number greater than 0" capitalize-first></span>.</div>
+                </div>
+              </div>
+              <div for-strategy="NetworkTopologyStrategy" style="margin-top: -40px; margin-bottom: 25px;">
+                <div class="row">
+                  <div class="col-md-12">
+                    <span class="badge badge-secondary" style="opacity: 0.85;">
+                      <span mulang="replication factor" capitalize></span>
+                    </span>
+                  </div>
+                </div>
+                <div class="data-centers"></div>
+              </div>
+              <div class="form-check margin-bottom" style="margin-top: 20px;">
+                <input class="form-check-input" type="checkbox" value id="keyspaceDurableWrites" checked>
+                <label class="form-check-label" for="keyspaceDurableWrites">
+                  <span mulang="durable writes" capitalize-first></span>.
+                </label>
+              </div>
+            </div>
+            <div class="action-editor">
+              <div class="editor"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="float-left">
+              <button type="button" class="btn btn-secondary btn-dark btn-sm switch-editor" disabled>
+                <ion-icon name="switch"></ion-icon>
+                <span mulang="switch editor"></span>
+              </button>
+            </div>
+            <div class="float-right">
+              <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" disabled id="executeActionStatement">
+                <span mulang="execute statement"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- The container of all toasts and pinned toasts elements -->

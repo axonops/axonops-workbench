@@ -2073,6 +2073,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       // Update the cloned keyspace node's parent ID to be the virtual keyspace node's ID
       keyspace.parent = virtualKeyspacesParentID
 
+      keyspace.a_attr = {
+        ...keyspace.a_attr,
+        'data-is-virtual': `true`
+      }
+
       // Push the keyspace node again
       treeStructure.core.data.push(keyspace)
     })

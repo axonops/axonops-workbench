@@ -1973,7 +1973,7 @@
                                 }]
 
                                 try {
-                                  if (nodeType != 'cluster' && nodeType != 'keyspace')
+                                  if (['cluster'].every((type) => nodeType != type))
                                     throw 0
 
                                   contextMenu = contextMenu.concat([{
@@ -2013,6 +2013,12 @@
                                     throw 0
 
                                   contextMenu = contextMenu.concat([{
+                                      type: 'separator'
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('actions')),
+                                      enabled: false
+                                    }, {
                                       label: I18next.capitalizeFirstLetter(I18next.t('alter keyspace')),
                                       action: 'alter',
                                       click: `() => views.main.webContents.send('alter-keyspace', {
@@ -2035,6 +2041,27 @@
 
                                   if (isSystemKeyspace)
                                     contextMenu = contextMenu.filter((item) => item.action != 'drop')
+                                } catch (e) {}
+
+                                try {
+                                  if (nodeType != 'keyspaces')
+                                    throw 0
+
+                                  contextMenu = [{
+                                      label: I18next.capitalizeFirstLetter(I18next.t('actions')),
+                                      enabled: false
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('create keyspace')),
+                                      action: 'create',
+                                      click: `() => views.main.webContents.send('create-keyspace', {
+                                        datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`
+                                    }
+                                  ]
                                 } catch (e) {}
 
                                 // Send a request to the main thread regards pop-up a menu
@@ -5655,6 +5682,10 @@
                               Modules.Docker.checkCassandraInContainer(pinnedToastID, ports.cassandra, (status) => {
                                 try {
                                   clusterElement.attr('data-latest-cassandra-version', `${status.version}`)
+                                } catch (e) {}
+
+                                try {
+                                  clusterElement.attr('data-datacenters', `${JSON.stringify(status.datacenters)}`)
                                 } catch (e) {}
 
                                 // If the process has been terminated then skip the upcoming code and stop the process

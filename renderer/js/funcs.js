@@ -949,6 +949,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             'text': `Keyspaces (<span>${metadata.keyspaces.length}</span>)`,
             'type': 'default',
             'icon': normalizePath(Path.join(extraIconsPath, 'keyspaces.png')),
+            'a_attr': {
+              'allow-right-context': 'true',
+              'type': 'keyspaces'
+            }
           }
         ]
       },

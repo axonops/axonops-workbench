@@ -47,7 +47,7 @@
       "app license (EULA)": "رخصة التطبيق (EULA)",
       "app settings": "إعدادات التطبيق",
       "are you sure about closing all active work areas - including local clusters - ?": "هل أنت متأكد من إغلاق جميع مساحات العمل النشطة - بما في ذلك العناقيد المحلية -؟",
-      "are you sure you want to drop the keyspace [b]$data[/b]? This action can't be undo": "هل أنت متأكد أنك تريد حذف المساحة [b]$data[/b]؟ لا يمكن التراجع عن هذا الإجراء",
+      "are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible": "هل أنت متأكد أنك تريد حذف المساحة [b]$data[/b]؟ لا يمكن التراجع عن هذا الإجراء",
       "authentication": "المصادقة",
       "auto update with notification": "التحديث التلقائي مع التنبيه",
       "avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully": "تجنب التبديل من SimpleStrategy إلى NetworkTopologyStrategy في عناقيد متعددة مراكز البيانات، خطط بعناية",

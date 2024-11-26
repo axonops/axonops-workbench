@@ -9571,12 +9571,21 @@
     })
 
     IPCRenderer.on('drop-keyspace', (_, data) => {
-      let keyspaceName = $('#generalPurposeDialog').attr('data-keyspacename')
+      let keyspaceName = $('#generalPurposeDialog').attr('data-keyspacename'),
+        dropKeyspaceEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionKeyspaceDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
 
       if (minifyText(keyspaceName).length <= 0)
         return
 
-      openDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the keyspace [b]$data[/b]? This action can't be undo`, [keyspaceName])) + '.', (confirmed) => {
+      let dropStatement = `DROP KEYSPACE ${keyspaceName};`
+
+      try {
+        dropKeyspaceEditor.setValue(dropStatement)
+      } catch (e) {}
+
+      setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
+
+      openDropKeyspaceDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible`, [keyspaceName])) + '.', (confirmed) => {
         if (!confirmed)
           return
 
@@ -9593,7 +9602,7 @@
 
         try {
           let statementInputField = $(`textarea#${data.textareaID}`)
-          statementInputField.val(`DROP KEYSPACE ${keyspaceName};`)
+          statementInputField.val(dropKeyspaceEditor.getValue())
           statementInputField.trigger('input').focus()
           AutoSize.update(statementInputField[0])
         } catch (e) {}
@@ -9783,7 +9792,7 @@
 
                 let element = `
                     <div class="data-center row" data-datacenter="${datacenter.datacenter}">
-                      <div class="col-md-7">${datacenter.datacenter}: ${datacenter.address}</div>
+                      <div class="col-md-7">${datacenter.datacenter}</div>
                       <div class="col-md-5">
                         <div class="form-outline form-white">
                           <input type="number" class="form-control" style="margin-bottom: 0;" value="${replicationFactor}" min="0">

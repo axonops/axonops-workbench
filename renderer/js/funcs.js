@@ -2307,12 +2307,13 @@ jQuery.fn.extend({
  * {object} `callback` function that will be triggered with passing the final result
  * {boolean} `?noBackdrop` whether or not the backdrop background should be rendered
  * {string} `?checkBox` whether or not showing a checkbox, the passed text will be the checkbox's label
+ * {object} `?dialogElement` the dialog UI element object to be used instead of the default one
  *
  * @Return: {boolean} action confirmed or canceled
  */
-let openDialog = (text, callback, noBackdrop = false, checkBox = '') => {
+let openDialog = (text, callback, noBackdrop = false, checkBox = '', dialogElement = null) => {
   // Point at the dialog's UI element
-  let dialog = $('div#generalPurposeDialog'),
+  let dialog = dialogElement || $('div#generalPurposeDialog'),
     // Get the dialog's MDB object
     dialogObject = getElementMDBObject(dialog, 'Modal'),
     // Point at the dialog's content container
@@ -2321,6 +2322,11 @@ let openDialog = (text, callback, noBackdrop = false, checkBox = '') => {
     closeBtn = dialog.find('div.btn-close'),
     // Point at the checkbox input element
     checkBoxInput = dialog.find('input[type="checkbox"]')
+
+  try {
+    if (dialogElement != null)
+      dialogContent = dialogContent.find('div.text')
+  } catch (e) {}
 
   // Set the dialog's text
   dialogContent.html(text)
@@ -2385,6 +2391,8 @@ let openDialog = (text, callback, noBackdrop = false, checkBox = '') => {
   if (noBackdrop)
     $('div.modal-backdrop:last-of-type').remove()
 }
+
+let openDropKeyspaceDialog = (text, callback) => openDialog(text, callback, false, '', $('div#actionKeyspaceDrop'))
 
 /**
  * Print a custom message in the app's terminals

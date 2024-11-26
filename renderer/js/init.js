@@ -767,7 +767,8 @@ $(document).on('initialize', () => {
   {
     let monacoPath = Path.join(__dirname, '..', '..', 'node_modules', 'monaco-editor', 'min'),
       editorUIElement = $('div.modal#addEditClusterDialog div.modal-body div.editor-container div.editor'),
-      rightClickActionsKeyspaceEditorUIElement = $('div.modal#actionsKeyspace div.modal-body div.action-editor div.editor')
+      rightClickActionsKeyspaceEditorUIElement = $('div.modal#actionsKeyspace div.modal-body div.action-editor div.editor'),
+      dropKeyspaceEditorUIElement = $('div.modal#actionKeyspaceDrop .editor')
 
     // Initialize the editor
     let amdLoader = require(Path.join(monacoPath, 'vs', 'loader.js')),
@@ -1069,7 +1070,32 @@ $(document).on('initialize', () => {
 
     amdRequire(['vs/editor/editor.main'], () => {
       try {
-        editor = monaco.editor.create(rightClickActionsKeyspaceEditorUIElement[0], {
+        monaco.editor.create(rightClickActionsKeyspaceEditorUIElement[0], {
+          language: 'sql',
+          minimap: {
+            enabled: false
+          },
+          padding: {
+            top: 10,
+            bottom: 10
+          },
+          wordWrap: 'on',
+          glyphMargin: false, // This option allows to render an object in the line numbering side
+          suggest: {
+            showFields: false,
+            showFunctions: false
+          },
+          theme: 'vs-dark',
+          scrollBeyondLastLine: false,
+          mouseWheelZoom: true,
+          fontSize: 13
+        })
+      } catch (e) {}
+    })
+
+    amdRequire(['vs/editor/editor.main'], () => {
+      try {
+        monaco.editor.create(dropKeyspaceEditorUIElement[0], {
           language: 'sql',
           minimap: {
             enabled: false

@@ -1304,3 +1304,13 @@
     })
   })
 }
+
+{
+  $('div.body div.left div.content div.logo').click(() => Open(`https://axonops.com`))
+}
+
+{
+  $("#actionKeyspaceDrop")[0].addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize'))
+
+  $('div.modal#actionKeyspaceDrop div.editor-container').mutate('show', () => $(window.visualViewport).trigger('resize'))
+}

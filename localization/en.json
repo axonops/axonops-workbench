@@ -45,7 +45,7 @@
       "app license (EULA)": "app license (EULA)",
       "app settings": "app settings",
       "are you sure about closing all active work areas - including local clusters - ?": "are you sure about closing all active work areas - including local clusters - ?",
-      "are you sure you want to drop the keyspace [b]$data[/b]? This action can't be undo": "are you sure you want to drop the keyspace [b]$data[/b]? This action can't be undo",
+      "are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible": "are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible",
       "authentication": "authentication",
       "auto update with notification": "auto update with notification",
       "avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully": "avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully",

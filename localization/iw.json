@@ -45,7 +45,7 @@
       "app license (EULA)": "רשיון אפליקציה (EULA)",
       "app settings": "הגדרות אפליקציה",
       "are you sure about closing all active work areas - including local clusters - ?": "האם אתה בטוח לגבי סגירת כל אזורי העבודה הפעילים - כולל אשכולות מקומיים - ?",
-      "are you sure you want to drop the keyspace [b]$data[/b]? This action can't be undo": "האם אתה בטוח שברצונך לשחרר את רווח המקשים [b]$data[/b]? לא ניתן לבטל את הפעולה הזו",
+      "are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible": "האם אתה בטוח שברצונך לשחרר את רווח המקשים [b]$data[/b]? פעולה זו היא בלתי הפיכה",
       "authentication": "אימות",
       "auto update with notification": "עדכון אוטומטי עם התראה",
       "avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully": "הימנע מהחלפה מ-SimpleStrategy ל-NetworkTopologyStrategy באשכולות מרובי-DC; תכנן בזהירות",

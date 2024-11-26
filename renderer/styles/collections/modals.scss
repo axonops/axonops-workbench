@@ -1265,3 +1265,20 @@ div.modal {
     }
   }
 }
+
+div.modal#actionKeyspaceDrop {
+  div.editor-container {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    margin-top: 10px;
+    background: inherit;
+    border-radius: 7px;
+    overflow: hidden;
+    background: #1e1e1e;
+
+    .editor {
+      @include position();
+    }
+  }
+}

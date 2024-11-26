@@ -45,7 +45,7 @@
       "app license (EULA)": "Licencia de aplicación (EULA)",
       "app settings": "Configuración de la aplicación",
       "are you sure about closing all active work areas - including local clusters - ?": "¿Está seguro de cerrar todas las áreas de trabajo activas, incluidos los clústeres locales?",
-      "are you sure you want to drop the keyspace [b]$data[/b]? This action can't be undo": "¿Está seguro de que desea eliminar el espacio de claves [b]$data[/b]? Esta acción no se puede deshacer.",
+      "are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible": "¿Estás seguro de que deseas eliminar el espacio de claves [b]$data[/b]? Esta acción es irreversible",
       "authentication": "autenticación",
       "auto update with notification": "actualización automática con notificación",
       "avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully": "evite cambiar de SimpleStrategy a NetworkTopologyStrategy en clústeres con múltiples centros de datos; planifique cuidadosamente",

@@ -45,7 +45,7 @@
       "app license (EULA)": "应用程序许可证 （EULA）",
       "app settings": "应用设置",
       "are you sure about closing all active work areas - including local clusters - ?": "您确定要关闭所有活动工作区 - 包括本地集群 - 吗？",
-      "are you sure you want to drop the keyspace [b]$data[/b]? This action can't be undo": "are you sure you want to drop the keyspace [b]$data[/b]? This action can't be undo",
+      "are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible": "您确定要删除键空间 [b]$data[/b] 吗？此操作不可逆",
       "authentication": "认证",
       "auto update with notification": "自动更新并通知",
       "avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully": "避免在多数据中心集群中从 SimpleStrategy 切换到 NetworkTopologyStrategy；请谨慎规划",

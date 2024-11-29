@@ -1940,14 +1940,6 @@
                                   scope += `index>${targetName}`
                                 } catch (e) {}
 
-                                try {
-                                  $('#actionsKeyspace').attr('data-keyspaces', `${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}`)
-                                } catch (e) {}
-
-                                try {
-                                  $('#generalPurposeDialog').attr('data-keyspacename', `${targetName}`)
-                                } catch (e) {}
-
                                 let contextMenu = [{
                                   label: I18next.capitalizeFirstLetter(I18next.t('get CQL description')),
                                   submenu: [{
@@ -1988,6 +1980,7 @@
                                       action: 'create',
                                       click: `() => views.main.webContents.send('create-keyspace', {
                                         datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                        keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
                                         tabID: '_${cqlshSessionContentID}',
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
@@ -2023,6 +2016,8 @@
                                       action: 'alter',
                                       click: `() => views.main.webContents.send('alter-keyspace', {
                                         datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                        keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                        keyspaceName: '${targetName}',
                                         tabID: '_${cqlshSessionContentID}',
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
@@ -2033,6 +2028,7 @@
                                       action: 'drop',
                                       click: `() => views.main.webContents.send('drop-keyspace', {
                                         tabID: '_${cqlshSessionContentID}',
+                                        keyspaceName: '${targetName}',
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
                                       })`
@@ -9488,6 +9484,10 @@
 
       $('input#keyspaceReplicationStrategy').attr('data-datacenters', `${data.datacenters}`)
 
+      try {
+        $('#actionsKeyspace').attr('data-keyspaces', `${data.keyspaces}`)
+      } catch (e) {}
+
       $('button#executeActionStatement').attr({
         'data-tab-id': `${data.tabID}`,
         'data-textarea-id': `${data.textareaID}`,
@@ -9517,6 +9517,14 @@
 
       try {
         metadataInfo.replication_strategy = JSON.parse(repairJSON(metadataInfo.replication_strategy))
+      } catch (e) {}
+
+      try {
+        $('#actionsKeyspace').attr('data-keyspaces', `${data.keyspaces}`)
+      } catch (e) {}
+
+      try {
+        $('#generalPurposeDialog').attr('data-keyspacename', `${data.keyspaceName}`)
       } catch (e) {}
 
       $('#actionsKeyspace').find('h5.modal-title').children('span').attr('mulang', 'alter keyspace').text(I18next.capitalize(I18next.t('alter keyspace')))
@@ -9564,6 +9572,7 @@
       } catch (e) {}
 
       $('input#keyspaceDurableWrites').prop('checked', metadataInfo.durable_writes)
+      $('input#keyspaceDurableWrites').attr('set-value', metadataInfo.durable_writes)
 
       $('#actionsKeyspace').removeClass('show-editor')
 
@@ -9571,11 +9580,15 @@
     })
 
     IPCRenderer.on('drop-keyspace', (_, data) => {
-      let keyspaceName = $('#generalPurposeDialog').attr('data-keyspacename'),
+      let keyspaceName = `${data.keyspaceName}`,
         dropKeyspaceEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionKeyspaceDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
 
       if (minifyText(keyspaceName).length <= 0)
         return
+
+      try {
+        $('#generalPurposeDialog').attr('data-keyspacename', `${keyspaceName}`)
+      } catch (e) {}
 
       let dropStatement = `DROP KEYSPACE ${keyspaceName};`
 
@@ -9672,7 +9685,38 @@
             }
           } catch (e) {}
 
-          let statement = `${isAlterState ? 'ALTER' : 'CREATE'} KEYSPACE ${keyspaceName}` + OS.EOL + `WITH replication = ${JSON.stringify(replication).replace(/"/gm, "'")}` + OS.EOL + `AND durable_writes = ${durableWrites};`
+          let durableWritesSetValue = $('input#keyspaceDurableWrites').attr('set-value'),
+            replicationStrategySetValue = ''
+
+          try {
+            replicationStrategySetValue = repairJSON(JSON.parse(repairJSON($('#actionsKeyspace').attr('data-keyspace-info'))).replication_strategy)
+          } catch (e) {}
+
+          let durableWritesFinal = '',
+            replicationStrategyFinal = ''
+
+          try {
+            if (isAlterState && minifyText(replicationStrategySetValue) == minifyText(JSON.stringify(replication)))
+              throw 0
+
+            replicationStrategyFinal = OS.EOL + `WITH replication = ${JSON.stringify(replication).replace(/"/gm, "'")}`
+          } catch (e) {}
+
+          try {
+            if (isAlterState && `${durableWritesSetValue}` == `${durableWrites}`)
+              throw 0
+
+            durableWritesFinal = OS.EOL + (replicationStrategyFinal.length <= 0 ? 'WITH' : 'AND') + ` durable_writes = ${durableWrites}`
+          } catch (e) {}
+
+          try {
+            if (!isAlterState)
+              throw 0
+
+            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [replicationStrategyFinal, durableWritesFinal].every((str) => `${str}`.length <= 0) ? '' : null)
+          } catch (e) {}
+
+          let statement = `${isAlterState ? 'ALTER' : 'CREATE'} KEYSPACE ${keyspaceName}${replicationStrategyFinal}${durableWritesFinal};`
 
           try {
             actionEditor.setValue(statement)
@@ -9737,7 +9781,9 @@
 
         dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 ? '' : null)
 
-        updateActionStatus()
+        try {
+          updateActionStatus()
+        } catch (e) {}
       })
 
       $('input#keyspaceReplicationStrategy').on('input', function() {
@@ -9791,17 +9837,17 @@
                 } catch (e) {}
 
                 let element = `
-                    <div class="data-center row" data-datacenter="${datacenter.datacenter}">
-                      <div class="col-md-7">${datacenter.datacenter}</div>
-                      <div class="col-md-5">
-                        <div class="form-outline form-white">
-                          <input type="number" class="form-control" style="margin-bottom: 0;" value="${replicationFactor}" min="0">
-                          <label class="form-label">
-                            <span mulang="replication factor" capitalize></span>
-                          </label>
+                      <div class="data-center row" data-datacenter="${datacenter.datacenter}">
+                        <div class="col-md-7">${datacenter.datacenter}</div>
+                        <div class="col-md-5">
+                          <div class="form-outline form-white">
+                            <input type="number" class="form-control" style="margin-bottom: 0;" value="${replicationFactor}" min="0">
+                            <label class="form-label">
+                              <span mulang="replication factor" capitalize></span>
+                            </label>
+                          </div>
                         </div>
-                      </div>
-                    </div>`
+                      </div>`
                 dataCentersContainer.append($(element).show(function() {
                   let dataCenter = $(this)
 
@@ -9830,7 +9876,9 @@
 
             networkTopologyContainer.show()
 
-            updateActionStatus()
+            try {
+              updateActionStatus()
+            } catch (e) {}
 
             return
           } catch (e) {}
@@ -9854,7 +9902,9 @@
 
           dialogElement.find('div[for-strategy="SimpleStrategy"]').show()
 
-          updateActionStatus()
+          try {
+            updateActionStatus()
+          } catch (e) {}
         }, 150)
       })
 
@@ -9868,6 +9918,10 @@
           return
 
         dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+
+        try {
+          updateActionStatus()
+        } catch (e) {}
       })
 
       // Clicks the `SWITCH TO EDITOR` button
@@ -9889,10 +9943,22 @@
         // Update the editor's layout
         $(window.visualViewport).trigger('resize')
 
-        updateActionStatus()
+        try {
+          updateActionStatus()
+        } catch (e) {}
+      })
+
+      $('input[type="checkbox"]#keyspaceDurableWrites').on('change', function() {
+        try {
+          updateActionStatus()
+        } catch (e) {}
       })
 
       $('button#executeActionStatement').click(function() {
+        try {
+          updateActionStatus()
+        } catch (e) {}
+
         try {
           getElementMDBObject($(`a.nav-link.btn[href="#${$(this).attr('data-tab-id')}"]`), 'Tab').show()
         } catch (e) {}

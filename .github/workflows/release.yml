@@ -32,7 +32,7 @@ jobs:
           tag: ${{ github.ref_name }}
         run: |
           OPTIONS=""
-          if [[ $GITHUB_REF_NAME == *"internal"* ]] || [[ $GITHUB_REF_NAME == *"beta"* ]]; then
+          if [[ $GITHUB_REF_NAME == *"internal"* ]]; then
             OPTIONS="--prerelease"
           fi
           gh release create "$GITHUB_REF_NAME" \
@@ -47,19 +47,19 @@ jobs:
     strategy:
       matrix:
         include:
-          # - os: [self-hosted, linux, X64]
-          #   target: Linux
+          - os: [self-hosted, linux, X64]
+            target: Linux
 
           # M1
           - os: macos-14
             target: Macos
 
-          # # X86
-          # - os: macos-13
-          #   target: Macos
+          # X86
+          - os: macos-13
+            target: Macos
 
-          # - os: windows-latest
-          #   target: Windows
+          - os: windows-latest
+            target: Windows
 
           # - os: "[self-hosted, linux, ARM64]"
           #   target: Linux
@@ -78,7 +78,7 @@ jobs:
       - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
         run: |
           mkdir -p main/bin
-          for binary in cqlsh-410 cqlsh-407 keys_generator; do
+          for binary in cqlsh keys_generator; do
             curl -fL ${CQLSH_GITHUB_URL}/${CQLSH_BUILD_VERSION}/${binary}-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
             mv main/bin/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}
             mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
@@ -86,7 +86,7 @@ jobs:
           sed -i.bak "s/%CQLSH_VERSION%/$CQLSH_BUILD_VERSION/g" renderer/views/index.html
           rm -f renderer/views/index.html.bak
         env:
-          CQLSH_BUILD_VERSION: "0.12.0"
+          CQLSH_BUILD_VERSION: "0.14.3"
           CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download' }}"
 
       - name: Setup Python v3.12
@@ -248,15 +248,13 @@ jobs:
             dist/*.nsis
             dist/*.msi
             dist/*.sha256sum
-            dist/mas-arm64/*.pkg
-            dist/mas-dev-arm64/*.pkg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   generate-sbom:
     runs-on: ubuntu-latest
     needs: [build]
-    if: ${{ !cancelled() && success() }}
+    if: ${{ !cancelled() && success() && !contains(github.ref, 'internal') }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -278,186 +276,186 @@ jobs:
           format: cyclonedx-json
 
 # Release choco and brew
-  # release-brew:
-  #   runs-on: ubuntu-latest
-  #   needs: [build]
-  #   if: ${{ !cancelled() && success() }}
+  release-brew:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ !cancelled() && success() && !contains(github.ref, 'internal') }}
 
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         ref: main
-  #         repository: axonops/homebrew-repository
-  #         path: homebrew
-  #         persist-credentials: true
-  #         fetch-depth: 0
-  #         ssh-key: ${{ secrets.BREW_SSH_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          repository: axonops/homebrew-repository
+          path: homebrew
+          persist-credentials: true
+          fetch-depth: 0
+          ssh-key: ${{ secrets.BREW_SSH_KEY }}
 
-  #     - name: Make changes to Homebrew
-  #       run: |
-  #         set -x
-  #         if [[ "$VERSION" == "" ]]; then
-  #           VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
-  #         fi
-  #         case $VERSION in
-  #           *internal*)
-  #             NAME=axonopsworkbench-internal
-  #             CONFIG_FILE=Casks/axonopsworkbench-internal.rb
-  #             ;;
-  #           *beta*)
-  #             NAME=axonopsworkbench-beta
-  #             CONFIG_FILE=Casks/axonopsworkbench-beta.rb
-  #             ;;
-  #           *)
-  #             NAME=axonopsworkbench
-  #             CONFIG_FILE=Casks/axonopsworkbench.rb
-  #             ;;
-  #         esac
-  #         cd homebrew
-  #         git config user.name "GitHub Actions"
-  #         git config user.email "actions@github.com"
-  #         # Get the sha256sum
-  #         SHA_ARM=$(curl -sfL ${GITHUB_URL}/v${VERSION}/AxonOps.Workbench-${VERSION}-mac-arm64.zip.sha256sum | awk '{print $1}')
-  #         SHA_AMD=$(curl -sfL ${GITHUB_URL}/v${VERSION}/AxonOps.Workbench-${VERSION}-mac-x64.zip.sha256sum | awk '{print $1}')
-  #         # Update versions
-  #         cp $TEMPLATE $CONFIG_FILE
-  #         sed -i "s/%SHA_ARM%/$SHA_ARM/g" $CONFIG_FILE
-  #         sed -i "s/%SHA_AMD%/$SHA_AMD/g" $CONFIG_FILE
-  #         sed -i "s/%VERSION%/${VERSION}/g" $CONFIG_FILE
-  #         sed -i "s/cask \"axonopsworkbench\" do/cask \"${NAME}\" do/g" $CONFIG_FILE
-  #         git add $CONFIG_FILE
-  #         if [ $(git status --porcelain | wc -l) -eq "0" ]; then
-  #           echo "No changes to commit"
-  #           exit 0
-  #         fi
-  #         git --no-pager diff
-  #         git commit -m "Changes made by GitHub Actions [skip ci]"
-  #         git tag $VERSION
-  #       env:
-  #         GITHUB_URL: https://github.com/axonops/axonops-workbench-cassandra/releases/download/
-  #         TEMPLATE: Casks/axonopsworkbench.rb.tmpl
+      - name: Make changes to Homebrew
+        run: |
+          set -x
+          if [[ "$VERSION" == "" ]]; then
+            VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          fi
+          case $VERSION in
+            *internal*)
+              NAME=axonopsworkbench-internal
+              CONFIG_FILE=Casks/axonopsworkbench-internal.rb
+              ;;
+            *beta*)
+              NAME=axonopsworkbench-beta
+              CONFIG_FILE=Casks/axonopsworkbench-beta.rb
+              ;;
+            *)
+              NAME=axonopsworkbench
+              CONFIG_FILE=Casks/axonopsworkbench.rb
+              ;;
+          esac
+          cd homebrew
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          # Get the sha256sum
+          SHA_ARM=$(curl -sfL ${GITHUB_URL}/v${VERSION}/AxonOps.Workbench-${VERSION}-mac-arm64.zip.sha256sum | awk '{print $1}')
+          SHA_AMD=$(curl -sfL ${GITHUB_URL}/v${VERSION}/AxonOps.Workbench-${VERSION}-mac-x64.zip.sha256sum | awk '{print $1}')
+          # Update versions
+          cp $TEMPLATE $CONFIG_FILE
+          sed -i "s/%SHA_ARM%/$SHA_ARM/g" $CONFIG_FILE
+          sed -i "s/%SHA_AMD%/$SHA_AMD/g" $CONFIG_FILE
+          sed -i "s/%VERSION%/${VERSION}/g" $CONFIG_FILE
+          sed -i "s/cask \"axonopsworkbench\" do/cask \"${NAME}\" do/g" $CONFIG_FILE
+          git add $CONFIG_FILE
+          if [ $(git status --porcelain | wc -l) -eq "0" ]; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git --no-pager diff
+          git commit -m "Changes made by GitHub Actions [skip ci]"
+          git tag $VERSION
+        env:
+          GITHUB_URL: https://github.com/axonops/axonops-workbench/releases/download/
+          TEMPLATE: Casks/axonopsworkbench.rb.tmpl
 
-  #     - name: Push changes
-  #       uses: ad-m/github-push-action@master
-  #       with:
-  #         github_token: ${{ secrets.GITHUB_TOKEN }}
-  #         directory: homebrew
-  #         repository: axonops/homebrew-repository
-  #         ssh: true
-  #         tags: true
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          directory: homebrew
+          repository: axonops/homebrew-repository
+          ssh: true
+          tags: true
 
-  # release-choco:
-  #   runs-on: ubuntu-latest
-  #   needs: [build]
-  #   if: ${{ !cancelled() && success() }}
+  release-choco:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ !cancelled() && success() && !contains(github.ref, 'internal') }}
 
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         ref: main
-  #         repository: axonops/chocolatey
-  #         path: chocolatey
-  #         persist-credentials: true
-  #         fetch-depth: 0
-  #         ssh-key: ${{ secrets.CHOCO_SSH_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          repository: axonops/chocolatey
+          path: chocolatey
+          persist-credentials: true
+          fetch-depth: 0
+          ssh-key: ${{ secrets.CHOCO_SSH_KEY }}
 
-  #     - name: Make changes to chocolatey
-  #       run: |
-  #         if [[ "$VERSION" == "" ]]; then
-  #           VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
-  #         fi
-  #         #echo "VERSION=$VERSION" >> $GITHUB_ENV
-  #         cd chocolatey
-  #         git config user.name "GitHub Actions"
-  #         git config user.email "actions@github.com"
-  #         # Get the sha256sum
-  #         SHA_AMD=$(curl -sfL ${GITHUB_URL}/v${VERSION}/AxonOps.Workbench-${VERSION}-win-x64.msi.sha256sum | awk '{print $1}')
-  #         # Update versions
-  #         cp $TEMPLATE $CONFIG_FILE
-  #         sed -i "s/%SHA_AMD%/$SHA_AMD/g" $CONFIG_FILE
-  #         sed -i "s/%VERSION%/${VERSION}/g" $CONFIG_FILE
-  #         sed -i "s%<version>.*</version>%<version>${VERSION}</version>%g" axonopsworkbench.nuspec
-  #         git add .
-  #         if [ $(git status --porcelain | wc -l) -eq "0" ]; then
-  #           echo "No changes to commit"
-  #           exit 0
-  #         fi
-  #         git --no-pager diff
-  #         git commit -m "Changes made by GitHub Actions"
-  #         git tag $VERSION
-  #       env:
-  #         GITHUB_URL: https://github.com/axonops/axonops-workbench-cassandra/releases/download/
-  #         TEMPLATE: tools/chocolateyinstall.ps1.tmpl
-  #         CONFIG_FILE: tools/chocolateyinstall.ps1
+      - name: Make changes to chocolatey
+        run: |
+          if [[ "$VERSION" == "" ]]; then
+            VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          fi
+          #echo "VERSION=$VERSION" >> $GITHUB_ENV
+          cd chocolatey
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          # Get the sha256sum
+          SHA_AMD=$(curl -sfL ${GITHUB_URL}/v${VERSION}/AxonOps.Workbench-${VERSION}-win-x64.msi.sha256sum | awk '{print $1}')
+          # Update versions
+          cp $TEMPLATE $CONFIG_FILE
+          sed -i "s/%SHA_AMD%/$SHA_AMD/g" $CONFIG_FILE
+          sed -i "s/%VERSION%/${VERSION}/g" $CONFIG_FILE
+          sed -i "s%<version>.*</version>%<version>${VERSION}</version>%g" axonopsworkbench.nuspec
+          git add .
+          if [ $(git status --porcelain | wc -l) -eq "0" ]; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git --no-pager diff
+          git commit -m "Changes made by GitHub Actions"
+          git tag $VERSION
+        env:
+          GITHUB_URL: https://github.com/axonops/axonops-workbench/releases/download/
+          TEMPLATE: tools/chocolateyinstall.ps1.tmpl
+          CONFIG_FILE: tools/chocolateyinstall.ps1
 
-  #     - name: Push changes
-  #       uses: ad-m/github-push-action@master
-  #       with:
-  #         github_token: ${{ secrets.GITHUB_TOKEN }}
-  #         directory: chocolatey
-  #         repository: axonops/chocolatey
-  #         ssh: true
-  #         tags: true
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          directory: chocolatey
+          repository: axonops/chocolatey
+          ssh: true
+          tags: true
 
-  # release-debian-redhat:
-  #   runs-on: ubuntu-latest
-  #   needs: [build]
-  #   if: ${{ !cancelled() && success() }}
+  release-debian-redhat:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ !cancelled() && success() }}
 
-  #   steps:
-  #     - id: "auth"
-  #       uses: "google-github-actions/auth@v1"
-  #       with:
-  #         credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
+    steps:
+      - id: "auth"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
 
-  #     - name: "Set up Cloud SDK"
-  #       uses: "google-github-actions/setup-gcloud@v1"
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v1"
 
-  #     - name: "Set runtime variables"
-  #       run: |
-  #         if [[ "$VERSION" == "" ]]; then
-  #           VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
-  #         fi
-  #         PUBLISH="yes"
-  #         DEBIAN_ARCHS="amd64"
-  #         REDHAT_ARCHS="x86_64"
-  #         VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
-  #         case $VERSION in
-  #           *internal*)
-  #             PUBLISH="no"
-  #             REPO_SUFFIX="-beta"
-  #             ;;
-  #           *beta*)
-  #             REPO_SUFFIX="-beta"
-  #             ;;
-  #           *)
-  #             REPO_SUFFIX=""
-  #             ;;
-  #         esac
-  #         echo "REPO=$REPO" >> $GITHUB_ENV
-  #         echo "DEBIAN_ARCHS=$DEBIAN_ARCHS" >> $GITHUB_ENV
-  #         echo "REDHAT_ARCHS=$REDHAT_ARCHS" >> $GITHUB_ENV
+      - name: "Set runtime variables"
+        run: |
+          if [[ "$VERSION" == "" ]]; then
+            VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          fi
+          PUBLISH="yes"
+          DEBIAN_ARCHS="amd64"
+          REDHAT_ARCHS="x86_64"
+          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          case $VERSION in
+            *internal*)
+              PUBLISH="no"
+              REPO_SUFFIX="-beta"
+              ;;
+            *beta*)
+              REPO_SUFFIX="-beta"
+              ;;
+            *)
+              REPO_SUFFIX=""
+              ;;
+          esac
+          echo "REPO=$REPO" >> $GITHUB_ENV
+          echo "DEBIAN_ARCHS=$DEBIAN_ARCHS" >> $GITHUB_ENV
+          echo "REDHAT_ARCHS=$REDHAT_ARCHS" >> $GITHUB_ENV
 
-  #     - name: Push Debian package
-  #       if: env.PUBLISH == 'yes'
-  #       run: |
-  #         if [[ "$VERSION" == "" ]]; then
-  #           VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
-  #         fi
-  #         for arch in ${{ env.DEBIAN_ARCHS }}; do
-  #           curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/v$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.deb"
-  #           gcloud config set project axonops-public
-  #           gcloud artifacts apt upload axonops-apt-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$VERSION-linux-${arch}.deb
-  #         done
+      - name: Push Debian package
+        if: env.PUBLISH == 'yes'
+        run: |
+          if [[ "$VERSION" == "" ]]; then
+            VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          fi
+          for arch in ${{ env.DEBIAN_ARCHS }}; do
+            curl -sLO "https://github.com/axonops/axonops-workbench/releases/download/v$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.deb"
+            gcloud config set project axonops-public
+            gcloud artifacts apt upload axonops-apt-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$VERSION-linux-${arch}.deb
+          done
 
-  #     - name: Push RedHat package
-  #       if: env.PUBLISH == 'yes'
-  #       run: |
-  #         if [[ "$VERSION" == "" ]]; then
-  #           VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
-  #         fi
-  #         for arch in ${{ env.REDHAT_ARCHS }}; do
-  #           curl -sLO "https://github.com/axonops/axonops-workbench-cassandra/releases/download/v$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.rpm"
-  #           gcloud config set project axonops-public
-  #           gcloud artifacts yum upload axonops-yum-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$VERSION-linux-${arch}.rpm
-  #         done
+      - name: Push RedHat package
+        if: env.PUBLISH == 'yes'
+        run: |
+          if [[ "$VERSION" == "" ]]; then
+            VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          fi
+          for arch in ${{ env.REDHAT_ARCHS }}; do
+            curl -sLO "https://github.com/axonops/axonops-workbench/releases/download/v$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.rpm"
+            gcloud config set project axonops-public
+            gcloud artifacts yum upload axonops-yum-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$VERSION-linux-${arch}.rpm
+          done

@@ -90,6 +90,12 @@ global.FS = require('fs-extra')
 global.Path = require('path')
 
 /**
+ * Node.js OS module
+ * Used for operating system-related utilities and properties
+ */
+global.OS = require('os')
+
+/**
  * Import extra modules needed in the main thread
  *
  * Node.js URL module
@@ -414,29 +420,48 @@ App.on('ready', () => {
       } catch (e) {}
     } catch (e) {}
   })
+  let status = {
+    initialized: false,
+    loaded: false
+  }
 
   // Once a `loaded` event is received from the main view
   IPCMain.on('loaded', () => {
-    // Trigger after 1s of loading the main view
-    setTimeout(() => {
-      // Destroy the intro view/window entirely
-      try {
-        views.intro.destroy()
-      } catch (e) {}
-
-      // Show the main view/window and maximize it
-      try {
-        views.main.show()
-        views.main.maximize()
-      } catch (e) {}
-
-      /**
-       * Send a `shown` status to the main view
-       * This will tell the app to load workspaces
-       */
-      setTimeout(() => views.main.webContents.send('windows-shown'), 100)
-    }, 2000)
+    status.loaded = true
   })
+
+  IPCMain.on('initialized', () => {
+    status.initialized = true
+  })
+
+  let checkStatus = () => {
+    setTimeout(() => {
+      if (!status.loaded || !status.initialized)
+        return checkStatus()
+
+      // Trigger after 1s of loading the main view
+      setTimeout(() => {
+        // Destroy the intro view/window entirely
+        try {
+          views.intro.destroy()
+        } catch (e) {}
+
+        // Show the main view/window and maximize it
+        try {
+          views.main.show()
+          views.main.maximize()
+        } catch (e) {}
+
+        /**
+         * Send a `shown` status to the main view
+         * This will tell the app to load workspaces
+         */
+        setTimeout(() => views.main.webContents.send('windows-shown'), 100)
+      }, 800)
+    }, 900)
+  }
+
+  checkStatus()
 
   // Set the menu bar to `null`; so it won't be created
   Menu.setApplicationMenu(null)
@@ -645,6 +670,8 @@ App.on('second-instance', () => {
         IPCMain
       })
     })
+
+    IPCMain.on('pty:cqlsh:initialize', () => Modules.Pty.initializeCQLSH(views.main))
   }
 
   /**
@@ -792,24 +819,40 @@ App.on('second-instance', () => {
 
   // Request to get the public key from the keys generator tool
   IPCMain.on('public-key:get', (_, id) => {
-    // Define the bin folder path
-    // let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
-    let binFolder = Path.join((extraResourcesPath != null ? Path.join(__dirname, '..', '..', 'main') : Path.join(__dirname)), 'bin', 'keys_generator')
+    let runKeysGenerator = () => {
+      // Define the bin folder path
+      // let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
+      let binFolder = Path.join((extraResourcesPath != null ? Path.join(__dirname, '..', '..', 'main') : Path.join(__dirname)), 'bin', 'keys_generator')
 
-    // Switch to the single-file mode
+      // Switch to the single-file mode
+      try {
+        if (!FS.lstatSync(binFolder).isDirectory())
+          binFolder = Path.join(binFolder, '..')
+      } catch (e) {}
+
+      // Run the keys generator tool
+      let binCall = `./keys_generator`
+
+      // If the host is Windows
+      binCall = (process.platform == 'win32') ? `keys_generator.exe` : binCall
+
+      // Execute the command, get the public key, and send it to the renderer thread
+      Terminal.run(`cd "${binFolder}" && ${binCall}`, (err, publicKey, stderr) => views.main.webContents.send(`public-key:${id}`, (err || stderr) ? '' : publicKey))
+    }
+
     try {
-      if (!FS.lstatSync(binFolder).isDirectory())
-        binFolder = Path.join(binFolder, '..')
+      if (OS.platform() != 'darwin') {
+        runKeysGenerator()
+        throw 0
+      }
+
+      Modules.Pty.runKeysGenerator((publicKey) => {
+        if (publicKey != null)
+          return views.main.webContents.send(`public-key:${id}`, publicKey)
+
+        runKeysGenerator()
+      })
     } catch (e) {}
-
-    // Run the keys generator tool
-    let binCall = `./keys_generator`
-
-    // If the host is Windows
-    binCall = (process.platform == 'win32') ? `keys_generator.exe` : binCall
-
-    // Execute the command, get the public key, and send it to the renderer thread
-    Terminal.run(`cd "${binFolder}" && ${binCall}`, (err, publicKey, stderr) => views.main.webContents.send(`public-key:${id}`, (err || stderr) ? '' : publicKey))
   })
 
   /**
@@ -870,7 +913,20 @@ App.on('second-instance', () => {
    */
   {
     // Define a variable to hold the last request's timestamp
-    let lastRequestTimestamp = 0
+    let lastRequestTimestamp = 0,
+      handleItems = (items) => {
+        for (let item of items) {
+          if (item.submenu != undefined)
+            handleItems(item.submenu)
+
+          try {
+            // Use `eval` to convert the click's content from string format to actual function
+            try {
+              item.click = eval(item.click)
+            } catch (e) {}
+          } catch (e) {}
+        }
+      }
 
     // Received a request to show a right-click context-menu
     IPCMain.on('show-context-menu', (_, items) => {
@@ -892,6 +948,9 @@ App.on('second-instance', () => {
 
       // Loop through each menu item
       for (let item of items) {
+        if (item.submenu != undefined)
+          handleItems(item.submenu)
+
         try {
           // Use `eval` to convert the click's content from string format to actual function
           try {

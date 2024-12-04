@@ -71,8 +71,7 @@
         "teamId": "UJ776LUP23"
       },
       "binaries": [
-        "main/bin/cqlsh-407/cqlsh-407",
-        "main/bin/cqlsh-410/cqlsh-410",
+        "main/bin/cqlsh/cqlsh",
         "main/bin/keys_generator/keys_generator"
       ],
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
@@ -128,7 +127,7 @@
     "mac:pkg": "electron-builder --mac pkg --publish never",
     "postinstall": "electron-builder install-app-deps"
   },
-  "repository": "https://github.com/axonops/axonops-workbench-cassandra",
+  "repository": "https://github.com/axonops/axonops-workbench",
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",
     "electron": "^31.6.0",
@@ -149,7 +148,7 @@
     "axios": "^1.7.7",
     "better-sqlite3": "^11.1.2",
     "byte-size": "^8.1.1",
-    "chart.js": "^4.3.0",
+    "chart.js": "^4.4.5",
     "co": "^4.6.0",
     "configparser": "^0.3.10",
     "debug": "^4.3.5",
@@ -170,7 +169,7 @@
     "json-beautify": "^1.1.1",
     "json-to-table": "^4.2.1",
     "jsonfile": "^6.1.0",
-    "jsonrepair": "^3.0.2",
+    "jsonrepair": "^3.8.1",
     "keytar": "^7.9.0",
     "ldrs": "^1.0.2",
     "marked": "^13.0.2",
@@ -192,7 +191,7 @@
     "stripchar": "^1.2.1",
     "sudo-prompt": "^9.2.1",
     "systeminformation": "^5.18.2",
-    "tabulator-tables": "^6.2.1",
+    "tabulator-tables": "^6.3.0",
     "tinycolor2": "^1.6.0",
     "tinykeys": "^2.1.0",
     "tree-kill": "^1.2.2",

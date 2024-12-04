@@ -266,7 +266,7 @@
   // Clicks the help/documentation button
   $(`${selector}[action="help"]`).click(() => {
     // Open the documentation's web page
-    Open('https://docs.axonops.com')
+    Open('https://axonops.com/docs/')
 
     // Add log for this action
     try {
@@ -437,6 +437,7 @@
         assistantAIEnabled = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || true,
         loggingEnabled = config.get('security', 'loggingEnabled'),
         sandboxProjectsEnabled = config.get('features', 'sandboxProjects'),
+        containersManagementTool = config.get('features', 'containersManagementTool') || 'none',
         basicCQLSHEnabled = config.get('features', 'basicCQLSH'),
         checkForUpdates = config.get('updates', 'checkForUpdates'),
         autoUpdate = config.get('updates', 'autoUpdate'),
@@ -474,6 +475,15 @@
 
       // Check the sandbox projects
       $('input#sandboxProjects[type="checkbox"]').prop('checked', sandboxProjectsEnabled == 'true')
+
+      $('div.management-tools.settings-dialog div.tool').removeClass('selected')
+
+      try {
+        containersManagementTool = (['docker', 'podman'].some((tool) => `${containersManagementTool}` == `${tool}`)) ? containersManagementTool : 'none'
+      } catch (e) {}
+
+      $(`div.management-tools.settings-dialog div.tool[tool="${containersManagementTool}"]`).addClass('selected')
+
 
       $('input#basicCQLSH[type="checkbox"]').prop('checked', basicCQLSHEnabled == 'true')
 
@@ -673,6 +683,24 @@
 
       actionButton.filter('[action="toggleFullscreen"]').click()
     })
+
+    $(document).on('keydown', function(e) {
+      // CTRL+L to clear the enhanced terminal
+      if (!e.ctrlKey || e.keyCode != 76)
+        return
+
+      let interactiveTerminal = $(`div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"] div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-content`)
+
+      if (interactiveTerminal.length <= 0)
+        return
+
+      try {
+        if (!interactiveTerminal.is(':visible'))
+          throw 0
+
+        interactiveTerminal.children('div.block').find('div.actions div.btn[action="delete"]').click()
+      } catch (e) {}
+    })
   }
 }
 
@@ -740,7 +768,8 @@
         checkForUpdatesOnLanuch = $('input#checkForUpdatesOnLanuch[type="checkbox"]').prop('checked'),
         autoUpdateWithNotification = $('input#autoUpdateWithNotification[type="checkbox"]').prop('checked'),
         // Get chosen display language and if it's from right to left
-        [chosenDisplayLanguage, languageRTL] = getAttributes($('input#languageUI'), ['hidden-value', 'rtl'])
+        [chosenDisplayLanguage, languageRTL] = getAttributes($('input#languageUI'), ['hidden-value', 'rtl']),
+        containersManagementTool = 'none'
 
       // Set RTL class if the language needs that
       $('body').toggleClass('rtl', languageRTL == 'true')
@@ -763,6 +792,15 @@
       })
 
       try {
+        let selectedManagementTool = $('div.management-tools.settings-dialog div.tool.selected').attr('tool')
+
+        if (selectedManagementTool == undefined)
+          throw 0
+
+        containersManagementTool = selectedManagementTool
+      } catch (e) {}
+
+      try {
         // Get the current app's config/settings
         Modules.Config.getConfig((config) => {
           // Update settings
@@ -770,6 +808,7 @@
           config.set('security', 'loggingEnabled', loggingEnabled)
           config.set('features', 'sandboxProjects', sandboxProjectsEnabled)
           config.set('features', 'basicCQLSH', basicCQLSHEnabled)
+          config.set('features', 'containersManagementTool', containersManagementTool)
           Keytar.setPassword('AxonOpsWorkbenchAIAssistant', 'value', `${assistantAIEnabled}`)
           config.set('limit', 'cqlsh', maxNumCQLSHSessions)
           config.set('limit', 'sandbox', maxNumSandboxProjects)
@@ -779,6 +818,8 @@
 
           // Set the updated settings
           Modules.Config.setConfig(config)
+
+          updateContainersManagementToolUI(containersManagementTool)
 
           // Show feedback to the user
           setTimeout(() => {
@@ -830,7 +871,7 @@
   // Show/hide the languages' list once the associated input is focused on/out
   setTimeout(() => {
     // Define the app's settings model selector path
-    let dialog = 'div.modal#appSettings'
+    let dialog = 'div.modal#appSettings, div.modal#actionsKeyspace'
 
     // Loop through the dropdown element of each select element
     $(`${dialog}`).find('div.dropdown[for-select]').each(function() {
@@ -839,8 +880,21 @@
         // Point at the associated input field
         input = $(`${dialog}`).find(`input#${$(this).attr('for-select')}`)
 
+
       // Once the associated select element is being focused then show the dropdown element and vice versa
-      input.on('focus', () => selectDropdown.show()).on('focusout', () => setTimeout(() => selectDropdown.hide(), 100))
+      input.on('focus', () => {
+        try {
+          input.parent().find('div.invalid-feedback').addClass('transparent-color')
+        } catch (e) {}
+
+        selectDropdown.show()
+      }).on('focusout', () => setTimeout(() => {
+        try {
+          input.parent().find('div.invalid-feedback').removeClass('transparent-color')
+        } catch (e) {}
+
+        selectDropdown.hide()
+      }, 100))
 
       // Once the parent `form-outline` is clicked trigger the `focus` event
       input.parent().click(() => input.trigger('focus'))
@@ -1206,4 +1260,57 @@
       } catch (e) {}
     })
   })
+}
+
+{
+  $(`ion-icon.management-tools-hint-icon.settings-dialog`).click(function() {
+    let isClicked = `${$(this).attr('name')}`.includes('outline')
+
+    try {
+      if (isClicked)
+        throw 0
+
+      $(this).attr('name', 'info-circle-outline')
+
+      $('div.management-tools-hint.settings-dialog').slideUp(350)
+
+      return
+    } catch (e) {}
+
+    $(this).attr('name', 'info-circle')
+
+    $('div.management-tools-hint.settings-dialog').slideDown(350)
+  })
+
+  $('div.management-tools.settings-dialog div.tool[tool]').click(function() {
+    $('div.management-tools.settings-dialog div.tool').removeClass('selected')
+
+    $(this).addClass('selected')
+  })
+}
+
+{
+  setTimeout(() => {
+    // Point at the list container
+    let keyspaceReplicationStrategyContainer = $(`div.dropdown[for-select="keyspaceReplicationStrategy"] ul.dropdown-menu`)
+
+    // Once one of the items is clicked
+    keyspaceReplicationStrategyContainer.find('a').click(function() {
+      // Point at the input field related to the list
+      let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)
+
+      // Update the input's value
+      selectElement.val($(this).attr('value')).trigger('input')
+    })
+  })
+}
+
+{
+  $('div.body div.left div.content div.logo').click(() => Open(`https://axonops.com`))
+}
+
+{
+  $("#actionKeyspaceDrop")[0].addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize'))
+
+  $('div.modal#actionKeyspaceDrop div.editor-container').mutate('show', () => $(window.visualViewport).trigger('resize'))
 }

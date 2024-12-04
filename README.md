@@ -1,20 +1,17 @@
-<img src="https://github.com/axonops/axonops-workbench-cassandra/assets/163300/0732fa17-37c5-4509-9595-a4163337680e" width="30" height="30"> THIS IS IN BETA FOR FIRST RELEASE
-=======
-
 # AxonOps™ Workbench for Apache Cassandra®
 
-AxonOps Workbench for Apache Cassandra is a desktop application built for Cassandra DB developers and DBAs. Seamlessly connect and interact with Apache Cassandra clusters while enjoying a host of innovative enhancements and exciting features. Stay tuned for its highly anticipated first official release!
+AxonOps Workbench for Apache Cassandra is a desktop application built for Cassandra DB developers and DBAs. Seamlessly connect and interact with Apache Cassandra clusters while enjoying a host of innovative enhancements and exciting features. 
 
-We welcome your feedback, so feel free to discuss any ideas you have https://github.com/axonops/axonops-workbench-cassandra/discussions/categories/ideas or raise issues any issues (https://github.com/axonops/axonops-workbench-cassandra/issues/new/choose)
+We welcome your feedback, so feel free to discuss any ideas you have https://github.com/axonops/axonops-workbench/discussions/categories/ideas or raise issues any issues (https://github.com/axonops/axonops-workbench/issues/new/choose)
 
 ## New CQL Console
-<img width="1709" alt="Screenshot 2024-08-23 at 07 45 40" src="https://github.com/user-attachments/assets/fc95976e-30f9-4760-ada9-1eb4711bfe73">
+![Enhanced_CQL_Console](https://github.com/user-attachments/assets/225cc8f3-d1e7-493c-bd73-b8186baa404d)
 
 ## Query Tracing
-<img width="1708" alt="Screenshot 2024-08-23 at 07 45 55" src="https://github.com/user-attachments/assets/04d6af09-f2f7-45a4-ab8f-d259592d36c4">
+![Advanced_query_tracing](https://github.com/user-attachments/assets/346cbdc4-60f2-4482-9a57-874919a4f711)
 
-## AI Assistant
-<img width="1703" alt="Screenshot 2024-08-23 at 07 50 13" src="https://github.com/user-attachments/assets/83da8e29-6278-4094-ab21-2dba291fe9d6">
+## AI Assistant (Experimental)
+![AI_Expert_Assistant](https://github.com/user-attachments/assets/41f737c4-7511-4732-8556-771a6dd8d8a3)
 
 ## Organise clusters into workspaces and securely add to source control for sharing
 <img width="1678" alt="Screenshot 2024-08-23 at 10 07 50" src="https://github.com/user-attachments/assets/42be7bd5-6fa6-4881-8c30-42ab96c2ae45">
@@ -27,7 +24,7 @@ We welcome your feedback, so feel free to discuss any ideas you have https://git
 
 ## Download and install
 
-Browse to the [releases](https://github.com/axonops/axonops-workbench-cassandra/releases) and select the package for your Operating System. We prebuild distributions for
+Browse to the [releases](https://github.com/axonops/axonops-workbench/releases) and select the package for your Operating System. We prebuild distributions for
 
 - OSX (Intel and Apple chips)
 - Linux (RedHat, Debian and others)

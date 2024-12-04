@@ -940,7 +940,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           {
             'id': getRandomID(30),
             'parent': '#',
-            'text': `Partitioner: <span>${metadata.partitioner}</span>`,
+            'text': `Partitioner: <span>${metadata.partitioner.replace(/.+\.(.+)/gi, '$1')}</span>`,
             'type': 'default',
           },
           {
@@ -949,6 +949,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             'text': `Keyspaces (<span>${metadata.keyspaces.length}</span>)`,
             'type': 'default',
             'icon': normalizePath(Path.join(extraIconsPath, 'keyspaces.png')),
+            'a_attr': {
+              'allow-right-context': 'true',
+              'type': 'keyspaces'
+            }
           }
         ]
       },
@@ -1071,6 +1075,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           if (object[attribute] == undefined)
             return
 
+          // For `durable_writes`, it should be displayed if its value is only `false`
+          if (attribute == 'durable_writes' && object[attribute] != 'false')
+            return
+
+
           // Otherwise, define that attribute's structure
           let structure = {
             id: getRandomID(30),
@@ -1147,6 +1156,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
     buildTreeViewForChild(keyspacesID, keyspaceID, `Keyspace`, keyspace, 'keyspace')
 
     try {
+      if (keyspace.replication_strategy == undefined)
+        throw 0
+
       let replicationStrategy = JSON.parse(repairJSON(keyspace.replication_strategy)),
         replicationStrategyID = getRandomID(30)
 
@@ -2065,6 +2077,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       // Update the cloned keyspace node's parent ID to be the virtual keyspace node's ID
       keyspace.parent = virtualKeyspacesParentID
 
+      keyspace.a_attr = {
+        ...keyspace.a_attr,
+        'data-is-virtual': `true`
+      }
+
       // Push the keyspace node again
       treeStructure.core.data.push(keyspace)
     })
@@ -2290,12 +2307,13 @@ jQuery.fn.extend({
  * {object} `callback` function that will be triggered with passing the final result
  * {boolean} `?noBackdrop` whether or not the backdrop background should be rendered
  * {string} `?checkBox` whether or not showing a checkbox, the passed text will be the checkbox's label
+ * {object} `?dialogElement` the dialog UI element object to be used instead of the default one
  *
  * @Return: {boolean} action confirmed or canceled
  */
-let openDialog = (text, callback, noBackdrop = false, checkBox = '') => {
+let openDialog = (text, callback, noBackdrop = false, checkBox = '', dialogElement = null) => {
   // Point at the dialog's UI element
-  let dialog = $('div#generalPurposeDialog'),
+  let dialog = dialogElement || $('div#generalPurposeDialog'),
     // Get the dialog's MDB object
     dialogObject = getElementMDBObject(dialog, 'Modal'),
     // Point at the dialog's content container
@@ -2304,6 +2322,11 @@ let openDialog = (text, callback, noBackdrop = false, checkBox = '') => {
     closeBtn = dialog.find('div.btn-close'),
     // Point at the checkbox input element
     checkBoxInput = dialog.find('input[type="checkbox"]')
+
+  try {
+    if (dialogElement != null)
+      dialogContent = dialogContent.find('div.text')
+  } catch (e) {}
 
   // Set the dialog's text
   dialogContent.html(text)
@@ -2368,6 +2391,8 @@ let openDialog = (text, callback, noBackdrop = false, checkBox = '') => {
   if (noBackdrop)
     $('div.modal-backdrop:last-of-type').remove()
 }
+
+let openDropKeyspaceDialog = (text, callback) => openDialog(text, callback, false, '', $('div#actionKeyspaceDrop'))
 
 /**
  * Print a custom message in the app's terminals
@@ -2548,7 +2573,7 @@ let encrypt = (publicKey, text) => {
   try {
     // Create a public RSA object
     let public = new NodeRSA(publicKey, 'public', {
-      encryptionScheme: 'pkcs1'
+      encryptionScheme: 'pkcs1_oaep'
     })
 
     // Encrypt the given text
@@ -2583,7 +2608,7 @@ let decrypt = (privateKey, text) => {
   try {
     // Create a private RSA object
     let private = new NodeRSA(privateKey, 'private', {
-      encryptionScheme: 'pkcs1'
+      encryptionScheme: 'pkcs1_oaep'
     })
 
     // Decrypt the given text
@@ -3961,4 +3986,57 @@ let copyStatement = (button) => {
 
   // Give feedback to the user
   showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
+}
+
+let isHostUbuntu = () => {
+  if (OS.platform() != 'linux')
+    return false
+
+  try {
+    let command = Terminal.runSync('(dpkg --list | less -S) | grep ubuntu-')
+
+    if (command.err || command.stderr)
+      return false
+
+    try {
+      return minifyText(command.data).includes('ubuntu')
+    } catch (e) {
+      return false
+    }
+  } catch (e) {
+    return false
+  }
+}
+
+let removeComments = (statement, trim = false) => {
+  let result = `${statement}`
+
+  try {
+    result = result.replace(/(?=(?:[^\\'\\"]*(?:\\'|\\")[^\\'\\"]*(?:\\'|\\"))*[^\\'\\"]*$)(^|[^"'])\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
+      .replace(/(?=(?:[^\\'\\"]*(?:\\'|\\")[^\\'\\"]*(?:\\'|\\"))*[^\\'\\"]*$)(^|[^"'])(^|[^"'])--.*$/gm, '$1') // Remove `--` comments
+      .replace(/(?=(?:[^\\'\\"]*(?:\\'|\\")[^\\'\\"]*(?:\\'|\\"))*[^\\'\\"]*$)(^|[^"'])(^|[^"'])\/\/.*$/gm, "$1") // Remove `//` comments
+
+    if (trim)
+      result = result.trim()
+
+  } catch (e) {}
+
+  return result
+}
+
+let updateContainersManagementToolUI = (tool, getConfig = false) => {
+  let update = () => {
+    $(`ion-icon.management-tool[name]`).attr('name', ['docker', 'podman'].some((_tool) => `${tool}` == _tool) ? `${tool}-plain` : 'unknown')
+  }
+
+  if (!getConfig)
+    return update()
+
+  Modules.Config.getConfig((config) => {
+    try {
+      tool = config.get('features', 'containersManagementTool') || 'none'
+    } catch (e) {}
+
+    update()
+  })
 }

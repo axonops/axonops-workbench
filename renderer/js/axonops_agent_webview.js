@@ -25,35 +25,66 @@ document.addEventListener('DOMContentLoaded', () => {
    * Import important libraries
    * JQuery library
    */
-  const $ = require('jquery'),
-    /**
-     * Electron renderer communication with the main thread
-     * Used for sending requests from the renderer threads to the main thread and listening to the responses
-     */
-    IPCRenderer = require('electron').ipcRenderer
+  global.$ = require('jquery')
+
+  /**
+   * Electron renderer communication with the main thread
+   * Used for sending requests from the renderer threads to the main thread and listening to the responses
+   */
+  global.IPCRenderer = require('electron').ipcRenderer
 
   // Add a reload button in the left menu-side of the AxonOps agent
   setTimeout(() => {
-    // Point at the side menu
-    let container = $('div.\\:sideMenu > div'),
-      // The button's UI structure to be appended
-      element = `
-      <div class=":h100 level1 sideMenu__item">
-        <div>
-          <div class=":flex:mid :p10 :clickable" style="padding-left: 16px;">
-            <div class=":sideMenu-icon">
-              <span style="display: inherit;">
-                <i class="fa fa-refresh" style="text-align: center;width: 20px;font-size: 16px;"></i>
-              </span>
+    // The button's UI structure to be appended
+    let element = `
+        <div bis_skin_checked="1" data-id="reloadWebView">
+          <div bis_skin_checked="1">
+            <div class=":h100 level1 sideMenu__item " bis_skin_checked="1">
+              <div bis_skin_checked="1">
+                <div class=":flex:mid :p10 :clickable" style="padding-left: 16px;" bis_skin_checked="1">
+                  <div class=":sideMenu-icon" bis_skin_checked="1"><span style="display: inherit;"><i class="fa fa-refresh " style="text-align: center; width: 20px; font-size: 18px;"></i></span></div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>`
+        </div>`
 
     /**
      * Append the button
      * Once it's clicked send to the webview a request of reloading
      */
-    container.append($(element).click(() => IPCRenderer.sendToHost(`reload-webview`)))
+    try {
+      document.querySelector('div.\\:sideMenu > div').insertAdjacentHTML('beforeend', element)
+
+      setTimeout(() => {
+        try {
+          document.querySelector('div[data-id="reloadWebView"]').addEventListener('click', () => {
+            IPCRenderer.sendToHost(`reload-webview`)
+          })
+        } catch (e) {}
+      }, 1000)
+    } catch (e) {}
+
+    let checkForTheSideMenuTimeout,
+      checkForTheSideMenu = () => {
+        checkForTheSideMenuTimeout = setTimeout(() => {
+          try {
+            document.querySelector('div.\\:sideMenu > div').insertAdjacentHTML('beforeend', element)
+
+            setTimeout(() => {
+              try {
+                document.querySelector('div[data-id="reloadWebView"]').addEventListener('click', () => {
+                  IPCRenderer.sendToHost(`reload-webview`)
+                })
+              } catch (e) {}
+            })
+          } catch (e) {}
+
+          if (document.querySelector('div.\\:sideMenu > div') == null)
+            checkForTheSideMenu()
+        }, 1000)
+      }
+
+    $(`#__next > div > div.pagesIndex__inner > div.termsAndConditions > div.\\:flex\\:center\\:between > div:nth-child(2) > button`).click(() => checkForTheSideMenu())
   }, 1000)
 })

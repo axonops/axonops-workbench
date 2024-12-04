@@ -393,6 +393,16 @@ div.toast[toast-id] {
   }
 }
 
+div.toast-body {
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 150px;
+    font-size: 98% !important;
+    display: inline-flex;
+  }
+}
+
 div.terminate-process {
   position: absolute;
   inset: 0;
@@ -860,6 +870,27 @@ ion-icon.axonops-status {
   }
 }
 
+ion-icon.management-tool {
+  vertical-align: middle;
+  margin-left: 5px;
+
+  &[name="docker-plain"] {
+    font-size: 230%;
+    opacity: 0.7;
+  }
+
+  &[name="podman-plain"] {
+    font-size: 190%;
+  }
+
+  &[name="unknown"] {
+    font-size: 300%;
+    transform: scale(0.55);
+    margin-left: -2px;
+    margin-right: -5px;
+  }
+}
+
 .json-literal,
 .json-string {
   color: #e3e3e3;
@@ -868,4 +899,19 @@ ion-icon.axonops-status {
 
 .hljs {
   color: #e3e3e3;
+}
+
+.form-outline.invalid-warning .form-control.is-invalid~.form-notch div {
+  border-color: #dc904c;
+}
+
+.form-outline.invalid-warning .form-control.is-invalid~.form-label,
+.form-outline.invalid-warning .invalid-feedback:not(.transparent-color),
+.was-validated .form-outline.invalid-warning .form-control:invalid~.form-label {
+  color: #dc904c !important;
+}
+
+div.invalid-feedback.transparent-color {
+  color: transparent !important;
+  pointer-events: none;
 }

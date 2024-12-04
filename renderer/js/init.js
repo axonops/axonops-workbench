@@ -292,20 +292,19 @@ $(document).on('initialize', () => {
         $(webviewMoreActionsContainer).toggleClass('show')
 
         // Show the transparent background which prevent interacting with the webview
-        $('div.body div.hidden-area div.content div.more-list-bg').show()
+        $('div.body div.hidden-area div.content div.more-list-bg').toggle()
 
-        setTimeout(() => {
-          // When clicking outside the more actions container
-          $(webviewMoreActionsContainer).oneClickOutside({
-            callback: () => {
-              // Hide the container
-              $(webviewMoreActionsContainer).removeClass('show')
+        // When clicking outside the more actions container
+        $(webviewMoreActionsContainer).oneClickOutside({
+          callback: () => {
+            // Hide the container
+            $(webviewMoreActionsContainer).removeClass('show')
 
-              // Hide the transparent background
-              $('div.body div.hidden-area div.content div.more-list-bg').hide()
-            }
-          })
-        }, 500)
+            // Hide the transparent background
+            $('div.body div.hidden-area div.content div.more-list-bg').hide()
+          },
+          calledFromClickInsideHandler: true
+        })
       })
 
       // Refresh the entire webview
@@ -722,7 +721,7 @@ $(document).on('initialize', () => {
     setTimeout(() => {
       Coloris({
         alpha: false,
-        clearButton: true,
+        clearButton: false,
         clearLabel: I18next.capitalize(I18next.t('clear')),
         themeMode: 'dark',
         swatches: ['#E53935', '#F4511E', '#FF8A80', '#FB8C00', '#FFB300', '#FFD180', '#FDD835', '#FFFF8D', '#C0CA33', '#43A047', '#7CB342', '#B9F6CA', '#00897B', '#1E88E5', '#039BE5', '#00ACC1', '#84FFFF', '#80D8FF', '#3949AB', '#5E35B1', '#8E24AA', '#B388FF', '#6D4C41', '#546E7A']
@@ -767,7 +766,9 @@ $(document).on('initialize', () => {
   // Monaco editor
   {
     let monacoPath = Path.join(__dirname, '..', '..', 'node_modules', 'monaco-editor', 'min'),
-      editorUIElement = $('div.modal#addEditClusterDialog div.modal-body div.editor-container div.editor')
+      editorUIElement = $('div.modal#addEditClusterDialog div.modal-body div.editor-container div.editor'),
+      rightClickActionsKeyspaceEditorUIElement = $('div.modal#actionsKeyspace div.modal-body div.action-editor div.editor'),
+      dropKeyspaceEditorUIElement = $('div.modal#actionKeyspaceDrop .editor')
 
     // Initialize the editor
     let amdLoader = require(Path.join(monacoPath, 'vs', 'loader.js')),
@@ -823,240 +824,298 @@ $(document).on('initialize', () => {
          */
         editor.layout()
 
+        let updateTimeout
+
         // Once there is a change in the editor (by pasting, typing, etc...)
         editor.getModel().onDidChangeContent(() => {
-          // If the editor is updating then stop once
-          if (isUpdatingEditor) {
-            isUpdatingEditor = false
+          try {
+            clearTimeout(updateTimeout)
+          } catch (e) {}
 
-            // By doing this, the `ChangeContent` event is triggered again after updating the content
-            editor.setValue(editor.getValue())
+          updateTimeout = setTimeout(() => {
+            // If the editor is updating then stop once
+            if (isUpdatingEditor) {
+              isUpdatingEditor = false
 
-            // Skip the upcoming code
-            return
-          }
+              // By doing this, the `ChangeContent` event is triggered again after updating the content
+              editor.setValue(editor.getValue())
 
-          // Disable the save cluster button
-          $('#addCluster').attr('disabled', 'disabled')
+              // Skip the upcoming code
+              return
+            }
 
-          // Detected sensitive data - username, password -
-          let detectedSensitiveData = false,
-            // Get the currently active workspace's ID
-            workspaceID = getActiveWorkspaceID()
+            // Disable the save cluster button
+            $('#addCluster').attr('disabled', 'disabled')
 
-          // Get and parse the content of the current `cqlsh.rc `file and change inputs' values as needed
-          Modules.Clusters.getCQLSHRCContent(workspaceID, null, editor).then((_content) => {
-            try {
-              // Update the global cqlsh values array with the current values from the editor
-              cqlshValues = _content
+            // Detected sensitive data - username, password -
+            let detectedSensitiveData = false,
+              // Get the currently active workspace's ID
+              workspaceID = getActiveWorkspaceID()
 
-              // Define the sections [connection, ui, SSL, etc...]
-              let _sections = Object.keys(_content)
+            // Get and parse the content of the current `cqlsh.rc `file and change inputs' values as needed
+            Modules.Clusters.getCQLSHRCContent(workspaceID, null, editor).then((_content) => {
+              try {
+                // Update the global cqlsh values array with the current values from the editor
+                cqlshValues = _content
 
-              // If there are no sections then the cqlsh is not - in terms of syntax - correct or something is missing then stop this process
-              if (_sections.length <= 0)
-                throw 0
+                // Define the sections [connection, ui, SSL, etc...]
+                let _sections = Object.keys(_content)
 
-              // Loop through each section
-              for (let _section of _sections) {
-                // Define the current section's keys [hostname, port, SSL, etc...]
-                let _keys = Object.keys(_content[_section])
+                // If there are no sections then the cqlsh is not - in terms of syntax - correct or something is missing then stop this process
+                if (_sections.length <= 0)
+                  throw 0
 
-                // If the current section has no keys then skip this section and move to the next one
-                if (_keys.length <= 0)
-                  continue
+                // Loop through each section
+                for (let _section of _sections) {
+                  // Define the current section's keys [hostname, port, SSL, etc...]
+                  let _keys = Object.keys(_content[_section])
 
-                // Loop through each key/option
-                for (let _key of _keys) {
-                  // Check if this key/option is considered to be sensitive data that shouldn't be in the config file
-                  if (Modules.Consts.SensitiveData.includes(_key))
-                    detectedSensitiveData = true
+                  // If the current section has no keys then skip this section and move to the next one
+                  if (_keys.length <= 0)
+                    continue
 
-                  // Get the current key/option input field's object
-                  let inputObject = getElementMDBObject($(`[info-section="${_section}"][info-key="${_key}"]`)),
-                    // Get the value for the key/option
-                    optionValue = _content[_section][_key],
-                    // Point at the input field
-                    input = $(`[info-section="${_section}"][info-key="${_key}"]`)
+                  // Loop through each key/option
+                  for (let _key of _keys) {
+                    // Check if this key/option is considered to be sensitive data that shouldn't be in the config file
+                    if (Modules.Consts.SensitiveData.includes(_key))
+                      detectedSensitiveData = true
 
-                  // Try to set the value using the `setValue` method
+                    // Get the current key/option input field's object
+                    let inputObject = getElementMDBObject($(`[info-section="${_section}"][info-key="${_key}"]`)),
+                      // Get the value for the key/option
+                      optionValue = _content[_section][_key],
+                      // Point at the input field
+                      input = $(`[info-section="${_section}"][info-key="${_key}"]`)
+
+                    // Try to set the value using the `setValue` method
+                    try {
+                      input.val(optionValue)
+                    } catch (e) {}
+
+                    // Add values to the checkbox inputs
+                    try {
+                      // If the input's type is not `checkbox` then skip this try-catch block
+                      if (input.attr('type') != 'checkbox')
+                        throw 0
+
+                      // Update the checkbox's status
+                      input.prop('checked', optionValue == 'true')
+                    } catch (e) {}
+
+                    // Add values to the file input fields
+                    try {
+                      // If the input field's type is not `file` then skip this try-catch block
+                      if (input.attr('type') == 'text' && input.parent().attr('role') != 'file-selector')
+                        throw 0
+
+                      /**
+                       * Update the tooltip's content and state
+                       * Get the object
+                       */
+                      let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is(input))
+
+                      // If the path to the file is invalid or inaccessible then don't adopt it
+                      if (!pathIsAccessible(optionValue)) {
+                        // Clear the input's value
+                        input.val('')
+
+                        // Clear the file's name preview
+                        input.parent().attr('file-name', '-')
+
+                        // Disable the tooltip
+                        try {
+                          tooltipObject[0].object.disable()
+                        } catch (e) {}
+
+                        // Skip the upcoming code in this try-catch block
+                        throw 0
+                      }
+
+                      // Enable the tooltip and update its content
+                      try {
+                        tooltipObject[0].object.enable()
+                        tooltipObject[0].object.setContent(optionValue)
+                      } catch (e) {}
+
+                      // Set the selected file's path
+                      input.val(optionValue)
+                      input.parent().attr('file-name', Path.basename(optionValue))
+                    } catch (e) {}
+
+                    // Update the input's object
+                    inputObject.update()
+                    inputObject._deactivate()
+                  }
+                }
+              } catch (e) {} finally {
+                // Check if there's any disabled key/option after the change and clear its input field in the UI
+                $('[info-section][info-key]').each(function() {
+                  // Get the input's Material Design object
+                  let object_ = getElementMDBObject($(this)),
+                    // Get the inputs' section, and its related key/option's name
+                    [section_, key_] = getAttributes($(this), ['info-section', 'info-key'])
+
+                  // If the input section is `none` then skip it and move to the next key/option
+                  if (section_ == 'none')
+                    return
+
                   try {
-                    input.val(optionValue)
-                  } catch (e) {}
-
-                  // Add values to the checkbox inputs
-                  try {
-                    // If the input's type is not `checkbox` then skip this try-catch block
-                    if (input.attr('type') != 'checkbox')
-                      throw 0
-
-                    // Update the checkbox's status
-                    input.prop('checked', optionValue == 'true')
-                  } catch (e) {}
-
-                  // Add values to the file input fields
-                  try {
-                    // If the input field's type is not `file` then skip this try-catch block
-                    if (input.attr('type') == 'text' && input.parent().attr('role') != 'file-selector')
-                      throw 0
-
                     /**
-                     * Update the tooltip's content and state
-                     * Get the object
+                     * Find the input's value from the editor
+                     * If it is not `undefined`; then it means this value has been updated already and no need to handle it as an empty or `undefined` value
                      */
-                    let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is(input))
+                    if (_content[section_][key_] != undefined)
+                      return
 
-                    // If the path to the file is invalid or inaccessible then don't adopt it
-                    if (!pathIsAccessible(optionValue)) {
-                      // Clear the input's value
-                      input.val('')
+                    // Handle when the input is actually a file selector
+                    try {
+                      // If the input is not a file selector then skip this try-catch block
+                      if ($(this).parent().attr('file-name') == undefined)
+                        throw 0
+
+                      /**
+                       * Update the tooltip's content and state
+                       * Get the object
+                       */
+                      let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
 
                       // Clear the file's name preview
-                      input.parent().attr('file-name', '-')
+                      $(this).parent().attr('file-name', '-')
 
                       // Disable the tooltip
                       try {
                         tooltipObject[0].object.disable()
                       } catch (e) {}
-
-                      // Skip the upcoming code in this try-catch block
-                      throw 0
-                    }
-
-                    // Enable the tooltip and update its content
-                    try {
-                      tooltipObject[0].object.enable()
-                      tooltipObject[0].object.setContent(optionValue)
                     } catch (e) {}
-
-                    // Set the selected file's path
-                    input.val(optionValue)
-                    input.parent().attr('file-name', Path.basename(optionValue))
-                  } catch (e) {}
-
-                  // Update the input's object
-                  inputObject.update()
-                  inputObject._deactivate()
-                }
-              }
-            } catch (e) {} finally {
-              // Check if there's any disabled key/option after the change and clear its input field in the UI
-              $('[info-section][info-key]').each(function() {
-                // Get the input's Material Design object
-                let object_ = getElementMDBObject($(this)),
-                  // Get the inputs' section, and its related key/option's name
-                  [section_, key_] = getAttributes($(this), ['info-section', 'info-key'])
-
-                // If the input section is `none` then skip it and move to the next key/option
-                if (section_ == 'none')
-                  return
-
-                try {
-                  /**
-                   * Find the input's value from the editor
-                   * If it is not `undefined`; then it means this value has been updated already and no need to handle it as an empty or `undefined` value
-                   */
-                  if (_content[section_][key_] != undefined)
-                    return
-
-                  // Handle when the input is actually a file selector
-                  try {
-                    // If the input is not a file selector then skip this try-catch block
-                    if ($(this).parent().attr('file-name') == undefined)
-                      throw 0
 
                     /**
-                     * Update the tooltip's content and state
-                     * Get the object
+                     * If it is `undefined` then it hasn't been found in the `cqlsh.rc` file
+                     * Set the input value to ''
                      */
-                    let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
-
-                    // Clear the file's name preview
-                    $(this).parent().attr('file-name', '-')
-
-                    // Disable the tooltip
                     try {
-                      tooltipObject[0].object.disable()
-                    } catch (e) {}
+                      $(this).val('')
+                    } catch (e) {
+                      // If the previous set didn't work then try to call the `selected` attribute
+                      try {
+                        $(this).prop('checked', getAttributes($(this), 'default-value') == 'true' ? true : false)
+                      } catch (e) {}
+                    } finally {
+                      // Update the object
+                      object_.update()
+                      object_._deactivate()
+                    }
                   } catch (e) {}
+                })
+              }
 
-                  /**
-                   * If it is `undefined` then it hasn't been found in the `cqlsh.rc` file
-                   * Set the input value to ''
-                   */
-                  try {
-                    $(this).val('')
-                  } catch (e) {
-                    // If the previous set didn't work then try to call the `selected` attribute
-                    try {
-                      $(this).prop('checked', getAttributes($(this), 'default-value') == 'true' ? true : false)
-                    } catch (e) {}
-                  } finally {
-                    // Update the object
-                    object_.update()
-                    object_._deactivate()
+              // Remove all decorations
+              if (editorDecorations != null)
+                editor.removeDecorations(editorDecorations)
+
+              // Sensitive data has been detected, if not, just stop here
+              if (!detectedSensitiveData)
+                return
+
+              /**
+               * If sensitive data has been detected then get the line number for those data and add red highlighter to them
+               *
+               * Define the alerts array which will be passed to the editor to decorate them
+               */
+              let alerts = [],
+                // Get the editor's model object
+                editorModel = editor.getModel(),
+                // Get the number of lines in the editor
+                lines = editorModel.getLineCount()
+
+              // Loop through editor's lines
+              for (let i = 1; i <= lines; i++) {
+                try {
+                  // Get the current line based on the index
+                  let line = editorModel.getLineContent(i),
+                    // Get the option in that current line if possible, and make sure it is active if so
+                    active = line.match(/^((?![\;\[])|(\;*\s*\[)).+/gm),
+                    // Split that active option, and look at the key
+                    [key, value] = active[0].split(/\s*\=\s*/gm)
+
+                  // The key/option name is not considered sensitive data
+                  if (!Modules.Consts.SensitiveData.includes(key))
+                    continue
+
+                  // If the key is considered sensitive data then add highlighter to that data line
+                  let alert = {
+                    range: new monaco.Range(i, 0, i, 0),
+                    options: {
+                      isWholeLine: true,
+                      className: 'line-forbidden',
+                      glyphMarginClassName: 'forbidden',
+                    }
                   }
+
+                  // Push that alert to be applied later in the editor
+                  alerts.push(alert)
                 } catch (e) {}
-              })
-            }
+              }
 
-            // Remove all decorations
-            if (editorDecorations != null)
-              editor.removeDecorations(editorDecorations)
-
-            // Sensitive data has been detected, if not, just stop here
-            if (!detectedSensitiveData)
-              return
-
-            /**
-             * If sensitive data has been detected then get the line number for those data and add red highlighter to them
-             *
-             * Define the alerts array which will be passed to the editor to decorate them
-             */
-            let alerts = [],
-              // Get the editor's model object
-              editorModel = editor.getModel(),
-              // Get the number of lines in the editor
-              lines = editorModel.getLineCount()
-
-            // Loop through editor's lines
-            for (let i = 1; i <= lines; i++) {
-              try {
-                // Get the current line based on the index
-                let line = editorModel.getLineContent(i),
-                  // Get the option in that current line if possible, and make sure it is active if so
-                  active = line.match(/^((?![\;\[])|(\;*\s*\[)).+/gm),
-                  // Split that active option, and look at the key
-                  [key, value] = active[0].split(/\s*\=\s*/gm)
-
-                // The key/option name is not considered sensitive data
-                if (!Modules.Consts.SensitiveData.includes(key))
-                  continue
-
-                // If the key is considered sensitive data then add highlighter to that data line
-                let alert = {
-                  range: new monaco.Range(i, 0, i, 0),
-                  options: {
-                    isWholeLine: true,
-                    className: 'line-forbidden',
-                    glyphMarginClassName: 'forbidden',
-                  }
-                }
-
-                // Push that alert to be applied later in the editor
-                alerts.push(alert)
-              } catch (e) {}
-            }
-
-            // Apply highlighters/decorations
-            editorDecorations = editor.deltaDecorations([], alerts)
-          })
+              // Apply highlighters/decorations
+              editorDecorations = editor.deltaDecorations([], alerts)
+            })
+          }, 250)
         })
       } catch (e) {
         try {
           errorLog(e, 'initialization')
         } catch (e) {}
       }
+    })
+
+    amdRequire(['vs/editor/editor.main'], () => {
+      try {
+        monaco.editor.create(rightClickActionsKeyspaceEditorUIElement[0], {
+          language: 'sql',
+          minimap: {
+            enabled: false
+          },
+          padding: {
+            top: 10,
+            bottom: 10
+          },
+          wordWrap: 'on',
+          glyphMargin: false, // This option allows to render an object in the line numbering side
+          suggest: {
+            showFields: false,
+            showFunctions: false
+          },
+          theme: 'vs-dark',
+          scrollBeyondLastLine: false,
+          mouseWheelZoom: true,
+          fontSize: 13
+        })
+      } catch (e) {}
+    })
+
+    amdRequire(['vs/editor/editor.main'], () => {
+      try {
+        monaco.editor.create(dropKeyspaceEditorUIElement[0], {
+          language: 'sql',
+          minimap: {
+            enabled: false
+          },
+          padding: {
+            top: 10,
+            bottom: 10
+          },
+          wordWrap: 'on',
+          glyphMargin: false, // This option allows to render an object in the line numbering side
+          suggest: {
+            showFields: false,
+            showFunctions: false
+          },
+          theme: 'vs-dark',
+          scrollBeyondLastLine: false,
+          mouseWheelZoom: true,
+          fontSize: 13
+        })
+      } catch (e) {}
     })
   }
 
@@ -1142,7 +1201,7 @@ $(document).on('initialize', () => {
         // Define the path to all binaries
         let binariesPath = Path.join((extraResourcesPath != null ? Path.join(appPath) : Path.join(__dirname, '..', '..')), 'main', 'bin'),
           // Define binaries to be checked
-          binaries = ['cqlsh-407', 'cqlsh-410', 'keys_generator']
+          binaries = ['cqlsh', 'keys_generator']
 
         // Check their existence
         Terminal.run(`cd "${binariesPath}" && ${OS.platform() == 'win32' ? 'dir' : 'ls'}`, (err, data, stderr) => {
@@ -1155,13 +1214,13 @@ $(document).on('initialize', () => {
               throw 0
 
             // If the host is Windows then change the binary call format
-            let binCall = (OS.platform() == 'win32') ? 'cqlsh-407.exe' : './cqlsh-407',
+            let binCall = (OS.platform() == 'win32') ? 'cqlsh.exe' : './cqlsh',
               // Define the cqlsh tool's directory
-              binDirectory = `&& cd "cqlsh-407" && `
+              binDirectory = `&& cd "cqlsh" && `
 
             // Switch to the single-file mode
             try {
-              if (!FS.lstatSync(Path.join(CWD, `cqlsh-407`)).isDirectory())
+              if (!FS.lstatSync(Path.join(binariesPath, `cqlsh`)).isDirectory())
                 binDirectory = '&&'
             } catch (e) {}
 
@@ -1301,7 +1360,10 @@ $(document).on('initialize', () => {
     $(`div.row#contentProtectionContainer`).hide()
 
     // NOTE: In case we've faced the multi-selection bug on Linux we can enable this line
-    // setTimeout(() => $('span[selection-feautre]').hide();$('div.modal-section div.drag-drop-workspaces').unbind('click').css('cursor', 'default'), 1000)
+    setTimeout(() => {
+      $('span[selection-feautre]').hide()
+      $('div.modal-section div.drag-drop-workspaces').unbind('click').css('cursor', 'default')
+    }, 1000)
   } catch (e) {}
 })
 
@@ -1332,7 +1394,7 @@ $(document).on('initialize', () => {
 
     try {
       import(Path.join(__dirname, '..', '..', 'node_modules', 'url-join', 'lib', 'url-join.js')).then((module) => {
-        let releaseLink = module.default(Modules.Consts.URLS.Workbench, 'releases', 'tag', AppInfo.version)
+        let releaseLink = module.default(Modules.Consts.URLS.Workbench, 'releases', 'tag', `v${AppInfo.version}`)
 
         $('button#releaseNotes').click(() => {
           try {
@@ -1356,24 +1418,41 @@ $(document).on('initialize', () => {
 })
 
 // Send the `loaded` event to the main thread, and show the `About` dialog/modal
-$(document).on('initialize', () => setTimeout(() => {
+$(document).on('initialize', () => {
   /**
    * Handle whether or not the `About` dialog should be shown
    *
    * Get the app's config
    */
-  Modules.Config.getConfig((config) => {
-    // Whether or not the copyright notice is acknowledged already
-    let isCopyrightAcknowledged = config.get('security', 'cassandraCopyrightAcknowledged') == 'true'
+  let getConfigToLoad = () => {
+    setTimeout(() => {
+      Modules.Config.getConfig((config) => {
+        // Whether or not the copyright notice is acknowledged already
+        let isCopyrightAcknowledged = config.get('security', 'cassandraCopyrightAcknowledged') == 'true'
 
-    // If it's not then skip the upcoming code - the app won't be loaded till the checkbox is checked -
-    if (!isCopyrightAcknowledged)
-      return
+        // If it's not then skip the upcoming code - the app won't be loaded till the checkbox is checked -
+        if (!isCopyrightAcknowledged)
+          return getConfigToLoad()
 
-    // Send the event
-    IPCRenderer.send('loaded')
-  })
-}, 2000))
+        // Send the event
+        IPCRenderer.send('initialized')
+      })
+    }, 1500)
+  }
+
+  try {
+    if (OS.platform() != 'darwin')
+      return getConfigToLoad()
+
+    getKey('public', (key) => {
+      getKey('private', (key) => {
+        IPCRenderer.send('pty:cqlsh:initialize')
+
+        IPCRenderer.on('pty:cqlsh:initialize:finished', () => getConfigToLoad())
+      })
+    })
+  } catch (e) {}
+})
 
 // Send the `loaded` event to the main thread, and show the `About` dialog/modal
 $(document).on('initialize', () => setTimeout(() => {
@@ -1540,6 +1619,9 @@ $(document).on('checkForUpdates', function(e, manualCheck = false) {
               }
             })
 
+            assetsContainer.toggle(assets.length != 0)
+
+
             if (assets.length != 0)
               assetsContainer.find('div.asset').remove()
 
@@ -1566,7 +1648,7 @@ $(document).on('checkForUpdates', function(e, manualCheck = false) {
 
           $('button#dismissUpdate').unbind('click').click(function() {
             try {
-              Store.set('dismissUpdate', `${result.releaseInfo.name}`)
+              Store.set('dismissUpdate', `${result.releaseInfo.tag_name}`)
 
               showToast(I18next.capitalize(I18next.t('dismiss update')), I18next.capitalizeFirstLetter(I18next.replaceData('the update with the specific version [b]$data[/b] has been dismissed, however, you can still reach this update from the settings section', [result.releaseInfo.name])) + '.', 'success')
 

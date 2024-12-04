@@ -64,6 +64,12 @@ div.body {
         width: 50px;
         height: 50px;
         border-radius: 50%;
+        transition: opacity 0.15s ease-in-out;
+        cursor: pointer;
+
+        &:hover {
+          opacity: 0.95;
+        }
 
         &:after {
           content: '';
@@ -1464,6 +1470,10 @@ div.body {
                       &[info="axonops"] {
                         animation-delay: 0.9s;
                       }
+
+                      &[info="management-tool"] {
+                        animation-delay: 1s;
+                      }
                     }
                   }
                 }
@@ -2191,6 +2201,10 @@ div.body {
 
                   &[info="axonops"] {
                     animation-delay: 0.9s;
+                  }
+
+                  &[info="management-tool"] {
+                    animation-delay: 1s;
                   }
                 }
               }
@@ -2968,6 +2982,12 @@ div.tab-content {
                     background: var(--mdb-info);
                   }
                 }
+
+                div.sub-output-content {
+                  pre {
+                    white-space: pre-wrap;
+                  }
+                }
               }
 
               div.executing {
@@ -3170,6 +3190,8 @@ div.tab-content {
         div.container-footer {
           height: 100px;
           margin-top: 20px;
+          box-shadow: 0 -10px 20px 10px #17181a;
+          position: relative;
 
           div.top {
             display: flex;
@@ -3959,6 +3981,10 @@ div.dropdown[for-select] {
   margin-bottom: -21.59px;
   z-index: 1;
 
+  &.adjust {
+    bottom: 70px;
+  }
+
   button {
     opacity: 0;
     pointer-events: none;
@@ -4638,6 +4664,132 @@ button#checkNowForUpdates {
       opacity: 1;
       transition: width 0.2s ease-in-out, opacity 0.2s ease-in-out 0.15s;
     }
+  }
+}
+
+div.management-tools {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-content: center;
+  align-items: center;
+  justify-content: space-between;
+
+  div.tool {
+    background: #353535;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-content: center;
+    padding: 10px;
+    border-radius: 7px;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      box-shadow: inset 0 0 0 1px rgba(59, 113, 202, 0.80);
+    }
+
+    &.selected {
+      box-shadow: inset 0 0 0 2px rgba(59, 113, 202, 0.80);
+
+      div.icon {
+        filter: grayscale(0);
+      }
+    }
+
+    &[tool="podman"] {
+      margin-right: 6px;
+    }
+
+    &[tool="docker"] {
+      margin-left: 6px;
+    }
+
+    div.icon {
+      font-size: 200%;
+      margin-right: 8px;
+      filter: grayscale(0.5);
+    }
+  }
+}
+
+ion-icon.management-tools-hint-icon {
+  font-size: 130%;
+  vertical-align: middle;
+  position: relative;
+  bottom: 2px;
+  transition: 0.2s ease-in-out;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+div.management-tools-hint {
+  background: rgba(123, 181, 255, 0.1);
+  font-size: 85%;
+  width: fit-content;
+  padding: 0 5px;
+  margin-top: -5px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  cursor: default;
+  display: none;
+
+  span.link {
+    text-decoration: underline;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    ion-icon {
+      margin-left: 1px;
+      vertical-align: middle;
+      position: relative;
+      bottom: 2px;
+    }
+
+    &:hover {
+      opacity: 0.85;
+    }
+  }
+}
+
+div.row.for-management-tools-settings {
+  margin-bottom: 20px !important;
+  margin-top: -11px;
+  transform: scale(0.9);
+  transform-origin: top;
+
+  div.col-md-9 {
+    position: relative;
+    left: -15px;
+  }
+}
+
+div#selectContainersManagementTool {
+  margin-bottom: 25px;
+
+  &.show-selected {
+    div.management-tools-hint,
+    ion-icon.management-tools-hint-icon {
+      display: none !important;
+    }
+
+    div.tool.selected {
+      box-shadow: inset 0 0 0 1px rgba(59, 113, 202, 0.80) !important;
+    }
+
+    div.tool:not(.selected) {
+      filter: grayscale(1);
+      opacity: 0.5;
+    }
+    pointer-events: none;
   }
 }
 /**

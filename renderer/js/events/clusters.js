@@ -21,9 +21,11 @@
    * `getClusters` will remove all clusters in the UI and fetch them all over again from the workspace folder
    * `refreshClusters` will keep the current clusters in the UI, and just add clusters that are not in the UI already
    */
-  $(document).on('getClusters refreshClusters', function(e, workspaceID) {
-    // To determine if the event is `getClusters` or `refreshClusters`
-    const event = e.type,
+  $(document).on('getClusters refreshClusters', function(e, passedData) {
+    // Save the given workspace ID
+    const workspaceID = passedData.workspaceID,
+      // To determine if the event is `getClusters` or `refreshClusters`
+      event = e.type,
       // Point at the element of the associated workspace element in the UI
       workspaceElement = $(`div.workspaces-container div.workspace[data-id="${workspaceID}"]`),
       // Point at the parent of all clusters container
@@ -36,6 +38,9 @@
       // Set the suitable function to get clusters/projects based on the type of the workspace
       moduleGetFunction = !isSandbox ? Modules.Clusters.getClusters : Modules.Docker.getProjects
 
+    let clustersCounter = 0,
+      clustersIndex = 0
+
     // Get all clusters/projects saved in the workspace
     moduleGetFunction(workspaceID).then((clusters) => {
       // Clean the container if the event is `get` clusters
@@ -44,6 +49,8 @@
 
       // Add or remove the `empty` class based on the number of saved clusters
       let areNoClusters = clusters.length <= 0
+
+      clustersCounter = clusters.length
 
       // Toggle the `empty` class
       setTimeout(() => parentClusterContainer.toggleClass('empty', areNoClusters), areNoClusters ? 200 : 10)
@@ -60,6 +67,8 @@
       // Loop through all fetched clusters
       clusters.forEach((cluster, currentIndex) => {
         try {
+          clustersIndex = currentIndex
+
           // If the current workspace is not the docker/sandbox then skip this try-catch block
           if (!isSandbox)
             throw 0
@@ -230,7 +239,8 @@
          * By default, it's empty
          */
         let numOfNodesInfo = '',
-          isAxonOpsInstalled = ''
+          isAxonOpsInstalled = '',
+          managementTool = ''
 
         try {
           // If the current cluster is not a docker/sandbox project then skip this try-catch block
@@ -253,6 +263,19 @@
               <ion-icon name="right-arrow-filled"></ion-icon>
             </div>
             <div class="text"><ion-icon class="axonops-status ${cluster.axonops}" name="${cluster.axonops == true ? 'check' : 'close'}"></ion-icon></div>
+            <div class="_placeholder" hidden></div>
+          </div>`
+
+          let containersManagementTool = passedData.containersManagementTool || 'none'
+
+          containersManagementTool = ['docker', 'podman'].some((tool) => containersManagementTool == tool) ? `${containersManagementTool}-plain` : 'unknown'
+
+          managementTool = `
+          <div class="info" info="management-tool">
+            <div class="title">Tool</span>
+              <ion-icon name="right-arrow-filled"></ion-icon>
+            </div>
+            <div class="text"><ion-icon class="management-tool" name="${containersManagementTool}"></ion-icon></div>
             <div class="_placeholder" hidden></div>
           </div>`
         } catch (e) {}
@@ -286,6 +309,7 @@
                   </div>
                   ${numOfNodesInfo}
                   ${isAxonOpsInstalled}
+                  ${managementTool}
                 </div>
               </div>
               ${!isSandbox ? footerStructure.nonSandbox : footerStructure.sandbox}
@@ -602,6 +626,7 @@
                     cqlshSessionContentID,
                     cqlshSessionSearchInputID,
                     cqlshSessionStatementInputID,
+                    executeStatementBtnID,
                     bashSessionContentID,
                     terminalContainerID,
                     terminalBashContainerID,
@@ -631,7 +656,7 @@
                     // Restart and close the work area
                     restartWorkareaBtnID,
                     closeWorkareaBtnID
-                  ] = getRandomID(20, 30)
+                  ] = getRandomID(20, 31)
 
                   /**
                    * Define tabs that shown only to sandbox projects
@@ -885,7 +910,7 @@
                                        </div>
                                      </div>
                                      <div class="execute">
-                                       <button class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
+                                       <button id="_${executeStatementBtnID}" class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
                                          <ion-icon name="send"></ion-icon>
                                          <l-reuleaux size="20" stroke="2" stroke-length="0.25" bg-opacity="0.25" speed="0.8" color="white"></l-reuleaux>
                                        </button>
@@ -1306,57 +1331,57 @@
                         if (isOnlyInfo)
                           throw 0
 
-                        statementText = Highlight.highlight(statementText, {
+                        statementText = Highlight.highlight(removeComments(statementText, true), {
                           language: 'cql'
                         }).value
                       } catch (e) {}
 
                       // The statement's block UI structure
                       let element = `
-                            <div class="block show" data-id="${blockID}">
-                              <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
-                                <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
-                                  <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
-                                </span>
-                                <div class="text"><pre>${statementText}</pre></div>
-                                <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
-                                  <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
-                                    data-mulang="copy the statement" capitalize-first>
-                                    <ion-icon name="copy-solid"></ion-icon>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="info-badges">
-                                <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
-                                <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
-                              </div>
-                              <div class="output">
-                                <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
-                                ${isOnlyInfo ? statement : ''}
-                              </div>
-                              <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
-                                <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
-                                  data-mulang="download the block" capitalize-first hidden>
-                                  <ion-icon name="download"></ion-icon>
-                                </div>
-                                <div class="download-options">
-                                  <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
-                                    <ion-icon name="csv"></ion-icon>
-                                  </div>
-                                  <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
-                                    <ion-icon name="pdf"></ion-icon>
-                                  </div>
-                                </div>
-                                <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
-                                  data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
-                                  <ion-icon name="copy-solid"></ion-icon>
-                                </div>
-                                <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
-                                  data-mulang="delete the block" capitalize-first>
-                                  <ion-icon name="trash"></ion-icon>
-                                </div>
-                              </div>
-                            </div>`
+                             <div class="block show" data-id="${blockID}">
+                               <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
+                                 <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
+                                   <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
+                                 </span>
+                                 <div class="text"><pre>${statementText}</pre></div>
+                                 <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
+                                   <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
+                                     data-mulang="copy the statement" capitalize-first>
+                                     <ion-icon name="copy-solid"></ion-icon>
+                                   </div>
+                                 </div>
+                               </div>
+                               <div class="info-badges">
+                                 <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
+                                 <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
+                               </div>
+                               <div class="output">
+                                 <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
+                                 ${isOnlyInfo ? statement : ''}
+                               </div>
+                               <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
+                                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
+                                   data-mulang="download the block" capitalize-first hidden>
+                                   <ion-icon name="download"></ion-icon>
+                                 </div>
+                                 <div class="download-options">
+                                   <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                     <ion-icon name="csv"></ion-icon>
+                                   </div>
+                                   <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                     <ion-icon name="pdf"></ion-icon>
+                                   </div>
+                                 </div>
+                                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
+                                   data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
+                                   <ion-icon name="copy-solid"></ion-icon>
+                                 </div>
+                                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
+                                   data-mulang="delete the block" capitalize-first>
+                                   <ion-icon name="trash"></ion-icon>
+                                 </div>
+                               </div>
+                             </div>`
 
                       // Append the block and hide it - till and output is received -
                       sessionContainer.append($(element).show(function() {
@@ -1690,7 +1715,6 @@
                       if (isConnectionLost)
                         return
 
-
                       try {
                         if (!((['connectionerror:', ',last_host']).some((keyword) => minifyText(allOutput).includes(keyword))))
                           throw 0
@@ -1840,6 +1864,10 @@
                               // Disable the selection feature of a tree node
                               jsTreeObject.disableSelection()
 
+                              try {
+                                jsTreeObject.unbind('contextmenu')
+                              } catch (e) {}
+
                               /**
                                * Create a listener to the event `contextmenu`
                                * This event `contextmenu` is customized for the JSTree plugin
@@ -1912,16 +1940,128 @@
                                   scope += `index>${targetName}`
                                 } catch (e) {}
 
-                                // Send a request to the main thread regards pop-up a menu
-                                IPCRenderer.send('show-context-menu', JSON.stringify([{
-                                  label: I18next.capitalize(I18next.t('get CQL description')),
-                                  click: `() => views.main.webContents.send('cql-desc:get', {
-                                        clusterID: '${getAttributes(clusterElement, 'data-id')}',
-                                        scope: '${scope}',
-                                        tabID: '${cqlDescriptionContentID}',
-                                        nodeID: '${getAttributes(clickedNode, 'id')}'
+                                let contextMenu = [{
+                                  label: I18next.capitalizeFirstLetter(I18next.t('get CQL description')),
+                                  submenu: [{
+                                      label: I18next.capitalizeFirstLetter(I18next.t('display in the work area')),
+                                      click: `() => views.main.webContents.send('cql-desc:get', {
+                                            clusterID: '${getAttributes(clusterElement, 'data-id')}',
+                                            scope: '${scope}',
+                                            tabID: '${cqlDescriptionContentID}',
+                                            nodeID: '${getAttributes(clickedNode, 'id')}'
+                                          })`
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('save it as a text file')),
+                                      click: `() => views.main.webContents.send('cql-desc:get', {
+                                            clusterID: '${getAttributes(clusterElement, 'data-id')}',
+                                            scope: '${scope}',
+                                            tabID: '${cqlDescriptionContentID}',
+                                            nodeID: '${getAttributes(clickedNode, 'id')}',
+                                            saveAsFile: true
+                                          })`
+                                    },
+                                  ]
+                                }]
+
+                                try {
+                                  if (['cluster'].every((type) => nodeType != type))
+                                    throw 0
+
+                                  contextMenu = contextMenu.concat([{
+                                      type: 'separator'
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('actions')),
+                                      enabled: false
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('create keyspace')),
+                                      action: 'create',
+                                      click: `() => views.main.webContents.send('create-keyspace', {
+                                        datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                        keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
                                       })`
-                                }]))
+                                    }
+                                  ])
+                                } catch (e) {}
+
+                                try {
+                                  if (nodeType != 'keyspace' || clickedNode.attr('data-is-virtual') != null)
+                                    throw 0
+
+                                  let keyspaceInfo = metadata.keyspaces.find((keyspace) => keyspace.name == targetName),
+                                    isSystemKeyspace = Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == keyspaceInfo.name)
+
+                                  try {
+                                    $('#actionsKeyspace').attr('data-keyspace-info', `${JSON.stringify(keyspaceInfo)}`)
+                                  } catch (e) {}
+
+                                  let replicationStrategy = JSON.parse(repairJSON(`${keyspaceInfo.replication_strategy}`) || `{}`)
+
+                                  if (replicationStrategy.class == 'LocalStrategy' && isSystemKeyspace)
+                                    throw 0
+
+                                  contextMenu = contextMenu.concat([{
+                                      type: 'separator'
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('actions')),
+                                      enabled: false
+                                    }, {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('alter keyspace')),
+                                      action: 'alter',
+                                      click: `() => views.main.webContents.send('alter-keyspace', {
+                                        datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                        keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                        keyspaceName: '${targetName}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('drop keyspace')),
+                                      action: 'drop',
+                                      click: `() => views.main.webContents.send('drop-keyspace', {
+                                        tabID: '_${cqlshSessionContentID}',
+                                        keyspaceName: '${targetName}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`
+                                    }
+                                  ])
+
+                                  if (isSystemKeyspace)
+                                    contextMenu = contextMenu.filter((item) => item.action != 'drop')
+                                } catch (e) {}
+
+                                try {
+                                  if (nodeType != 'keyspaces')
+                                    throw 0
+
+                                  contextMenu = [{
+                                      label: I18next.capitalizeFirstLetter(I18next.t('actions')),
+                                      enabled: false
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('create keyspace')),
+                                      action: 'create',
+                                      click: `() => views.main.webContents.send('create-keyspace', {
+                                        datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`
+                                    }
+                                  ]
+                                } catch (e) {}
+
+                                // Send a request to the main thread regards pop-up a menu
+                                IPCRenderer.send('show-context-menu', JSON.stringify(contextMenu))
                               })
 
                               // Handle the search feature in the metadata tree view
@@ -2189,18 +2329,24 @@
 
                         // Get the identifiers detected in the statements
                         let statementsIdentifiers = [],
-                          statementsNextIdentifiers = []
+                          statementsStNextIdentifiers = [],
+                          statementsNdNextIdentifiers = []
 
                         try {
                           // Get the detected identifiers
                           statementsIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[(.*?)\]/i)[1].split(',')
-
-                          statementsNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[(.*?)\]/i)[1].split(',')
-
                           // Manipulate them
                           statementsIdentifiers = statementsIdentifiers.map((identifier) => identifier.trim())
+                        } catch (e) {}
 
-                          statementsNextIdentifiers = statementsNextIdentifiers.map((identifier) => identifier.trim())
+                        try {
+                          statementsStNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[(.*?)\]/i)[1].split(',')
+                          statementsStNextIdentifiers = statementsStNextIdentifiers.map((identifier) => identifier.trim())
+                        } catch (e) {}
+
+                        try {
+                          statementsNdNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[.*?\]\[(.*?)\]/i)[1].split(',')
+                          statementsNdNextIdentifiers = statementsNdNextIdentifiers.map((identifier) => identifier.trim())
                         } catch (e) {}
 
                         // Handle if the statement's execution process has stopped
@@ -2377,7 +2523,8 @@
 
                               // Point at the current identifier
                               let statementIdentifier = statementsIdentifiers[loopIndex],
-                                statementsNextIdentifier = statementsNextIdentifiers[loopIndex]
+                                statementsStNextIdentifier = statementsStNextIdentifiers[loopIndex],
+                                statementsNdNextIdentifier = statementsNdNextIdentifiers[loopIndex]
 
                               // Avoid infinite loops with zero-width matches
                               if (matches.index === statementOutputRegex.lastIndex)
@@ -2397,7 +2544,7 @@
                                 try {
                                   if (['alter', 'create', 'drop'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound)) {
                                     // Make sure the statement is not about specific actions
-                                    if (['role', 'user'].some((identifier) => statementsNextIdentifier.toLowerCase().indexOf(identifier) != -1))
+                                    if (['role', 'user'].some((identifier) => statementsStNextIdentifier.toLowerCase().indexOf(identifier) != -1))
                                       throw 0
 
                                     // Make sure to clear the previous timeout
@@ -2415,6 +2562,13 @@
                                     throw 0
 
                                   noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span> - <span mulang="no data found" capitalize-first></span>.</no-output>'
+                                } catch (e) {}
+
+                                try {
+                                  if (`${statementIdentifier}`.toLowerCase() != 'begin' || !([statementsStNextIdentifier, statementsNdNextIdentifier].some((identifier) => `${identifier}`.toLowerCase() == 'batch')))
+                                    throw 0
+
+                                  noOutputElement = '<no-output>Batch <span mulang="CQL statement executed" capitalize-first></span>.</no-output>'
                                 } catch (e) {}
 
                                 let isOutputHighlighted = false
@@ -2504,12 +2658,26 @@
                                   let jsonString = '',
                                     // Define the tabulator object if one is created
                                     tabulatorObject = null,
-                                    connectionLost = `${match}`.indexOf('NoHostAvailable:') != -1
+                                    connectionLost = `${match}`.indexOf('NoHostAvailable:') != -1,
+                                    isJSONKeywordFound = statementsStNextIdentifier.toLowerCase().indexOf('json') != -1
+
+                                  try {
+                                    if (!isJSONKeywordFound)
+                                      throw 0
+
+                                    outputElement.find('div.sub-actions').attr('hidden', null)
+
+                                    outputElement.find('div.sub-actions').css('width', '30px')
+
+                                    outputElement.find('div.sub-actions').children('div.sub-action[sub-action="download"]').hide()
+
+                                    outputElement.addClass('actions-shown')
+                                  } catch (e) {}
 
                                   // Handle if the content has JSON string
                                   try {
                                     // If the statement is not `SELECT` then don't attempt to render a table
-                                    if (statementIdentifier.toLowerCase().indexOf('select') <= -1 || connectionLost)
+                                    if (statementIdentifier.toLowerCase().indexOf('select') <= -1 || isJSONKeywordFound || connectionLost)
                                       throw 0
 
                                     // Deal with the given output as JSON string by default
@@ -2732,7 +2900,7 @@
                                   match = (new ANSIToHTML()).toHtml(match)
 
                                   // Reaching here and has a `json` keyword in the output means there's no record/row to be shown
-                                  if (match.includes('[json]') || StripTags(match).length <= 0)
+                                  if (StripTags(match).length <= 0)
                                     match = noOutputElement
 
                                   // Set the final content and make sure the localization process is updated
@@ -3248,7 +3416,11 @@
                               })
 
                               // Clear the screen again but with the prompt this time
-                              setTimeout(() => terminal.clear(), 1000)
+                              setTimeout(() => {
+                                try {
+                                  terminal.clear()
+                                } catch (e) {}
+                              }, 1000)
                             })
 
                             // Update the attribute; to not perform this process again
@@ -3296,6 +3468,18 @@
 
                         // Clear the statement's input field and make sure it's focused on it
                         setTimeout(() => statementInputField.val('').trigger('input').focus().attr('style', null))
+
+                        try {
+                          let isClearCommand = (['clear', 'cls']).some((command) => statement.startsWith(minifyText(command)))
+
+                          if (!isClearCommand)
+                            throw 0
+
+
+                          sessionContainer.children('div.block').find('div.actions div.btn[action="delete"]').click()
+
+                          return
+                        } catch (e) {}
 
                         try {
                           if (!((['quit', 'exit']).some((command) => minifyText(statement).startsWith(minifyText(command)))))
@@ -3347,6 +3531,8 @@
                             if (history.length > 50)
                               history.pop()
 
+                            statement = removeComments(statement, true)
+
                             // Add the statement at the very beginning of the array
                             history.unshift(statement)
 
@@ -3361,12 +3547,16 @@
                           }
 
                           // Handle when the statement is `SELECT` but there's no `JSON` after it
-                          try {
-                            // Regex pattern to match 'SELECT' not followed by 'JSON'
-                            let pattern = /((?:^|\;\s*)\bselect\b(?!\s+json\b))/gi
+                          // try {
+                          //   // Regex pattern to match 'SELECT' not followed by 'JSON'
+                          //   let pattern = /((?:^|\;\s*)\bselect\b(?!\s+json\b))/gi
+                          //
+                          //   // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
+                          //   statement = statement.replace(pattern, '$1 JSON')
+                          // } catch (e) {}
 
-                            // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
-                            statement = statement.replace(pattern, '$1 JSON')
+                          try {
+                            statement = statement.trim()
                           } catch (e) {}
 
                           // Send the command to the main thread to be executed
@@ -3401,7 +3591,7 @@
                         // Enable and disable the execution button based set conditions
                         {
                           // Minify the statement
-                          let minifiedStatement = minifyText(statement),
+                          let minifiedStatement = minifyText(removeComments(statement, true)),
                             /**
                              * Whether or not the statement is a CQLSH command
                              * In this case, the statement doesn't need semi colon `;` at the end
@@ -3409,8 +3599,9 @@
                             isCQLSHCommand = Modules.Consts.CQLSHCommands.some((command) => minifiedStatement.startsWith(minifyText(command))),
                             // Whether or not the statement is quitting the cqlsh session
                             isQuitCommand = (['quit', 'exit']).some((command) => minifiedStatement.startsWith(minifyText(command))),
+                            isClearCommand = (['clear', 'cls']).some((command) => minifiedStatement.startsWith(minifyText(command))),
                             // Decide whether or not the execution button should be disabled
-                            isExecutionButtonDisabled = minifiedStatement.length <= 0 || ((!isCQLSHCommand && !isQuitCommand) && !minifiedStatement.endsWith(';'))
+                            isExecutionButtonDisabled = minifiedStatement.length <= 0 || ((!isCQLSHCommand && !isQuitCommand && !isClearCommand) && !minifiedStatement.endsWith(';'))
 
                           // Disable/enable the execution button
                           executeBtn.attr('disabled', isExecutionButtonDisabled ? '' : null)
@@ -4130,6 +4321,10 @@
                             metadata = JSON.stringify(JSON.parse(metadata))
                           } catch (e) {}
 
+                          try {
+                            suffix = Sanitize(suffix)
+                          } catch (e) {}
+
                           // If there's a suffix then add it to the name
                           if (suffix.trim().length != 0)
                             snapshotName = `${snapshotName}_${suffix}`
@@ -4336,10 +4531,13 @@
                                 // Select the snapshot to be deleted
                                 $(this).find('a[action="multiple"] input').change(function() {
                                   // Get the number of selected snapshots
-                                  let checkedSnapshots = snapshotsContainer.find('div.snapshot').find('a[action="multiple"] input').filter(':checked')
+                                  let checkedSnapshots = snapshotsContainer.find('div.snapshot').find('a[action="multiple"] input').filter(':checked'),
+                                    unCheckedSnapshots = snapshotsContainer.find('div.snapshot').find('a[action="multiple"] input').filter(':not(:checked)')
 
                                   // Show/hide the actions for multiple snapshots based on the number of selected ones
                                   $('#loadSnapshot div.actions-multiple').toggleClass('show', checkedSnapshots.length != 0)
+
+                                  $('#loadSnapshot').find('div.actions-multiple').find('a[action="select"]').attr('check', unCheckedSnapshots.length > 0 ? 'true' : 'false')
                                 })
                               }))
                             })
@@ -4600,7 +4798,7 @@
                                       throw 0
 
                                     // Show feedback to the user about the script which failed
-                                    let info = `${I18next.t('script "$data" didn\'t return the success code <code>0</code>, but')} <code>${executionResult.status}</code>.`
+                                    let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
 
                                     if (status == -1000)
                                       info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
@@ -4828,7 +5026,7 @@
 
                                 // Send a request to the main thread regards pop-up a menu
                                 IPCRenderer.send('show-context-menu', JSON.stringify([{
-                                  label: I18next.capitalize(I18next.t('close workarea (disconnect)')),
+                                  label: I18next.capitalizeFirstLetter(`${I18next.t('close work area')} (${I18next.t('disconnect')})`),
                                   click: `() => views.main.webContents.send('workarea:close', {
                                       btnID: '${closeWorkareaBtnID}'
                                     })`
@@ -5352,10 +5550,45 @@
                       showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
 
                       // Check the existence of Docker in the machine
-                      Modules.Docker.checkDockerCompose((dockerExists, userGroup) => {
+                      Modules.Docker.checkDockerCompose((dockerExists, userGroup, selectedManagementTool) => {
+                        try {
+                          if (['docker', 'podman'].some((tool) => `${selectedManagementTool}` == tool))
+                            throw 0
+
+                          showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('a containers management tool should be selected before using the local clusters feature, please consider to select either Podman or Docker before attempting to create a local cluster')) + '.', 'failure')
+
+                          startPostProcess()
+
+                          return
+                        } catch (e) {}
+
+
+                        // If `podman` is the selected management tool then check if the host is Linux Ubuntu
+                        try {
+                          if (selectedManagementTool != 'podman')
+                            throw 0
+
+                          if (!isHostUbuntu())
+                            throw 0
+
+                          showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.t(`Linux distributions based on Ubuntu often face compatibility issues with Podman containers management tool. Switching to Docker is highly recommended for better compatibility`)) + '.', 'failure')
+
+                          startPostProcess()
+
+                          return
+                        } catch (e) {}
+
                         // If Docker doesn't exist then show feedback to the user and skip the upcoming code
                         if (!dockerExists) {
-                          showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('local clusters feature requires [code]docker compose[/code] or [code]docker-compose[/code] tool to be installed, please make sure it\'s installed and accessible before attempting to create a local cluster')) + '.', 'failure')
+                          if (selectedManagementTool != 'podman')
+                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('local clusters feature with Docker management tool requires either [code]docker compose[/code] or [code]docker-compose[/code] to be installed, please make sure at least one of them is installed and accessible before attempting to $data', [I18next.t('start local cluster')])) + '.', 'failure')
+
+                          try {
+                            if (selectedManagementTool != 'podman')
+                              throw 0
+
+                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData(`local clusters feature with Podman management tool requires [code]podman-compose[/code] to be installed, please make sure it's installed and accessible before attempting to $data`, [I18next.t('start local cluster')])) + '.', 'failure')
+                          } catch (e) {}
 
                           startPostProcess()
 
@@ -5364,7 +5597,7 @@
 
                         // If the current user is not in the `docker` group
                         if (!userGroup) {
-                          showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('local clusters feature requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again')) + '.', 'failure')
+                          showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.t('local clusters feature with Docker management tool requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again')) + '.', 'failure')
 
                           startPostProcess()
 
@@ -5394,7 +5627,7 @@
                             if (!feedback.status || isStartingProcessTerminated) {
                               // Show failure feedback to the user if the process hasn't been terminated
                               if (!isStartingProcessTerminated)
-                                showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the local cluster [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                                showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the local cluster [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` : ''), 'failure')
 
                               // Call the post function
                               startPostProcess()
@@ -5445,6 +5678,10 @@
                               Modules.Docker.checkCassandraInContainer(pinnedToastID, ports.cassandra, (status) => {
                                 try {
                                   clusterElement.attr('data-latest-cassandra-version', `${status.version}`)
+                                } catch (e) {}
+
+                                try {
+                                  clusterElement.attr('data-datacenters', `${JSON.stringify(status.datacenters)}`)
                                 } catch (e) {}
 
                                 // If the process has been terminated then skip the upcoming code and stop the process
@@ -5519,6 +5756,16 @@
 
                                   // Update the button's text to be `ENTER`
                                   setTimeout(() => $(this).children('span').attr('mulang', 'enter').text(I18next.t('enter')), 1000)
+
+                                  try {
+                                    setTimeout(() => {
+                                      let clusterButtons = clusterElement.find('button')
+
+                                      clusterButtons.each(function() {
+                                        $(this).toggle(minifyText($(this).text()).length > 0)
+                                      })
+                                    }, 2000)
+                                  } catch (e) {}
 
                                   setTimeout(() => {
                                     // Call the post function
@@ -5595,7 +5842,7 @@
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
-                  return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                  return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                 // Change the dialog's title
                 $(`${dialog}`).find('h5.modal-title').text(`${I18next.capitalize(I18next.t('connection settings'))} ${getAttributes(clusterElement, 'data-name')}`)
@@ -5919,11 +6166,11 @@
                     return
 
                   // Get the project/cluster work area
-                  let clusterWorkarea = $(`div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-folder')}"]`)
+                  let clusterWorkarea = $(`div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-id')}"]`)
 
                   // If there's a work area already then stop the deletion process
                   if (clusterWorkarea.length != 0)
-                    return showToast(I18next.capitalize(I18next.t('delete local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('there\'s an active work area for the local cluster [b]$data[/b], please consider to close it before attempting to delete the local cluster again', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                    return showToast(I18next.capitalize(I18next.t(isSandbox ? 'delete local cluster' : 'delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData(isSandbox ? 'there\'s an active work area for the local cluster [b]$data[/b], please consider to close it before attempting to delete the local cluster again' : 'this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
 
                   try {
                     // If the current workspace is not the sandbox then skip this try-catch block
@@ -5946,7 +6193,9 @@
                       projectsContainer.children(`div.cluster[data-workspace-id="${workspaceID}"][data-folder="${getAttributes(clusterElement, 'data-folder')}"]`).remove()
 
                       // Refresh projects' list
-                      $(document).trigger('refreshClusters', workspaceID)
+                      $(document).trigger('refreshClusters', {
+                        workspaceID
+                      })
                     })
 
                     // Skip the upcoming code - no need to execute it if the workspace is the sandbox -
@@ -5986,7 +6235,9 @@
                     $(`div.clusters div.cluster[data-id="${clusterID}"]`).remove()
 
                     // Refresh clusters' list
-                    $(document).trigger('refreshClusters', workspaceID)
+                    $(document).trigger('refreshClusters', {
+                      workspaceID
+                    })
 
                     // Refresh workspaces' list
                     $(document).trigger('getWorkspaces')
@@ -6322,6 +6573,17 @@
     })
     // End of getting all saved clusters/projects
 
+    let innerUpdateContainersManagementTool = () => {
+      setTimeout(() => {
+        if ((clustersIndex + 1) < clustersCounter)
+          return innerUpdateContainersManagementTool()
+
+        setTimeout(() => updateContainersManagementToolUI('unknown', true), 500)
+      }, 100)
+    }
+
+    innerUpdateContainersManagementTool()
+
     /**
      * Define different inner functions that are used only in this event file, and in the current events handler
      *
@@ -6371,7 +6633,7 @@
           throw 0
 
         // Show feedback to the user about not finding the target cluster
-        showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with <code>cqlsh.rc</code> file', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
+        showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with [code]cqlsh.rc[/code] file', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
 
         setTimeout(() => {
           // Enable the `TEST CONNECTION` button
@@ -6634,7 +6896,7 @@
                       throw 0
 
                     // Show feedback to the user about the script which failed
-                    let info = `${I18next.t('script "$data" didn\'t return the success code <code>0</code>, but')} <code>${executionResult.status}</code>.`
+                    let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
 
                     if (status == -1000)
                       info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
@@ -6768,7 +7030,7 @@
              *
              * Define the feedback info
              */
-            let info = `${I18next.t('script "$data" didn\'t return the success code <code>0</code>, but')} <code>${executionResult.status}</code>`
+            let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>`
 
             // `-1000` error code means the app couldn't find the script in the given path
             if (status == -1000)
@@ -7095,6 +7357,9 @@
             let input = $(this), // Point at the current input
               workspaceID = getActiveWorkspaceID() // Get the active workspace's ID
 
+            // Remove any visual feedback about having an invalid value
+            input.removeClass('is-invalid')
+
             // Ignore the input field if it is not associated with a section in the `cqlsh.rc` config file
             if (getAttributes(input, 'info-section') == 'none')
               return
@@ -7118,9 +7383,6 @@
 
             // Convert final value to string
             value = `${value}`
-
-            // Remove any visual feedback about having an invalid value
-            input.removeClass('is-invalid')
 
             // Inner function to update the editor's content
             let update = async () => {
@@ -7356,8 +7618,10 @@
                  */
                 hostname = cqlshValues.connection.hostname
 
+                port = cqlshValues.connection.port
+
                 // If the hostname is empty or only whitespaces then skip this try-catch block
-                if (hostname.trim().length <= 0)
+                if (hostname.trim().length <= 0 || `${cqlshValues.connection.port}`.length <= 0)
                   throw 0
               } catch (e) {
                 /**
@@ -7365,7 +7629,11 @@
                  *
                  * Add `invalid` class to the `hostname` input field
                  */
-                $('[info-section="connection"][info-key="hostname"]').addClass('is-invalid')
+                if (`${cqlshValues.connection.port}`.length <= 0)
+                  $('[info-section="connection"][info-key="port"]').addClass('is-invalid')
+
+                if (hostname.trim().length <= 0)
+                  $('[info-section="connection"][info-key="hostname"]').addClass('is-invalid')
 
                 // Point at the basic section navigation button in the dialog
                 let basicSectionBtn = dialogElement.find('div.btn[section="basic"]')
@@ -7375,7 +7643,7 @@
                   basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t('to test connection, host name is the only required field to be provided')) + '.', 'failure')
+                showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t('to test connection, host name and port are the only required fields to be provided')) + '.', 'failure')
 
                 // Skip the upcoming code - end the connection test process -
                 return
@@ -7738,7 +8006,7 @@
                            *
                            * Define the feedback info
                            */
-                          let info = `${I18next.t('script "$data" didn\'t return the success code <code>0</code>, but')} <code>${executionResult.status}</code>.`
+                          let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
 
                           // `-1000` error code means the app couldn't find the script in the given path
                           if (status == -1000)
@@ -7886,7 +8154,7 @@
                    *
                    * Define the feedback info
                    */
-                  let info = `${I18next.t('script "$data" didn\'t return the success code <code>0</code>, but')} <code>${executionResult.status}</code>.`
+                  let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
 
                   // `-1000` error code means the app couldn't find the script in the given path
                   if (status == -1000)
@@ -8014,6 +8282,20 @@
                  * `editedClusterObject` is a global object that is updated with every attempt to edit/update a cluster
                  */
                 extraCondition = editingMode ? clusterName != editedClusterObject.name : true
+
+              try {
+                if (Sanitize(minifyText(clusterName)).length > 0)
+                  throw 0
+
+                // Enable the buttons in the footer
+                button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
+
+                // Show feedback to the user
+                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('the given name seems invalid, please provide a unique valid name')) + '.', 'failure')
+
+                // Skip the upcoming code - terminate the saving/updating process -
+                return
+              } catch (e) {}
 
               try {
                 // If there's no duplication then skip this try-catch block
@@ -8208,6 +8490,14 @@
                   editedClusterObject = newEditedCluster
                 } catch (e) {}
 
+                // Refresh clusters for the currently active workspace
+                $(document).trigger('refreshClusters', {
+                  workspaceID
+                })
+
+                // Get workspaces; to sync with newly added/updated clusters
+                $(document).trigger('getWorkspaces')
+
                 {
                   setTimeout(() => {
                     let clusterElement = $(`div.clusters-container div.cluster[data-id="${finalCluster.info.id}"]`),
@@ -8220,6 +8510,34 @@
                       testConnectionBtn = clusterElement.children('div.footer').children('div.button').children('button.test-connection'),
                       // Point at the status element - the flashing circle at the top right -
                       statusElement = clusterElement.children('div.status')
+
+
+                    try {
+                      if (!secrets[0])
+                        throw 0
+
+                      getKey('public', (key) => {
+                        try {
+                          // If the received key is valid to be used then skip this try-catch block
+                          if (key.length <= 0)
+                            throw 0
+
+                          for (secret of secrets) {
+                            if (typeof secret !== 'object')
+                              continue
+
+                            try {
+                              if (`${secret.value}`.length <= 0)
+                                throw 0
+
+                              let value = encrypt(key, secret.value)
+
+                              clusterElement.attr(`data-${secret.name.toLowerCase().replace('ssh', 'ssh-')}`, value)
+                            } catch (e) {}
+                          }
+                        } catch (e) {}
+                      })
+                    } catch (e) {}
 
                     try {
                       if (tempClusterID == null)
@@ -8271,12 +8589,6 @@
                     })
                   }, 1000)
                 }
-
-                // Refresh clusters for the currently active workspace
-                $(document).trigger('refreshClusters', workspaceID)
-
-                // Get workspaces; to sync with newly added/updated clusters
-                $(document).trigger('getWorkspaces')
               }
               // End of the inner function to do processes after saving/updating cluster
 
@@ -8342,6 +8654,30 @@
               // Determine the proper function to be called based on whether the current mode is `edit` or not
               let clustersCallFunction = editingMode ? Modules.Clusters.updateCluster : Modules.Clusters.saveCluster
 
+              /**
+               * Encrypt all provided secrets - for Apache Cassandra and SSH -
+               *
+               * Create an array of names and values of the secrets
+               */
+              let secrets = [{
+                  name: 'username',
+                  value: username
+                }, {
+                  name: 'password',
+                  value: password
+                }, {
+                  name: 'sshUsername',
+                  value: sshUsername
+                }, {
+                  name: 'sshPassword',
+                  value: sshPassword
+                },
+                {
+                  name: 'sshPassphrase',
+                  value: sshPassphrase
+                }
+              ]
+
               try {
                 // If there's no need to wait for the encryption process then skip this try-catch block
                 if (!waitForEncryption)
@@ -8363,30 +8699,6 @@
                     // Stop the process; as something is not correct with the generator tool
                     return
                   } catch (e) {}
-
-                  /**
-                   * Encrypt all provided secrets - for Apache Cassandra and SSH -
-                   *
-                   * Create an array of names and values of the secrets
-                   */
-                  let secrets = [{
-                      name: 'username',
-                      value: username
-                    }, {
-                      name: 'password',
-                      value: password
-                    }, {
-                      name: 'sshUsername',
-                      value: sshUsername
-                    }, {
-                      name: 'sshPassword',
-                      value: sshPassword
-                    },
-                    {
-                      name: 'sshPassphrase',
-                      value: sshPassphrase
-                    }
-                  ]
 
                   // Values will be saved in the `secrets` object
                   finalCluster.info.secrets = [],
@@ -8429,7 +8741,7 @@
                   clustersCallFunction(workspaceID, finalCluster).then((status) => postProcess(status, editingMode ? {
                     ...savedSecrets,
                     ...finalCluster.info.credentials
-                  } : null))
+                  } : [true, ...secrets]))
                 })
 
                 // Skip the upcoming code
@@ -8800,7 +9112,9 @@
     // Clicks the refresh button
     $(`${selector}[action="refresh"] button`).click(function() {
       // Refresh clusters' list
-      $(document).trigger('refreshClusters', getActiveWorkspaceID())
+      $(document).trigger('refreshClusters', {
+        workspaceID: getActiveWorkspaceID()
+      })
 
       // Call the inner function
       clickParentButton(this)
@@ -8906,6 +9220,52 @@
 
         // Update the flag
         isDescriptionFetched = true
+
+        try {
+          if (data.saveAsFile == undefined)
+            throw 0
+
+          // keyspace_cyclingtable_products_2024-11-14_203041
+          let descriptionScope = data.scope.replace(/>/gm, '-').replace('table-', '-table-'),
+            descriptionFileName = Sanitize(`${descriptionScope}-${formatTimestamp(new Date().getTime(), true)}.cql`).replace(/\s+/gm, '_') || 'cql_desc.cql'
+
+          let dialogID = getRandomID(5),
+            dialogData = {
+              id: dialogID,
+              title: I18next.capitalize(I18next.t('save CQL description')),
+              properties: ['showHiddenFiles', 'createDirectory', 'promptToCreate'],
+              defaultPath: descriptionFileName,
+              type: 'showSaveDialog'
+            }
+
+          IPCRenderer.send('dialog:create', dialogData)
+
+          IPCRenderer.on(`dialog:${dialogID}`, (_, path) => {
+            path = `${path}`
+
+            try {
+              if (path.length <= 0)
+                throw 0
+
+              if (!pathIsAccessible(Path.join(path, '..'))) {
+                showToast(I18next.capitalize(I18next.t('save CQL description')), I18next.capitalizeFirstLetter(I18next.t('the selected path is inaccessible and can\'t be used, please make sure you have read/write permissions')) + '.', 'failure')
+
+                throw 0
+              }
+
+              let descriptionSize = ByteSize(ValueSize(description))
+
+              FS.writeFile(path, description, (err) => {
+                if (err)
+                  return showToast(I18next.capitalize(I18next.t('save CQL description')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to save the CQL description')) + `. ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${err}` + '.', 'failure')
+
+                showToast(I18next.capitalize(I18next.t('save CQL description')), I18next.capitalizeFirstLetter(I18next.replaceData('the cql description has been successfully saved as a text file, the size is $data', [descriptionSize])) + '.', 'success')
+              })
+            } catch (e) {}
+          })
+
+          return
+        } catch (e) {}
 
         // The CQL description's tab's container is not empty now, and make sure to clear the empty the search input field
         cqlDescriptionsTabContent.removeClass('_empty').find('input').val('').trigger('input')
@@ -9047,10 +9407,13 @@
           setTimeout(() => {
             // Create an editor for the description
             let descriptionEditor = monaco.editor.create($(`#_${editorContainerID}`)[0], {
-              value: OS.EOL + OS.EOL + `${description}`,
+              value: `${description}`,
               language: 'sql', // Set the content's language
               minimap: {
                 enabled: true
+              },
+              padding: {
+                top: 35
               },
               readOnly: true,
               glyphMargin: false,
@@ -9111,10 +9474,517 @@
         }))
       })
     })
+
+    IPCRenderer.on('create-keyspace', (_, data) => {
+      let actionsKeyspaceModal = getElementMDBObject($('#actionsKeyspace'), 'Modal')
+
+      $('#actionsKeyspace').find('h5.modal-title').children('span').attr('mulang', 'create keyspace').text(I18next.capitalize(I18next.t('create keyspace')))
+
+      $('#actionsKeyspace').attr('data-state', null)
+
+      $('input#keyspaceReplicationStrategy').attr('data-datacenters', `${data.datacenters}`)
+
+      try {
+        $('#actionsKeyspace').attr('data-keyspaces', `${data.keyspaces}`)
+      } catch (e) {}
+
+      $('button#executeActionStatement').attr({
+        'data-tab-id': `${data.tabID}`,
+        'data-textarea-id': `${data.textareaID}`,
+        'data-btn-id': `${data.btnID}`
+      })
+
+      $('input#keyspaceReplicationStrategy').attr('disabled', null).css('background-color', 'inherit')
+
+      $('input#keyspaceReplicationStrategy').parent().children('ion-icon.trailing').show()
+
+      $('input#keyspaceName').val('').trigger('input')
+
+      $('input#keyspaceReplicationStrategy').val('NetworkTopologyStrategy').trigger('input')
+
+      $('input#keyspaceReplicationFactorSimpleStrategy').val(1).trigger('input')
+
+      $('input#keyspaceDurableWrites').prop('checked', true)
+
+      $('#actionsKeyspace').removeClass('show-editor')
+
+      actionsKeyspaceModal.show()
+    })
+
+    IPCRenderer.on('alter-keyspace', (_, data) => {
+      let actionsKeyspaceModal = getElementMDBObject($('#actionsKeyspace'), 'Modal'),
+        metadataInfo = JSON.parse(repairJSON($('#actionsKeyspace').attr('data-keyspace-info')))
+
+      try {
+        metadataInfo.replication_strategy = JSON.parse(repairJSON(metadataInfo.replication_strategy))
+      } catch (e) {}
+
+      try {
+        $('#actionsKeyspace').attr('data-keyspaces', `${data.keyspaces}`)
+      } catch (e) {}
+
+      try {
+        $('#generalPurposeDialog').attr('data-keyspacename', `${data.keyspaceName}`)
+      } catch (e) {}
+
+      $('#actionsKeyspace').find('h5.modal-title').children('span').attr('mulang', 'alter keyspace').text(I18next.capitalize(I18next.t('alter keyspace')))
+
+      $('#actionsKeyspace').attr('data-state', 'alter')
+
+      $('input#keyspaceReplicationStrategy').attr('data-datacenters', `${data.datacenters}`)
+
+      $('button#executeActionStatement').attr({
+        'data-tab-id': `${data.tabID}`,
+        'data-textarea-id': `${data.textareaID}`,
+        'data-btn-id': `${data.btnID}`
+      })
+
+      $('input#keyspaceName').val(`${metadataInfo.name}`).trigger('input')
+
+      $('input#keyspaceReplicationStrategy').val(`${metadataInfo.replication_strategy.class}`).trigger('input')
+
+      try {
+        if (`${metadataInfo.replication_strategy.class}` != 'SimpleStrategy')
+          throw 0
+
+        $('#actionsKeyspace').attr('data-rf', `${metadataInfo.replication_strategy.replication_factor}`)
+
+        $('input#keyspaceReplicationFactorSimpleStrategy').val(metadataInfo.replication_strategy.replication_factor).trigger('input')
+
+        $('#actionsKeyspace').attr('data-datacenters-rf', null)
+
+        $('input#keyspaceReplicationStrategy').attr('disabled', null).css('background-color', 'inherit')
+
+        $('input#keyspaceReplicationStrategy').parent().children('ion-icon.trailing').show()
+      } catch (e) {}
+
+      try {
+        if (`${metadataInfo.replication_strategy.class}` != 'NetworkTopologyStrategy')
+          throw 0
+
+        $('#actionsKeyspace').attr('data-datacenters-rf', `${JSON.stringify(metadataInfo.replication_strategy)}`)
+
+        $('#actionsKeyspace').attr('data-rf', null)
+
+        $('input#keyspaceReplicationStrategy').attr('disabled', '').css('background-color', '')
+
+        $('input#keyspaceReplicationStrategy').parent().children('ion-icon.trailing').hide()
+      } catch (e) {}
+
+      $('input#keyspaceDurableWrites').prop('checked', metadataInfo.durable_writes)
+      $('input#keyspaceDurableWrites').attr('set-value', metadataInfo.durable_writes)
+
+      $('#actionsKeyspace').removeClass('show-editor')
+
+      actionsKeyspaceModal.show()
+    })
+
+    IPCRenderer.on('drop-keyspace', (_, data) => {
+      let keyspaceName = `${data.keyspaceName}`,
+        dropKeyspaceEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionKeyspaceDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+
+      if (minifyText(keyspaceName).length <= 0)
+        return
+
+      try {
+        $('#generalPurposeDialog').attr('data-keyspacename', `${keyspaceName}`)
+      } catch (e) {}
+
+      let dropStatement = `DROP KEYSPACE ${keyspaceName};`
+
+      try {
+        dropKeyspaceEditor.setValue(dropStatement)
+      } catch (e) {}
+
+      setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
+
+      openDropKeyspaceDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible`, [keyspaceName])) + '.', (confirmed) => {
+        if (!confirmed)
+          return
+
+        try {
+          getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
+        } catch (e) {}
+
+        let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+
+        try {
+          activeWorkarea.find('div.terminal-container').hide()
+          activeWorkarea.find('div.interactive-terminal-container').show()
+        } catch (e) {}
+
+        try {
+          let statementInputField = $(`textarea#${data.textareaID}`)
+          statementInputField.val(dropKeyspaceEditor.getValue())
+          statementInputField.trigger('input').focus()
+          AutoSize.update(statementInputField[0])
+        } catch (e) {}
+
+        try {
+          setTimeout(() => $(`button#${data.btnID}`).click(), 100)
+        } catch (e) {}
+      })
+    })
   }
 
   // Handle the request of closing a cluster's work area
   {
     IPCRenderer.on('workarea:close', (_, data) => $(`div.btn[data-id="${data.btnID}"]`).trigger('click', false))
+  }
+
+  {
+    setTimeout(() => {
+      // Define the scroll value, by default, the current scroll value is `0` - at the top of the dialog -
+      let scrollValue = 0,
+        dialogElement = $(`div.modal#actionsKeyspace`),
+        actionEditor = monaco.editor.getEditors().find((editor) => dialogElement.find('div.action-editor div.editor div.monaco-editor').is(editor.getDomNode())),
+        updateActionStatus = () => {
+          let replicationStrategy = $('input#keyspaceReplicationStrategy').val(),
+            keyspaceName = $('input#keyspaceName').val(),
+            durableWrites = $('input#keyspaceDurableWrites').prop('checked'),
+            replication = {},
+            isAlterState = $('div.modal#actionsKeyspace').attr('data-state')
+
+          isAlterState = isAlterState != null && isAlterState == 'alter'
+
+          try {
+            if (dialogElement.find('.is-invalid:not(.ignore-invalid)').length <= 0)
+              throw 0
+
+            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+          } catch (e) {}
+
+          try {
+            if (minifyText(replicationStrategy) != 'simplestrategy')
+              throw 0
+
+            let replicationFactor = $('input#keyspaceReplicationFactorSimpleStrategy').val()
+
+            replication.class = 'SimpleStrategy'
+            replication.replication_factor = replicationFactor
+          } catch (e) {}
+
+          try {
+            if (minifyText(replicationStrategy) != 'networktopologystrategy')
+              throw 0
+
+            let replicationFactor = $('input#keyspaceReplicationFactorSimpleStrategy').val()
+
+            replication.class = 'NetworkTopologyStrategy'
+
+            let dataCenters = dialogElement.find('div[for-strategy="NetworkTopologyStrategy"]').children('div.data-centers').find('div.data-center')
+
+            for (let dataCenter of dataCenters) {
+              dataCenter = $(dataCenter)
+              let rf = dataCenter.find('input[type="number"]').val()
+
+              if (rf <= 0)
+                continue
+
+              replication[dataCenter.attr('data-datacenter')] = rf
+            }
+          } catch (e) {}
+
+          let durableWritesSetValue = $('input#keyspaceDurableWrites').attr('set-value'),
+            replicationStrategySetValue = ''
+
+          try {
+            replicationStrategySetValue = repairJSON(JSON.parse(repairJSON($('#actionsKeyspace').attr('data-keyspace-info'))).replication_strategy)
+          } catch (e) {}
+
+          let durableWritesFinal = '',
+            replicationStrategyFinal = ''
+
+          try {
+            if (isAlterState && minifyText(replicationStrategySetValue) == minifyText(JSON.stringify(replication)))
+              throw 0
+
+            replicationStrategyFinal = OS.EOL + `WITH replication = ${JSON.stringify(replication).replace(/"/gm, "'")}`
+          } catch (e) {}
+
+          try {
+            if (isAlterState && `${durableWritesSetValue}` == `${durableWrites}`)
+              throw 0
+
+            durableWritesFinal = OS.EOL + (replicationStrategyFinal.length <= 0 ? 'WITH' : 'AND') + ` durable_writes = ${durableWrites}`
+          } catch (e) {}
+
+          try {
+            if (!isAlterState)
+              throw 0
+
+            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [replicationStrategyFinal, durableWritesFinal].every((str) => `${str}`.length <= 0) ? '' : null)
+          } catch (e) {}
+
+          let statement = `${isAlterState ? 'ALTER' : 'CREATE'} KEYSPACE ${keyspaceName}${replicationStrategyFinal}${durableWritesFinal};`
+
+          try {
+            actionEditor.setValue(statement)
+          } catch (e) {}
+        }
+
+      $('input#keyspaceName').on('input', function() {
+        let keyspaces = [],
+          keyspaceName = $(this).val(),
+          isNameDuplicated = false,
+          isNameInvalid = false,
+          invalidFeedback = $(this).parent().children('div.invalid-feedback'),
+          isAlterState = $('div.modal#actionsKeyspace').attr('data-state')
+
+        isAlterState = isAlterState != null && isAlterState == 'alter'
+
+
+        $(this).attr('disabled', isAlterState ? '' : null)
+        $(this).parent().toggleClass('invalid-warning', isAlterState)
+        $(this).toggleClass('is-invalid ignore-invalid', isAlterState)
+
+        try {
+          if (!isAlterState)
+            throw 0
+
+          invalidFeedback.find('span').attr('mlang', 'the keyspace name can\'t be altered').text(I18next.capitalizeFirstLetter(I18next.t('the keyspace name can\'t be altered')))
+
+          dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+
+          return
+        } catch (e) {}
+
+
+        try {
+          keyspaces = JSON.parse($('#actionsKeyspace').attr('data-keyspaces'))
+        } catch (e) {}
+
+        try {
+          if (keyspaces.length <= 0)
+            throw 0
+
+          isNameDuplicated = keyspaces.some((keyspace) => `${keyspace}` == `${keyspaceName}`)
+
+          if (isAlterState && isNameDuplicated && (keyspaceName == $('div.modal#actionsKeyspace').attr('data-keyspacename')))
+            isNameDuplicated = false
+
+          if (isNameDuplicated)
+            invalidFeedback.find('span').attr('mlang', 'provided name is already in use').text(I18next.capitalizeFirstLetter(I18next.t('provided name is already in use')))
+        } catch (e) {}
+
+        try {
+          if (`${keyspaceName}`.length <= 0)
+            throw 0
+
+          isNameInvalid = `${keyspaceName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
+
+          if (isNameInvalid)
+            invalidFeedback.find('span').attr('mlang', 'provided name is invalid, only alphanumeric and underscores are allowed').text(I18next.capitalizeFirstLetter(I18next.t('provided name is invalid, only alphanumeric and underscores are allowed')))
+        } catch (e) {}
+
+        $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid)
+
+        dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 ? '' : null)
+
+        try {
+          updateActionStatus()
+        } catch (e) {}
+      })
+
+      $('input#keyspaceReplicationStrategy').on('input', function() {
+        let replicationStrategy = $(this).val(),
+          isAlterState = $('div.modal#actionsKeyspace').attr('data-state')
+
+        isAlterState = isAlterState != null && isAlterState == 'alter'
+
+        setTimeout(() => {
+          dialogElement.find('div[for-strategy]').hide()
+
+          let networkTopologyContainer = dialogElement.find('div[for-strategy="NetworkTopologyStrategy"]'),
+            simpleStrategyContainer = dialogElement.find('div[for-strategy="SimpleStrategy"]'),
+            dataCentersContainer = networkTopologyContainer.children('div.data-centers'),
+            dataCenters = []
+
+          try {
+            dataCenters = JSON.parse($(this).attr('data-datacenters'))
+          } catch (e) {}
+
+          $(this).parent().find('div.invalid-feedback span[mulang][capitalize-first]').attr('mulang', 'SimpleStrategy is intended for development purposes only').text(I18next.capitalizeFirstLetter(I18next.t('SimpleStrategy is intended for development purposes only')))
+
+          $(this).parent().css('margin-bottom', '50px')
+
+          try {
+            if (minifyText(replicationStrategy) == minifyText('simplestrategy'))
+              throw 0
+
+            $(this).removeClass('is-invalid')
+
+            $('input#keyspaceReplicationFactorSimpleStrategy').val(1).trigger('input')
+
+            try {
+              dataCentersContainer.children('div.row.data-center').remove()
+
+              let dataCentersRF = {}
+
+              try {
+                if (isAlterState)
+                  dataCentersRF = JSON.parse($('div.modal#actionsKeyspace').attr('data-datacenters-rf'))
+              } catch (e) {}
+
+              for (let datacenter of dataCenters) {
+                let replicationFactor = parseInt(dataCentersRF[datacenter.datacenter]) || 0
+
+                try {
+                  if (!isAlterState || dataCenters.length > 1 || dataCentersRF.class == 'NetworkTopologyStrategy')
+                    throw 0
+
+                  replicationFactor = parseInt($('div.modal#actionsKeyspace').attr('data-rf')) || 0
+                } catch (e) {}
+
+                let element = `
+                      <div class="data-center row" data-datacenter="${datacenter.datacenter}">
+                        <div class="col-md-7">${datacenter.datacenter}</div>
+                        <div class="col-md-5">
+                          <div class="form-outline form-white">
+                            <input type="number" class="form-control" style="margin-bottom: 0;" value="${replicationFactor}" min="0">
+                            <label class="form-label">
+                              <span mulang="replication factor" capitalize></span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>`
+                dataCentersContainer.append($(element).show(function() {
+                  let dataCenter = $(this)
+
+                  setTimeout(() => {
+                    dataCenter.find('input').each(function() {
+                      getElementMDBObject($(this))
+                    })
+
+                    dataCenter.find('input[type="number"]').on('input', function() {
+                      let rf = parseInt($(this).val()),
+                        isInvalid = isNaN(rf) || rf < 0
+
+                      $(this).toggleClass('is-invalid', isInvalid)
+
+                      if (minifyText($('input#keyspaceName').val()).length <= 0)
+                        return
+
+                      dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+                    })
+                  })
+
+                  setTimeout(() => Modules.Localization.applyLanguageSpecific(dataCenter.find('span[mulang], [data-mulang]')))
+                }))
+              }
+            } catch (e) {}
+
+            networkTopologyContainer.show()
+
+            try {
+              updateActionStatus()
+            } catch (e) {}
+
+            return
+          } catch (e) {}
+
+          setTimeout(() => $(this).addClass('is-invalid'), 250)
+
+          try {
+            if (!isAlterState)
+              throw 0
+
+            $('input#keyspaceReplicationFactorSimpleStrategy').val(parseInt($('div.modal#actionsKeyspace').attr('data-rf')) || 1)
+
+            $(`div.modal#actionsKeyspace`).find('div.data-center').find('input[type="number"]').val(0).trigger('input')
+
+            if (dataCenters.length > 1) {
+              $(this).parent().find('div.invalid-feedback span[mulang][capitalize-first]').attr('mulang', 'avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully').text(I18next.capitalizeFirstLetter(I18next.t('avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully')))
+
+              $(this).parent().css('margin-bottom', '70px')
+            }
+          } catch (e) {}
+
+          dialogElement.find('div[for-strategy="SimpleStrategy"]').show()
+
+          try {
+            updateActionStatus()
+          } catch (e) {}
+        }, 150)
+      })
+
+      $('input#keyspaceReplicationFactorSimpleStrategy').on('input', function() {
+        let rf = parseInt($(this).val()),
+          isInvalid = isNaN(rf) || rf < 1
+
+        $('input#keyspaceReplicationFactorSimpleStrategy').toggleClass('is-invalid', isInvalid)
+
+        if (minifyText($('input#keyspaceName').val()).length <= 0)
+          return
+
+        dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+
+        try {
+          updateActionStatus()
+        } catch (e) {}
+      })
+
+      // Clicks the `SWITCH TO EDITOR` button
+      dialogElement.find('button.switch-editor').click(function() {
+        // Point at the dialog's content element
+        let dialogBody = dialogElement.find('div.modal-body'),
+          // Determine if the editor is visible/shown or not
+          editorShown = dialogElement.hasClass('show-editor')
+
+        // Add the `show-editor` class if it is not added, otherwise it'll be removed
+        dialogElement.toggleClass('show-editor', !editorShown)
+
+        // Update the current scroll value if the editor is not shown already, otherwise, keep the current saved value
+        scrollValue = !editorShown ? dialogBody[0].scrollTop : scrollValue
+
+        // Either scroll to the last saved position if the editor is visible, or scroll to the top of the dialog for the editor before showing it
+        dialogBody[0].scrollTo(0, editorShown ? scrollValue : 0)
+
+        // Update the editor's layout
+        $(window.visualViewport).trigger('resize')
+
+        try {
+          updateActionStatus()
+        } catch (e) {}
+      })
+
+      $('input[type="checkbox"]#keyspaceDurableWrites').on('change', function() {
+        try {
+          updateActionStatus()
+        } catch (e) {}
+      })
+
+      $('button#executeActionStatement').click(function() {
+        try {
+          updateActionStatus()
+        } catch (e) {}
+
+        try {
+          getElementMDBObject($(`a.nav-link.btn[href="#${$(this).attr('data-tab-id')}"]`), 'Tab').show()
+        } catch (e) {}
+
+        let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+
+        try {
+          activeWorkarea.find('div.terminal-container').hide()
+          activeWorkarea.find('div.interactive-terminal-container').show()
+        } catch (e) {}
+
+        try {
+          let statementInputField = $(`textarea#${$(this).attr('data-textarea-id')}`)
+          statementInputField.val(actionEditor.getValue())
+          statementInputField.trigger('input').focus()
+          AutoSize.update(statementInputField[0])
+        } catch (e) {}
+
+        try {
+          setTimeout(() => $(`button#${$(this).attr('data-btn-id')}`).click(), 100)
+        } catch (e) {}
+
+        try {
+          setTimeout(() => getElementMDBObject($('#actionsKeyspace'), 'Modal').hide(), 50)
+        } catch (e) {}
+      })
+    }, 5000)
   }
 }

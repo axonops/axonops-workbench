@@ -903,13 +903,44 @@
                 <li><a class="dropdown-item" href="#" value="4.0">4.0</a></li>
               </ul>
             </div>
-            <div class="form-outline form-white" style="margin-bottom: 25px;">
+            <div class="form-outline form-white" style="margin-bottom: 15px;">
               <label class="form-label" style="color: #fbfbfb;">
                 <span mulang="cassandra nodes" capitalize></span> (<span mulang="default" capitalize></span> 3)
               </label>
               <div class="range" style="opacity:0.9">
                 <input type="range" class="form-range" min="1" max="20" value="3" id="numOfNodes">
                 <div class="default-value"></div>
+              </div>
+            </div>
+            <div class="form-outline form-white" id="selectContainersManagementTool">
+              <label class="form-label" style="color: #fbfbfb;">
+                <span mulang="containers management tool" capitalize></span>
+                <ion-icon name="info-circle-outline" class="management-tools-hint-icon localclusters-dialog"></ion-icon>
+              </label>
+              <input type="text" hidden>
+              <div class="management-tools-hint localclusters-dialog">
+                <span mulang="workbench leverages containerization to operate local clusters. We offer support for both Podman and Docker. Please select your preferred tool and follow the detailed setup instructions provided" capitalize-first></span>
+                <span class="link"><span mulang="here"></span>
+                  <ion-icon name="external-link"></ion-icon>
+                </span>.
+              </div>
+              <div class="management-tools localclusters-dialog">
+                <div class="tool" tool="podman">
+                  <div class="icon">
+                    <ion-icon name="podman"></ion-icon>
+                  </div>
+                  <div class="title">
+                    Podman
+                  </div>
+                </div>
+                <div class="tool" tool="docker">
+                  <div class="icon">
+                    <ion-icon name="docker"></ion-icon>
+                  </div>
+                  <div class="title">
+                    Docker
+                  </div>
+                </div>
               </div>
             </div>
             <div class="form-check" style="margin-bottom: 10px;">
@@ -1150,6 +1181,44 @@
                       <small>
                         <span mulang="this update needs an app restart" capitalize-first></span>.
                       </small>
+                    </div>
+                  </div>
+                </div>
+                <div class="row flex margin-bottom more-margin flex-advanced for-management-tools-settings">
+                  <div class="col-md-3">
+                  </div>
+                  <div class="col-md-9">
+                    <div class="form-outline form-white" id="selectContainersManagementToolSettings">
+                      <label class="form-label" style="color: #fbfbfb;">
+                        <span mulang="containers management tool" capitalize></span>
+                        <ion-icon name="info-circle-outline" class="management-tools-hint-icon settings-dialog"></ion-icon>
+                      </label>
+                      <input type="text" hidden>
+                      <div class="management-tools-hint settings-dialog">
+                        <span mulang="workbench leverages containerization to operate local clusters. We offer support for both Podman and Docker. Please select your preferred tool and follow the detailed setup instructions provided"
+                          capitalize-first></span>
+                        <span class="link"><span mulang="here"></span>
+                          <ion-icon name="external-link"></ion-icon>
+                        </span>.
+                      </div>
+                      <div class="management-tools settings-dialog">
+                        <div class="tool" tool="podman">
+                          <div class="icon">
+                            <ion-icon name="podman"></ion-icon>
+                          </div>
+                          <div class="title">
+                            Podman
+                          </div>
+                        </div>
+                        <div class="tool" tool="docker">
+                          <div class="icon">
+                            <ion-icon name="docker"></ion-icon>
+                          </div>
+                          <div class="title">
+                            Docker
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1466,7 +1535,7 @@
                   </span>
                 </div>
                 <div class="section">
-                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" link="https://docs.axonops.com/workbench/cassandra/license">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" link="https://axonops.com/docs/workbench/cassandra/license/">
                     <span mulang="app license (EULA)" capitalize></span>
                     <ion-icon name="external-link"></ion-icon>
                   </div>
@@ -1537,8 +1606,8 @@
               </div>
               <div class="modal-section" section="notices" hidden>
                 <div class="notice">
-                  AxonOps is a registered trademark of AxonOps Limited. Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation (<span class="link"><span
-                      class="content">http://www.apache.org/</span>
+                  AxonOps is a registered trademark of AxonOps Limited. Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache
+                  Software Foundation (<span class="link"><span class="content">http://www.apache.org/</span>
                     <ion-icon name="external-link"></ion-icon>
                   </span>) or its subsidiaries in Canada, the United States and/or other countries.
                 </div>
@@ -1698,6 +1767,113 @@
                 <span mulang="dismiss this update"></span>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal top fade" id="actionsKeyspace" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <span mulang="create keyspace" capitalize></span>
+            </h5>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="action-elements">
+              <div class="form-outline form-white margin-bottom">
+                <input type="text" class="form-control form-control-lg" id="keyspaceName">
+                <label class="form-label">
+                  <span mulang="keyspace name" capitalize-first></span>
+                </label>
+                <div class="valid-feedback"></div>
+                <div class="invalid-feedback">
+                  <span mulang capitalize-first></span>.
+                </div>
+              </div>
+              <div class="form-outline form-white invalid-warning" style="margin-bottom: 50px; z-index: 2;">
+                <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                <input type="text" class="form-control form-icon-trailing form-control-lg ignore-invalid" style="cursor: pointer;" id="keyspaceReplicationStrategy" value="NetworkTopologyStrategy" readonly>
+                <label class="form-label">
+                  <span mulang="keyspace replication strategy" capitalize></span>
+                </label>
+                <div class="valid-feedback"></div>
+                <div class="invalid-feedback"><span mulang="warning" capitalize></span>: <span mulang="SimpleStrategy is intended for development purposes only" capitalize-first></span>.</div>
+              </div>
+              <div class="dropdown adjust" for-select="keyspaceReplicationStrategy">
+                <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#" value="NetworkTopologyStrategy">NetworkTopologyStrategy</a></li>
+                  <li><a class="dropdown-item" href="#" value="SimpleStrategy">SimpleStrategy</a></li>
+                </ul>
+              </div>
+              <div for-strategy="SimpleStrategy">
+                <div class="form-outline form-white margin-bottom replication-factor">
+                  <input type="number" class="form-control form-control-lg" min="1" value="1" id="keyspaceReplicationFactorSimpleStrategy">
+                  <label class="form-label">
+                    <span mulang="replication factor" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"><span mulang="replication factor must be a positive number greater than 0" capitalize-first></span>.</div>
+                </div>
+              </div>
+              <div for-strategy="NetworkTopologyStrategy" style="margin-top: -40px; margin-bottom: 25px;">
+                <div class="row">
+                  <div class="col-md-12">
+                    <span class="badge badge-secondary" style="opacity: 0.85;">
+                      <span mulang="replication factor" capitalize></span>
+                    </span>
+                  </div>
+                </div>
+                <div class="data-centers"></div>
+              </div>
+              <div class="form-check margin-bottom" style="margin-top: 20px;">
+                <input class="form-check-input" type="checkbox" value id="keyspaceDurableWrites" checked>
+                <label class="form-check-label" for="keyspaceDurableWrites">
+                  <span mulang="durable writes" capitalize-first></span>.
+                </label>
+              </div>
+            </div>
+            <div class="action-editor">
+              <div class="editor"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="float-left">
+              <button type="button" class="btn btn-secondary btn-dark btn-sm switch-editor" disabled>
+                <ion-icon name="switch"></ion-icon>
+                <span mulang="switch editor"></span>
+              </button>
+            </div>
+            <div class="float-right">
+              <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" disabled id="executeActionStatement">
+                <span mulang="execute statement"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- General purpose dialog -->
+    <div class="modal top fade" id="actionKeyspaceDrop" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-body">
+            <div class="text"></div>
+            <div class="editor-container">
+              <div class="editor"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal">
+              <span mulang="cancel"></span>
+            </button>
+            <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color">
+              <span mulang="confirm"></span>
+            </button>
           </div>
         </div>
       </div>

@@ -1990,8 +1990,17 @@
                                 } catch (e) {}
 
                                 try {
-                                  if (nodeType != 'keyspace' || clickedNode.attr('data-is-virtual') != null)
+                                  if (['keyspace', 'udts-parent'].every((type) => nodeType != type) || clickedNode.attr('data-is-virtual') != null)
                                     throw 0
+
+                                  try {
+                                    if (nodeType != 'udts-parent')
+                                      throw 0
+
+                                    contextMenu = []
+
+                                    targetName = keyspaceName
+                                  } catch (e) {}
 
                                   let keyspaceInfo = metadata.keyspaces.find((keyspace) => keyspace.name == targetName),
                                     isSystemKeyspace = Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == keyspaceInfo.name)
@@ -2007,10 +2016,12 @@
 
                                   let keyspaceUDTs = metadata.keyspaces.find((keyspace) => keyspace.name == targetName).user_types
 
+                                  if (nodeType != 'udts-parent')
+                                    contextMenu = contextMenu.concat([{
+                                      type: 'separator',
+                                    }])
+
                                   contextMenu = contextMenu.concat([{
-                                      type: 'separator'
-                                    },
-                                    {
                                       label: I18next.capitalizeFirstLetter(I18next.t('actions')),
                                       enabled: false
                                     },
@@ -2037,7 +2048,8 @@
                                         tabID: '_${cqlshSessionContentID}',
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
-                                      })`
+                                      })`,
+                                      visible: nodeType == 'keyspace'
                                     },
                                     {
                                       label: I18next.capitalizeFirstLetter(I18next.t('drop keyspace')),
@@ -2047,7 +2059,8 @@
                                         keyspaceName: '${targetName}',
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
-                                      })`
+                                      })`,
+                                      visible: nodeType == 'keyspace'
                                     }
                                   ])
 

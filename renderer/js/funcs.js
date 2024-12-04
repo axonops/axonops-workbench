@@ -1786,17 +1786,17 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       if (Object.keys(lengths).every((length) => lengths[length] <= 0))
         throw 0
 
-      // Define the main node's structure
-      let userDefinedElementsStructure = {
-        id: userDefinedElementsID,
-        parent: keyspaceID,
-        text: `User Definitions`,
-        type: 'default',
-        icon: normalizePath(Path.join(extraIconsPath, 'user_definitions.png'))
-      }
-
-      // Append the UDEs' container to the tree structure
-      treeStructure.core.data.push(userDefinedElementsStructure)
+      // // Define the main node's structure
+      // let userDefinedElementsStructure = {
+      //   id: userDefinedElementsID,
+      //   parent: keyspaceID,
+      //   text: `User Definitions`,
+      //   type: 'default',
+      //   icon: normalizePath(Path.join(extraIconsPath, 'user_definitions.png'))
+      // }
+      //
+      // // Append the UDEs' container to the tree structure
+      // treeStructure.core.data.push(userDefinedElementsStructure)
 
       // Handle `User Defined Types (UDT)`
       try {
@@ -1812,10 +1812,15 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           // Define the node/leaf structure
           userTypesStructure = {
             id: userTypesID,
-            parent: userDefinedElementsID,
-            text: `Types - UDT (<span>${lengths.userTypes}</span>)`,
+            parent: keyspaceID,
+            text: `User Defined Types (<span>${lengths.userTypes}</span>)`,
             type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'udt.png'))
+            icon: normalizePath(Path.join(extraIconsPath, 'udt.png')),
+            a_attr: {
+              keyspace: keyspace.name,
+              type: 'udts-parent',
+              'allow-right-context': true
+            }
           }
 
         // Append the UDTs' container to the tree structure
@@ -1866,8 +1871,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           // Define the node/leaf structure
           userFuncsStructure = {
             id: userFuncsID,
-            parent: userDefinedElementsID,
-            text: `Functions - UDF (<span>${lengths.functions}</span>)`,
+            parent: keyspaceID,
+            text: `User Defined Functions (<span>${lengths.functions}</span>)`,
             type: 'default',
             icon: normalizePath(Path.join(extraIconsPath, 'udf.png'))
           }
@@ -1952,8 +1957,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           // Define the node/leaf structure
           userAggregatesStructure = {
             id: userAggregatesID,
-            parent: userDefinedElementsID, // Under the current keyspace
-            text: `Aggregates - UDA (<span>${lengths.aggregates}</span>)`,
+            parent: keyspaceID, // Under the current keyspace
+            text: `User Defined Aggregates (<span>${lengths.aggregates}</span>)`,
             type: 'default',
             icon: normalizePath(Path.join(extraIconsPath, 'aggregate.png'))
           }

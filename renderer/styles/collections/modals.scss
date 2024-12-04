@@ -1181,7 +1181,7 @@ div.modal#appUpdate {
   }
 }
 
-div.modal#actionsKeyspace {
+div.modal#rightClickActionsMetadata {
   div.action-editor {
     position: absolute;
     inset: 0;
@@ -1248,6 +1248,113 @@ div.modal#actionsKeyspace {
           }
         }
       }
+    }
+  }
+
+  div.data-fields,
+  div.data-udt-fields {
+    div.data-field,
+    div.data-udt-field {
+      margin: 15px 0;
+      height: 36px;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-content: center;
+      align-items: center;
+
+      div.form-outline.data-name {
+        margin-right: 4px;
+        width: calc(100% - 4px);
+      }
+
+      div.form-outline.data-type {
+        margin-left: 4px;
+        width: calc(100% - 4px);
+      }
+
+      a[action="delete-udt"] {
+        color: inherit;
+        position: relative;
+        top: 1px;
+        width: 35px;
+        height: 30px;
+        left: 8px;
+
+        ion-icon {
+          position: absolute;
+          inset: 0;
+          margin: auto;
+        }
+      }
+
+      &:not(:first-of-type) {
+        margin-top: 20px;
+      }
+    }
+  }
+
+  a.addFieldBtn {
+    display: flex;
+    color: inherit;
+    text-transform: capitalize;
+    flex: {
+      direction: row;
+      wrap: nowrap;
+    }
+    align-items: center;
+
+    ion-icon[name="plus"] {
+      font-size: 171%;
+    }
+  }
+
+  div.fields-badge-action {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-content: center;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  div.empty-fields {
+    background: #3b3b3b;
+    border-radius: 7px;
+    font-size: 85%;
+    opacity: 0.7;
+    width: fit-content;
+    margin-left: 5px;
+    padding: 1px 8px;
+    margin-bottom: 29px;
+    margin-top: 10px;
+    @extend .no-select;
+
+    span.no-udt {
+      display: none;
+    }
+  }
+
+  div.input-group {
+    div.input-group-text.udt-name-keyspace {
+      border-color: #4e4e4e;
+      position: relative;
+      height: 45px;
+
+      &:after {
+        content: '.';
+      }
+
+      div.keyspace-name {
+        max-width: 200px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .invalid-feedback {
+      margin-top: 0.1rem;
     }
   }
 }

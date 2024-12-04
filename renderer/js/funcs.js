@@ -27,17 +27,26 @@
  * @Return: {object} the Material Design's object
  */
 let getElementMDBObject = (element, type = 'Input') => {
+
   // Define the final object which be returned
   let object = null
 
   // Check if the MDB object has already been created
   try {
     // Get the MDB object by filtering all created objects
-    let foundObject = mdbObjects.filter((object) => object.element.is(element) && object.type == type)
+    let foundObject = mdbObjects.find((object) => {
+      let objectUIElement = object.element
+
+      try {
+        objectUIElement = object.element.length > 1 ? object.element[0] : object.element
+      } catch (e) {}
+
+      return objectUIElement.is(element) && object.type == type
+    })
 
     // If it has already been found then return it
-    if (foundObject.length != 0)
-      return foundObject[0].object
+    if (foundObject != undefined)
+      return foundObject.object
   } catch (e) {}
 
   /**

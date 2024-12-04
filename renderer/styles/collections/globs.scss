@@ -915,3 +915,14 @@ div.invalid-feedback.transparent-color {
   color: transparent !important;
   pointer-events: none;
 }
+
+ul.dropdown-menu {
+  li {
+    span.group-text {
+      font-size: 97%;
+      padding: 0 10px;
+      opacity: 0.6;
+      @extend .no-select;
+    }
+  }
+}

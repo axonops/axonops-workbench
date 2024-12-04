@@ -871,7 +871,7 @@
   // Show/hide the languages' list once the associated input is focused on/out
   setTimeout(() => {
     // Define the app's settings model selector path
-    let dialog = 'div.modal#appSettings, div.modal#actionsKeyspace'
+    let dialog = 'div.modal#appSettings, div.modal#rightClickActionsMetadata'
 
     // Loop through the dropdown element of each select element
     $(`${dialog}`).find('div.dropdown[for-select]').each(function() {
@@ -879,7 +879,6 @@
       let selectDropdown = getElementMDBObject($(this), 'Dropdown'),
         // Point at the associated input field
         input = $(`${dialog}`).find(`input#${$(this).attr('for-select')}`)
-
 
       // Once the associated select element is being focused then show the dropdown element and vice versa
       input.on('focus', () => {

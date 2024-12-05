@@ -1037,7 +1037,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       try {
         // If the child is not any of the defined types then skip this try-catch block
-        if (['Keyspace', 'Table', 'View', 'Index'].every((type) => text != type))
+        if (['Keyspace', 'Table', 'View', 'Index', 'User Type'].every((type) => text != type))
           throw 0
 
         // Set an `a_attr` attribute with important sub-attributes
@@ -1054,6 +1054,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         try {
           structure.a_attr.table = parentType.table
+        } catch (e) {}
+
+        try {
+          if (minifyText(text) != 'usertype')
+            throw 0
+
+          structure.a_attr.type = 'udt'
+          structure.a_attr.keyspace = object.keyspace
         } catch (e) {}
       } catch (e) {}
 
@@ -1835,7 +1843,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           ] = getRandomID(30, 2)
 
           // Build a tree view for the current UDT
-          buildTreeViewForChild(userTypesID, userTypeID, `User Type`, userType, 'udt')
+          buildTreeViewForChild(userTypesID, userTypeID, `User Type`, {
+            ...userType,
+            keyspace: keyspace.name
+          }, 'udt')
 
           // Loop through each field of the current UDT
           userType.field_names.forEach((field, index) => {
@@ -2406,7 +2417,7 @@ let openDialog = (text, callback, noBackdrop = false, checkBox = '', dialogEleme
     $('div.modal-backdrop:last-of-type').remove()
 }
 
-let openDropKeyspaceDialog = (text, callback) => openDialog(text, callback, false, '', $('div#actionKeyspaceDrop'))
+let openDropDataDialog = (text, callback) => openDialog(text, callback, false, '', $('div#actionDataDrop'))
 
 /**
  * Print a custom message in the app's terminals

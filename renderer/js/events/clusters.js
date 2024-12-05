@@ -1990,11 +1990,11 @@
                                 } catch (e) {}
 
                                 try {
-                                  if (['keyspace', 'udts-parent'].every((type) => nodeType != type) || clickedNode.attr('data-is-virtual') != null)
+                                  if (['keyspace', 'udts-parent', 'udt'].every((type) => nodeType != type) || clickedNode.attr('data-is-virtual') != null)
                                     throw 0
 
                                   try {
-                                    if (nodeType != 'udts-parent')
+                                    if (!nodeType.includes('udt'))
                                       throw 0
 
                                     contextMenu = []
@@ -2016,7 +2016,7 @@
 
                                   let keyspaceUDTs = metadata.keyspaces.find((keyspace) => keyspace.name == targetName).user_types
 
-                                  if (nodeType != 'udts-parent')
+                                  if (contextMenu.length != 0)
                                     contextMenu = contextMenu.concat([{
                                       type: 'separator',
                                     }])
@@ -2028,7 +2028,7 @@
                                     {
                                       label: I18next.capitalizeFirstLetter(I18next.t('create UDT')),
                                       action: 'createUDT',
-                                      visible: !isSystemKeyspace,
+                                      visible: !isSystemKeyspace && nodeType != 'udt',
                                       click: `() => views.main.webContents.send('create-udt', {
                                         keyspaceName: '${targetName}',
                                         udts: '${JSON.stringify(keyspaceUDTs) || []}',
@@ -2037,6 +2037,23 @@
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
                                       })`
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('alter UDT')),
+                                      action: 'alterUDT',
+                                      visible: nodeType == 'udt'
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('drop UDT')),
+                                      action: 'dropUDT',
+                                      click: `() => views.main.webContents.send('drop-udt', {
+                                        udtName: '${clickedNode.attr('name')}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        keyspaceName: '${targetName}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`,
+                                      visible: nodeType == 'udt'
                                     },
                                     {
                                       label: I18next.capitalizeFirstLetter(I18next.t('alter keyspace')),
@@ -9616,7 +9633,7 @@
 
     IPCRenderer.on('drop-keyspace', (_, data) => {
       let keyspaceName = `${data.keyspaceName}`,
-        dropKeyspaceEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionKeyspaceDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+        dropKeyspaceEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
 
       if (minifyText(keyspaceName).length <= 0)
         return
@@ -9633,7 +9650,7 @@
 
       setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
 
-      openDropKeyspaceDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible`, [keyspaceName])) + '.', (confirmed) => {
+      openDropDataDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible`, [keyspaceName])) + '.', (confirmed) => {
         if (!confirmed)
           return
 
@@ -9694,6 +9711,57 @@
       $('div.modal#rightClickActionsMetadata').find('span[mulang].exist-udt').toggle(data.numOfUDTs > 0)
 
       rightClickActionsMetadataModal.show()
+    })
+
+    IPCRenderer.on('drop-udt', (_, data) => {
+      let udtName = `${data.udtName}`,
+      keyspaceName = `${data.keyspaceName}`,
+        dropUDTEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+
+      if ([udtName, keyspaceName].some((name) => minifyText(name).length <= 0))
+        return
+
+      try {
+        $('#generalPurposeDialog').attr({
+          'data-keyspacename': `${keyspaceName}`,
+          'data-udtname': `${udtName}`
+        })
+      } catch (e) {}
+
+      let dropStatement = `DROP TYPE ${keyspaceName}.${udtName};`
+
+      try {
+        dropUDTEditor.setValue(dropStatement)
+      } catch (e) {}
+
+      setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
+
+      openDropDataDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the defined type [b]$data[/b] in the keyspace [b]$data[/b]? This action is irreversible, and, by executing this command, the UDT [b]$data[/b] will be dropped [b]immediately[/b].`, [udtName, keyspaceName, udtName])) + '.', (confirmed) => {
+        if (!confirmed)
+          return
+
+        try {
+          getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
+        } catch (e) {}
+
+        let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+
+        try {
+          activeWorkarea.find('div.terminal-container').hide()
+          activeWorkarea.find('div.interactive-terminal-container').show()
+        } catch (e) {}
+
+        try {
+          let statementInputField = $(`textarea#${data.textareaID}`)
+          statementInputField.val(dropUDTEditor.getValue())
+          statementInputField.trigger('input').focus()
+          AutoSize.update(statementInputField[0])
+        } catch (e) {}
+
+        try {
+          setTimeout(() => $(`button#${data.btnID}`).click(), 100)
+        } catch (e) {}
+      })
     })
   }
 
@@ -10227,7 +10295,7 @@
 
           try {
             if (dialogElement.find('div[action="udts"]').find('.is-invalid:not(.ignore-invalid)').length <= 0 &&
-              dataFieldsContainer.children('div.data-field.row').length > 0 &&
+              dialogElement.find('div[action="udts"]').find('div.data-field.row').length > 0 &&
               minifyText(udtName).length > 0)
               throw 0
 

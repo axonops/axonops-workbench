@@ -1309,7 +1309,7 @@
 }
 
 {
-  $("#actionKeyspaceDrop")[0].addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize'))
+  $("#actionDataDrop")[0].addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize'))
 
-  $('div.modal#actionKeyspaceDrop div.editor-container').mutate('show', () => $(window.visualViewport).trigger('resize'))
+  $('div.modal#actionDataDrop div.editor-container').mutate('show', () => $(window.visualViewport).trigger('resize'))
 }

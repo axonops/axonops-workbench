@@ -1263,6 +1263,10 @@ div.modal#rightClickActionsMetadata {
       align-content: center;
       align-items: center;
 
+      &.deleted {
+        background: repeating-linear-gradient(45deg, /* The angle of the lines */ rgba(244, 67, 54, 0.1), /* Red color (#f44336) with transparency */ rgba(244, 67, 54, 0.1) 10px, /* Thickness of each line */ transparent 10px, /* Spacing between lines */ transparent 20px /* Repeat every 20px */);
+      }
+
       div.form-outline.data-name {
         margin-right: 4px;
         width: calc(100% - 4px);

@@ -27,17 +27,26 @@
  * @Return: {object} the Material Design's object
  */
 let getElementMDBObject = (element, type = 'Input') => {
+
   // Define the final object which be returned
   let object = null
 
   // Check if the MDB object has already been created
   try {
     // Get the MDB object by filtering all created objects
-    let foundObject = mdbObjects.filter((object) => object.element.is(element) && object.type == type)
+    let foundObject = mdbObjects.find((object) => {
+      let objectUIElement = object.element
+
+      try {
+        objectUIElement = object.element.length > 1 ? object.element[0] : object.element
+      } catch (e) {}
+
+      return objectUIElement.is(element) && object.type == type
+    })
 
     // If it has already been found then return it
-    if (foundObject.length != 0)
-      return foundObject[0].object
+    if (foundObject != undefined)
+      return foundObject.object
   } catch (e) {}
 
   /**
@@ -1001,7 +1010,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       let structure = {
         id: childID,
         parent: parentID,
-        text: `<span>${object.name}</span>`,
+        text: `<span>${EscapeHTML(object.name)}</span>`,
         type: 'default',
         parentType: setParentType
       }
@@ -1028,7 +1037,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       try {
         // If the child is not any of the defined types then skip this try-catch block
-        if (['Keyspace', 'Table', 'View', 'Index'].every((type) => text != type))
+        if (['Keyspace', 'Table', 'View', 'Index', 'User Type'].every((type) => text != type))
           throw 0
 
         // Set an `a_attr` attribute with important sub-attributes
@@ -1045,6 +1054,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         try {
           structure.a_attr.table = parentType.table
+        } catch (e) {}
+
+        try {
+          if (minifyText(text) != 'usertype')
+            throw 0
+
+          structure.a_attr.type = 'udt'
+          structure.a_attr.keyspace = object.keyspace
         } catch (e) {}
       } catch (e) {}
 
@@ -1367,7 +1384,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
                 parentOptionsStructure = {
                   id: parentOptionsID,
                   parent: parentID, // Under the options' container node
-                  text: `${text}`,
+                  text: `${EscapeHTML(text)}`,
                   type: 'default',
                   icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
                 }
@@ -1388,7 +1405,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               optionStructure = {
                 id: optionID,
                 parent: parentID, // Under the options' node
-                text: `${text}: <span>${value}</span>`,
+                text: `${text}: <span>${EscapeHTML(value)}</span>`,
                 type: 'default',
                 icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
               }
@@ -1579,7 +1596,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           treeStructure.core.data.push({
             id: kindID,
             parent: indexID,
-            text: `Kind: <span>${I18next.capitalizeFirstLetter(index.kind.toLowerCase())}</span>`,
+            text: `Kind: <span>${I18next.capitalizeFirstLetter(EscapeHTML(index.kind.toLowerCase()))}</span>`,
             type: 'default'
           })
         })
@@ -1629,7 +1646,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         treeStructure.core.data.push({
           id: getRandomID(30),
           parent: viewID,
-          text: `Base Table: <span>${view.base_table_name}</span>`,
+          text: `Base Table: <span>${EscapeHTML(view.base_table_name)}</span>`,
           type: 'default'
         })
 
@@ -1748,14 +1765,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         treeStructure.core.data.push({
           id: kindID,
           parent: indexID,
-          text: `Kind: <span>${I18next.capitalizeFirstLetter(index.kind.toLowerCase())}</span>`,
+          text: `Kind: <span>${I18next.capitalizeFirstLetter(EscapeHTML(index.kind.toLowerCase()))}</span>`,
           type: 'default'
         })
 
         treeStructure.core.data.push({
           id: relatedTableID,
           parent: indexID,
-          text: `Table: ${indexInfo.table}`,
+          text: `Table: ${EscapeHTML(indexInfo.table)}`,
           type: 'default',
           icon: normalizePath(Path.join(extraIconsPath, 'table.png'))
         })
@@ -1777,17 +1794,17 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       if (Object.keys(lengths).every((length) => lengths[length] <= 0))
         throw 0
 
-      // Define the main node's structure
-      let userDefinedElementsStructure = {
-        id: userDefinedElementsID,
-        parent: keyspaceID,
-        text: `User Definitions`,
-        type: 'default',
-        icon: normalizePath(Path.join(extraIconsPath, 'user_definitions.png'))
-      }
-
-      // Append the UDEs' container to the tree structure
-      treeStructure.core.data.push(userDefinedElementsStructure)
+      // // Define the main node's structure
+      // let userDefinedElementsStructure = {
+      //   id: userDefinedElementsID,
+      //   parent: keyspaceID,
+      //   text: `User Definitions`,
+      //   type: 'default',
+      //   icon: normalizePath(Path.join(extraIconsPath, 'user_definitions.png'))
+      // }
+      //
+      // // Append the UDEs' container to the tree structure
+      // treeStructure.core.data.push(userDefinedElementsStructure)
 
       // Handle `User Defined Types (UDT)`
       try {
@@ -1803,10 +1820,15 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           // Define the node/leaf structure
           userTypesStructure = {
             id: userTypesID,
-            parent: userDefinedElementsID,
-            text: `Types - UDT (<span>${lengths.userTypes}</span>)`,
+            parent: keyspaceID,
+            text: `User Defined Types (<span>${lengths.userTypes}</span>)`,
             type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'udt.png'))
+            icon: normalizePath(Path.join(extraIconsPath, 'udt.png')),
+            a_attr: {
+              keyspace: keyspace.name,
+              type: 'udts-parent',
+              'allow-right-context': true
+            }
           }
 
         // Append the UDTs' container to the tree structure
@@ -1821,7 +1843,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           ] = getRandomID(30, 2)
 
           // Build a tree view for the current UDT
-          buildTreeViewForChild(userTypesID, userTypeID, `User Type`, userType, 'udt')
+          buildTreeViewForChild(userTypesID, userTypeID, `User Type`, {
+            ...userType,
+            keyspace: keyspace.name
+          }, 'udt')
 
           // Loop through each field of the current UDT
           userType.field_names.forEach((field, index) => {
@@ -1836,7 +1861,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             treeStructure.core.data.push({
               id: fieldID,
               parent: userTypeID,
-              text: `<span>${field}</span>: <span>${type}</span>`,
+              text: `<span>${field}</span>: <span>${EscapeHTML(type)}</span>`,
               type: 'default'
             })
           })
@@ -1857,8 +1882,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           // Define the node/leaf structure
           userFuncsStructure = {
             id: userFuncsID,
-            parent: userDefinedElementsID,
-            text: `Functions - UDF (<span>${lengths.functions}</span>)`,
+            parent: keyspaceID,
+            text: `User Defined Functions (<span>${lengths.functions}</span>)`,
             type: 'default',
             icon: normalizePath(Path.join(extraIconsPath, 'udf.png'))
           }
@@ -1884,7 +1909,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               `Deterministic: <span class="material-icons for-treeview">${func.deterministic ? 'check' : 'close'}</span>`,
               `Monotonic: <span class="material-icons for-treeview">${func.monotonic ? 'check' : 'close'}</span>`,
               `Called On null Input: <span class="material-icons for-treeview">${func.called_on_null_input ? 'check' : 'close'}</span>`,
-              `Language: <span>${func.language.toUpperCase()}</span>`,
+              `Language: <span>${EscapeHTML(func.language.toUpperCase())}</span>`,
               `Return Type: <span>${EscapeHTML(func.return_type)}</span>`
             ]
 
@@ -1943,8 +1968,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           // Define the node/leaf structure
           userAggregatesStructure = {
             id: userAggregatesID,
-            parent: userDefinedElementsID, // Under the current keyspace
-            text: `Aggregates - UDA (<span>${lengths.aggregates}</span>)`,
+            parent: keyspaceID, // Under the current keyspace
+            text: `User Defined Aggregates (<span>${lengths.aggregates}</span>)`,
             type: 'default',
             icon: normalizePath(Path.join(extraIconsPath, 'aggregate.png'))
           }
@@ -2005,7 +2030,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             treeStructure.core.data.push({
               id: argumentTypeID,
               parent: argumentsID,
-              text: `<span>${argumentType}</span>`,
+              text: `<span>${EscapeHTML(argumentType)}</span>`,
               type: 'default'
             })
           })
@@ -2392,7 +2417,7 @@ let openDialog = (text, callback, noBackdrop = false, checkBox = '', dialogEleme
     $('div.modal-backdrop:last-of-type').remove()
 }
 
-let openDropKeyspaceDialog = (text, callback) => openDialog(text, callback, false, '', $('div#actionKeyspaceDrop'))
+let openDropDataDialog = (text, callback) => openDialog(text, callback, false, '', $('div#actionDataDrop'))
 
 /**
  * Print a custom message in the app's terminals

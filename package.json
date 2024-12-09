@@ -66,7 +66,7 @@
       "type": "distribution",
       "entitlements": "./resources/entitlements.mac.plist",
       "entitlementsInherit": "./resources/entitlements.mac.plist",
-      "provisioningProfile": "./resources/WorkbenchDevelopment.provisionprofile",
+      "provisioningProfile": "./resources/Workbench.provisionprofile",
       "notarize": {
         "teamId": "UJ776LUP23"
       },
@@ -76,13 +76,28 @@
       ],
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
+    "masDev": {
+      "icon": "./renderer/assets/images/axonops.icns",
+      "entitlements": "./resources/entitlements.mas.plist",
+      "entitlementsInherit": "./resources/entitlements.inherit.mas.plist",
+      "provisioningProfile": "./resources/WorkbenchDevelopment.provisionprofile",
+      "artifactName": "AxonOps.Workbench-${version}-mas-${os}-${arch}.${ext}",
+      "minimumSystemVersion": "12.0.0",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "target": [
+        "pkg"
+      ]
+    },
     "mas": {
       "icon": "./renderer/assets/images/axonops.icns",
       "entitlements": "./resources/entitlements.mas.plist",
       "entitlementsInherit": "./resources/entitlements.inherit.mas.plist",
-      "provisioningProfile": "./resources/MacAppStore.provisionprofile",
+      "provisioningProfile": "./resources/Workbench.provisionprofile",
       "artifactName": "AxonOps.Workbench-${version}-mas-${os}-${arch}.${ext}",
       "minimumSystemVersion": "12.0.0",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
       "target": [
         "pkg"
       ]
@@ -122,6 +137,7 @@
     "linux:arm64": "electron-builder --linux tar.gz deb rpm --publish never --arm64",
     "mac": "electron-builder --mac --publish never --x64",
     "mac:mas": "electron-builder --mac mas --publish never --arm64",
+    "mac:mas-dev": "electron-builder --mac mas-dev --publish never",
     "mac:arm64": "electron-builder --mac --publish never --arm64",
     "mac:zip": "electron-builder --mac zip --publish never",
     "mac:pkg": "electron-builder --mac pkg --publish never",

@@ -50,7 +50,7 @@
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
-      "icon": "./renderer/assets/images/axonops-icon-512x512.icns",
+      "icon": "./resources/icon.icns",
       "category": "public.app-category.developer-tools",
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"
@@ -77,12 +77,15 @@
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "masDev": {
-      "icon": "./renderer/assets/images/axonops.icns",
+      "icon": "./resources/icon.icns",
       "entitlements": "./resources/entitlements.mas.plist",
       "entitlementsInherit": "./resources/entitlements.inherit.mas.plist",
       "provisioningProfile": "./resources/WorkbenchDevelopment.provisionprofile",
       "artifactName": "AxonOps.Workbench-${version}-mas-${os}-${arch}.${ext}",
-      "minimumSystemVersion": "12.0.0",
+      "minimumSystemVersion": "13.0.0",
+      "extendInfo": {
+        "LSMinimumSystemVersion": "13.0.0"
+      },
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "target": [
@@ -90,14 +93,17 @@
       ]
     },
     "mas": {
-      "icon": "./renderer/assets/images/axonops.icns",
+      "icon": "./resources/icon.icns",
       "entitlements": "./resources/entitlements.mas.plist",
       "entitlementsInherit": "./resources/entitlements.inherit.mas.plist",
       "provisioningProfile": "./resources/Workbench.provisionprofile",
       "artifactName": "AxonOps.Workbench-${version}-mas-${os}-${arch}.${ext}",
-      "minimumSystemVersion": "12.0.0",
+      "minimumSystemVersion": "13.0.0",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
+      "extendInfo": {
+        "LSMinimumSystemVersion": "13.0.0"
+      },
       "target": [
         "pkg"
       ]

@@ -1990,14 +1990,23 @@
                                 } catch (e) {}
 
                                 try {
-                                  if (nodeType != 'keyspace' || clickedNode.attr('data-is-virtual') != null)
+                                  if (['keyspace', 'udts-parent', 'udt'].every((type) => nodeType != type) || clickedNode.attr('data-is-virtual') != null)
                                     throw 0
+
+                                  try {
+                                    if (!nodeType.includes('udt'))
+                                      throw 0
+
+                                    contextMenu = []
+
+                                    targetName = keyspaceName
+                                  } catch (e) {}
 
                                   let keyspaceInfo = metadata.keyspaces.find((keyspace) => keyspace.name == targetName),
                                     isSystemKeyspace = Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == keyspaceInfo.name)
 
                                   try {
-                                    $('#actionsKeyspace').attr('data-keyspace-info', `${JSON.stringify(keyspaceInfo)}`)
+                                    $('#rightClickActionsMetadata').attr('data-keyspace-info', `${JSON.stringify(keyspaceInfo)}`)
                                   } catch (e) {}
 
                                   let replicationStrategy = JSON.parse(repairJSON(`${keyspaceInfo.replication_strategy}`) || `{}`)
@@ -2005,13 +2014,57 @@
                                   if (replicationStrategy.class == 'LocalStrategy' && isSystemKeyspace)
                                     throw 0
 
+                                  let keyspaceUDTs = metadata.keyspaces.find((keyspace) => keyspace.name == targetName).user_types
+
+                                  if (contextMenu.length != 0)
+                                    contextMenu = contextMenu.concat([{
+                                      type: 'separator',
+                                    }])
+
                                   contextMenu = contextMenu.concat([{
-                                      type: 'separator'
-                                    },
-                                    {
                                       label: I18next.capitalizeFirstLetter(I18next.t('actions')),
                                       enabled: false
-                                    }, {
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('create UDT')),
+                                      action: 'createUDT',
+                                      visible: !isSystemKeyspace && nodeType != 'udt',
+                                      click: `() => views.main.webContents.send('create-udt', {
+                                        keyspaceName: '${targetName}',
+                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                        numOfUDTs: ${keyspaceUDTs.length},
+                                        tabID: '_${cqlshSessionContentID}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('alter UDT')),
+                                      action: 'alterUDT',
+                                      click: `() => views.main.webContents.send('alter-udt', {
+                                        keyspaceName: '${targetName}',
+                                        udtName: '${clickedNode.attr('name')}',
+                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                        numOfUDTs: ${keyspaceUDTs.length},
+                                        tabID: '_${cqlshSessionContentID}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`,
+                                      visible: nodeType == 'udt'
+                                    },
+                                    {
+                                      label: I18next.capitalizeFirstLetter(I18next.t('drop UDT')),
+                                      action: 'dropUDT',
+                                      click: `() => views.main.webContents.send('drop-udt', {
+                                        udtName: '${clickedNode.attr('name')}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        keyspaceName: '${targetName}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`,
+                                      visible: nodeType == 'udt'
+                                    },
+                                    {
                                       label: I18next.capitalizeFirstLetter(I18next.t('alter keyspace')),
                                       action: 'alter',
                                       click: `() => views.main.webContents.send('alter-keyspace', {
@@ -2021,7 +2074,8 @@
                                         tabID: '_${cqlshSessionContentID}',
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
-                                      })`
+                                      })`,
+                                      visible: nodeType == 'keyspace'
                                     },
                                     {
                                       label: I18next.capitalizeFirstLetter(I18next.t('drop keyspace')),
@@ -2031,7 +2085,8 @@
                                         keyspaceName: '${targetName}',
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
-                                      })`
+                                      })`,
+                                      visible: nodeType == 'keyspace'
                                     }
                                   ])
 
@@ -9476,16 +9531,19 @@
     })
 
     IPCRenderer.on('create-keyspace', (_, data) => {
-      let actionsKeyspaceModal = getElementMDBObject($('#actionsKeyspace'), 'Modal')
+      let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
 
-      $('#actionsKeyspace').find('h5.modal-title').children('span').attr('mulang', 'create keyspace').text(I18next.capitalize(I18next.t('create keyspace')))
+      $('div.modal#rightClickActionsMetadata div[action]').hide()
+      $('div.modal#rightClickActionsMetadata div[action="keyspaces"]').show()
 
-      $('#actionsKeyspace').attr('data-state', null)
+      $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'create keyspace').text(I18next.capitalize(I18next.t('create keyspace')))
+
+      $('#rightClickActionsMetadata').attr('data-state', null)
 
       $('input#keyspaceReplicationStrategy').attr('data-datacenters', `${data.datacenters}`)
 
       try {
-        $('#actionsKeyspace').attr('data-keyspaces', `${data.keyspaces}`)
+        $('#rightClickActionsMetadata').attr('data-keyspaces', `${data.keyspaces}`)
       } catch (e) {}
 
       $('button#executeActionStatement').attr({
@@ -9506,30 +9564,33 @@
 
       $('input#keyspaceDurableWrites').prop('checked', true)
 
-      $('#actionsKeyspace').removeClass('show-editor')
+      $('#rightClickActionsMetadata').removeClass('show-editor')
 
-      actionsKeyspaceModal.show()
+      rightClickActionsMetadataModal.show()
     })
 
     IPCRenderer.on('alter-keyspace', (_, data) => {
-      let actionsKeyspaceModal = getElementMDBObject($('#actionsKeyspace'), 'Modal'),
-        metadataInfo = JSON.parse(repairJSON($('#actionsKeyspace').attr('data-keyspace-info')))
+      let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal'),
+        metadataInfo = JSON.parse(repairJSON($('#rightClickActionsMetadata').attr('data-keyspace-info')))
+
+      $('div.modal#rightClickActionsMetadata div[action]').hide()
+      $('div.modal#rightClickActionsMetadata div[action="keyspaces"]').show()
 
       try {
         metadataInfo.replication_strategy = JSON.parse(repairJSON(metadataInfo.replication_strategy))
       } catch (e) {}
 
       try {
-        $('#actionsKeyspace').attr('data-keyspaces', `${data.keyspaces}`)
+        $('#rightClickActionsMetadata').attr('data-keyspaces', `${data.keyspaces}`)
       } catch (e) {}
 
       try {
         $('#generalPurposeDialog').attr('data-keyspacename', `${data.keyspaceName}`)
       } catch (e) {}
 
-      $('#actionsKeyspace').find('h5.modal-title').children('span').attr('mulang', 'alter keyspace').text(I18next.capitalize(I18next.t('alter keyspace')))
+      $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'alter keyspace').text(I18next.capitalize(I18next.t('alter keyspace')))
 
-      $('#actionsKeyspace').attr('data-state', 'alter')
+      $('#rightClickActionsMetadata').attr('data-state', 'alter')
 
       $('input#keyspaceReplicationStrategy').attr('data-datacenters', `${data.datacenters}`)
 
@@ -9547,11 +9608,11 @@
         if (`${metadataInfo.replication_strategy.class}` != 'SimpleStrategy')
           throw 0
 
-        $('#actionsKeyspace').attr('data-rf', `${metadataInfo.replication_strategy.replication_factor}`)
+        $('#rightClickActionsMetadata').attr('data-rf', `${metadataInfo.replication_strategy.replication_factor}`)
 
         $('input#keyspaceReplicationFactorSimpleStrategy').val(metadataInfo.replication_strategy.replication_factor).trigger('input')
 
-        $('#actionsKeyspace').attr('data-datacenters-rf', null)
+        $('#rightClickActionsMetadata').attr('data-datacenters-rf', null)
 
         $('input#keyspaceReplicationStrategy').attr('disabled', null).css('background-color', 'inherit')
 
@@ -9562,9 +9623,9 @@
         if (`${metadataInfo.replication_strategy.class}` != 'NetworkTopologyStrategy')
           throw 0
 
-        $('#actionsKeyspace').attr('data-datacenters-rf', `${JSON.stringify(metadataInfo.replication_strategy)}`)
+        $('#rightClickActionsMetadata').attr('data-datacenters-rf', `${JSON.stringify(metadataInfo.replication_strategy)}`)
 
-        $('#actionsKeyspace').attr('data-rf', null)
+        $('#rightClickActionsMetadata').attr('data-rf', null)
 
         $('input#keyspaceReplicationStrategy').attr('disabled', '').css('background-color', '')
 
@@ -9574,14 +9635,14 @@
       $('input#keyspaceDurableWrites').prop('checked', metadataInfo.durable_writes)
       $('input#keyspaceDurableWrites').attr('set-value', metadataInfo.durable_writes)
 
-      $('#actionsKeyspace').removeClass('show-editor')
+      $('#rightClickActionsMetadata').removeClass('show-editor')
 
-      actionsKeyspaceModal.show()
+      rightClickActionsMetadataModal.show()
     })
 
     IPCRenderer.on('drop-keyspace', (_, data) => {
       let keyspaceName = `${data.keyspaceName}`,
-        dropKeyspaceEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionKeyspaceDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+        dropKeyspaceEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
 
       if (minifyText(keyspaceName).length <= 0)
         return
@@ -9598,7 +9659,7 @@
 
       setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
 
-      openDropKeyspaceDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible`, [keyspaceName])) + '.', (confirmed) => {
+      openDropDataDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible`, [keyspaceName])) + '.', (confirmed) => {
         if (!confirmed)
           return
 
@@ -9625,6 +9686,145 @@
         } catch (e) {}
       })
     })
+
+    IPCRenderer.on('create-udt', (_, data) => {
+      let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+      $('button#executeActionStatement').attr({
+        'data-tab-id': `${data.tabID}`,
+        'data-textarea-id': `${data.textareaID}`,
+        'data-btn-id': `${data.btnID}`
+      })
+
+      $('#rightClickActionsMetadata').attr('data-state', null)
+
+      $('div.modal#rightClickActionsMetadata').find('div.data-field.row').remove()
+
+      $('input[type="text"]#udtName').val('').trigger('input')
+
+      $('div.modal#rightClickActionsMetadata').find('div.empty-fields').show()
+
+      $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'create UDT').text(I18next.capitalize(I18next.t('create UDT')))
+
+      $('#rightClickActionsMetadata div.input-group-text.udt-name-keyspace div.keyspace-name').text(`${data.keyspaceName}`)
+
+      $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
+
+      $('div.modal#rightClickActionsMetadata div[action]').hide()
+
+      $('div.modal#rightClickActionsMetadata div[action="udts"]').show()
+
+      $('div.modal#rightClickActionsMetadata a.addFieldBtn#addUDTDataField').toggleClass('disabled', data.numOfUDTs <= 0)
+
+      $('div.modal#rightClickActionsMetadata').find('span[mulang].no-udt').toggle(data.numOfUDTs <= 0)
+      $('div.modal#rightClickActionsMetadata').find('span[mulang].exist-udt').toggle(data.numOfUDTs > 0)
+
+      $('#rightClickActionsMetadata').removeClass('show-editor')
+
+      rightClickActionsMetadataModal.show()
+    })
+
+    IPCRenderer.on('alter-udt', (_, data) => {
+      let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+      $('div.modal#rightClickActionsMetadata div[action]').hide()
+      $('div.modal#rightClickActionsMetadata div[action="udts"]').show()
+
+      $('button#executeActionStatement').attr({
+        'data-tab-id': `${data.tabID}`,
+        'data-textarea-id': `${data.textareaID}`,
+        'data-btn-id': `${data.btnID}`
+      })
+
+      $('#rightClickActionsMetadata').attr('data-state', 'alter')
+
+      $('div.modal#rightClickActionsMetadata').find('div.data-field.row').remove()
+
+      $('input[type="text"]#udtName').val(`${data.udtName}`).trigger('input')
+
+      $('div.modal#rightClickActionsMetadata').find('div.empty-fields').show()
+
+      $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'alter UDT').text(I18next.capitalize(I18next.t('alter UDT')))
+
+      $('#rightClickActionsMetadata div.input-group-text.udt-name-keyspace div.keyspace-name').text(`${data.keyspaceName}`)
+
+      $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
+
+      $('div.modal#rightClickActionsMetadata a.addFieldBtn#addUDTDataField').toggleClass('disabled', data.numOfUDTs <= 0)
+
+      $('div.modal#rightClickActionsMetadata').find('span[mulang].no-udt').toggle(data.numOfUDTs <= 0)
+      $('div.modal#rightClickActionsMetadata').find('span[mulang].exist-udt').toggle(data.numOfUDTs > 0)
+
+      // Get related data to the current UDT
+      try {
+        let udt = JSON.parse(data.udts).find((udt) => udt.name == data.udtName),
+          fields = [];
+
+        for (let i = 0; i < udt.field_names.length; ++i) {
+          fields.push({
+            name: udt.field_names[i],
+            type: udt.field_types[i]
+          })
+        }
+
+        $(`a[action]#addDataField`).add($(`a[action]#addUDTDataField`)).trigger('click', JSON.stringify(fields))
+      } catch (e) {}
+
+      $('#rightClickActionsMetadata').removeClass('show-editor')
+
+      rightClickActionsMetadataModal.show()
+    })
+
+    IPCRenderer.on('drop-udt', (_, data) => {
+      let udtName = `${data.udtName}`,
+        keyspaceName = `${data.keyspaceName}`,
+        dropUDTEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+
+      if ([udtName, keyspaceName].some((name) => minifyText(name).length <= 0))
+        return
+
+      try {
+        $('#generalPurposeDialog').attr({
+          'data-keyspacename': `${keyspaceName}`,
+          'data-udtname': `${udtName}`
+        })
+      } catch (e) {}
+
+      let dropStatement = `DROP TYPE ${keyspaceName}.${udtName};`
+
+      try {
+        dropUDTEditor.setValue(dropStatement)
+      } catch (e) {}
+
+      setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
+
+      openDropDataDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the defined type [b]$data[/b] in the keyspace [b]$data[/b]? This action is irreversible, and, by executing this command, the UDT [b]$data[/b] will be dropped [b]immediately[/b].`, [udtName, keyspaceName, udtName])) + '.', (confirmed) => {
+        if (!confirmed)
+          return
+
+        try {
+          getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
+        } catch (e) {}
+
+        let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+
+        try {
+          activeWorkarea.find('div.terminal-container').hide()
+          activeWorkarea.find('div.interactive-terminal-container').show()
+        } catch (e) {}
+
+        try {
+          let statementInputField = $(`textarea#${data.textareaID}`)
+          statementInputField.val(dropUDTEditor.getValue())
+          statementInputField.trigger('input').focus()
+          AutoSize.update(statementInputField[0])
+        } catch (e) {}
+
+        try {
+          setTimeout(() => $(`button#${data.btnID}`).click(), 100)
+        } catch (e) {}
+      })
+    })
   }
 
   // Handle the request of closing a cluster's work area
@@ -9636,22 +9836,24 @@
     setTimeout(() => {
       // Define the scroll value, by default, the current scroll value is `0` - at the top of the dialog -
       let scrollValue = 0,
-        dialogElement = $(`div.modal#actionsKeyspace`),
+        dialogElement = $(`div.modal#rightClickActionsMetadata`),
         actionEditor = monaco.editor.getEditors().find((editor) => dialogElement.find('div.action-editor div.editor div.monaco-editor').is(editor.getDomNode())),
-        updateActionStatus = () => {
+        updateActionStatusForKeyspaces = () => {
           let replicationStrategy = $('input#keyspaceReplicationStrategy').val(),
             keyspaceName = $('input#keyspaceName').val(),
             durableWrites = $('input#keyspaceDurableWrites').prop('checked'),
             replication = {},
-            isAlterState = $('div.modal#actionsKeyspace').attr('data-state')
+            isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
 
           isAlterState = isAlterState != null && isAlterState == 'alter'
 
           try {
-            if (dialogElement.find('.is-invalid:not(.ignore-invalid)').length <= 0)
+            if (dialogElement.find('div[action="keyspaces"]').find('.is-invalid:not(.ignore-invalid)').length <= 0)
               throw 0
 
             dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+
+            return
           } catch (e) {}
 
           try {
@@ -9672,7 +9874,7 @@
 
             replication.class = 'NetworkTopologyStrategy'
 
-            let dataCenters = dialogElement.find('div[for-strategy="NetworkTopologyStrategy"]').children('div.data-centers').find('div.data-center')
+            let dataCenters = dialogElement.find('div[action="keyspaces"]').find('div[for-strategy="NetworkTopologyStrategy"]').children('div.data-centers').find('div.data-center')
 
             for (let dataCenter of dataCenters) {
               dataCenter = $(dataCenter)
@@ -9689,7 +9891,7 @@
             replicationStrategySetValue = ''
 
           try {
-            replicationStrategySetValue = repairJSON(JSON.parse(repairJSON($('#actionsKeyspace').attr('data-keyspace-info'))).replication_strategy)
+            replicationStrategySetValue = repairJSON(JSON.parse(repairJSON($('#rightClickActionsMetadata').attr('data-keyspace-info'))).replication_strategy)
           } catch (e) {}
 
           let durableWritesFinal = '',
@@ -9729,7 +9931,7 @@
           isNameDuplicated = false,
           isNameInvalid = false,
           invalidFeedback = $(this).parent().children('div.invalid-feedback'),
-          isAlterState = $('div.modal#actionsKeyspace').attr('data-state')
+          isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
 
         isAlterState = isAlterState != null && isAlterState == 'alter'
 
@@ -9742,7 +9944,7 @@
           if (!isAlterState)
             throw 0
 
-          invalidFeedback.find('span').attr('mlang', 'the keyspace name can\'t be altered').text(I18next.capitalizeFirstLetter(I18next.t('the keyspace name can\'t be altered')))
+          invalidFeedback.find('span').attr('mulang', 'the keyspace name can\'t be altered').text(I18next.capitalizeFirstLetter(I18next.t('the keyspace name can\'t be altered')))
 
           dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
 
@@ -9751,7 +9953,7 @@
 
 
         try {
-          keyspaces = JSON.parse($('#actionsKeyspace').attr('data-keyspaces'))
+          keyspaces = JSON.parse($('#rightClickActionsMetadata').attr('data-keyspaces'))
         } catch (e) {}
 
         try {
@@ -9760,11 +9962,11 @@
 
           isNameDuplicated = keyspaces.some((keyspace) => `${keyspace}` == `${keyspaceName}`)
 
-          if (isAlterState && isNameDuplicated && (keyspaceName == $('div.modal#actionsKeyspace').attr('data-keyspacename')))
+          if (isAlterState && isNameDuplicated && (keyspaceName == $('div.modal#rightClickActionsMetadata').attr('data-keyspacename')))
             isNameDuplicated = false
 
           if (isNameDuplicated)
-            invalidFeedback.find('span').attr('mlang', 'provided name is already in use').text(I18next.capitalizeFirstLetter(I18next.t('provided name is already in use')))
+            invalidFeedback.find('span').attr('mulang', 'provided name is already in use').text(I18next.capitalizeFirstLetter(I18next.t('provided name is already in use')))
         } catch (e) {}
 
         try {
@@ -9774,7 +9976,7 @@
           isNameInvalid = `${keyspaceName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
 
           if (isNameInvalid)
-            invalidFeedback.find('span').attr('mlang', 'provided name is invalid, only alphanumeric and underscores are allowed').text(I18next.capitalizeFirstLetter(I18next.t('provided name is invalid, only alphanumeric and underscores are allowed')))
+            invalidFeedback.find('span').attr('mulang', 'provided name is invalid, only alphanumeric and underscores are allowed').text(I18next.capitalizeFirstLetter(I18next.t('provided name is invalid, only alphanumeric and underscores are allowed')))
         } catch (e) {}
 
         $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid)
@@ -9782,13 +9984,13 @@
         dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 ? '' : null)
 
         try {
-          updateActionStatus()
+          updateActionStatusForKeyspaces()
         } catch (e) {}
       })
 
       $('input#keyspaceReplicationStrategy').on('input', function() {
         let replicationStrategy = $(this).val(),
-          isAlterState = $('div.modal#actionsKeyspace').attr('data-state')
+          isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
 
         isAlterState = isAlterState != null && isAlterState == 'alter'
 
@@ -9823,7 +10025,7 @@
 
               try {
                 if (isAlterState)
-                  dataCentersRF = JSON.parse($('div.modal#actionsKeyspace').attr('data-datacenters-rf'))
+                  dataCentersRF = JSON.parse($('div.modal#rightClickActionsMetadata').attr('data-datacenters-rf'))
               } catch (e) {}
 
               for (let datacenter of dataCenters) {
@@ -9833,7 +10035,7 @@
                   if (!isAlterState || dataCenters.length > 1 || dataCentersRF.class == 'NetworkTopologyStrategy')
                     throw 0
 
-                  replicationFactor = parseInt($('div.modal#actionsKeyspace').attr('data-rf')) || 0
+                  replicationFactor = parseInt($('div.modal#rightClickActionsMetadata').attr('data-rf')) || 0
                 } catch (e) {}
 
                 let element = `
@@ -9877,7 +10079,7 @@
             networkTopologyContainer.show()
 
             try {
-              updateActionStatus()
+              updateActionStatusForKeyspaces()
             } catch (e) {}
 
             return
@@ -9889,9 +10091,9 @@
             if (!isAlterState)
               throw 0
 
-            $('input#keyspaceReplicationFactorSimpleStrategy').val(parseInt($('div.modal#actionsKeyspace').attr('data-rf')) || 1)
+            $('input#keyspaceReplicationFactorSimpleStrategy').val(parseInt($('div.modal#rightClickActionsMetadata').attr('data-rf')) || 1)
 
-            $(`div.modal#actionsKeyspace`).find('div.data-center').find('input[type="number"]').val(0).trigger('input')
+            $(`div.modal#rightClickActionsMetadata`).find('div.data-center').find('input[type="number"]').val(0).trigger('input')
 
             if (dataCenters.length > 1) {
               $(this).parent().find('div.invalid-feedback span[mulang][capitalize-first]').attr('mulang', 'avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully').text(I18next.capitalizeFirstLetter(I18next.t('avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully')))
@@ -9903,7 +10105,7 @@
           dialogElement.find('div[for-strategy="SimpleStrategy"]').show()
 
           try {
-            updateActionStatus()
+            updateActionStatusForKeyspaces()
           } catch (e) {}
         }, 150)
       })
@@ -9920,7 +10122,7 @@
         dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
 
         try {
-          updateActionStatus()
+          updateActionStatusForKeyspaces()
         } catch (e) {}
       })
 
@@ -9929,7 +10131,8 @@
         // Point at the dialog's content element
         let dialogBody = dialogElement.find('div.modal-body'),
           // Determine if the editor is visible/shown or not
-          editorShown = dialogElement.hasClass('show-editor')
+          editorShown = dialogElement.hasClass('show-editor'),
+          currentActiveAction = $('div.modal#rightClickActionsMetadata div[action]').filter(':visible').attr('action')
 
         // Add the `show-editor` class if it is not added, otherwise it'll be removed
         dialogElement.toggleClass('show-editor', !editorShown)
@@ -9944,19 +10147,41 @@
         $(window.visualViewport).trigger('resize')
 
         try {
-          updateActionStatus()
+          if (currentActiveAction != 'keyspaces')
+            throw 0
+
+          updateActionStatusForKeyspaces()
+        } catch (e) {}
+
+        try {
+          if (currentActiveAction != 'udts')
+            throw 0
+
+          updateActionStatusForUDTs()
         } catch (e) {}
       })
 
       $('input[type="checkbox"]#keyspaceDurableWrites').on('change', function() {
         try {
-          updateActionStatus()
+          updateActionStatusForKeyspaces()
         } catch (e) {}
       })
 
       $('button#executeActionStatement').click(function() {
+        let currentActiveAction = $('div.modal#rightClickActionsMetadata div[action]').filter(':visible').attr('action')
+
         try {
-          updateActionStatus()
+          if (currentActiveAction != 'keyspaces')
+            throw 0
+
+          updateActionStatusForKeyspaces()
+        } catch (e) {}
+
+        try {
+          if (currentActiveAction != 'udts')
+            throw 0
+
+          updateActionStatusForUDTs()
         } catch (e) {}
 
         try {
@@ -9982,7 +10207,1096 @@
         } catch (e) {}
 
         try {
-          setTimeout(() => getElementMDBObject($('#actionsKeyspace'), 'Modal').hide(), 50)
+          setTimeout(() => getElementMDBObject($('#rightClickActionsMetadata'), 'Modal').hide(), 50)
+        } catch (e) {}
+      })
+
+      let getFieldElement = (keyspaceUDTs = []) => {
+          let typesList = `
+                <li><span class="group-text"><span mulang="numeric types" capitalize></span></span></li>
+                <li><a class="dropdown-item" href="#" value="int">int</a></li>
+                <li><a class="dropdown-item" href="#" value="bigint">bigint</a></li>
+                <li><a class="dropdown-item" href="#" value="smallint">smallint</a></li>
+                <li><a class="dropdown-item" href="#" value="tinyint">tinyint</a></li>
+                <li><a class="dropdown-item" href="#" value="varint">varint</a></li>
+                <li><a class="dropdown-item" href="#" value="float">float</a></li>
+                <li><a class="dropdown-item" href="#" value="double">double</a></li>
+                <li><a class="dropdown-item" href="#" value="decimal">decimal</a></li>
+                <li><span class="group-text"><span mulang="textual types" capitalize></span></span></li>
+                <li><a class="dropdown-item" href="#" value="text">text</a></li>
+                <li><a class="dropdown-item" href="#" value="varchar">varchar</a></li>
+                <li><a class="dropdown-item" href="#" value="ascii">ascii</a></li>
+                <li><span class="group-text"><span mulang="boolean type" capitalize></span></span></li>
+                <li><a class="dropdown-item" href="#" value="boolean">boolean</a></li>
+                <li><span class="group-text"><span mulang="date/time types" capitalize></span></span></li>
+                <li><a class="dropdown-item" href="#" value="timestamp">timestamp</a></li>
+                <li><a class="dropdown-item" href="#" value="date">date</a></li>
+                <li><a class="dropdown-item" href="#" value="time">time</a></li>
+                <li><span class="group-text"><span mulang="binary type" capitalize></span></span></li>
+                <li><a class="dropdown-item" href="#" value="blob">blob</a></li>
+                <li><span class="group-text"><span mulang="UUID types" capitalize></span></span></li>
+                <li><a class="dropdown-item" href="#" value="uuid">uuid</a></li>
+                <li><a class="dropdown-item" href="#" value="timeuuid">timeuuid</a></li>
+                <li><span class="group-text"><span mulang="network type" capitalize></span></span></li>
+                <li><a class="dropdown-item" href="#" value="inet">inet</a></li>`,
+            collectionsTypesItems = `
+                <li><span class="group-text"><span mulang="collection types" capitalize></span></span></li>
+                <li><a class="dropdown-item" href="#" value="list" data-is-collection>list&lt;type&gt;</a></li>
+                <li><a class="dropdown-item" href="#" value="set" data-is-collection>set&lt;type&gt;</a></li>
+                <li><a class="dropdown-item" style="overflow: hidden; text-overflow: ellipsis;" href="#" value="map" data-is-collection data-is-map>map&lt;key_type, value_type&gt;</a></li>`
+          defaultType = 'text'
+
+          try {
+            if (keyspaceUDTs.length <= 0)
+              throw 0
+
+            typesList = ''
+
+            defaultType = keyspaceUDTs[0]
+
+            for (let udt of keyspaceUDTs)
+              typesList += `<li><a class="dropdown-item" href="#" value="${udt}">${udt}</a></li>`
+          } catch (e) {}
+
+          let [
+            collectionKeyTypeID,
+            collectionItemTypeID,
+            fieldDataTypeID
+          ] = getRandomID(10, 3).map((id) => `_${id}`),
+            element = `
+              <div class="data-field row" ${keyspaceUDTs.length > 0 ? 'for-udt-data-field' : ''}>
+              <div class="col-md-5">
+                <div class="form-outline form-white" style="margin-right: 4px; width: calc(100% - 4px);">
+                  <input type="text" class="form-control form-icon-trailing fieldName is-invalid" style="margin-bottom: 0;">
+                  <label class="form-label">
+                    <span mulang="field name" capitalize></span>
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6" col="fieldDataType">
+                <div class="form-outline form-white" style="z-index: 2; margin-left: 4px; width: calc(100% - 4px);">
+                  <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing fieldDataType" id="${fieldDataTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly>
+                  <label class="form-label">
+                    <span mulang="field data type" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                </div>
+                <div class="dropdown" for-select="${fieldDataTypeID}" for-data-type="fieldDataType" style="bottom: 20px;">
+                  <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                  <ul class="dropdown-menu">
+                    ${typesList}
+                    ${keyspaceUDTs.length <= 0 ? collectionsTypesItems : ''}
+                  </ul>
+                </div>
+              </div>
+              <div class="col-md-2" col="collectionKeyType" style="display:none;">
+                <div class="form-outline form-white" style="z-index: 2; margin-left: 4px; width: calc(100% - 4px);">
+                  <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing collectionKeyType" id="${collectionKeyTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly>
+                  <label class="form-label">
+                    <span mulang="key type" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                </div>
+                <div class="dropdown" for-select="${collectionKeyTypeID}" style="bottom: 20px;">
+                  <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                  <ul class="dropdown-menu">
+                    ${typesList}
+                  </ul>
+                </div>
+              </div>
+              <div class="col-md-2" col="collectionItemType" style="display:none;">
+                <div class="form-outline form-white" style="z-index: 2; margin-left: 4px; width: calc(100% - 4px);">
+                  <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing collectionItemType" id="${collectionItemTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly>
+                  <label class="form-label">
+                    <span mulang="value type" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                </div>
+                <div class="dropdown" for-select="${collectionItemTypeID}" style="bottom: 20px;">
+                  <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                  <ul class="dropdown-menu">
+                    ${typesList}
+                  </ul>
+                </div>
+              </div>
+              <div class="col-md-1">
+                <a action="delete-udt" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                  <ion-icon name="trash"></ion-icon>
+                </a>
+              </div>
+            </div>`
+
+          return element
+        },
+        updateRowsZIndex = () => {
+          setTimeout(() => {
+            let rows = dialogElement.find('div.data-field.row'),
+              rowsCount = rows.length
+
+            rows.each(function() {
+              $(this).css('z-index', `${rowsCount}`)
+
+              rowsCount -= 1
+            })
+          })
+        },
+        updateActionStatusForUDTs = () => {
+          let udtName = $('input#udtName').val(),
+            keyspaceName = dialogElement.find('div[action="udts"]').find('div.keyspace-name').text(),
+            allDataFields = dialogElement.find('div[action="udts"]').find('div.data-field.row'),
+            isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state'),
+            dataFieldsText = ''
+
+          isAlterState = isAlterState != null && isAlterState == 'alter'
+
+          try {
+            if (dialogElement.find('div[action="udts"]').find('.is-invalid:not(.ignore-invalid)').length <= 0 &&
+              dialogElement.find('div[action="udts"]').find('div.data-field.row').length > 0 &&
+              minifyText(udtName).length > 0)
+              throw 0
+
+            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+
+            return
+          } catch (e) {}
+
+          try {
+            if (!isAlterState)
+              throw 0
+
+            let statements = []
+
+            for (let row of dialogElement.find('div[action="udts"]').find('div.data-field.row')) {
+              let rowElement = $(row),
+                fieldName = rowElement.find('input.fieldName').attr('data-original-value'),
+                fieldType = rowElement.find('input.fieldDataType').attr('data-original-value')
+
+              // Deleting a field is the first thing to be checked
+              if (rowElement.hasClass('deleted')) {
+                statements.push(`ALTER TYPE ${keyspaceName}.${udtName} DROP ${fieldName};`)
+                continue
+              }
+
+              // The type of the field has been changed
+              {
+                let isChangeInTypeDetected = false
+
+                try {
+                  for (let typeRelatedField of [rowElement.find('input.fieldDataType'), rowElement.find('input.collectionItemType'), rowElement.find('input.collectionKeyType')]) {
+                    let setValue = typeRelatedField.val(),
+                      originalValue = typeRelatedField.attr('data-original-value')
+
+                    if (setValue != originalValue && originalValue != undefined) {
+                      isChangeInTypeDetected = true
+                      break
+                    }
+                  }
+                } catch (e) {}
+
+                try {
+                  if (!isChangeInTypeDetected)
+                    throw 0
+
+                  // Second is altering the type of the field
+                  let newFieldType = rowElement.find('input.fieldDataType').val()
+
+                  if (!([newFieldType, fieldName].some((data) => data == undefined))) {
+                    try {
+                      if (['map', 'set', 'list'].some((type) => `${newFieldType}`.includes(type)))
+                        throw 0
+
+                      let finalNewFieldType = `${newFieldType}`
+
+                      if (rowElement.parent().hasClass('data-udt-fields'))
+                        finalNewFieldType = `frozen<${finalNewFieldType}>`
+
+                      statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ALTER ${fieldName} TYPE ${finalNewFieldType};`)
+                    } catch (e) {}
+
+                    try {
+                      if (!(['map', 'set', 'list'].some((type) => `${newFieldType}`.includes(type))))
+                        throw 0
+
+                      let collectionItemType = rowElement.find('input.collectionItemType').val()
+
+                      if (`${newFieldType}` != 'map') {
+                        statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ALTER ${fieldName} TYPE ${newFieldType}<${collectionItemType}>;`)
+                        throw 0
+                      }
+
+                      let collectionKeyType = rowElement.find('input.collectionKeyType').val()
+
+                      statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ALTER ${fieldName} TYPE ${newFieldType}<${collectionKeyType}, ${collectionItemType}>;`)
+                    } catch (e) {}
+                  }
+                } catch (e) {}
+              }
+
+              // The field's name has been changed
+              {
+                try {
+                  let setFieldName = rowElement.find('input.fieldName').val()
+
+                  if (fieldName == setFieldName || fieldName == undefined)
+                    throw 0
+
+                  statements.push(`ALTER TYPE ${keyspaceName}.${udtName} RENAME ${fieldName} TO ${setFieldName};`)
+                } catch (e) {}
+              }
+
+              // A new field has been added
+              {
+                try {
+                  if (rowElement.attr('data-original-field') != undefined)
+                    throw 0
+
+                  fieldName = rowElement.find('input.fieldName').val()
+                  fieldType = rowElement.find('input.fieldDataType').val()
+
+                  try {
+                    if (['map', 'set', 'list'].some((type) => `${fieldType}`.includes(type)))
+                      throw 0
+
+                    let finalFieldType = `${fieldType}`
+
+                    if (rowElement.parent().hasClass('data-udt-fields'))
+                      finalFieldType = `frozen<${finalFieldType}>`
+
+                    statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ADD ${fieldName} ${finalFieldType};`)
+                  } catch (e) {}
+
+                  try {
+                    if (!(['map', 'set', 'list'].some((type) => `${fieldType}`.includes(type))))
+                      throw 0
+
+                    let collectionItemType = rowElement.find('input.collectionItemType').val()
+
+                    if (`${fieldType}` != 'map') {
+                      statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ADD ${fieldName} ${fieldType}<${collectionItemType}>;`)
+
+                      throw 0
+                    }
+
+                    let collectionKeyType = rowElement.find('input.collectionKeyType').val()
+
+                    statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ADD ${fieldName} ${fieldType}<${collectionKeyType}, ${collectionItemType}>;`)
+                  } catch (e) {}
+                } catch (e) {}
+              }
+            }
+
+            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', statements.length <= 0 ? '' : null)
+
+            try {
+              actionEditor.setValue(statements.join(OS.EOL))
+            } catch (e) {}
+
+            return
+          } catch (e) {}
+
+          try {
+            let currentIndex = 0
+
+            for (let dataField of allDataFields) {
+              let tempTxt = '',
+                dataFieldUIElement = $(dataField),
+                isUDTDataField = $(dataField).attr('for-udt-data-field') != undefined,
+                fieldName = dataFieldUIElement.find('input.fieldName').val(),
+                fieldType = dataFieldUIElement.find('input.fieldDataType').val(),
+                collectionKeyType = dataFieldUIElement.find('input.collectionKeyType').val(),
+                collectionItemType = dataFieldUIElement.find('input.collectionItemType').val()
+
+              currentIndex += 1
+
+              try {
+                if (!isUDTDataField)
+                  throw 0
+
+                tempTxt = `${fieldName} frozen<${fieldType}>`
+              } catch (e) {}
+
+              try {
+                if (isUDTDataField)
+                  throw 0
+
+                let finalFieldType = `${fieldName} ${fieldType}`
+
+                if (['set', 'list'].some((type) => fieldType == type))
+                  finalFieldType = `${fieldName} ${fieldType}<${collectionItemType}>`
+
+                if (fieldType == 'map')
+                  finalFieldType = `${fieldName} ${fieldType}<${collectionKeyType},${collectionItemType}>`
+
+                tempTxt = finalFieldType
+              } catch (e) {}
+
+              if (currentIndex != allDataFields.length)
+                tempTxt = `${tempTxt},`
+
+              tempTxt = `    ${tempTxt}`
+
+              dataFieldsText += tempTxt + OS.EOL
+            }
+          } catch (e) {}
+
+          dataFieldsText = OS.EOL + dataFieldsText
+
+          let statement = `CREATE TYPE ${keyspaceName}.${udtName} (${dataFieldsText});`
+
+          try {
+            actionEditor.setValue(statement)
+          } catch (e) {}
+        },
+        dataFieldsContainer = dialogElement.find('div.data-fields'),
+        dataUDTFieldsContainer = dialogElement.find('div.data-udt-fields')
+
+      $(`a[action]#addDataField`).on('click', function(_, fields) {
+        dataFieldsContainer.children('div.empty-fields').hide()
+
+        try {
+          if (fields == null)
+            throw 0
+
+          fields = JSON.parse(fields)
+
+          let filterdFields = fields.filter((field) => !field.type.includes('frozen<'))
+
+          if (filterdFields.length <= 0) {
+            dataFieldsContainer.children('div.empty-fields').show()
+            return
+          }
+
+          for (let field of filterdFields) {
+            dataFieldsContainer.prepend($(getFieldElement()).show(function() {
+              let row = $(this)
+
+              row.attr('data-original-field', 'true')
+
+              setTimeout(() => {
+                let dropDownMDBObject = getElementMDBObject(row.find(`div.dropdown[for-select]`), 'Dropdown')
+
+                setTimeout(() => dropDownMDBObject.update(), 500)
+
+                {
+                  row.find('div.dropdown[for-select]').each(function() {
+                    let dropDownElement = $(this),
+                      // Get the MDB object of the current dropdown element
+                      selectDropdown = getElementMDBObject(dropDownElement, 'Dropdown'),
+                      // Point at the associated input field
+                      input = row.find(`input#${dropDownElement.attr('for-select')}`)
+
+                    // Once the associated select element is being focused then show the dropdown element and vice versa
+                    input.on('focus', () => {
+                      try {
+                        input.parent().find('div.invalid-feedback').addClass('transparent-color')
+                      } catch (e) {}
+
+                      selectDropdown.show()
+                    }).on('focusout', () => setTimeout(() => {
+                      try {
+                        input.parent().find('div.invalid-feedback').removeClass('transparent-color')
+                      } catch (e) {}
+
+                      selectDropdown.hide()
+                    }, 100))
+
+                    // Once the parent `form-outline` is clicked trigger the `focus` event
+                    input.parent().click(() => input.trigger('focus'))
+                  })
+
+                  // Once one of the items is clicked
+                  $(this).find(`div.dropdown[for-select]`).each(function() {
+                    let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
+
+                    $(this).find(`ul.dropdown-menu`).find('a').click(function() {
+                      // Point at the input field related to the list
+                      let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
+                        selectedValue = $(this).attr('value'),
+                        isTypeCollection = $(this).attr('data-is-collection') != undefined,
+                        isCollectionMap = $(this).attr('data-is-map') != undefined
+
+                      try {
+                        if (!mainDropDown)
+                          throw 0
+
+                        row.find(`div[col="fieldDataType"]`).removeClass(function(index, className) {
+                          return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                        }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 6}`)
+
+                        row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
+
+                        row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection).removeClass(function(index, className) {
+                          return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                        }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 6}`)
+                      } catch (e) {}
+
+                      // Update the input's value
+                      selectElement.val(selectedValue).trigger('input')
+
+                      try {
+                        updateActionStatusForUDTs()
+                      } catch (e) {}
+                    })
+                  })
+                }
+
+                $(this).find(`a[action="delete-udt"]`).click(function() {
+                  row.toggleClass('deleted')
+
+                  try {
+                    updateActionStatusForUDTs()
+                  } catch (e) {}
+                })
+
+                $(this).find('input.fieldName').on('input', function(_, triggerInput = true) {
+                  let fieldName = $(this).val(),
+                    fieldRow = $(this).parent().parent().parent(),
+                    isNameDuplicated = false,
+                    isNameInvalid = false,
+                    isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
+
+                  isAlterState = isAlterState != null && isAlterState == 'alter'
+
+                  try {
+                    if (`${fieldName}`.length <= 0)
+                      throw 0
+
+                    isNameInvalid = `${fieldName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
+                  } catch (e) {}
+
+                  try {
+                    let allDataFields = dialogElement.find('div[action="udts"]').find('div.data-field.row').not(fieldRow[0])
+
+                    for (let dataField of allDataFields) {
+                      let dataFieldNameElement = $(dataField).find('input.fieldName')
+
+                      if (triggerInput)
+                        dataFieldNameElement.trigger('input', false)
+
+                      if (minifyText(`${dataFieldNameElement.val()}`) != minifyText(fieldName))
+                        continue
+
+                      isNameDuplicated = true
+                      break
+                    }
+                  } catch (e) {}
+
+                  $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0)
+
+                  dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+
+                  try {
+                    updateActionStatusForUDTs()
+                  } catch (e) {}
+                })
+
+                setTimeout(() => {
+                  $(this).find('input[type="text"]').each(function() {
+                    let mdbObject = getElementMDBObject($(this))
+
+                    setTimeout(() => mdbObject.update(), 500)
+                  })
+                })
+
+                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
+                updateRowsZIndex()
+
+                try {
+                  row.find('input.fieldName').val(field.name).trigger('input')
+                  row.find('input.fieldName').attr('data-original-value', field.name)
+
+                  if (['map', 'set', 'list'].some((type) => field.type.includes(type)))
+                    throw 0
+
+                  row.find('input.fieldDataType').val(field.type).trigger('input')
+                  row.find('input.fieldDataType').attr('data-original-value', field.type)
+                } catch (e) {}
+
+                try {
+                  let extractData = field.type.match(/(.+)\<(.*?)\>/)
+
+                  if (extractData == null || !(['map', 'set', 'list'].some((type) => extractData[1].includes(type))))
+                    throw 0
+
+                  $(`div.dropdown[for-select="${row.find('input.fieldDataType').attr('id')}"]`).find(`li a[value="${extractData[1]}"]`).trigger('click')
+
+                  row.find('input.fieldDataType').attr('data-original-value', extractData[1])
+
+                  if (extractData[1] != 'map') {
+                    row.find('input.collectionItemType').val(extractData[2]).trigger('input')
+                    row.find('input.collectionItemType').attr('data-original-value', extractData[2])
+                  } else {
+                    let mapValues = minifyText(extractData[2]).split(',')
+
+                    row.find('input.collectionKeyType').val(mapValues[0]).trigger('input')
+                    row.find('input.collectionKeyType').attr('data-original-value', mapValues[0])
+
+                    row.find('input.collectionItemType').val(mapValues[1]).trigger('input')
+                    row.find('input.collectionItemType').attr('data-original-value', mapValues[1])
+                  }
+                } catch (e) {}
+
+                try {
+                  updateActionStatusForUDTs()
+                } catch (e) {}
+              })
+            }))
+          }
+
+          return
+        } catch (e) {}
+
+        dataFieldsContainer.prepend($(getFieldElement()).show(function() {
+          let row = $(this)
+
+          setTimeout(() => {
+            let dropDownMDBObject = getElementMDBObject(row.find(`div.dropdown[for-select]`), 'Dropdown')
+
+            setTimeout(() => dropDownMDBObject.update(), 500)
+
+            {
+              row.find('div.dropdown[for-select]').each(function() {
+                let dropDownElement = $(this),
+                  // Get the MDB object of the current dropdown element
+                  selectDropdown = getElementMDBObject(dropDownElement, 'Dropdown'),
+                  // Point at the associated input field
+                  input = row.find(`input#${dropDownElement.attr('for-select')}`)
+
+                // Once the associated select element is being focused then show the dropdown element and vice versa
+                input.on('focus', () => {
+                  try {
+                    input.parent().find('div.invalid-feedback').addClass('transparent-color')
+                  } catch (e) {}
+
+                  selectDropdown.show()
+                }).on('focusout', () => setTimeout(() => {
+                  try {
+                    input.parent().find('div.invalid-feedback').removeClass('transparent-color')
+                  } catch (e) {}
+
+                  selectDropdown.hide()
+                }, 100))
+
+                // Once the parent `form-outline` is clicked trigger the `focus` event
+                input.parent().click(() => input.trigger('focus'))
+              })
+
+              // Once one of the items is clicked
+              $(this).find(`div.dropdown[for-select]`).each(function() {
+                let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
+
+                $(this).find(`ul.dropdown-menu`).find('a').click(function() {
+                  // Point at the input field related to the list
+                  let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
+                    selectedValue = $(this).attr('value'),
+                    isTypeCollection = $(this).attr('data-is-collection') != undefined,
+                    isCollectionMap = $(this).attr('data-is-map') != undefined
+
+                  try {
+                    if (!mainDropDown)
+                      throw 0
+
+                    row.find(`div[col="fieldDataType"]`).removeClass(function(index, className) {
+                      return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                    }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 6}`)
+
+                    row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
+
+                    row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection).removeClass(function(index, className) {
+                      return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                    }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 6}`)
+                  } catch (e) {}
+
+                  // Update the input's value
+                  selectElement.val(selectedValue).trigger('input')
+
+                  try {
+                    updateActionStatusForUDTs()
+                  } catch (e) {}
+                })
+              })
+            }
+
+            $(this).find(`a[action="delete-udt"]`).click(function() {
+              $(this).parent().parent().remove()
+
+              try {
+                updateActionStatusForUDTs()
+              } catch (e) {}
+
+              if (dataFieldsContainer.children('div.data-field.row').length != 0)
+                return
+
+              dataFieldsContainer.children('div.empty-fields').fadeIn(250)
+            })
+
+            $(this).find('input.fieldName').on('input', function(_, triggerInput = true) {
+              let fieldName = $(this).val(),
+                fieldRow = $(this).parent().parent().parent(),
+                isNameDuplicated = false,
+                isNameInvalid = false,
+                isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
+
+              isAlterState = isAlterState != null && isAlterState == 'alter'
+
+              try {
+                if (`${fieldName}`.length <= 0)
+                  throw 0
+
+                isNameInvalid = `${fieldName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
+              } catch (e) {}
+
+              try {
+                let allDataFields = dialogElement.find('div[action="udts"]').find('div.data-field.row').not(fieldRow[0])
+
+                for (let dataField of allDataFields) {
+                  let dataFieldNameElement = $(dataField).find('input.fieldName')
+
+                  if (triggerInput)
+                    dataFieldNameElement.trigger('input', false)
+
+                  if (minifyText(`${dataFieldNameElement.val()}`) != minifyText(fieldName))
+                    continue
+
+                  isNameDuplicated = true
+                  break
+                }
+              } catch (e) {}
+
+              $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0)
+
+              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+
+              try {
+                updateActionStatusForUDTs()
+              } catch (e) {}
+            })
+
+            setTimeout(() => {
+              $(this).find('input[type="text"]').each(function() {
+                let mdbObject = getElementMDBObject($(this))
+
+                setTimeout(() => mdbObject.update(), 500)
+              })
+            })
+
+            setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
+            updateRowsZIndex()
+
+            try {
+              updateActionStatusForUDTs()
+            } catch (e) {}
+          })
+        }))
+      })
+
+      $(`a[action]#addUDTDataField`).click('click', function(_, fields) {
+        dataUDTFieldsContainer.children('div.empty-fields').hide()
+
+        let keyspaceUDTs = [],
+          isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
+
+        isAlterState = isAlterState != null && isAlterState == 'alter'
+
+        try {
+          keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts'))
+
+          keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
+        } catch (e) {}
+
+        try {
+          if (!isAlterState)
+            throw 0
+
+          keyspaceUDTs = keyspaceUDTs.filter((udt) => udt != $('input#udtName').val())
+        } catch (e) {}
+
+        try {
+          if (fields == null)
+            throw 0
+
+          fields = JSON.parse(fields)
+
+          let filterdFields = fields.filter((field) => field.type.includes('frozen<'))
+
+          if (filterdFields.length <= 0) {
+            dataUDTFieldsContainer.children('div.empty-fields').show()
+            return
+          }
+
+          for (let field of filterdFields) {
+            try {
+              let extractData = field.type.match(/.+\<(.*?)\>/)[1]
+
+              field.type = extractData
+            } catch (e) {}
+
+            dataUDTFieldsContainer.prepend($(getFieldElement(keyspaceUDTs)).show(function() {
+              let row = $(this)
+
+              row.attr('data-original-field', 'true')
+
+              setTimeout(() => {
+                let dropDownMDBObject = getElementMDBObject(row.find(`div.dropdown[for-select]`), 'Dropdown')
+
+                setTimeout(() => dropDownMDBObject.update(), 500)
+
+                {
+                  row.find('div.dropdown[for-select]').each(function() {
+                    let dropDownElement = $(this),
+                      // Get the MDB object of the current dropdown element
+                      selectDropdown = getElementMDBObject(dropDownElement, 'Dropdown'),
+                      // Point at the associated input field
+                      input = row.find(`input#${dropDownElement.attr('for-select')}`)
+
+                    // Once the associated select element is being focused then show the dropdown element and vice versa
+                    input.on('focus', () => {
+                      try {
+                        input.parent().find('div.invalid-feedback').addClass('transparent-color')
+                      } catch (e) {}
+
+                      selectDropdown.show()
+                    }).on('focusout', () => setTimeout(() => {
+                      try {
+                        input.parent().find('div.invalid-feedback').removeClass('transparent-color')
+                      } catch (e) {}
+
+                      selectDropdown.hide()
+                    }, 100))
+
+                    // Once the parent `form-outline` is clicked trigger the `focus` event
+                    input.parent().click(() => input.trigger('focus'))
+                  })
+                  // Once one of the items is clicked
+                  $(this).find(`div.dropdown[for-select]`).each(function() {
+                    let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
+
+                    $(this).find(`ul.dropdown-menu`).find('a').click(function() {
+                      // Point at the input field related to the list
+                      let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
+                        selectedValue = $(this).attr('value'),
+                        isTypeCollection = $(this).attr('data-is-collection') != undefined,
+                        isCollectionMap = $(this).attr('data-is-map') != undefined
+
+                      try {
+                        if (!mainDropDown)
+                          throw 0
+
+                        row.find(`div[col="fieldDataType"]`).removeClass(function(index, className) {
+                          return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                        }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 6}`)
+
+                        row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
+
+                        row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection).removeClass(function(index, className) {
+                          return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                        }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 6}`)
+                      } catch (e) {}
+
+                      // Update the input's value
+                      selectElement.val(selectedValue).trigger('input')
+
+                      try {
+                        updateActionStatusForUDTs()
+                      } catch (e) {}
+                    })
+                  })
+                }
+
+                $(this).find(`a[action="delete-udt"]`).click(function() {
+                  row.toggleClass('deleted')
+
+                  try {
+                    updateActionStatusForUDTs()
+                  } catch (e) {}
+                })
+
+                $(this).find('input.fieldName').on('input', function(_, triggerInput = true) {
+                  let fieldName = $(this).val(),
+                    fieldRow = $(this).parent().parent().parent(),
+                    isNameDuplicated = false,
+                    isNameInvalid = false,
+                    isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
+
+                  isAlterState = isAlterState != null && isAlterState == 'alter'
+
+                  try {
+                    if (`${fieldName}`.length <= 0)
+                      throw 0
+
+                    isNameInvalid = `${fieldName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
+                  } catch (e) {}
+
+                  try {
+                    let allDataFields = dialogElement.find('div[action="udts"]').find('div.data-field.row').not(fieldRow[0])
+
+                    for (let dataField of allDataFields) {
+                      let dataFieldNameElement = $(dataField).find('input.fieldName')
+
+                      if (triggerInput)
+                        dataFieldNameElement.trigger('input', false)
+
+                      if (minifyText(`${dataFieldNameElement.val()}`) != minifyText(fieldName))
+                        continue
+
+                      isNameDuplicated = true
+                      break
+                    }
+                  } catch (e) {}
+
+                  $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0)
+
+                  dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+
+                  try {
+                    updateActionStatusForUDTs()
+                  } catch (e) {}
+                })
+
+                setTimeout(() => {
+                  $(this).find('input[type="text"]').each(function() {
+                    let mdbObject = getElementMDBObject($(this))
+
+                    setTimeout(() => mdbObject.update(), 500)
+                  })
+                })
+
+                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
+                updateRowsZIndex()
+
+                try {
+                  row.find('input.fieldName').val(field.name).trigger('input')
+                  row.find('input.fieldName').attr('data-original-value', field.name)
+
+                  row.find('input.fieldDataType').val(field.type).trigger('input')
+                  row.find('input.fieldDataType').attr('data-original-value', field.type)
+                } catch (e) {}
+
+                try {
+                  updateActionStatusForUDTs()
+                } catch (e) {}
+              })
+            }))
+          }
+
+          return
+        } catch (e) {}
+
+        dataUDTFieldsContainer.prepend($(getFieldElement(keyspaceUDTs)).show(function() {
+          let row = $(this)
+
+          setTimeout(() => {
+            let dropDownMDBObject = getElementMDBObject(row.find(`div.dropdown[for-select]`), 'Dropdown')
+
+            setTimeout(() => dropDownMDBObject.update(), 500)
+
+            {
+              row.find('div.dropdown[for-select]').each(function() {
+                let dropDownElement = $(this),
+                  // Get the MDB object of the current dropdown element
+                  selectDropdown = getElementMDBObject(dropDownElement, 'Dropdown'),
+                  // Point at the associated input field
+                  input = row.find(`input#${dropDownElement.attr('for-select')}`)
+
+                // Once the associated select element is being focused then show the dropdown element and vice versa
+                input.on('focus', () => {
+                  try {
+                    input.parent().find('div.invalid-feedback').addClass('transparent-color')
+                  } catch (e) {}
+
+                  selectDropdown.show()
+                }).on('focusout', () => setTimeout(() => {
+                  try {
+                    input.parent().find('div.invalid-feedback').removeClass('transparent-color')
+                  } catch (e) {}
+
+                  selectDropdown.hide()
+                }, 100))
+
+                // Once the parent `form-outline` is clicked trigger the `focus` event
+                input.parent().click(() => input.trigger('focus'))
+              })
+              // Once one of the items is clicked
+              $(this).find(`div.dropdown[for-select]`).each(function() {
+                let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
+
+                $(this).find(`ul.dropdown-menu`).find('a').click(function() {
+                  // Point at the input field related to the list
+                  let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
+                    selectedValue = $(this).attr('value'),
+                    isTypeCollection = $(this).attr('data-is-collection') != undefined,
+                    isCollectionMap = $(this).attr('data-is-map') != undefined
+
+                  try {
+                    if (!mainDropDown)
+                      throw 0
+
+                    row.find(`div[col="fieldDataType"]`).removeClass(function(index, className) {
+                      return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                    }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 6}`)
+
+                    row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
+
+                    row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection).removeClass(function(index, className) {
+                      return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                    }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 6}`)
+                  } catch (e) {}
+
+                  // Update the input's value
+                  selectElement.val(selectedValue).trigger('input')
+
+                  try {
+                    updateActionStatusForUDTs()
+                  } catch (e) {}
+                })
+              })
+            }
+
+            $(this).find(`a[action="delete-udt"]`).click(function() {
+              $(this).parent().parent().remove()
+
+              try {
+                updateActionStatusForUDTs()
+              } catch (e) {}
+
+              if (dataUDTFieldsContainer.children('div.data-field.row').length != 0)
+                return
+
+              dataUDTFieldsContainer.children('div.empty-fields').fadeIn(250)
+            })
+
+            $(this).find('input.fieldName').on('input', function(_, triggerInput = true) {
+              let fieldName = $(this).val(),
+                fieldRow = $(this).parent().parent().parent(),
+                isNameDuplicated = false,
+                isNameInvalid = false,
+                isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
+
+              isAlterState = isAlterState != null && isAlterState == 'alter'
+
+              try {
+                if (`${fieldName}`.length <= 0)
+                  throw 0
+
+                isNameInvalid = `${fieldName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
+              } catch (e) {}
+
+              try {
+                let allDataFields = dialogElement.find('div[action="udts"]').find('div.data-field.row').not(fieldRow[0])
+
+                for (let dataField of allDataFields) {
+                  let dataFieldNameElement = $(dataField).find('input.fieldName')
+
+                  if (triggerInput)
+                    dataFieldNameElement.trigger('input', false)
+
+                  if (minifyText(`${dataFieldNameElement.val()}`) != minifyText(fieldName))
+                    continue
+
+                  isNameDuplicated = true
+                  break
+                }
+              } catch (e) {}
+
+              $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0)
+
+              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+
+              try {
+                updateActionStatusForUDTs()
+              } catch (e) {}
+            })
+
+            setTimeout(() => {
+              $(this).find('input[type="text"]').each(function() {
+                let mdbObject = getElementMDBObject($(this))
+
+                setTimeout(() => mdbObject.update(), 500)
+              })
+            })
+
+            setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
+            updateRowsZIndex()
+
+            try {
+              updateActionStatusForUDTs()
+            } catch (e) {}
+          })
+
+        }))
+      })
+
+      $('input#udtName').on('input', function() {
+        let keyspaceUDTs = [],
+          udtName = $(this).val(),
+          isNameDuplicated = false,
+          isNameInvalid = false,
+          invalidFeedback = $(this).parent().children('div.invalid-feedback'),
+          isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
+
+        isAlterState = isAlterState != null && isAlterState == 'alter'
+
+        $(this).attr('disabled', isAlterState ? '' : null)
+        $(this).parent().toggleClass('invalid-warning', isAlterState)
+        $(this).toggleClass('is-invalid ignore-invalid', isAlterState)
+
+        try {
+          if (!isAlterState)
+            throw 0
+
+          invalidFeedback.find('span').attr('mulang', 'the UDT name can\'t be altered').text(I18next.capitalizeFirstLetter(I18next.t('the UDT name can\'t be altered')))
+
+          dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+
+          return
+        } catch (e) {}
+
+        try {
+          keyspaceUDTs = JSON.parse($('#rightClickActionsMetadata').attr('data-keyspace-udts'))
+        } catch (e) {}
+
+        try {
+          if (keyspaceUDTs.length <= 0)
+            throw 0
+
+          isNameDuplicated = keyspaceUDTs.some((udt) => minifyText(`${udt.name}`) == minifyText(`${udtName}`))
+
+          if (isAlterState && isNameDuplicated && (udtName == $('div.modal#rightClickActionsMetadata').attr('data-udt-name')))
+            isNameDuplicated = false
+
+          if (isNameDuplicated)
+            invalidFeedback.find('span').attr('mulang', 'provided name is already in use').text(I18next.capitalizeFirstLetter(I18next.t('provided name is already in use')))
+        } catch (e) {}
+
+        try {
+          if (`${udtName}`.length <= 0)
+            throw 0
+
+          isNameInvalid = `${udtName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
+
+          if (isNameInvalid)
+            invalidFeedback.find('span').attr('mulang', 'provided name is invalid, only alphanumeric and underscores are allowed').text(I18next.capitalizeFirstLetter(I18next.t('provided name is invalid, only alphanumeric and underscores are allowed')))
+        } catch (e) {}
+
+        $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid)
+
+        let allDataFields = dialogElement.find('div[action="udts"]').find('div.data-field.row'),
+          invalidInputFields = allDataFields.find('input.is-invalid')
+
+        dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 || allDataFields.length <= 0 || invalidInputFields.length > 0 ? '' : null)
+
+        try {
+          updateActionStatusForUDTs()
         } catch (e) {}
       })
     }, 5000)

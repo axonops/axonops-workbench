@@ -38,7 +38,8 @@ const FS = require('fs-extra'),
    * Electron renderer communication with the main thread
    * Used for sending requests from the renderer threads to the main thread and listening to the responses
    */
-  IPCRenderer = require('electron').ipcRenderer
+  IPCRenderer = require('electron').ipcRenderer,
+  log = require('electron-log/renderer')
 
 /**
  * Get the set extra resources path
@@ -82,7 +83,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
           // Ensure the file exists
           try {
             await FS.ensureFile(Path.join(appPath, ...file))
-          } catch (e) {}
+          } catch (e) {
+            log.warn('Required file doesn\'t exist', file)
+          }
 
           // Skip the upcoming code and move to the next file
           continue
@@ -119,6 +122,7 @@ $(document).on('pre-initialize', async () => {
    * Essential modification for the `console` function after loading the `functions` file
    * Now console triggers such as `log`, `debug`, `error`, and others are logged as part of the logging feature
    */
+  // Now this is not needed because electron-log supports it natively
   {
     try {
       // Copy the original `console` function
@@ -212,6 +216,7 @@ $(document).on('initialize', () => {
     isLoggingEnabled = isLoggingEnabled == 'false' ? false : true
 
     // If the logging feature is not enabled then skip the upcoming code
+    // Replaced with log.transports.file.level = false;
     if (!isLoggingEnabled)
       return
 
@@ -335,6 +340,7 @@ $(document).on('initialize', async () => getMachineID().then((id) => {
     try {
       addLog(`AxonOps Workbench has loaded all components and is ready to be used`)
       addLog(`This machine has a unique ID of '${machineID}'`, 'env')
+      log.info('This machine unique ID', machineID)
     } catch (e) {}
   }, 1000)
 }))
@@ -553,6 +559,7 @@ $(document).on('initialize', () => {
         })
       })
     } catch (e) {
+      log.error('Renderer initialization failed', e)
       try {
         errorLog(e, 'initialization')
       } catch (e) {}

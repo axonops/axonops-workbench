@@ -26,7 +26,6 @@
       "config"
     ],
     "publish": [{
-        "provider": "github"
     }],
     "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}",
     "win": {

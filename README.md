@@ -81,7 +81,10 @@ If you would like to run it in development, please follow the instructions below
 - Run `npm i` to install the nodejs dependencies
 - Execute `npm start` to run it in development mode
 
-> **_NOTE:_** You can set the environment variable `AXONOPS_DEV_TOOLS=true` to open the developer tools on start up
+### Debugging
+
+- You can set the environment variable `AXONOPS_DEV_TOOLS=true` to open the developer tools on start up
+- Using VSCode, you can use `Main + Renderer` compound launch configuration to debug main process and rendereres simultaneously
 
 ### Packaging
 

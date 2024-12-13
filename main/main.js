@@ -115,6 +115,16 @@ const URL = require('url'),
   DotEnv = require('dotenv')
 
 /**
+ * Import electron logging module
+ */
+const log = require('electron-log/main')
+// Initialize logging for renderers
+log.initialize();
+// Set proper verbosity levels for different channels
+log.transports.console.level = 'debug'; 
+log.transports.file.level = 'warn'
+
+/**
  * Check if the app is in production environment
  * https://www.electronjs.org/docs/latest/api/app#appispackaged-readonly
  *
@@ -156,6 +166,7 @@ try {
 
       // Import the module
       Modules[moduleName] = require(Path.join(modulesFilesPath, moduleFile))
+      log.debug("Successfully loaded module", moduleName)
     } catch (e) {}
   })
 } catch (e) {}
@@ -228,7 +239,9 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
       protocol: 'file:',
       slashes: true
     }))
-  } catch (e) {}
+  } catch (e) {
+    log.error('Failed to load file', viewPath, e)
+  }
 
   // Whether or not the window should be at the center of the screen
   if (extraProperties.center)

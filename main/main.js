@@ -115,6 +115,16 @@ const URL = require('url'),
   DotEnv = require('dotenv')
 
 /**
+ * Import electron logging module
+ */
+const log = require('electron-log/main')
+// Initialize logging for renderers
+log.initialize();
+// Set proper verbosity levels for different channels
+log.transports.console.level = 'debug'; 
+log.transports.file.level = 'warn'
+log.info('Greetings from main') // Will get to console but not to file
+/**
  * Check if the app is in production environment
  * https://www.electronjs.org/docs/latest/api/app#appispackaged-readonly
  *
@@ -156,6 +166,7 @@ try {
 
       // Import the module
       Modules[moduleName] = require(Path.join(modulesFilesPath, moduleFile))
+      log.debug("Successfully loaded module", moduleName)
     } catch (e) {}
   })
 } catch (e) {}
@@ -178,6 +189,7 @@ const isDevToolsEnabled = process.env.AXONOPS_DEV_TOOLS == 'true'
  */
 global.eventEmitter = new EventEmitter()
 
+// this is not needed because electron-log supports it natively
 // Import the set customized logging addition function and make it global across the entire thread
 global.addLog = null
 
@@ -228,7 +240,9 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
       protocol: 'file:',
       slashes: true
     }))
-  } catch (e) {}
+  } catch (e) {
+    log.error('Failed to load file', viewPath, e)
+  }
 
   // Whether or not the window should be at the center of the screen
   if (extraProperties.center)
@@ -262,7 +276,9 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
     if (extraProperties.openDevTools)
       try {
         windowObject.webContents.openDevTools()
-      } catch (e) {}
+      } catch (e) {
+        log.warn('Unable to initialize Developer Tools', e)
+      }
 
     // Send the window's content's ID
     try {
@@ -674,6 +690,8 @@ App.on('second-instance', () => {
     IPCMain.on('pty:cqlsh:initialize', () => Modules.Pty.initializeCQLSH(views.main))
   }
 
+  // this is not needed because electron-log supports it natively
+  // Besides the fact this logging:init happens after two addLog calls are failed
   /**
    * Requests related to the logging system
    * All requests have the prefix `logging:`

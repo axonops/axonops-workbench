@@ -39,7 +39,7 @@ const FS = require('fs-extra'),
    * Used for sending requests from the renderer threads to the main thread and listening to the responses
    */
   IPCRenderer = require('electron').ipcRenderer
-  
+
   log = require('electron-log/renderer')
 
 /**
@@ -196,7 +196,7 @@ $(document).on('pre-initialize', async () => {
     return
   } catch (e) {}
 
-  // Merge the two config files, and wait for the callback to be triggerd
+  // Merge the two config files, and wait for the callback function to be triggerd
   Modules.Config.mergeConfigFiles(oldConfigFilePath, newConfigFilePath, () => {
     /**
      * Now call the `initialization` event for `document`

@@ -122,7 +122,7 @@ $(document).on('pre-initialize', async () => {
    * Essential modification for the `console` function after loading the `functions` file
    * Now console triggers such as `log`, `debug`, `error`, and others are logged as part of the logging feature
    */
-  // Now this is not needed because electron-log supports it natively
+  // this is not needed because electron-log supports it natively
   {
     try {
       // Copy the original `console` function
@@ -195,7 +195,7 @@ $(document).on('pre-initialize', async () => {
     return
   } catch (e) {}
 
-  // Merge the two config files, and wait for the callback function to be triggerd
+  // Merge the two config files, and wait for the callback to be triggerd
   Modules.Config.mergeConfigFiles(oldConfigFilePath, newConfigFilePath, () => {
     /**
      * Now call the `initialization` event for `document`

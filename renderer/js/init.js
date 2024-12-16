@@ -38,7 +38,8 @@ const FS = require('fs-extra'),
    * Electron renderer communication with the main thread
    * Used for sending requests from the renderer threads to the main thread and listening to the responses
    */
-  IPCRenderer = require('electron').ipcRenderer,
+  IPCRenderer = require('electron').ipcRenderer
+  
   log = require('electron-log/renderer')
 
 /**

@@ -50,7 +50,7 @@
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
-      "icon": "./resources/icon.icns",
+      "icon": "./renderer/assets/images/axonops-iconset.icns",
       "category": "public.app-category.developer-tools",
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"
@@ -77,7 +77,7 @@
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "masDev": {
-      "icon": "./resources/icon.icns",
+      "icon": "./renderer/assets/images/axonops-iconset.icns",
       "entitlements": "./resources/entitlements.mas.plist",
       "entitlementsInherit": "./resources/entitlements.inherit.mas.plist",
       "provisioningProfile": "./resources/WorkbenchDevelopment.provisionprofile",
@@ -93,7 +93,7 @@
       ]
     },
     "mas": {
-      "icon": "./resources/icon.icns",
+      "icon": "./renderer/assets/images/axonops-iconset.icns",
       "entitlements": "./resources/entitlements.mas.plist",
       "entitlementsInherit": "./resources/entitlements.inherit.mas.plist",
       "provisioningProfile": "./resources/Workbench.provisionprofile",

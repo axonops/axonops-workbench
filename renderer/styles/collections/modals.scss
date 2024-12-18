@@ -1251,10 +1251,18 @@ div.modal#rightClickActionsMetadata {
     }
   }
 
+  div.clustering-keys-fields,
+  div.counter-columns-fields,
   div.data-fields,
-  div.data-udt-fields {
+  div.data-udt-fields,
+  div.partition-keys-fields,
+  div.table-options-fields {
+    div.clustering-key-field,
+    div.counter-column-field,
     div.data-field,
-    div.data-udt-field {
+    div.data-udt-field,
+    div.partition-key-field,
+    div.table-option-field {
       margin: 15px 0;
       height: 36px;
       display: flex;
@@ -1277,7 +1285,12 @@ div.modal#rightClickActionsMetadata {
         width: calc(100% - 4px);
       }
 
-      a[action="delete-udt"] {
+      a[action="delete-udt"],
+      a[action="delete-option"],
+      a[action="undo-change"],
+      a[action="delete-partition-key"],
+      a[action="delete-clustering-key"],
+      a[action="delete-counter-column"] {
         color: inherit;
         position: relative;
         top: 1px;
@@ -1298,7 +1311,13 @@ div.modal#rightClickActionsMetadata {
     }
   }
 
-  a.addFieldBtn {
+  a.addClusteringKeyBtn,
+  a.addCounterColumnBtn,
+  a.addFieldBtn,
+  a.addPartitionKeyBtn,
+  a.addTableOptionBtn,
+  a.hideOptionsContainer,
+  a.showOptionsContainer {
     display: flex;
     color: inherit;
     text-transform: capitalize;
@@ -1322,7 +1341,11 @@ div.modal#rightClickActionsMetadata {
     justify-content: space-between;
   }
 
-  div.empty-fields {
+  div.empty-clustering-keys,
+  div.empty-columns,
+  div.empty-fields,
+  div.empty-options,
+  div.empty-partition-keys {
     background: #3b3b3b;
     border-radius: 7px;
     font-size: 85%;
@@ -1334,26 +1357,31 @@ div.modal#rightClickActionsMetadata {
     margin-top: 10px;
     @extend .no-select;
 
-    span.no-udt {
+    span.no-udt,
+    span.one-udt {
       display: none;
     }
   }
 
   div.input-group {
-    div.input-group-text.udt-name-keyspace {
-      border-color: #4e4e4e;
-      position: relative;
-      height: 45px;
+    div.input-group-text {
+      &.counter-table-name-keyspace,
+      &.table-name-keyspace,
+      &.udt-name-keyspace {
+        border-color: #4e4e4e;
+        position: relative;
+        height: 45px;
 
-      &:after {
-        content: '.';
-      }
+        &:after {
+          content: '.';
+        }
 
-      div.keyspace-name {
-        max-width: 200px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
+        div.keyspace-name {
+          max-width: 200px;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
       }
     }
 
@@ -1390,6 +1418,71 @@ div.modal#actionDataDrop {
 
     .editor {
       @include position();
+    }
+  }
+}
+
+div.add-buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-content: center;
+  align-items: center;
+  justify-content: space-between;
+  float: right;
+}
+
+.modal {
+  overflow-y: scroll !important;
+}
+
+div.show-options-container {
+  height: 35px;
+  width: 100%;
+  position: relative;
+  border-radius: 7px;
+  overflow: hidden;
+
+  a {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    border-radius: 7px;
+    justify-content: center;
+
+    ion-icon {
+      font-size: 155% !important;
+    }
+  }
+}
+
+div.table-options-sub-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-content: center;
+  align-items: center;
+
+  a {
+    height: 19px;
+    width: 19px;
+    position: relative;
+    margin-left: 7px;
+
+    ion-icon {
+      position: absolute !important;
+      inset: 0 !important;
+      margin: auto !important;
+      font-size: 155% !important;
+      transition: transform 0.4s ease-in-out;
+      transform: rotate(180deg);
+    }
+
+    &.show {
+      ion-icon {
+        transform: rotate(0deg);
+        transition-delay: 0.25s;
+      }
     }
   }
 }

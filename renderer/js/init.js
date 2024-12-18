@@ -675,6 +675,12 @@ $(document).on('initialize', () => {
       loadScript(Path.join(jQueryUIPath, 'jqueryui.js'))
     }
 
+    {
+      try {
+        require('jquery-sortablejs')
+      } catch (e) {}
+    }
+
     // jQuery JS Tree Plugin
     {
       let jsTreePath = Path.join(__dirname, '..', 'js', 'external', 'jstree')

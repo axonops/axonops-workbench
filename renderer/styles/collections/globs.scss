@@ -930,3 +930,69 @@ ul.dropdown-menu {
 .sub-output.error * {
   color: #dc4c64 !important;
 }
+
+span.badge.sub-badge {
+  margin-left: 10px;
+  position: relative;
+
+  &:before {
+    content: '';
+    position: absolute;
+    left: -9px;
+    top: -50%;
+    margin: auto;
+    width: 1px;
+    height: 100%;
+    background: rgb(235, 237, 239);
+    background: linear-gradient(0deg, rgba(235, 237, 239, 1) 0%, rgba(38, 38, 38, 1) 100%);
+    background-image: linear-gradient(to top, #ebedef, #ebedef, #ebedef, #ebedef, #ebedef, #d9dadc, #c7c8ca, #b5b6b8, #8e8f90, #69696a, #464647, #262626);
+    opacity: 0.5;
+  }
+
+  &:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -9px;
+    margin: auto;
+    height: 1px;
+    width: 12px;
+    background: #ebedef;
+    opacity: 0.5;
+  }
+}
+
+.ghost-field {
+  opacity: 0.5;
+}
+
+div.btn.field-sort-type.badge {
+  display: inline-block;
+  height: inherit;
+  line-height: 1;
+  text: {
+    transform: inherit;
+    align: center;
+  }
+  padding: 0.35em 0.65em;
+  font: {
+    size: 0.75em;
+    weight: 500;
+  }
+  color: inherit;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.27rem;
+  overflow: hidden;
+  box-shadow: 0 0;
+  background: #1b1b1e;
+  opacity: 0.9;
+  transition: opacity 0.2s ease-in-out;
+  margin: 0 1px;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.65;
+  }
+}

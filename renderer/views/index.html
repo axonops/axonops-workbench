@@ -1880,6 +1880,100 @@
                   <div class="empty-fields">
                     <span mulang="add field by clicking the + button" class="exist-udt" capitalize-first></span>
                     <span mulang="this keyspace has no UDT to be added" class="no-udt" capitalize-first></span>
+                    <span mulang="this keyspace has only the UDT which is being altered" class="one-udt" capitalize-first></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div action="counter-tables">
+              <div class="action-elements">
+                <div class="input-group">
+                  <div class="input-group-text counter-table-name-keyspace">
+                    <div class="keyspace-name"></div>
+                  </div>
+                  <div class="form-outline form-white margin-bottom">
+                    <input type="text" class="form-control form-control-lg" id="countertableName">
+                    <label class="form-label">
+                      <span mulang="table name" capitalize></span>
+                    </label>
+                    <div class="valid-feedback"></div>
+                    <div class="invalid-feedback">
+                      <span mulang capitalize-first></span>.
+                    </div>
+                  </div>
+                </div>
+                <div class="fields-badge-action">
+                  <span class="badge badge-secondary">
+                    <span mulang="add primary keys" capitalize></span>
+                  </span>
+                </div>
+                <div class="fields-badge-action" style="margin-top: 10px;">
+                  <span class="badge badge-secondary sub-badge">
+                    <span mulang="add partition keys" capitalize></span>
+                  </span>
+                  <div class="add-buttons">
+                    <a action="add-partition-key" class="btn btn-link btn-rounded btn-sm addPartitionKeyBtn" data-mdb-ripple-color="light" href="#" role="button" id="addPartitionKey">
+                      <ion-icon name="plus" role="img" class="md hydrated" aria-label="plus"></ion-icon> <span mulang="add partition key" capitalize=""></span>
+                    </a>
+                  </div>
+                </div>
+                <div class="partition-keys-fields">
+                  <div class="empty-partition-keys">
+                    <span mulang="add key by clicking the + button" capitalize-first></span>
+                  </div>
+                </div>
+                <div class="fields-badge-action">
+                  <span class="badge badge-secondary sub-badge">
+                    <span mulang="add clustering keys" capitalize></span>
+                  </span>
+                  <div class="add-buttons">
+                    <a action="add-clustering-key" class="btn btn-link btn-rounded btn-sm addClusteringKeyBtn disabled" data-mdb-ripple-color="light" href="#" role="button" id="addClusteringKey">
+                      <ion-icon name="plus" role="img" class="md hydrated" aria-label="plus"></ion-icon> <span mulang="add clustering key" capitalize=""></span>
+                    </a>
+                  </div>
+                </div>
+                <div class="clustering-keys-fields">
+                  <div class="empty-clustering-keys">
+                    <span mulang="add key by clicking the + button" capitalize-first></span>
+                    <span mulang="this table has no clustering keys" class="no-keys" style="display:none;" capitalize-first></span>
+                  </div>
+                </div>
+                <div class="fields-badge-action">
+                  <span class="badge badge-secondary">
+                    <span mulang="add counter columns" capitalize></span>
+                  </span>
+                  <a action="add-counter-column" class="btn btn-link btn-rounded btn-sm addCounterColumnBtn" data-mdb-ripple-color="light" href="#" role="button" id="addCounterColumn">
+                    <ion-icon name="plus" role="img" class="md hydrated" aria-label="plus"></ion-icon> <span mulang="add column" capitalize=""></span>
+                  </a>
+                </div>
+                <div class="counter-columns-fields">
+                  <div class="empty-columns">
+                    <span mulang="add column by clicking the + button" capitalize-first></span>
+                  </div>
+                </div>
+                <div class="show-options-container">
+                  <a action="show-options-container" class="btn btn-link btn-rounded btn-sm showOptionsContainer" data-mdb-ripple-color="light" href="#" role="button">
+                    <ion-icon name="arrow-down" role="img" class="md hydrated" aria-label="arrow-down"></ion-icon> <span mulang="show table options" capitalize=""></span>
+                  </a>
+                </div>
+                <div class="table-options-container" style="display:none;">
+                  <div class="fields-badge-action">
+                    <div class="table-options-sub-container">
+                      <span class="badge badge-secondary">
+                        <span mulang="table options" capitalize></span>
+                      </span>
+                      <a action="hide-options-container" class="btn btn-link btn-rounded btn-sm hideOptionsContainer" data-mdb-ripple-color="light" href="#" role="button" id="hideOptionsContainer">
+                        <ion-icon name="arrow-up" role="img" class="md hydrated" aria-label="plus"></ion-icon>
+                      </a>
+                    </div>
+                    <a action="add-table-option" class="btn btn-link btn-rounded btn-sm addTableOptionBtn" data-mdb-ripple-color="light" href="#" role="button" id="addTableOption">
+                      <ion-icon name="plus" role="img" class="md hydrated" aria-label="plus"></ion-icon> <span mulang="add option" capitalize=""></span>
+                    </a>
+                  </div>
+                  <div class="table-options-fields" style="max-height: 200px; overflow-y: scroll; overflow-x: hidden;">
+                    <div class="empty-options">
+                      <span mulang="add option by clicking the + button" capitalize-first></span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1892,7 +1986,7 @@
             <div class="float-left">
               <button type="button" class="btn btn-secondary btn-dark btn-sm switch-editor" disabled>
                 <ion-icon name="switch"></ion-icon>
-                <span mulang="switch editor"></span>
+                <span mulang="switch CQL editor"></span>
               </button>
             </div>
             <div class="float-right">

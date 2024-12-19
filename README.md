@@ -74,10 +74,15 @@ If you would like to run it in development, please follow the instructions below
 
 - nodejs >= 20.15.0
 - npm >= 10.7.0
+- python >= 3.12
 
 ### Installation & Running
 
 - Clone this repository
+- Install python dependencies `pip3 install -r requirements.txt`
+- Download CQLSH binaries from [axonops-workbench-cqlsh](https://github.com/axonops/axonops-workbench-cqlsh/releases/latest)
+    - `cqlsh` binary has to be placed in `main/bin/cqlsh/cqlsh`
+    - `keys_generator` binary has to be placed in `main/bin/keys_generator/keys_generator`
 - Run `npm i` to install the nodejs dependencies
 - Execute `npm start` to run it in development mode
 

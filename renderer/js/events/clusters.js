@@ -9755,7 +9755,7 @@
 
         $('#rightClickActionsMetadata div.input-group-text.udt-name-keyspace div.keyspace-name').text(`${data.keyspaceName}`)
 
-        $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts || null}`)
+        $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
 
         $('div.modal#rightClickActionsMetadata div[action]').hide()
 
@@ -9796,7 +9796,7 @@
 
         $('#rightClickActionsMetadata div.input-group-text.udt-name-keyspace div.keyspace-name').text(`${data.keyspaceName}`)
 
-        $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts || null}`)
+        $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
 
         $('div.modal#rightClickActionsMetadata a.addFieldBtn#addUDTDataField').toggleClass('disabled', data.numOfUDTs <= 0)
 
@@ -9897,7 +9897,7 @@
 
         $('#rightClickActionsMetadata').attr('data-keyspace-tables', `${data.tables}`)
 
-        $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts || null}`)
+        $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
 
         $('div.modal#rightClickActionsMetadata').find('div.empty-partition-keys, div.empty-clustering-keys, div.empty-columns, div.empty-options').show()
 
@@ -9998,7 +9998,7 @@
 
           $('#rightClickActionsMetadata').attr('data-keyspace-tables', `${data.tables}`)
 
-          $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts || null}`)
+          $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
 
           $('#rightClickActionsMetadata').removeClass('show-editor')
 
@@ -10252,6 +10252,10 @@
             dataCenters = JSON.parse($(this).attr('data-datacenters'))
           } catch (e) {}
 
+          try {
+            dataCenters = dataCenters.filter((datacenter, index, datacenters) => datacenters.findIndex(_datacenter => _datacenter.name === datacenter.name) === index)
+          } catch (e) {}
+
           $(this).parent().find('div.invalid-feedback span[mulang][capitalize-first]').attr('mulang', 'SimpleStrategy is intended for development purposes only').text(I18next.capitalizeFirstLetter(I18next.t('SimpleStrategy is intended for development purposes only')))
 
           $(this).parent().css('margin-bottom', '50px')
@@ -10272,6 +10276,10 @@
               try {
                 if (isAlterState)
                   dataCentersRF = JSON.parse($('div.modal#rightClickActionsMetadata').attr('data-datacenters-rf'))
+              } catch (e) {}
+
+              try {
+                dataCentersRF = dataCentersRF.filter((datacenter, index, datacenters) => datacenters.findIndex(_datacenter => _datacenter.name === datacenter.name) === index)
               } catch (e) {}
 
               for (let datacenter of dataCenters) {
@@ -10474,7 +10482,7 @@
       let updateActionStatusForUDTs
 
       {
-        let getFieldElement = (keyspaceUDTs = null) => {
+        let getFieldElement = (keyspaceUDTs = []) => {
             let typesList = `
             <li><span class="group-text"><span mulang="numeric types" capitalize></span></span></li>
             <li><a class="dropdown-item" href="#" value="int">int</a></li>
@@ -10510,7 +10518,7 @@
             defaultType = 'text'
 
             try {
-              if (keyspaceUDTs == null)
+              if (keyspaceUDTs == null || keyspaceUDTs.length <= 0)
                 throw 0
 
               typesList = ''
@@ -10539,7 +10547,7 @@
           <div class="col-md-6" col="fieldDataType">
             <div class="form-outline form-white" style="z-index: 2; margin-left: 4px; width: calc(100% - 4px);">
               <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-              <input type="text" class="form-control form-icon-trailing fieldDataType" id="${fieldDataTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly>
+              <input type="text" class="form-control form-icon-trailing fieldDataType" id="${fieldDataTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly noopacity>
               <label class="form-label">
                 <span mulang="field data type" capitalize></span>
               </label>
@@ -10557,7 +10565,7 @@
           <div class="col-md-2" col="collectionKeyType" style="display:none;">
             <div class="form-outline form-white" style="z-index: 2; margin-left: 4px; width: calc(100% - 4px);">
               <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-              <input type="text" class="form-control form-icon-trailing collectionKeyType" id="${collectionKeyTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly>
+              <input type="text" class="form-control form-icon-trailing collectionKeyType" id="${collectionKeyTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly noopacity>
               <label class="form-label">
                 <span mulang="key type" capitalize></span>
               </label>
@@ -10574,7 +10582,7 @@
           <div class="col-md-2" col="collectionItemType" style="display:none;">
             <div class="form-outline form-white" style="z-index: 2; margin-left: 4px; width: calc(100% - 4px);">
               <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-              <input type="text" class="form-control form-icon-trailing collectionItemType" id="${collectionItemTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly>
+              <input type="text" class="form-control form-icon-trailing collectionItemType" id="${collectionItemTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly noopacity>
               <label class="form-label">
                 <span mulang="value type" capitalize></span>
               </label>
@@ -11617,7 +11625,9 @@
             if (!isAlterState)
               throw 0
 
-            let alteringStatements = []
+            let alteringStatements = [],
+              alteredOptions = [],
+              droppedColumns = []
 
             for (let dataField of allDataFields) {
               if ($(dataField).hasClass('partition-key-field'))
@@ -11646,6 +11656,12 @@
                   counterColumnName = counterColumnNameElement.val(),
                   originalName = counterColumnNameElement.attr('data-original-name')
 
+                if ($(dataField).hasClass('deleted')) {
+                  alteringStatements.push(`DROP ${counterColumnName}`)
+
+                  continue
+                }
+
                 if (originalName != undefined && counterColumnName != originalName)
                   alteringStatements.push(`RENAME ${counterColumnName} TO ${originalName}`)
 
@@ -11664,13 +11680,22 @@
                   [originalName, originalValue] = getAttributes($(dataField), ['data-original-name', 'data-original-value'])
 
                 if (tableOptionName != originalName || tableOptionValue != originalValue)
-                  alteringStatements.push(`WITH ${tableOptionName} = ${tableOptionValue}`)
+                  alteredOptions.push(`${alteredOptions.length <= 0 ? 'WITH' : 'AND'} ${tableOptionName} = ${tableOptionValue}`)
               } catch (e) {}
             }
 
-            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', alteringStatements.length <= 0 ? '' : null)
+            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...alteringStatements, ...alteredOptions, ...droppedColumns].length <= 0 ? '' : null)
 
-            let statement = alteringStatements.map((statement) => `ALTER TABLE ${keyspaceName}.${counterTableName} ${statement}`).join(';' + OS.EOL) + ';'
+            let statement = [...alteringStatements, ...droppedColumns].map((statement) => `ALTER TABLE ${keyspaceName}.${counterTableName} ${statement}`).join(';' + OS.EOL) + ';'
+
+            try {
+              if (alteredOptions.length <= 0)
+                throw 0
+
+              statement = alteringStatements.length <= 0 ? '' : `${statement}` + OS.EOL
+
+              statement += `ALTER TABLE ${keyspaceName}.${counterTableName} ` + alteredOptions.join(' ') + ';'
+            } catch (e) {}
 
             try {
               actionEditor.setValue(statement)
@@ -12028,7 +12053,7 @@
                   <div class="col-md-5" col="partitionKeyType">
                     <div class="form-outline form-white" style="z-index: 2; margin-left: 4px; width: calc(100% - 4px);">
                       <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                      <input type="text" class="form-control form-icon-trailing partitionKeyType" id="${partitionKeyTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly>
+                      <input type="text" class="form-control form-icon-trailing partitionKeyType" id="${partitionKeyTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly noopacity>
                       <label class="form-label">
                         <span mulang="key type" capitalize></span>
                       </label>
@@ -12046,7 +12071,7 @@
                   <div class="col-md-2" col="collectionKeyType" style="display:none;">
                     <div class="form-outline form-white" style="z-index: 2; margin-left: 4px; width: calc(100% - 4px);">
                       <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                      <input type="text" class="form-control form-icon-trailing collectionKeyType" id="${collectionKeyTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly>
+                      <input type="text" class="form-control form-icon-trailing collectionKeyType" id="${collectionKeyTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly noopacity>
                       <label class="form-label">
                         <span mulang="key type" capitalize></span>
                       </label>
@@ -12063,7 +12088,7 @@
                   <div class="col-md-2" col="collectionItemType" style="display:none;">
                     <div class="form-outline form-white" style="z-index: 2; margin-left: 4px; width: calc(100% - 4px);">
                       <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                      <input type="text" class="form-control form-icon-trailing collectionItemType" id="${collectionItemTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly>
+                      <input type="text" class="form-control form-icon-trailing collectionItemType" id="${collectionItemTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly noopacity>
                       <label class="form-label">
                         <span mulang="value type" capitalize></span>
                       </label>
@@ -12112,15 +12137,21 @@
             fields = JSON.parse(fields)
 
             for (let field of fields) {
-              dataFieldsContainer.prepend($(getPartitionKeyFieldElement(keyspaceUDTs)).show(function() {
+              dataFieldsContainer.append($(getPartitionKeyFieldElement(keyspaceUDTs)).show(function() {
                 let row = $(this)
+
+                $(this).attr('data-is-altered', 'true')
+
                 setTimeout(() => {
-                  $(this).find('div.sort-handler').css({
-                    'pointer-events': 'none',
-                    'opacity': '0.65'
-                  })
+                  $(this).find('div.sort-handler').parent().hide()
 
                   $(this).find('a:not([value]), input').removeClass('is-invalid').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
+
+                  $(this).find(`a[action="delete-partition-key"]`).parent().hide()
+
+                  $(this).find('div[col="partitionKeyName"], div[col="partitionKeyType"]').removeClass('col-md-5').addClass('col-md-6')
+
+                  $(this).find('ion-icon[name="arrow-down"]').hide()
                 })
 
                 setTimeout(() => {
@@ -12129,32 +12160,6 @@
                   setTimeout(() => dropDownMDBObject.update(), 500)
 
                   {
-                    row.find('div.dropdown[for-select]').each(function() {
-                      let dropDownElement = $(this),
-                        // Get the MDB object of the current dropdown element
-                        selectDropdown = getElementMDBObject(dropDownElement, 'Dropdown'),
-                        // Point at the associated input field
-                        input = row.find(`input#${dropDownElement.attr('for-select')}`)
-
-                      // Once the associated select element is being focused then show the dropdown element and vice versa
-                      input.on('focus', () => {
-                        try {
-                          input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                        } catch (e) {}
-
-                        selectDropdown.show()
-                      }).on('focusout', () => setTimeout(() => {
-                        try {
-                          input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                        } catch (e) {}
-
-                        selectDropdown.hide()
-                      }, 100))
-
-                      // Once the parent `form-outline` is clicked trigger the `focus` event
-                      input.parent().click(() => input.trigger('focus'))
-                    })
-
                     // Once one of the items is clicked
                     $(this).find(`div.dropdown[for-select]`).each(function() {
                       let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
@@ -12164,19 +12169,25 @@
                         let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
                           selectedValue = $(this).attr('value'),
                           isTypeCollection = $(this).attr('data-is-collection') != undefined,
-                          isCollectionMap = $(this).attr('data-is-map') != undefined
+                          isCollectionMap = $(this).attr('data-is-map') != undefined,
+                          isAltered = row.attr('data-is-altered') != undefined
 
                         try {
                           if (!mainDropDown)
                             throw 0
 
+                          let newColMD = isTypeCollection ? (isCollectionMap ? 3 : 4) : 5
+
+                          if (isAltered)
+                            newColMD += 1
+
                           row.find(`div[col="partitionKeyName"]`).removeClass(function(index, className) {
                             return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
-                          }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 3 : 4) : 5}`)
+                          }).addClass(`col-md-${newColMD}`)
 
                           row.find(`div[col="partitionKeyType"]`).removeClass(function(index, className) {
                             return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
-                          }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 3 : 4) : 5}`)
+                          }).addClass(`col-md-${newColMD}`)
 
                           row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
 
@@ -12249,7 +12260,7 @@
             return
           } catch (e) {}
 
-          dataFieldsContainer.prepend($(getPartitionKeyFieldElement(keyspaceUDTs)).show(function() {
+          dataFieldsContainer.append($(getPartitionKeyFieldElement(keyspaceUDTs)).show(function() {
             let row = $(this)
 
             setTimeout(() => {
@@ -12493,7 +12504,7 @@
                   <div class="col-md-4" col="clusteringKeyType">
                     <div class="form-outline form-white" style="z-index: 2; margin-left: 4px; width: calc(100% - 4px);">
                       <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                      <input type="text" class="form-control form-icon-trailing clusteringKeyType" id="${clusteringKeyTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly>
+                      <input type="text" class="form-control form-icon-trailing clusteringKeyType" id="${clusteringKeyTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly noopacity>
                       <label class="form-label">
                         <span mulang="key type" capitalize></span>
                       </label>
@@ -12511,7 +12522,7 @@
                   <div class="col-md-2" col="collectionKeyType" style="display:none;">
                     <div class="form-outline form-white" style="z-index: 2; margin-left: 4px; width: calc(100% - 4px);">
                       <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                      <input type="text" class="form-control form-icon-trailing collectionKeyType" id="${collectionKeyTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly>
+                      <input type="text" class="form-control form-icon-trailing collectionKeyType" id="${collectionKeyTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly noopacity>
                       <label class="form-label">
                         <span mulang="key type" capitalize></span>
                       </label>
@@ -12528,7 +12539,7 @@
                   <div class="col-md-2" col="collectionItemType" style="display:none;">
                     <div class="form-outline form-white" style="z-index: 2; margin-left: 4px; width: calc(100% - 4px);">
                       <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                      <input type="text" class="form-control form-icon-trailing collectionItemType" id="${collectionItemTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly>
+                      <input type="text" class="form-control form-icon-trailing collectionItemType" id="${collectionItemTypeID}" style="background-color: inherit; cursor: pointer;" value="${defaultType}" readonly noopacity>
                       <label class="form-label">
                         <span mulang="value type" capitalize></span>
                       </label>
@@ -12583,15 +12594,12 @@
             }
 
             for (let field of fields) {
-              dataFieldsContainer.prepend($(getClusteringKeyFieldElement(keyspaceUDTs)).show(function() {
+              dataFieldsContainer.append($(getClusteringKeyFieldElement(keyspaceUDTs)).show(function() {
                 let row = $(this),
                   fieldType = field.type
 
                 setTimeout(() => {
-                  $(this).find('div.sort-handler').css({
-                    'pointer-events': 'none',
-                    'opacity': '0.65'
-                  })
+                  $(this).find('div.sort-handler').parent().hide()
 
                   $(this).find('div.field-sort-type').parent().hide()
 
@@ -12612,6 +12620,12 @@
                   $(this).find('span.group-text').remove()
 
                   $(this).find(`a:not([value]), input${notCondition}`).removeClass('is-invalid').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
+
+                  $(this).find(`a[action="delete-clustering-key"]`).parent().hide()
+
+                  $(this).find('div[col="clusteringKeyName"], div[col="clusteringKeyType"]').removeClass('col-md-5').addClass('col-md-6')
+
+                  $(this).find(`input${notCondition}`).parent().children('ion-icon[name="arrow-down"]').hide()
                 })
 
                 setTimeout(() => {
@@ -12629,6 +12643,9 @@
 
                       // Once the associated select element is being focused then show the dropdown element and vice versa
                       input.on('focus', () => {
+                        if (input.hasClass('disabled'))
+                          return
+
                         try {
                           input.parent().find('div.invalid-feedback').addClass('transparent-color')
                         } catch (e) {}
@@ -12661,13 +12678,18 @@
                           if (!mainDropDown)
                             throw 0
 
+                          let newColMD = isTypeCollection ? (isCollectionMap ? 3 : 4) : 5
+
+                          if (isAltered)
+                            newColMD += 1
+
                           row.find(`div[col="clusteringKeyName"]`).removeClass(function(index, className) {
                             return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
-                          }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 3 : 4) : 5}`)
+                          }).addClass(`col-md-${newColMD}`)
 
                           row.find(`div[col="clusteringKeyType"]`).removeClass(function(index, className) {
                             return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
-                          }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 3 : 4) : 5}`)
+                          }).addClass(`col-md-${newColMD}`)
 
                           row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
 
@@ -12737,7 +12759,7 @@
             return
           } catch (e) {}
 
-          dataFieldsContainer.prepend($(getClusteringKeyFieldElement(keyspaceUDTs)).show(function() {
+          dataFieldsContainer.append($(getClusteringKeyFieldElement(keyspaceUDTs)).show(function() {
             let row = $(this)
 
             setTimeout(() => {
@@ -12910,12 +12932,12 @@
             getCounterColumnFieldElement = () => {
               return `
               <div class="counter-column-field row" >
-                <div class="col-md-1" style="text-align: center;">
+                <div class="col-md-1" style="text-align: center; display:none;">
                   <div class="sort-handler" style="cursor:grab;">
                     <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
                   </div>
                 </div>
-                <div class="col-md-10">
+                <div class="col-md-11">
                   <div class="form-outline form-white" style="margin-right: 4px; width: calc(100% - 4px);">
                     <input type="text" class="form-control form-icon-trailing counterColumnName is-invalid" style="margin-bottom: 0;">
                     <label class="form-label">
@@ -12944,21 +12966,20 @@
             fields = JSON.parse(fields)
 
             for (let field of fields) {
-              dataFieldsContainer.prepend($(getCounterColumnFieldElement()).show(function() {
+              dataFieldsContainer.append($(getCounterColumnFieldElement()).show(function() {
                 let row = $(this)
-
-                setTimeout(() => {
-                  $(this).find('div.sort-handler').css({
-                    'pointer-events': 'none',
-                    'opacity': '0.65'
-                  })
-
-                  $(this).find('a:not([value])').removeClass('is-invalid').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
-                })
 
                 setTimeout(() => {
                   $(this).find('input.counterColumnName').val(`${field}`).removeClass('is-invalid').attr('data-original-name', `${field}`).trigger('input')
                 })
+
+                setTimeout(() => $(this).find(`a[action="delete-counter-column"]`).click(() => {
+                  row.toggleClass('deleted')
+
+                  try {
+                    updateActionStatusForCounterTables()
+                  } catch (e) {}
+                }))
 
                 setTimeout(() => {
                   $(this).find('input[type="text"]').each(function() {
@@ -12985,7 +13006,7 @@
             return
           } catch (e) {}
 
-          dataFieldsContainer.prepend($(getCounterColumnFieldElement()).show(function() {
+          dataFieldsContainer.append($(getCounterColumnFieldElement()).show(function() {
             let row = $(this)
 
             $(this).find(`a[action="delete-counter-column"]`).click(function() {
@@ -13122,7 +13143,7 @@
               if (field.name == undefined)
                 continue
 
-              dataFieldsContainer.prepend($(getTableOptionFieldElement(true)).show(function() {
+              dataFieldsContainer.append($(getTableOptionFieldElement(true)).show(function() {
                 let row = $(this)
 
                 row.attr({
@@ -13236,6 +13257,14 @@
                     updateActionStatusForCounterTables()
                   } catch (e) {}
                 })
+
+                setTimeout(() => {
+                  try {
+                    dataFieldsContainer.animate({
+                      scrollTop: dataFieldsContainer.get(0).scrollHeight
+                    }, 10)
+                  } catch (e) {}
+                })
               }))
             }
 
@@ -13265,7 +13294,7 @@
 
               optionValue = `${optionValue}`
 
-              dataFieldsContainer.prepend($(getTableOptionFieldElement(true)).show(function() {
+              dataFieldsContainer.append($(getTableOptionFieldElement(true)).show(function() {
                 let row = $(this)
 
                 row.attr({
@@ -13378,13 +13407,21 @@
                     updateActionStatusForCounterTables()
                   } catch (e) {}
                 })
+
+                setTimeout(() => {
+                  try {
+                    dataFieldsContainer.animate({
+                      scrollTop: dataFieldsContainer.get(0).scrollHeight
+                    }, 10)
+                  } catch (e) {}
+                })
               }))
             }
 
             return
           } catch (e) {}
 
-          dataFieldsContainer.prepend($(getTableOptionFieldElement()).show(function() {
+          dataFieldsContainer.append($(getTableOptionFieldElement()).show(function() {
             let row = $(this)
 
             $(this).find(`a[action="delete-option"]`).click(function() {
@@ -13477,6 +13514,14 @@
             setTimeout(() => {
               try {
                 updateActionStatusForCounterTables()
+              } catch (e) {}
+            })
+
+            setTimeout(() => {
+              try {
+                dataFieldsContainer.animate({
+                  scrollTop: dataFieldsContainer.get(0).scrollHeight
+                }, 10)
               } catch (e) {}
             })
           }))

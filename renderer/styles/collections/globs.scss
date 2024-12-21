@@ -838,9 +838,10 @@ div.resolve-variables {
 }
 
 .form-outline.form-white .form-control.disabled,
-.form-outline.form-white .form-control:disabled,
-.form-outline.form-white .form-control[readonly] {
+.form-outline.form-white .form-control:disabled {
   background-color: rgba(255, 255, 255, 0.15);
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 .monaco-sash {

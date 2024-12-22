@@ -47,6 +47,12 @@ const FS = require('fs-extra'),
 let extraResourcesPath = null,
   tinyKeys
 
+/**
+ * Electron Logging
+ * Used for logging
+ */
+const log = require('electron-log/renderer')
+
 // Get the set extra resources path from the main thread
 $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) => {
   // Adopt the set path
@@ -75,10 +81,6 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
        */
       for (let file of processTypes.ensureFile) {
         try {
-          // If the current file about `logging`
-          if (file[1] != 'logging')
-            throw 0
-
           // Ensure the file exists
           try {
             await FS.ensureFile(Path.join(appPath, ...file))
@@ -116,49 +118,10 @@ $(document).on('pre-initialize', async () => {
   })
 
   /**
-   * Essential modification for the `console` function after loading the `functions` file
+   * Essential modification for the `console` function
    * Now console triggers such as `log`, `debug`, `error`, and others are logged as part of the logging feature
    */
-  {
-    try {
-      // Copy the original `console` function
-      let originalConsole = {
-        ...console
-      }; // This semicolon is critical here
-
-      // Loop through a set of console types
-      (['debug', 'error', 'info', 'log']).forEach((type) => {
-        // Initial log type
-        let logType = type
-
-        // Switch and manipulate the type to be suitable
-        switch (logType) {
-          case 'log':
-          case 'debug': {
-            logType = 'info'
-            break
-          }
-          default: {
-            logType = 'info'
-          }
-        }
-
-        // Manipulate the original `console` by adding any upcoming text as a log
-        global.console[type] = (text) => {
-          try {
-            addLog(`${text}`, logType)
-          } catch (e) {}
-
-          // Call the original `console`
-          originalConsole[type](text)
-        }
-      })
-    } catch (e) {
-      try {
-        errorLog(e, 'initialization')
-      } catch (e) {}
-    }
-  }
+  Object.assign(console, log.functions);
 
   // Load the rest bootstrap JS files
   for (let file of ['libs', 'globs'])
@@ -198,28 +161,6 @@ $(document).on('pre-initialize', async () => {
      * This event will load and initialize the entire app after getting the path of the extra resources
      */
     setTimeout(() => $(document).trigger('initialize'), 100)
-  })
-})
-
-// Initialize the logging system
-$(document).on('initialize', () => {
-  // Get the app's config
-  Modules.Config.getConfig((config) => {
-    // Check the status of whether or not the logging feature is enabled
-    isLoggingEnabled = config.get('security', 'loggingEnabled') || isLoggingEnabled
-
-    // Convert the flag to a boolean instead of a string
-    isLoggingEnabled = isLoggingEnabled == 'false' ? false : true
-
-    // If the logging feature is not enabled then skip the upcoming code
-    if (!isLoggingEnabled)
-      return
-
-    // Send the initialization request to the main thread
-    IPCRenderer.send('logging:init', {
-      date: new Date().getTime(),
-      id: getRandomID(5)
-    })
   })
 })
 
@@ -332,10 +273,8 @@ $(document).on('initialize', async () => getMachineID().then((id) => {
 
   // Add the first set of logs
   setTimeout(() => {
-    try {
-      addLog(`AxonOps Workbench has loaded all components and is ready to be used`)
-      addLog(`This machine has a unique ID of '${machineID}'`, 'env')
-    } catch (e) {}
+    log.info('AxonOps Workbench has loaded all components and is ready to be used')
+    log.info('This machine has a unique ID', machineID)
   }, 1000)
 }))
 
@@ -349,9 +288,7 @@ $(document).on('initialize', () => {
         let chosenLanguage = config.get('ui', 'language') || 'en'
 
         // Add a log about the chosen language
-        try {
-          addLog(`The configuration file has been loaded, and the language to be rendered is '${chosenLanguage.toUpperCase()}'`)
-        } catch (e) {}
+        log.info('The configuration file has been loaded, and the language to be rendered is', chosenLanguage.toUpperCase())
 
         // Load all saved languages and make sure the chosen language exists and is loaded as well
         Modules.Localization.loadLocalization((languages) => {
@@ -451,9 +388,7 @@ $(document).on('initialize', () => {
                   text = text.replace(close, `</${tag}>`)
                 })
               } catch (e) {
-                try {
-                  errorLog(e, 'initialization')
-                } catch (e) {}
+                log.error('[initialization]', e)
               }
 
               // Return the final result
@@ -513,9 +448,7 @@ $(document).on('initialize', () => {
                 clearLoadInterval()
             })
           } catch (e) {
-            try {
-              errorLog(e, 'initialization')
-            } catch (e) {}
+            log.error('[initialization]', e)
           }
 
           // Update the list of languages to select in the settings dialog
@@ -553,9 +486,7 @@ $(document).on('initialize', () => {
         })
       })
     } catch (e) {
-      try {
-        errorLog(e, 'initialization')
-      } catch (e) {}
+      log.error('[initialization]', e)
     }
   })
 })
@@ -1068,9 +999,7 @@ $(document).on('initialize', () => {
           }, 250)
         })
       } catch (e) {
-        try {
-          errorLog(e, 'initialization')
-        } catch (e) {}
+        log.error('[initialization]', e)
       }
     })
 
@@ -1162,9 +1091,7 @@ $(document).on('initialize', () => {
       } catch (e) {}
     })
   } catch (e) {
-    try {
-      errorLog(e, 'initialization')
-    } catch (e) {}
+    log.error('[initialization]', e)
   }
 })
 
@@ -1389,9 +1316,7 @@ $(document).on('initialize', () => {
       try {
         Clipboard.writeText(`v${AppInfo.version}`)
       } catch (e) {
-        try {
-          errorLog(e, 'init')
-        } catch (e) {}
+        log.error('[initialization]', e)
       }
 
       // Give feedback to the user

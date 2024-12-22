@@ -55,8 +55,6 @@ let publicKey = '',
  * This flag is defined to show the toast only once
  */
 let isSandboxDockerInfoShown = false
-// This flag determines whether or not the logging system should be enabled during the current session
-isLoggingEnabled = true
 
 /**
  * Retrieve the view/window content's ID from the main thread

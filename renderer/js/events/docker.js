@@ -78,9 +78,7 @@
         $(this).attr('disabled', '')
 
         // Add log about this request
-        try {
-          addLog(`Request has been triggered, create a local cluster`, 'action')
-        } catch (e) {}
+        log.info('Request to create a local cluster')
 
         // Check the existence of Docker in the machine
         Modules.Docker.checkDockerCompose((dockerExists, userGroup, _selectedManagementTool) => {
@@ -139,9 +137,7 @@
           numOfNodes = (numOfNodes < minNumOfNodes) ? minNumOfNodes : ((numOfNodes > maxNumOfNodes) ? maxNumOfNodes : numOfNodes)
 
           // Add log about the project's attributes
-          try {
-            addLog(`The local cluster attributes are: [Cassandra version: ${cassandraVersion}, Number of nodes: ${numOfNodes}]`)
-          } catch (e) {}
+          log.info('Local cluster attributes', 'Cassandra version', cassandraVersion, 'Number of nodes', numOfNodes)
 
           // Create a Docker instance/object
           let dockerObject = new Modules.Docker.DockerCompose()

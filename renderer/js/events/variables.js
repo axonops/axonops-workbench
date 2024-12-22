@@ -286,9 +286,7 @@
       // Update the process' status
       status = true
     } catch (e) {
-      try {
-        errorLog(e, 'variables')
-      } catch (e) {}
+      log.error('[variables]', e)
     }
 
     // Call the callback function
@@ -381,9 +379,7 @@
       // Update saved workspaces array
       savedWorkspaces = await Modules.Workspaces.getWorkspaces()
     } catch (e) {
-      try {
-        errorLog(e, 'variables')
-      } catch (e) {}
+      log.error('[variables]', e)
     }
   }
 
@@ -670,9 +666,7 @@
             // Show/hide the bulk deletion button based on the final state of the flag
             $(`#deleteSelectedVariables`).toggleClass('show', foundChecked)
           } catch (e) {
-            try {
-              errorLog(e, 'variables')
-            } catch (e) {}
+            log.error('[variables]', e)
           }
         })
       })

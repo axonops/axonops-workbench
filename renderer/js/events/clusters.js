@@ -364,9 +364,7 @@
                 isSSHTunnelNeeded = clusterElement.getAllAttributes('data-ssh')
 
                 // Add log for this request
-                try {
-                  addLog(`Request to test the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                } catch (e) {}
+               log.info('Request to test the connection', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                 // If the cluster has an active work area and the process to be executed is not disconnecting with the cluster then stop the process and show feedback to the user
                 if (hasWorkarea == 'true' && !isProcessDisconnect)
@@ -509,9 +507,7 @@
                   maximumRunningClusters = isNaN(maximumRunningClusters) || maximumRunningClusters < 1 ? 10 : maximumRunningClusters
 
                   // Add log for this request
-                  try {
-                    addLog(`Request to connect '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                  } catch (e) {}
+                  log.info('Request to connect', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                   // If the currently running clusters are more than or equal to the maximum allowed number and this is not the sandbox workspace then end the process and show feedback to the user
                   if (([numRunningClusters, numAttemptingClusters]).some((num) => num >= maximumRunningClusters) && !isSandbox)
@@ -3073,9 +3069,7 @@
                       terminal = terminalObjects[terminalID]
 
                       // Add log
-                      try {
-                        addLog(`CQLSH session created for the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
-                      } catch (e) {}
+                      log.info('CQLSH session created', 'connection', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                       /**
                        * Custom terminal options
@@ -3999,11 +3993,7 @@
                         terminalBash = new XTerm({
                           theme: XTermThemes.Atom
                         })
-
-                        // Add log
-                        try {
-                          addLog(`Created a bash session for local cluster ${getAttributes(clusterElement, ['data-id'])}`)
-                        } catch (e) {}
+                        log.info('Created a bash session for local cluster', getAttributes(clusterElement, ['data-id']))
 
                         /**
                          * Custom terminal options
@@ -4194,9 +4184,7 @@
                           $(`div.btn[data-id="${searchInMetadataBtnID}"]`).trigger('click', true)
 
                           // Add log about this refreshing process
-                          try {
-                            addLog(`Request to refresh the metadata of the cluster connected to by '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                          } catch (e) {}
+                          log.info('Request to refresh the metadata of the cluster', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                           // Reset the metadata trigger
                           isMetadataFetched = false
@@ -4381,9 +4369,7 @@
                           } catch (e) {}
 
                           // Add log a about the request
-                          try {
-                            addLog(`Request to save a schema snapshot of the metadata of the cluster connected to by '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                          } catch (e) {}
+                          log.info('Request to save a schema snapshot of the metadata', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                           // Minimize the size of the metadata by compression
                           try {
@@ -4486,9 +4472,7 @@
                                 $(this).find('a[action="load"]').click(async function() {
                                   try {
                                     // Add log about this loading process
-                                    try {
-                                      addLog(`Request to load a schema snapshot in path '${snapshotPath}' related to the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                                    } catch (e) {}
+                                    log.info('Request to load a schema snapshot', 'path', snapshotPath, 'connection', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                                     // Read the snapshot's content
                                     let snapshotContent = await FS.readFileSync(snapshotPath, 'utf8')
@@ -4571,9 +4555,7 @@
                                   }
 
                                   // Add log about this deletion process
-                                  try {
-                                    addLog(`Request to delete a snapshot in path '${snapshotPath}' related to the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                                  } catch (e) {}
+                                  log.info('Request to delete a snapshot', 'path', snapshotPath, 'connection', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                                   // If no need for confirmation then call the deletion function and skip the upcoming code
                                   try {
@@ -4653,9 +4635,7 @@
                       setTimeout(() => {
                         $(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).on('click', (event, moveToWorkspace = true) => {
                           // Add log for this action
-                          try {
-                            addLog(`Request to close/refresh the work area of the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                          } catch (e) {}
+                          log.info('Request to close/refresh the work area of the connection', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                           // Ask the user for credentials again if they're required
                           try {
@@ -5050,9 +5030,7 @@
                                   clusterElement = $(`div[content="clusters"] div.clusters-container div.clusters[workspace-id="${workspaceID}"] div.cluster[data-id="${clusterID}"]`)
 
                                 // Add log about this action
-                                try {
-                                  addLog(`Switch to the work area of the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                                } catch (e) {}
+                                log.info('Switch to the work area of the connection', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                                 // Set the workspace's color on the UI
                                 setUIColor(getAttributes(workspaceElement, 'data-color'))
@@ -5515,9 +5493,7 @@
                       numAttemptingSandbox = $(`div[content="clusters"] div.clusters-container div.cluster[data-is-sandbox="true"].test-connection`).length
 
                     // Add log for this request
-                    try {
-                      addLog(`Request to start a local cluster '${getAttributes(clusterElement, ['data-id'])}'`, 'action')
-                    } catch (e) {}
+                    log.info('Request to start a local cluster', getAttributes(clusterElement, ['data-id']))
 
                     // Manipulate the maximum number, set it to the default value `1` if needed
                     maximumRunningSandbox = isNaN(maximumRunningSandbox) || maximumRunningSandbox < 1 ? 1 : maximumRunningSandbox
@@ -5888,9 +5864,7 @@
                   hasWorkarea = getAttributes(clusterElement, 'data-workarea')
 
                 // Add log about edit cluster
-                try {
-                  addLog(`Attempt to edit local cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                } catch (e) {}
+                log.info('Attempt to edit local cluster', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
@@ -6195,9 +6169,7 @@
                 let confirmText = I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the connection [b]$data[/b] in the workspace [b]$data[/b]?', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]))
 
                 // Add log
-                try {
-                  addLog(`Request to delete ${isSandbox ? 'local cluster' : 'connection'} ${getAttributes(clusterElement, ['data-name', 'data-id'])}`, 'action')
-                } catch (e) {}
+                log.info('Request to delete', isSandbox ? 'local cluster' : 'connection', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                 // If the current workspace is sandbox then change the text
                 if (isSandbox)
@@ -7632,9 +7604,7 @@
               sshTunnelCreationRequestID = getRandomID(30)
 
               // Add log about this request
-              try {
-                addLog(`Request to test connection that could be added/updated`, 'action')
-              } catch (e) {}
+              log.info('Request to test connection that could be added/updated')
 
               // Attempt to close the created SSH tunnel - if exists -
               try {
@@ -8274,9 +8244,7 @@
                 editingMode = getAttributes($(`div.modal#addEditClusterDialog`), 'data-edit-cluster-id') != undefined
 
               // Add log about this request
-              try {
-                addLog(`Request to add/edit new connection after a successful test`, 'action')
-              } catch (e) {}
+              log.info('Request to add/edit new connection after a successful test')
 
               try {
                 // If the provided cluster's name is valid then skip this try-catch block

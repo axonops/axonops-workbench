@@ -114,6 +114,18 @@ const URL = require('url'),
   // Loads environment variables from a .env file into process.env
   DotEnv = require('dotenv')
 
+ /**
+ * Electron logging module
+ * Used for logging
+ */
+ const log = require('electron-log/main')
+ // Initialize logging for renderers
+ log.initialize();
+ 
+ // Logging configuration // Very primitive atm, need to discuss reqs with the team
+ log.transports.console.level = 'debug'; 
+ log.transports.file.level = 'warn'
+
 /**
  * Check if the app is in production environment
  * https://www.electronjs.org/docs/latest/api/app#appispackaged-readonly
@@ -156,16 +168,24 @@ try {
 
       // Import the module
       Modules[moduleName] = require(Path.join(modulesFilesPath, moduleFile))
-    } catch (e) {}
+      log.info('Loaded module', moduleName)
+    } catch (e) {
+      log.warning('Failed to load module', moduleName, e)
+    }
   })
-} catch (e) {}
+} catch (e) {
+  log.error('Failure loading modules', e)
+}
 
 // Load environment variables from .env file
 try {
+  let envFilePath = Path.join(__dirname, '..', '.env')
   DotEnv.config({
-    path: Path.join(__dirname, '..', '.env')
+    path: envFilePath
   })
-} catch (e) {}
+} catch (e) {
+  log.warning('Failed to load configuration file', envFilePath, e)
+}
 
 // Flag to tell whether or not dev tools are enabled
 const isDevToolsEnabled = process.env.AXONOPS_DEV_TOOLS == 'true'
@@ -177,14 +197,6 @@ const isDevToolsEnabled = process.env.AXONOPS_DEV_TOOLS == 'true'
  *
  */
 global.eventEmitter = new EventEmitter()
-
-// Import the set customized logging addition function and make it global across the entire thread
-global.addLog = null
-
-// Set the proper add log function
-try {
-  global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
-} catch (e) {}
 
 // Object that will hold all views/windows of the app
 let views = {
@@ -199,9 +211,7 @@ let views = {
 // An array that will save all cqlsh instances with their ID given by the renderer thread
 let CQLSHInstances = [],
   // Whether or not the user wants to completely quit the application. This occurs when all renderer threads are terminated or closed
-  isMacOSForcedClose = false,
-  // A `logging` object which will be created once the app is ready
-  logging = null
+  isMacOSForcedClose = false
 
 /**
  * Create a window with different passed properties
@@ -228,7 +238,9 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
       protocol: 'file:',
       slashes: true
     }))
-  } catch (e) {}
+  } catch (e) {
+    log.error('Failed to load view file', viewPath, e)
+  }
 
   // Whether or not the window should be at the center of the screen
   if (extraProperties.center)
@@ -674,46 +686,7 @@ App.on('second-instance', () => {
     IPCMain.on('pty:cqlsh:initialize', () => Modules.Pty.initializeCQLSH(views.main))
   }
 
-  /**
-   * Requests related to the logging system
-   * All requests have the prefix `logging:`
-   */
-  {
-    // Initialize the logging system
-    IPCMain.on('logging:init', (_, data) => {
-      // Create a `logging` object and refer to it via the global `logging` variable
-      try {
-        logging = new Modules.Logging.Logging(data)
-      } catch (e) {}
-    })
-
-    /**
-     * Add a new log text
-     *
-     * Adding a new log can be processed via two methods:
-     * First is using the `ipcMain` module, this method is used by the renderer threads
-     * Second is by triggering a custom event using the `eventEmitter` module, this method is used inside the main thread
-     */
-    {
-      // Define the event's name and its function/method
-      let event = {
-        name: 'logging:add',
-        func: (_, data) => {
-          try {
-            logging.addLog(data)
-          } catch (e) {}
-        }
-      }
-
-      // Add a custom event to be triggered inside the main thread
-      eventEmitter.addListener(event.name, event.func)
-
-      // Listen to `add` log request from the renderer thread
-      IPCMain.on(event.name, event.func)
-    }
-  }
-
-  /**
+   /**
    * Requests to perform processes in the background
    * Processes will be executed in the `views.backgroundProcesses` view
    */

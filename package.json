@@ -25,9 +25,11 @@
       "main/bin",
       "config"
     ],
-    "publish": [{
-      "provider": "github"
-    }],
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ],
     "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
@@ -141,6 +143,7 @@
     "diff": "^5.2.0",
     "dotenv": "^16.4.5",
     "electron-context-menu": "^3.6.1",
+    "electron-log": "^5.2.4",
     "electron-positioner": "^4.1.0",
     "escape-html": "^1.0.3",
     "extract-string": "^1.0.2",

@@ -1283,7 +1283,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         let primaryKeysStructure = {
           id: primaryKeysID,
           parent: tableID,
-          text: `Primary Keys (<span>${table.primary_key.length}</span>)`,
+          text: `Primary Key (<span>${table.primary_key.length}</span>)`,
           type: 'default',
           icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
         }

@@ -1251,18 +1251,24 @@ div.modal#rightClickActionsMetadata {
     }
   }
 
-  div.clustering-keys-fields,
-  div.counter-columns-fields,
+  div.counter-table-clustering-keys-fields,
+  div.counter-table-columns-fields,
+  div.standard-table-partition-keys-fields,
+  div.standard-table-clustering-keys-fields,
+  div.standard-table-regular-columns-fields,
+  div.standard-table-static-columns-fields,
+  div.standard-table-UDT-columns-fields,
+  div.standard-table-options-fields,
   div.data-fields,
   div.data-udt-fields,
-  div.partition-keys-fields,
-  div.table-options-fields {
-    div.clustering-key-field,
-    div.counter-column-field,
+  div.counter-table-partition-keys-fields,
+  div.counter-table-options-fields {
+    div.counter-table-clustering-key-field,
+    div.counter-table-column-field,
     div.data-field,
     div.data-udt-field,
-    div.partition-key-field,
-    div.table-option-field {
+    div.counter-table-partition-key-field,
+    div.counter-table-option-field {
       margin: 15px 0;
       height: 36px;
       display: flex;
@@ -1286,11 +1292,11 @@ div.modal#rightClickActionsMetadata {
       }
 
       a[action="delete-udt"],
-      a[action="delete-option"],
+      a[action="delete-counter-table-option"],
       a[action="undo-change"],
-      a[action="delete-partition-key"],
-      a[action="delete-clustering-key"],
-      a[action="delete-counter-column"] {
+      a[action="delete-counter-table-partition-key"],
+      a[action="delete-counter-table-clustering-key"],
+      a[action="delete-counter-table-column"] {
         color: inherit;
         position: relative;
         top: 1px;
@@ -1311,13 +1317,13 @@ div.modal#rightClickActionsMetadata {
     }
   }
 
-  a.addClusteringKeyBtn,
-  a.addCounterColumnBtn,
+  a.addCounterTableClusteringKeyBtn,
+  a.addCounterTableColumnBtn,
   a.addFieldBtn,
-  a.addPartitionKeyBtn,
-  a.addTableOptionBtn,
-  a.hideOptionsContainer,
-  a.showOptionsContainer {
+  a.addCounterTablePartitionKeyBtn,
+  a.addCounterTableOptionBtn,
+  a.hideCounterTableOptionsContainer,
+  a.showCounterTableOptionsContainer {
     display: flex;
     color: inherit;
     text-transform: capitalize;
@@ -1341,11 +1347,11 @@ div.modal#rightClickActionsMetadata {
     justify-content: space-between;
   }
 
-  div.empty-clustering-keys,
-  div.empty-columns,
+  div.empty-counter-table-clustering-keys,
+  div.empty-counter-table-columns,
   div.empty-fields,
-  div.empty-options,
-  div.empty-partition-keys {
+  div.empty-counter-table-options,
+  div.empty-counter-table-partition-keys {
     background: #3b3b3b;
     border-radius: 7px;
     font-size: 85%;
@@ -1436,7 +1442,7 @@ div.add-buttons {
   overflow-y: scroll !important;
 }
 
-div.show-options-container {
+div.show-counter-table-options-container {
   height: 35px;
   width: 100%;
   position: relative;
@@ -1456,7 +1462,7 @@ div.show-options-container {
   }
 }
 
-div.table-options-sub-container {
+div.counter-table-options-sub-container {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;

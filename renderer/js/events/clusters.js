@@ -2041,6 +2041,20 @@
                                       visible: !isSystemKeyspace && ['keyspace', 'udts-parent'].some((type) => nodeType == type),
                                     },
                                     {
+                                      label: I18next.capitalize(I18next.t('create standard table')),
+                                      action: 'createCounterTable',
+                                      click: `() => views.main.webContents.send('create-standard-table', {
+                                        keyspaceName: '${targetName}',
+                                        tables: '${JSON.stringify(keyspaceTables) || []}',
+                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                        numOfUDTs: ${keyspaceUDTs.length},
+                                        tabID: '_${cqlshSessionContentID}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                        })`,
+                                      visible: !isSystemKeyspace && ['keyspace', 'tables-parent'].some((type) => nodeType == type)
+                                    },
+                                    {
                                       label: I18next.capitalize(I18next.t('create counter table')),
                                       action: 'createCounterTable',
                                       click: `() => views.main.webContents.send('create-counter-table', {
@@ -9878,6 +9892,59 @@
 
     // For tables - standard and counter -
     {
+      IPCRenderer.on('create-standard-table', (_, data) => {
+        let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+        $('button#executeActionStatement').attr({
+          'data-tab-id': `${data.tabID}`,
+          'data-textarea-id': `${data.textareaID}`,
+          'data-btn-id': `${data.btnID}`
+        })
+
+        $('#rightClickActionsMetadata').attr('data-state', null)
+
+        $('div.modal#rightClickActionsMetadata').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.regular-column-field, div.static-column-field, div.counter-table-option-field').remove()
+
+        $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'create standard table').text(I18next.capitalize(I18next.t('create standard table')))
+
+        $('input[type="text"]#standardtableName').val('').trigger('input')
+
+        $('#rightClickActionsMetadata').attr('data-keyspace-tables', `${data.tables}`)
+
+        $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
+
+        $('div.modal#rightClickActionsMetadata').find('div.empty-counter-table-partition-keys, div.empty-counter-table-clustering-keys, div.empty-counter-table-columns, div.empty-regular-columns, div.empty-static-columns, div.empty-counter-table-options').show()
+
+        $('div.modal#rightClickActionsMetadata').find('div.empty-counter-table-clustering-keys').find('span[mulang]').hide()
+        $('div.modal#rightClickActionsMetadata').find('div.empty-counter-table-clustering-keys').find('span:not(.no-keys)').show()
+
+        $('#rightClickActionsMetadata div.input-group-text.standard-table-name-keyspace div.keyspace-name').text(`${data.keyspaceName}`)
+
+        $(`a[action]#addStandardTablePartitionKey`).removeClass('disabled')
+
+        $('div.modal#rightClickActionsMetadata div[action]').hide()
+
+        $('div.modal#rightClickActionsMetadata div[action="standard-tables"]').show()
+
+        $('#rightClickActionsMetadata').removeClass('show-editor')
+
+        try {
+          let cassandraVersion = $(`div[content="clusters"] div.clusters-container div.cluster[data-id="${activeClusterID}"]`).attr('data-cassandra-version')
+
+          cassandraVersion = cassandraVersion.startsWith('5.0') ? '5.0' : (cassandraVersion.startsWith('4.1') ? '4.1' : '4.0')
+
+          let tableDefaultMetadata = Modules.Consts.TableDefaultMetadata[cassandraVersion]
+
+          $(`a[action]#addStandardTableOption`).trigger('click', JSON.stringify([...tableDefaultMetadata, {
+            default: true
+          }]))
+        } catch (e) {}
+
+        $('#rightClickActionsMetadata').find('div.counter-table-options-sub-container a').click()
+
+        rightClickActionsMetadataModal.show()
+      })
+
       IPCRenderer.on('create-counter-table', (_, data) => {
         let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
 
@@ -9889,7 +9956,7 @@
 
         $('#rightClickActionsMetadata').attr('data-state', null)
 
-        $('div.modal#rightClickActionsMetadata').find('div.partition-key-field, div.clustering-key-field, div.counter-column-field, div.table-option-field').remove()
+        $('div.modal#rightClickActionsMetadata').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field, div.counter-table-option-field').remove()
 
         $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'create counter table').text(I18next.capitalize(I18next.t('create counter table')))
 
@@ -9899,14 +9966,14 @@
 
         $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
 
-        $('div.modal#rightClickActionsMetadata').find('div.empty-partition-keys, div.empty-clustering-keys, div.empty-columns, div.empty-options').show()
+        $('div.modal#rightClickActionsMetadata').find('div.empty-counter-table-partition-keys, div.empty-counter-table-clustering-keys, div.empty-counter-table-columns, div.empty-counter-table-options').show()
 
-        $('div.modal#rightClickActionsMetadata').find('div.empty-clustering-keys').find('span[mulang]').hide()
-        $('div.modal#rightClickActionsMetadata').find('div.empty-clustering-keys').find('span:not(.no-keys)').show()
+        $('div.modal#rightClickActionsMetadata').find('div.empty-counter-table-clustering-keys').find('span[mulang]').hide()
+        $('div.modal#rightClickActionsMetadata').find('div.empty-counter-table-clustering-keys').find('span:not(.no-keys)').show()
 
         $('#rightClickActionsMetadata div.input-group-text.counter-table-name-keyspace div.keyspace-name').text(`${data.keyspaceName}`)
 
-        $(`a[action]#addPartitionKey`).removeClass('disabled')
+        $(`a[action]#addCounterTablePartitionKey`).removeClass('disabled')
 
         $('div.modal#rightClickActionsMetadata div[action]').hide()
 
@@ -9921,12 +9988,12 @@
 
           let tableDefaultMetadata = Modules.Consts.TableDefaultMetadata[cassandraVersion]
 
-          $(`a[action]#addTableOption`).trigger('click', JSON.stringify([...tableDefaultMetadata, {
+          $(`a[action]#addCounterTableOption`).trigger('click', JSON.stringify([...tableDefaultMetadata, {
             default: true
           }]))
         } catch (e) {}
 
-        $('#rightClickActionsMetadata').find('div.table-options-sub-container a').click()
+        $('#rightClickActionsMetadata').find('div.counter-table-options-sub-container a').click()
 
         rightClickActionsMetadataModal.show()
       })
@@ -9983,12 +10050,12 @@
 
           $('#rightClickActionsMetadata').attr('data-state', 'alter')
 
-          $('div.modal#rightClickActionsMetadata').find('div.partition-key-field, div.clustering-key-field, div.counter-column-field, div.table-option-field').remove()
+          $('div.modal#rightClickActionsMetadata').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field, div.counter-table-option-field').remove()
 
-          $('div.modal#rightClickActionsMetadata').find('div.empty-partition-keys, div.empty-clustering-keys, div.empty-columns, div.empty-options').show()
+          $('div.modal#rightClickActionsMetadata').find('div.empty-counter-table-partition-keys, div.empty-counter-table-clustering-keys, div.empty-counter-table-columns, div.empty-counter-table-options').show()
 
-          $('div.modal#rightClickActionsMetadata').find('div.empty-clustering-keys').find('span[mulang]').hide()
-          $('div.modal#rightClickActionsMetadata').find('div.empty-clustering-keys').find('span:not(.no-keys)').show()
+          $('div.modal#rightClickActionsMetadata').find('div.empty-counter-table-clustering-keys').find('span[mulang]').hide()
+          $('div.modal#rightClickActionsMetadata').find('div.empty-counter-table-clustering-keys').find('span:not(.no-keys)').show()
 
           $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'alter counter table').text(I18next.capitalize(I18next.t('alter counter table')))
 
@@ -10002,19 +10069,19 @@
 
           $('#rightClickActionsMetadata').removeClass('show-editor')
 
-          $(`a[action]#addPartitionKey`).trigger('click', JSON.stringify(partitionKeys))
+          $(`a[action]#addCounterTablePartitionKey`).trigger('click', JSON.stringify(partitionKeys))
 
-          $(`a[action]#addPartitionKey`).add($(`a[action]#addClusteringKey`)).addClass('disabled')
+          $(`a[action]#addCounterTablePartitionKey`).add($(`a[action]#addCounterTableClusteringKey`)).addClass('disabled')
 
-          $(`a[action]#addClusteringKey`).trigger('click', JSON.stringify(clusteringKeys))
+          $(`a[action]#addCounterTableClusteringKey`).trigger('click', JSON.stringify(clusteringKeys))
 
-          $(`a[action]#addCounterColumn`).trigger('click', JSON.stringify(counterColumns))
+          $(`a[action]#addCounterTableColumn`).trigger('click', JSON.stringify(counterColumns))
 
-          $(`a[action]#addTableOption`).trigger('click', JSON.stringify(tableOptions))
+          $(`a[action]#addCounterTableOption`).trigger('click', JSON.stringify(tableOptions))
 
           rightClickActionsMetadataModal.show()
 
-          $('#rightClickActionsMetadata').find('div.table-options-sub-container a').click()
+          $('#rightClickActionsMetadata').find('div.counter-table-options-sub-container a').click()
 
           return
         } catch (e) {}
@@ -11589,7 +11656,7 @@
       {
         let updateRowsZIndex = () => {
           setTimeout(() => {
-            let rows = dialogElement.find('div.partition-key-field, div.clustering-key-field, div.counter-column-field, div.table-option-field'),
+            let rows = dialogElement.find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field, div.counter-table-option-field'),
               rowsCount = rows.length
 
             rows.each(function() {
@@ -11605,8 +11672,8 @@
 
           try {
             if (dialogElement.find('div[action="counter-tables"]').find('.is-invalid:not(.ignore-invalid)').length <= 0 &&
-              dialogElement.find('div[action="counter-tables"]').find('div.partition-key-field.row').length > 0 &&
-              dialogElement.find('div[action="counter-tables"]').find('div.counter-column-field.row').length > 0 &&
+              dialogElement.find('div[action="counter-tables"]').find('div.counter-table-partition-key-field.row').length > 0 &&
+              dialogElement.find('div[action="counter-tables"]').find('div.counter-table-column-field.row').length > 0 &&
               minifyText(counterTableName).length > 0)
               throw 0
 
@@ -11616,7 +11683,7 @@
           } catch (e) {}
 
           let keyspaceName = dialogElement.find('div[action="counter-tables"]').find('div.keyspace-name').text(),
-            allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.partition-key-field, div.clustering-key-field, div.counter-column-field, div.table-option-field'),
+            allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field, div.counter-table-option-field'),
             isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
 
           isAlterState = isAlterState != null && isAlterState == 'alter'
@@ -11630,11 +11697,11 @@
               droppedColumns = []
 
             for (let dataField of allDataFields) {
-              if ($(dataField).hasClass('partition-key-field'))
+              if ($(dataField).hasClass('counter-table-partition-key-field'))
                 continue
 
               try {
-                if (!$(dataField).hasClass('clustering-key-field'))
+                if (!$(dataField).hasClass('counter-table-clustering-key-field'))
                   throw 0
 
                 let clusteringKeyName = $(dataField).find('input.clusteringKeyName').val(),
@@ -11649,7 +11716,7 @@
               } catch (e) {}
 
               try {
-                if (!$(dataField).hasClass('counter-column-field'))
+                if (!$(dataField).hasClass('counter-table-column-field'))
                   throw 0
 
                 let counterColumnNameElement = $(dataField).find('input.counterColumnName'),
@@ -11672,7 +11739,7 @@
               } catch (e) {}
 
               try {
-                if (!$(dataField).hasClass('table-option-field'))
+                if (!$(dataField).hasClass('counter-table-option-field'))
                   throw 0
 
                 let tableOptionName = $(dataField).find('input.tableOptionName').val(),
@@ -11714,7 +11781,7 @@
           try {
             for (let dataField of allDataFields) {
               try {
-                if (!$(dataField).hasClass('partition-key-field'))
+                if (!$(dataField).hasClass('counter-table-partition-key-field'))
                   throw 0
 
                 let name = $(dataField).find('input.partitionKeyName').val(),
@@ -11755,7 +11822,7 @@
               } catch (e) {}
 
               try {
-                if (!$(dataField).hasClass('clustering-key-field'))
+                if (!$(dataField).hasClass('counter-table-clustering-key-field'))
                   throw 0
 
                 let name = $(dataField).find('input.clusteringKeyName').val(),
@@ -11796,7 +11863,7 @@
               } catch (e) {}
 
               try {
-                if (!$(dataField).hasClass('counter-column-field'))
+                if (!$(dataField).hasClass('counter-table-column-field'))
                   throw 0
 
                 counterColumns.push({
@@ -11806,7 +11873,7 @@
               } catch (e) {}
 
               try {
-                if (!$(dataField).hasClass('table-option-field'))
+                if (!$(dataField).hasClass('counter-table-option-field'))
                   throw 0
 
                 let name = $(dataField).find('input.tableOptionName').val(),
@@ -11910,7 +11977,7 @@
 
         setTimeout(() => {
           try {
-            dialogElement.find('div.counter-columns-fields, div.partition-keys-fields, div.clustering-keys-fields').sortable({
+            dialogElement.find('div.counter-table-columns-fields, div.counter-table-partition-keys-fields, div.counter-table-clustering-keys-fields').sortable({
               handle: '.sort-handler',
               animation: 150,
               ghostClass: 'ghost-field',
@@ -11973,7 +12040,7 @@
 
           $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid)
 
-          let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.partition-key-field, div.clustering-key-field, div.counter-column-field, div.table-option-field'),
+          let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field, div.counter-table-option-field'),
             invalidInputFields = allDataFields.find('input.is-invalid')
 
           dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 || allDataFields.length <= 0 || invalidInputFields.length > 0 ? '' : null)
@@ -11983,8 +12050,8 @@
           } catch (e) {}
         })
 
-        $(`a[action]#addPartitionKey`).on('click', function(_, fields = null) {
-          let dataFieldsContainer = dialogElement.find('div.partition-keys-fields'),
+        $(`a[action]#addCounterTablePartitionKey`).on('click', function(_, fields = null) {
+          let dataFieldsContainer = dialogElement.find('div.counter-table-partition-keys-fields'),
             getPartitionKeyFieldElement = (keyspaceUDTs = []) => {
               let typesList = `
               <li><span class="group-text"><span mulang="numeric types" capitalize></span></span></li>
@@ -12036,7 +12103,7 @@
                 partitionKeyTypeID
               ] = getRandomID(10, 3).map((id) => `_${id}`),
                 element = `
-                <div class="partition-key-field row">
+                <div class="counter-table-partition-key-field row">
                   <div class="col-md-1" style="text-align: center;">
                     <div class="sort-handler" style="cursor:grab;">
                       <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
@@ -12108,7 +12175,7 @@
                     </div>
                   </div>
                   <div class="col-md-1">
-                    <a action="delete-partition-key" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                    <a action="delete-counter-table-partition-key" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
                       <ion-icon name="trash"></ion-icon>
                     </a>
                   </div>
@@ -12117,7 +12184,7 @@
               return element
             }
 
-          dataFieldsContainer.children('div.empty-partition-keys').hide()
+          dataFieldsContainer.children('div.empty-counter-table-partition-keys').hide()
 
           let keyspaceUDTs = [],
             isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
@@ -12147,7 +12214,7 @@
 
                   $(this).find('a:not([value]), input').removeClass('is-invalid').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
 
-                  $(this).find(`a[action="delete-partition-key"]`).parent().hide()
+                  $(this).find(`a[action="delete-counter-table-partition-key"]`).parent().hide()
 
                   $(this).find('div[col="partitionKeyName"], div[col="partitionKeyType"]').removeClass('col-md-5').addClass('col-md-6')
 
@@ -12247,7 +12314,7 @@
                   updateRowsZIndex()
                 } catch (e) {}
 
-                $(`a[action]#addClusteringKey`).addClass('disabled')
+                $(`a[action]#addCounterTableClusteringKey`).addClass('disabled')
 
                 setTimeout(() => {
                   try {
@@ -12264,19 +12331,19 @@
             let row = $(this)
 
             setTimeout(() => {
-              $(this).find(`a[action="delete-partition-key"]`).click(function() {
+              $(this).find(`a[action="delete-counter-table-partition-key"]`).click(function() {
                 $(this).parent().parent().remove()
 
                 try {
                   updateActionStatusForCounterTables()
                 } catch (e) {}
 
-                if (dataFieldsContainer.children('div.partition-key-field.row').length != 0)
+                if (dataFieldsContainer.children('div.counter-table-partition-key-field.row').length != 0)
                   return
 
-                $(`a[action]#addClusteringKey`).addClass('disabled')
+                $(`a[action]#addCounterTableClusteringKey`).addClass('disabled')
 
-                dataFieldsContainer.children('div.empty-partition-keys').fadeIn(250)
+                dataFieldsContainer.children('div.empty-counter-table-partition-keys').fadeIn(250)
               })
 
               $(this).find(`div.btn.field-sort-type`).click(function() {
@@ -12312,7 +12379,7 @@
                 } catch (e) {}
 
                 try {
-                  let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.partition-key-field, div.clustering-key-field, div.counter-column-field').not(fieldRow[0])
+                  let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field').not(fieldRow[0])
 
                   for (let dataField of allDataFields) {
                     let dataPartitionKeyNameElement = $(dataField).find('input.partitionKeyName, input.clusteringKeyName, input.counterColumnName')
@@ -12424,7 +12491,7 @@
             } catch (e) {}
 
             if (fields == null)
-              $(`a[action]#addClusteringKey`).removeClass('disabled')
+              $(`a[action]#addCounterTableClusteringKey`).removeClass('disabled')
 
             setTimeout(() => {
               try {
@@ -12434,8 +12501,8 @@
           }))
         })
 
-        $(`a[action]#addClusteringKey`).on('click', function(_, fields = null) {
-          let dataFieldsContainer = dialogElement.find('div.clustering-keys-fields'),
+        $(`a[action]#addCounterTableClusteringKey`).on('click', function(_, fields = null) {
+          let dataFieldsContainer = dialogElement.find('div.counter-table-clustering-keys-fields'),
             getClusteringKeyFieldElement = (keyspaceUDTs = []) => {
               let typesList = `
               <li><span class="group-text"><span mulang="numeric types" capitalize></span></span></li>
@@ -12487,7 +12554,7 @@
                 clusteringKeyTypeID
               ] = getRandomID(10, 3).map((id) => `_${id}`),
                 element = `
-                <div class="clustering-key-field row">
+                <div class="counter-table-clustering-key-field row">
                   <div class="col-md-1" style="text-align: center;">
                     <div class="sort-handler" style="cursor:grab;">
                       <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
@@ -12559,7 +12626,7 @@
                     </div>
                   </div>
                   <div class="col-md-1">
-                    <a action="delete-clustering-key" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                    <a action="delete-counter-table-clustering-key" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
                       <ion-icon name="trash"></ion-icon>
                     </a>
                   </div>
@@ -12568,7 +12635,7 @@
               return element
             }
 
-          dataFieldsContainer.children('div.empty-clustering-keys').hide()
+          dataFieldsContainer.children('div.empty-counter-table-clustering-keys').hide()
 
           let keyspaceUDTs = [],
             isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
@@ -12588,9 +12655,9 @@
             fields = JSON.parse(fields)
 
             if (fields.length <= 0) {
-              dataFieldsContainer.children('div.empty-clustering-keys').show()
-              dataFieldsContainer.children('div.empty-clustering-keys').find('span[mulang]').hide()
-              dataFieldsContainer.children('div.empty-clustering-keys').find('span.no-keys').show()
+              dataFieldsContainer.children('div.empty-counter-table-clustering-keys').show()
+              dataFieldsContainer.children('div.empty-counter-table-clustering-keys').find('span[mulang]').hide()
+              dataFieldsContainer.children('div.empty-counter-table-clustering-keys').find('span.no-keys').show()
             }
 
             for (let field of fields) {
@@ -12621,7 +12688,7 @@
 
                   $(this).find(`a:not([value]), input${notCondition}`).removeClass('is-invalid').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
 
-                  $(this).find(`a[action="delete-clustering-key"]`).parent().hide()
+                  $(this).find(`a[action="delete-counter-table-clustering-key"]`).parent().hide()
 
                   $(this).find('div[col="clusteringKeyName"], div[col="clusteringKeyType"]').removeClass('col-md-5').addClass('col-md-6')
 
@@ -12763,7 +12830,7 @@
             let row = $(this)
 
             setTimeout(() => {
-              $(this).find(`a[action="delete-clustering-key"]`).click(function() {
+              $(this).find(`a[action="delete-counter-table-clustering-key"]`).click(function() {
                 $(this).parent().parent().remove()
 
                 setTimeout(() => {
@@ -12772,13 +12839,13 @@
                   } catch (e) {}
                 })
 
-                if (dataFieldsContainer.children('div.clustering-key-field.row').length != 0)
+                if (dataFieldsContainer.children('div.counter-table-clustering-key-field.row').length != 0)
                   return
 
-                dataFieldsContainer.children('div.empty-clustering-keys').fadeIn(250)
+                dataFieldsContainer.children('div.empty-counter-table-clustering-keys').fadeIn(250)
 
-                dataFieldsContainer.children('div.empty-clustering-keys').find('span[mulang]').hide()
-                dataFieldsContainer.children('div.empty-clustering-keys').find('span:not(.no-keys)').show()
+                dataFieldsContainer.children('div.empty-counter-table-clustering-keys').find('span[mulang]').hide()
+                dataFieldsContainer.children('div.empty-counter-table-clustering-keys').find('span:not(.no-keys)').show()
               })
 
               $(this).find(`div.btn.field-sort-type`).click(function() {
@@ -12808,7 +12875,7 @@
                 } catch (e) {}
 
                 try {
-                  let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.partition-key-field, div.clustering-key-field, div.counter-column-field').not(fieldRow[0])
+                  let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field').not(fieldRow[0])
 
                   for (let dataField of allDataFields) {
                     let dataClusteringKeyNameElement = $(dataField).find('input.partitionKeyName, input.clusteringKeyName, input.counterColumnName')
@@ -12927,11 +12994,11 @@
           }))
         })
 
-        $(`a[action]#addCounterColumn`).on('click', function(_, fields = null) {
-          let dataFieldsContainer = dialogElement.find('div.counter-columns-fields'),
+        $(`a[action]#addCounterTableColumn`).on('click', function(_, fields = null) {
+          let dataFieldsContainer = dialogElement.find('div.counter-table-columns-fields'),
             getCounterColumnFieldElement = () => {
               return `
-              <div class="counter-column-field row" >
+              <div class="counter-table-column-field row" >
                 <div class="col-md-1" style="text-align: center; display:none;">
                   <div class="sort-handler" style="cursor:grab;">
                     <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
@@ -12946,14 +13013,14 @@
                   </div>
                 </div>
                 <div class="col-md-1">
-                  <a action="delete-counter-column" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                  <a action="delete-counter-table-column" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
                     <ion-icon name="trash"></ion-icon>
                   </a>
                 </div>
               </div>`
             }
 
-          dataFieldsContainer.children('div.empty-columns').hide()
+          dataFieldsContainer.children('div.empty-counter-table-columns').hide()
 
           let isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
 
@@ -12973,7 +13040,7 @@
                   $(this).find('input.counterColumnName').val(`${field}`).removeClass('is-invalid').attr('data-original-name', `${field}`).trigger('input')
                 })
 
-                setTimeout(() => $(this).find(`a[action="delete-counter-column"]`).click(() => {
+                setTimeout(() => $(this).find(`a[action="delete-counter-table-column"]`).click(() => {
                   row.toggleClass('deleted')
 
                   try {
@@ -13009,7 +13076,7 @@
           dataFieldsContainer.append($(getCounterColumnFieldElement()).show(function() {
             let row = $(this)
 
-            $(this).find(`a[action="delete-counter-column"]`).click(function() {
+            $(this).find(`a[action="delete-counter-table-column"]`).click(function() {
               $(this).parent().parent().remove()
 
               setTimeout(() => {
@@ -13018,10 +13085,10 @@
                 } catch (e) {}
               })
 
-              if (dataFieldsContainer.children('div.counter-column-field.row').length != 0)
+              if (dataFieldsContainer.children('div.counter-table-column-field.row').length != 0)
                 return
 
-              dataFieldsContainer.children('div.empty-columns').fadeIn(250)
+              dataFieldsContainer.children('div.empty-counter-table-columns').fadeIn(250)
             })
 
             $(this).find('input.counterColumnName').on('input', function(_, triggerInput = true) {
@@ -13041,7 +13108,7 @@
               } catch (e) {}
 
               try {
-                let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.partition-key-field, div.clustering-key-field, div.counter-column-field').not(fieldRow[0])
+                let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field').not(fieldRow[0])
 
                 for (let dataField of allDataFields) {
                   let dataCounterColumnNameElement = $(dataField).find('input.partitionKeyName, input.clusteringKeyName, input.counterColumnName')
@@ -13088,11 +13155,11 @@
           }))
         })
 
-        $(`a[action]#addTableOption`).on('click', function(_, fields = null) {
-          let dataFieldsContainer = dialogElement.find('div.table-options-fields'),
+        $(`a[action]#addCounterTableOption`).on('click', function(_, fields = null) {
+          let dataFieldsContainer = dialogElement.find('div.counter-table-options-fields'),
             getTableOptionFieldElement = (defaultOption = false) => {
               return `
-              <div class="table-option-field row" style="padding-right: 10px;">
+              <div class="counter-table-option-field row" style="padding-right: 10px;">
                 <div class="col-md-5">
                   <div class="form-outline form-white" style="margin-right: 4px; width: calc(100% - 4px);">
                     <input type="text" class="form-control form-icon-trailing tableOptionName is-invalid" style="margin-bottom: 0;">
@@ -13110,7 +13177,7 @@
                   </div>
                 </div>
                 <div class="col-md-1" ${defaultOption ? 'hidden' : ''}>
-                  <a action="delete-option" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                  <a action="delete-counter-table-option" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
                     <ion-icon name="trash"></ion-icon>
                   </a>
                 </div>
@@ -13122,7 +13189,7 @@
               </div>`
             }
 
-          dataFieldsContainer.children('div.empty-options').hide()
+          dataFieldsContainer.children('div.empty-counter-table-options').hide()
 
           try {
             if (fields == null)
@@ -13190,7 +13257,7 @@
                   } catch (e) {}
 
                   try {
-                    let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.table-option-field').not(fieldRow[0])
+                    let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-option-field').not(fieldRow[0])
 
                     for (let dataField of allDataFields) {
                       let tableOptionNameElement = $(dataField).find('input.tableOptionName')
@@ -13340,7 +13407,7 @@
                   } catch (e) {}
 
                   try {
-                    let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.table-option-field').not(fieldRow[0])
+                    let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-option-field').not(fieldRow[0])
 
                     for (let dataField of allDataFields) {
                       let tableOptionNameElement = $(dataField).find('input.tableOptionName')
@@ -13424,7 +13491,7 @@
           dataFieldsContainer.append($(getTableOptionFieldElement()).show(function() {
             let row = $(this)
 
-            $(this).find(`a[action="delete-option"]`).click(function() {
+            $(this).find(`a[action="delete-counter-table-option"]`).click(function() {
               $(this).parent().parent().remove()
 
               setTimeout(() => {
@@ -13433,10 +13500,10 @@
                 } catch (e) {}
               })
 
-              if (dataFieldsContainer.children('div.table-option-field.row').length != 0)
+              if (dataFieldsContainer.children('div.counter-table-option-field.row').length != 0)
                 return
 
-              dataFieldsContainer.children('div.empty-options').fadeIn(250)
+              dataFieldsContainer.children('div.empty-counter-table-options').fadeIn(250)
             })
 
             $(this).find('input.tableOptionName').on('input', function(_, triggerInput = true) {
@@ -13456,7 +13523,7 @@
               } catch (e) {}
 
               try {
-                let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.table-option-field').not(fieldRow[0])
+                let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-option-field').not(fieldRow[0])
 
                 for (let dataField of allDataFields) {
                   let tableOptionNameElement = $(dataField).find('input.tableOptionName')
@@ -13528,13 +13595,13 @@
         })
 
         {
-          let showOptionsContainerBtn = $('#rightClickActionsMetadata').find('div.show-options-container'),
-            hideOptionsContainerBtn = $('#rightClickActionsMetadata').find('div.table-options-sub-container a'),
-            tableOptionsContainer = $('#rightClickActionsMetadata').find('div.table-options-container'),
+          let showCounterTableOptionsContainerBtn = $('#rightClickActionsMetadata').find('div.show-counter-table-options-container'),
+            hideCounterTableOptionsContainerBtn = $('#rightClickActionsMetadata').find('div.counter-table-options-sub-container a'),
+            tableOptionsContainer = $('#rightClickActionsMetadata').find('div.counter-table-options-container'),
             tableOptionsContainerResizingObserver,
             isShowBtnShown = false
 
-          showOptionsContainerBtn.click(function() {
+          showCounterTableOptionsContainerBtn.click(function() {
             $(this).hide()
 
             try {
@@ -13545,10 +13612,10 @@
 
             tableOptionsContainer.slideDown(300)
 
-            hideOptionsContainerBtn.addClass('show')
+            hideCounterTableOptionsContainerBtn.addClass('show')
           })
 
-          hideOptionsContainerBtn.click(function() {
+          hideCounterTableOptionsContainerBtn.click(function() {
             tableOptionsContainer.slideUp(300)
 
             $(this).removeClass('show')
@@ -13562,7 +13629,7 @@
                 if (tableOptionsContainer.height() > 35 || isShowBtnShown)
                   throw 0
 
-                showOptionsContainerBtn.show()
+                showCounterTableOptionsContainerBtn.show()
 
                 tableOptionsContainer.hide()
 

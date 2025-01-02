@@ -114,17 +114,13 @@ const URL = require('url'),
   // Loads environment variables from a .env file into process.env
   DotEnv = require('dotenv')
 
- /**
+/**
  * Electron logging module
  * Used for logging
  */
- const log = require('electron-log/main')
- // Initialize logging for renderers
- log.initialize();
- 
- // Logging configuration // Very primitive atm, need to discuss reqs with the team
- log.transports.console.level = 'debug'; 
- log.transports.file.level = 'warn'
+const log = require('electron-log/main')
+// Initialize logging for renderers
+log.initialize();
 
 /**
  * Check if the app is in production environment
@@ -177,6 +173,17 @@ try {
   log.error('Failure loading modules', e)
 }
 
+// Logging configuration
+log.transports.file.level = false
+log.transports.console.level = 'debug';
+Modules.Config.getConfig((config) => {
+  if (config.get('security', 'loggingEnabled')) {
+    log.transports.file.level = 'warn'
+    log.transports.file.resolvePathFn = () => path.join(APP_DATA, 'logs/main.log');
+    log.info('Logging enabled, writing logs to file', log.transports.file.resolvePathFn())
+  }
+})
+
 // Load environment variables from .env file
 try {
   let envFilePath = Path.join(__dirname, '..', '.env')
@@ -184,7 +191,7 @@ try {
     path: envFilePath
   })
 } catch (e) {
-  log.warning('Failed to load configuration file', envFilePath, e)
+  log.warning('Failed to load environment variables file', envFilePath, e)
 }
 
 // Flag to tell whether or not dev tools are enabled
@@ -274,7 +281,9 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
     if (extraProperties.openDevTools)
       try {
         windowObject.webContents.openDevTools()
-      } catch (e) {}
+      } catch (e) {
+        log.warning('Failed to open DevTools', e)
+      }
 
     // Send the window's content's ID
     try {

@@ -137,7 +137,7 @@
     "chart.js": "^4.4.7",
     "co": "^4.6.0",
     "configparser": "^0.3.10",
-    "debug": "^4.3.5",
+    "debug": "^4.4.0",
     "diff": "^5.2.0",
     "dotenv": "^16.4.7",
     "electron-context-menu": "^3.6.1",

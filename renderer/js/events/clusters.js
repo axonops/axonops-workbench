@@ -9903,7 +9903,7 @@
 
         $('#rightClickActionsMetadata').attr('data-state', null)
 
-        $('div.modal#rightClickActionsMetadata').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.regular-column-field, div.static-column-field, div.counter-table-option-field').remove()
+        $('div.modal#rightClickActionsMetadata').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field, div.standard-table-udt-column-field, div.standard-table-option-field').remove()
 
         $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'create table').text(I18next.capitalize(I18next.t('create table')))
 
@@ -9913,10 +9913,10 @@
 
         $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
 
-        $('div.modal#rightClickActionsMetadata').find('div.empty-counter-table-partition-keys, div.empty-counter-table-clustering-keys, div.empty-counter-table-columns, div.empty-regular-columns, div.empty-static-columns, div.empty-counter-table-options').show()
+        $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-partition-keys, div.empty-standard-table-clustering-keys, div.empty-standard-table-columns, div.empty-standard-table-udt-columns, div.empty-standard-table-options').show()
 
-        $('div.modal#rightClickActionsMetadata').find('div.empty-counter-table-clustering-keys').find('span[mulang]').hide()
-        $('div.modal#rightClickActionsMetadata').find('div.empty-counter-table-clustering-keys').find('span:not(.no-keys)').show()
+        $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-clustering-keys').find('span[mulang]').hide()
+        $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-clustering-keys').find('span:not(.no-keys)').show()
 
         $('#rightClickActionsMetadata div.input-group-text.standard-table-name-keyspace div.keyspace-name').text(`${data.keyspaceName}`)
 
@@ -9940,7 +9940,7 @@
           }]))
         } catch (e) {}
 
-        $('#rightClickActionsMetadata').find('div.counter-table-options-sub-container a').click()
+        $('#rightClickActionsMetadata').find('div.standard-table-options-sub-container a').click()
 
         rightClickActionsMetadataModal.show()
       })
@@ -10487,6 +10487,13 @@
 
           updateActionStatusForCounterTables()
         } catch (e) {}
+
+        try {
+          if (currentActiveAction != 'standard-tables')
+            throw 0
+
+          updateActionStatusForStandardTables()
+        } catch (e) {}
       })
 
       $('input[type="checkbox"]#keyspaceDurableWrites').on('change', function() {
@@ -10517,6 +10524,13 @@
             throw 0
 
           updateActionStatusForCounterTables()
+        } catch (e) {}
+
+        try {
+          if (currentActiveAction != 'standard-tables')
+            throw 0
+
+          updateActionStatusForStandardTables()
         } catch (e) {}
 
         try {
@@ -10672,16 +10686,19 @@
 
             return element
           },
-          updateRowsZIndex = () => {
+          updateRowsZIndex = (isTransformNegative = false) => {
             setTimeout(() => {
-              let rows = dialogElement.find('div.data-field.row'),
+              let rows = dialogElement.find('div.data-field.row').get(),
                 rowsCount = rows.length
 
-              rows.each(function() {
-                $(this).css('z-index', `${rowsCount}`)
+              if (isTransformNegative)
+                rows = rows.reverse()
+
+              for (let row of rows) {
+                $(row).css('z-index', `${rowsCount}`)
 
                 rowsCount -= 1
-              })
+              }
             })
           }
 
@@ -10960,6 +10977,16 @@
                     $(this).find(`div.dropdown[for-select]`).each(function() {
                       let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
+                      $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                        $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                        try {
+                          updateRowsZIndex(isTransformNegative)
+                        } catch (e) {}
+                      })
+
                       $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                         // Point at the input field related to the list
                         let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
@@ -11141,6 +11168,16 @@
                 // Once one of the items is clicked
                 $(this).find(`div.dropdown[for-select]`).each(function() {
                   let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
+
+                  $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                    $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                    try {
+                      updateRowsZIndex(isTransformNegative)
+                    } catch (e) {}
+                  })
 
                   $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                     // Point at the input field related to the list
@@ -11342,6 +11379,16 @@
                     $(this).find(`div.dropdown[for-select]`).each(function() {
                       let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
+                      $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                        $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                        try {
+                          updateRowsZIndex(isTransformNegative)
+                        } catch (e) {}
+                      })
+
                       $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                         // Point at the input field related to the list
                         let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
@@ -11495,6 +11542,16 @@
                 // Once one of the items is clicked
                 $(this).find(`div.dropdown[for-select]`).each(function() {
                   let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
+
+                  $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                    $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                    try {
+                      updateRowsZIndex(isTransformNegative)
+                    } catch (e) {}
+                  })
 
                   $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                     // Point at the input field related to the list
@@ -11671,16 +11728,19 @@
       let updateActionStatusForCounterTables
 
       {
-        let updateRowsZIndex = () => {
+        let updateRowsZIndex = (isTransformNegative = false) => {
           setTimeout(() => {
-            let rows = dialogElement.find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field, div.counter-table-option-field'),
+            let rows = dialogElement.find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field, div.counter-table-option-field').get(),
               rowsCount = rows.length
 
-            rows.each(function() {
-              $(this).css('z-index', `${rowsCount}`)
+            if (isTransformNegative)
+              rows = rows.reverse()
+
+            for (let row of rows) {
+              $(row).css('z-index', `${rowsCount}`)
 
               rowsCount -= 1
-            })
+            }
           })
         }
 
@@ -11793,7 +11853,10 @@
             counterColumns = [],
             tableOptions = [],
             primaryKeys = '',
-            descOrder = []
+            order = {
+              asc: [],
+              desc: []
+            }
 
           try {
             for (let dataField of allDataFields) {
@@ -11834,8 +11897,7 @@
                   })
                 } catch (e) {}
 
-                if ($(dataField).find('div.btn.field-sort-type').attr('data-current-sort') != 'asc')
-                  descOrder.push(name)
+                order[$(dataField).find('div.btn.field-sort-type').attr('data-current-sort') != 'asc' ? 'desc' : 'asc'].push(name)
               } catch (e) {}
 
               try {
@@ -11875,8 +11937,7 @@
                   })
                 } catch (e) {}
 
-                if ($(dataField).find('div.btn.field-sort-type').attr('data-current-sort') != 'asc')
-                  descOrder.push(name)
+                order[$(dataField).find('div.btn.field-sort-type').attr('data-current-sort') != 'asc' ? 'desc' : 'asc'].push(name)
               } catch (e) {}
 
               try {
@@ -11959,6 +12020,8 @@
             primaryKeys += `, ` + (clusteringKeys.map((key) => key.name)).join(', ')
           } catch (e) {}
 
+          let descOrder = [...order.asc, ...order.desc]
+
           try {
             if (tableOptions.length <= 0)
               throw 0
@@ -11980,7 +12043,7 @@
             if (descOrder.length <= 0)
               throw 0
 
-            descOrder = ` WITH CLUSTERING ORDER BY (` + (descOrder.map((column) => `${column} DESC`)).join(', ') + `)`
+            descOrder = ` WITH CLUSTERING ORDER BY (` + (clusteringKeys.map((key) => `${key.name} ${order.desc.includes(key.name) ? 'DESC' : 'ASC'}`)).join(', ') + `)`
           } catch (e) {
             descOrder = ''
           }
@@ -12252,6 +12315,16 @@
                     $(this).find(`div.dropdown[for-select]`).each(function() {
                       let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
+                      $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                        $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                        try {
+                          updateRowsZIndex(isTransformNegative)
+                        } catch (e) {}
+                      })
+
                       $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                         // Point at the input field related to the list
                         let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
@@ -12465,6 +12538,16 @@
                 // Once one of the items is clicked
                 $(this).find(`div.dropdown[for-select]`).each(function() {
                   let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
+
+                  $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                    $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                    try {
+                      updateRowsZIndex(isTransformNegative)
+                    } catch (e) {}
+                  })
 
                   $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                     // Point at the input field related to the list
@@ -12763,6 +12846,16 @@
                     $(this).find(`div.dropdown[for-select]`).each(function() {
                       let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
+                      $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                        $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                        try {
+                          updateRowsZIndex(isTransformNegative)
+                        } catch (e) {}
+                      })
+
                       $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                         // Point at the input field related to the list
                         let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
@@ -12969,6 +13062,16 @@
                 // Once one of the items is clicked
                 $(this).find(`div.dropdown[for-select]`).each(function() {
                   let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
+
+                  $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                    $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                    try {
+                      updateRowsZIndex(isTransformNegative)
+                    } catch (e) {}
+                  })
 
                   $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                     // Point at the input field related to the list
@@ -13684,16 +13787,19 @@
       let updateActionStatusForStandardTables
 
       {
-        let updateRowsZIndex = () => {
+        let updateRowsZIndex = (isTransformNegative = false) => {
           setTimeout(() => {
-            let rows = dialogElement.find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field, div.standard-table-udt-field, div.standard-table-option-field'),
+            let rows = dialogElement.find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field, div.standard-table-udt-column-field, div.standard-table-option-field').get(),
               rowsCount = rows.length
 
-            rows.each(function() {
-              $(this).css('z-index', `${rowsCount}`)
+            if (isTransformNegative)
+              rows = rows.reverse()
+
+            for (let row of rows) {
+              $(row).css('z-index', `${rowsCount}`)
 
               rowsCount -= 1
-            })
+            }
           })
         }
 
@@ -13744,13 +13850,16 @@
             columns = [],
             tableOptions = [],
             primaryKeys = '',
-            descOrder = []
+            order = {
+              asc: [],
+              desc: []
+            }
 
-            let keyspaceUDTs = []
+          let keyspaceUDTs = []
 
-            try {
-              keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts')).map((udt) => udt.name)
-            } catch (e) {}
+          try {
+            keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts')).map((udt) => udt.name)
+          } catch (e) {}
 
           try {
             for (let dataField of allDataFields) {
@@ -13829,8 +13938,7 @@
                   })
                 } catch (e) {}
 
-                if ($(dataField).find('div.btn.field-sort-type').attr('data-current-sort') != 'asc')
-                  descOrder.push(name)
+                order[$(dataField).find('div.btn.field-sort-type').attr('data-current-sort') != 'asc' ? 'desc' : 'asc'].push(name)
               } catch (e) {}
 
               try {
@@ -13946,8 +14054,8 @@
 
           let manipulatedColumns = columns.map((column) => {
             let isTypeCollection = ['map', 'set', 'list'].some((collectionType) => collectionType == column.type),
-            isCollectionMap = isTypeCollection && column.type == 'map',
-            keyspaceUDTs = []
+              isCollectionMap = isTypeCollection && column.type == 'map',
+              keyspaceUDTs = []
             isTypeUDT = false
 
             try {
@@ -13982,6 +14090,8 @@
             primaryKeys += `, ` + (clusteringKeys.map((key) => key.name)).join(', ')
           } catch (e) {}
 
+          let descOrder = [...order.asc, ...order.desc]
+
           try {
             if (tableOptions.length <= 0)
               throw 0
@@ -14003,7 +14113,7 @@
             if (descOrder.length <= 0)
               throw 0
 
-            descOrder = ` WITH CLUSTERING ORDER BY (` + (descOrder.map((column) => `${column} DESC`)).join(', ') + `)`
+            descOrder = ` WITH CLUSTERING ORDER BY (` + (clusteringKeys.map((key) => `${key.name} ${order.desc.includes(key.name) ? 'DESC' : 'ASC'}`)).join(', ') + `)`
           } catch (e) {
             descOrder = ''
           }
@@ -14356,6 +14466,16 @@
                 $(this).find(`div.dropdown[for-select]`).each(function() {
                   let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
+                  $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                    $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                    try {
+                      updateRowsZIndex(isTransformNegative)
+                    } catch (e) {}
+                  })
+
                   $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                     // Point at the input field related to the list
                     let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
@@ -14653,6 +14773,16 @@
                     $(this).find(`div.dropdown[for-select]`).each(function() {
                       let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
+                      $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                        $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                        try {
+                          updateRowsZIndex(isTransformNegative)
+                        } catch (e) {}
+                      })
+
                       $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                         // Point at the input field related to the list
                         let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
@@ -14859,6 +14989,16 @@
                 // Once one of the items is clicked
                 $(this).find(`div.dropdown[for-select]`).each(function() {
                   let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
+
+                  $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                    $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                    try {
+                      updateRowsZIndex(isTransformNegative)
+                    } catch (e) {}
+                  })
 
                   $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                     // Point at the input field related to the list
@@ -15184,6 +15324,16 @@
                 $(this).find(`div.dropdown[for-select]`).each(function() {
                   let mainDropDown = $(this).attr('for-data-type') == 'columnType'
 
+                  $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                    $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                    try {
+                      updateRowsZIndex(isTransformNegative)
+                    } catch (e) {}
+                  })
+
                   $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                     // Point at the input field related to the list
                     let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
@@ -15466,6 +15616,16 @@
 
                 // Once one of the items is clicked
                 $(this).find(`div.dropdown[for-select]`).each(function() {
+                  $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                    $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                    try {
+                      updateRowsZIndex(isTransformNegative)
+                    } catch (e) {}
+                  })
+
                   $(this).find(`ul.dropdown-menu`).find('a').click(function() {
                     // Point at the input field related to the list
                     let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),

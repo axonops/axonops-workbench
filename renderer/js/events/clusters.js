@@ -1977,7 +1977,7 @@
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('create keyspace')),
-                                      action: 'create',
+                                      action: 'createKeyspace',
                                       click: `() => views.main.webContents.send('create-keyspace', {
                                         datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
                                         keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
@@ -2042,7 +2042,7 @@
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('create table')),
-                                      action: 'createCounterTable',
+                                      action: 'createStandardTable',
                                       click: `() => views.main.webContents.send('create-table', {
                                         keyspaceName: '${targetName}',
                                         tables: '${JSON.stringify(keyspaceTables) || []}',
@@ -2108,7 +2108,7 @@
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
                                       })`,
-                                      visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'true'
+                                      visible: nodeType == 'table'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('drop table')),
@@ -2124,7 +2124,7 @@
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('alter keyspace')),
-                                      action: 'alter',
+                                      action: 'alterKeyspace',
                                       click: `() => views.main.webContents.send('alter-keyspace', {
                                         datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
                                         keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
@@ -2137,7 +2137,7 @@
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('drop keyspace')),
-                                      action: 'drop',
+                                      action: 'dropKeyspace',
                                       click: `() => views.main.webContents.send('drop-keyspace', {
                                         tabID: '_${cqlshSessionContentID}',
                                         keyspaceName: '${targetName}',
@@ -2149,7 +2149,7 @@
                                   ])
 
                                   if (isSystemKeyspace)
-                                    contextMenu = contextMenu.filter((item) => item.action != 'drop')
+                                    contextMenu = contextMenu.filter((item) => item.action != 'dropKeyspace')
                                 } catch (e) {}
 
                                 try {
@@ -2162,7 +2162,7 @@
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('create keyspace')),
-                                      action: 'create',
+                                      action: 'createKeyspace',
                                       click: `() => views.main.webContents.send('create-keyspace', {
                                         datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
                                         tabID: '_${cqlshSessionContentID}',
@@ -10085,6 +10085,107 @@
 
           return
         } catch (e) {}
+
+        let tableName = `${data.tableName}`,
+          tableObj = null,
+          partitionKeys = [],
+          clusteringKeys = [],
+          columns = {
+            regular: [],
+            udt: []
+          },
+          tableOptions = []
+
+        try {
+          tableObj = JSON.parse(data.tables).find((table) => table.name == tableName)
+        } catch (e) {}
+
+        try {
+          partitionKeys = tableObj.partition_key.map((key) => ({
+            name: key.name,
+            type: key.cql_type,
+            isStatic: key.is_static
+          }))
+        } catch (e) {}
+
+        try {
+          clusteringKeys = tableObj.clustering_key.map((key) => ({
+            name: key.name,
+            type: key.cql_type,
+            isStatic: key.is_static
+          }))
+        } catch (e) {}
+
+        try {
+          tableOptions = tableObj.options
+        } catch (e) {}
+
+        try {
+          let keyspaceUDTs = JSON.parse(data.udts),
+            filteredColumns = tableObj.columns.filter((column) => tableObj.primary_key.find((key) => key.name == column.name) == undefined)
+
+          for (let column of filteredColumns) {
+            let columnType = column.cql_type
+
+            try {
+              columnType = columnType.match(/frozen\<(.*?)(\<|\>)/)[1]
+            } catch (e) {}
+
+            let isColumnDataTypeUDT = keyspaceUDTs.find((udt) => udt.name == columnType)
+
+            columns[isColumnDataTypeUDT ? 'udt' : 'regular'].push({
+              name: column.name,
+              type: column.cql_type,
+              isStatic: column.is_static
+            })
+          }
+        } catch (e) {}
+
+        $('div.modal#rightClickActionsMetadata div[action]').hide()
+        $('div.modal#rightClickActionsMetadata div[action="standard-tables"]').show()
+
+        $('button#executeActionStatement').attr({
+          'data-tab-id': `${data.tabID}`,
+          'data-textarea-id': `${data.textareaID}`,
+          'data-btn-id': `${data.btnID}`
+        })
+
+        $('#rightClickActionsMetadata').attr('data-state', 'alter')
+
+        $('div.modal#rightClickActionsMetadata').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field, div.standard-table-udt-column-field, div.standard-table-option-field').remove()
+
+        $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-partition-keys, div.empty-standard-table-clustering-keys, div.empty-standard-table-columns, div.empty-standard-table-udt-columns, div.empty-standard-table-options').show()
+
+        $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-clustering-keys').find('span[mulang]').hide()
+        $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-clustering-keys').find('span:not(.no-keys)').show()
+
+        $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'alter table').text(I18next.capitalize(I18next.t('alter table')))
+
+        $('#rightClickActionsMetadata div.input-group-text.standard-table-name-keyspace div.keyspace-name').text(`${data.keyspaceName}`)
+
+        $('input[type="text"]#standardtableName').val(`${data.tableName}`).trigger('input')
+
+        $('#rightClickActionsMetadata').attr('data-keyspace-tables', `${data.tables}`)
+
+        $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
+
+        $('#rightClickActionsMetadata').removeClass('show-editor')
+
+        $(`a[action]#addStandardTablePartitionKey`).trigger('click', JSON.stringify(partitionKeys))
+
+        $(`a[action]#addStandardTablePartitionKey`).add($(`a[action]#addStandardTableClusteringKey`)).addClass('disabled')
+
+        $(`a[action]#addStandardTableClusteringKey`).trigger('click', JSON.stringify(clusteringKeys))
+
+        $(`a[action]#addStandardTableOption`).trigger('click', JSON.stringify(tableOptions))
+
+        $(`a[action]#addStandardTableColumns`).trigger('click', JSON.stringify(columns.regular))
+
+        $(`a[action]#addStandardTableUDTColumns`).trigger('click', JSON.stringify(columns.udt))
+
+        rightClickActionsMetadataModal.show()
+
+        $('#rightClickActionsMetadata').find('div.standard-table-options-sub-container a').click()
       })
 
       IPCRenderer.on('drop-table', (_, data) => {
@@ -12861,7 +12962,8 @@
                         let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
                           selectedValue = $(this).attr('value'),
                           isTypeCollection = $(this).attr('data-is-collection') != undefined,
-                          isCollectionMap = $(this).attr('data-is-map') != undefined
+                          isCollectionMap = $(this).attr('data-is-map') != undefined,
+                          isAltered = row.attr('data-is-altered') != undefined
 
                         try {
                           if (!mainDropDown)
@@ -13167,6 +13269,9 @@
               throw 0
 
             fields = JSON.parse(fields)
+
+            if (fields.length <= 0)
+              dataFieldsContainer.children('div.empty-counter-table-columns').show()
 
             for (let field of fields) {
               dataFieldsContainer.append($(getCounterColumnFieldElement()).show(function() {
@@ -13804,6 +13909,18 @@
         }
 
         updateActionStatusForStandardTables = () => {
+          let keyspaceName = dialogElement.find('div[action="standard-tables"]').find('div.keyspace-name').text(),
+            allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field, div.standard-table-udt-column-field, div.standard-table-option-field'),
+            isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
+
+          isAlterState = isAlterState != null && isAlterState == 'alter'
+
+          let keyspaceUDTs = []
+
+          try {
+            keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts')).map((udt) => udt.name)
+          } catch (e) {}
+
           let standardTableName = $('input#standardtableName').val()
 
           // For enabling the `static` option for columns
@@ -13815,7 +13932,7 @@
               columnField = $(columnField)
 
               let isStaticCheckboxFormTooltip = getElementMDBObject(columnField.find('div.form-check.forIsStaticCheckbox'), 'Tooltip'),
-                isStaticCheckbox = columnField.find('input.isStatic')
+                isStaticCheckbox = columnField.find('input.isStatic:not(.altered)')
 
               try {
                 isStaticCheckboxFormTooltip[isClusteringKeyFieldFound ? 'disable' : 'enable']()
@@ -13839,11 +13956,143 @@
             return
           } catch (e) {}
 
-          let keyspaceName = dialogElement.find('div[action="standard-tables"]').find('div.keyspace-name').text(),
-            allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field, div.standard-table-udt-column-field, div.standard-table-option-field'),
-            isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
+          try {
+            if (!isAlterState)
+              throw 0
 
-          isAlterState = isAlterState != null && isAlterState == 'alter'
+            let alteredOptions = [],
+              addedColumns = [],
+              droppedColumns = []
+
+            for (let dataField of allDataFields) {
+              if (['partition', 'clustering'].some((fieldClass) => $(dataField).hasClass(`standard-table-${fieldClass}-key-field`)))
+                continue
+
+              try {
+                if (!(['column', 'udt-column'].some((fieldClass) => $(dataField).hasClass(`standard-table-${fieldClass}-field`))))
+                  throw 0
+
+                let name = $(dataField).find('input.columnName').val()
+
+                if ($(dataField).hasClass('deleted')) {
+                  droppedColumns.push(name)
+                  continue
+                }
+
+                if ($(dataField).find('input.columnName').hasClass('disabled'))
+                  continue
+
+                let type = $(dataField).find('input.columnType').val(),
+                  isTypeCollection = ['map', 'set', 'list'].some((collectionType) => collectionType == type),
+                  isCollectionMap = isTypeCollection && type == 'map',
+                  isTypeUDT = keyspaceUDTs.find((udtName) => udtName == type) != undefined,
+                  isStatic = $(dataField).find('input.isStatic').prop('checked') && $(dataField).find('input.isStatic').attr('disabled') == undefined,
+                  isFrozen = $(dataField).find('input.isFrozen').prop('checked') && (isTypeCollection || isTypeUDT)
+
+                try {
+                  if (isTypeCollection || isTypeUDT)
+                    throw 0
+
+                  addedColumns.push({
+                    name,
+                    type,
+                    isStatic
+                  })
+                } catch (e) {}
+
+                try {
+                  if (!isTypeCollection && !isTypeUDT)
+                    throw 0
+
+                  let tempJSON = {
+                    value: $(dataField).find('input.collectionItemType').val()
+                  }
+
+                  if (isCollectionMap)
+                    tempJSON.key = $(dataField).find('input.collectionKeyType').val()
+
+                  let columnStructure = {
+                    name,
+                    type,
+                    isStatic,
+                    isFrozen
+                  }
+
+                  if (isTypeCollection)
+                    columnStructure = {
+                      ...columnStructure,
+                      ...tempJSON
+                    }
+
+                  addedColumns.push(columnStructure)
+                } catch (e) {}
+              } catch (e) {}
+
+              try {
+                if (!$(dataField).hasClass('standard-table-option-field'))
+                  throw 0
+
+                let tableOptionName = $(dataField).find('input.tableOptionName').val(),
+                  tableOptionValue = $(dataField).find('input.tableOptionValue').val(),
+                  [originalName, originalValue] = getAttributes($(dataField), ['data-original-name', 'data-original-value'])
+
+                if (tableOptionName != originalName || tableOptionValue != originalValue)
+                  alteredOptions.push(`${alteredOptions.length <= 0 ? 'WITH' : 'AND'} ${tableOptionName} = ${tableOptionValue}`)
+              } catch (e) {}
+            }
+
+            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...droppedColumns, ...addedColumns, ...alteredOptions].length <= 0 ? '' : null)
+
+            try {
+              droppedColumns = droppedColumns.map((column) => `DROP ${column}`)
+            } catch (e) {}
+
+            try {
+              addedColumns = addedColumns.map((column) => {
+                let isTypeCollection = ['map', 'set', 'list'].some((collectionType) => collectionType == column.type),
+                  isCollectionMap = isTypeCollection && column.type == 'map',
+                  keyspaceUDTs = []
+                isTypeUDT = false
+
+                try {
+                  keyspaceUDTs = JSON.parse($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts')).map((udt) => udt.name)
+
+                  isTypeUDT = keyspaceUDTs.find((udt) => column.type == udt)
+                } catch (e) {}
+
+                try {
+                  if (!isTypeCollection)
+                    throw 0
+
+                  let collectionType = isCollectionMap ? `${column.key}, ${column.value}` : `${column.value}`
+
+                  column.type = `${column.type}<${collectionType}>`
+                } catch (e) {}
+
+                if ((isTypeCollection || isTypeUDT) && column.isFrozen)
+                  column.type = `frozen<${column.type}>`
+
+                return `ADD ${column.name} ${column.type}${column.isStatic ? ' STATIC' : ''}`
+              })
+            } catch (e) {}
+
+            let statement = [...addedColumns, ...droppedColumns].map((statement) => `ALTER TABLE ${keyspaceName}.${standardTableName} ${statement}`).join(';' + OS.EOL) + ';'
+
+            try {
+              if (alteredOptions.length <= 0)
+                throw 0
+
+              statement = ([...addedColumns, ...droppedColumns]).length <= 0 ? '' : `${statement}` + OS.EOL
+
+              statement += `ALTER TABLE ${keyspaceName}.${standardTableName} ` + alteredOptions.join(' ') + ';'
+            } catch (e) {}
+
+            try {
+              actionEditor.setValue(statement)
+            } catch (e) {}
+
+            return
+          } catch (e) {}
 
           let partitionKeys = [],
             clusteringKeys = [],
@@ -13854,12 +14103,6 @@
               asc: [],
               desc: []
             }
-
-          let keyspaceUDTs = []
-
-          try {
-            keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts')).map((udt) => udt.name)
-          } catch (e) {}
 
           try {
             for (let dataField of allDataFields) {
@@ -14348,6 +14591,152 @@
           } catch (e) {}
 
 
+          try {
+            if (fields == null)
+              throw 0
+
+            fields = JSON.parse(fields)
+
+            if (fields.length <= 0) {
+              dataFieldsContainer.children('div.empty-standard-table-partition-keys').show()
+              dataFieldsContainer.children('div.empty-standard-table-partition-keys').find('span[mulang]').hide()
+              dataFieldsContainer.children('div.empty-standard-table-partition-keys').find('span.no-keys').show()
+            }
+
+            for (let field of fields) {
+              dataFieldsContainer.append($(getPartitionKeyFieldElement(keyspaceUDTs)).show(function() {
+                let row = $(this),
+                  fieldType = field.type
+
+                setTimeout(() => {
+                  let dropDownMDBObject = getElementMDBObject(row.find(`div.dropdown[for-select]`), 'Dropdown')
+
+                  setTimeout(() => {
+                    try {
+                      dropDownMDBObject.update()
+                    } catch (e) {}
+                  }, 500)
+
+                  {
+                    // Once one of the items is clicked
+                    $(this).find(`div.dropdown[for-select]`).each(function() {
+                      let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
+
+                      $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                        $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                        try {
+                          updateRowsZIndex(isTransformNegative)
+                        } catch (e) {}
+                      })
+
+                      $(this).find(`ul.dropdown-menu`).find('a').click(function() {
+                        // Point at the input field related to the list
+                        let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
+                          selectedValue = $(this).attr('value'),
+                          isTypeCollection = $(this).attr('data-is-collection') != undefined,
+                          isCollectionMap = $(this).attr('data-is-map') != undefined
+
+                        try {
+                          if (!mainDropDown)
+                            throw 0
+
+                          let newColMD = isTypeCollection ? (isCollectionMap ? 4 : 5) : 6
+
+                          row.find(`div[col="partitionKeyName"]`).removeClass(function(index, className) {
+                            return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                          }).addClass(`col-md-${newColMD}`)
+
+                          row.find(`div[col="partitionKeyType"]`).removeClass(function(index, className) {
+                            return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                          }).addClass(`col-md-${newColMD}`)
+
+                          row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
+
+                          row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection)
+                        } catch (e) {}
+
+                        // Update the input's value
+                        selectElement.val(selectedValue).trigger('input')
+
+                        try {
+                          updateActionStatusForStandardTables()
+                        } catch (e) {}
+                      })
+                    })
+                  }
+                })
+
+                setTimeout(() => {
+                  $(this).find('input[type="text"]').each(function() {
+                    let mdbObject = getElementMDBObject($(this))
+
+                    setTimeout(() => mdbObject.update(), 500)
+                  })
+                })
+
+                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
+                setTimeout(() => {
+                  $(this).find('div.sort-handler').parent().hide()
+
+                  $(this).find('div.field-sort-type').parent().hide()
+
+                  $(this).find('span.group-text').remove()
+
+                  $(this).find(`a:not([value]), input`).removeClass('is-invalid').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
+
+                  $(this).find(`a[action="delete-standard-table-partition-key"]`).parent().hide()
+
+                  $(this).find('div[col="partitionKeyName"], div[col="partitionKeyType"]').removeClass('col-md-5').addClass('col-md-6')
+
+                  $(this).find(`input`).parent().children('ion-icon[name="arrow-down"]').hide()
+                })
+
+                setTimeout(() => {
+                  $(this).find('input.partitionKeyName').val(`${field.name}`).trigger('input')
+
+                  try {
+                    fieldType = field.type.match(/frozen\<(.*?)(\<|\>)/)[1]
+                  } catch (e) {}
+
+                  try {
+                    if (!(['map', 'set', 'list'].some((type) => type == fieldType)))
+                      throw 0
+
+                    let fieldKeyType = field.type.match(/frozen\<.*?\<(.*?)\>/)[1]
+
+                    if (fieldType == 'map') {
+                      let mapValues = minifyText(fieldKeyType).split(',')
+
+                      $(this).find('input.collectionKeyType').val(`${mapValues[0]}`).trigger('input')
+                      $(this).find('input.collectionItemType').val(`${mapValues[1]}`).trigger('input')
+                    } else {
+                      $(this).find('input.collectionKeyType').val(`${fieldKeyType}`).trigger('input')
+                    }
+                  } catch (e) {}
+
+                  $(this).find('div.dropdown[for-data-type="partitionKeyType"]').find(`a[value="${fieldType}"]`).trigger('click')
+                  $(this).find('input.partitionKeyType').attr('data-original-type', `${fieldType}`)
+                })
+
+                try {
+                  updateRowsZIndex()
+                } catch (e) {}
+
+                setTimeout(() => {
+                  try {
+                    updateActionStatusForStandardTables()
+                  } catch (e) {}
+                })
+              }))
+            }
+
+            return
+          } catch (e) {}
+
           dataFieldsContainer.append($(getPartitionKeyFieldElement(keyspaceUDTs)).show(function() {
             let row = $(this)
 
@@ -14701,36 +15090,6 @@
                   fieldType = field.type
 
                 setTimeout(() => {
-                  $(this).find('div.sort-handler').parent().hide()
-
-                  $(this).find('div.field-sort-type').parent().hide()
-
-                  let notCondition = ['int', 'text', 'varchar'].some((type) => fieldType == type) ? `:not(.clusteringKeyType)` : ''
-
-                  switch (fieldType) {
-                    case 'int':
-                      $(this).find(`a.dropdown-item:not([value="${fieldType}"]):not([value="varint"])`).remove()
-                      break;
-                    case 'text':
-                      $(this).find(`a.dropdown-item:not([value="${fieldType}"]):not([value="varchar"])`).remove()
-                      break;
-                    case 'varchar':
-                      $(this).find(`a.dropdown-item:not([value="${fieldType}"]):not([value="text"])`).remove()
-                      break;
-                  }
-
-                  $(this).find('span.group-text').remove()
-
-                  $(this).find(`a:not([value]), input${notCondition}`).removeClass('is-invalid').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
-
-                  $(this).find(`a[action="delete-standard-table-clustering-key"]`).parent().hide()
-
-                  $(this).find('div[col="clusteringKeyName"], div[col="clusteringKeyType"]').removeClass('col-md-5').addClass('col-md-6')
-
-                  $(this).find(`input${notCondition}`).parent().children('ion-icon[name="arrow-down"]').hide()
-                })
-
-                setTimeout(() => {
                   let dropDownMDBObject = getElementMDBObject(row.find(`div.dropdown[for-select]`), 'Dropdown')
 
                   setTimeout(() => {
@@ -14740,35 +15099,6 @@
                   }, 500)
 
                   {
-                    row.find('div.dropdown[for-select]').each(function() {
-                      let dropDownElement = $(this),
-                        // Get the MDB object of the current dropdown element
-                        selectDropdown = getElementMDBObject(dropDownElement, 'Dropdown'),
-                        // Point at the associated input field
-                        input = row.find(`input#${dropDownElement.attr('for-select')}`)
-
-                      // Once the associated select element is being focused then show the dropdown element and vice versa
-                      input.on('focus', () => {
-                        if (input.hasClass('disabled'))
-                          return
-
-                        try {
-                          input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                        } catch (e) {}
-
-                        selectDropdown.show()
-                      }).on('focusout', () => setTimeout(() => {
-                        try {
-                          input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                        } catch (e) {}
-
-                        selectDropdown.hide()
-                      }, 100))
-
-                      // Once the parent `form-outline` is clicked trigger the `focus` event
-                      input.parent().click(() => input.trigger('focus'))
-                    })
-
                     // Once one of the items is clicked
                     $(this).find(`div.dropdown[for-select]`).each(function() {
                       let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
@@ -14794,10 +15124,7 @@
                           if (!mainDropDown)
                             throw 0
 
-                          let newColMD = isTypeCollection ? (isCollectionMap ? 3 : 4) : 5
-
-                          if (isAltered)
-                            newColMD += 1
+                          let newColMD = isTypeCollection ? (isCollectionMap ? 4 : 5) : 6
 
                           row.find(`div[col="clusteringKeyName"]`).removeClass(function(index, className) {
                             return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
@@ -14821,6 +15148,32 @@
                       })
                     })
                   }
+                })
+
+                setTimeout(() => {
+                  $(this).find('input[type="text"]').each(function() {
+                    let mdbObject = getElementMDBObject($(this))
+
+                    setTimeout(() => mdbObject.update(), 500)
+                  })
+                })
+
+                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
+                setTimeout(() => {
+                  $(this).find('div.sort-handler').parent().hide()
+
+                  $(this).find('div.field-sort-type').parent().hide()
+
+                  $(this).find('span.group-text').remove()
+
+                  $(this).find(`a:not([value]), input`).removeClass('is-invalid').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
+
+                  $(this).find(`a[action="delete-standard-table-clustering-key"]`).parent().hide()
+
+                  $(this).find('div[col="clusteringKeyName"], div[col="clusteringKeyType"]').removeClass('col-md-5').addClass('col-md-6')
+
+                  $(this).find(`input`).parent().children('ion-icon[name="arrow-down"]').hide()
                 })
 
                 setTimeout(() => {
@@ -14849,16 +15202,6 @@
                   $(this).find('div.dropdown[for-data-type="clusteringKeyType"]').find(`a[value="${fieldType}"]`).trigger('click')
                   $(this).find('input.clusteringKeyType').attr('data-original-type', `${fieldType}`)
                 })
-
-                setTimeout(() => {
-                  $(this).find('input[type="text"]').each(function() {
-                    let mdbObject = getElementMDBObject($(this))
-
-                    setTimeout(() => mdbObject.update(), 500)
-                  })
-                })
-
-                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
 
                 try {
                   updateRowsZIndex()
@@ -15218,6 +15561,193 @@
             keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
           } catch (e) {}
 
+          try {
+            if (fields == null)
+              throw 0
+
+            fields = JSON.parse(fields)
+
+            if (fields.length <= 0)
+              dataFieldsContainer.children('div.empty-standard-table-columns').show()
+
+            for (let field of fields) {
+              dataFieldsContainer.append($(getStandardColumnFieldElement(keyspaceUDTs)).show(function() {
+                let row = $(this),
+                  isFrozen = false,
+                  fieldType = field.type
+
+                setTimeout(() => {
+                  let dropDownMDBObject = getElementMDBObject(row.find(`div.dropdown[for-select]`), 'Dropdown')
+
+                  setTimeout(() => {
+                    try {
+                      dropDownMDBObject.update()
+                    } catch (e) {}
+                  }, 500)
+
+                  {
+                    // Once one of the items is clicked
+                    $(this).find(`div.dropdown[for-select]`).each(function() {
+                      let mainDropDown = $(this).attr('for-data-type') == 'columnType'
+
+                      $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                        $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                        try {
+                          updateRowsZIndex(isTransformNegative)
+                        } catch (e) {}
+                      })
+
+                      $(this).find(`ul.dropdown-menu`).find('a').click(function() {
+                        // Point at the input field related to the list
+                        let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
+                          selectedValue = $(this).attr('value'),
+                          isTypeCollection = $(this).attr('data-is-collection') != undefined,
+                          isCollectionMap = $(this).attr('data-is-map') != undefined,
+                          isTypeUDT = $(this).attr('data-is-udt') != undefined
+
+                        try {
+                          let tooltip = getElementMDBObject(row.find(`div[col="is-static"]`).find('input[data-tippy="tooltip"]'), 'Tooltip')
+
+                          try {
+                            tooltip[isTypeCollection || isTypeUDT ? 'enable' : 'disable']()
+                          } catch (e) {}
+                        } catch (e) {}
+
+                        try {
+                          if (!mainDropDown)
+                            throw 0
+
+                          row.find(`div[col="columnName"]`).removeClass(function(index, className) {
+                            return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                          }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 4}`)
+
+                          row.find(`div[col="columnType"]`).removeClass(function(index, className) {
+                            return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                          }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 4}`)
+
+                          row.find(`div[col="is-static"]`).removeClass(function(index, className) {
+                            return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                          }).addClass(`col-md-${isTypeCollection ? 1 : 3}`).find('label').toggle(!isTypeCollection)
+
+                          row.find(`div[col="is-frozen"]`).toggle(isTypeCollection)
+
+                          row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
+
+                          row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection)
+                        } catch (e) {}
+
+                        try {
+                          if (isTypeCollection)
+                            throw 0
+
+                          row.find(`div[col="is-static"]`).removeClass(function(index, className) {
+                            return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
+                          }).addClass(`col-md-${isTypeUDT ? 1 : 3}`).find('label').toggle(!isTypeUDT)
+
+                          row.find(`div[col="is-frozen"]`).toggle(isTypeUDT)
+                        } catch (e) {}
+
+                        // Update the input's value
+                        selectElement.val(selectedValue).trigger('input')
+
+                        try {
+                          updateActionStatusForStandardTables()
+                        } catch (e) {}
+                      })
+                    })
+                  }
+                })
+
+                setTimeout(() => {
+                  $(this).find('input[type="text"]').each(function() {
+                    let mdbObject = getElementMDBObject($(this))
+
+                    setTimeout(() => mdbObject.update(), 500)
+                  })
+                })
+
+                setTimeout(() => {
+                  $(this).find('[data-tippy="tooltip"]').each(function() {
+                    // Create an MDB oject for the tooltip
+                    let tooltip = getElementMDBObject($(this), 'Tooltip')
+
+                    // Disable the tab's tooltips
+                    if ($(this).attr('data-is-hidden') != undefined)
+                      tooltip.disable()
+
+                    // Once the tooltip's reference element is clicked hide the tooltip
+                    $(tooltip.reference).click(() => tooltip.hide())
+                  })
+                })
+
+                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
+                try {
+                  updateRowsZIndex()
+                } catch (e) {}
+
+                setTimeout(() => {
+                  try {
+                    updateActionStatusForStandardTables()
+                  } catch (e) {}
+                })
+
+                try {
+                  fieldType = `${fieldType}`.match(/frozen\<(.*?)(\<|\>)/)[1]
+
+                  isFrozen = true
+                } catch (e) {}
+
+                $(this).find(`a[action="delete-standard-table-column"]`).click(function() {
+                  row.toggleClass('deleted')
+
+                  try {
+                    updateActionStatusForStandardTables()
+                  } catch (e) {}
+                })
+
+                setTimeout(() => {
+                  row.find('input.columnName').val(`${field.name}`).removeClass('is-invalid').addClass('disabled')
+
+                  try {
+                    if (!(['map', 'set', 'list'].some((type) => type == fieldType)))
+                      throw 0
+
+                    let fieldKeyType = field.type.match(/frozen\<.*?\<(.*?)\>/)[1]
+
+                    if (fieldType == 'map') {
+                      let mapValues = minifyText(fieldKeyType).split(',')
+
+                      $(this).find('input.collectionKeyType').val(`${mapValues[0]}`).trigger('input')
+                      $(this).find('input.collectionItemType').val(`${mapValues[1]}`).trigger('input')
+                    } else {
+                      $(this).find('input.collectionKeyType').val(`${fieldKeyType}`).trigger('input')
+                    }
+
+                    $(this).find('input.collectionKeyType, input.collectionItemType').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
+
+                    $(this).find('ion-icon[name="arrow-down"]').hide()
+                  } catch (e) {}
+
+                  row.find(`ul.dropdown-menu`).find(`a[value="${fieldType}"]`).click()
+
+                  row.find('div[col="columnType"]').find('ion-icon[name="arrow-down"]').hide()
+
+                  row.find('div[col="columnType"]').find('input.columnType').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
+
+                  row.find('input.isFrozen').prop('checked', isFrozen || false).attr('disabled', '')
+
+                  row.find('input.isStatic').addClass('altered').prop('checked', field.isStatic || false).attr('disabled', '')
+                })
+              }))
+            }
+
+            return
+          } catch (e) {}
+
           dataFieldsContainer.append($(getStandardColumnFieldElement(keyspaceUDTs)).show(function() {
             let row = $(this)
 
@@ -15514,6 +16044,122 @@
             keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts'))
 
             keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
+          } catch (e) {}
+
+          try {
+            if (fields == null)
+              throw 0
+
+            fields = JSON.parse(fields)
+
+            if (fields.length <= 0)
+              dataFieldsContainer.children('div.empty-standard-table-udt-columns').show()
+
+            for (let field of fields) {
+              dataFieldsContainer.append($(getStandardUDTColumnFieldElement(keyspaceUDTs)).show(function() {
+                let row = $(this),
+                  isFrozen = false,
+                  fieldType = field.type
+
+                try {
+                  fieldType = field.type.match(/frozen\<(.*?)(\<|\>)/)[1]
+
+                  isFrozen = true
+                } catch (e) {}
+
+                $(this).find(`a[action="delete-standard-table-udt-column"]`).click(function() {
+                  row.toggleClass('deleted')
+
+                  try {
+                    updateActionStatusForStandardTables()
+                  } catch (e) {}
+                })
+
+                setTimeout(() => {
+                  row.find('input.columnName').val(`${field.name}`).removeClass('is-invalid').addClass('disabled')
+
+                  row.find('div.dropdown[for-data-type="columnType"]').find(`a.dropdown-item[value="${fieldType}"]`).click()
+
+                  row.find('div[col="columnType"]').find('ion-icon[name="arrow-down"]').hide()
+
+                  row.find('div[col="columnType"]').find('input.columnType').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
+
+                  row.find('input.isFrozen').prop('checked', isFrozen || false).attr('disabled', '')
+
+                  row.find('input.isStatic').addClass('altered').prop('checked', field.isStatic || false).attr('disabled', '')
+                })
+
+                setTimeout(() => {
+                  let dropDownMDBObject = getElementMDBObject(row.find(`div.dropdown[for-select]`), 'Dropdown')
+
+                  setTimeout(() => dropDownMDBObject.update(), 500)
+
+                  {
+                    // Once one of the items is clicked
+                    $(this).find(`div.dropdown[for-select]`).each(function() {
+                      $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                        $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                        try {
+                          updateRowsZIndex(isTransformNegative)
+                        } catch (e) {}
+                      })
+
+                      $(this).find(`ul.dropdown-menu`).find('a').click(function() {
+                        // Point at the input field related to the list
+                        let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
+                          selectedValue = $(this).attr('value')
+
+                        // Update the input's value
+                        selectElement.val(selectedValue).trigger('input')
+
+                        try {
+                          updateActionStatusForStandardTables()
+                        } catch (e) {}
+                      })
+                    })
+                  }
+                })
+
+                setTimeout(() => {
+                  $(this).find('input[type="text"]').each(function() {
+                    let mdbObject = getElementMDBObject($(this))
+
+                    setTimeout(() => mdbObject.update(), 500)
+                  })
+                })
+
+                setTimeout(() => {
+                  $(this).find('[data-tippy="tooltip"]').each(function() {
+                    // Create an MDB oject for the tooltip
+                    let tooltip = getElementMDBObject($(this), 'Tooltip')
+
+                    // Disable the tab's tooltips
+                    if ($(this).attr('data-is-hidden') != undefined)
+                      tooltip.disable()
+
+                    // Once the tooltip's reference element is clicked hide the tooltip
+                    $(tooltip.reference).click(() => tooltip.hide())
+                  })
+                })
+
+                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
+                try {
+                  updateRowsZIndex()
+                } catch (e) {}
+
+                setTimeout(() => {
+                  try {
+                    updateActionStatusForStandardTables()
+                  } catch (e) {}
+                })
+              }))
+            }
+
+            return
           } catch (e) {}
 
           dataFieldsContainer.append($(getStandardUDTColumnFieldElement(keyspaceUDTs)).show(function() {

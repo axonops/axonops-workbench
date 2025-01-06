@@ -15637,9 +15637,7 @@
                           row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
 
                           row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection)
-                        } catch (e) {}
 
-                        try {
                           if (isTypeCollection)
                             throw 0
 
@@ -15901,9 +15899,7 @@
                       row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
 
                       row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection)
-                    } catch (e) {}
 
-                    try {
                       if (isTypeCollection)
                         throw 0
 

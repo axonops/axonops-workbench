@@ -13,7 +13,6 @@ jobs:
   build:
     name: MAS build on ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
-    needs: [release]
     strategy:
       matrix:
         include:

@@ -105,45 +105,11 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
-      # Ensure this task is right before the Upload
-      - name: Create checksum files
-        run: |
-          SAVEIFS=$IFS
-          IFS=$(echo -en "\n\b")
-
-          cd dist
-
-          case "$(uname -s)" in
-          Darwin)
-            FILES=$(ls -1 *.dmg *.zip *.pkg)
-            for f in $FILES; do
-              shasum -a 256 $f > ${f}.sha256sum
-            done
-          ;;
-          MINGW64*)
-            FILES=$(ls -1 *.exe *.msi)
-            for f in $FILES; do
-              sha256sum $f > ${f}.sha256sum
-            done
-          ;;
-          Linux)
-            FILES=$(ls -1 *.tar.gz *.deb *.rpm)
-            for f in $FILES; do
-              sha256sum $f > ${f}.sha256sum
-            done
-          ;;
-          esac
-
-          IFS=$SAVEIFS
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Upload Artifacts
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/*.pkg
-            dist/*.sha256sum
+            dist/mas-arm64/*.pkg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -151,4 +117,4 @@ jobs:
         with:
           name: workbench
           path: |
-            dist/*.pkg
+            dist/mas-arm64/*.pkg

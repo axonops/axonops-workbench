@@ -82,30 +82,6 @@ jobs:
           CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
           CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
 
-      - name: Setup temporary installer signing keychain
-        uses: apple-actions/import-codesign-certs@v3
-        if: ${{ startsWith(runner.os, 'macos') }}
-        with:
-          p12-file-base64: ${{ secrets.CSC_INSTALLER_LINK }}
-          p12-password: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
-
-      - name: Sign the Apple pkg
-        if: ${{ startsWith(runner.os, 'macos') }}
-        run: |
-          for pkg_name in $(ls -1 dist/*.pkg); do
-            mv $pkg_name Unsigned-Workbench.pkg
-
-            productsign --sign "Developer ID Installer: AXONOPS Limited (UJ776LUP23)" Unsigned-Workbench.pkg $pkg_name
-            rm -f Unsigned-Workbench.pkg
-            xcrun notarytool submit $pkg_name --apple-id $APPLE_ID --team-id $APPLE_TEAM_ID --password $APPLE_APP_SPECIFIC_PASSWORD --wait
-          done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-
-
       - uses: actions/upload-artifact@v4
         with:
           name: workbench

@@ -1,0 +1,149 @@
+name: Release Workbench
+
+on:
+  push:
+    branches:
+      - 'MAS'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: MAS build on ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    needs: [release]
+    strategy:
+      matrix:
+        include:
+          # M1
+          - os: macos-14
+            target: Macos
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Change the package.json version to match the tag
+        run: |
+          VERSION=$(cat package.json| jq -r .version)
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+      - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
+        run: |
+          mkdir -p main/bin
+          for binary in cqlsh keys_generator; do
+            curl -fL ${CQLSH_GITHUB_URL}/${CQLSH_BUILD_VERSION}/${binary}-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
+            mv main/bin/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}
+            mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
+          done
+          sed -i.bak "s/%CQLSH_VERSION%/$CQLSH_BUILD_VERSION/g" renderer/views/index.html
+          rm -f renderer/views/index.html.bak
+        env:
+          CQLSH_BUILD_VERSION: "0.14.3"
+          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download' }}"
+
+      - name: Setup Python v3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: "pip"
+
+      - name: Install python dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Setup Node.js v20.17.0
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.17.0
+
+      - name: Get credits and add them to the database
+        run: |
+          cd get_credits
+          npm cache clean --force
+          npm i
+          npm rebuild
+          node get_credits.js
+
+      - name: Install AxonOps Developer Workbench dependencies
+        run: |
+          npm cache clean --force
+          npm i
+
+      - name: Pack AxonOps Developer Workbench
+        run: |
+          npm run mac:mas
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
+          CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
+
+      - name: Setup temporary installer signing keychain
+        uses: apple-actions/import-codesign-certs@v3
+        if: ${{ startsWith(runner.os, 'macos') }}
+        with:
+          p12-file-base64: ${{ secrets.CSC_INSTALLER_LINK }}
+          p12-password: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
+
+      - name: Sign the Apple pkg
+        if: ${{ startsWith(runner.os, 'macos') }}
+        run: |
+          for pkg_name in $(ls -1 dist/*.pkg); do
+            mv $pkg_name Unsigned-Workbench.pkg
+
+            productsign --sign "Developer ID Installer: AXONOPS Limited (UJ776LUP23)" Unsigned-Workbench.pkg $pkg_name
+            rm -f Unsigned-Workbench.pkg
+            xcrun notarytool submit $pkg_name --apple-id $APPLE_ID --team-id $APPLE_TEAM_ID --password $APPLE_APP_SPECIFIC_PASSWORD --wait
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      # Ensure this task is right before the Upload
+      - name: Create checksum files
+        run: |
+          SAVEIFS=$IFS
+          IFS=$(echo -en "\n\b")
+
+          cd dist
+
+          case "$(uname -s)" in
+          Darwin)
+            FILES=$(ls -1 *.dmg *.zip *.pkg)
+            for f in $FILES; do
+              shasum -a 256 $f > ${f}.sha256sum
+            done
+          ;;
+          MINGW64*)
+            FILES=$(ls -1 *.exe *.msi)
+            for f in $FILES; do
+              sha256sum $f > ${f}.sha256sum
+            done
+          ;;
+          Linux)
+            FILES=$(ls -1 *.tar.gz *.deb *.rpm)
+            for f in $FILES; do
+              sha256sum $f > ${f}.sha256sum
+            done
+          ;;
+          esac
+
+          IFS=$SAVEIFS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Artifacts
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.pkg
+            dist/*.sha256sum
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -12,6 +12,8 @@
         <true/>
         <key>com.apple.security.cs.disable-library-validation</key>
         <true/>
+        <key>com.apple.developer.team-identifier</key>
+        <string>UJ776LUP23</string>
         <key>com.apple.security.application-groups</key>
         <string>UJ776LUP23.com.axonops.workbench</string>
         <key>com.apple.security.network.client</key>

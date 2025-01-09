@@ -59,7 +59,7 @@
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
-      "icon": "./renderer/assets/images/axonops-iconset.icns",
+      "icon": "./renderer/assets/images/axonops-icon-512x512.icns",
       "category": "public.app-category.developer-tools",
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"
@@ -70,7 +70,7 @@
         "pkg",
         "mas-dev"
       ],
-      "hardenedRuntime": true,
+      "hardenedRuntime": false,
       "gatekeeperAssess": false,
       "type": "distribution",
       "entitlements": "./resources/entitlements.mac.plist",
@@ -80,16 +80,6 @@
         "teamId": "UJ776LUP23"
       },
       "binaries": [
-          "./node_modules/node-pty/build/Release/pty.node",
-          "./node_modules/node-pty/build/Release/spawn-helper",
-          "./node_modules/7zip-bin/mac/arm64/7za",
-          "./node_modules/ssh2/lib/protocol/crypto/build/Release/sshcrypto.node",
-          "./node_modules/cpu-features/build/Release/cpufeatures.node",
-          "./node_modules/better-sqlite3/build/Release/better_sqlite3.node",
-          "./node_modules/app-builder-bin/mac/app-builder_arm64",
-          "./node_modules/app-builder-bin/mac/app-builder_amd64",
-          "./node_modules/keytar/build/Release/keytar.node",
-          "./node_modules/iconv-corefoundation/lib/native.node",
           "./main/bin/keys_generator/_internal/lib-dynload/_struct.cpython-312-darwin.so",
           "./main/bin/keys_generator/_internal/lib-dynload/array.cpython-312-darwin.so",
           "./main/bin/keys_generator/_internal/lib-dynload/_queue.cpython-312-darwin.so",

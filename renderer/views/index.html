@@ -1828,6 +1828,11 @@
                       </span>
                     </div>
                   </div>
+                  <div class="row invalid-text-container">
+                    <div class="col-md-12">
+                      <span class="invalid-text" mulang="at least one data center should have a replication factor greater than 0" capitalize-first></span>.
+                    </div>
+                  </div>
                   <div class="data-centers"></div>
                 </div>
                 <div class="form-check margin-bottom" style="margin-top: 20px;">
@@ -1951,7 +1956,7 @@
                 <div class="standard-table-columns-fields">
                   <div class="empty-standard-table-columns">
                     <span mulang="add column by clicking the + button" capitalize-first></span>
-                    <span mulang="this table has no columns" style="display:none;" capitalize-first></span>
+                    <span mulang="this table has no columns" class="no-columns" style="display:none;" capitalize-first></span>
                   </div>
                 </div>
                 <div class="fields-badge-action">
@@ -1966,8 +1971,9 @@
                 </div>
                 <div class="standard-table-udt-columns-fields">
                   <div class="empty-standard-table-udt-columns">
-                    <span mulang="add column by clicking the + button" capitalize-first></span>
-                    <span mulang="this table has no UDT columns" style="display:none;" capitalize-first></span>
+                    <span mulang="add column by clicking the + button" class="add-column" capitalize-first></span>
+                    <span mulang="this table has no UDT columns" class="no-columns" style="display:none;" capitalize-first></span>
+                    <span mulang="this keyspace has no UDTs" class="no-udts" style="display:none;" capitalize-first></span>
                   </div>
                 </div>
                 <div class="show-standard-table-options-container">

@@ -1997,7 +1997,8 @@
                                     if (['udt', 'counter-tables-parent', 'tables-parent', 'table'].every((type) => !nodeType.includes(type)))
                                       throw 0
 
-                                    contextMenu = []
+                                    if (nodeType != 'table')
+                                      contextMenu = []
 
                                     targetName = keyspaceName
                                   } catch (e) {}
@@ -9918,9 +9919,33 @@
         $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-clustering-keys').find('span[mulang]').hide()
         $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-clustering-keys').find('span:not(.no-keys)').show()
 
+        $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-columns').find('span[mulang]').hide()
+        $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-columns').find('span:not(.no-columns)').show()
+
+        $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-udt-columns').find('span[mulang]').hide()
+        $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-udt-columns').find('span.add-column').show()
+
+        $(`a#addStandardTableUDTColumns`).removeClass('hide-action-button')
+
+        // For UDT columns
+        try {
+          let keyspaceUDTs = JSON.parse(data.udts)
+
+          if (keyspaceUDTs.length > 0)
+            throw 0
+
+          $(`a#addStandardTableUDTColumns`).addClass('hide-action-button')
+
+          $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-udt-columns').find('span[mulang]').hide()
+
+          $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-udt-columns').find('span.no-udts').show()
+        } catch (e) {}
+
         $('#rightClickActionsMetadata div.input-group-text.standard-table-name-keyspace div.keyspace-name').text(`${data.keyspaceName}`)
 
         $(`a[action]#addStandardTablePartitionKey`).removeClass('disabled')
+
+        $(`a[action]#addStandardTablePartitionKey`).add($(`a[action]#addStandardTableClusteringKey`)).show()
 
         $('div.modal#rightClickActionsMetadata div[action]').hide()
 
@@ -9974,6 +9999,8 @@
         $('#rightClickActionsMetadata div.input-group-text.counter-table-name-keyspace div.keyspace-name').text(`${data.keyspaceName}`)
 
         $(`a[action]#addCounterTablePartitionKey`).removeClass('disabled')
+
+        $(`a[action]#addCounterTablePartitionKey`).add($(`a[action]#addCounterTableClusteringKey`)).show()
 
         $('div.modal#rightClickActionsMetadata div[action]').hide()
 
@@ -10071,7 +10098,7 @@
 
           $(`a[action]#addCounterTablePartitionKey`).trigger('click', JSON.stringify(partitionKeys))
 
-          $(`a[action]#addCounterTablePartitionKey`).add($(`a[action]#addCounterTableClusteringKey`)).addClass('disabled')
+          $(`a[action]#addCounterTablePartitionKey`).add($(`a[action]#addCounterTableClusteringKey`)).hide()
 
           $(`a[action]#addCounterTableClusteringKey`).trigger('click', JSON.stringify(clusteringKeys))
 
@@ -10095,6 +10122,8 @@
             udt: []
           },
           tableOptions = []
+
+        let keyspaceUDTs
 
         try {
           tableObj = JSON.parse(data.tables).find((table) => table.name == tableName)
@@ -10121,7 +10150,7 @@
         } catch (e) {}
 
         try {
-          let keyspaceUDTs = JSON.parse(data.udts),
+          keyspaceUDTs = JSON.parse(data.udts),
             filteredColumns = tableObj.columns.filter((column) => tableObj.primary_key.find((key) => key.name == column.name) == undefined)
 
           for (let column of filteredColumns) {
@@ -10173,7 +10202,7 @@
 
         $(`a[action]#addStandardTablePartitionKey`).trigger('click', JSON.stringify(partitionKeys))
 
-        $(`a[action]#addStandardTablePartitionKey`).add($(`a[action]#addStandardTableClusteringKey`)).addClass('disabled')
+        $(`a[action]#addStandardTablePartitionKey`).add($(`a[action]#addStandardTableClusteringKey`)).hide()
 
         $(`a[action]#addStandardTableClusteringKey`).trigger('click', JSON.stringify(clusteringKeys))
 
@@ -10182,6 +10211,17 @@
         $(`a[action]#addStandardTableColumns`).trigger('click', JSON.stringify(columns.regular))
 
         $(`a[action]#addStandardTableUDTColumns`).trigger('click', JSON.stringify(columns.udt))
+
+        try {
+          if (keyspaceUDTs.length > 0)
+            throw 0
+
+          $(`a#addStandardTableUDTColumns`).addClass('hide-action-button')
+
+          $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-udt-columns').find('span[mulang]').hide()
+
+          $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-udt-columns').find('span.no-udts').show()
+        } catch (e) {}
 
         rightClickActionsMetadataModal.show()
 
@@ -10257,7 +10297,9 @@
             keyspaceName = $('input#keyspaceName').val(),
             durableWrites = $('input#keyspaceDurableWrites').prop('checked'),
             replication = {},
-            isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
+            isRFAcceptable = false
+
+          isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
 
           isAlterState = isAlterState != null && isAlterState == 'alter'
 
@@ -10297,8 +10339,22 @@
               if (rf <= 0)
                 continue
 
+              isRFAcceptable = true
+
               replication[dataCenter.attr('data-datacenter')] = rf
             }
+
+            if (isAlterState)
+              isRFAcceptable = true
+
+            dialogElement.find('div.row.invalid-text-container').toggleClass('show', !isRFAcceptable)
+
+            let invalidState = !isAlterState && (!isRFAcceptable || ($('input#keyspaceName').hasClass('is-invalid') || `${$('input#keyspaceName').val()}`.length <= 0))
+
+            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', invalidState ? '' : null)
+
+            if (invalidState)
+              return
           } catch (e) {}
 
           let durableWritesSetValue = $('input#keyspaceDurableWrites').attr('set-value'),
@@ -10490,6 +10546,10 @@
                         return
 
                       dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+
+                      try {
+                        updateActionStatusForKeyspaces()
+                      } catch (e) {}
                     })
                   })
 
@@ -12879,29 +12939,15 @@
 
                   $(this).find('div.field-sort-type').parent().hide()
 
-                  let notCondition = ['int', 'text', 'varchar'].some((type) => fieldType == type) ? `:not(.clusteringKeyType)` : ''
-
-                  switch (fieldType) {
-                    case 'int':
-                      $(this).find(`a.dropdown-item:not([value="${fieldType}"]):not([value="varint"])`).remove()
-                      break;
-                    case 'text':
-                      $(this).find(`a.dropdown-item:not([value="${fieldType}"]):not([value="varchar"])`).remove()
-                      break;
-                    case 'varchar':
-                      $(this).find(`a.dropdown-item:not([value="${fieldType}"]):not([value="text"])`).remove()
-                      break;
-                  }
-
                   $(this).find('span.group-text').remove()
 
-                  $(this).find(`a:not([value]), input${notCondition}`).removeClass('is-invalid').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
+                  $(this).find(`a:not([value]), input`).removeClass('is-invalid').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
 
                   $(this).find(`a[action="delete-counter-table-clustering-key"]`).parent().hide()
 
                   $(this).find('div[col="clusteringKeyName"], div[col="clusteringKeyType"]').removeClass('col-md-5').addClass('col-md-6')
 
-                  $(this).find(`input${notCondition}`).parent().children('ion-icon[name="arrow-down"]').hide()
+                  $(this).find(`input`).parent().children('ion-icon[name="arrow-down"]').hide()
                 })
 
                 setTimeout(() => {
@@ -12969,10 +13015,7 @@
                           if (!mainDropDown)
                             throw 0
 
-                          let newColMD = isTypeCollection ? (isCollectionMap ? 3 : 4) : 5
-
-                          if (isAltered)
-                            newColMD += 1
+                          let newColMD = isTypeCollection ? (isCollectionMap ? 4 : 5) : 6
 
                           row.find(`div[col="clusteringKeyName"]`).removeClass(function(index, className) {
                             return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')

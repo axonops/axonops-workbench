@@ -882,12 +882,22 @@
 
       // Once the associated select element is being focused then show the dropdown element and vice versa
       input.on('focus', () => {
+        let isInputDisabled = input.hasClass('disabled') || input.attr('disabled') != undefined
+
+        if (isInputDisabled)
+          return selectDropdown.hide()
+
         try {
           input.parent().find('div.invalid-feedback').addClass('transparent-color')
         } catch (e) {}
 
         selectDropdown.show()
       }).on('focusout', () => setTimeout(() => {
+        let isInputDisabled = input.hasClass('disabled') || input.attr('disabled') != undefined
+
+        if (isInputDisabled)
+          return selectDropdown.hide()
+
         try {
           input.parent().find('div.invalid-feedback').removeClass('transparent-color')
         } catch (e) {}

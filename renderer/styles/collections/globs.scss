@@ -997,3 +997,28 @@ div.btn.field-sort-type.badge {
     opacity: 0.65;
   }
 }
+
+.invalid-text-container {
+  color: #dc4c64;
+  height: 0;
+  transform: scaleY(0);
+
+  .invalid-text {
+    font-size: 80% !important;
+    width: auto;
+    margin-top: 3px;
+    display: inline-block;
+    transform-origin: top;
+  }
+
+  &.show {
+    transition: transform 0.15s ease-in-out;
+    height: auto;
+    transform: scaleY(1);
+  }
+}
+
+.hide-action-button {
+  opacity: 0;
+  pointer-events: none;
+}

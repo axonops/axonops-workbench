@@ -1101,7 +1101,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         let attributes = ['virtual', 'durable_writes', 'is_static', 'is_reversed']
 
         if (parentType == 'partitionKeys')
-          attributes = `${attributes}`.slice(0, -2)
+          attributes = attributes.slice(0, -2)
 
         // Loop through them all
         attributes.forEach((attribute) => {

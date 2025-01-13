@@ -37,6 +37,21 @@
       }
     },
     {
+      name: 'transform',
+      handler: function(n) {
+        let e = $(n)
+
+        if (!e.data('mutate-transform'))
+          e.data('mutate-transform', e.css('transform'))
+
+        if (e.data('mutate-transform') && e.css('transform') != e.data('mutate-transform')) {
+          e.data('mutate-transform', e.css('transform'))
+
+          return true
+        }
+      }
+    },
+    {
       name: 'top',
       handler: function(n) {
         let e = $(n)

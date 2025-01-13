@@ -174,15 +174,15 @@ try {
 }
 
 // Logging configuration
-log.transports.file.level = false
-log.transports.console.level = 'debug';
-Modules.Config.getConfig((config) => {
-  if (config.get('security', 'loggingEnabled')) {
-    log.transports.file.level = 'warn'
-    log.transports.file.resolvePathFn = () => path.join(APP_DATA, 'logs/main.log');
-    log.info('Logging enabled, writing logs to file', log.transports.file.resolvePathFn())
-  }
-})
+// log.transports.file.level = false
+// log.transports.console.level = 'debug';
+// Modules.Config.getConfig((config) => {
+//   if (config.get('security', 'loggingEnabled')) {
+//     log.transports.file.level = 'warn'
+//     log.transports.file.resolvePathFn = () => path.join(APP_DATA, 'logs/main.log');
+//     log.info('Logging enabled, writing logs to file', log.transports.file.resolvePathFn())
+//   }
+// })
 
 // Load environment variables from .env file
 try {
@@ -449,16 +449,20 @@ App.on('ready', () => {
   // Once a `loaded` event is received from the main view
   IPCMain.on('loaded', () => {
     status.loaded = true
+    log.info('Renderer is loaded')
   })
 
   IPCMain.on('initialized', () => {
     status.initialized = true
+    log.info('Renderer is initialized')
   })
 
   let checkStatus = () => {
     setTimeout(() => {
-      if (!status.loaded || !status.initialized)
+      if (!status.loaded || !status.initialized) {
+        log.debug('Waiting initialization...', 'Loaded:', status.loaded.toString(), 'Initialized:', status.initialized.toString())
         return checkStatus()
+      }
 
       // Trigger after 1s of loading the main view
       setTimeout(() => {

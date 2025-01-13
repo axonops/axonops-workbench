@@ -40,8 +40,6 @@ const FS = require('fs-extra'),
    */
   IPCRenderer = require('electron').ipcRenderer
 
-  log = require('electron-log/renderer')
-
 /**
  * Get the set extra resources path
  * This value will be updated from the main thread
@@ -54,6 +52,7 @@ let extraResourcesPath = null,
  * Used for logging
  */
 const log = require('electron-log/renderer')
+log.debug('Renderer is initializing...')
 
 // Get the set extra resources path from the main thread
 $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) => {
@@ -266,7 +265,7 @@ $(document).on('initialize', () => {
       setInterval(() => {
         buttons.back.toggleClass('disabled', !webviewAIAssistant[0].canGoBack())
         buttons.forward.toggleClass('disabled', !webviewAIAssistant[0].canGoForward())
-      }, 500)
+      }, 1500)
     })
   } catch (e) {}
 })
@@ -296,6 +295,7 @@ $(document).on('initialize', () => {
 
         // Load all saved languages and make sure the chosen language exists and is loaded as well
         Modules.Localization.loadLocalization((languages) => {
+          log.info('Loading localizations...')
           try {
             // Attempt to get the language's object
             let languageObject = languages.list.filter((language) => language.key == chosenLanguage)
@@ -370,14 +370,11 @@ $(document).on('initialize', () => {
               // Strip any HTML tag
               text = StripTags(text)
 
-              try {
-                // Update the status of the flag
-                isHTMLFound = Modules.Consts.AllowedHTMLTags.some((tag) => text.indexOf(`[${tag}]`) != -1)
+              // Update the status of the flag
+              isHTMLFound = Modules.Consts.AllowedHTMLTags.some((tag) => text.indexOf(`[${tag}]`) != -1)
 
-                // If there's no allowed HTML has been found then skip this try-catch block
-                if (!isHTMLFound)
-                  throw 0
-
+              // If there's no allowed HTML has been found then skip this try-catch block
+              if (isHTMLFound) {
                 // Loop through the allowed HTML tags
                 Modules.Consts.AllowedHTMLTags.forEach((tag) => {
                   // Define a regex for the tag's opening
@@ -391,8 +388,6 @@ $(document).on('initialize', () => {
                   // Update the close
                   text = text.replace(close, `</${tag}>`)
                 })
-              } catch (e) {
-                log.error('[initialization]', e)
               }
 
               // Return the final result
@@ -452,7 +447,7 @@ $(document).on('initialize', () => {
                 clearLoadInterval()
             })
           } catch (e) {
-            log.error('[initialization]', e)
+            log.error('Failed to load localizations:', e)
           }
 
           // Update the list of languages to select in the settings dialog
@@ -1003,7 +998,7 @@ $(document).on('initialize', () => {
           }, 250)
         })
       } catch (e) {
-        log.error('[initialization]', e)
+        log.error('Something went wrong on Monaco editor initialization', e)
       }
     })
 
@@ -1091,11 +1086,15 @@ $(document).on('initialize', () => {
           return
 
         // Otherwise, load the event file
+        log.debug('Loading event file...', eventFile)
         loadScript(Path.join(eventsFilesPath, eventFile))
-      } catch (e) {}
+        log.debug('Event file loaded')
+      } catch (e) {
+        log.warn('Failed to load event file', eventFile, e)
+      }
     })
   } catch (e) {
-    log.error('[initialization]', e)
+    log.error('Event files loading failed', e)
   }
 })
 
@@ -1320,7 +1319,7 @@ $(document).on('initialize', () => {
       try {
         Clipboard.writeText(`v${AppInfo.version}`)
       } catch (e) {
-        log.error('[initialization]', e)
+        log.error('Failed to copy text to clipboard', e)
       }
 
       // Give feedback to the user
@@ -1366,8 +1365,10 @@ $(document).on('initialize', () => {
         let isCopyrightAcknowledged = config.get('security', 'cassandraCopyrightAcknowledged') == 'true'
 
         // If it's not then skip the upcoming code - the app won't be loaded till the checkbox is checked -
-        if (!isCopyrightAcknowledged)
+        if (!isCopyrightAcknowledged) {
+          log.debug('copyright is not acknowledged, waiting...')
           return getConfigToLoad()
+        }
 
         // Send the event
         IPCRenderer.send('initialized')

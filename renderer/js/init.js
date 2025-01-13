@@ -40,6 +40,8 @@ const FS = require('fs-extra'),
    */
   IPCRenderer = require('electron').ipcRenderer
 
+  log = require('electron-log/renderer')
+
 /**
  * Get the set extra resources path
  * This value will be updated from the main thread
@@ -84,7 +86,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
           // Ensure the file exists
           try {
             await FS.ensureFile(Path.join(appPath, ...file))
-          } catch (e) {}
+          } catch (e) {
+            log.warn('Required file doesn\'t exist', file)
+          }
 
           // Skip the upcoming code and move to the next file
           continue
@@ -486,7 +490,7 @@ $(document).on('initialize', () => {
         })
       })
     } catch (e) {
-      log.error('[initialization]', e)
+      log.error('Renderer initialisation failed', e)
     }
   })
 })

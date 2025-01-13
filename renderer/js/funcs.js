@@ -27,7 +27,6 @@
  * @Return: {object} the Material Design's object
  */
 let getElementMDBObject = (element, type = 'Input') => {
-
   // Define the final object which be returned
   let object = null
 
@@ -38,10 +37,24 @@ let getElementMDBObject = (element, type = 'Input') => {
       let objectUIElement = object.element
 
       try {
-        objectUIElement = object.element.length > 1 ? object.element[0] : object.element
+        objectUIElement = object.element.length > 1 ? object.element[0] : objectUIElement
       } catch (e) {}
 
-      return objectUIElement.is(element) && object.type == type
+      try {
+        objectUIElement = object.object.reference || objectUIElement
+      } catch (e) {}
+
+      let isObjectFound = false
+
+      try {
+        isObjectFound = objectUIElement.is(element) && object.type == type
+      } catch (e) {
+        try {
+          isObjectFound = $(objectUIElement).is(element) && object.type == type
+        } catch (e) {}
+      }
+
+      return isObjectFound
     })
 
     // If it has already been found then return it
@@ -1074,7 +1087,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         let attributes = ['virtual', 'durable_writes', 'is_static', 'is_reversed']
 
         if (parentType == 'partitionKeys')
-          attributes = `${attributes}`.slice(0, -2)
+          attributes = attributes.slice(0, -2)
 
         // Loop through them all
         attributes.forEach((attribute) => {
@@ -1269,7 +1282,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         let primaryKeysStructure = {
           id: primaryKeysID,
           parent: tableID,
-          text: `Primary Keys (<span>${table.primary_key.length}</span>)`,
+          text: `Primary Key (<span>${table.primary_key.length}</span>)`,
           type: 'default',
           icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
         }

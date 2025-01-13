@@ -1,6 +1,8 @@
-# AxonOps™ Workbench for Apache Cassandra®
+# AxonOps™ Workbench
 
-AxonOps Workbench for Apache Cassandra is a desktop application built for Cassandra DB developers and DBAs. Seamlessly connect and interact with Apache Cassandra clusters while enjoying a host of innovative enhancements and exciting features. 
+[AxonOps Workbench](https://axonops.com/workbench/) is a desktop application built for Cassandra DB developers and DBAs. Kafka support is coming soon! 
+
+Seamlessly connect and interact with Apache Cassandra clusters while enjoying a host of innovative enhancements and exciting features. 
 
 We welcome your feedback, so feel free to discuss any ideas you have https://github.com/axonops/axonops-workbench/discussions/categories/ideas or raise issues any issues (https://github.com/axonops/axonops-workbench/issues/new/choose)
 
@@ -108,5 +110,5 @@ See the `packages.json` for other build options.
 
 ***
 
-*AxonOps is a registered trademark of AxonOps Limited. Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation or its subsidiaries in Canada, the United States and/or other countries.*
+*This project may contain trademarks or logos for projects, products, or services. Any use of third-party trademarks or logos are subject to those third-party's policies. AxonOps is a registered trademark of AxonOps Limited. Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation or its subsidiaries in Canada, the United States and/or other countries.*
 

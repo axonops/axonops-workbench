@@ -52,7 +52,7 @@ let extraResourcesPath = null,
  * Used for logging
  */
 const log = require('electron-log/renderer')
-log.debug('Renderer is initializing...')
+log.debug('init.js is running...')
 
 // Get the set extra resources path from the main thread
 $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) => {
@@ -1382,12 +1382,15 @@ $(document).on('initialize', () => {
 
     getKey('public', (key) => {
       getKey('private', (key) => {
-        IPCRenderer.send('pty:cqlsh:initialize')
-
+        log.debug('EVENT', 'pty:cqlsh:initialize')
+        
         IPCRenderer.on('pty:cqlsh:initialize:finished', () => getConfigToLoad())
+        IPCRenderer.send('pty:cqlsh:initialize')
       })
     })
-  } catch (e) {}
+  } catch (e) {
+    log.warning('Something went wrong during key processing:', e)
+  }
 })
 
 // Send the `loaded` event to the main thread, and show the `About` dialog/modal

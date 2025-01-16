@@ -1,3 +1,5 @@
+#!/bin/bash
+
 CQLSH_BUILD_VERSION="0.14.3"
 CQLSH_GITHUB_URL='https://github.com/axonops/axonops-workbench-cqlsh/releases/download'
 

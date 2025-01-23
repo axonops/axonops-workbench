@@ -164,13 +164,13 @@ try {
 
       // Import the module
       Modules[moduleName] = require(Path.join(modulesFilesPath, moduleFile))
-      log.info('Loaded module', moduleName)
+      log.info('Loaded module', {'module': moduleName})
     } catch (e) {
-      log.warning('Failed to load module', moduleName, e)
+      log.warning('Failed to load module', {'module': moduleName, 'error': e})
     }
   })
 } catch (e) {
-  log.error('Failure loading modules', e)
+  log.warning('Failure loading modules', e)
 }
 
 // Logging configuration
@@ -191,7 +191,7 @@ try {
     path: envFilePath
   })
 } catch (e) {
-  log.warning('Failed to load environment variables file', envFilePath, e)
+  log.warning('Failed to load environment variables file', {'path': envFilePath, 'error': e})
 }
 
 // Flag to tell whether or not dev tools are enabled
@@ -246,7 +246,8 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
       slashes: true
     }))
   } catch (e) {
-    log.error('Failed to load view file', viewPath, e)
+    log.warning('Failed to load view file', {'path': viewPath, 'error': e})
+    // TODO: it's an exceptional situation, must be error+abort, not warning
   }
 
   // Whether or not the window should be at the center of the screen
@@ -282,7 +283,7 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
       try {
         windowObject.webContents.openDevTools()
       } catch (e) {
-        log.warning('Failed to open DevTools', e)
+        log.warning('Failed to open DevTools', {'error': e})
       }
 
     // Send the window's content's ID
@@ -293,7 +294,9 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
     // Attempt to call the callback function
     try {
       callback()
-    } catch (e) {}
+    } catch (e) {
+      log.warning('Failed to execute callback for a created window ', {'view': viewPath, 'error': e})
+    }
   })
 
   // When the window is closed, the event has finished; set the window object reference to `null`
@@ -460,7 +463,7 @@ App.on('ready', () => {
   let checkStatus = () => {
     setTimeout(() => {
       if (!status.loaded || !status.initialized) {
-        log.debug('Waiting initialization...', 'Loaded:', status.loaded.toString(), 'Initialized:', status.initialized.toString())
+        log.debug('Waiting initialization...', {'Loaded': status.loaded.toString(), 'Initialized': status.initialized.toString()})
         return checkStatus()
       }
 

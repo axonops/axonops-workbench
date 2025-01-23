@@ -195,7 +195,7 @@ let getElementMDBObject = (element, type = 'Input') => {
  */
 let loadScript = (path) => {
   // Add log about this loading process
-  log.debug('Loading script...', path)
+  log.debug('Loading script...', {'path': path})
   /**
    * Call the JQuery's HTTP request function
    * Set `async attribute` to `false`; to be sure the script is loaded before executing the upcoming code
@@ -206,9 +206,9 @@ let loadScript = (path) => {
       async: false,
       dataType: 'script'
     })
-    log.debug('Script loaded')
+    log.debug('Script loaded', {'path': path})
   } catch (e) {
-    log.error('Failed to load script', e)
+    log.warning('Failed to load script', {'path': path, 'error': e})
   }
 }
 
@@ -220,14 +220,14 @@ let loadScript = (path) => {
  */
 let loadStyleSheet = (path) => {
   // Add log about this loading process
-  log.debug('Loading stylesheet...', path)
+  log.debug('Loading stylesheet...', {'path': path})
 
   // Prepend the stylesheet file
   try {
     $('head').prepend(`<link rel="stylesheet" href="${path}">`)
-    log.debug('Stylesheet loaded')
+    log.debug('Stylesheet loaded', {'path': path})
   } catch (e) {
-    log.warning('Failed to load stylesheet', e)
+    log.warning('Failed to load stylesheet', {'path': path, 'error': e})
   }
 }
 
@@ -272,7 +272,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
     let logType = (['success', 'neutral']).some((_type) => type == _type) ? 'info' : (type == 'failure' ? 'error' : type)
 
     // Add the log - toast's title and text -
-    log.debug('Showing toast', StripTags(title), StripTags(text))
+    log.debug('Showing toast', {'type': logType, 'title': StripTags(title), 'text': StripTags(text)})
   }
 
   // Whether or not the `toast-id` attribute will be added
@@ -582,7 +582,7 @@ let formatTimestamp = (timestamp, isSecondFormat = false, withMilliSeconds = fal
     if (withMilliSeconds)
       format = `${format}.${milliSeconds}`
   } catch (e) {
-    log.warning('Failed to format the timestamp', e)
+    log.warning('Failed to format the timestamp', {'error': e})
   }
 
   // Return the human-readable result
@@ -642,7 +642,7 @@ let repairJSON = (json) => {
   let result = json // Final result which be returned
 
   // Add a log about this process -  without logging the result afterward -
-  log.info('Attempting to repair a string-format JSON...', json.slice(0, 20))
+  log.info('Attempting to repair a string-format JSON...', {'data': json.slice(0, 20)})
 
   try {
     // Replace non-ascii chars except the ones which are used to build a valid JSON
@@ -2558,7 +2558,7 @@ let openDialog = (text, callback, noBackdrop = false, checkBox = '', dialogEleme
   } catch (e) {}
 
   // Add log for this confirmation dialog - its text -
-  log.debug('Confirmation dialog', text)
+  log.debug('Confirmation dialog', {'text': text})
 
   // Point at the confirm and cancel buttons in the dialog
   let confirm = dialog.find('button.btn-primary'),
@@ -2576,7 +2576,7 @@ let openDialog = (text, callback, noBackdrop = false, checkBox = '', dialogEleme
     } : $(this).is(confirm))
 
     // Add log for the confirmation's status
-    log.debug('Confirmation dialog status', $(this).is(confirm) ? 'confirmed' : 'canceled')
+    log.debug('Confirmation dialog status', {'status': $(this).is(confirm) ? 'confirmed' : 'canceled'})
 
     // Hide the dialog
     dialogObject.hide()
@@ -2670,7 +2670,7 @@ let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
  */
 let getKey = async (type, callback, called = false) => {
   // Add log for this process
-  log.info('Getting the key for encryption or decryption...', 'type', type)
+  log.info('Getting the key for encryption or decryption...', {'type': type, 'already_called': called})
 
   try {
     // If the key's type is not `private` then skip this try-catch block
@@ -2715,7 +2715,7 @@ let getKey = async (type, callback, called = false) => {
     // Skip the upcoming code - since it's about obtaining a public key -
     return
   } catch (e) {
-    log.warning('Failed to get the key', e)
+    log.warning('Failed to get the key', {'type': type, 'already_called': called, 'error': e})
   }
 
   /**
@@ -2791,7 +2791,7 @@ let decrypt = (privateKey, text) => {
   let decryptedText = text || '' // The final decrypted text
 
   // Add log for this process
-  log.info('Decrypting a text using RSA')
+  log.info('Decrypting a text using RSA...')
 
   try {
     // Create a private RSA object
@@ -2826,7 +2826,7 @@ let executeScript = (scriptID, scripts, callback) => {
   let requestID = getRandomID(20)
 
   // Add log about executing the current script
-  log.info('Executing the script...', scripts[scriptID])
+  log.info('Executing a script...', {'id': scriptID, 'requestID': requestID, 'path': scripts[scriptID]})
 
   // Send the execution request
   IPCRenderer.send('script:run', {
@@ -2847,9 +2847,9 @@ let executeScript = (scriptID, scripts, callback) => {
 
     // Add log for the execution's status
     if (0 === status) {
-      log.info('The script executed successfully', scripts[scriptID])
+      log.info('The script executed successfully', {'id': scriptID, 'requestID': requestID})
     } else {
-      log.warning('The script execution failed', scripts[scriptID], originalStatus)
+      log.warning('The script execution failed', {'id': scriptID, 'requestID': requestID, 'status': originalStatus})
     }
 
     try {
@@ -2909,25 +2909,28 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
   let workspace = `workspace #${workspaceID}`
 
   // Add log about this process
-  log.info('Getting all pre/post-connection scripts...', 'Workspace:', workspace, 'Connection:', clusterID != null ? '#' + clusterID : 'a new connection')
+  log.info('Getting all pre/post-connection scripts...', {'Workspace:': workspace, 'Connection': clusterID != null ? '#' + clusterID : 'new'})
   
   // Check pre and post-connection scripts
   try {
     // Set cluster to be null by default
     let cluster = null
 
-    try {
-      // If there's no cluster ID has been passed then skip this try-catch block
-      if (clusterID == null)
-        throw 0
+    // If cluster ID has been passed then load cluster data
+    if (null != clusterID) {
+      try {
+        // Get all saved clusters
+        let clusters = await Modules.Clusters.getClusters(workspaceID)
 
-      // Get all saved clusters
-      let clusters = await Modules.Clusters.getClusters(workspaceID)
+        // Get the target cluster's object
+        cluster = clusters.find((cluster) => cluster.info.id == clusterID)
 
-      // Get the target cluster's object
-      cluster = clusters.filter((cluster) => cluster.info.id == clusterID)[0]
-    } catch (e) {
-      log.error('[functions]', e)
+        if (typeof myVar !== 'undefined') {
+          throw new Error('Cluster with this ID not found')
+        }
+      } catch (e) {
+        log.warning('Something went wrong getting cluster', {'error': e})
+      }
     }
 
     // Get the cluster's `cqlsh.rc` file's content
@@ -2963,12 +2966,12 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
       }
     }
   } catch (e) {
-    log.error('[functions]', e)
+    log.warning('Something went wrong getting pre/post-connection scripts...', {'Workspace:': workspace, 'Connection': clusterID != null ? '#' + clusterID : 'new', 'error': e})
   }
 
   // Add log if scripts have been found
   if (scripts.length != 0) {
-    log.info('Pre/post-connection scripts', JSON.stringify(scripts))
+    log.info('Pre/post-connection scripts have beed loaded', {'count': scripts.length})
   }
 
   // Return the final result
@@ -3003,8 +3006,7 @@ let getRandomPort = async (amount = 1) => {
     }
 
   // Add log about the free-to-use ports
-  // log.info(`Get ${amount} free-to-use port(s), returned '${amount == 1 ? ports[0] : JSON.stringify(ports)}')
-  log.info('Get free-to-use port(s)', 'requested', amount, 'returned', 1 === amount ? ports[0] : JSON.stringify(ports))
+  log.info('Get free-to-use port(s)', {'requested': amount, 'ports': JSON.stringify(ports)})
 
   // Return one `port` if only one is needed, or the entire array otherwise
   return amount == 1 ? ports[0] : ports
@@ -3102,7 +3104,7 @@ let invertColor = (hex) => {
     g = padZero((255 - parseInt(`${hex}`.slice(2, 4), 16)).toString(16))
     b = padZero((255 - parseInt(`${hex}`.slice(4, 6), 16)).toString(16))
   } catch (e) {
-    log.error('[functions]', e)
+    log.error('Failed to invert color', {'error': e})
   }
 
   // Return the final result
@@ -3123,7 +3125,7 @@ let checkSSH = (callback) => {
     // Run the command to check SSH
     Terminal.run('ssh -V', (err, stderr, data) => {
       // Add log for the process' result
-      log.info('Check SSH client exists and is available', 'status', !(err || stderr) ? 'exists and accessible' : 'not exists or inaccessible', stderr)
+      log.info('Check SSH client exists and is available', {'status': !(err || stderr) ? 'exists and accessible' : 'not exists or inaccessible', 'stderr': stderr})
 
       // Call the callback function with the result
       callback(!(err || stderr))
@@ -3320,7 +3322,7 @@ let variablesToValues = (object, variables) => {
       object[key] = value
     })
   } catch (e) {
-    log.error('[functions]', e)
+    log.warning('Failed to convert json values to variables', e)
   }
 
   // Return the object after manipulation
@@ -3414,7 +3416,7 @@ let applyJSONBeautify = (object, sort = false) => {
     // Attempt to beautify the passed JSON object
     beautifiedJSON = BeautifyJSON(object, null, 2, 80)
   } catch (e) {
-    log.error('[functions]', e)
+    log.warning('Failed to beautify json', e)
   }
 
   // Return the beautified version of the JSON
@@ -3541,7 +3543,7 @@ let getWorkspaceFolderPath = (workspaceID, replaceDefault = true) => {
     // Return the result
     return Path.join(folderPath, folderName)
   } catch (e) {
-    log.error('[functions]', e)
+    log.warning('Failed to get workspace folder path', {'workspaceID': workspaceID, 'error': e})
 
     // Return an empty value if an error has occurred
     return ''
@@ -3592,11 +3594,11 @@ let pathIsAccessible = (path) => {
     // Reaching here means the test has successfully passed
     accessible = true
   } catch (e) {
-    log.error('[functions]', e)
+    log.warning('Failed to check the path accessibilty', {'path': path, 'error': e})
   }
 
   // Add log for this process
-  log.info('Check the path is accessible and the user has privileges to it', 'path', path, 'result', accessible ? 'accessible' : 'inaccessible')
+  log.info('Check the path is accessible and the user has privileges to it', {'path': path, 'result': accessible ? 'accessible' : 'inaccessible'})
 
   // Return the test result
   return accessible
@@ -3621,7 +3623,7 @@ let getMachineID = async () => {
       original: true // Set to `true`; to return the original ID value of the machine rather than a hashed value (SHA-256)
     })
   } catch (e) {
-    log.error('[functions]', e)
+    log.warning('Failed to get machine ID', e)
   }
 
   // Return the machine ID
@@ -3636,13 +3638,13 @@ let clearTemp = () => {
   // Define the OS temp folder
   let tempFolder = OS.tmpdir()
 
-  log.info('Clear temporary files from the last session')
+  log.info('Clearing temporary files from the last session...')
 
   // Read the temp folder and get all items (files and folders) in it
   FS.readdir(tempFolder, (err, items) => {
     // If any error has occurred then end this process
     if (err) {
-      log.error('[functions]', err)
+      log.error('Failed to read temporary files folder', {'path': tempFolder, 'error': err})
 
       return
     }
@@ -3657,7 +3659,9 @@ let clearTemp = () => {
         // Remove that temporary config file
         try {
           FS.removeSync(Path.join(tempFolder, item))
-        } catch (e) {}
+        } catch (e) {
+          log.error('Failed to delete temporary file', {'file': item, 'error': e})
+        }
 
         // Skip the upcoming code and move to the next item
         continue
@@ -3847,7 +3851,7 @@ let setUIColor = (workspaceColor) => {
     // Append the stylesheet
     $('body').append($(stylesheet))
   } catch (e) {
-    log.error('[functions]', e)
+    log.warning('Failed to set UI color', e)
   }
 }
 
@@ -3985,7 +3989,7 @@ let closeAllWorkareas = () => {
   let workareas = $('div.body div.right div.content div[content="workarea"] div.workarea[cluster-id]')
 
   // Add log for this  process
-  log.info('Closing all active work areas...', 'open work areas:', workareas.length)
+  log.info('Closing all active work areas...', {'open work areas': workareas.length})
 
   // Loop through each docker/sandbox project and attempt to close it
   Modules.Docker.getProjects().then((projects) => projects.forEach((project) => Modules.Docker.getDockerInstance(project.folder).stopDockerCompose(undefined, () => {})))
@@ -4079,7 +4083,7 @@ let copyStatement = (button) => {
   try {
     Clipboard.writeText(content)
   } catch (e) {
-    log.error('[functions]', e)
+    log.error('Failed to write to clipboard', e)
   }
 
   // Give feedback to the user

@@ -170,7 +170,7 @@ try {
     }
   })
 } catch (e) {
-  log.warning('Failure loading modules', e)
+  log.warning('Failure loading modules', {'error': e})
 }
 
 // Logging configuration

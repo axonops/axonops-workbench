@@ -194,7 +194,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                 try {
                   log.info('SSH Tunnel debug', data)
                 } catch (e) {
-                  log.warning('Failed to log SSH tunnel debug data', e)
+                  log.warning('Failed to log SSH tunnel debug data', {'error': e})
                 }
               }
             }
@@ -237,7 +237,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                   // Remove the SSH tunnel from being closed
                   toBeClosedSSHTunnels = toBeClosedSSHTunnels.filter((_requestID) => _requestID == data.requestID)
                 } catch (e) {
-                  log.warning('Failed to close SSH tunnel', e)
+                  log.warning('Failed to close SSH tunnel', {'error': e})
                 }
 
                 // Skip the upcoming code and stop the process
@@ -265,7 +265,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                 requestID: data.requestID
               })
             }).catch((e) => {
-              log.error('Failed to open ssh tunnel', {'requestID': data.requestID, 'error': e})
+              log.warning('Failed to open ssh tunnel', {'requestID': data.requestID, 'error': e})
 
               // Catch any occurred error
               result.error = e.toString()
@@ -386,7 +386,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                 type: 'CHANGE'
               })
           } catch (e) {
-            log.error('Something went wrong detecting differentiation', {'error': e})
+            log.warning('Something went wrong detecting differentiation', {'error': e})
           }
         }
 

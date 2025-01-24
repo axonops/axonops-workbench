@@ -276,8 +276,7 @@ $(document).on('initialize', async () => getMachineID().then((id) => {
 
   // Add the first set of logs
   setTimeout(() => {
-    log.info('AxonOps Workbench has loaded all components and is ready to be used')
-    log.info('This machine has a unique ID', machineID)
+    log.info('AxonOps Workbench has loaded all components and is ready to be used', {'machineID': machineID})
   }, 1000)
 }))
 
@@ -291,7 +290,7 @@ $(document).on('initialize', () => {
         let chosenLanguage = config.get('ui', 'language') || 'en'
 
         // Add a log about the chosen language
-        log.info('The configuration file has been loaded, and the language to be rendered is', chosenLanguage.toUpperCase())
+        log.info('The configuration file has been loaded', {'language': chosenLanguage.toUpperCase()})
 
         // Load all saved languages and make sure the chosen language exists and is loaded as well
         Modules.Localization.loadLocalization((languages) => {
@@ -447,7 +446,7 @@ $(document).on('initialize', () => {
                 clearLoadInterval()
             })
           } catch (e) {
-            log.error('Failed to load localizations:', e)
+            log.warning('Failed to load localizations', {'error': e})
           }
 
           // Update the list of languages to select in the settings dialog
@@ -485,7 +484,7 @@ $(document).on('initialize', () => {
         })
       })
     } catch (e) {
-      log.error('Renderer initialisation failed', e)
+      log.warning('Renderer initialisation failed', {'error': e})
     }
   })
 })
@@ -998,7 +997,7 @@ $(document).on('initialize', () => {
           }, 250)
         })
       } catch (e) {
-        log.error('Something went wrong on Monaco editor initialization', e)
+        log.warning('Something went wrong on Monaco editor initialization', {'error': e})
       }
     })
 
@@ -1086,15 +1085,15 @@ $(document).on('initialize', () => {
           return
 
         // Otherwise, load the event file
-        log.debug('Loading event file...', eventFile)
+        log.debug('Loading event file...', {'path': eventFile})
         loadScript(Path.join(eventsFilesPath, eventFile))
-        log.debug('Event file loaded')
+        log.debug('Event file loaded', {'path': eventFile})
       } catch (e) {
-        log.warn('Failed to load event file', eventFile, e)
+        log.warn('Failed to load event file', {'path': eventFile, 'error': e})
       }
     })
   } catch (e) {
-    log.error('Event files loading failed', e)
+    log.warning('Event files loading failed', {'error': e})
   }
 })
 
@@ -1319,7 +1318,7 @@ $(document).on('initialize', () => {
       try {
         Clipboard.writeText(`v${AppInfo.version}`)
       } catch (e) {
-        log.error('Failed to copy text to clipboard', e)
+        log.warning('Failed to copy text to clipboard', {'error': e})
       }
 
       // Give feedback to the user
@@ -1382,14 +1381,14 @@ $(document).on('initialize', () => {
 
     getKey('public', (key) => {
       getKey('private', (key) => {
-        log.debug('EVENT', 'pty:cqlsh:initialize')
+        log.debug('EVENT', {'event': 'pty:cqlsh:initialize'})
         
         IPCRenderer.on('pty:cqlsh:initialize:finished', () => getConfigToLoad())
         IPCRenderer.send('pty:cqlsh:initialize')
       })
     })
   } catch (e) {
-    log.warning('Something went wrong during key processing:', e)
+    log.warning('Something went wrong during key processing', {'error': e})
   }
 })
 

@@ -137,7 +137,7 @@
           numOfNodes = (numOfNodes < minNumOfNodes) ? minNumOfNodes : ((numOfNodes > maxNumOfNodes) ? maxNumOfNodes : numOfNodes)
 
           // Add log about the project's attributes
-          log.info('Local cluster attributes', 'Cassandra version', cassandraVersion, 'Number of nodes', numOfNodes)
+          log.info('Local cluster attributes', {'version': cassandraVersion, 'nodes': numOfNodes})
 
           // Create a Docker instance/object
           let dockerObject = new Modules.Docker.DockerCompose()

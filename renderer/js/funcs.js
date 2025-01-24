@@ -671,7 +671,7 @@ let repairJSON = (json) => {
     // Update the result with the new repaired JSON string
     result = json
   } catch (e) {
-    log.warning('Failed to repair JSON', e)
+    log.warning('Failed to repair JSON', {'error': e})
   } finally {
     // Return the final result
     return result
@@ -2771,7 +2771,7 @@ let encrypt = (publicKey, text) => {
     // Encrypt the given text
     encryptedText = public.encrypt(text).toString('base64')
   } catch (e) {
-    log.warning('Failed to encrypt the text', e)
+    log.warning('Failed to encrypt the text', {'error': e})
   } finally {
     // Return the final encrypted text
     return encryptedText
@@ -2802,7 +2802,7 @@ let decrypt = (privateKey, text) => {
     // Decrypt the given text
     decryptedText = private.decrypt(text).toString('utf8')
   } catch (e) {
-    log.warning('Failed to decrypt the text', e)
+    log.warning('Failed to decrypt the text', {'error': e})
   } finally {
     // Return the final decrypted text
     return decryptedText
@@ -2867,7 +2867,7 @@ let executeScript = (scriptID, scripts, callback) => {
       // Call the execution function again in a recursive way
       executeScript(scriptID, scripts, callback)
     } catch (e) {
-      log.error('[functions]', e)
+      log.warning('[functions]', {'error': e})
 
       /**
        * Call the callback function
@@ -3002,7 +3002,7 @@ let getRandomPort = async (amount = 1) => {
     try {
       ports.push(await PortGet())
     } catch (e) {
-      log.error('Failed to get a new port', e)
+      log.warning('Failed to get a new port', {'error': e})
     }
 
   // Add log about the free-to-use ports
@@ -3104,7 +3104,7 @@ let invertColor = (hex) => {
     g = padZero((255 - parseInt(`${hex}`.slice(2, 4), 16)).toString(16))
     b = padZero((255 - parseInt(`${hex}`.slice(4, 6), 16)).toString(16))
   } catch (e) {
-    log.error('Failed to invert color', {'error': e})
+    log.warning('Failed to invert color', {'error': e})
   }
 
   // Return the final result
@@ -3131,7 +3131,7 @@ let checkSSH = (callback) => {
       callback(!(err || stderr))
     })
   } catch (e) {
-    log.error('Failed to check availability of ssh client', e)
+    log.warning('Failed to check availability of ssh client', {'error': e})
   }
 }
 
@@ -3242,7 +3242,7 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
         // Skip the upcoming code
         return
       } catch (e) {
-        log.error('[functions]', e)
+        log.warning('[functions]', {'error': e})
       }
 
       /**
@@ -3266,7 +3266,7 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
       result[objectValue] = value
     })
   } catch (e) {
-    log.error('[functions]', e)
+    log.warning('[functions]', {'error': e})
   } finally {
     // Return the final result in case more than raw data is wanted
     if (!rawData)
@@ -3322,7 +3322,7 @@ let variablesToValues = (object, variables) => {
       object[key] = value
     })
   } catch (e) {
-    log.warning('Failed to convert json values to variables', e)
+    log.warning('Failed to convert json values to variables', {'error': e})
   }
 
   // Return the object after manipulation
@@ -3416,7 +3416,7 @@ let applyJSONBeautify = (object, sort = false) => {
     // Attempt to beautify the passed JSON object
     beautifiedJSON = BeautifyJSON(object, null, 2, 80)
   } catch (e) {
-    log.warning('Failed to beautify json', e)
+    log.warning('Failed to beautify json', {'error': e})
   }
 
   // Return the beautified version of the JSON
@@ -3623,7 +3623,7 @@ let getMachineID = async () => {
       original: true // Set to `true`; to return the original ID value of the machine rather than a hashed value (SHA-256)
     })
   } catch (e) {
-    log.warning('Failed to get machine ID', e)
+    log.warning('Failed to get machine ID', {'error': e})
   }
 
   // Return the machine ID
@@ -3660,7 +3660,7 @@ let clearTemp = () => {
         try {
           FS.removeSync(Path.join(tempFolder, item))
         } catch (e) {
-          log.error('Failed to delete temporary file', {'file': item, 'error': e})
+          log.warning('Failed to delete temporary file', {'file': item, 'error': e})
         }
 
         // Skip the upcoming code and move to the next item
@@ -3851,7 +3851,7 @@ let setUIColor = (workspaceColor) => {
     // Append the stylesheet
     $('body').append($(stylesheet))
   } catch (e) {
-    log.warning('Failed to set UI color', e)
+    log.warning('Failed to set UI color', {'error': e})
   }
 }
 
@@ -4083,7 +4083,7 @@ let copyStatement = (button) => {
   try {
     Clipboard.writeText(content)
   } catch (e) {
-    log.error('Failed to write to clipboard', e)
+    log.warning('Failed to write to clipboard', {'error': e})
   }
 
   // Give feedback to the user

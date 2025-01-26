@@ -27,7 +27,10 @@
         },
         "args": [".", "--remote-debugging-port=9223"],
         "outputCapture": "std",
-        "console": "integratedTerminal"
+        "console": "integratedTerminal",
+        "env": {
+          "AXONOPS_DEV_TOOLS": "true"
+        }
       }
     ]
   }

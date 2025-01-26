@@ -477,18 +477,12 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                           method: 'append'
                         }
 
-                        try {
-                          // If the container is hidden then skip this try-catch block
-                          if (!hideSwitcher)
-                            throw 0
-
-                          // As the container is shown, the new switcher will be right after the home button
+                        // As the container is shown, the new switcher will be right after the home button
+                        if (hideSwitcher) {
                           addingFunction = {
                             element: workspaceSwitcher.children('div.workspace[home]'),
                             method: 'after'
                           }
-                        } catch (e) {
-                          log.error('[workspaces]', e)
                         }
 
                         // Append the workspace switcher to the switch container
@@ -547,7 +541,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                               let workspaceElement = $(`div[content="workspaces"] div.workspaces-container div.workspace[data-id="${workspaceID}"]`)
 
                               // Add log about this action
-                              log.debug('Switch to the work area of workspace', getAttributes(workspaceElement, ['data-name', 'data-id']))
+                              log.debug('Switch to the work area of workspace', {'workspace': getAttributes(workspaceElement, ['data-name', 'data-id'])})
 
                               // Deactivate all workspaces and clusters inside the switchers
                               $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
@@ -659,7 +653,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
                 // Clicks the delete button
                 $(`div.btn[button-id="${deleteBtnID}"]`).click(() => {
-                  log.info('[workspaces]', 'Request to delete the workspace', workspaceID)
+                  log.info('Request to delete a workspace', {'workspace': workspaceID})
 
                   // Open the confirmation dialog and wait for the response
                   openDialog(I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the workspace [b]$data[/b]? once you confirm, there is no undo', [getAttributes(workspaceElement, 'data-name')])) + '.', (response) => {
@@ -736,7 +730,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
           }))
         } catch (e) {
-          log.error('[workspaces]', e)
+          log.warning('Something went wrong processing workspace', {'workspace': workspaceID, 'error': e})
         }
       })
     })

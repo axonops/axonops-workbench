@@ -322,7 +322,7 @@ $(document).on('initialize', () => {
         buttons.back.toggleClass('disabled', !webviewAIAssistant[0].canGoBack())
         buttons.forward.toggleClass('disabled', !webviewAIAssistant[0].canGoForward())
       }, 500)
-    })
+    }, 2000)
   } catch (e) {}
 })
 

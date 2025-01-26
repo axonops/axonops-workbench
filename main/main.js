@@ -283,7 +283,8 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
       try {
         windowObject.webContents.openDevTools()
       } catch (e) {
-        log.warning('Failed to open DevTools', {'error': e})
+        // Electron-log won't be available in renderer at that moment
+        console.log('Failed to open DevTools', {'view': viewPath, 'error': e})
       }
 
     // Send the window's content's ID
@@ -292,10 +293,13 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
     } catch (e) {}
 
     // Attempt to call the callback function
-    try {
-      callback()
-    } catch (e) {
-      log.warning('Failed to execute callback for a created window ', {'view': viewPath, 'error': e})
+    if (callback instanceof Function) {
+      try {
+        callback()
+      } catch (e) {
+        // Electron-log won't be available in renderer at that moment
+        console.log('Failed to execute callback for a created window ', {'view': viewPath, 'error': e})
+      }
     }
   })
 

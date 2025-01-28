@@ -1,7 +1,7 @@
 {
   "name": "axonops-workbench",
   "title": "AxonOps Workbench",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "author": {
     "name": "AxonOps",
     "email": "info@axonops.com"
@@ -60,7 +60,7 @@
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
-      "icon": "./renderer/assets/images/axonops-icon-512x512.icns",
+      "icon": "./renderer/assets/images/axonops-icon.icns",
       "category": "public.app-category.developer-tools",
       "extendInfo": {
         "ElectronTeamID": "UJ776LUP23"

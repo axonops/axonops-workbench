@@ -40,7 +40,7 @@ window.onload = () => {
       const AppInfo = require(Path.join(__dirname, '..', '..', 'package.json')); // This semicolon is critical here
 
       // Set the app's name and version
-      (['title', 'version']).forEach((info) => document.getElementById(info).innerHTML = AppInfo[info])
+      (['title', 'version']).forEach((info) => document.getElementById(info).innerHTML = (info == 'version' && !AppInfo[info].startsWith('v') ? 'v' : '') + AppInfo[info])
     } catch (e) {}
 
     // Handle the Cassandra's copyright acknowledgement

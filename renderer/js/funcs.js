@@ -27,7 +27,6 @@
  * @Return: {object} the Material Design's object
  */
 let getElementMDBObject = (element, type = 'Input') => {
-
   // Define the final object which be returned
   let object = null
 
@@ -38,10 +37,24 @@ let getElementMDBObject = (element, type = 'Input') => {
       let objectUIElement = object.element
 
       try {
-        objectUIElement = object.element.length > 1 ? object.element[0] : object.element
+        objectUIElement = object.element.length > 1 ? object.element[0] : objectUIElement
       } catch (e) {}
 
-      return objectUIElement.is(element) && object.type == type
+      try {
+        objectUIElement = object.object.reference || objectUIElement
+      } catch (e) {}
+
+      let isObjectFound = false
+
+      try {
+        isObjectFound = objectUIElement.is(element) && object.type == type
+      } catch (e) {
+        try {
+          isObjectFound = $(objectUIElement).is(element) && object.type == type
+        } catch (e) {}
+      }
+
+      return isObjectFound
     })
 
     // If it has already been found then return it
@@ -1053,6 +1066,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         } catch (e) {}
 
         try {
+          structure.a_attr['is-counter-table'] = parentType.isCounterTable
+        } catch (e) {}
+
+        try {
           structure.a_attr.table = parentType.table
         } catch (e) {}
 
@@ -1084,7 +1101,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         let attributes = ['virtual', 'durable_writes', 'is_static', 'is_reversed']
 
         if (parentType == 'partitionKeys')
-          attributes = `${attributes}`.slice(0, -2)
+          attributes = attributes.slice(0, -2)
 
         // Loop through them all
         attributes.forEach((attribute) => {
@@ -1208,13 +1225,37 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       parent: keyspaceID, // Under the current keyspace
       text: `Tables (<span>${keyspace.tables.length}</span>)`,
       type: 'default',
-      icon: normalizePath(Path.join(extraIconsPath, 'table.png'))
+      icon: normalizePath(Path.join(extraIconsPath, 'table.png')),
+      a_attr: {
+        keyspace: keyspace.name,
+        type: 'tables-parent',
+        'allow-right-context': true
+      }
     }
 
     // Append the tables' container to the tree structure
     treeStructure.core.data.push(tablesStructure)
 
     sortItemsAlphabetically(keyspace.tables, 'name')
+
+    let counterTablesID = getRandomID(30),
+      counterTablesStructure = {
+        id: counterTablesID,
+        parent: tablesID,
+        type: 'default',
+        icon: normalizePath(Path.join(extraIconsPath, 'counter.png')),
+        state: {
+          hidden: true
+        },
+        a_attr: {
+          keyspace: keyspace.name,
+          type: 'counter-tables-parent',
+          'allow-right-context': true
+        }
+      },
+      numOfCounterTables = 0
+
+    treeStructure.core.data.push(counterTablesStructure)
 
     // Loop through every table in the keyspace
     keyspace.tables.forEach((table) => {
@@ -1230,25 +1271,44 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         indexesID
       ] = getRandomID(30, 8)
 
+      let isCounterTable = table.columns.find((column) => column.cql_type == 'counter') != undefined
+
+      if (isCounterTable)
+        numOfCounterTables += 1
+
       /**
        * Build a tree view for the table
        * For the `parentType` parameter set it to be the table's keyspace's name; to set a correct scope for getting a CQL description
        */
       buildTreeViewForChild(tablesID, tableID, `Table`, table, 'table', {
-        keyspace: keyspace.name
+        keyspace: keyspace.name,
+        isCounterTable
       })
+
+      if (isCounterTable)
+        buildTreeViewForChild(counterTablesID, `${tableID}_${counterTablesID}`, `Table`, table, 'table', {
+          keyspace: keyspace.name,
+          isCounterTable: true
+        })
 
       // Table's primary keys
       {
         let primaryKeysStructure = {
           id: primaryKeysID,
           parent: tableID,
-          text: `Primary Keys (<span>${table.primary_key.length}</span>)`,
+          text: `Primary Key (<span>${table.primary_key.length}</span>)`,
           type: 'default',
           icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
         }
 
         treeStructure.core.data.push(primaryKeysStructure)
+
+        if (isCounterTable)
+          treeStructure.core.data.push({
+            ...primaryKeysStructure,
+            id: `${primaryKeysID}_${counterTablesID}`,
+            parent: `${tableID}_${counterTablesID}`
+          })
 
         // Loop through primary keys
         table.primary_key.forEach((primaryKey) => {
@@ -1257,6 +1317,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           // Build tree view for the key
           buildTreeViewForChild(primaryKeysID, primaryKeyID, `Key`, primaryKey, 'key')
+
+          if (isCounterTable)
+            buildTreeViewForChild(`${primaryKeysID}_${counterTablesID}`, `${primaryKeyID}_${counterTablesID}`, `Key`, primaryKey, 'key')
         })
       }
 
@@ -1272,6 +1335,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         treeStructure.core.data.push(partitionKeysStructure)
 
+        if (isCounterTable)
+          treeStructure.core.data.push({
+            ...partitionKeysStructure,
+            id: `${partitionKeysID}_${counterTablesID}`,
+            parent: `${tableID}_${counterTablesID}`
+          })
+
         // Loop through keys
         table.partition_key.forEach((partitionKey) => {
           // Get a random ID for the key
@@ -1279,6 +1349,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           // Build tree view for the key
           buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'key', 'partitionKeys')
+
+          if (isCounterTable)
+            buildTreeViewForChild(`${partitionKeysID}_${counterTablesID}`, `${partitionKeyID}_${counterTablesID}`, `Key`, partitionKey, 'key', 'partitionKeys')
         })
       }
 
@@ -1294,6 +1367,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         treeStructure.core.data.push(clusteringKeysStructure)
 
+        if (isCounterTable)
+          treeStructure.core.data.push({
+            ...clusteringKeysStructure,
+            id: `${clusteringKeysID}_${counterTablesID}`,
+            parent: `${tableID}_${counterTablesID}`
+          })
+
         // Loop through clustering keys
         table.clustering_key.forEach((clusteringKey) => {
           // Get a random ID for the key
@@ -1301,6 +1381,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           // Build tree view for the key
           buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'key')
+
+          if (isCounterTable)
+            buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'key')
         })
       }
 
@@ -1316,6 +1399,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         treeStructure.core.data.push(columnsStructure)
 
+        if (isCounterTable)
+          treeStructure.core.data.push({
+            ...columnsStructure,
+            id: `${columnsID}_${counterTablesID}`,
+            parent: `${tableID}_${counterTablesID}`
+          })
+
         sortItemsAlphabetically(table.columns, 'name')
 
         // Loop through columns
@@ -1328,15 +1418,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           // Build a tree view for the column
           buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
+
+          if (isCounterTable)
+            buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, 'column')
         })
       }
 
       // Display the `Options` node/leaf if there is at least one option available for the current table
       try {
-        // If the current table does not have an `options` attribute, then skip this try-catch block
-        if (table.options == undefined || Object.keys(table.options).length <= 0)
-          throw 0
-
         /**
          * Options' container that will be under the table overall container
          * Get a random ID for the options' parent/container node
@@ -1353,6 +1442,17 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         // Append the options' parent/container to the tree structure
         treeStructure.core.data.push(optionsStructure)
+
+        if (isCounterTable)
+          treeStructure.core.data.push({
+            ...optionsStructure,
+            id: `${optionsID}_${counterTablesID}`,
+            parent: `${tableID}_${counterTablesID}`
+          })
+
+        // If the current table does not have an `options` attribute, then skip this try-catch block
+        if (table.options == undefined || Object.keys(table.options).length <= 0)
+          throw 0
 
         // Define an inner function to handle the appending process of options to the tree structure
         let appendOptions = (options, parentID) => {
@@ -1392,6 +1492,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               // Push the node
               treeStructure.core.data.push(parentOptionsStructure)
 
+              if (isCounterTable)
+                treeStructure.core.data.push({
+                  ...parentOptionsStructure,
+                  id: `${parentOptionsID}_${counterTablesID}`,
+                  parent: `${parentID}_${counterTablesID}`
+                })
+
               // Make a recursive call to the same function
               return appendOptions(value, parentOptionsID)
             } catch (e) {}
@@ -1412,6 +1519,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
             // Push the node
             treeStructure.core.data.push(optionStructure)
+
+            if (isCounterTable)
+              treeStructure.core.data.push({
+                ...optionStructure,
+                id: `${optionID}_${counterTablesID}`,
+                parent: `${parentID}_${counterTablesID}`
+              })
           })
         }
 
@@ -1431,6 +1545,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         treeStructure.core.data.push(triggersStructure)
 
+        if (isCounterTable)
+          treeStructure.core.data.push({
+            ...triggersStructure,
+            id: `${triggersID}_${counterTablesID}`,
+            parent: `${tableID}_${counterTablesID}`
+          })
+
         // Loop through triggers
         table.triggers.forEach((trigger) => {
           // Get a random ID for the trigger
@@ -1438,15 +1559,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           // Build a tree view for the trigger
           buildTreeViewForChild(triggersID, triggerID, `Trigger`, trigger, 'trigger')
+
+          if (isCounterTable)
+            buildTreeViewForChild(`${triggersID}_${counterTablesID}`, `${triggerID}_${counterTablesID}`, `Trigger`, trigger, 'trigger')
         })
       }
 
       // Show a `Views` node/leaf if the current table has at least one view
       try {
-        // If the current table doesn't have any materialized view then skip this try-catch block
-        if (table.views.length <= 0)
-          throw 0
-
         /**
          * Views' container that will be under the table container
          * Get a random ID for the views' parent node
@@ -1463,6 +1583,17 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         // Append the views' container to the tree structure
         treeStructure.core.data.push(viewsStructure)
+
+        if (isCounterTable)
+          treeStructure.core.data.push({
+            ...viewsStructure,
+            id: `${viewsID}_${counterTablesID}`,
+            parent: `${tableID}_${counterTablesID}`
+          })
+
+        // If the current table doesn't have any materialized view then skip this try-catch block
+        if (table.views.length <= 0)
+          throw 0
 
         // Loop through every view in the table
         table.views.forEach((view) => {
@@ -1482,6 +1613,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             keyspace: keyspace.name
           })
 
+          if (isCounterTable)
+            buildTreeViewForChild(`${viewsID}_${counterTablesID}`, `${viewID}_${counterTablesID}`, `View`, view, 'table', {
+              keyspace: keyspace.name
+            })
+
           // Loop through the view's children, starting from the clustering keys
           let clusteringKeysStructure = {
             id: clusteringKeysID,
@@ -1493,6 +1629,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           treeStructure.core.data.push(clusteringKeysStructure)
 
+          if (isCounterTable)
+            treeStructure.core.data.push({
+              ...clusteringKeysStructure,
+              id: `${clusteringKeysID}_${counterTablesID}`,
+              parent: `${viewID}_${counterTablesID}`
+            })
+
           // Loop through clustering keys
           view.clustering_key.forEach((clusteringKey) => {
             // Get a random ID for the key
@@ -1500,6 +1643,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
             // Build tree view for the key
             buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'key')
+
+            if (isCounterTable)
+              buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'key')
           })
           // End of view's clustering keys
 
@@ -1514,6 +1660,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           treeStructure.core.data.push(partitionKeysStructure)
 
+          if (isCounterTable)
+            treeStructure.core.data.push({
+              ...partitionKeysStructure,
+              id: `${partitionKeysID}_${counterTablesID}`,
+              parent: `${viewID}_${counterTablesID}`
+            })
+
           // Loop through keys
           view.partition_key.forEach((partitionKey) => {
             // Get a random ID for the key
@@ -1521,6 +1674,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
             // Build tree view for the key
             buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'key', 'partitionKeys')
+
+            if (isCounterTable)
+              buildTreeViewForChild(`${partitionKeysID}_${partitionKeyID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, partitionKey, 'key', 'partitionKeys')
           })
           // End of view's partition keys
 
@@ -1535,6 +1691,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           treeStructure.core.data.push(columnsStructure)
 
+          if (isCounterTable)
+            treeStructure.core.data.push({
+              ...columnsStructure,
+              id: `${columnsID}_${counterTablesID}`,
+              parent: `${viewID}_${counterTablesID}`
+            })
+
           // Loop through columns
           view.columns.forEach((column) => {
             // Get rid of `is_reversed` attribute
@@ -1545,16 +1708,15 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
             // Build a tree view for the column
             buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
+
+            if (isCounterTable)
+              buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, 'column')
           })
         })
       } catch (e) {}
 
       // Show an `Indexes` node/leaf if the current table has at least one index
       try {
-        // If the current table doesn't have any index then skip this try-catch block
-        if (table.indexes.length <= 0)
-          throw 0
-
         /**
          * Indexes' container that will be under the table container
          * Get a random ID for the indexes' parent node
@@ -1571,6 +1733,17 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         // Append the indexes' container to the tree structure
         treeStructure.core.data.push(indexesStructure)
+
+        if (isCounterTable)
+          treeStructure.core.data.push({
+            ...indexesStructure,
+            id: `${indexesID}_${counterTablesID}`,
+            parent: `${tableID}_${counterTablesID}`
+          })
+
+        // If the current table doesn't have any index then skip this try-catch block
+        if (table.indexes.length <= 0)
+          throw 0
 
         // Loop through every index in the table
         table.indexes.forEach((index) => {
@@ -1592,6 +1765,12 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             table: table.name
           })
 
+          if (isCounterTable)
+            buildTreeViewForChild(`${indexesID}_${counterTablesID}`, `${indexID}_${counterTablesID}`, `Index`, index, 'index', {
+              keyspace: keyspace.name,
+              table: table.name
+            })
+
           // Push the index's kind's tree view's node structure
           treeStructure.core.data.push({
             id: kindID,
@@ -1599,16 +1778,28 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             text: `Kind: <span>${I18next.capitalizeFirstLetter(EscapeHTML(index.kind.toLowerCase()))}</span>`,
             type: 'default'
           })
+
+          if (isCounterTable)
+            treeStructure.core.data.push({
+              id: `${kindID}_${counterTablesID}`,
+              parent: `${indexID}_${counterTablesID}`,
+              text: `Kind: <span>${I18next.capitalizeFirstLetter(EscapeHTML(index.kind.toLowerCase()))}</span>`,
+              type: 'default'
+            })
         })
       } catch (e) {}
     })
 
+    try {
+      let counterTablesNode = treeStructure.core.data.find((node) => node.id == counterTablesID)
+
+      counterTablesNode.state.hidden = false
+
+      counterTablesNode.text = `Counter Tables (<span>${numOfCounterTables}</span>)`
+    } catch (e) {}
+
     // Show a `Views` node/leaf if the current keyspace has at least one view
     try {
-      // If the current keyspace doesn't have any materialized view then skip this try-catch block
-      if (keyspace.views.length <= 0)
-        throw 0
-
       /**
        * Views' container that will be under the keyspace container
        * Get a random ID for the views' parent node
@@ -1625,6 +1816,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       // Append the views' container to the tree structure
       treeStructure.core.data.push(viewsStructure)
+
+      // If the current keyspace doesn't have any materialized view then skip this try-catch block
+      if (keyspace.views.length <= 0)
+        throw 0
 
       // Loop through every view in the keyspace
       keyspace.views.forEach((view) => {
@@ -1719,10 +1914,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
     // Show an `Indexes` node/leaf if the current keyspace has at least one index
     try {
-      // If the current keyspace doesn't have any index then skip this try-catch block
-      if (keyspace.indexes.length <= 0)
-        throw 0
-
       /**
        * Indexes' container that will be under the keyspace container
        * Get a random ID for the indexes' parent node
@@ -1739,6 +1930,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       // Append the indexes' container to the tree structure
       treeStructure.core.data.push(indexesStructure)
+
+      // If the current keyspace doesn't have any index then skip this try-catch block
+      if (keyspace.indexes.length <= 0)
+        throw 0
 
       // Loop through every index in the keyspace
       keyspace.indexes.forEach((index) => {
@@ -1790,10 +1985,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Get random ID for the main node/leaf
         userDefinedElementsID = getRandomID(30)
 
-      // If there's no user-defined element then skip this try-catch block
-      if (Object.keys(lengths).every((length) => lengths[length] <= 0))
-        throw 0
-
       // // Define the main node's structure
       // let userDefinedElementsStructure = {
       //   id: userDefinedElementsID,
@@ -1808,10 +1999,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       // Handle `User Defined Types (UDT)`
       try {
-        // If the current keyspace doesn't have any UDT then skip this try-catch block
-        if (lengths.userTypes <= 0)
-          throw 0
-
         /**
          * UDTs' parent node that will be under the main node
          * Get a random ID for the UDTs' parent node
@@ -1833,6 +2020,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         // Append the UDTs' container to the tree structure
         treeStructure.core.data.push(userTypesStructure)
+
+        // If the current keyspace doesn't have any UDT then skip this try-catch block
+        if (lengths.userTypes <= 0)
+          throw 0
 
         // Loop through every UDT in the keyspace
         keyspace.user_types.forEach((userType) => {
@@ -1870,10 +2061,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       // Handle `User Defined Functions (UDF)`
       try {
-        // If the current keyspace doesn't have any UDF then skip this try-catch block
-        if (lengths.functions <= 0)
-          throw 0
-
         /**
          * UDFs' parent node that will be under the main node
          * Get a random ID for the UDFs' parent node
@@ -1890,6 +2077,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         // Push the UDFs' node to the tree structure
         treeStructure.core.data.push(userFuncsStructure)
+
+        // If the current keyspace doesn't have any UDF then skip this try-catch block
+        if (lengths.functions <= 0)
+          throw 0
 
         // Loop through every UDF in the keyspace
         keyspace.functions.forEach((func) => {
@@ -1956,10 +2147,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       // Handle `User Defined Aggregates (UDA)`
       try {
-        // If the current keyspace doesn't have any UDA then skip this try-catch block
-        if (lengths.aggregates <= 0)
-          throw 0
-
         /**
          * UDA's parent node that will be under the main node
          * Get a random ID for the UDTs' parent node
@@ -1976,6 +2163,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         // Push the UDA's main node to the tree structure
         treeStructure.core.data.push(userAggregatesStructure)
+
+        // If the current keyspace doesn't have any UDA then skip this try-catch block
+        if (lengths.aggregates <= 0)
+          throw 0
 
         // Loop through every UDA in the keyspace
         keyspace.aggregates.forEach((aggregate) => {

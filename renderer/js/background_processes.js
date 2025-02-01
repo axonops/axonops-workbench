@@ -56,14 +56,19 @@ const FS = require('fs-extra'),
   Diff = require('diff')
 
 /**
+ * Electron Logging
+ * Used for logging
+ */
+const log = require('electron-log/renderer')
+log.debug('background_processes.js is running...')
+
+/**
  * Get the set extra resources path
  * This value will be updated from the main thread
  */
 let extraResourcesPath = null,
   // An array to hold all created SSH tunnels
   sshTunnelsObjects = [],
-  // Boolean value used to tell if the logging system should be enabled in the current session or not
-  isLoggingEnabled = true,
   // An array that tells which SSH tunnel should be closed - after terminating the process -
   toBeClosedSSHTunnels = []
 
@@ -87,28 +92,20 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
     })
   })
 
-  /**
-   * Check the status of either enabling or disabling the logging feature
-   * Get the app's config
-   */
-  Config.getConfig(async (config) => {
-    // Check the status of either enabling or disabling the logging feature
-    isLoggingEnabled = config.get('security', 'loggingEnabled') || isLoggingEnabled
-
-    // Convert the flag to a boolean instead of a string
-    isLoggingEnabled = isLoggingEnabled == 'false' ? false : true
-  })
-
   // Handle all communication channels with the main thread
   {
     // SSH tunnels creation and controlling
     {
       // Request from the main thread to create an SSH tunnel
       IPCRenderer.on(`ssh-tunnel:create`, async (_, data) => {
+        // If no specific port passed for the SSH server then use 22
+        data.port = data.port || 22
+
+        // Same for the destination address/host, default is 127.0.0.1 - localhost -
+        data.dstAddr = data.dstAddr || '127.0.0.1'
+
         // Add log for this request
-        try {
-          addLog(`Create an SSH tunnel to activate connection`, 'network')
-        } catch (e) {}
+        log.info('Creating an SSH tunnel...', {'address': data.dstAddr, 'port': data.port})
 
         // Get the app's config
         Config.getConfig(async (config) => {
@@ -130,12 +127,6 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               localPort
             ] = await getRandomPort(2)
 
-            // If no specific port passed for the SSH server then use 22
-            data.port = data.port || 22
-
-            // Same for the destination address/host, default is 127.0.0.1 - localhost -
-            data.dstAddr = data.dstAddr || '127.0.0.1'
-
             // Initialize the authentication data
             let authentication = {}
 
@@ -148,25 +139,20 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               if (![undefined, null, ''].includes(data.privatekey))
                 authentication.privateKey = await FS.readFileSync(data.privatekey, 'utf8')
             } catch (e) {
-              try {
-                errorLog(e, 'SSH tunnel')
-              } catch (e) {}
+              log.warning('Failed to read private key file', {'path': data.privatekey, 'error': e})
             }
 
-            try {
-              // If a pass phrase for the private key file has been passed
-              if (data.passphrase == undefined || data.passphrase.trim().length <= 0)
-                throw 0
-
-              // Parse the key file's content using the `parseKey` function
-              let prasedKey = SSH2Utils.parseKey(authentication.privateKey, data.passphrase)
-
-              // Update the key's content
-              authentication.privateKey = prasedKey.getPrivatePEM()
-            } catch (e) {
+            // If a pass phrase for the private key file has been passed
+            if (data.passphrase != undefined && data.passphrase.trim().length > 0) {
               try {
-                errorLog(e, 'SSH tunnel')
-              } catch (e) {}
+                // Parse the key file's content using the `parseKey` function
+                let prasedKey = SSH2Utils.parseKey(authentication.privateKey, data.passphrase)
+
+                // Update the key's content
+                authentication.privateKey = prasedKey.getPrivatePEM()
+              } catch (e) {
+                log.warning('Failed to parse private key with pass phrase', {'error': e})
+              }
             }
 
             // Make sure there's no key with an `undefined` value
@@ -183,9 +169,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                   delete authentication[key]
               })
             } catch (e) {
-              try {
-                errorLog(e, 'SSH tunnel')
-              } catch (e) {}
+              log.warning('Something went wrong sanitizing ssh tunnel data', {'error': e})
             }
 
             // Define the final SSH tunnel's attributes
@@ -209,8 +193,10 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               forwardTimeout: timeout.forward,
               debug: function(data) {
                 try {
-                  addLog(data)
-                } catch (e) {}
+                  log.info('SSH Tunnel debug', data)
+                } catch (e) {
+                  log.warning('Failed to log SSH tunnel debug data', {'error': e})
+                }
               }
             }
 
@@ -232,9 +218,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               })
 
               // Add log about the final attributes
-              try {
-                addLog(`Final attributes of the SSH tunnel are '${JSON.stringify(sshTunnelAttributesCopy)}'`)
-              } catch (e) {}
+              log.info('SSH Tunnel attributes', sshTunnelAttributesCopy)
             }
 
             // Create the tunnel
@@ -249,16 +233,12 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                   tunnel.close()
 
                   // Add log for this process
-                  try {
-                    addLog(`The SSH tunnel which associated with request ID '${data.requestID}' has been closed`)
-                  } catch (e) {}
+                  log.info('The SSH tunnel has been closed', {'requestID': data.requestID})
 
                   // Remove the SSH tunnel from being closed
                   toBeClosedSSHTunnels = toBeClosedSSHTunnels.filter((_requestID) => _requestID == data.requestID)
                 } catch (e) {
-                  try {
-                    errorLog(e, 'SSH tunnel')
-                  } catch (e) {}
+                  log.warning('Failed to close SSH tunnel', {'error': e})
                 }
 
                 // Skip the upcoming code and stop the process
@@ -286,9 +266,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                 requestID: data.requestID
               })
             }).catch((e) => {
-              try {
-                errorLog(e, 'SSH tunnel')
-              } catch (e) {}
+              log.warning('Failed to open ssh tunnel', {'requestID': data.requestID, 'error': e})
 
               // Catch any occurred error
               result.error = e.toString()
@@ -300,9 +278,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               })
             })
           } catch (e) {
-            try {
-              errorLog(e, 'SSH tunnel')
-            } catch (e) {}
+            log.warning('Failed to create ssh tunnel', {'address': data.dstAddr, 'port': data.port, 'error': e})
 
             // Catch any occurred error
             result.error = e.toString()
@@ -325,57 +301,22 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
         let isPort = !isNaN(parseInt(clusterID))
 
         // Add log for this process
-        try {
-          addLog(`Close an SSH tunnel that associated with the connection of ID/defined-port '${clusterID}'`, 'network')
-        } catch (e) {}
+        log.info('Closing an SSH tunnel...', {'id': clusterID, 'type': isPort ? 'port' : 'cluster' })
 
         try {
-          // If what has been given is not a port then skip this try-catch block
-          if (!isPort)
-            throw 0
-
-          // Loop through the active SSH tunnels
-          Object.keys(sshTunnelsObjects).forEach((tunnel) => {
-            // Define the current SSH tunnel
-            let sshTunnel = sshTunnelsObjects[tunnel]
-
-            // If the current SSH tunnel's port is not the given one then skip it and move to the next tunnel
-            if (sshTunnel.port != clusterID)
-              return
-
+          if (isPort) {
             // Close that SSH tunnel
-            try {
-              sshTunnel.object.close()
-
-              // Add log for this process
-              try {
-                addLog(`The SSH tunnel which associated with connection of ID/defined-port '${clusterID}' has been closed`)
-              } catch (e) {}
-            } catch (e) {
-              try {
-                errorLog(e, 'SSH tunnel')
-              } catch (e) {}
-            }
-          })
-
-          // Skip the upcoming code
-          return
-        } catch (e) {
-          try {
-            errorLog(e, 'SSH tunnel')
-          } catch (e) {}
-        }
-
-        // Close that SSH tunnel
-        try {
-          sshTunnelsObjects[clusterID].object.close()
-
+            sshTunnelsObjects[clusterID].object.close()
+          } else {
+            // Loop through the active SSH tunnels
+            sshTunnelsObjects
+              .filter((tunnel) => tunnel.port == clusterID)
+              .forEach((tunnel) => tunnel.object.close());
+          }
           // Add log for this process
-          addLog(`The SSH tunnel which associated with connection of ID/defined-port '${clusterID}' has been closed.`)
+          log.info('The SSH tunnel has been closed', {'id': clusterID, 'type': isPort ? 'port' : 'cluster' })
         } catch (e) {
-          try {
-            errorLog(e, 'SSH tunnel')
-          } catch (e) {}
+          log.warning('Something went wrong closing SSH tunnel', {'id': clusterID, 'type': isPort ? 'port' : 'cluster', 'error': e})
         }
       })
 
@@ -446,9 +387,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                 type: 'CHANGE'
               })
           } catch (e) {
-            try {
-              errorLog(e, 'SSH tunnel')
-            } catch (e) {}
+            log.warning('Something went wrong detecting differentiation', {'error': e})
           }
         }
 

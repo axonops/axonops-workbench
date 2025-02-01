@@ -117,9 +117,7 @@
     let assistantContent = $('div.body div.hidden-area div.content.ai-assistant')
 
     // Add log for this action
-    try {
-      addLog(`The navigation side, opened the AI Assistant section`, 'action')
-    } catch (e) {}
+    log.debug('navigation', {'section': 'AI Assistant'})
 
     try {
       // If the content is already shown/visible
@@ -269,9 +267,7 @@
     Open('https://axonops.com/docs/')
 
     // Add log for this action
-    try {
-      addLog(`The navigation side, opened the help/documentation web page`, 'action')
-    } catch (e) {}
+    log.debug('navigation', {'section': 'help/documentation web page'})
   })
 
   // Clicks the AI assistant button
@@ -288,9 +284,7 @@
       btn = $(this).find('div.sub-content.btn')
 
     // Add log for this action
-    try {
-      addLog(`The navigation side, opened the notifications center section`, 'action')
-    } catch (e) {}
+    log.debug('navigation', {'section': 'notifications center'})
 
     try {
       // If the content is already shown/visible
@@ -444,9 +438,7 @@
         displayLanguage = config.get('ui', 'language')
 
       // Add log for this action
-      try {
-        addLog(`The navigation side, opened the settings dialog`, 'action')
-      } catch (e) {}
+      log.debug('navigation', {'section': 'settings'})
 
       // Check the maximum number of allowed CQLSH sessions at once
       $('input#maxNumCQLSHSessions').val(!isNaN(maxNumCQLSHSessions) && maxNumCQLSHSessions > 0 ? maxNumCQLSHSessions : 10)
@@ -571,9 +563,7 @@
           $('div.terminal-container div.terminal.xterm').trigger('changefont', 187)
 
           // Add log for this action
-          try {
-            addLog(`Zoom in the UI by '${zoomLevel}%'`, 'action')
-          } catch (e) {}
+          log.debug('Zoom in the UI', {'zoom': zoomLevel})
           break
         }
         case 'zoomOut': {
@@ -582,9 +572,7 @@
           $('div.terminal-container div.terminal.xterm').trigger('changefont', 189)
 
           // Add log for this action
-          try {
-            addLog(`Zoom out the UI by '${zoomLevel}%'`, 'action')
-          } catch (e) {}
+          log.debug('Zoom out the UI', {'zoom': zoomLevel})
           break
         }
         case 'zoomReset': {
@@ -593,43 +581,33 @@
           $('div.terminal-container div.terminal.xterm').trigger('changefont', 48)
 
           // Add log for this action
-          try {
-            addLog(`Rest the zoom of the UI to '${zoomLevel}%'`, 'action')
-          } catch (e) {}
+          log.info('Reset the zoom of the UI')
           break
         }
         case 'toggleFullscreen': {
           IPCRenderer.send('options:view:toggle-fullscreen')
 
           // Add log for this action
-          try {
-            addLog(`Toggle the fullscreen mode`, 'action')
-          } catch (e) {}
+          log.debug('Toggle the fullscreen mode')
           break
         }
         case 'restartApp': {
           // Add log for this action
-          try {
-            addLog(`Restart the app`, 'action')
-          } catch (e) {}
+          log.info('Restart the app')
 
           IPCRenderer.send('options:actions:restart')
           break
         }
         case 'quitApp': {
           // Add log for this action
-          try {
-            addLog(`Quit the app`, 'action')
-          } catch (e) {}
+          log.info('Quit the app')
 
           IPCRenderer.send('options:actions:quit')
           break
         }
         case 'closeWorkareas': {
           // Add log for this action
-          try {
-            addLog(`Request to close all active work areas`, 'action')
-          } catch (e) {}
+          log.info('Request to close all active work areas')
 
           // Confirm the close of all work areas
           openDialog(I18next.capitalizeFirstLetter(I18next.t('are you sure about closing all active work areas - including local clusters - ?')), (confirm) => {
@@ -748,9 +726,7 @@
   // Clicks the `SAVE SETTINGS` button in the footer of the dialog
   $(`button#saveSettings`).click(function() {
     // Add log about this action
-    try {
-      addLog(`Request to save the updated app's settings`, 'action')
-    } catch (e) {}
+    log.info('Request to save the updated app settings')
 
     // Update variables and get the result
     $('button#updateVariables').trigger('click', (result) => {
@@ -831,10 +807,9 @@
             showToast(I18next.capitalize(I18next.t('app settings')), I18next.capitalizeFirstLetter(I18next.replaceData('some settings have been successfully saved, however, an error has occurred with variables, $data', [result.failureMessage])) + '.', 'warning')
           }, 100)
         })
+
       } catch (e) {
-        try {
-          errorLog(e, 'common')
-        } catch (e) {}
+        log.warning('Something went wrong updating variables', {'error': e})
       }
     })
   })
@@ -945,7 +920,7 @@
     Modules.Clusters.getClusters(getActiveWorkspaceID()).then((clusters) => {
       try {
         // Get the associated cluster's object
-        let cluster = clusters.filter((cluster) => cluster.info.id == clusterID)[0]
+        let cluster = clusters.find((cluster) => cluster.info.id == clusterID)
 
         // This attribute is required for updating clusters
         cluster.original = cluster
@@ -971,10 +946,9 @@
           // Clicks the `TEST CONNECTION` button of the cluster
           setTimeout(() => clusterElement.find('div.button button.test-connection').click())
         })
+
       } catch (e) {
-        try {
-          errorLog(e, 'common')
-        } catch (e) {}
+        log.warning('Something went wrong removing cluster credentials', {'cluster': clusterID, 'error': e})
 
         // The updating process failed, show feedback to the user
         return showToast(I18next.capitalize(I18next.t('ignore connection credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the connection [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
@@ -1115,44 +1089,38 @@
              */
             cluster.info.secrets = cluster.info.secrets == undefined ? [] : cluster.info.secrets
 
-            try {
-              // If the user didn't confirm the saving of DB auth credentials then skip this try-catch block
-              if (!saveAuthCredentialsConfirmed)
-                throw 0
-
-              // Save `username`
-              if (credentialsArray.authusername.trim().length != 0)
-                cluster.info.secrets.username = encrypt(key, credentialsArray.authusername)
-
-              // Save `password`
-              if (credentialsArray.authpassword.trim().length != 0)
-                cluster.info.secrets.password = encrypt(key, credentialsArray.authpassword)
-            } catch (e) {
+            // If the user confirmed the saving of DB auth credentials
+            if (saveAuthCredentialsConfirmed) {
               try {
-                errorLog(e, 'common')
-              } catch (e) {}
+                // Save `username`
+                if (credentialsArray.authusername.trim().length != 0)
+                  cluster.info.secrets.username = encrypt(key, credentialsArray.authusername)
+
+                // Save `password`
+                if (credentialsArray.authpassword.trim().length != 0)
+                  cluster.info.secrets.password = encrypt(key, credentialsArray.authpassword)
+              } catch (e) {
+                log.warning('Something went wrong saving DB auth credentials', {'cluster': clusterID, 'error': e})
+              }
             }
 
-            try {
-              // If the user didn't confirm the saving of SSH credentials then skip this try-catch block
-              if (!saveSSHCredentialsConfirmed)
-                throw 0
-
-              // Save the SSH `username`
-              if (credentialsArray.sshusername.trim().length != 0)
-                cluster.info.secrets.sshUsername = encrypt(key, credentialsArray.sshusername)
-
-              // Save the SSH `password`
-              if (credentialsArray.sshpassword.trim().length != 0)
-                cluster.info.secrets.sshPassword = encrypt(key, credentialsArray.sshpassword)
-
-              // Save the SSH `passphrase`
-              if (credentialsArray.sshpassphrase.trim().length != 0)
-                cluster.info.secrets.sshPassphrase = encrypt(key, credentialsArray.sshpassphrase)
-            } catch (e) {
+            // If the user confirmed the saving of SSH credentials
+            if (saveSSHCredentialsConfirmed) {
               try {
-                errorLog(e, 'common')
-              } catch (e) {}
+                // Save the SSH `username`
+                if (credentialsArray.sshusername.trim().length != 0)
+                  cluster.info.secrets.sshUsername = encrypt(key, credentialsArray.sshusername)
+
+                // Save the SSH `password`
+                if (credentialsArray.sshpassword.trim().length != 0)
+                  cluster.info.secrets.sshPassword = encrypt(key, credentialsArray.sshpassword)
+
+                // Save the SSH `passphrase`
+                if (credentialsArray.sshpassphrase.trim().length != 0)
+                  cluster.info.secrets.sshPassphrase = encrypt(key, credentialsArray.sshpassphrase)
+              } catch (e) {
+                log.warning('Something went wrong saving SSH credentials', {'cluster': clusterID, 'error': e})
+              }
             }
 
             // Attempt to update the cluster
@@ -1165,9 +1133,7 @@
               clusterElement.removeAttr(`${saveAuthCredentialsConfirmed ? 'data-credentials-auth' : ''} ${saveSSHCredentialsConfirmed ? 'data-credentials-ssh' : ''}`)
             })
           } catch (e) {
-            try {
-              errorLog(e, 'common')
-            } catch (e) {}
+            log.warning('Something went wrong saving credentials', {'cluster': clusterID, 'error': e})
 
             // The updating process failed, show feedback to the user
             showToast(I18next.capitalize(I18next.t('save connection credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the connection [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
@@ -1180,9 +1146,7 @@
           }
         })
       } catch (e) {
-        try {
-          errorLog(e, 'common')
-        } catch (e) {}
+        log.warning('Something went wrong saving credentials', {'error': e})
       }
 
       // Enable the proceed button again

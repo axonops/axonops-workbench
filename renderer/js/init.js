@@ -47,6 +47,13 @@ const FS = require('fs-extra'),
 let extraResourcesPath = null,
   tinyKeys
 
+/**
+ * Electron Logging
+ * Used for logging
+ */
+const log = require('electron-log/renderer')
+log.debug('init.js is running...')
+
 // Get the set extra resources path from the main thread
 $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) => {
   // Adopt the set path
@@ -62,7 +69,6 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
         ensureFile: [
           ['config', 'app-config.cfg'],
           ['data', 'localclusters', 'localclusters.json'],
-          ['data', 'logging', 'log.tmp'],
           ['data', 'workspaces', 'workspaces.json']
         ]
       }
@@ -75,14 +81,12 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
        */
       for (let file of processTypes.ensureFile) {
         try {
-          // If the current file about `logging`
-          if (file[1] != 'logging')
-            throw 0
-
           // Ensure the file exists
           try {
             await FS.ensureFile(Path.join(appPath, ...file))
-          } catch (e) {}
+          } catch (e) {
+            log.warn('Required file doesn\'t exist', file)
+          }
 
           // Skip the upcoming code and move to the next file
           continue
@@ -116,49 +120,10 @@ $(document).on('pre-initialize', async () => {
   })
 
   /**
-   * Essential modification for the `console` function after loading the `functions` file
+   * Essential modification for the `console` function
    * Now console triggers such as `log`, `debug`, `error`, and others are logged as part of the logging feature
    */
-  {
-    try {
-      // Copy the original `console` function
-      let originalConsole = {
-        ...console
-      }; // This semicolon is critical here
-
-      // Loop through a set of console types
-      (['debug', 'error', 'info', 'log']).forEach((type) => {
-        // Initial log type
-        let logType = type
-
-        // Switch and manipulate the type to be suitable
-        switch (logType) {
-          case 'log':
-          case 'debug': {
-            logType = 'info'
-            break
-          }
-          default: {
-            logType = 'info'
-          }
-        }
-
-        // Manipulate the original `console` by adding any upcoming text as a log
-        global.console[type] = (text) => {
-          try {
-            addLog(`${text}`, logType)
-          } catch (e) {}
-
-          // Call the original `console`
-          originalConsole[type](text)
-        }
-      })
-    } catch (e) {
-      try {
-        errorLog(e, 'initialization')
-      } catch (e) {}
-    }
-  }
+  Object.assign(console, log.functions);
 
   // Load the rest bootstrap JS files
   for (let file of ['libs', 'globs'])
@@ -198,28 +163,6 @@ $(document).on('pre-initialize', async () => {
      * This event will load and initialize the entire app after getting the path of the extra resources
      */
     setTimeout(() => $(document).trigger('initialize'), 100)
-  })
-})
-
-// Initialize the logging system
-$(document).on('initialize', () => {
-  // Get the app's config
-  Modules.Config.getConfig((config) => {
-    // Check the status of whether or not the logging feature is enabled
-    isLoggingEnabled = config.get('security', 'loggingEnabled') || isLoggingEnabled
-
-    // Convert the flag to a boolean instead of a string
-    isLoggingEnabled = isLoggingEnabled == 'false' ? false : true
-
-    // If the logging feature is not enabled then skip the upcoming code
-    if (!isLoggingEnabled)
-      return
-
-    // Send the initialization request to the main thread
-    IPCRenderer.send('logging:init', {
-      date: new Date().getTime(),
-      id: getRandomID(5)
-    })
   })
 })
 
@@ -332,10 +275,7 @@ $(document).on('initialize', async () => getMachineID().then((id) => {
 
   // Add the first set of logs
   setTimeout(() => {
-    try {
-      addLog(`AxonOps Workbench has loaded all components and is ready to be used`)
-      addLog(`This machine has a unique ID of '${machineID}'`, 'env')
-    } catch (e) {}
+    log.info('AxonOps Workbench has loaded all components and is ready to be used', {'machineID': machineID})
   }, 1000)
 }))
 
@@ -349,12 +289,11 @@ $(document).on('initialize', () => {
         let chosenLanguage = config.get('ui', 'language') || 'en'
 
         // Add a log about the chosen language
-        try {
-          addLog(`The configuration file has been loaded, and the language to be rendered is '${chosenLanguage.toUpperCase()}'`)
-        } catch (e) {}
+        log.info('The configuration file has been loaded', {'language': chosenLanguage.toUpperCase()})
 
         // Load all saved languages and make sure the chosen language exists and is loaded as well
         Modules.Localization.loadLocalization((languages) => {
+          log.info('Loading localizations...')
           try {
             // Attempt to get the language's object
             let languageObject = languages.list.filter((language) => language.key == chosenLanguage)
@@ -429,14 +368,11 @@ $(document).on('initialize', () => {
               // Strip any HTML tag
               text = StripTags(text)
 
-              try {
-                // Update the status of the flag
-                isHTMLFound = Modules.Consts.AllowedHTMLTags.some((tag) => text.indexOf(`[${tag}]`) != -1)
+              // Update the status of the flag
+              isHTMLFound = Modules.Consts.AllowedHTMLTags.some((tag) => text.indexOf(`[${tag}]`) != -1)
 
-                // If there's no allowed HTML has been found then skip this try-catch block
-                if (!isHTMLFound)
-                  throw 0
-
+              // If there's no allowed HTML has been found then skip this try-catch block
+              if (isHTMLFound) {
                 // Loop through the allowed HTML tags
                 Modules.Consts.AllowedHTMLTags.forEach((tag) => {
                   // Define a regex for the tag's opening
@@ -450,10 +386,6 @@ $(document).on('initialize', () => {
                   // Update the close
                   text = text.replace(close, `</${tag}>`)
                 })
-              } catch (e) {
-                try {
-                  errorLog(e, 'initialization')
-                } catch (e) {}
               }
 
               // Return the final result
@@ -513,9 +445,7 @@ $(document).on('initialize', () => {
                 clearLoadInterval()
             })
           } catch (e) {
-            try {
-              errorLog(e, 'initialization')
-            } catch (e) {}
+            log.warning('Failed to load localizations', {'error': e})
           }
 
           // Update the list of languages to select in the settings dialog
@@ -553,9 +483,7 @@ $(document).on('initialize', () => {
         })
       })
     } catch (e) {
-      try {
-        errorLog(e, 'initialization')
-      } catch (e) {}
+      log.warning('Renderer initialisation failed', {'error': e})
     }
   })
 })
@@ -1068,9 +996,7 @@ $(document).on('initialize', () => {
           }, 250)
         })
       } catch (e) {
-        try {
-          errorLog(e, 'initialization')
-        } catch (e) {}
+        log.warning('Something went wrong on Monaco editor initialization', {'error': e})
       }
     })
 
@@ -1158,13 +1084,15 @@ $(document).on('initialize', () => {
           return
 
         // Otherwise, load the event file
+        log.debug('Loading event file...', {'path': eventFile})
         loadScript(Path.join(eventsFilesPath, eventFile))
-      } catch (e) {}
+        log.debug('Event file loaded', {'path': eventFile})
+      } catch (e) {
+        log.warn('Failed to load event file', {'path': eventFile, 'error': e})
+      }
     })
   } catch (e) {
-    try {
-      errorLog(e, 'initialization')
-    } catch (e) {}
+    log.warning('Event files loading failed', {'error': e})
   }
 })
 
@@ -1389,9 +1317,7 @@ $(document).on('initialize', () => {
       try {
         Clipboard.writeText(`v${AppInfo.version}`)
       } catch (e) {
-        try {
-          errorLog(e, 'init')
-        } catch (e) {}
+        log.warning('Failed to copy text to clipboard', {'error': e})
       }
 
       // Give feedback to the user
@@ -1437,8 +1363,10 @@ $(document).on('initialize', () => {
         let isCopyrightAcknowledged = config.get('security', 'cassandraCopyrightAcknowledged') == 'true'
 
         // If it's not then skip the upcoming code - the app won't be loaded till the checkbox is checked -
-        if (!isCopyrightAcknowledged)
+        if (!isCopyrightAcknowledged) {
+          log.debug('copyright is not acknowledged, waiting...')
           return getConfigToLoad()
+        }
 
         // Send the event
         IPCRenderer.send('initialized')
@@ -1452,12 +1380,15 @@ $(document).on('initialize', () => {
 
     getKey('public', (key) => {
       getKey('private', (key) => {
-        IPCRenderer.send('pty:cqlsh:initialize')
-
+        log.debug('EVENT', {'event': 'pty:cqlsh:initialize'})
+        
         IPCRenderer.on('pty:cqlsh:initialize:finished', () => getConfigToLoad())
+        IPCRenderer.send('pty:cqlsh:initialize')
       })
     })
-  } catch (e) {}
+  } catch (e) {
+    log.warning('Something went wrong during key processing', {'error': e})
+  }
 })
 
 // Send the `loaded` event to the main thread, and show the `About` dialog/modal

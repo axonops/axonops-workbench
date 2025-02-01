@@ -264,8 +264,8 @@ $(document).on('initialize', () => {
       setInterval(() => {
         buttons.back.toggleClass('disabled', !webviewAIAssistant[0].canGoBack())
         buttons.forward.toggleClass('disabled', !webviewAIAssistant[0].canGoForward())
-      }, 1500)
-    })
+      }, 500)
+    }, 2000)
   } catch (e) {}
 })
 

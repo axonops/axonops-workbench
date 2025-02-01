@@ -346,7 +346,7 @@
     "appdata-path": "^1.0.0",
     "autosize": "^6.0.1",
     "axios": "^1.7.9",
-    "better-sqlite3": "^11.7.0",
+    "better-sqlite3": "^11.7.2",
     "byte-size": "^8.1.1",
     "chart.js": "^4.4.7",
     "co": "^4.6.0",

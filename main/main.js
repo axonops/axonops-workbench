@@ -137,11 +137,15 @@ global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), (pro
  */
 const Modules = []
 
+// Enque log messages until configuration is finished
+log.buffering.begin();
+
 try {
   // Define the folder's path of the custom node modules
-  let modulesFilesPath = Path.join(__dirname, '..', 'custom_node_modules', 'main'),
-    // Read all files inside the folder
-    modulesFiles = FS.readdirSync(modulesFilesPath)
+  let modulesFilesPath = Path.join(__dirname, '..', 'custom_node_modules', 'main')
+  log.debug('Loading modules...', {'path': modulesFilesPath})
+  // Read all files inside the folder
+  let modulesFiles = FS.readdirSync(modulesFilesPath)
 
   /**
    * Loop through each module file
@@ -174,15 +178,18 @@ try {
 }
 
 // Logging configuration
-// log.transports.file.level = false
-// log.transports.console.level = 'debug';
-// Modules.Config.getConfig((config) => {
-//   if (config.get('security', 'loggingEnabled')) {
-//     log.transports.file.level = 'warn'
-//     log.transports.file.resolvePathFn = () => path.join(APP_DATA, 'logs/main.log');
-//     log.info('Logging enabled, writing logs to file', log.transports.file.resolvePathFn())
-//   }
-// })
+log.transports.file.level = false
+log.transports.console.level = 'debug'
+
+Modules.Config.getConfig((config) => {
+  if (config.get('security', 'loggingEnabled')) {
+    log.transports.file.level = 'debug'
+    log.info('Logging to file enabled', {'path': log.transports.file.getFile().path, 'hooks': log.hooks.length})
+  }
+})
+
+// Write logs to console (and file, if enabled)
+log.buffering.commit();
 
 // Load environment variables from .env file
 try {
@@ -209,7 +216,7 @@ global.eventEmitter = new EventEmitter()
 let views = {
   // The main view/window object
   main: null,
-  // A view/window as a loding screen
+  // A view/window as a loading screen
   intro: null,
   // A view/window for all background processes
   backgroundProcesses: null

@@ -60,6 +60,7 @@ const FS = require('fs-extra'),
  * Used for logging
  */
 const log = require('electron-log/renderer')
+log.debug('background_processes.js is running...')
 
 /**
  * Get the set extra resources path

@@ -69,7 +69,6 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
         ensureFile: [
           ['config', 'app-config.cfg'],
           ['data', 'localclusters', 'localclusters.json'],
-          ['data', 'logging', 'log.tmp'],
           ['data', 'workspaces', 'workspaces.json']
         ]
       }

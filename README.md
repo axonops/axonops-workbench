@@ -75,16 +75,16 @@ You can find our SBOM files in each [release](releases) as part of the release a
 
 We maintain these SBOM files as part of our commitment to software supply chain security and transparency. They are updated with each release to reflect the current state of our software dependencies.
 
-## Tidying up between beta release installs
+### Tidying up between beta release installs
 
 The current builds are still in development and are not necessarily backwards compatible, so do this before taking a new beta release
 
-### Linux and macOS:
+#### Linux and macOS:
 
 - Delete the folder(s) with perfix .axonops- in the home folder.
 - In the OS Keychain, remove all keys with prefix AxonOps.
 
-### Windows:
+#### Windows:
 - Delete the folder with prefix axonops- in the user directory folder C:\Users{username}.
 - Delete the folder with prefix AxonOps in apps' data folder C:\Users{username}\AppData\Roaming or %appData%.
 - In the Windows Credential Manager, remove all credentials with prefix AxonOps.

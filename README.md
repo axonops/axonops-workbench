@@ -10,6 +10,8 @@ We welcome your feedback, so feel free to discuss any ideas you have https://git
 
 Go to https://axonops.com/workbench/download/ to download the latest release for your OS.
 
+### Homebrew
+
 For MacOS it is also possible to install the AxonOps Workbench using [brew](https://brew.sh/)
 
 ```sh

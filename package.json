@@ -375,7 +375,7 @@
     "ldrs": "^1.0.2",
     "marked": "^13.0.2",
     "material-components-web": "^14.0.0",
-    "material-icons": "^1.13.1",
+    "material-icons": "^1.13.13",
     "monaco-editor": "^0.46.0",
     "node-cmd": "^5.0.0",
     "node-gyp": "^10.3.1",

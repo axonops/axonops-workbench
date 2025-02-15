@@ -26,11 +26,7 @@ We welcome your feedback, so feel free to discuss any ideas you have https://git
 
 ## Download and install
 
-Browse to the [releases](https://github.com/axonops/axonops-workbench/releases) and select the package for your Operating System. We prebuild distributions for
-
-- OSX (Intel and Apple chips)
-- Linux (RedHat, Debian and others)
-- Windows (Intel)
+Go to https://axonops.com/workbench/download/ to download the latest release for your OS.
 
 For MacOS it is also possible to install the AxonOps Workbench using [brew](https://brew.sh/)
 

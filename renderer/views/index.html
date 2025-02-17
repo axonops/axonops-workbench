@@ -1277,7 +1277,7 @@
                     </button>
                     <span class="vertical-seperator"></span>
                   </div>
-                  <div class="col-md-9 btn btn-primiary btn-sm btn-rounded" data-mdb-ripple-color="dark" check-result>
+                  <div class="col-md-9 btn btn-primary btn-sm btn-rounded" data-mdb-ripple-color="dark" check-result>
                     <span mulang="you've the latest version" capitalize-first></span>
                     <ion-icon name="expand-2"></ion-icon>
                   </div>
@@ -1772,7 +1772,7 @@
       </div>
     </div>
 
-    <div class="modal top fade" id="rightClickActionsMetadata" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+    <div class="modal top fade" id="rightClickActionsMetadata" aria-hidden="true" data-mdb-backdrop="true" data-mdb-focus="false" data-mdb-keyboard="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
@@ -2096,6 +2096,156 @@
                 </div>
               </div>
             </div>
+            <div action="insert-row">
+              <div class="fields-badge-action" id="insertPrimaryKeyBadge" style="padding: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="primary key" capitalize></span>
+                </span>
+              </div>
+              <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeysTree"></div>
+
+              <div class="fields-badge-action" id="insertRegularColumnsBadge" style="padding: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="regular columns" capitalize></span>
+                </span>
+              </div>
+              <div class="table-fields-tree children-transform" id="tableFieldsRegularColumnsTree"></div>
+
+              <div class="fields-badge-action" id="insertCollectionColumnsBadge" style="padding: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="collection types columns" capitalize></span>
+                </span>
+              </div>
+              <div class="table-fields-tree children-transform" id="tableFieldsCollectionColumnsTree"></div>
+
+              <div class="fields-badge-action" id="insertUDTColumnsBadge" style="padding: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="UDT columns" capitalize></span>
+                </span>
+              </div>
+              <div class="table-fields-tree children-transform" id="tableFieldsUDTColumnsTree"></div>
+
+              <div class="fields-badge-action" id="extraOptionsBadge" style="padding: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="extra options" capitalize></span>
+                </span>
+              </div>
+
+              <div class="row flex data-ttl-row">
+                <div class="col-md-6">
+                  <div class="form-outline form-white">
+                    <div class="clear-field hide">
+                      <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                        <ion-icon name="close"></ion-icon>
+                      </div>
+                    </div>
+                    <input type="number" class="form-control" id="ttl">
+                    <label for="ttl" class="form-label">
+                      <span mulang="Data Time-To-Live" capitalize></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                    <input class="form-check-input" type="radio" name="ttlValueType" id="ttlMS" value="ms" checked>
+                    <label class="form-check-label" for="ttlMS">ms</label>
+                  </div>
+
+                  <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                    <input class="form-check-input" type="radio" name="ttlValueType" id="ttlS" value="s">
+                    <label class="form-check-label" for="ttlS">s</label>
+                  </div>
+
+                  <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                    <input class="form-check-input" type="radio" name="ttlValueType" id="ttlM" value="m">
+                    <label class="form-check-label" for="ttlM">m</label>
+                  </div>
+
+                  <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                    <input class="form-check-input" type="radio" name="ttlValueType" id="ttlH" value="h">
+                    <label class="form-check-label" for="ttlH">h</label>
+                  </div>
+
+                  <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                    <input class="form-check-input" type="radio" name="ttlValueType" id="ttlD" value="d">
+                    <label class="form-check-label" for="ttlD">d</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row flex data-insertion-timestamp-row">
+                <div class="col-md-6">
+                  <div class="form-outline form-white">
+                    <div class="clear-field hide">
+                      <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                        <ion-icon name="close"></ion-icon>
+                      </div>
+                    </div>
+                    <input type="number" class="form-control" id="insertionTimestamp">
+                    <label for="insertionTimestamp" class="form-label">
+                      <span mulang="data insertion timestamp" capitalize></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <button type="button" class="btn btn-light btn-rounded btn-sm ripple-surface-dark" style="margin-left: 10px;
+    opacity: 0.8;" id="insertionTimestampPicker">
+                    <ion-icon name="calendar" role="img" class="md hydrated" aria-label="calendar"></ion-icon> <span mulang="date time picker" capitalize></span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="row flex consistency-level-row">
+                <div class="col-md-12">
+                  <div class="form-outline form-white" style="z-index: 2; width: calc(100% - 10px);">
+                    <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                    <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="writeConsistencyLevel" value="NOT SET" readonly noopacity>
+                    <label class="form-label">
+                      <span mulang="write consistency level" capitalize></span>
+                    </label>
+                    <div class="valid-feedback"></div>
+                    <div class="invalid-feedback"></div>
+                  </div>
+                  <div class="dropdown" for-select="writeConsistencyLevel">
+                    <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                    <ul class="dropdown-menu top-margin">
+                      <li><a class="dropdown-item" href="#" value="NOT SET">NOT SET</a></li>
+                      <li><a class="dropdown-item" href="#" value="ANY">ANY</a></li>
+                      <li><a class="dropdown-item" href="#" value="LOCAL_ONE">LOCAL_ONE</a></li>
+                      <li><a class="dropdown-item" href="#" value="ONE">ONE</a></li>
+                      <li><a class="dropdown-item" href="#" value="TWO">TWO</a></li>
+                      <li><a class="dropdown-item" href="#" value="THREE">THREE</a></li>
+                      <li><a class="dropdown-item" href="#" value="QUORUM">QUORUM</a></li>
+                      <li><a class="dropdown-item" href="#" value="LOCAL_QUORUM">LOCAL_QUORUM</a></li>
+                      <li><a class="dropdown-item" href="#" value="EACH_QUORUM">EACH_QUORUM</a></li>
+                      <li><a class="dropdown-item" href="#" value="ALL">ALL</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row flex default-omitted-columns-value-row">
+                <div class="col-md-12">
+                  <div class="form-outline form-white invalid-warning" style="z-index: 2; width: calc(100% - 10px);">
+                    <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                    <input type="text" class="form-control form-icon-trailing ignore-invalid" style="background-color: inherit; cursor: pointer;" id="defaultOmittedColumnsValue" value="UNSET" readonly noopacity>
+                    <label class="form-label">
+                      <span mulang="default omitted columns value" capitalize></span>
+                    </label>
+                    <div class="valid-feedback"></div>
+                    <div class="invalid-feedback">Any column omitted from the JSON map its value will be set to <code>NULL</code>.</div>
+                  </div>
+                  <div class="dropdown" for-select="defaultOmittedColumnsValue">
+                    <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                    <ul class="dropdown-menu top-margin">
+                      <li><a class="dropdown-item" href="#" value="UNSET">UNSET</a></li>
+                      <li><a class="dropdown-item" href="#" value="NULL">NULL</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="action-editor" style="z-index:50000">
               <div class="editor"></div>
             </div>

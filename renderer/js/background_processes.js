@@ -29,6 +29,11 @@ const FS = require('fs-extra'),
    * Working with file and directory paths, and providing useful utilities
    */
   Path = require('path'),
+  /**
+   * Node.js OS module
+   * Used for operating system-related utilities and properties
+   */
+  OS = require('os'),
   // JQuery library
   $ = require('jquery'),
   jQuery = $,
@@ -53,7 +58,11 @@ const FS = require('fs-extra'),
    */
   SSH2Utils = require('ssh2').utils,
   // JS module for text differencing implementation
-  Diff = require('diff')
+  Diff = require('diff'),
+  // Convert to/from HEX strings and byte arrays
+  ConvertHEX = require('convert-hex'),
+  // Sanitize a string to be safe for use as a file name; by removing directory paths and invalid characters
+  Sanitize = require('sanitize-filename')
 
 /**
  * Get the set extra resources path
@@ -470,6 +479,50 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
           result,
           requestID: data.requestID
         })
+      })
+    }
+
+    // Handle `blob` content bi-directional conversion
+    {
+      IPCRenderer.on('blob:read-convert', (_, data) => {
+        let itemHEXString = ''
+
+        try {
+          let itemBuffer = FS.readFileSync(data.itemPath)
+
+          itemHEXString = ConvertHEX.bytesToHex(Array.from(itemBuffer))
+
+          itemHEXString = `0x${itemHEXString}`
+        } catch (e) {}
+
+        IPCRenderer.send(`blob:read-convert:result:${data.requestID}`, {
+          itemHEXString,
+          requestID: data.requestID
+        })
+      })
+
+      IPCRenderer.on('blob:convert-write', (_, data) => {
+        let itemTempFile = ``,
+          error = false
+
+        try {
+          let blobBytes = ConvertHEX.hexToBytes(data.blobHEXString),
+            itemBuffer = Buffer.from(blobBytes)
+
+          itemTempFile = Path.join(OS.tmpdir(), Sanitize(`preview_item_${data.randomID}`))
+
+          itemTempFile = `${itemTempFile}.${data.itemType}`
+
+          FS.writeFileSync(itemTempFile, itemBuffer)
+        } catch (e) {
+          error = true
+        } finally {
+          IPCRenderer.send(`blob:convert-write:result:${data.requestID}`, {
+            itemTempFile,
+            error,
+            requestID: data.requestID
+          })
+        }
       })
     }
   }

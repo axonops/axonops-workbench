@@ -228,7 +228,7 @@ $(document).on('initialize', () => {
   try {
     setTimeout(async () => {
       // If the saved language is invalid, the chosen language will be `English`
-      let adminOption = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || true,
+      let adminOption = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || false,
         isAIAssistantEnabled = `${adminOption}` == 'true' && Modules.Consts.EnableAIAssistant
 
       /**
@@ -688,6 +688,14 @@ $(document).on('initialize', () => {
       loadStyleSheet(Path.join(jsTreePath, 'theme', 'style.css'))
 
       loadScript(Path.join(jsTreePath, 'jstree.js'))
+
+      setTimeout(() => {
+        try {
+          $.jstree.plugins.noclose = function() {
+            this.close_node = $.noop
+          }
+        } catch (e) {}
+      })
     }
 
     // jQuery JSON Viewer plugin
@@ -707,6 +715,16 @@ $(document).on('initialize', () => {
     // jQuery plugin that adds a one-time callback for a click outside of an element
     {
       loadScript(Path.join(__dirname, '..', 'js', 'external', 'click_outside.js'))
+    }
+
+    {
+      setTimeout(function() {
+        let dateTimePicker = Path.join(__dirname, '..', 'js', 'external', 'datetimepicker')
+
+        loadStyleSheet(Path.join(dateTimePicker, 'style.css'))
+
+        loadScript(Path.join(dateTimePicker, 'datetimepicker.js'))
+      }, 1000)
     }
   }
 
@@ -748,7 +766,7 @@ $(document).on('initialize', () => {
   // ldrs.js
   {
     let ldrsPath = Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js'),
-      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'momentum']
+      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'momentum', 'ring2']
 
     try {
       import(ldrsPath).then((loaders) => usedLoaders.forEach((loader) => loaders[loader].register()))
@@ -1638,7 +1656,7 @@ $(document).on('checkForUpdates', function(e, manualCheck = false) {
                       ${asset.name}
                     </div>
                     <div class="size">
-                      (${ByteSize(asset.size)})
+                      (${Bytes(asset.size)})
                     </div>
                     <div class="icon">
                       <ion-icon name="download"></ion-icon>

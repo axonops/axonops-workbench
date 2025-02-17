@@ -30,10 +30,12 @@ const OS = require('os'),
    */
   Clipboard = require('electron').clipboard,
   /**
-   * Convert a byte value to a human-readable string (9 KB, 2 MB, and so on)
+   * Convert a byte value to a human-readable string (9 KB, 2 MB, and so on), and vice-versa
    * Mainly used for showing the metadata size
    */
-  ByteSize = require('byte-size'),
+  Bytes = require('bytes'),
+  // Convert to/from HEX strings and byte arrays
+  ConvertHEX = require('convert-hex'),
   /**
    * Get the size of an array, object or string
    * Mainly used for getting the size of a metadata JSON string
@@ -65,6 +67,8 @@ const OS = require('os'),
   Highlight = require('highlight.js/lib/core'),
   // Convert ANSI escaped text streams to html
   ANSIToHTML = require('ansi-to-html'),
+  // Fast, and flexible library for parsing and manipulating HTML and XML
+  Cheerio = require('cheerio'),
   // Return the absolute system-dependant path for the place where the app should store its data for the current user
   AppData = require('appdata-path'),
   /**
@@ -118,6 +122,12 @@ const OS = require('os'),
    * Used for opening paths, apps, files, links, and so on
    */
   Open = require('open'),
+  // Detect file type by signatures
+  DetectFileType = require('detect-file-type'),
+  // Helps with date validations
+  ValidateDate = require("validate-date"),
+  // Checks if a value is a timestamp
+  IsTimestamp = require('is-timestamp'),
   /**
    * Get a random free-to-use port
    * It has been implemented within the function `getRandomPort(?amount)`

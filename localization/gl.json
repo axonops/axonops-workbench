@@ -234,7 +234,7 @@
       "logging system": "Sistema de rexistro",
       "logging": "Rexistro",
       "logout": "Logout",
-      "mandatory field": "Campo obrigatorio",
+      "mandatory": "obrigatorio",
       "maximum number": "Número máximo",
       "metadata for the cluster connected to by [b]$data[/b] has been copied to the clipboard, the size is $data": "Os metadatos para o cluster conectado a [b]$data[/b] foron copiados no portapapeis, o tamaño é $data",
       "missing variables": "Faltan variables",

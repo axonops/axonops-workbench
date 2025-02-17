@@ -1,6 +1,7 @@
 /*
  *  jQuery one click outside - v0.1.3
  *  get called if someone clicks outside
+ *  https://github.com/christianvoigt/jquery-one-click-outside
  *
  *
  *  Made by Christian Voigt

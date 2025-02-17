@@ -1560,7 +1560,7 @@
                               // Get the beautified version of the result
                               let resultBeautified = applyJSONBeautify(result),
                                 // Get the result size
-                                resultSize = ByteSize(ValueSize(resultBeautified))
+                                resultSize = Bytes(ValueSize(resultBeautified))
 
                               // Copy the result to the clipboard
                               try {
@@ -2096,6 +2096,37 @@
                                       visible: nodeType == 'udt'
                                     },
                                     {
+                                      label: I18next.capitalize(I18next.t('insert row as JSON')),
+                                      action: 'insertRow',
+                                      click: `() => views.main.webContents.send('insert-row', {
+                                        tableName: '${clickedNode.attr('name')}',
+                                        tables: '${JSON.stringify(keyspaceJSONObj.tables) || []}',
+                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        keyspaceName: '${keyspaceName}',
+                                        isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}',
+                                        asJSON: 'true'
+                                      })`,
+                                      visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('insert row')),
+                                      action: 'insertRow',
+                                      click: `() => views.main.webContents.send('insert-row', {
+                                        tableName: '${clickedNode.attr('name')}',
+                                        tables: '${JSON.stringify(keyspaceJSONObj.tables) || []}',
+                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        keyspaceName: '${keyspaceName}',
+                                        isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`,
+                                      visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                    },
+                                    {
                                       label: I18next.capitalize(I18next.t('alter table')),
                                       action: 'alterTable',
                                       click: `() => views.main.webContents.send('alter-table', {
@@ -2166,6 +2197,7 @@
                                       action: 'createKeyspace',
                                       click: `() => views.main.webContents.send('create-keyspace', {
                                         datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                        keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
                                         tabID: '_${cqlshSessionContentID}',
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
@@ -2540,7 +2572,7 @@
                                     output: outputGroup
                                   }),
                                   // Get the content's size
-                                  contentSize = ByteSize(ValueSize(contentBeautified))
+                                  contentSize = Bytes(ValueSize(contentBeautified))
 
                                 // Copy content to the clipboard
                                 try {
@@ -2885,7 +2917,7 @@
                                             output: outputGroup
                                           }),
                                           // Get the content's size
-                                          contentSize = ByteSize(ValueSize(contentBeautified))
+                                          contentSize = Bytes(ValueSize(contentBeautified))
 
                                         // Copy content to the clipboard
                                         try {
@@ -4206,7 +4238,7 @@
                           // Get the beautified version of the metadata
                           let metadataBeautified = applyJSONBeautify(latestMetadata, true),
                             // Get the metadata size
-                            metadataSize = ByteSize(ValueSize(metadataBeautified))
+                            metadataSize = Bytes(ValueSize(metadataBeautified))
 
                           // Copy metadata to the clipboard
                           try {
@@ -4380,7 +4412,7 @@
                           // Reset the suffix value
                           suffixInput.val('')
                           suffixInputObject.update()
-                          suffixInputObject._deactivate()
+                          setTimeout(() => suffixInputObject._deactivate())
 
                           // Get the current date and time, format it, and show it to the user
                           let time = parseInt($(`span[data-id="${newMetadataTimeID}"]`).attr('data-time')) || new Date().getTime()
@@ -4501,7 +4533,7 @@
                                        <div class="name">${snapshot.name}</div>
                                        <div class="badges">
                                          <span class="badge badge-primary">${formatTimestamp(snapshot.time)}</span>
-                                         <span class="badge badge-secondary">${ByteSize(snapshot.size)}</span>
+                                         <span class="badge badge-secondary">${Bytes(snapshot.size)}</span>
                                        </div>
                                      </div>
                                      <div class="_right">
@@ -6074,7 +6106,7 @@
 
                     // Update the object
                     object.update()
-                    object._deactivate()
+                    setTimeout(() => object._deactivate())
 
                     // If the current input is not a file selector then skip this try-catch block
                     if ($(object._element).attr('file-name') == undefined)
@@ -6190,7 +6222,7 @@
 
                           // Update the object
                           object.update()
-                          object._deactivate()
+                          setTimeout(() => object._deactivate())
                         })
                       })
                     } catch (e) {
@@ -6234,7 +6266,7 @@
 
                       // Update the object
                       object.update()
-                      object._deactivate()
+                      setTimeout(() => object._deactivate())
 
                       // If the current input is not a file selector then skip this try-catch block
                       if ($(object._element).attr('file-name') == undefined)
@@ -8533,7 +8565,7 @@
                       } finally {
                         // Update the object
                         object_.update()
-                        object_._deactivate()
+                        setTimeout(() => object_._deactivate())
                       }
                     })
                   }, 1000)
@@ -8624,7 +8656,6 @@
                       testConnectionBtn = clusterElement.children('div.footer').children('div.button').children('button.test-connection'),
                       // Point at the status element - the flashing circle at the top right -
                       statusElement = clusterElement.children('div.status')
-
 
                     try {
                       if (!secrets[0])
@@ -9178,7 +9209,7 @@
           setTimeout(() => {
             try {
               inputObject.update()
-              inputObject._deactivate()
+              setTimeout(() => inputObject._deactivate())
             } catch (e) {}
 
             // Remove the initial indicator's attribute
@@ -9298,6 +9329,8 @@
     })
   }
 
+  let updateActionStatusForInsertRow
+
   // Handle the request of getting a CQL description of the cluster, keyspace in it, or a table
   {
     IPCRenderer.on('cql-desc:get', (_, data) => {
@@ -9367,7 +9400,7 @@
                 throw 0
               }
 
-              let descriptionSize = ByteSize(ValueSize(description))
+              let descriptionSize = Bytes(ValueSize(description))
 
               FS.writeFile(path, description, (err) => {
                 if (err)
@@ -9701,7 +9734,7 @@
       })
 
       IPCRenderer.on('drop-keyspace', (_, data) => {
-        let keyspaceName = `${data.keyspaceName}`,
+        let keyspaceName = addDoubleQuotes(`${data.keyspaceName}`),
           dropKeyspaceEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
 
         if (minifyText(keyspaceName).length <= 0)
@@ -9821,7 +9854,7 @@
 
         // Get related data to the current UDT
         try {
-          let udt = JSON.parse(data.udts).find((udt) => udt.name == data.udtName),
+          let udt = JSON.parse(JSONRepair(data.udts)).find((udt) => udt.name == data.udtName),
             fields = [];
 
           for (let i = 0; i < udt.field_names.length; ++i) {
@@ -9840,8 +9873,8 @@
       })
 
       IPCRenderer.on('drop-udt', (_, data) => {
-        let udtName = `${data.udtName}`,
-          keyspaceName = `${data.keyspaceName}`,
+        let udtName = addDoubleQuotes(`${data.udtName}`),
+          keyspaceName = addDoubleQuotes(`${data.keyspaceName}`),
           dropUDTEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
 
         if ([udtName, keyspaceName].some((name) => minifyText(name).length <= 0))
@@ -9929,7 +9962,7 @@
 
         // For UDT columns
         try {
-          let keyspaceUDTs = JSON.parse(data.udts)
+          let keyspaceUDTs = JSON.parse(JSONRepair(data.udts))
 
           if (keyspaceUDTs.length > 0)
             throw 0
@@ -10040,7 +10073,7 @@
             tableOptions = []
 
           try {
-            tableObj = JSON.parse(data.tables).find((table) => table.name == tableName)
+            tableObj = JSON.parse(JSONRepair(data.tables)).find((table) => table.name == tableName)
           } catch (e) {}
 
           try {
@@ -10126,7 +10159,7 @@
         let keyspaceUDTs
 
         try {
-          tableObj = JSON.parse(data.tables).find((table) => table.name == tableName)
+          tableObj = JSON.parse(JSONRepair(data.tables)).find((table) => table.name == tableName)
         } catch (e) {}
 
         try {
@@ -10150,7 +10183,7 @@
         } catch (e) {}
 
         try {
-          keyspaceUDTs = JSON.parse(data.udts),
+          keyspaceUDTs = JSON.parse(JSONRepair(data.udts)),
             filteredColumns = tableObj.columns.filter((column) => tableObj.primary_key.find((key) => key.name == column.name) == undefined)
 
           for (let column of filteredColumns) {
@@ -10229,8 +10262,8 @@
       })
 
       IPCRenderer.on('drop-table', (_, data) => {
-        let tableName = `${data.tableName}`,
-          keyspaceName = `${data.keyspaceName}`,
+        let tableName = addDoubleQuotes(`${data.tableName}`),
+          keyspaceName = addDoubleQuotes(`${data.keyspaceName}`),
           dropUDTEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
 
         if ([tableName, keyspaceName].some((name) => minifyText(name).length <= 0))
@@ -10278,6 +10311,1490 @@
           } catch (e) {}
         })
       })
+
+      let tableFieldsTreeContainers = {
+        primaryKey: $('div#tableFieldsPrimaryKeysTree'),
+        columnsRegular: $('div#tableFieldsRegularColumnsTree'),
+        columnsCollection: $('div#tableFieldsCollectionColumnsTree'),
+        columnsUDT: $('div#tableFieldsUDTColumnsTree')
+      }
+
+      let effectedNodes = {}
+
+      IPCRenderer.on('insert-row', (_, data) => {
+        Modules.Config.getConfig((config) => {
+          let enableBlobPreview = false
+
+          try {
+            enableBlobPreview = config.get('features', 'previewBlob') == 'true'
+          } catch (e) {}
+
+          effectedNodes = {}
+
+          let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal'),
+            isInsertionAsJSON = data.asJSON === 'true'
+
+          $('button#executeActionStatement').attr({
+            'data-tab-id': `${data.tabID}`,
+            'data-textarea-id': `${data.textareaID}`,
+            'data-btn-id': `${data.btnID}`
+          })
+
+          $('#rightClickActionsMetadata').attr({
+            'data-state': null,
+            'data-keyspace-name': `${data.keyspaceName}`,
+            'data-table-name': `${data.tableName}`,
+            'data-as-json': `${!isInsertionAsJSON ? null : 'true'}`
+          })
+
+          $('div.row.default-omitted-columns-value-row').toggle(isInsertionAsJSON)
+
+          $('div.row.default-omitted-columns-value-row').find('a[value="UNSET"]').click()
+
+          $('input#ttl').val('')
+          $('input#ttlMS').prop('checked', true)
+          $('input#insertionTimestamp').val('')
+
+          $('div.dropdown[for-select="writeConsistencyLevel"]').find(`a[value="NOT SET"]`).click()
+
+
+          $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'insert row').html(`${I18next.capitalize(I18next.t('insert row'))} ${isInsertionAsJSON ? '(JSON)' : ''} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
+
+          $('#rightClickActionsMetadata').attr('data-keyspace-tables', `${data.tables}`)
+
+          $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
+
+          try {
+            for (let container of Object.keys(tableFieldsTreeContainers)) {
+              try {
+                tableFieldsTreeContainers[container].jstree('destroy')
+              } catch (e) {}
+            }
+          } catch (e) {}
+
+          let keys = [],
+            columns = [],
+            udts = [],
+            keyspaceUDTs = []
+
+          try {
+            let tableObj = JSON.parse(JSONRepair(data.tables)).find((table) => table.name == data.tableName)
+
+            try {
+              keys = tableObj.primary_key.map((key) => {
+                let isPartition = tableObj.partition_key.find((partitionKey) => partitionKey.name == key.name) != undefined
+
+                return {
+                  name: key.name,
+                  type: key.cql_type,
+                  isPartition
+                }
+              })
+            } catch (e) {}
+
+            try {
+              columns = tableObj.columns.filter((column) => tableObj.primary_key.find((key) => key.name == column.name) == undefined)
+                .map((column) => {
+                  return {
+                    name: column.name,
+                    type: column.cql_type
+                  }
+                })
+            } catch (e) {}
+
+            try {
+              try {
+                keyspaceUDTs = JSON.parse(JSONRepair(data.udts))
+              } catch (e) {}
+
+              for (let column of columns) {
+                let udtStructure = {},
+                  manipulatedColumnType = column.type
+
+                manipulatedColumnType = removeFrozenKeyword(`${manipulatedColumnType}`)
+
+                try {
+                  manipulatedColumnType = `${manipulatedColumnType}`.match(/<(.*?)>$/)[1];
+                } catch (e) {}
+
+                let udtObject = keyspaceUDTs.find((udt) => udt.name == manipulatedColumnType)
+
+                if (udtObject == undefined || ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))
+                  continue
+
+                udtStructure = {
+                  ...udtObject,
+                  ...column
+                }
+
+                udts.push(udtStructure)
+              }
+
+              columns = columns.filter((column) => udts.find((udt) => udt.name == column.name) == undefined)
+            } catch (e) {}
+          } catch (e) {}
+
+          let groupStructure = buildTableFieldsTreeview(keys, columns, udts, keyspaceUDTs, enableBlobPreview),
+            handleHiddenNodes = (treeData) => {
+              let index = 0
+
+              while (index < treeData.length) {
+                const node = treeData[index]
+
+                try {
+                  if (Array.isArray(node)) {
+                    processArray(node)
+
+                    index++
+
+                    continue
+                  }
+
+                  if (node.a_attr['add-hidden-node'] !== undefined) {
+                    treeData.splice(index + 1, 0, {
+                      id: node.a_attr['add-hidden-node'],
+                      parent: node.parent,
+                      state: {
+                        opened: true,
+                        selected: false
+                      },
+                      text: ``
+                    })
+
+                    index++
+                  }
+                } catch (e) {}
+
+                index++
+
+              }
+              return treeData;
+            },
+            handleNodeCreationDeletion = () => {
+              let allInsertionRelatedInputs = $('#rightClickActionsMetadata').find('div[action="insert-row"]').find('input').get()
+
+              for (let inputDOM of allInsertionRelatedInputs) {
+                let input = $(inputDOM),
+                  [
+                    inputCassandraType,
+                    inputHTMLType,
+                    inputID
+                  ] = getAttributes(input, ['data-field-type', 'type', 'id']),
+                  inputSavedValue = effectedNodes[inputID] || ''
+
+                if (inputSavedValue == undefined || inputSavedValue.length <= 0)
+                  continue
+
+                try {
+                  if (inputHTMLType != 'checkbox')
+                    throw 0
+
+                  input.prop('checked', !(inputSavedValue != 'true')).trigger('change')
+
+                  continue
+                } catch (e) {}
+
+                try {
+                  if (inputCassandraType != 'blob')
+                    throw 0
+
+                  input.val(inputSavedValue.inputValue).trigger('input')
+
+                  input.data('value', inputSavedValue.dataValue)
+
+                  continue
+                } catch (e) {}
+
+                // Not `blob` or `boolean`
+                try {
+                  input.val(inputSavedValue).trigger('input')
+                } catch (e) {}
+              }
+
+              setTimeout(() => {
+                try {
+                  updateActionStatusForInsertRow()
+                } catch (e) {}
+              })
+            }
+
+          try {
+            for (let treeViewType of Object.keys(groupStructure))
+              groupStructure[treeViewType].core.data = handleHiddenNodes(groupStructure[treeViewType].core.data)
+          } catch (e) {}
+
+          {
+            let primaryKeyTreeElements = tableFieldsTreeContainers.primaryKey.add('div#insertPrimaryKeyBadge')
+
+            try {
+              if (keys.length <= 0)
+                throw 0
+
+              primaryKeyTreeElements.show()
+
+              tableFieldsTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
+            } catch (e) {
+              primaryKeyTreeElements.hide()
+            }
+          }
+
+          {
+            let columnsRegularTreeElements = tableFieldsTreeContainers.columnsRegular.add('div#insertRegularColumnsBadge')
+
+            try {
+              if (!(columns.some((column) => ['map', 'set', 'list'].every((type) => !(`${column.type}`.includes(`${type}<`))))))
+                throw 0
+
+              columnsRegularTreeElements.show()
+
+              tableFieldsTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
+            } catch (e) {
+              columnsRegularTreeElements.hide()
+            }
+          }
+
+          {
+            let columnsCollectionTreeElements = tableFieldsTreeContainers.columnsCollection.add('div#insertCollectionColumnsBadge')
+
+            try {
+              if (!(columns.some((column) => ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))))
+                throw 0
+
+              columnsCollectionTreeElements.show()
+
+              tableFieldsTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
+            } catch (e) {
+              columnsCollectionTreeElements.hide()
+            }
+          }
+
+          {
+            let columnsUDTTreeElements = tableFieldsTreeContainers.columnsUDT.add('div#insertUDTColumnsBadge')
+            try {
+              if (udts.length <= 0)
+                throw 0
+
+              columnsUDTTreeElements.show()
+
+              tableFieldsTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
+            } catch (e) {
+              columnsUDTTreeElements.hide()
+            }
+          }
+
+          setTimeout(() => {
+            for (let container of Object.keys(tableFieldsTreeContainers)) {
+              let tableFieldsTreeContainer = tableFieldsTreeContainers[container]
+
+              try {
+                tableFieldsTreeContainer.unbind('loaded.jstree')
+                tableFieldsTreeContainer.unbind('select_node.jstree')
+                tableFieldsTreeContainer.unbind('create_node.jstree')
+                tableFieldsTreeContainer.unbind('delete_node.jstree')
+                tableFieldsTreeContainer.unbind('hide_node.jstree')
+              } catch (e) {}
+
+              tableFieldsTreeContainer.on('loaded.jstree', () => {
+                tableFieldsTreeContainer.find('input').each(function() {
+                  setTimeout(() => {
+                    try {
+                      let mdbObject = getElementMDBObject($(this))
+
+                      mdbObject.update()
+                    } catch (e) {}
+                  }, 100)
+                })
+
+                setTimeout(() => {
+                  try {
+                    updateActionStatusForInsertRow()
+                  } catch (e) {}
+                })
+
+                tableFieldsTreeContainer.find('a.jstree-anchor[add-hidden-node]').each(function() {
+                  let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${$(this).attr('add-hidden-node')}"]`)
+
+                  hiddenNode.css('margin-top', '-45px')
+
+                  hiddenNode.children('a').css('pointer-events', 'none')
+                })
+
+                setTimeout(() => {
+                  {
+                    let allActionsMenuToggleBtns = tableFieldsTreeContainer.find('button.dropdown-toggle').get()
+
+                    for (let toggleBtn of allActionsMenuToggleBtns) {
+                      let actionsDropDownObject = getElementMDBObject($(toggleBtn), 'Dropdown'),
+                        actionsDropDownElement = $(actionsDropDownObject._menu)
+
+                      try {
+                        $(toggleBtn).unbind('click')
+                      } catch (e) {}
+
+                      $(toggleBtn).click(() => {
+                        for (let subToggleBtn of allActionsMenuToggleBtns) {
+                          if ($(subToggleBtn).is($(toggleBtn)))
+                            continue
+
+                          let subActionsDropDownObject = getElementMDBObject($(subToggleBtn), 'Dropdown'),
+                            subActionsDropDownElement = $(subActionsDropDownObject._menu)
+
+                          try {
+                            subActionsDropDownElement.hide()
+                            subActionsDropDownObject.hide()
+                          } catch (e) {}
+                        }
+
+                        setTimeout(() => {
+                          actionsDropDownElement.toggle()
+                          actionsDropDownObject.toggle()
+                        })
+
+                        setTimeout(() => {
+                          actionsDropDownElement.oneClickOutside({
+                            callback: function() {
+                              try {
+                                actionsDropDownElement.hide()
+                                actionsDropDownObject.hide()
+                              } catch (e) {}
+                            },
+                            exceptions: toggleBtn
+                          })
+                        })
+
+                        setTimeout(() => {
+                          try {
+                            updateActionStatusForInsertRow()
+                          } catch (e) {}
+                        })
+                      })
+                    }
+                  }
+
+                  {
+                    let allAddItemActionBtns = tableFieldsTreeContainer.find('button[action="add-item"]').get()
+
+                    for (let addItemActionBtn of allAddItemActionBtns) {
+                      try {
+                        $(addItemActionBtn).unbind('click')
+                      } catch (e) {}
+
+                      $(addItemActionBtn).click(function() {
+                        let relatedNode = $(this).parent().parent().parent(),
+                          [
+                            id,
+                            type,
+                            fieldType,
+                            mandatory,
+                            hiddenNodeID
+                          ] = getAttributes(relatedNode, ['id', 'type', 'field-type', 'mandatory', 'add-hidden-node']),
+                          isTypeMap = `${type}`.includes('map<'),
+                          relatedTreeObject = relatedNode.closest('div.table-fields-tree').jstree(),
+                          relatedHiddenNode = relatedTreeObject.element.find(`li[id="hiddenNodeID"]`)
+
+                        try {
+                          type = removeFrozenKeyword(`${type}`)
+                        } catch (e) {}
+
+                        try {
+                          type = `${type}`.match(/<(.*?)>$/)[1]
+                        } catch (e) {}
+
+                        try {
+                          if (!isTypeMap)
+                            throw 0
+
+                          type = `${type}`.replace(/\s+/, '').split(',')
+
+                          type = type.map((subType) => {
+                            try {
+                              subType = removeFrozenKeyword(`${subType}`)
+                            } catch (e) {}
+
+                            subType = subType.replace(/(.*?)</gi, '').replace(/>(.*?)/gi, '')
+
+                            return subType
+                          })
+
+                        } catch (e) {}
+
+                        try {
+                          if (typeof type != 'object')
+                            throw 0
+
+                          let itemMainNodeID = getRandomID(30),
+                            itemMainNodeStrucutre = {
+                              id: itemMainNodeID,
+                              parent: hiddenNodeID,
+                              state: {
+                                opened: true,
+                                selected: false
+                              },
+                              a_attr: {
+                                'is-map-item': true
+                              },
+                              text: `
+                            <div class="input-group">
+                              <div class="input-group-text for-insertion for-name ignored-applied">
+                                <span class="name">
+                                  <span mulang="name" capitalize></span>
+                                  <ion-icon name="right-arrow-filled"></ion-icon>
+                                </span>
+                                <span class="name-value">Item #${getRandomID(3)}</span>
+                              </div>
+                              <div class="input-group-text for-insertion for-actions ignored-applied">
+                                <span class="actions">
+                                  <span mulang="actions" capitalize></span>
+                                  <ion-icon name="right-arrow-filled"></ion-icon>
+                                </span>
+                                <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
+                                  <ion-icon name="trash-outline"></ion-icon>
+                                  <span mulang="delete item"></span>
+                                </button>
+                              </div>
+                            </div>`
+                            }
+
+                          let mapKeyUDTObject = keyspaceUDTs.find((udt) => udt.name == type[0]),
+                            mapKeyObject = {
+                              isUDT: mapKeyUDTObject != undefined,
+                              name: ``,
+                              type: type[0],
+                              fieldType: 'collection-map-key',
+                              isMandatory: false,
+                              noEmptyValue: true
+                            },
+                            mapKeyStructure = buildTableFieldsTreeview([], [], [], keyspaceUDTs, enableBlobPreview, mapKeyObject.isUDT ? {
+                              ...mapKeyUDTObject,
+                              ...mapKeyObject
+                            } : mapKeyObject)
+
+                          let mapValueUDTObject = keyspaceUDTs.find((udt) => udt.name == type[1]),
+                            mapValueObject = {
+                              isUDT: mapValueUDTObject != undefined,
+                              name: ``,
+                              type: type[1],
+                              fieldType: 'collection-map-value',
+                              isMandatory: false,
+                              noEmptyValue: true
+                            },
+                            mapValueStructure = buildTableFieldsTreeview([], [], [], keyspaceUDTs, enableBlobPreview, mapValueObject.isUDT ? {
+                              ...mapValueUDTObject,
+                              ...mapValueObject
+                            } : mapValueObject)
+
+                          try {
+                            mapKeyStructure.parent = itemMainNodeID
+                          } catch (e) {}
+
+                          try {
+                            mapValueStructure.parent = itemMainNodeID
+                          } catch (e) {}
+
+                          let allNewNodes = []
+
+                          try {
+                            if (Array.isArray(itemMainNodeStrucutre)) {
+                              allNewNodes = allNewNodes.concat(itemMainNodeStrucutre)
+                            } else {
+                              allNewNodes.push(itemMainNodeStrucutre)
+                            }
+                          } catch (e) {}
+
+                          try {
+                            if (Array.isArray(mapKeyStructure)) {
+                              allNewNodes = allNewNodes.concat(mapKeyStructure)
+                            } else {
+                              allNewNodes.push(mapKeyStructure)
+                            }
+                          } catch (e) {}
+
+                          try {
+                            if (Array.isArray(mapValueStructure)) {
+                              allNewNodes = allNewNodes.concat(mapValueStructure)
+                            } else {
+                              allNewNodes.push(mapValueStructure)
+                            }
+                          } catch (e) {}
+
+                          try {
+                            allNewNodes = flattenArray(allNewNodes)
+                          } catch (e) {}
+
+                          try {
+                            allNewNodes = handleHiddenNodes(allNewNodes)
+                          } catch (e) {}
+
+                          for (let i = 0; i < allNewNodes.length; i++) {
+                            let node = allNewNodes[i]
+
+                            try {
+                              if (node.parent != '#')
+                                throw 0
+
+                              allNewNodes[i].parent = itemMainNodeID
+                            } catch (e) {}
+
+                            try {
+                              let nodeText = Cheerio.load(allNewNodes[i].text)
+
+                              try {
+                                nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')
+                              } catch (e) {}
+
+                              allNewNodes[i].text = nodeText('body').html()
+                            } catch (e) {}
+
+                            try {
+                              relatedTreeObject.create_node(allNewNodes[i].parent, allNewNodes[i])
+                            } catch (e) {}
+
+                            try {
+                              handleNodeCreationDeletion()
+                            } catch (e) {}
+                          }
+
+                          return
+                        } catch (e) {}
+
+                        let nodeUDTType = keyspaceUDTs.find((udt) => udt.name == type),
+                          nodeTypeObject = {
+                            isUDT: nodeUDTType != undefined,
+                            name: ``,
+                            type: type,
+                            fieldType: 'collection-type',
+                            isMandatory: false,
+                            noEmptyValue: true
+                          },
+                          nodeTypeStructure = buildTableFieldsTreeview([], [], [], keyspaceUDTs, enableBlobPreview, nodeTypeObject.isUDT ? {
+                            ...nodeUDTType,
+                            ...nodeTypeObject
+                          } : nodeTypeObject)
+
+                        try {
+                          nodeTypeStructure = Array.isArray(nodeTypeStructure) ? flattenArray(nodeTypeStructure) : [nodeTypeStructure]
+                        } catch (e) {}
+
+                        try {
+                          nodeTypeStructure = handleHiddenNodes(nodeTypeStructure)
+                        } catch (e) {}
+
+                        for (let i = 0; i < nodeTypeStructure.length; i++) {
+                          try {
+                            if (nodeTypeStructure[i].parent != '#')
+                              throw 0
+
+                            let nodeText = Cheerio.load(nodeTypeStructure[i].text),
+                              deleteItemBtn = `
+                            <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
+                              <ion-icon name="trash-outline"></ion-icon>
+                              <span mulang="delete item"></span>
+                            </button>`
+
+                            try {
+                              nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')
+                            } catch (e) {}
+
+                            let actionsGroup = nodeText('div.input-group-text.for-actions')
+
+                            if (actionsGroup.length != 0) {
+                              actionsGroup.find('button').before(deleteItemBtn)
+                            } else {
+                              let actionsGroupContainer = `
+                                <div class="input-group-text for-insertion for-actions ignored-applied">
+                                  <span class="actions">
+                                    <span mulang="actions" capitalize></span>
+                                    <ion-icon name="right-arrow-filled"></ion-icon>
+                                  </span>
+                                  ${deleteItemBtn}
+                                </div>`
+
+                              nodeText('div.input-group').append(actionsGroupContainer)
+                            }
+
+                            nodeTypeStructure[i].text = nodeText('body').html()
+
+                            nodeTypeStructure[i].parent = hiddenNodeID
+                          } catch (e) {}
+
+                          try {
+                            relatedTreeObject.create_node(nodeTypeStructure[i].parent, {
+                              ...nodeTypeStructure[i]
+                            })
+                          } catch (e) {}
+
+                          try {
+                            handleNodeCreationDeletion()
+                          } catch (e) {}
+                        }
+                      })
+                    }
+
+                    let allDeleteItemActionBtns = tableFieldsTreeContainer.find('button[action="delete-item"]').get()
+
+                    for (let deleteItemActionBtn of allDeleteItemActionBtns) {
+                      try {
+                        $(deleteItemActionBtn).unbind('click')
+                      } catch (e) {}
+
+                      $(deleteItemActionBtn).click(function() {
+                        let relatedNode = $(this).parent().parent().parent(),
+                          relatedTreeObject = relatedNode.closest('div.table-fields-tree').jstree()
+
+                        try {
+                          let deletedNode = relatedTreeObject.get_node(relatedNode)
+
+                          relatedTreeObject.delete_node(deletedNode)
+
+                          try {
+                            handleNodeCreationDeletion()
+                          } catch (e) {}
+                        } catch (e) {}
+                      })
+                    }
+                  }
+
+                  {
+                    let AllIgnoreCheckboxes = tableFieldsTreeContainer.find('div.not-ignore-checkbox').get()
+
+                    for (let ignoreCheckbox of AllIgnoreCheckboxes) {
+                      try {
+                        $(ignoreCheckbox).unbind('click')
+                      } catch (e) {}
+
+                      $(ignoreCheckbox).click(function() {
+                        let relatedNode = $(this).closest('a.jstree-anchor'),
+                          relatedTreeObject = relatedNode.closest('div.table-fields-tree').jstree(),
+                          relatedNodeObject = relatedTreeObject.get_node(relatedNode)
+
+                        $(this).attr('data-status', `${$(this).attr('data-status') == 'true' ? 'false' : 'true'}`)
+
+                        let checkBoxStatus = $(this).attr('data-status')
+
+                        relatedNode.toggleClass('ignored', checkBoxStatus != 'true')
+
+                        let allChildrenNodes = relatedNodeObject.children_d
+
+                        try {
+                          if (relatedNode.attr('add-hidden-node') == undefined)
+                            throw 0
+
+                          let hiddenNodeObject = relatedTreeObject.get_node(`${relatedNode.attr('add-hidden-node')}`)
+
+                          allChildrenNodes = allChildrenNodes.concat(hiddenNodeObject.children_d)
+                        } catch (e) {}
+
+                        for (let childrenNodeID of allChildrenNodes) {
+                          let childrenNode = $(`a[id="${childrenNodeID}_anchor"]`)
+
+                          childrenNode.toggleClass('ignored', checkBoxStatus != 'true')
+                        }
+
+                        setTimeout(() => {
+                          try {
+                            updateActionStatusForInsertRow()
+                          } catch (e) {}
+                        })
+                      })
+                    }
+                  }
+
+                  {
+                    let allClearFieldBtns = tableFieldsTreeContainer.find('div.clear-field div.btn').get()
+
+                    for (let clearFieldBtn of allClearFieldBtns) {
+                      try {
+                        $(clearFieldBtn).unbind('click')
+                      } catch (e) {}
+
+                      $(clearFieldBtn).click(function() {
+                        let relatedNode = $(this).closest('a.jstree-anchor'),
+                          rlatedInutField = relatedNode.find('input'),
+                          inputObject = getElementMDBObject(rlatedInutField)
+
+                        try {
+                          rlatedInutField.val('').trigger('input')
+                        } catch (e) {}
+
+                        try {
+                          inputObject.update()
+                          setTimeout(() => inputObject._deactivate())
+                        } catch (e) {}
+
+                        setTimeout(() => {
+                          try {
+                            updateActionStatusForInsertRow()
+                          } catch (e) {}
+                        })
+                      })
+                    }
+                  }
+
+                  {
+                    let allNULLApplyBtns = tableFieldsTreeContainer.find('button[action="apply-null"]').get()
+
+                    for (let applyBtn of allNULLApplyBtns) {
+                      try {
+                        $(applyBtn).unbind('click')
+                      } catch (e) {}
+
+                      $(applyBtn).click(function() {
+                        let isNULLApplied = $(this).hasClass('applied')
+
+                        $(this).closest('a.jstree-anchor').find('.null-related').toggleClass('null-applied', !isNULLApplied)
+                        $(this).toggleClass('applied', !isNULLApplied)
+
+                        setTimeout(() => {
+                          try {
+                            updateActionStatusForInsertRow()
+                          } catch (e) {}
+                        })
+                      })
+                    }
+                  }
+                })
+
+                setTimeout(() => {
+                  try {
+                    tableFieldsTreeContainer.find('input').unbind('input')
+                    tableFieldsTreeContainer.find('input').unbind('change')
+                  } catch (e) {}
+
+                  tableFieldsTreeContainer.find('input').on('input change', function() {
+                    let [
+                      inputCassandraType,
+                      inputHTMLType,
+                      inputID
+                    ] = getAttributes($(this), ['data-field-type', 'type', 'id']),
+                      relatedNode = $(this).closest('a.jstree-anchor'),
+                      isMandatory = relatedNode.attr('mandatory') == 'true',
+                      isEmptyValueNotAllowed = relatedNode.attr('no-empty-value') == 'true'
+
+                    try {
+                      if (!((isMandatory || isEmptyValueNotAllowed) && $(this).val().length <= 0))
+                        throw 0
+
+                      relatedNode.find('div.clear-field').addClass('hide')
+
+                      $(this).addClass('is-invalid')
+
+                      setTimeout(() => {
+                        try {
+                          updateActionStatusForInsertRow()
+                        } catch (e) {}
+                      })
+
+                      return
+                    } catch (e) {}
+
+                    $(this).removeClass('is-invalid')
+
+                    /**
+                     * Using `switch` here won't be suffiecnet as we need, in some cases, to check either one of the types, or both of them
+                     * `boolean` type - `checkbox` input type
+                     */
+                    try {
+                      if (inputHTMLType != 'checkbox')
+                        throw 0
+
+                      $(`label[for="${$(this).attr('id')}"]`).text($(this).prop('checked') ? 'true' : 'false')
+
+                      effectedNodes[inputID] = `${$(this).prop('checked')}`
+                    } catch (e) {}
+
+                    if (inputHTMLType != 'checkbox')
+                      effectedNodes[inputID] = $(this).val()
+
+                    // `inet` Cassandra type - `text` input type
+                    try {
+                      if (inputCassandraType != 'inet')
+                        throw 0
+
+                      let ipValue = $(this).val(),
+                        isValidIP = isIP(`${ipValue}`) != 0
+
+                      if (minifyText(ipValue).length <= 0)
+                        throw $(this).removeClass('is-invalid')
+
+                      $(this).toggleClass('is-invalid', !isValidIP)
+                    } catch (e) {}
+
+                    // `uuid` and `timeuuid` Cassandra types - `text` input type
+                    try {
+                      if (!(['uuid', 'timeuuid'].some((type) => inputCassandraType == type)))
+                        throw 0
+
+                      let uuidValue = $(this).val(),
+                        isValidUUID = isUUID(`${uuidValue}`),
+                        uuidFunction = inputCassandraType == 'uuid' ? 'uuid' : 'now'
+
+                      if (minifyText(uuidValue).length <= 0 || uuidValue == `${uuidFunction}()`)
+                        throw $(this).removeClass('is-invalid')
+
+                      $(this).toggleClass('is-invalid', !isValidUUID)
+                    } catch (e) {}
+
+                    // `timestamp` Cassandra type - `text` input type
+                    try {
+                      if (inputCassandraType != 'timestamp')
+                        throw 0
+
+                      let timestampValue = $(this).val()
+
+                      try {
+                        timestampValue = !isNaN(timestampValue) ? parseInt(timestampValue) : timestampValue
+                      } catch (e) {}
+
+                      let isValidTimestamp = !isNaN((new Date(timestampValue).getTime()))
+
+                      if (minifyText($(this).val()).length <= 0 || $(this).val() == 'current_timestamp()')
+                        throw $(this).removeClass('is-invalid')
+
+                      $(this).toggleClass('is-invalid', !isValidTimestamp)
+                    } catch (e) {}
+
+                    // `date` Cassandra type - `text` input type
+                    try {
+                      if (inputCassandraType != 'date')
+                        throw 0
+
+                      let dateValue = $(this).val(),
+                        isValidDate = (`${dateValue}`.match(/^\d{4}-\d{2}-\d{2}$/) != null || !isNaN(dateValue)) && !(isNaN(new Date(parseInt(dateValue)).getTime()))
+
+                      if (minifyText($(this).val()).length <= 0 || $(this).val() == 'current_date()')
+                        throw $(this).removeClass('is-invalid')
+
+                      $(this).toggleClass('is-invalid', !isValidDate)
+                    } catch (e) {}
+
+                    // `time` Cassandra type - `text` input type
+                    try {
+                      if (inputCassandraType != 'time')
+                        throw 0
+
+                      let timeValue = $(this).val(),
+                        isValidTime = (`${timeValue}`.match(/^\d{2}:\d{2}:\d{2}(\.\d+)*$/) != null || !isNaN(timeValue)) && !(isNaN(new Date(parseInt(timeValue)).getTime()))
+
+                      if (minifyText($(this).val()).length <= 0 || $(this).val() == 'current_time()')
+                        throw $(this).removeClass('is-invalid')
+
+                      $(this).toggleClass('is-invalid', !isValidTime)
+                    } catch (e) {}
+
+                    // `duration` Cassandra type - `text` input type
+                    try {
+                      if (inputCassandraType != 'duration')
+                        throw 0
+
+                      let durationValue = $(this).val(),
+                        isValidDuration = `${durationValue}`.match(/^P(?!$)(\d+Y)?(\d+M)?(\d+D)?(T(?!$)(\d+H)?(\d+M)?(\d*\.?\d*S)?)?$/) != null
+
+                      if (minifyText($(this).val()).length <= 0)
+                        throw $(this).removeClass('is-invalid')
+
+                      $(this).toggleClass('is-invalid', !isValidDuration)
+                    } catch (e) {}
+
+                    // `blob` Cassandra type - `text` input type
+                    try {
+                      if (inputCassandraType != 'blob')
+                        throw 0
+
+                      let blobValue = $(this).val(),
+                        isValidBlob = `${blobValue}`.match(/^(?:0x)[0-9a-fA-F]+(\.\.\.)?$/) != null
+
+                      if (minifyText($(this).val()).length <= 0)
+                        throw $(this).removeClass('is-invalid')
+
+                      $(this).toggleClass('is-invalid', !isValidBlob)
+
+                      effectedNodes[inputID] = {
+                        inputValue: $(this).val(),
+                        dataValue: $(this).data('value')
+                      }
+                    } catch (e) {}
+
+                    try {
+                      relatedNode.find('div.clear-field').toggleClass('hide', $(this).val().length <= 0)
+                    } catch (e) {}
+
+                    setTimeout(() => {
+                      try {
+                        updateActionStatusForInsertRow()
+                      } catch (e) {}
+                    })
+                  })
+
+                  let tippyInstances = []
+
+                  tableFieldsTreeContainer.find('a.dropdown-item').on('click', function() {
+                    let btnAction = $(this).attr('action')
+
+                    switch (btnAction) {
+                      case 'function': {
+                        let functionContent = $(this).attr('data-function'),
+                          inputField = $(this).parent().parent().parent().parent().find('input'),
+                          inputObject = getElementMDBObject(inputField)
+
+                        inputField.val(`${functionContent}`).trigger('input')
+
+                        try {
+                          inputObject.update()
+                        } catch (e) {}
+
+                        break
+                      }
+                      case 'datetimepicker': {
+                        let viewMode = $(this).attr('data-view-mode'),
+                          inputField = $(this).parent().parent().parent().parent().find('input'),
+                          inputObject = getElementMDBObject(inputField)
+
+                        try {
+                          let tippyReference = $(this).parent().parent().parent().find('button'),
+                            tippyInstance = tippyInstances.find((instance) => $(instance.reference).is(tippyReference))
+
+                          if (tippyInstance != undefined) {
+                            try {
+                              tippyInstance.enable()
+                              tippyInstance.show()
+                            } catch (e) {}
+
+                            throw 0
+                          }
+
+                          let pickerContainerID = getRandomID(30),
+                            isDataCleared = false
+
+                          tippyInstance = tippy(tippyReference[0], {
+                            content: `<div id="_${pickerContainerID}"></div>`,
+                            appendTo: () => document.body,
+                            allowHTML: true,
+                            arrow: false,
+                            interactive: true,
+                            placement: 'right-start',
+                            trigger: 'click',
+                            theme: 'material',
+                            showOnCreate: true,
+                            onShow(instance) {
+                              let popper = $(instance.popper),
+                                reference = $(instance.reference),
+                                inputField = reference.parent().parent().find('input'),
+                                inputObject = getElementMDBObject(inputField)
+
+                              if (popper.find('div.row, form').length != 0)
+                                return
+
+                              setTimeout(() => {
+                                try {
+                                  if (viewMode != 'HMS-D')
+                                    throw 0
+
+                                  let [
+                                    yearsInputID,
+                                    monthsInputID,
+                                    daysInputID,
+                                    hoursInputID,
+                                    minutesInputID,
+                                    secondsInputID,
+                                    clearBtnID,
+                                    confirmBtnID
+                                  ] = getRandomID(10, 8).map((id) => `_${id}_du`),
+                                    durationForm = `
+                                    <div class="row for-duration">
+                                      <div class="input-group">
+                                      <div class="input-group-text" style="height: 29px; font-size: 100%;">
+                                          <span mulang="period" capitalize></span>
+                                        </div>
+                                        <div class="form-outline form-white">
+                                          <input type="number" step="1" min="0" class="form-control form-control-sm" id="${yearsInputID}" data-part-suffix="Y">
+                                          <label class="form-label">
+                                            <span mulang="years" capitalize></span>
+                                          </label>
+                                        </div>
+                                        <div class="form-outline form-white">
+                                          <input type="number" step="1" min="0" class="form-control form-control-sm" id="${monthsInputID}" data-part-suffix="M">
+                                          <label class="form-label">
+                                            <span mulang="months" capitalize></span>
+                                          </label>
+                                        </div>
+                                        <div class="form-outline form-white">
+                                          <input type="number" step="1" min="0" class="form-control form-control-sm" id="${daysInputID}" data-part-suffix="D">
+                                          <label class="form-label">
+                                            <span mulang="days" capitalize></span>
+                                          </label>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="row for-duration">
+                                      <div class="input-group">
+                                        <div class="input-group-text" style="height: 29px; font-size: 100%;">
+                                          <span mulang="time" capitalize></span>
+                                        </div>
+                                        <div class="form-outline form-white">
+                                          <input type="number" step="1" min="0" class="form-control form-control-sm" id="${hoursInputID}" data-part-suffix="H">
+                                          <label class="form-label">
+                                            <span mulang="hours" capitalize></span>
+                                          </label>
+                                        </div>
+                                        <div class="form-outline form-white">
+                                          <input type="number" step="1" min="0" class="form-control form-control-sm" id="${minutesInputID}" data-part-suffix="M">
+                                          <label class="form-label">
+                                            <span mulang="minutes" capitalize></span>
+                                          </label>
+                                        </div>
+                                        <div class="form-outline form-white">
+                                          <input type="number" step="1" min="0" class="form-control form-control-sm" id="${secondsInputID}" data-part-suffix="S">
+                                          <label class="form-label">
+                                            <span mulang="seconds" capitalize></span>
+                                          </label>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="row for-duration">
+                                      <div class="col-md-4">
+                                        <button type="button" class="btn btn-secondary btn-dark btn-sm" id="${clearBtnID}">
+                                          <span mulang="clear"></span>
+                                        </button>
+                                      </div>
+                                      <div class="col-md-8">
+                                        <button type="button" class="btn btn-primary btn-dark changed-bg changed-color btn-sm" id="${confirmBtnID}">
+                                          <span mulang="confirm"></span>
+                                        </button>
+                                      </div>
+                                    </div>`
+
+                                  $(`div#_${pickerContainerID}`).append($(durationForm).show(function() {
+                                    let durationFormElement = $(this)
+
+                                    setTimeout(() => durationFormElement.find('input').each(function() {
+                                      setTimeout(() => getElementMDBObject($(this)))
+                                    }))
+
+                                    setTimeout(() => durationFormElement.find('button').each(function() {
+                                      getElementMDBObject($(this), 'Button')
+                                    }))
+
+                                    setTimeout(() => Modules.Localization.applyLanguageSpecific(durationFormElement.find('span[mulang], [data-mulang]')))
+
+                                    setTimeout(() => {
+                                      $(`button#${clearBtnID}`).add(`button#${confirmBtnID}`).unbind('click')
+
+                                      $(`button#${clearBtnID}`).click(function() {
+                                        for (let durationInputField of $(this).parent().parent().parent().find('input').get()) {
+                                          $(durationInputField).val(``).trigger('input')
+
+                                          try {
+                                            let durationInputObject = getElementMDBObject($(durationInputObject))
+
+                                            durationInputObject.update()
+                                            setTimeout(() => durationInputObject._deactivate())
+                                          } catch (e) {}
+                                        }
+
+                                        inputField.val(``).trigger('input')
+
+                                        try {
+                                          inputObject.update()
+                                          setTimeout(() => inputObject._deactivate())
+                                        } catch (e) {}
+
+                                        setTimeout(() => {
+                                          try {
+                                            updateActionStatusForInsertRow()
+                                          } catch (e) {}
+                                        })
+                                      })
+
+                                      $(`button#${confirmBtnID}`).click(function() {
+                                        try {
+                                          let duration = `P`
+
+                                          try {
+                                            let periodInputFields = [yearsInputID, monthsInputID, daysInputID]
+
+                                            for (let periodInputFieldID of periodInputFields) {
+                                              let inputElement = $(`input#${periodInputFieldID}`),
+                                                inputSuffix = inputElement.attr('data-part-suffix'),
+                                                inputValue = parseInt(inputElement.val()) >= 1 ? `${inputElement.val()}${inputSuffix}` : ''
+
+                                              duration += inputValue
+                                            }
+                                          } catch (e) {}
+
+                                          try {
+                                            let timeInputFields = [hoursInputID, minutesInputID, secondsInputID],
+                                              tempTxt = ''
+
+                                            for (let timeInputFieldID of timeInputFields) {
+                                              let inputElement = $(`input#${timeInputFieldID}`),
+                                                inputSuffix = inputElement.attr('data-part-suffix'),
+                                                inputValue = parseInt(inputElement.val()) >= 1 ? `${inputElement.val()}${inputSuffix}` : ''
+
+                                              tempTxt += inputValue
+                                            }
+
+                                            if (tempTxt.length <= 0)
+                                              throw 0
+
+                                            duration += `T${tempTxt}`
+                                          } catch (e) {}
+
+                                          duration = duration == 'P' ? '' : duration
+
+                                          inputField.val(duration).trigger('input')
+
+                                          try {
+                                            inputObject.update()
+                                          } catch (e) {}
+                                        } catch (e) {} finally {
+                                          try {
+                                            instance.disable()
+                                            instance.hide()
+                                          } catch (e) {}
+                                        }
+
+                                        setTimeout(() => {
+                                          try {
+                                            updateActionStatusForInsertRow()
+                                          } catch (e) {}
+                                        })
+                                      })
+                                    })
+                                  }))
+
+                                  return
+                                } catch (e) {}
+
+                                setTimeout(() => $(instance.popper).find('div.tippy-content').addClass('no-padding'))
+
+                                setTimeout(() => $(`div#_${pickerContainerID}`).datetimepicker({
+                                  date: new Date(),
+                                  viewMode,
+                                  onClear: () => {
+                                    inputField.val('').trigger('input')
+
+                                    isDataCleared = true
+
+                                    try {
+                                      inputObject.update()
+                                      setTimeout(() => inputObject._deactivate())
+                                    } catch (e) {}
+
+                                    setTimeout(() => {
+                                      try {
+                                        updateActionStatusForInsertRow()
+                                      } catch (e) {}
+                                    })
+                                  },
+                                  onDateChange: function() {
+                                    isDataCleared = this.getValue() == null
+                                  },
+                                  onOk: function() {
+                                    try {
+                                      if (isDataCleared)
+                                        throw 0
+
+                                      let dateTimeValue = this.getText(viewMode == 'YMDHMS' ? 'YYYY-MM-DD HH:mm:ss.i' : (viewMode == 'YMD' ? 'YYYY-MM-DD' : 'HH:mm:ss.i'))
+
+                                      try {
+                                        if (viewMode != 'YMDHMS')
+                                          throw 0
+
+                                        dateTimeValue = new Date(this.getValue()).getTime()
+                                      } catch (e) {}
+
+                                      inputField.val(`${dateTimeValue}`).trigger('input')
+
+                                      try {
+                                        inputObject.update()
+                                      } catch (e) {}
+
+                                    } catch (e) {} finally {
+                                      try {
+                                        instance.disable()
+                                        instance.hide()
+                                      } catch (e) {}
+                                    }
+
+                                    setTimeout(() => {
+                                      try {
+                                        updateActionStatusForInsertRow()
+                                      } catch (e) {}
+                                    })
+                                  }
+                                }))
+                              })
+                            },
+                            onHidden(instance) {
+                              try {
+                                instance.disable()
+                                instance.hide()
+                              } catch (e) {}
+                            },
+                          })
+
+                          tippyInstances.push(tippyInstance)
+                        } catch (e) {}
+
+                        break
+                      }
+                      case 'upload-item': {
+                        let inputField = $(this).parent().parent().parent().parent().find('input'),
+                          inputObject = getElementMDBObject(inputField),
+                          dialogID = getRandomID(5),
+                          data = {
+                            id: dialogID,
+                            title: I18next.capitalizeFirstLetter(I18next.t('upload item for BLOB field')),
+                            properties: ['showHiddenFiles', 'createDirectory', 'promptToCreate', 'openFile']
+                          }
+
+                        // Send a request to the main thread to create a dialog
+                        IPCRenderer.send('dialog:create', data)
+
+                        // Listen for the response
+                        IPCRenderer.on(`dialog:${dialogID}`, (_, selected) => {
+                          if (selected.length <= 0) {
+                            inputField.val('').trigger('input')
+
+                            inputField.data('value', '')
+
+                            try {
+                              inputObject.update()
+
+                              setTimeout(() => inputObject._deactivate())
+                            } catch (e) {}
+
+                            return
+                          }
+
+                          let selectedItem = selected[0]
+
+                          Modules.Config.getConfig((config) => {
+                            let maxItemSize = config.get('limit', 'insertBlobSize') || '2MB'
+
+                            try {
+                              maxItemSize = Bytes(maxItemSize) || 2097152
+                            } catch (e) {}
+
+                            FS.stat(selectedItem, (err, stats) => {
+                              if (err)
+                                return
+
+                              let itemSize = stats.size
+
+                              if (itemSize > maxItemSize)
+                                return showToast(I18next.capitalize(I18next.t('upload item')), I18next.capitalizeFirstLetter(I18next.replaceData('the size of the uploaded item is [b]$data[/b], which is greater than the maximum allowed size of [b]$data[/b]. Please consider to change that in the config file or try with smaller item', [Bytes(itemSize), Bytes(maxItemSize)])) + '.', 'failure')
+
+                              let requestID = getRandomID(20),
+                                ringSpinnerElement = $(this).parent().parent().parent().children('l-ring-2'),
+                                showRingSpinnerTimeout = null,
+                                showRingSpinner = () => {
+                                  try {
+                                    clearTimeout(showRingSpinnerTimeout)
+                                  } catch (e) {}
+
+                                  showRingSpinnerTimeout = setTimeout(() => ringSpinnerElement.addClass('show'), 500)
+                                }
+
+                              showRingSpinner()
+
+                              // Request to get the public key
+                              IPCRenderer.send('blob:read-convert', {
+                                requestID,
+                                itemPath: selectedItem
+                              })
+
+                              // Wait for the response
+                              IPCRenderer.on(`blob:read-convert:result:${requestID}`, (_, data) => {
+                                inputField.data('value', data.itemHEXString)
+
+                                data.itemHEXString = data.itemHEXString.length <= 0 ? '' : (data.itemHEXString.length > 100 ? `${data.itemHEXString.slice(0, 100)}...` : data.itemHEXString)
+
+                                inputField.val(data.itemHEXString).trigger('input')
+
+                                try {
+                                  inputObject.update()
+                                } catch (e) {}
+
+                                try {
+                                  clearTimeout(showRingSpinnerTimeout)
+                                } catch (e) {}
+
+                                ringSpinnerElement.removeClass('show')
+                              })
+                            })
+                          })
+                        })
+
+                        break
+                      }
+                      case 'preview-item': {
+                        let inputField = $(this).parent().parent().parent().parent().find('input')
+
+                        try {
+                          let blobHEXString = inputField.data('value')
+
+                          if (`${inputField.val()}`.slice(0, 100) != `${blobHEXString}`.slice(0, 100))
+                            throw 0
+
+                          getBlobType(blobHEXString, (err, result) => {
+                            if (err || `${result.mime}`.includes('application'))
+                              throw 0
+
+                            let itemType = ''
+
+                            try {
+                              itemType = result.ext
+                            } catch (e) {}
+
+                            let requestID = getRandomID(20),
+                              ringSpinnerElement = $(this).parent().parent().parent().children('l-ring-2'),
+                              showRingSpinnerTimeout = null,
+                              showRingSpinner = () => {
+                                try {
+                                  clearTimeout(showRingSpinnerTimeout)
+                                } catch (e) {}
+
+                                showRingSpinnerTimeout = setTimeout(() => ringSpinnerElement.addClass('show'), 500)
+                              }
+
+                            showRingSpinner()
+
+                            // Request to get the public key
+                            IPCRenderer.send('blob:convert-write', {
+                              requestID,
+                              itemType,
+                              blobHEXString,
+                              randomID: getRandomID(15)
+                            })
+
+                            // Wait for the response
+                            IPCRenderer.on(`blob:convert-write:result:${requestID}`, (_, data) => {
+                              if (data.error)
+                                throw 0
+
+                              Open(data.itemTempFile)
+
+                              try {
+                                clearTimeout(showRingSpinnerTimeout)
+                              } catch (e) {}
+
+                              ringSpinnerElement.removeClass('show')
+                            })
+                          })
+                        } catch (e) {
+                          showToast(I18next.capitalize(I18next.t('preview item')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to finalize the preview process of the current item')) + '.', 'failure')
+                        }
+
+                        break
+                      }
+                    }
+
+                    $(this).parent().parent().hide()
+
+                    setTimeout(() => {
+                      try {
+                        updateActionStatusForInsertRow()
+                      } catch (e) {}
+                    })
+                  })
+
+                  setTimeout(() => {
+                    tableFieldsTreeContainer.find('input').trigger('input')
+                    tableFieldsTreeContainer.find('input').trigger('change')
+                  })
+                })
+
+                setTimeout(() => Modules.Localization.applyLanguageSpecific(tableFieldsTreeContainer.find('span[mulang], [data-mulang]')))
+              })
+
+              let triggerLoadEventTimeOut = null,
+                triggerLoadEvent = () => {
+                  try {
+                    clearTimeout(triggerLoadEventTimeOut)
+                  } catch (e) {}
+
+                  setTimeout(() => {
+                    try {
+                      updateActionStatusForInsertRow()
+                    } catch (e) {}
+                  })
+
+                  triggerLoadEventTimeOut = setTimeout(() => tableFieldsTreeContainer.trigger('loaded.jstree'))
+                }
+
+              tableFieldsTreeContainer.on('create_node.jstree', function(e, data) {
+                let parentNodeID = '_'
+
+                try {
+                  parentNodeID = data.node.parents.at(-2)
+                } catch (e) {}
+
+                try {
+                  if (tableFieldsTreeContainer.find(`a.jstree-anchor[add-hidden-node="${parentNodeID}"]`).length <= 0)
+                    throw 0
+
+                  let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${parentNodeID}"]`)
+
+                  hiddenNode.css('margin-top', '-45px')
+
+                  hiddenNode.children('a').css('pointer-events', 'none')
+                } catch (e) {}
+
+                triggerLoadEvent()
+              })
+
+              tableFieldsTreeContainer.on('delete_node.jstree', function(e, data) {
+                try {
+                  data.instance.hide_node(data.node.id)
+                } catch (e) {}
+
+                setTimeout(() => {
+                  try {
+                    updateActionStatusForInsertRow()
+                  } catch (e) {}
+                })
+              })
+
+              tableFieldsTreeContainer.on('hide_node.jstree', () => triggerLoadEvent())
+
+              tableFieldsTreeContainer.on('select_node.jstree', function(e, data) {
+                let clickedNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${data.node.id}"]`)
+
+                try {
+                  let clickedTarget = $(data.event.target)
+
+                  if (minifyText(clickedTarget[0].tagName) != 'input')
+                    throw 0
+
+                  setTimeout(() => clickedTarget.trigger(clickedTarget.attr('type') == 'checkbox' ? 'click' : 'focus'))
+                } catch (e) {}
+
+                setTimeout(() => {
+                  try {
+                    data.instance.deselect_all()
+                  } catch (e) {}
+                }, 100)
+              })
+            }
+          })
+
+          $('div.modal#rightClickActionsMetadata div[action]').hide()
+          $('div.modal#rightClickActionsMetadata div[action="insert-row"]').show()
+
+          $('div.modal#rightClickActionsMetadata').addClass('insertion-action')
+
+          $('#rightClickActionsMetadata').removeClass('show-editor')
+
+          rightClickActionsMetadataModal.show()
+
+          setTimeout(() => {
+            try {
+              updateActionStatusForInsertRow()
+            } catch (e) {}
+          })
+        })
+      })
     }
   }
 
@@ -10294,7 +11811,7 @@
         actionEditor = monaco.editor.getEditors().find((editor) => dialogElement.find('div.action-editor div.editor div.monaco-editor').is(editor.getDomNode())),
         updateActionStatusForKeyspaces = () => {
           let replicationStrategy = $('input#keyspaceReplicationStrategy').val(),
-            keyspaceName = $('input#keyspaceName').val(),
+            keyspaceName = addDoubleQuotes($('input#keyspaceName').val()),
             durableWrites = $('input#keyspaceDurableWrites').prop('checked'),
             replication = {},
             isRFAcceptable = false
@@ -10361,7 +11878,7 @@
             replicationStrategySetValue = ''
 
           try {
-            replicationStrategySetValue = repairJSON(JSON.parse(repairJSON($('#rightClickActionsMetadata').attr('data-keyspace-info'))).replication_strategy)
+            replicationStrategySetValue = JSONRepair(JSON.parse(JSONRepair($('#rightClickActionsMetadata').attr('data-keyspace-info'))).replication_strategy)
           } catch (e) {}
 
           let durableWritesFinal = '',
@@ -10423,7 +11940,7 @@
 
 
         try {
-          keyspaces = JSON.parse($('#rightClickActionsMetadata').attr('data-keyspaces'))
+          keyspaces = JSON.parse(JSONRepair($('#rightClickActionsMetadata').attr('data-keyspaces')))
         } catch (e) {}
 
         try {
@@ -10473,7 +11990,7 @@
             dataCenters = []
 
           try {
-            dataCenters = JSON.parse($(this).attr('data-datacenters'))
+            dataCenters = JSON.parse(JSONRepair($(this).attr('data-datacenters')))
           } catch (e) {}
 
           try {
@@ -10499,7 +12016,7 @@
 
               try {
                 if (isAlterState)
-                  dataCentersRF = JSON.parse($('div.modal#rightClickActionsMetadata').attr('data-datacenters-rf'))
+                  dataCentersRF = JSON.parse(JSONRepair($('div.modal#rightClickActionsMetadata').attr('data-datacenters-rf')))
               } catch (e) {}
 
               try {
@@ -10655,6 +12172,13 @@
 
           updateActionStatusForStandardTables()
         } catch (e) {}
+
+        try {
+          if (currentActiveAction != 'insert-row')
+            throw 0
+
+          updateActionStatusForInsertRow()
+        } catch (e) {}
       })
 
       $('input[type="checkbox"]#keyspaceDurableWrites').on('change', function() {
@@ -10678,6 +12202,13 @@
             throw 0
 
           updateActionStatusForUDTs()
+        } catch (e) {}
+
+        try {
+          if (currentActiveAction != 'insert-row')
+            throw 0
+
+          updateActionStatusForInsertRow()
         } catch (e) {}
 
         try {
@@ -10744,6 +12275,7 @@
             <li><span class="group-text"><span mulang="date/time types" capitalize></span></span></li>
             <li><a class="dropdown-item" href="#" value="timestamp">timestamp</a></li>
             <li><a class="dropdown-item" href="#" value="date">date</a></li>
+            <li><a class="dropdown-item" href="#" value="duration">duration</a></li>
             <li><a class="dropdown-item" href="#" value="time">time</a></li>
             <li><span class="group-text"><span mulang="binary type" capitalize></span></span></li>
             <li><a class="dropdown-item" href="#" value="blob">blob</a></li>
@@ -10864,8 +12396,8 @@
           }
 
         updateActionStatusForUDTs = () => {
-          let udtName = $('input#udtName').val(),
-            keyspaceName = dialogElement.find('div[action="udts"]').find('div.keyspace-name').text(),
+          let udtName = addDoubleQuotes($('input#udtName').val()),
+            keyspaceName = addDoubleQuotes(dialogElement.find('div[action="udts"]').find('div.keyspace-name').text()),
             allDataFields = dialogElement.find('div[action="udts"]').find('div.data-field.row'),
             isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state'),
             dataFieldsText = ''
@@ -10891,8 +12423,8 @@
 
             for (let row of dialogElement.find('div[action="udts"]').find('div.data-field.row')) {
               let rowElement = $(row),
-                fieldName = rowElement.find('input.fieldName').attr('data-original-value'),
-                fieldType = rowElement.find('input.fieldDataType').attr('data-original-value')
+                fieldName = addDoubleQuotes(rowElement.find('input.fieldName').attr('data-original-value')),
+                fieldType = addDoubleQuotes(rowElement.find('input.fieldDataType').attr('data-original-value'))
 
               // Deleting a field is the first thing to be checked
               if (rowElement.hasClass('deleted')) {
@@ -10928,7 +12460,7 @@
                       if (['map', 'set', 'list'].some((type) => newFieldType == type))
                         throw 0
 
-                      let finalNewFieldType = `${newFieldType}`
+                      let finalNewFieldType = addDoubleQuotes(`${newFieldType}`)
 
                       if (rowElement.parent().hasClass('data-udt-fields'))
                         finalNewFieldType = `frozen<${finalNewFieldType}>`
@@ -10940,14 +12472,14 @@
                       if (!(['map', 'set', 'list'].some((type) => newFieldType == type)))
                         throw 0
 
-                      let collectionItemType = rowElement.find('input.collectionItemType').val()
+                      let collectionItemType = addDoubleQuotes(rowElement.find('input.collectionItemType').val())
 
                       if (`${newFieldType}` != 'map') {
                         statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ALTER ${fieldName} TYPE ${newFieldType}<${collectionItemType}>;`)
                         throw 0
                       }
 
-                      let collectionKeyType = rowElement.find('input.collectionKeyType').val()
+                      let collectionKeyType = addDoubleQuotes(rowElement.find('input.collectionKeyType').val())
 
                       statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ALTER ${fieldName} TYPE ${newFieldType}<${collectionKeyType}, ${collectionItemType}>;`)
                     } catch (e) {}
@@ -10958,7 +12490,7 @@
               // The field's name has been changed
               {
                 try {
-                  let setFieldName = rowElement.find('input.fieldName').val()
+                  let setFieldName = addDoubleQuotes(rowElement.find('input.fieldName').val())
 
                   if (fieldName == setFieldName || fieldName == undefined)
                     throw 0
@@ -10973,8 +12505,8 @@
                   if (rowElement.attr('data-original-field') != undefined)
                     throw 0
 
-                  fieldName = rowElement.find('input.fieldName').val()
-                  fieldType = rowElement.find('input.fieldDataType').val()
+                  fieldName = addDoubleQuotes(rowElement.find('input.fieldName').val())
+                  fieldType = addDoubleQuotes(rowElement.find('input.fieldDataType').val())
 
                   try {
                     if (['map', 'set', 'list'].some((type) => fieldType == type))
@@ -10992,7 +12524,7 @@
                     if (!(['map', 'set', 'list'].some((type) => fieldType == type)))
                       throw 0
 
-                    let collectionItemType = rowElement.find('input.collectionItemType').val()
+                    let collectionItemType = addDoubleQuotes(rowElement.find('input.collectionItemType').val())
 
                     if (`${fieldType}` != 'map') {
                       statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ADD ${fieldName} ${fieldType}<${collectionItemType}>;`)
@@ -11024,10 +12556,10 @@
               let tempTxt = '',
                 dataFieldUIElement = $(dataField),
                 isUDTDataField = $(dataField).attr('for-udt-data-field') != undefined,
-                fieldName = dataFieldUIElement.find('input.fieldName').val(),
-                fieldType = dataFieldUIElement.find('input.fieldDataType').val(),
-                collectionKeyType = dataFieldUIElement.find('input.collectionKeyType').val(),
-                collectionItemType = dataFieldUIElement.find('input.collectionItemType').val()
+                fieldName = addDoubleQuotes(dataFieldUIElement.find('input.fieldName').val()),
+                fieldType = addDoubleQuotes(dataFieldUIElement.find('input.fieldDataType').val()),
+                collectionKeyType = addDoubleQuotes(dataFieldUIElement.find('input.collectionKeyType').val()),
+                collectionItemType = addDoubleQuotes(dataFieldUIElement.find('input.collectionItemType').val())
 
               currentIndex += 1
 
@@ -11453,7 +12985,7 @@
           isAlterState = isAlterState != null && isAlterState == 'alter'
 
           try {
-            keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts'))
+            keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
             keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
           } catch (e) {}
@@ -11847,7 +13379,7 @@
           } catch (e) {}
 
           try {
-            keyspaceUDTs = JSON.parse($('#rightClickActionsMetadata').attr('data-keyspace-udts'))
+            keyspaceUDTs = JSON.parse(JSONRepair($('#rightClickActionsMetadata').attr('data-keyspace-udts')))
           } catch (e) {}
 
           try {
@@ -11906,7 +13438,7 @@
         }
 
         updateActionStatusForCounterTables = () => {
-          let counterTableName = $('input#countertableName').val()
+          let counterTableName = addDoubleQuotes($('input#countertableName').val())
 
           try {
             if (dialogElement.find('div[action="counter-tables"]').find('.is-invalid:not(.ignore-invalid)').length <= 0 &&
@@ -11920,7 +13452,7 @@
             return
           } catch (e) {}
 
-          let keyspaceName = dialogElement.find('div[action="counter-tables"]').find('div.keyspace-name').text(),
+          let keyspaceName = addDoubleQuotes(dialogElement.find('div[action="counter-tables"]').find('div.keyspace-name').text()),
             allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field, div.counter-table-option-field'),
             isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
 
@@ -11942,10 +13474,10 @@
                 if (!$(dataField).hasClass('counter-table-clustering-key-field'))
                   throw 0
 
-                let clusteringKeyName = $(dataField).find('input.clusteringKeyName').val(),
+                let clusteringKeyName = addDoubleQuotes($(dataField).find('input.clusteringKeyName').val()),
                   clusteringKeyTypeElement = $(dataField).find('input.clusteringKeyType'),
-                  currentType = clusteringKeyTypeElement.val(),
-                  originalType = clusteringKeyTypeElement.attr('data-original-type')
+                  currentType = addDoubleQuotes(clusteringKeyTypeElement.val()),
+                  originalType = addDoubleQuotes(clusteringKeyTypeElement.attr('data-original-type'))
 
                 if (currentType != originalType)
                   alteringStatements.push(`ALTER ${clusteringKeyName} TYPE ${currentType}`)
@@ -11958,8 +13490,8 @@
                   throw 0
 
                 let counterColumnNameElement = $(dataField).find('input.counterColumnName'),
-                  counterColumnName = counterColumnNameElement.val(),
-                  originalName = counterColumnNameElement.attr('data-original-name')
+                  counterColumnName = addDoubleQuotes(counterColumnNameElement.val()),
+                  originalName = addDoubleQuotes(counterColumnNameElement.attr('data-original-name'))
 
                 if ($(dataField).hasClass('deleted')) {
                   alteringStatements.push(`DROP ${counterColumnName}`)
@@ -12145,8 +13677,25 @@
               keyspaceUDTs = [],
               isTypeUDT = false
 
+
             try {
-              keyspaceUDTs = JSON.parse($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts')).map((udt) => udt.name)
+              key.name = addDoubleQuotes(key.name)
+            } catch (e) {}
+
+            try {
+              key.type = addDoubleQuotes(key.type)
+            } catch (e) {}
+
+            try {
+              key.key = addDoubleQuotes(key.key)
+            } catch (e) {}
+
+            try {
+              key.value = addDoubleQuotes(key.value)
+            } catch (e) {}
+
+            try {
+              keyspaceUDTs = JSON.parse(JSONRepair($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts'))).map((udt) => udt.name)
             } catch (e) {}
 
             isTypeUDT = keyspaceUDTs.find((udt) => key.type == udt)
@@ -12253,7 +13802,7 @@
           } catch (e) {}
 
           try {
-            keyspaceTables = JSON.parse($('#rightClickActionsMetadata').attr('data-keyspace-tables'))
+            keyspaceTables = JSON.parse(JSONRepair($('#rightClickActionsMetadata').attr('data-keyspace-tables')))
           } catch (e) {}
 
           try {
@@ -12313,6 +13862,7 @@
               <li><span class="group-text"><span mulang="date/time types" capitalize></span></span></li>
               <li><a class="dropdown-item" href="#" value="timestamp">timestamp</a></li>
               <li><a class="dropdown-item" href="#" value="date">date</a></li>
+              <li><a class="dropdown-item" href="#" value="duration">duration</a></li>
               <li><a class="dropdown-item" href="#" value="time">time</a></li>
               <li><span class="group-text"><span mulang="binary type" capitalize></span></span></li>
               <li><a class="dropdown-item" href="#" value="blob">blob</a></li>
@@ -12433,7 +13983,7 @@
           isAlterState = isAlterState != null && isAlterState == 'alter'
 
           try {
-            keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts'))
+            keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
             keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
           } catch (e) {}
@@ -12792,6 +14342,7 @@
               <li><span class="group-text"><span mulang="date/time types" capitalize></span></span></li>
               <li><a class="dropdown-item" href="#" value="timestamp">timestamp</a></li>
               <li><a class="dropdown-item" href="#" value="date">date</a></li>
+              <li><a class="dropdown-item" href="#" value="duration">duration</a></li>
               <li><a class="dropdown-item" href="#" value="time">time</a></li>
               <li><span class="group-text"><span mulang="binary type" capitalize></span></span></li>
               <li><a class="dropdown-item" href="#" value="blob">blob</a></li>
@@ -12912,7 +14463,7 @@
           isAlterState = isAlterState != null && isAlterState == 'alter'
 
           try {
-            keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts'))
+            keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
             keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
           } catch (e) {}
@@ -13952,7 +15503,7 @@
         }
 
         updateActionStatusForStandardTables = () => {
-          let keyspaceName = dialogElement.find('div[action="standard-tables"]').find('div.keyspace-name').text(),
+          let keyspaceName = addDoubleQuotes(dialogElement.find('div[action="standard-tables"]').find('div.keyspace-name').text()),
             allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field, div.standard-table-udt-column-field, div.standard-table-option-field'),
             isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
 
@@ -13961,10 +15512,10 @@
           let keyspaceUDTs = []
 
           try {
-            keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts')).map((udt) => udt.name)
+            keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts'))).map((udt) => udt.name)
           } catch (e) {}
 
-          let standardTableName = $('input#standardtableName').val()
+          let standardTableName = addDoubleQuotes($('input#standardtableName').val())
 
           // For enabling the `static` option for columns
           try {
@@ -14087,7 +15638,7 @@
             dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...droppedColumns, ...addedColumns, ...alteredOptions].length <= 0 ? '' : null)
 
             try {
-              droppedColumns = droppedColumns.map((column) => `DROP ${column}`)
+              droppedColumns = droppedColumns.map((column) => `DROP ${addDoubleQuotes(column)}`)
             } catch (e) {}
 
             try {
@@ -14098,9 +15649,21 @@
                 isTypeUDT = false
 
                 try {
-                  keyspaceUDTs = JSON.parse($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts')).map((udt) => udt.name)
+                  keyspaceUDTs = JSON.parse(JSONRepair($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts'))).map((udt) => udt.name)
 
                   isTypeUDT = keyspaceUDTs.find((udt) => column.type == udt)
+                } catch (e) {}
+
+                try {
+                  column.type = addDoubleQuotes(column.type)
+                } catch (e) {}
+
+                try {
+                  column.key = addDoubleQuotes(column.key)
+                } catch (e) {}
+
+                try {
+                  column.value = addDoubleQuotes(column.value)
                 } catch (e) {}
 
                 try {
@@ -14314,10 +15877,26 @@
               isTypeUDT = false
 
             try {
-              keyspaceUDTs = JSON.parse($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts')).map((udt) => udt.name)
+              keyspaceUDTs = JSON.parse(JSONRepair($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts'))).map((udt) => udt.name)
             } catch (e) {}
 
             isTypeUDT = keyspaceUDTs.find((udt) => key.type == udt)
+
+            try {
+              key.type = addDoubleQuotes(key.type)
+            } catch (e) {}
+
+            try {
+              key.name = addDoubleQuotes(key.name)
+            } catch (e) {}
+
+            try {
+              key.value = addDoubleQuotes(key.value)
+            } catch (e) {}
+
+            try {
+              key.key = addDoubleQuotes(key.key)
+            } catch (e) {}
 
             try {
               if (!isTypeUDT)
@@ -14345,9 +15924,26 @@
             isTypeUDT = false
 
             try {
-              keyspaceUDTs = JSON.parse($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts')).map((udt) => udt.name)
+              keyspaceUDTs = JSON.parse(JSONRepair($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts'))).map((udt) => udt.name)
 
               isTypeUDT = keyspaceUDTs.find((udt) => column.type == udt)
+            } catch (e) {}
+
+
+            try {
+              column.type = addDoubleQuotes(column.type)
+            } catch (e) {}
+
+            try {
+              column.name = addDoubleQuotes(column.name)
+            } catch (e) {}
+
+            try {
+              column.value = addDoubleQuotes(column.value)
+            } catch (e) {}
+
+            try {
+              column.key = addDoubleQuotes(column.key)
             } catch (e) {}
 
             try {
@@ -14448,7 +16044,7 @@
           } catch (e) {}
 
           try {
-            keyspaceTables = JSON.parse($('#rightClickActionsMetadata').attr('data-keyspace-tables'))
+            keyspaceTables = JSON.parse(JSONRepair($('#rightClickActionsMetadata').attr('data-keyspace-tables')))
           } catch (e) {}
 
           try {
@@ -14508,6 +16104,7 @@
             <li><span class="group-text"><span mulang="date/time types" capitalize></span></span></li>
             <li><a class="dropdown-item" href="#" value="timestamp">timestamp</a></li>
             <li><a class="dropdown-item" href="#" value="date">date</a></li>
+            <li><a class="dropdown-item" href="#" value="duration">duration</a></li>
             <li><a class="dropdown-item" href="#" value="time">time</a></li>
             <li><span class="group-text"><span mulang="binary type" capitalize></span></span></li>
             <li><a class="dropdown-item" href="#" value="blob">blob</a></li>
@@ -14628,7 +16225,7 @@
           isAlterState = isAlterState != null && isAlterState == 'alter'
 
           try {
-            keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts'))
+            keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
             keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
           } catch (e) {}
@@ -14990,6 +16587,7 @@
               <li><span class="group-text"><span mulang="date/time types" capitalize></span></span></li>
               <li><a class="dropdown-item" href="#" value="timestamp">timestamp</a></li>
               <li><a class="dropdown-item" href="#" value="date">date</a></li>
+              <li><a class="dropdown-item" href="#" value="duration">duration</a></li>
               <li><a class="dropdown-item" href="#" value="time">time</a></li>
               <li><span class="group-text"><span mulang="binary type" capitalize></span></span></li>
               <li><a class="dropdown-item" href="#" value="blob">blob</a></li>
@@ -15110,7 +16708,7 @@
           isAlterState = isAlterState != null && isAlterState == 'alter'
 
           try {
-            keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts'))
+            keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
             keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
           } catch (e) {}
@@ -15465,6 +17063,7 @@
             <li><span class="group-text"><span mulang="date/time types" capitalize></span></span></li>
             <li><a class="dropdown-item" href="#" value="timestamp">timestamp</a></li>
             <li><a class="dropdown-item" href="#" value="date">date</a></li>
+            <li><a class="dropdown-item" href="#" value="duration">duration</a></li>
             <li><a class="dropdown-item" href="#" value="time">time</a></li>
             <li><span class="group-text"><span mulang="binary type" capitalize></span></span></li>
             <li><a class="dropdown-item" href="#" value="blob">blob</a></li>
@@ -15480,15 +17079,19 @@
           <li><a class="dropdown-item" style="overflow: hidden; text-overflow: ellipsis;" href="#" value="map" data-is-collection data-is-map>map&lt;key_type, value_type&gt;</a></li>`
               defaultType = 'text'
 
-              try {
-                if (keyspaceUDTs.length <= 0)
-                  throw 0
+              let addKeyspaceUDTs = (typesList) => {
+                try {
+                  if (keyspaceUDTs.length <= 0)
+                    throw 0
 
-                typesList += '<li><span class="group-text"><span mulang="user defined types" capitalize></span></span></li>'
+                  typesList += '<li><span class="group-text"><span mulang="user defined types" capitalize></span></span></li>'
 
-                for (let udt of keyspaceUDTs)
-                  typesList += `<li><a class="dropdown-item" data-is-udt="true" href="#" value="${udt}">${udt}</a></li>`
-              } catch (e) {}
+                  for (let udt of keyspaceUDTs)
+                    typesList += `<li><a class="dropdown-item" data-is-udt="true" href="#" value="${udt}">${udt}</a></li>`
+                } catch (e) {}
+
+                return typesList
+              }
 
               let [
                 collectionKeyTypeID,
@@ -15543,7 +17146,7 @@
                     <div class="dropdown" for-select="${collectionKeyTypeID}" style="bottom: 20px;">
                       <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
                       <ul class="dropdown-menu">
-                        ${typesList}
+                        ${addKeyspaceUDTs(typesList)}
                       </ul>
                     </div>
                   </div>
@@ -15560,7 +17163,7 @@
                     <div class="dropdown" for-select="${collectionItemTypeID}" style="bottom: 20px;">
                       <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
                       <ul class="dropdown-menu">
-                        ${typesList}
+                        ${addKeyspaceUDTs(typesList)}
                       </ul>
                     </div>
                   </div>
@@ -15599,7 +17202,7 @@
           isAlterState = isAlterState != null && isAlterState == 'alter'
 
           try {
-            keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts'))
+            keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
             keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
           } catch (e) {}
@@ -15737,9 +17340,15 @@
                 })
 
                 try {
-                  fieldType = `${fieldType}`.match(/frozen\<(.*?)(\<|\>)/)[1]
+                  fieldType = `${field.type}`.match(/frozen\<(.*?)(\<|\>)/)[1]
 
                   isFrozen = true
+                } catch (e) {}
+
+                try {
+                  fieldType = removeFrozenKeyword(`${field.type}`)
+
+                  fieldType = `${fieldType}`.match(/^((.*?)<)/)[2]
                 } catch (e) {}
 
                 $(this).find(`a[action="delete-standard-table-column"]`).click(function() {
@@ -15757,15 +17366,42 @@
                     if (!(['map', 'set', 'list'].some((type) => type == fieldType)))
                       throw 0
 
-                    let fieldKeyType = field.type.match(/frozen\<.*?\<(.*?)\>/)[1]
+                    let fieldKeyType = field.type
+
+                    try {
+                      if (`${fieldKeyType}`.match(/^frozen</) == null)
+                        throw 0
+
+                      fieldKeyType = removeFrozenKeyword(`${fieldKeyType}`)
+                    } catch (e) {}
 
                     if (fieldType == 'map') {
+                      try {
+                        fieldKeyType = fieldKeyType.match(/.*?<(.*?)>$/)[1]
+                      } catch (e) {}
+
                       let mapValues = minifyText(fieldKeyType).split(',')
+
+                      mapValues.forEach((value, index) => {
+                        try {
+                          if (`${fieldKeyType}`.includes('frozen<'))
+                            mapValues[index] = removeFrozenKeyword(value)
+                        } catch (e) {}
+                      })
 
                       $(this).find('input.collectionKeyType').val(`${mapValues[0]}`).trigger('input')
                       $(this).find('input.collectionItemType').val(`${mapValues[1]}`).trigger('input')
                     } else {
-                      $(this).find('input.collectionKeyType').val(`${fieldKeyType}`).trigger('input')
+                      try {
+                        if (`${fieldKeyType}`.includes('frozen<'))
+                          fieldKeyType = removeFrozenKeyword(fieldKeyType)
+                      } catch (e) {}
+
+                      try {
+                        fieldKeyType = `${fieldKeyType}`.match(/<(.*?)>$/)[1]
+                      } catch (e) {}
+
+                      $(this).find('input.collectionItemType').val(`${fieldKeyType}`).trigger('input')
                     }
 
                     $(this).find('input.collectionKeyType, input.collectionItemType').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
@@ -16080,7 +17716,7 @@
           isAlterState = isAlterState != null && isAlterState == 'alter'
 
           try {
-            keyspaceUDTs = JSON.parse($(dialogElement).attr('data-keyspace-udts'))
+            keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
             keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
           } catch (e) {}
@@ -16857,4 +18493,705 @@
       }
     }, 5000)
   }
+
+  {
+    let tippyInstance = null,
+      dateTimePickerObject = null
+
+    $('button#insertionTimestampPicker').click(function(_, isInitProcess = false) {
+      try {
+        let tippyReference = $('button#insertionTimestampPicker')
+
+        if (tippyInstance != null) {
+          try {
+            tippyInstance.enable()
+            setTimeout(() => tippyInstance.show())
+          } catch (e) {}
+
+          try {
+            dateTimePickerObject.setValue(new Date())
+          } catch (e) {}
+
+          throw 0
+        }
+
+        let pickerContainerID = getRandomID(30),
+          isDataCleared = false,
+          viewMode = 'YMDHMS'
+
+        tippyInstance = tippy(tippyReference[0], {
+          content: `<div id="_${pickerContainerID}"></div>`,
+          appendTo: () => document.body,
+          allowHTML: true,
+          arrow: false,
+          interactive: true,
+          placement: 'top',
+          trigger: 'click',
+          theme: 'material',
+          showOnCreate: false,
+          onShow(instance) {
+            let popper = $(instance.popper),
+              reference = $(instance.reference),
+              inputField = reference.parent().parent().find('input'),
+              inputObject = getElementMDBObject(inputField)
+
+            if (popper.find('div.row, form').length != 0)
+              return
+
+            setTimeout(() => {
+              setTimeout(() => $(instance.popper).find('div.tippy-content').addClass('no-padding'))
+
+              setTimeout(() => {
+                dateTimePickerObject = $(`div#_${pickerContainerID}`).datetimepicker({
+                  date: new Date(),
+                  viewMode,
+                  onClear: () => {
+                    inputField.val('').trigger('input')
+
+                    isDataCleared = true
+
+                    try {
+                      inputObject.update()
+                      setTimeout(() => inputObject._deactivate())
+                    } catch (e) {}
+                  },
+                  onDateChange: function() {
+                    isDataCleared = this.getValue() == null
+                  },
+                  onOk: function() {
+                    try {
+                      if (isDataCleared)
+                        throw 0
+
+                      let dateTimeValue = this.getText(viewMode == 'YMDHMS' ? 'YYYY-MM-DD HH:mm:ss.i' : (viewMode == 'YMD' ? 'YYYY-MM-DD' : 'HH:mm:ss.i'))
+
+                      try {
+                        if (viewMode != 'YMDHMS')
+                          throw 0
+
+                        dateTimeValue = new Date(this.getValue()).getTime()
+                      } catch (e) {}
+
+                      inputField.val(`${dateTimeValue}`).trigger('input')
+
+                      try {
+                        inputObject.update()
+                      } catch (e) {}
+
+                    } catch (e) {} finally {
+                      try {
+                        instance.disable()
+                        instance.hide()
+                      } catch (e) {}
+                    }
+                  }
+                })
+              })
+            })
+
+            if (isInitProcess) {
+              setTimeout(() => {
+                try {
+                  instance.disable()
+                  instance.hide()
+                } catch (e) {}
+              })
+            }
+          },
+          onHidden(instance) {
+            try {
+              instance.disable()
+              instance.hide()
+            } catch (e) {}
+          },
+        })
+      } catch (e) {}
+    })
+
+    setTimeout(() => $('button#insertionTimestampPicker').trigger('click', true), 3000)
+
+
+    setTimeout(() => {
+      // Point at the list container
+      let writeConsistencyLevelsContainer = $(`div.dropdown[for-select="writeConsistencyLevel"] ul.dropdown-menu`),
+        defaultOmittedColumnsValueContainer = $(`div.dropdown[for-select="defaultOmittedColumnsValue"] ul.dropdown-menu`)
+
+      // Once one of the items is clicked
+      writeConsistencyLevelsContainer.add(defaultOmittedColumnsValueContainer).find('a').click(function() {
+        // Point at the input field related to the list
+        let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)
+
+        // Update the input's value
+        selectElement.val($(this).attr('value')).trigger('input')
+
+        if (selectElement.attr('id') == 'defaultOmittedColumnsValue')
+          selectElement.toggleClass('is-invalid', $(this).attr('value') == 'NULL')
+
+        setTimeout(() => {
+          try {
+            updateActionStatusForInsertRow()
+          } catch (e) {}
+        })
+      })
+    })
+
+    $('input#writeConsistencyLevel').add('input#defaultOmittedColumnsValue').on('focus', () => $('#rightClickActionsMetadata').scrollTop($('#rightClickActionsMetadata').height()))
+
+    $('input#ttl').add($('input#insertionTimestamp')).each(function() {
+      let clearField = $(this).parent().parent().find('div.clear-field')
+
+      $(this).on('input', function() {
+        try {
+          clearField.toggleClass('hide', $(this).val().length <= 0)
+        } catch (e) {}
+
+        setTimeout(() => {
+          try {
+            updateActionStatusForInsertRow()
+          } catch (e) {}
+        })
+      })
+
+      clearField.children('div.btn').click(function() {
+        let rlatedInutField = $(this).parent().parent().find('input'),
+          inputObject = getElementMDBObject(rlatedInutField)
+
+        try {
+          rlatedInutField.val('').trigger('input')
+        } catch (e) {}
+
+        try {
+          inputObject.update()
+          setTimeout(() => inputObject._deactivate())
+        } catch (e) {}
+      })
+    })
+
+    $('input[name="ttlValueType"]').each(function() {
+      $(this).on('change input', function() {
+        setTimeout(() => {
+          try {
+            updateActionStatusForInsertRow()
+          } catch (e) {}
+        })
+      })
+    })
+  }
+
+  setTimeout(() => {
+    let dialogElement = $(`div.modal#rightClickActionsMetadata`),
+      actionEditor = monaco.editor.getEditors().find((editor) => dialogElement.find('div.action-editor div.editor div.monaco-editor').is(editor.getDomNode()))
+
+    updateActionStatusForInsertRow = () => {
+      let dialogElement = $('#rightClickActionsMetadata'),
+        [
+          keyspaceName,
+          tableName
+        ] = getAttributes(dialogElement, ['data-keyspace-name', 'data-table-name']).map((name) => addDoubleQuotes(name)),
+        relatedTreesObjects = {
+          primaryKey: $('div#tableFieldsPrimaryKeysTree').jstree(),
+          columns: {
+            regular: $('div#tableFieldsRegularColumnsTree').jstree(),
+            collection: $('div#tableFieldsCollectionColumnsTree').jstree(),
+            udt: $('div#tableFieldsUDTColumnsTree').jstree()
+          }
+        }
+
+      let keyspaceUDTs = []
+
+      try {
+        keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts'))).map((udt) => udt.name)
+      } catch (e) {}
+
+      let allNodes = dialogElement.find('div[action="insert-row"]').find(`a.jstree-anchor`)
+
+      allNodes.each(function() {
+        if ($(this)[0].scrollWidth == $(this).innerWidth() || $(this).find('ul.dropdown-menu.for-insertion-actions').hasClass('show'))
+          return
+
+        let widthDifference = Math.abs($(this)[0].scrollWidth - $(this).innerWidth()),
+          typeValueSpan = $(this).find('span.type-value'),
+          spanWidth = typeValueSpan.outerWidth() - 4
+
+        typeValueSpan.css('width', `${spanWidth - widthDifference}px`).addClass('overflow')
+      })
+
+      try {
+        if (allNodes.filter(`:not(.ignored)`).find('.is-invalid:not(.ignore-invalid)').length <= 0)
+          throw 0
+
+        dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+
+        return
+      } catch (e) {}
+
+      let fieldsNames = [],
+        fieldsValues = [],
+        passedFields = [],
+        isInsertionAsJSON = $('#rightClickActionsMetadata').attr('data-as-json') === 'true'
+
+      let handleFieldsPre = (treeObject, mainNodeID = '#') => {
+        let relatedFieldsArray = []
+
+        try {
+          treeObject.get_node(mainNodeID)
+        } catch (e) {
+          return relatedFieldsArray
+        }
+
+        for (let currentNodeID of treeObject.get_node(mainNodeID).children) {
+          let currentNode = $(`a.jstree-anchor[static-id="${currentNodeID}"]`)
+
+          try {
+            if (currentNode.length <= 0)
+              currentNode = $(`a.jstree-anchor[id="${currentNodeID}_anchor"]`)
+          } catch (e) {}
+
+          let [
+            fieldName,
+            fieldType,
+            isMandatory,
+            isMapItem
+          ] = getAttributes(currentNode, ['name', 'type', 'mandatory', 'is-map-item']),
+            fieldValue = currentNode.find('input'),
+            isNULL = false
+
+          if (passedFields.includes(currentNodeID))
+            continue
+
+          passedFields.push(currentNodeID)
+
+          try {
+            fieldValue = fieldValue.attr('type') == 'checkbox' ? fieldValue.prop('checked') : fieldValue.val()
+          } catch (e) {}
+
+          try {
+            isNULL = $(currentNode).find('button[action="apply-null"]').hasClass('applied')
+          } catch (e) {}
+
+          let isIgnored = currentNode.hasClass('ignored')
+
+          if (isIgnored || (`${fieldValue}`.length <= 0 && !isNULL))
+            continue
+
+          try {
+            isMapItem = isMapItem != undefined
+          } catch (e) {}
+
+          // Check if the type is collection
+          try {
+            if (!(['map', 'set', 'list'].some((type) => `${fieldType}`.includes(`${type}<`))) && !isMapItem)
+              throw 0
+
+            let hiddenNodeID = currentNode.attr(isMapItem ? 'id' : 'add-hidden-node')
+
+            relatedFieldsArray.push({
+              name: addDoubleQuotes(fieldName),
+              type: fieldType,
+              value: fieldValue,
+              id: hiddenNodeID,
+              parent: mainNodeID,
+              isMapItem,
+              isNULL
+            })
+
+            relatedFieldsArray[hiddenNodeID] = handleFieldsPre(treeObject, hiddenNodeID)
+
+            continue
+          } catch (e) {}
+
+          // Check if the type is UDT
+          try {
+            let manipulatedType = `${fieldType}`
+
+            try {
+              if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
+
+              manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
+            } catch (e) {}
+
+            try {
+              manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
+            } catch (e) {}
+
+            if (!(keyspaceUDTs.includes(manipulatedType)))
+              throw 0
+
+            relatedFieldsArray.push({
+              name: addDoubleQuotes(fieldName),
+              type: fieldType,
+              value: fieldValue,
+              id: currentNodeID,
+              parent: mainNodeID,
+              isMapItem,
+              isUDT: true,
+              isNULL
+            })
+
+            relatedFieldsArray[currentNodeID] = handleFieldsPre(treeObject, currentNodeID)
+
+            continue
+          } catch (e) {}
+
+          // Standard type
+          relatedFieldsArray.push({
+            name: addDoubleQuotes(fieldName),
+            type: fieldType,
+            value: fieldValue,
+            id: currentNodeID,
+            parent: mainNodeID,
+            isMapItem,
+            isNULL
+          })
+        }
+
+        return relatedFieldsArray
+      }
+
+      let primaryKeyFields = handleFieldsPre(relatedTreesObjects.primaryKey),
+        columnsRegularFields = handleFieldsPre(relatedTreesObjects.columns.regular),
+        columnsCollectionFields = handleFieldsPre(relatedTreesObjects.columns.collection),
+        columnsUDTFields = handleFieldsPre(relatedTreesObjects.columns.udt)
+
+      let handleFieldsPost = (fields, isUDT = false, isCollection = false, parentType = null) => {
+        let names = [],
+          values = []
+
+        for (let field of fields) {
+          try {
+            if (['name', 'type', 'value'].every((attribute) => field[attribute] == undefined) && !field.isMapItem)
+              continue
+
+            let value = ''
+
+            // Handle collection type
+            try {
+              if (!(['map', 'set', 'list'].some((type) => `${field.type}`.includes(`${type}<`))) && !field.isMapItem)
+                throw 0
+
+              let items = []
+
+              // Check if there're no added items
+              try {
+                items = fields[field.id]
+
+                if (fields[field.id].length <= 0)
+                  continue
+              } catch (e) {}
+
+              let fieldValue = handleFieldsPost(items, false, true, parentType || field.type)
+
+              try {
+                let isUDTType = false
+
+                try {
+                  isUDTType = fieldValue.values[1].startsWith('{') && fieldValue.values[1].endsWith('}')
+                } catch (e) {}
+
+                fieldValue = fieldValue.values.join(field.isMapItem ? ': ' : ', ')
+
+                if (parentType != null && (`${parentType}`.includes(`list<`) || `${parentType}`.includes(`set<`)) && (field.isMapItem || `${field.type}`.includes(`map<`))) {
+                  fieldValue = `{${fieldValue}}`
+                } else if (field.parent == '#' || isUDT) {
+                  fieldValue = `${field.type}`.includes(`list<`) || (`${field.type}`.includes(`set<`) && isInsertionAsJSON) ? `[${fieldValue}]` : (`${field.type}`.includes(`set<`) || (`${field.type}`.includes(`map<`) && !isUDTType) ? `{${fieldValue}}` : `${fieldValue}`)
+                }
+              } catch (e) {}
+
+              if (field.parent == '#')
+                names.push(`${field.name}` + (!isInsertionAsJSON ? `, -- ${field.type}` : ''))
+
+              if (field.parent != '#' && isUDT)
+                names.push(`${field.name}`)
+
+              values.push(field.isMapItem ? `${fieldValue}` : (`${fieldValue}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : '')))
+
+              continue
+            } catch (e) {}
+
+            // Handle UDT type
+            try {
+              let manipulatedType = `${field.type}`
+
+              try {
+                if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
+
+                manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
+              } catch (e) {}
+
+              try {
+                manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
+              } catch (e) {}
+
+              if (!(keyspaceUDTs.includes(manipulatedType)))
+                throw 0
+
+              let subFields = []
+
+              // Check if there're no added items
+              try {
+                subFields = fields[field.id]
+
+                if (fields[field.id].length <= 0)
+                  continue
+              } catch (e) {}
+
+              let fieldValue = handleFieldsPost(subFields, true, false),
+                joinedValue = []
+
+              try {
+                for (let i = 0; i < fieldValue.names.length; i++) {
+
+                  let subFieldName = addDoubleQuotes(fieldValue.names[i])
+
+                  try {
+                    if (!isInsertionAsJSON)
+                      throw 0
+
+                    subFieldName = `${subFieldName}`.replace(/"/g, '\\"')
+
+                    subFieldName = `"${subFieldName}"`
+                  } catch (e) {}
+
+                  joinedValue.push(`${subFieldName}: ${fieldValue.values[i]}`)
+                }
+
+                joinedValue = joinedValue.join(', ')
+
+                joinedValue = `{ ${joinedValue} }`
+              } catch (e) {}
+
+              if (field.parent == '#')
+                names.push(`${field.name}` + (!isInsertionAsJSON ? `, -- ${field.type}` : ''))
+
+              if (field.parent != '#' && isUDT)
+                names.push(`${field.name}`)
+
+              values.push(`${joinedValue}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : ''))
+
+              continue
+            } catch (e) {}
+
+            // Standard type
+            try {
+              let isSingleQuotesNeeded = false
+
+              value = `${field.value}`
+
+              try {
+                if (isInsertionAsJSON) {
+                  isSingleQuotesNeeded = true
+                  throw 0
+                }
+
+                try {
+                  if (['text', 'varchar', 'ascii', 'inet'].some((type) => type == field.type))
+                    isSingleQuotesNeeded = true
+                } catch (e) {}
+
+                try {
+                  if (field.type != 'time')
+                    throw 0
+
+                  if (IsTimestamp(value)) {
+                    try {
+                      value = formatTimestamp(parseInt(value), false, true).split(/\s+/)[1]
+                    } catch (e) {}
+                  }
+
+                  if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
+                    isSingleQuotesNeeded = true
+                } catch (e) {}
+
+                try {
+                  if (field.type != 'date')
+                    throw 0
+
+                  if (IsTimestamp(value)) {
+                    try {
+                      value = `toDate(${value})`
+                    } catch (e) {}
+                  }
+
+                  if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
+                    isSingleQuotesNeeded = true
+                } catch (e) {}
+
+                try {
+                  if (field.type != 'timestamp')
+                    throw 0
+
+                  if (ValidateDate(value, 'boolean'))
+                    value = `toTimestamp('${value}')`
+                } catch (e) {}
+              } catch (e) {}
+
+              try {
+                if (!isSingleQuotesNeeded)
+                  throw 0
+
+                value = `${value}`.replace(/(^|[^'])'(?!')/g, "$1''")
+
+                value = isInsertionAsJSON ? `"${value}"` : `'${value}'`
+              } catch (e) {}
+
+              if (field.isNULL)
+                value = !isInsertionAsJSON ? 'NULL' : 'null'
+
+              if (field.parent == '#' || isUDT)
+                names.push(isUDT ? `${field.name}` : (`${field.name}` + (!isInsertionAsJSON ? `, -- ${field.type}` : '')))
+
+              values.push(isUDT || isCollection ? `${value}` : (`${value}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : '')))
+            } catch (e) {}
+          } catch (e) {}
+        }
+
+        return {
+          names,
+          values
+        }
+      }
+
+      let manipulatedFields = {
+        primaryKey: handleFieldsPost(primaryKeyFields),
+        columnsRegular: handleFieldsPost(columnsRegularFields),
+        columnsCollection: handleFieldsPost(columnsCollectionFields),
+        columnsUDT: handleFieldsPost(columnsUDTFields)
+      }
+
+      for (let fieldsClass of Object.keys(manipulatedFields)) {
+        let fields = manipulatedFields[fieldsClass]
+
+        fieldsNames = fieldsNames.concat(fields.names)
+        fieldsValues = fieldsValues.concat(fields.values)
+      }
+
+      dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...fieldsNames, ...fieldsValues].length <= 0 ? '' : null)
+
+      let fields = []
+
+      try {
+        if (isInsertionAsJSON) {
+          fieldsNames = fieldsNames.map((name) => {
+            name = addDoubleQuotes(name)
+
+            try {
+              name = `${name}`.replace(/"/g, '\\"')
+            } catch (e) {}
+
+            return `"${name}"`
+          })
+
+          for (let i = 0; i < fieldsNames.length; i++) {
+            let fieldName = fieldsNames[i],
+              fieldValue = fieldsValues[i]
+
+            fields.push(`${fieldName}: ${fieldValue}`)
+          }
+
+          fields = fields.map((field) => `    ${field}`).join(`,` + OS.EOL)
+
+
+          throw 0
+        }
+
+        try {
+          let lastFieldName = fieldsNames.at(-1)
+
+          fieldsNames[fieldsNames.length - 1] = `${lastFieldName.substring(0, lastFieldName.lastIndexOf(', --'))} --${lastFieldName.substring(lastFieldName.lastIndexOf(', --') + 4)}`
+        } catch (e) {}
+
+        try {
+          let lastFieldValue = fieldsValues.at(-1)
+
+          fieldsValues[fieldsValues.length - 1] = `${lastFieldValue.substring(0, lastFieldValue.lastIndexOf(', --'))} --${lastFieldValue.substring(lastFieldValue.lastIndexOf(', --') + 4)}`
+        } catch (e) {}
+
+        try {
+          fieldsNames = fieldsNames.map((name) => `    ${name}`).join(OS.EOL)
+        } catch (e) {}
+
+        try {
+          fieldsValues = fieldsValues.map((value) => `    ${value}`).join(OS.EOL)
+        } catch (e) {}
+      } catch (e) {}
+
+      // Extra options
+      let extraOptions = '',
+        // Write consistency level
+        writeConsistencyLevel = ''
+
+      // TTL
+      try {
+        let ttlValue = $('#ttl').val(),
+          ttlValueType = getCheckedValue('ttlValueType'),
+          multipliers = {
+            ms: 1,
+            s: 1000,
+            m: 60000,
+            h: 3600000,
+            d: 86400000
+          }
+
+        if (`${ttlValue}`.length <= 0)
+          throw 0
+
+        try {
+          ttlValue = parseInt(ttlValue) * (multipliers[ttlValueType] || 1)
+        } catch (e) {}
+
+        if (isNaN(ttlValue))
+          throw 0
+
+        extraOptions = `TTL ${ttlValue}`
+      } catch (e) {}
+
+      // Data insertion timestamp
+      try {
+        let insertionTimestamp = $('#insertionTimestamp').val()
+
+        if (`${insertionTimestamp}`.length <= 0)
+          throw 0
+
+        let insertionTimestampTxt = `TIMESTAMP ${insertionTimestamp}`
+
+        extraOptions = `${extraOptions}` + (extraOptions.length <= 0 ? '' : ' AND ') + insertionTimestampTxt
+      } catch (e) {}
+
+      if (extraOptions.length != 0)
+        extraOptions = ` USING ${extraOptions}`
+
+      // Write consistency level
+      try {
+        let setLevel = $('#writeConsistencyLevel').val()
+
+        if (setLevel == 'NOT SET')
+          throw 0
+
+        writeConsistencyLevel = `CONSISTENCY ${setLevel};` + OS.EOL
+      } catch (e) {}
+
+      let statement =
+        writeConsistencyLevel +
+        `INSERT INTO ${keyspaceName}.${tableName} (` + OS.EOL +
+        `${fieldsNames}` + OS.EOL + `) VALUES (` + OS.EOL +
+        `${fieldsValues}` + OS.EOL + `)${extraOptions};`
+
+      if (isInsertionAsJSON) {
+        try {
+          extraOptions = ` DEFAULT ${$('input#defaultOmittedColumnsValue').val()}${extraOptions}`
+        } catch (e) {
+          console.log(extraOptions);
+        }
+
+        statement = writeConsistencyLevel +
+          `INSERT INTO ${keyspaceName}.${tableName} JSON '{` + OS.EOL +
+          `${fields}` + OS.EOL +
+          `}'${extraOptions};`
+      }
+
+      try {
+        actionEditor.setValue(statement)
+      } catch (e) {}
+    }
+  }, 5000)
 }

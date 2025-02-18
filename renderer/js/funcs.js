@@ -1122,12 +1122,16 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           if (attribute == 'durable_writes' && object[attribute] != 'false')
             return
 
+          let materialIcon = object[attribute] ? 'check' : 'close'
+
+          if (attribute == 'is_reversed')
+            materialIcon = materialIcon == 'check' ? 'arrow_upward' : 'arrow_downward'
 
           // Otherwise, define that attribute's structure
           let structure = {
             id: getRandomID(30),
             parent: childID,
-            text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: <span class="material-icons for-treeview">${object[attribute] ? 'check' : 'close'}</span>`,
+            text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: ${attribute == 'is_reversed' ? (object[attribute] ? 'DESC' : 'ASC') : ''} <span class="material-icons for-treeview">${materialIcon}</span>`,
             type: 'default'
           }
 

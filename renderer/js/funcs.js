@@ -1440,33 +1440,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       // Display the `Options` node/leaf if there is at least one option available for the current table
       try {
-        /**
-         * Options' container that will be under the table overall container
-         * Get a random ID for the options' parent/container node
-         */
-        let optionsID = getRandomID(30),
-          // Define the node/leaf structure
-          optionsStructure = {
-            id: optionsID,
-            parent: tableID, // Under the current table
-            text: `Options`,
-            type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'options.png'))
-          }
-
-        // Append the options' parent/container to the tree structure
-        treeStructure.core.data.push(optionsStructure)
-
-        if (isCounterTable)
-          treeStructure.core.data.push({
-            ...optionsStructure,
-            id: `${optionsID}_${counterTablesID}`,
-            parent: `${tableID}_${counterTablesID}`
-          })
-
-        // If the current table does not have an `options` attribute, then skip this try-catch block
-        if (table.options == undefined || Object.keys(table.options).length <= 0)
-          throw 0
 
         // Define an inner function to handle the appending process of options to the tree structure
         let appendOptions = (options, parentID) => {
@@ -1542,6 +1515,68 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               })
           })
         }
+
+        try {
+          if (table.options.length <= 0)
+            throw 0
+
+          // Get a random ID for the current parent's options node
+          let highlightedOptionsID = getRandomID(30),
+            // Define the node/leaf structure
+            highlightedOptionsStructure = {
+              id: highlightedOptionsID,
+              parent: tableID,
+              text: `Highlighted Options`,
+              type: 'default',
+              icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png')),
+              state: {
+                opened: true
+              }
+            }
+
+          // Push the node
+          treeStructure.core.data.push(highlightedOptionsStructure)
+
+          if (isCounterTable)
+            treeStructure.core.data.push({
+              ...highlightedOptionsStructure,
+              id: `${highlightedOptionsID}_${counterTablesID}`,
+              parent: `${tableID}_${counterTablesID}`
+            })
+
+          appendOptions({
+            compaction: table.options['compaction'],
+            bloom_filter_fp_chance: table.options['bloom_filter_fp_chance']
+          }, highlightedOptionsID)
+        } catch (e) {}
+
+        /**
+         * Options' container that will be under the table overall container
+         * Get a random ID for the options' parent/container node
+         */
+        let optionsID = getRandomID(30),
+          // Define the node/leaf structure
+          optionsStructure = {
+            id: optionsID,
+            parent: tableID, // Under the current table
+            text: `Options`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'options.png'))
+          }
+
+        // Append the options' parent/container to the tree structure
+        treeStructure.core.data.push(optionsStructure)
+
+        if (isCounterTable)
+          treeStructure.core.data.push({
+            ...optionsStructure,
+            id: `${optionsID}_${counterTablesID}`,
+            parent: `${tableID}_${counterTablesID}`
+          })
+
+        // If the current table does not have an `options` attribute, then skip this try-catch block
+        if (table.options == undefined || Object.keys(table.options).length <= 0)
+          throw 0
 
         // Initial call to the inner function
         appendOptions(table.options, optionsID)

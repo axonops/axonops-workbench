@@ -12005,6 +12005,10 @@
             if (minifyText(replicationStrategy) == minifyText('simplestrategy'))
               throw 0
 
+            $('span.dynamic-rf').attr('mulang', 'data center replication factor')
+
+            Modules.Localization.applyLanguageSpecific($('span.dynamic-rf'))
+
             $(this).removeClass('is-invalid')
 
             $('input#keyspaceReplicationFactorSimpleStrategy').val(1).trigger('input')
@@ -12083,6 +12087,10 @@
 
             return
           } catch (e) {}
+
+          $('span.dynamic-rf').attr('mulang', 'replication factor')
+
+          Modules.Localization.applyLanguageSpecific($('span.dynamic-rf'))
 
           setTimeout(() => $(this).addClass('is-invalid'), 250)
 

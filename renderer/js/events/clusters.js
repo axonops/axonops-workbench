@@ -787,13 +787,13 @@
                            <div class="header">
                              <div class="cluster-tabs">
                                <ul class="nav nav-tabs nav-justified mb-3" id="ex-with-icons" role="tablist">
-                                 <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQLSH session" capitalize data-title="CQLSH Session">
+                                 <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL console" capitalize data-title="CQL console">
                                    <a class="nav-link btn btn-tertiary active" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlshSessionContentID}" role="tab" aria-selected="true">
                                      <span class="icon">
                                        <ion-icon name="terminal"></ion-icon>
                                      </span>
                                      <span class="title">
-                                       <span mulang="CQLSH session" capitalize></span>
+                                       <span mulang="CQL console" capitalize></span>
                                      </span>
                                    </a>
                                  </li>
@@ -3143,7 +3143,7 @@
 
                       // Add log
                       try {
-                        addLog(`CQLSH session created for the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
+                        addLog(`CQL console created for the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
                       } catch (e) {}
 
                       /**

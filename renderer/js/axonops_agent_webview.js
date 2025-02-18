@@ -47,27 +47,13 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
           </div>
-        </div>`
-
-    /**
-     * Append the button
-     * Once it's clicked send to the webview a request of reloading
-     */
-    try {
-      document.querySelector('div.\\:sideMenu > div').insertAdjacentHTML('beforeend', element)
-
-      setTimeout(() => {
-        try {
-          document.querySelector('div[data-id="reloadWebView"]').addEventListener('click', () => {
-            IPCRenderer.sendToHost(`reload-webview`)
-          })
-        } catch (e) {}
-      }, 1000)
-    } catch (e) {}
-
-    let checkForTheSideMenuTimeout,
+        </div>`,
+      checkForTheSideMenuTimeout,
       checkForTheSideMenu = () => {
         checkForTheSideMenuTimeout = setTimeout(() => {
+          if (document.querySelector('div[data-id="reloadWebView"]') != null)
+            return
+
           try {
             document.querySelector('div.\\:sideMenu > div').insertAdjacentHTML('beforeend', element)
 
@@ -84,6 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
             checkForTheSideMenu()
         }, 1000)
       }
+
+    checkForTheSideMenu()
 
     $(`#__next > div > div.pagesIndex__inner > div.termsAndConditions > div.\\:flex\\:center\\:between > div:nth-child(2) > button`).click(() => checkForTheSideMenu())
   }, 1000)

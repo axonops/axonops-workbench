@@ -536,6 +536,8 @@
 
                   $('div.body div.right').addClass('hide-content-info')
 
+                  clusterElement.children('div.status').removeClass('failure').addClass('success')
+
                   try {
                     // If the work area does not exist then skip this try-catch block
                     if (contentCluster.length <= 0)
@@ -5327,8 +5329,8 @@
                              * Apply different effects on the work area UI
                              * Update the cluster's element in the clusters' list
                              */
-                            clusterElement.attr('data-connected', connected ? 'true' : 'false')
-                              .children('div.status').addClass(connected ? 'success' : 'failure').removeClass(connected ? 'failure' : 'success')
+                            // clusterElement.attr('data-connected', connected ? 'true' : 'false')
+                            //   .children('div.status').addClass(connected ? 'success' : 'failure').removeClass(connected ? 'failure' : 'success')
 
                             // Disable selected buttons
                             workareaElement.find('.disableable').toggleClass('disabled', !connected)
@@ -7100,7 +7102,7 @@
             })
 
             // Add the success state to the cluster's UI element
-            statusElement.removeClass('failure').addClass('success')
+            statusElement.removeClass('failure')
 
             try {
               // If the version of Cassandra is not v3 then skip this try-catch block

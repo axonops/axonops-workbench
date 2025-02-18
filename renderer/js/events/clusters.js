@@ -13373,7 +13373,7 @@
 
           $(this).attr('disabled', isAlterState ? '' : null)
           $(this).parent().toggleClass('invalid-warning', isAlterState)
-          $(this).toggleClass('is-invalid ignore-invalid', isAlterState)
+          $(this).removeClass('is-invalid ignore-invalid')
 
           try {
             if (!isAlterState)
@@ -13796,7 +13796,7 @@
 
           $(this).attr('disabled', isAlterState ? '' : null)
           $(this).parent().toggleClass('invalid-warning', isAlterState)
-          $(this).toggleClass('is-invalid ignore-invalid', isAlterState)
+          $(this).removeClass('is-invalid ignore-invalid')
 
           try {
             if (!isAlterState)
@@ -16038,7 +16038,7 @@
 
           $(this).attr('disabled', isAlterState ? '' : null)
           $(this).parent().toggleClass('invalid-warning', isAlterState)
-          $(this).toggleClass('is-invalid ignore-invalid', isAlterState)
+          $(this).removeClass('is-invalid ignore-invalid')
 
           try {
             if (!isAlterState)

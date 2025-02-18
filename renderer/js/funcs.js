@@ -1588,7 +1588,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             parent: tableID, // Under the current table
             text: `Views (<span>${table.views.length}</span>)`,
             type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'table.png'))
+            icon: normalizePath(Path.join(extraIconsPath, 'view.png'))
           }
 
         // Append the views' container to the tree structure
@@ -1619,12 +1619,12 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
            * Build a tree view for the current view
            * For the `parentType` parameter set it to be the view's keyspace's name; to set a correct scope for getting a CQL description
            */
-          buildTreeViewForChild(viewsID, viewID, `View`, view, 'table', {
+          buildTreeViewForChild(viewsID, viewID, `View`, view, 'view', {
             keyspace: keyspace.name
           })
 
           if (isCounterTable)
-            buildTreeViewForChild(`${viewsID}_${counterTablesID}`, `${viewID}_${counterTablesID}`, `View`, view, 'table', {
+            buildTreeViewForChild(`${viewsID}_${counterTablesID}`, `${viewID}_${counterTablesID}`, `View`, view, 'view', {
               keyspace: keyspace.name
             })
 
@@ -1821,7 +1821,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           parent: keyspaceID, // Under the current keyspace
           text: `Views (<span>${keyspace.views.length}</span>)`,
           type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'table.png'))
+          icon: normalizePath(Path.join(extraIconsPath, 'view.png'))
         }
 
       // Append the views' container to the tree structure
@@ -1845,7 +1845,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * Build a tree view for the current view
          * For the `parentType` parameter set it to be the view's keyspace's name; to set a correct scope for getting a CQL description
          */
-        buildTreeViewForChild(viewsID, viewID, `View`, view, 'table', keyspace.name)
+        buildTreeViewForChild(viewsID, viewID, `View`, view, 'view', keyspace.name)
 
         // Add a node/leaf about the view's base table's name
         treeStructure.core.data.push({

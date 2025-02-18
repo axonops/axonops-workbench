@@ -1425,6 +1425,12 @@ $(document).on('initialize', () => {
             Open(releaseLink)
           } catch (e) {}
         })
+
+        $('button#githubProject').click(() => {
+          try {
+            Open(Modules.Consts.URLS.Workbench)
+          } catch (e) {}
+        })
       })
     } catch (e) {}
   } catch (e) {}

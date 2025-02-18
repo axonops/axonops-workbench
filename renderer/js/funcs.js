@@ -1122,12 +1122,16 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           if (attribute == 'durable_writes' && object[attribute] != 'false')
             return
 
+          let materialIcon = object[attribute] ? 'check' : 'close'
+
+          if (attribute == 'is_reversed')
+            materialIcon = materialIcon == 'check' ? 'arrow_upward' : 'arrow_downward'
 
           // Otherwise, define that attribute's structure
           let structure = {
             id: getRandomID(30),
             parent: childID,
-            text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: <span class="material-icons for-treeview">${object[attribute] ? 'check' : 'close'}</span>`,
+            text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: ${attribute == 'is_reversed' ? (object[attribute] ? 'DESC' : 'ASC') : ''} <span class="material-icons for-treeview">${materialIcon}</span>`,
             type: 'default'
           }
 
@@ -1322,13 +1326,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Loop through primary keys
         table.primary_key.forEach((primaryKey) => {
           // Get a random ID for the key
-          let primaryKeyID = getRandomID(30)
+          let primaryKeyID = getRandomID(30),
+            isPartitionKey = table.partition_key.find((partitionKey) => primaryKey.name == partitionKey.name) != undefined
 
           // Build tree view for the key
-          buildTreeViewForChild(primaryKeysID, primaryKeyID, `Key`, primaryKey, 'key')
+          buildTreeViewForChild(primaryKeysID, primaryKeyID, `Key`, primaryKey, isPartitionKey ? 'partition-key' : 'clustering-key')
 
           if (isCounterTable)
-            buildTreeViewForChild(`${primaryKeysID}_${counterTablesID}`, `${primaryKeyID}_${counterTablesID}`, `Key`, primaryKey, 'key')
+            buildTreeViewForChild(`${primaryKeysID}_${counterTablesID}`, `${primaryKeyID}_${counterTablesID}`, `Key`, primaryKey, isPartitionKey ? 'partition-key' : 'clustering-key')
         })
       }
 
@@ -1339,7 +1344,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           parent: tableID,
           text: `Partition Keys (<span>${table.partition_key.length}</span>)`,
           type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+          icon: normalizePath(Path.join(extraIconsPath, 'partition-key.png'))
         }
 
         treeStructure.core.data.push(partitionKeysStructure)
@@ -1357,10 +1362,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let partitionKeyID = getRandomID(30)
 
           // Build tree view for the key
-          buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'key', 'partitionKeys')
+          buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
 
           if (isCounterTable)
-            buildTreeViewForChild(`${partitionKeysID}_${counterTablesID}`, `${partitionKeyID}_${counterTablesID}`, `Key`, partitionKey, 'key', 'partitionKeys')
+            buildTreeViewForChild(`${partitionKeysID}_${counterTablesID}`, `${partitionKeyID}_${counterTablesID}`, `Key`, partitionKey, 'partition-key', 'partitionKeys')
         })
       }
 
@@ -1371,7 +1376,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           parent: tableID,
           text: `Clustering Keys (<span>${table.clustering_key.length}</span>)`,
           type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+          icon: normalizePath(Path.join(extraIconsPath, 'clustering-key.png'))
         }
 
         treeStructure.core.data.push(clusteringKeysStructure)
@@ -1389,10 +1394,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let clusteringKeyID = getRandomID(30)
 
           // Build tree view for the key
-          buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'key')
+          buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
 
           if (isCounterTable)
-            buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'key')
+            buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'clustering-key')
         })
       }
 
@@ -1435,33 +1440,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       // Display the `Options` node/leaf if there is at least one option available for the current table
       try {
-        /**
-         * Options' container that will be under the table overall container
-         * Get a random ID for the options' parent/container node
-         */
-        let optionsID = getRandomID(30),
-          // Define the node/leaf structure
-          optionsStructure = {
-            id: optionsID,
-            parent: tableID, // Under the current table
-            text: `Options`,
-            type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'options.png'))
-          }
-
-        // Append the options' parent/container to the tree structure
-        treeStructure.core.data.push(optionsStructure)
-
-        if (isCounterTable)
-          treeStructure.core.data.push({
-            ...optionsStructure,
-            id: `${optionsID}_${counterTablesID}`,
-            parent: `${tableID}_${counterTablesID}`
-          })
-
-        // If the current table does not have an `options` attribute, then skip this try-catch block
-        if (table.options == undefined || Object.keys(table.options).length <= 0)
-          throw 0
 
         // Define an inner function to handle the appending process of options to the tree structure
         let appendOptions = (options, parentID) => {
@@ -1538,6 +1516,68 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           })
         }
 
+        try {
+          if (table.options.length <= 0)
+            throw 0
+
+          // Get a random ID for the current parent's options node
+          let highlightedOptionsID = getRandomID(30),
+            // Define the node/leaf structure
+            highlightedOptionsStructure = {
+              id: highlightedOptionsID,
+              parent: tableID,
+              text: `Highlighted Options`,
+              type: 'default',
+              icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png')),
+              state: {
+                opened: true
+              }
+            }
+
+          // Push the node
+          treeStructure.core.data.push(highlightedOptionsStructure)
+
+          if (isCounterTable)
+            treeStructure.core.data.push({
+              ...highlightedOptionsStructure,
+              id: `${highlightedOptionsID}_${counterTablesID}`,
+              parent: `${tableID}_${counterTablesID}`
+            })
+
+          appendOptions({
+            compaction: table.options['compaction'],
+            bloom_filter_fp_chance: table.options['bloom_filter_fp_chance']
+          }, highlightedOptionsID)
+        } catch (e) {}
+
+        /**
+         * Options' container that will be under the table overall container
+         * Get a random ID for the options' parent/container node
+         */
+        let optionsID = getRandomID(30),
+          // Define the node/leaf structure
+          optionsStructure = {
+            id: optionsID,
+            parent: tableID, // Under the current table
+            text: `Options`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'options.png'))
+          }
+
+        // Append the options' parent/container to the tree structure
+        treeStructure.core.data.push(optionsStructure)
+
+        if (isCounterTable)
+          treeStructure.core.data.push({
+            ...optionsStructure,
+            id: `${optionsID}_${counterTablesID}`,
+            parent: `${tableID}_${counterTablesID}`
+          })
+
+        // If the current table does not have an `options` attribute, then skip this try-catch block
+        if (table.options == undefined || Object.keys(table.options).length <= 0)
+          throw 0
+
         // Initial call to the inner function
         appendOptions(table.options, optionsID)
       } catch (e) {}
@@ -1587,7 +1627,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             parent: tableID, // Under the current table
             text: `Views (<span>${table.views.length}</span>)`,
             type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'table.png'))
+            icon: normalizePath(Path.join(extraIconsPath, 'view.png'))
           }
 
         // Append the views' container to the tree structure
@@ -1618,12 +1658,12 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
            * Build a tree view for the current view
            * For the `parentType` parameter set it to be the view's keyspace's name; to set a correct scope for getting a CQL description
            */
-          buildTreeViewForChild(viewsID, viewID, `View`, view, 'table', {
+          buildTreeViewForChild(viewsID, viewID, `View`, view, 'view', {
             keyspace: keyspace.name
           })
 
           if (isCounterTable)
-            buildTreeViewForChild(`${viewsID}_${counterTablesID}`, `${viewID}_${counterTablesID}`, `View`, view, 'table', {
+            buildTreeViewForChild(`${viewsID}_${counterTablesID}`, `${viewID}_${counterTablesID}`, `View`, view, 'view', {
               keyspace: keyspace.name
             })
 
@@ -1633,7 +1673,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             parent: viewID,
             text: `Clustering Keys (<span>${view.clustering_key.length}</span>)`,
             type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+            icon: normalizePath(Path.join(extraIconsPath, 'clustering-key.png'))
           }
 
           treeStructure.core.data.push(clusteringKeysStructure)
@@ -1651,10 +1691,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             let clusteringKeyID = getRandomID(30)
 
             // Build tree view for the key
-            buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'key')
+            buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
 
             if (isCounterTable)
-              buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'key')
+              buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'clustering-key')
           })
           // End of view's clustering keys
 
@@ -1664,7 +1704,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             parent: viewID,
             text: `Partition Keys (<span>${view.partition_key.length}</span>)`,
             type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+            icon: normalizePath(Path.join(extraIconsPath, 'partition-key.png'))
           }
 
           treeStructure.core.data.push(partitionKeysStructure)
@@ -1682,10 +1722,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             let partitionKeyID = getRandomID(30)
 
             // Build tree view for the key
-            buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'key', 'partitionKeys')
+            buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
 
             if (isCounterTable)
-              buildTreeViewForChild(`${partitionKeysID}_${partitionKeyID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, partitionKey, 'key', 'partitionKeys')
+              buildTreeViewForChild(`${partitionKeysID}_${partitionKeyID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, partitionKey, 'partition-key', 'partitionKeys')
           })
           // End of view's partition keys
 
@@ -1820,7 +1860,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           parent: keyspaceID, // Under the current keyspace
           text: `Views (<span>${keyspace.views.length}</span>)`,
           type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'table.png'))
+          icon: normalizePath(Path.join(extraIconsPath, 'view.png'))
         }
 
       // Append the views' container to the tree structure
@@ -1844,7 +1884,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * Build a tree view for the current view
          * For the `parentType` parameter set it to be the view's keyspace's name; to set a correct scope for getting a CQL description
          */
-        buildTreeViewForChild(viewsID, viewID, `View`, view, 'table', keyspace.name)
+        buildTreeViewForChild(viewsID, viewID, `View`, view, 'view', keyspace.name)
 
         // Add a node/leaf about the view's base table's name
         treeStructure.core.data.push({
@@ -1860,7 +1900,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           parent: viewID,
           text: `Clustering Keys (<span>${view.clustering_key.length}</span>)`,
           type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+          icon: normalizePath(Path.join(extraIconsPath, 'clustering-key.png'))
         }
 
         treeStructure.core.data.push(clusteringKeysStructure)
@@ -1871,7 +1911,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let clusteringKeyID = getRandomID(30)
 
           // Build tree view for the key
-          buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'key')
+          buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
         })
         // End of view's clustering keys
 
@@ -1881,7 +1921,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           parent: viewID,
           text: `Partition Keys (<span>${view.partition_key.length}</span>)`,
           type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+          icon: normalizePath(Path.join(extraIconsPath, 'partition-key.png'))
         }
 
         treeStructure.core.data.push(partitionKeysStructure)
@@ -1892,7 +1932,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let partitionKeyID = getRandomID(30)
 
           // Build tree view for the key
-          buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'key', 'partitionKeys')
+          buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
         })
         // End of view's partition keys
 

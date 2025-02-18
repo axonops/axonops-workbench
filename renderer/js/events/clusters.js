@@ -536,6 +536,8 @@
 
                   $('div.body div.right').addClass('hide-content-info')
 
+                  clusterElement.children('div.status').removeClass('failure').addClass('success')
+
                   try {
                     // If the work area does not exist then skip this try-catch block
                     if (contentCluster.length <= 0)
@@ -787,13 +789,13 @@
                            <div class="header">
                              <div class="cluster-tabs">
                                <ul class="nav nav-tabs nav-justified mb-3" id="ex-with-icons" role="tablist">
-                                 <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQLSH session" capitalize data-title="CQLSH Session">
+                                 <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL console" capitalize data-title="CQL console">
                                    <a class="nav-link btn btn-tertiary active" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlshSessionContentID}" role="tab" aria-selected="true">
                                      <span class="icon">
                                        <ion-icon name="terminal"></ion-icon>
                                      </span>
                                      <span class="title">
-                                       <span mulang="CQLSH session" capitalize></span>
+                                       <span mulang="CQL console" capitalize></span>
                                      </span>
                                    </a>
                                  </li>
@@ -3143,7 +3145,7 @@
 
                       // Add log
                       try {
-                        addLog(`CQLSH session created for the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
+                        addLog(`CQL console created for the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
                       } catch (e) {}
 
                       /**
@@ -5327,8 +5329,8 @@
                              * Apply different effects on the work area UI
                              * Update the cluster's element in the clusters' list
                              */
-                            clusterElement.attr('data-connected', connected ? 'true' : 'false')
-                              .children('div.status').addClass(connected ? 'success' : 'failure').removeClass(connected ? 'failure' : 'success')
+                            // clusterElement.attr('data-connected', connected ? 'true' : 'false')
+                            //   .children('div.status').addClass(connected ? 'success' : 'failure').removeClass(connected ? 'failure' : 'success')
 
                             // Disable selected buttons
                             workareaElement.find('.disableable').toggleClass('disabled', !connected)
@@ -7100,7 +7102,7 @@
             })
 
             // Add the success state to the cluster's UI element
-            statusElement.removeClass('failure').addClass('success')
+            statusElement.removeClass('failure')
 
             try {
               // If the version of Cassandra is not v3 then skip this try-catch block
@@ -11925,7 +11927,7 @@
 
         $(this).attr('disabled', isAlterState ? '' : null)
         $(this).parent().toggleClass('invalid-warning', isAlterState)
-        $(this).toggleClass('is-invalid ignore-invalid', isAlterState)
+        $(this).removeClass('is-invalid ignore-invalid')
 
         try {
           if (!isAlterState)
@@ -12005,6 +12007,10 @@
             if (minifyText(replicationStrategy) == minifyText('simplestrategy'))
               throw 0
 
+            $('span.dynamic-rf').attr('mulang', 'data center replication factor')
+
+            Modules.Localization.applyLanguageSpecific($('span.dynamic-rf'))
+
             $(this).removeClass('is-invalid')
 
             $('input#keyspaceReplicationFactorSimpleStrategy').val(1).trigger('input')
@@ -12083,6 +12089,10 @@
 
             return
           } catch (e) {}
+
+          $('span.dynamic-rf').attr('mulang', 'replication factor')
+
+          Modules.Localization.applyLanguageSpecific($('span.dynamic-rf'))
 
           setTimeout(() => $(this).addClass('is-invalid'), 250)
 
@@ -13365,7 +13375,7 @@
 
           $(this).attr('disabled', isAlterState ? '' : null)
           $(this).parent().toggleClass('invalid-warning', isAlterState)
-          $(this).toggleClass('is-invalid ignore-invalid', isAlterState)
+          $(this).removeClass('is-invalid ignore-invalid')
 
           try {
             if (!isAlterState)
@@ -13788,7 +13798,7 @@
 
           $(this).attr('disabled', isAlterState ? '' : null)
           $(this).parent().toggleClass('invalid-warning', isAlterState)
-          $(this).toggleClass('is-invalid ignore-invalid', isAlterState)
+          $(this).removeClass('is-invalid ignore-invalid')
 
           try {
             if (!isAlterState)
@@ -16030,7 +16040,7 @@
 
           $(this).attr('disabled', isAlterState ? '' : null)
           $(this).parent().toggleClass('invalid-warning', isAlterState)
-          $(this).toggleClass('is-invalid ignore-invalid', isAlterState)
+          $(this).removeClass('is-invalid ignore-invalid')
 
           try {
             if (!isAlterState)

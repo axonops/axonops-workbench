@@ -628,11 +628,14 @@
                   <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="connection" info-key="hostname">
                   <label class="form-label">
                     <span mulang="cassandra host name" capitalize></span>
+                    <span class="badge badge-dark-1 rounded-pill badge-mandatory">
+                      <span mulang="mandatory" capitalize></span>
+                    </span>
                   </label>
                   <div class="valid-feedback"></div>
                   <div class="invalid-feedback"></div>
                   <div class="form-helper">
-                    <span mulang="example" capitalize></span>: 192.168.0.10 <span mulang="mandatory field" class="badge badge-secondary mandatory" capitalize-first></span>
+                    <span mulang="example" capitalize></span>: 192.168.0.10
                   </div>
                 </div>
                 <div class="form-outline form-white margin-bottom">
@@ -640,11 +643,14 @@
                   <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="connection" info-key="port">
                   <label class="form-label">
                     <span mulang="port" capitalize></span>
+                    <span class="badge badge-dark-1 rounded-pill badge-mandatory">
+                      <span mulang="mandatory" capitalize></span>
+                    </span>
                   </label>
                   <div class="valid-feedback"></div>
                   <div class="invalid-feedback"></div>
                   <div class="form-helper">
-                    <span mulang="default" capitalize></span>: 9042 <span mulang="mandatory field" class="badge badge-secondary mandatory" capitalize-first></span>
+                    <span mulang="default" capitalize></span>: 9042
                   </div>
                 </div>
               </div>
@@ -1575,6 +1581,9 @@
                           capitalize-first>
                           <ion-icon name="copy"></ion-icon>
                         </button>
+                        <button id="githubProject" type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Release notes" data-mulang="GitHub project" capitalize-first>
+                          <ion-icon name="github"></ion-icon>
+                        </button>
                         <button id="releaseNotes" type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Release notes" data-mulang="release notes" capitalize-first>
                           <ion-icon name="external-link"></ion-icon>
                         </button>
@@ -1788,6 +1797,9 @@
                   <input type="text" class="form-control form-control-lg" id="keyspaceName">
                   <label class="form-label">
                     <span mulang="keyspace name" capitalize-first></span>
+                    <span class="badge badge-dark-1 rounded-pill badge-mandatory">
+                      <span mulang="mandatory" capitalize></span>
+                    </span>
                   </label>
                   <div class="valid-feedback"></div>
                   <div class="invalid-feedback">
@@ -1814,7 +1826,7 @@
                   <div class="form-outline form-white margin-bottom replication-factor">
                     <input type="number" class="form-control form-control-lg" min="1" value="1" id="keyspaceReplicationFactorSimpleStrategy">
                     <label class="form-label">
-                      <span mulang="replication factor" capitalize></span>
+                      <span class="dynamic-rf" mulang="replication factor" capitalize></span>
                     </label>
                     <div class="valid-feedback"></div>
                     <div class="invalid-feedback"><span mulang="replication factor must be a positive number greater than 0" capitalize-first></span>.</div>
@@ -1824,7 +1836,7 @@
                   <div class="row">
                     <div class="col-md-12">
                       <span class="badge badge-secondary" style="opacity: 0.85;">
-                        <span mulang="replication factor" capitalize></span>
+                        <span class="dynamic-rf" mulang="replication factor" capitalize></span>
                       </span>
                     </div>
                   </div>

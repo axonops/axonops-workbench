@@ -1908,3 +1908,12 @@ ul.dropdown-menu.top-margin {
   margin-top: 25px !important;
   width: calc(100% - 10px) !important;
 }
+
+.badge-dark-1 {
+  background-color: #595353;
+}
+
+.badge-mandatory {
+  opacity: 0.85;
+  transform: translateY(-1px) translateX(-5px) scale(0.85);
+}

@@ -13561,6 +13561,13 @@
               } catch (e) {}
             }
 
+            try {
+              let commentTextarea = $('textarea#counterTableCommentOption')
+
+              if (`${commentTextarea.val()}` != commentTextarea.data('original-value'))
+                alteredOptions.push(`${alteredOptions.length <= 0 ? 'WITH' : 'AND'} comment = '${commentTextarea.val().replace(/(^|[^'])'(?!')/g, "$1''")}'`)
+            } catch (e) {}
+
             dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...alteringStatements, ...alteredOptions, ...droppedColumns].length <= 0 ? '' : null)
 
             let statement = [...alteringStatements, ...droppedColumns].map((statement) => `ALTER TABLE ${keyspaceName}.${counterTableName} ${statement}`).join(';' + OS.EOL) + ';'
@@ -13707,6 +13714,19 @@
                 })
               } catch (e) {}
             }
+          } catch (e) {}
+
+          // Add comment
+          try {
+            let comment = $('textarea#counterTableCommentOption').val()
+
+            if (`${comment}`.length <= 0)
+              throw 0
+
+            tableOptions.push({
+              name: 'comment',
+              value: (comment || '').replace(/(^|[^'])'(?!')/g, "$1''")
+            })
           } catch (e) {}
 
           dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
@@ -15071,7 +15091,7 @@
               throw 0
 
             try {
-              fields = JSON.parse(fields)
+              fields = JSON.parse(repairJSON(fields))
             } catch (e) {
               fields = []
             }
@@ -15084,6 +15104,17 @@
             for (let field of fields) {
               if (field.name == undefined)
                 continue
+
+              try {
+                if (field.name != 'comment')
+                  throw 0
+
+                $('textarea#counterTableCommentOption').data('original-value', `${field.value}`)
+
+                $('textarea#counterTableCommentOption').val(`${field.value}`).trigger('input')
+
+                continue
+              } catch (e) {}
 
               dataFieldsContainer.append($(getTableOptionFieldElement(true)).show(function() {
                 let row = $(this)
@@ -15228,6 +15259,17 @@
 
             for (let optionName of optionsNames) {
               let optionValue = options[optionName]
+
+              try {
+                if (optionName != 'comment')
+                  throw 0
+
+                $('textarea#counterTableCommentOption').data('original-value', `${optionValue}`)
+
+                $('textarea#counterTableCommentOption').val(`${optionValue}`).trigger('input')
+
+                continue
+              } catch (e) {}
 
               try {
                 if (typeof optionValue == 'object')
@@ -15675,6 +15717,13 @@
               } catch (e) {}
             }
 
+            try {
+              let commentTextarea = $('textarea#standardTableCommentOption')
+
+              if (`${commentTextarea.val()}` != commentTextarea.data('original-value'))
+                alteredOptions.push(`${alteredOptions.length <= 0 ? 'WITH' : 'AND'} comment = '${commentTextarea.val().replace(/(^|[^'])'(?!')/g, "$1''")}'`)
+            } catch (e) {}
+
             dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...droppedColumns, ...addedColumns, ...alteredOptions].length <= 0 ? '' : null)
 
             try {
@@ -15906,6 +15955,19 @@
                 })
               } catch (e) {}
             }
+          } catch (e) {}
+
+          // Add comment
+          try {
+            let comment = $('textarea#standardTableCommentOption').val()
+
+            if (`${comment}`.length <= 0)
+              throw 0
+
+            tableOptions.push({
+              name: 'comment',
+              value: (comment || '').replace(/(^|[^'])'(?!')/g, "$1''")
+            })
           } catch (e) {}
 
           dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
@@ -17503,7 +17565,7 @@
                 let allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field, div.standard-table-udt-column-field').not(fieldRow[0])
 
                 for (let dataField of allDataFields) {
-                  let dataStandardColumnNameElement = $(dataField).find('input.columnName, input.clusteringKeyName, input.columnName')
+                  let dataStandardColumnNameElement = $(dataField).find('input.partitionKeyName, input.columnName, input.clusteringKeyName, input.columnName')
 
                   if (triggerInput)
                     dataStandardColumnNameElement.trigger('input', false)
@@ -17915,7 +17977,7 @@
                 let allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-udt-column-field').not(fieldRow[0])
 
                 for (let dataField of allDataFields) {
-                  let dataStandardColumnNameElement = $(dataField).find('input.columnName, input.clusteringKeyName, input.columnName')
+                  let dataStandardColumnNameElement = $(dataField).find('input.partitionKeyName, input.columnName, input.clusteringKeyName, input.columnName')
 
                   if (triggerInput)
                     dataStandardColumnNameElement.trigger('input', false)
@@ -18080,7 +18142,7 @@
               throw 0
 
             try {
-              fields = JSON.parse(fields)
+              fields = JSON.parse(repairJSON(fields))
             } catch (e) {
               fields = []
             }
@@ -18093,6 +18155,17 @@
             for (let field of fields) {
               if (field.name == undefined)
                 continue
+
+              try {
+                if (field.name != 'comment')
+                  throw 0
+
+                $('textarea#standardTableCommentOption').data('original-value', `${field.value}`)
+
+                $('textarea#standardTableCommentOption').val(`${field.value}`).trigger('input')
+
+                continue
+              } catch (e) {}
 
               dataFieldsContainer.append($(getTableOptionFieldElement(true)).show(function() {
                 let row = $(this)
@@ -18237,6 +18310,17 @@
 
             for (let optionName of optionsNames) {
               let optionValue = options[optionName]
+
+              try {
+                if (optionName != 'comment')
+                  throw 0
+
+                $('textarea#standardTableCommentOption').data('original-value', `${optionValue}`)
+
+                $('textarea#standardTableCommentOption').val(`${optionValue}`).trigger('input')
+
+                continue
+              } catch (e) {}
 
               try {
                 if (typeof optionValue == 'object')
@@ -18530,6 +18614,52 @@
             } catch (e) {}
           })
         }
+      }
+
+      {
+        $('textarea#standardTableCommentOption').add('textarea#counterTableCommentOption').on('input', function() {
+          try {
+            let originalValue = $(this).data('original-value')
+
+            $('a#standardTableCommentOptionUndoChanges').add('a#counterTableCommentOptionUndoChanges').toggleClass('disabled', !(originalValue != $(this).val()))
+          } catch (e) {}
+
+          setTimeout(() => {
+            try {
+              if ($(this).attr('id').includes('standard')) {
+                updateActionStatusForStandardTables()
+              } else {
+                updateActionStatusForCounterTables()
+              }
+            } catch (e) {}
+          })
+        })
+
+        $('a#standardTableCommentOptionUndoChanges').click(function() {
+          let relatedTextarea = $(`textarea#standardTableCommentOption`),
+            originalValue = relatedTextarea.data('original-value')
+
+          relatedTextarea.val(originalValue).trigger('input')
+
+          setTimeout(() => {
+            try {
+              updateActionStatusForStandardTables()
+            } catch (e) {}
+          })
+        })
+
+        $('a#counterTableCommentOptionUndoChanges').click(function() {
+          let relatedTextarea = $(`textarea#counterTableCommentOption`),
+            originalValue = relatedTextarea.data('original-value')
+
+          relatedTextarea.val(originalValue).trigger('input')
+
+          setTimeout(() => {
+            try {
+              updateActionStatusForCounterTables()
+            } catch (e) {}
+          })
+        })
       }
     }, 5000)
   }
@@ -19219,9 +19349,7 @@
       if (isInsertionAsJSON) {
         try {
           extraOptions = ` DEFAULT ${$('input#defaultOmittedColumnsValue').val()}${extraOptions}`
-        } catch (e) {
-          console.log(extraOptions);
-        }
+        } catch (e) {}
 
         statement = writeConsistencyLevel +
           `INSERT INTO ${keyspaceName}.${tableName} JSON '{` + OS.EOL +

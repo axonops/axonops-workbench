@@ -1457,6 +1457,29 @@ div.modal#rightClickActionsMetadata {
       margin-top: 0.1rem;
     }
   }
+
+  a#counterTableCommentOptionUndoChanges,
+  a#standardTableCommentOptionUndoChanges {
+    color: inherit;
+    position: relative;
+    top: 1px;
+    width: 30px;
+    height: 30px;
+    left: 8px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+
+    ion-icon {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      transform: translateX(-1px);
+    }
+  }
 }
 
 div.modal {

@@ -635,6 +635,7 @@
                     // CQL description
                     cqlDescriptionContentID,
                     cqlDescriptionSearchInputID,
+                    cqlDescriptionsCloseAllBtnID,
                     // Query tracing
                     queryTracingContentID,
                     queryTracingSearchInputID,
@@ -658,7 +659,7 @@
                     // Restart and close the work area
                     restartWorkareaBtnID,
                     closeWorkareaBtnID
-                  ] = getRandomID(20, 31)
+                  ] = getRandomID(20, 32)
 
                   /**
                    * Define tabs that shown only to sandbox projects
@@ -931,12 +932,17 @@
                              </div>
                              <div class="tab-pane fade _empty" tab="cql-description" id="_${cqlDescriptionContentID}" role="tabpanel">
                                <div class="descriptions-container">
-                                 <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
+                                 <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;width: calc(100% - 45px);">
                                    <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
                                    <input type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlDescriptionSearchInputID}">
                                    <label class="form-label">
                                      <span mulang="search for CQL description" capitalize-first></span>
                                    </label>
+                                   <div class="close-all-descriptions">
+                                     <button type="button" id="_${cqlDescriptionsCloseAllBtnID}" class="btn btn-sm btn-dark btn-secondary ripple-surface-light" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="close all descriptions" capitalize data-title="Close All Descriptions">
+                                       <ion-icon name="close"></ion-icon>
+                                     </button>
+                                   </div>
                                  </div>
                                  <div class="descriptions">
                                  </div>
@@ -1150,6 +1156,10 @@
                             // Show/hide it based on the result of whether or not it contains the search text
                             $(this).toggle(descriptionContent.search(searchValue))
                           })
+                        })
+
+                        $(`button#_${cqlDescriptionsCloseAllBtnID}`).click(function() {
+                          $(`div.tab-pane[tab="cql-description"]#_${cqlDescriptionContentID}`).find('div.descriptions').find('button.close-description').click()
                         })
                       })
                     }
@@ -9471,9 +9481,16 @@
         // Description's UI element structure
         let element = `
             <div class="description" data-scope="${data.scope}">
-              <span class="badge rounded-pill badge-secondary">
-                <a href="#_${editorContainerID}">${scope}</a>
-              </span>
+              <div class="sticky-header">
+                <span class="badge rounded-pill badge-secondary description-scope">
+                  <a href="#_${editorContainerID}">${scope}</a>
+                </span>
+                <div class="close-description">
+                  <button type="button" class="btn btn-sm btn-tertiary close-description" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-mulang="close description" capitalize data-title="Close Description">
+                    <ion-icon name="close"></ion-icon>
+                  </button>
+                </div>
+              </div>
               <div class="inner-content">
                 <div class="editor" id="_${editorContainerID}"></div>
               </div>
@@ -9495,10 +9512,12 @@
                 absolute: true
               }),
               // Point at the expandation/shrinking button
-              expandBtnElement = $(this).find('button.expand-editor'); // This semicolon is critical here
+              expandBtnElement = $(this).find('button.expand-editor'),
+              closeDescriptionBtnElement = $(this).find('button.close-description'); // This semicolon is critical here
 
             // Create a tooltip object for the button
             getElementMDBObject(expandBtnElement, 'Tooltip')
+            getElementMDBObject(closeDescriptionBtnElement, 'Tooltip')
 
             // Once the button is clicked
             expandBtnElement.click(function() {
@@ -9547,6 +9566,13 @@
 
               // Click the attached anchor in the description's UI element
               setTimeout(() => $(main).find('a')[0].click(), 210)
+            })
+
+            closeDescriptionBtnElement.click(function() {
+              main.remove()
+
+              if (cqlDescriptionsContainer.children('div.description').length <= 0)
+                cqlDescriptionsTabContent.addClass('_empty').find('input').trigger('input')
             })
 
             // Click the expandation button

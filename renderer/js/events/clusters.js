@@ -9388,6 +9388,10 @@
           let descriptionScope = data.scope.replace(/>/gm, '-').replace('table-', '-table-'),
             descriptionFileName = Sanitize(`${descriptionScope}-${formatTimestamp(new Date().getTime(), true)}.cql`).replace(/\s+/gm, '_') || 'cql_desc.cql'
 
+          try {
+            descriptionFileName = Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), clusterElement.attr('data-folder'), descriptionFileName)
+          } catch (e) {}
+
           let dialogID = getRandomID(5),
             dialogData = {
               id: dialogID,

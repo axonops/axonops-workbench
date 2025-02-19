@@ -234,7 +234,7 @@
       "logging system": "מערכת רישום",
       "logging": "רישום",
       "logout": "התנתקות",
-      "mandatory field": "שדה חובה",
+      "mandatory": "הֶכְרֵחִי",
       "maximum number": "מספר מרבי",
       "metadata for the cluster connected to by [b]$data[/b] has been copied to the clipboard, the size is $data": "מטה-נתונים עבור האשכול המחובר באמצעות [b]$data[/b] הועתקו ללוח, הגודל הוא $data",
       "missing variables": "משתנים חסרים",

@@ -234,7 +234,7 @@
       "logging system": "测井系统",
       "logging": "伐木",
       "logout": "注销",
-      "mandatory field": "必填字段",
+      "mandatory": "强制的",
       "maximum number": "最大数量",
       "metadata for the cluster connected to by [b]$data[/b] has been copied to the clipboard, the size is $data": "通过 [b]$data[/b] 连接的集群的元数据已复制到剪贴板，大小为 $data",
       "missing variables": "缺少变量",

@@ -59,7 +59,8 @@ const Electron = require('electron'),
    * https://www.electronjs.org/docs/latest/api/menu-item
    *
    */
-  MenuItem = Electron.MenuItem
+  MenuItem = Electron.MenuItem,
+  NativeImage = Electron.nativeImage
 
 /**
  * Import modules globally
@@ -776,6 +777,28 @@ App.on('second-instance', () => {
         })
       })
     }
+
+    {
+      IPCMain.on('blob:read-convert', (_, data) => {
+        // Send the request to the background processes' renderer thread
+        views.backgroundProcesses.webContents.send('blob:read-convert', data)
+
+        IPCMain.on(`blob:read-convert:result:${data.requestID}`, (_, data) => {
+          // Send the response to the renderer thread
+          views.main.webContents.send(`blob:read-convert:result:${data.requestID}`, data)
+        })
+      })
+
+      IPCMain.on('blob:convert-write', (_, data) => {
+        // Send the request to the background processes' renderer thread
+        views.backgroundProcesses.webContents.send('blob:convert-write', data)
+
+        IPCMain.on(`blob:convert-write:result:${data.requestID}`, (_, data) => {
+          // Send the response to the renderer thread
+          views.main.webContents.send(`blob:convert-write:result:${data.requestID}`, data)
+        })
+      })
+    }
   }
 
   /**
@@ -924,6 +947,12 @@ App.on('second-instance', () => {
             try {
               item.click = eval(item.click)
             } catch (e) {}
+
+            try {
+              item.icon = NativeImage.createFromPath(item.icon)
+            } catch (e) {
+              item.icon = ''
+            }
           } catch (e) {}
         }
       }

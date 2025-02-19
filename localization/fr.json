@@ -234,7 +234,7 @@
       "logging system": "système d’enregistrement",
       "logging": "exploitation forestière",
       "logout": "déconnexion",
-      "mandatory field": "Champ obligatoire",
+      "mandatory": "obligatoire",
       "maximum number": "nombre maximum",
       "metadata for the cluster connected to by [b]$data[/b] has been copied to the clipboard, the size is $data": "Les métadonnées du cluster connecté par [b]$data[/b] ont été copiées dans le presse-papiers, leur taille est de $data",
       "missing variables": "Variables manquantes",

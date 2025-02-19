@@ -1022,3 +1022,12 @@ div.btn.field-sort-type.badge {
   opacity: 0;
   pointer-events: none;
 }
+
+div.tippy-content.no-padding {
+  padding: 0 !important;
+  transition: none !important;
+}
+
+.badge-secondary {
+  opacity: 0.95;
+}

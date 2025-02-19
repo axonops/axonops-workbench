@@ -428,7 +428,7 @@
       let maxNumCQLSHSessions = config.get('limit', 'cqlsh'),
         maxNumSandboxProjects = config.get('limit', 'sandbox'),
         contentProtection = await Keytar.findPassword('AxonOpsWorkbenchContentProtection') || false,
-        assistantAIEnabled = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || true,
+        assistantAIEnabled = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || false,
         loggingEnabled = config.get('security', 'loggingEnabled'),
         sandboxProjectsEnabled = config.get('features', 'sandboxProjects'),
         containersManagementTool = config.get('features', 'containersManagementTool') || 'none',
@@ -1286,4 +1286,8 @@
   $("#actionDataDrop")[0].addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize'))
 
   $('div.modal#actionDataDrop div.editor-container').mutate('show', () => $(window.visualViewport).trigger('resize'))
+}
+
+{
+  $("#rightClickActionsMetadata")[0].addEventListener('hidden.mdb.modal', () => $("#rightClickActionsMetadata").removeClass('insertion-action'))
 }

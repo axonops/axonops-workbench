@@ -280,7 +280,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
     // Whether or not a specified elements will be hidden
     hideElement = toastID.length != 0 ? 'hidden' : ''
 
-  // Toast UI element strucutre
+  // Toast UI element structure
   let element = `
       <div style="text-align: initial;" class="toast ${toastID.length <= 0 ? 'show' : ''}" ${addToastID}>
         <div class="toast-header no-select">
@@ -912,7 +912,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
   let normalizePath = (path) => OS.platform == 'win32' ? `${path}`.replace(/\\/gm, '/') : `${path}`
 
   // Get a keyspaces container's random ID
-  let keyspacesID = getRandomID(30),
+  let [clusterID, keyspacesID] = getRandomID(30, 2),
     // Define the path of extra icons to be used with each leaf
     extraIconsPath = normalizePath(Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra')),
     // The initial tree structure
@@ -935,10 +935,15 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           'name': 'default-dark'
         },
         'data': [{
-            'id': getRandomID(30),
+            'id': clusterID,
             'parent': '#',
             'text': `Cluster: <span>${metadata.cluster_name}</span>`,
             'type': 'default',
+            'icon': normalizePath(Path.join(extraIconsPath, 'cluster.png')),
+            'state': {
+              'opened': true,
+              'selected': false
+            },
             'a_attr': {
               'allow-right-context': 'true',
               'name': metadata.cluster_name,
@@ -947,7 +952,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           },
           {
             'id': getRandomID(30),
-            'parent': '#',
+            'parent': clusterID,
             'text': `Partitioner: <span>${metadata.partitioner.replace(/.+\.(.+)/gi, '$1')}</span>`,
             'type': 'default',
           },
@@ -957,6 +962,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             'text': `Keyspaces (<span>${metadata.keyspaces.length}</span>)`,
             'type': 'default',
             'icon': normalizePath(Path.join(extraIconsPath, 'keyspaces.png')),
+            'state': {
+              'opened': true,
+              'selected': false
+            },
             'a_attr': {
               'allow-right-context': 'true',
               'type': 'keyspaces'
@@ -1099,12 +1108,16 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           if (attribute == 'durable_writes' && object[attribute] != 'false')
             return
 
+          let materialIcon = object[attribute] ? 'check' : 'close'
+
+          if (attribute == 'is_reversed')
+            materialIcon = materialIcon == 'check' ? 'arrow_upward' : 'arrow_downward'
 
           // Otherwise, define that attribute's structure
           let structure = {
             id: getRandomID(30),
             parent: childID,
-            text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: <span class="material-icons for-treeview">${object[attribute] ? 'check' : 'close'}</span>`,
+            text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: ${attribute == 'is_reversed' ? (object[attribute] ? 'DESC' : 'ASC') : ''} <span class="material-icons for-treeview">${materialIcon}</span>`,
             type: 'default'
           }
 
@@ -1299,13 +1312,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Loop through primary keys
         table.primary_key.forEach((primaryKey) => {
           // Get a random ID for the key
-          let primaryKeyID = getRandomID(30)
+          let primaryKeyID = getRandomID(30),
+            isPartitionKey = table.partition_key.find((partitionKey) => primaryKey.name == partitionKey.name) != undefined
 
           // Build tree view for the key
-          buildTreeViewForChild(primaryKeysID, primaryKeyID, `Key`, primaryKey, 'key')
+          buildTreeViewForChild(primaryKeysID, primaryKeyID, `Key`, primaryKey, isPartitionKey ? 'partition-key' : 'clustering-key')
 
           if (isCounterTable)
-            buildTreeViewForChild(`${primaryKeysID}_${counterTablesID}`, `${primaryKeyID}_${counterTablesID}`, `Key`, primaryKey, 'key')
+            buildTreeViewForChild(`${primaryKeysID}_${counterTablesID}`, `${primaryKeyID}_${counterTablesID}`, `Key`, primaryKey, isPartitionKey ? 'partition-key' : 'clustering-key')
         })
       }
 
@@ -1316,7 +1330,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           parent: tableID,
           text: `Partition Keys (<span>${table.partition_key.length}</span>)`,
           type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+          icon: normalizePath(Path.join(extraIconsPath, 'partition-key.png'))
         }
 
         treeStructure.core.data.push(partitionKeysStructure)
@@ -1334,10 +1348,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let partitionKeyID = getRandomID(30)
 
           // Build tree view for the key
-          buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'key', 'partitionKeys')
+          buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
 
           if (isCounterTable)
-            buildTreeViewForChild(`${partitionKeysID}_${counterTablesID}`, `${partitionKeyID}_${counterTablesID}`, `Key`, partitionKey, 'key', 'partitionKeys')
+            buildTreeViewForChild(`${partitionKeysID}_${counterTablesID}`, `${partitionKeyID}_${counterTablesID}`, `Key`, partitionKey, 'partition-key', 'partitionKeys')
         })
       }
 
@@ -1348,7 +1362,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           parent: tableID,
           text: `Clustering Keys (<span>${table.clustering_key.length}</span>)`,
           type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+          icon: normalizePath(Path.join(extraIconsPath, 'clustering-key.png'))
         }
 
         treeStructure.core.data.push(clusteringKeysStructure)
@@ -1366,10 +1380,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let clusteringKeyID = getRandomID(30)
 
           // Build tree view for the key
-          buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'key')
+          buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
 
           if (isCounterTable)
-            buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'key')
+            buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'clustering-key')
         })
       }
 
@@ -1412,33 +1426,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       // Display the `Options` node/leaf if there is at least one option available for the current table
       try {
-        /**
-         * Options' container that will be under the table overall container
-         * Get a random ID for the options' parent/container node
-         */
-        let optionsID = getRandomID(30),
-          // Define the node/leaf structure
-          optionsStructure = {
-            id: optionsID,
-            parent: tableID, // Under the current table
-            text: `Options`,
-            type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'options.png'))
-          }
-
-        // Append the options' parent/container to the tree structure
-        treeStructure.core.data.push(optionsStructure)
-
-        if (isCounterTable)
-          treeStructure.core.data.push({
-            ...optionsStructure,
-            id: `${optionsID}_${counterTablesID}`,
-            parent: `${tableID}_${counterTablesID}`
-          })
-
-        // If the current table does not have an `options` attribute, then skip this try-catch block
-        if (table.options == undefined || Object.keys(table.options).length <= 0)
-          throw 0
 
         // Define an inner function to handle the appending process of options to the tree structure
         let appendOptions = (options, parentID) => {
@@ -1515,6 +1502,68 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           })
         }
 
+        try {
+          if (table.options.length <= 0)
+            throw 0
+
+          // Get a random ID for the current parent's options node
+          let highlightedOptionsID = getRandomID(30),
+            // Define the node/leaf structure
+            highlightedOptionsStructure = {
+              id: highlightedOptionsID,
+              parent: tableID,
+              text: `Highlighted Options`,
+              type: 'default',
+              icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png')),
+              state: {
+                opened: true
+              }
+            }
+
+          // Push the node
+          treeStructure.core.data.push(highlightedOptionsStructure)
+
+          if (isCounterTable)
+            treeStructure.core.data.push({
+              ...highlightedOptionsStructure,
+              id: `${highlightedOptionsID}_${counterTablesID}`,
+              parent: `${tableID}_${counterTablesID}`
+            })
+
+          appendOptions({
+            compaction: table.options['compaction'],
+            bloom_filter_fp_chance: table.options['bloom_filter_fp_chance']
+          }, highlightedOptionsID)
+        } catch (e) {}
+
+        /**
+         * Options' container that will be under the table overall container
+         * Get a random ID for the options' parent/container node
+         */
+        let optionsID = getRandomID(30),
+          // Define the node/leaf structure
+          optionsStructure = {
+            id: optionsID,
+            parent: tableID, // Under the current table
+            text: `Options`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'options.png'))
+          }
+
+        // Append the options' parent/container to the tree structure
+        treeStructure.core.data.push(optionsStructure)
+
+        if (isCounterTable)
+          treeStructure.core.data.push({
+            ...optionsStructure,
+            id: `${optionsID}_${counterTablesID}`,
+            parent: `${tableID}_${counterTablesID}`
+          })
+
+        // If the current table does not have an `options` attribute, then skip this try-catch block
+        if (table.options == undefined || Object.keys(table.options).length <= 0)
+          throw 0
+
         // Initial call to the inner function
         appendOptions(table.options, optionsID)
       } catch (e) {}
@@ -1564,7 +1613,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             parent: tableID, // Under the current table
             text: `Views (<span>${table.views.length}</span>)`,
             type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'table.png'))
+            icon: normalizePath(Path.join(extraIconsPath, 'view.png'))
           }
 
         // Append the views' container to the tree structure
@@ -1595,12 +1644,12 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
            * Build a tree view for the current view
            * For the `parentType` parameter set it to be the view's keyspace's name; to set a correct scope for getting a CQL description
            */
-          buildTreeViewForChild(viewsID, viewID, `View`, view, 'table', {
+          buildTreeViewForChild(viewsID, viewID, `View`, view, 'view', {
             keyspace: keyspace.name
           })
 
           if (isCounterTable)
-            buildTreeViewForChild(`${viewsID}_${counterTablesID}`, `${viewID}_${counterTablesID}`, `View`, view, 'table', {
+            buildTreeViewForChild(`${viewsID}_${counterTablesID}`, `${viewID}_${counterTablesID}`, `View`, view, 'view', {
               keyspace: keyspace.name
             })
 
@@ -1610,7 +1659,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             parent: viewID,
             text: `Clustering Keys (<span>${view.clustering_key.length}</span>)`,
             type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+            icon: normalizePath(Path.join(extraIconsPath, 'clustering-key.png'))
           }
 
           treeStructure.core.data.push(clusteringKeysStructure)
@@ -1628,10 +1677,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             let clusteringKeyID = getRandomID(30)
 
             // Build tree view for the key
-            buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'key')
+            buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
 
             if (isCounterTable)
-              buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'key')
+              buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'clustering-key')
           })
           // End of view's clustering keys
 
@@ -1641,7 +1690,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             parent: viewID,
             text: `Partition Keys (<span>${view.partition_key.length}</span>)`,
             type: 'default',
-            icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+            icon: normalizePath(Path.join(extraIconsPath, 'partition-key.png'))
           }
 
           treeStructure.core.data.push(partitionKeysStructure)
@@ -1659,10 +1708,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             let partitionKeyID = getRandomID(30)
 
             // Build tree view for the key
-            buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'key', 'partitionKeys')
+            buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
 
             if (isCounterTable)
-              buildTreeViewForChild(`${partitionKeysID}_${partitionKeyID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, partitionKey, 'key', 'partitionKeys')
+              buildTreeViewForChild(`${partitionKeysID}_${partitionKeyID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, partitionKey, 'partition-key', 'partitionKeys')
           })
           // End of view's partition keys
 
@@ -1797,7 +1846,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           parent: keyspaceID, // Under the current keyspace
           text: `Views (<span>${keyspace.views.length}</span>)`,
           type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'table.png'))
+          icon: normalizePath(Path.join(extraIconsPath, 'view.png'))
         }
 
       // Append the views' container to the tree structure
@@ -1821,7 +1870,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * Build a tree view for the current view
          * For the `parentType` parameter set it to be the view's keyspace's name; to set a correct scope for getting a CQL description
          */
-        buildTreeViewForChild(viewsID, viewID, `View`, view, 'table', keyspace.name)
+        buildTreeViewForChild(viewsID, viewID, `View`, view, 'view', keyspace.name)
 
         // Add a node/leaf about the view's base table's name
         treeStructure.core.data.push({
@@ -1837,7 +1886,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           parent: viewID,
           text: `Clustering Keys (<span>${view.clustering_key.length}</span>)`,
           type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+          icon: normalizePath(Path.join(extraIconsPath, 'clustering-key.png'))
         }
 
         treeStructure.core.data.push(clusteringKeysStructure)
@@ -1848,7 +1897,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let clusteringKeyID = getRandomID(30)
 
           // Build tree view for the key
-          buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'key')
+          buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
         })
         // End of view's clustering keys
 
@@ -1858,7 +1907,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           parent: viewID,
           text: `Partition Keys (<span>${view.partition_key.length}</span>)`,
           type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'key.png'))
+          icon: normalizePath(Path.join(extraIconsPath, 'partition-key.png'))
         }
 
         treeStructure.core.data.push(partitionKeysStructure)
@@ -1869,7 +1918,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let partitionKeyID = getRandomID(30)
 
           // Build tree view for the key
-          buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'key', 'partitionKeys')
+          buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
         })
         // End of view's partition keys
 
@@ -2224,6 +2273,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       parent: keyspacesID,
       text: `System Keyspaces (<span>${numOfFoundSystemKeyspaces}</span>)`,
       type: 'default',
+      state: {
+        opened: true,
+        selected: false
+      },
       icon: normalizePath(Path.join(extraIconsPath, 'keyspaces.png'))
     }
 
@@ -2260,6 +2313,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       parent: keyspacesID,
       text: `Virtual Keyspaces (<span>${virtualNodes.length}</span>)`,
       type: 'default',
+      state: {
+        opened: true,
+        selected: false
+      },
       icon: normalizePath(Path.join(extraIconsPath, 'keyspaces.png'))
     }
 
@@ -2329,6 +2386,21 @@ let suggestionSearch = (needle, haystack) => {
  */
 String.prototype.search = function(needle) {
   return this.indexOf(needle) != -1
+}
+
+let flattenArray = (array) => {
+  let i = 0
+
+  while (i < array.length) {
+    if (Array.isArray(array[i])) {
+      const nested = flattenArray(array[i])
+
+      array.splice(i, 1, ...nested)
+    } else {
+      i++
+    }
+  }
+  return array
 }
 
 // Extend the jQuery library capabilities by adding new functions to objects
@@ -3655,7 +3727,7 @@ let clearTemp = () => {
        * Check if the item ends with the `.cwb` or `.metadata` extensions
        * The `.cwb` item is a `cqlsh.rc` config file created for test connection and it should be removed
        */
-      if (['cwb', 'metadata', 'tmp', 'cqldesc', 'checkconn', 'aocwtmp'].some((extension) => item.endsWith(`.${extension}`))) {
+      if (['cwb', 'metadata', 'tmp', 'cqldesc', 'checkconn', 'aocwtmp'].some((extension) => item.endsWith(`.${extension}`)) || item.startsWith('preview_item_')) {
         // Remove that temporary config file
         try {
           FS.removeSync(Path.join(tempFolder, item))
@@ -3825,6 +3897,8 @@ let setUIColor = (workspaceColor) => {
           .ui-resizable-handle:hover {background: ${backgroundColor.hover.replace('70%', '40%')} !important}
           .checkbox-checked:checked:focus:before {box-shadow: 3px -1px 0 13px ${backgroundColor.hover.replace('70%', '100%')} !important;}
           .form-check-input:not([no-color]):checked:focus:before {box-shadow: 0 0 0 13px ${backgroundColor.hover.replace('70%', '100%')} !important;}
+          .form-check-input[type=radio]:not([no-color]):checked:after {border-color: ${backgroundColor.hover.replace('70%', '35%')} !important; background-color: ${backgroundColor.hover.replace('70%', '35%')} !important;}
+          .form-check-input[type=radio]:not([no-color]):checked {background: ${backgroundColor.hover.replace('70%', '25%')} !important;}
           .changed-color {color: ${textColor} !important}
           .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active, form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus, .form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus {border-color: ${backgroundColor.default} !important}
           ion-icon[name="lock-closed"] {color: ${backgroundColor.default} !important}
@@ -3846,6 +3920,11 @@ let setUIColor = (workspaceColor) => {
           .hljs-keyword, .hljs-selector-tag, .hljs-bullet, .hljs-tag { color: ${highlightColors[0]}; }
           .hljs-subst, .hljs-variable, .hljs-template-tag, .hljs-template-variable { color: ${highlightColors[5]}; }
           .hljs-type, .hljs-built_in, .hljs-quote, .hljs-section, .hljs-selector-class { color: ${highlightColors[4]}; }
+          .perfect-datetimepicker table.tt input:focus { border-color: ${backgroundColor.default}; box-shadow: 0 0 6px ${backgroundColor.hover.replace('70%', '60%')}; }
+          .perfect-datetimepicker table.tt input:focus { border-color: ${backgroundColor.default}; box-shadow: 0 0 6px ${backgroundColor.hover.replace('70%', '60%')}; }
+          .perfect-datetimepicker tbody td.today { color: ${highlightColors[0]}; }
+          .perfect-datetimepicker tbody td.selected { border: 1px solid ${backgroundColor.default}; background-color: ${backgroundColor.default}; }
+          .perfect-datetimepicker table td.weekend { color: ${highlightColors[4]}; opacity: 0.5; }
         </style>`
 
     // Append the stylesheet
@@ -4077,7 +4156,7 @@ let copyStatement = (button) => {
   // Get the block's statement
   let content = `${$(button).parent().parent().children('div.text').text()}`,
     // Get the statement's size
-    contentSize = ByteSize(ValueSize(content))
+    contentSize = Bytes(ValueSize(content))
 
   // Copy statement to the clipboard
   try {
@@ -4114,9 +4193,9 @@ let removeComments = (statement, trim = false) => {
   let result = `${statement}`
 
   try {
-    result = result.replace(/(?=(?:[^\\'\\"]*(?:\\'|\\")[^\\'\\"]*(?:\\'|\\"))*[^\\'\\"]*$)(^|[^"'])\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
-      .replace(/(?=(?:[^\\'\\"]*(?:\\'|\\")[^\\'\\"]*(?:\\'|\\"))*[^\\'\\"]*$)(^|[^"'])(^|[^"'])--.*$/gm, '$1') // Remove `--` comments
-      .replace(/(?=(?:[^\\'\\"]*(?:\\'|\\")[^\\'\\"]*(?:\\'|\\"))*[^\\'\\"]*$)(^|[^"'])(^|[^"'])\/\/.*$/gm, "$1") // Remove `//` comments
+    result = result.replace(/(?=(?:[^\\'\\"]*(?:\\'|\\")[^\\'\\"]*(?:\\'|\\"))*[^\\'\\"]*$)\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
+      .replace(/(?=(?:[^\\'\\"]*(?:\\'|\\")[^\\'\\"]*(?:\\'|\\"))*[^\\'\\"]*$)(^|[^"'])--(?!.*['"]).*$/gm, '$1') // Remove `--` comments
+      .replace(/(?=(?:[^\\'\\"]*(?:\\'|\\")[^\\'\\"]*(?:\\'|\\"))*[^\\'\\"]*$)(^|[^"'])\/\/.*$/gm, '$1') // Remove `//` comments
 
     if (trim)
       result = result.trim()
@@ -4141,4 +4220,558 @@ let updateContainersManagementToolUI = (tool, getConfig = false) => {
 
     update()
   })
+}
+
+let handleLabelClickEvent = (label) => {
+  let checkBoxInput = $(`input#${$(label).attr('for')}`)
+
+  checkBoxInput.prop('checked', !checkBoxInput.prop('checked')).trigger('input')
+}
+
+let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs = [], enableBlobPreview = false, singleNode = null) => {
+  let treeStructure = {
+      'dnd': {
+        'is_draggable': false,
+        'check_while_dragging': false
+      },
+      'core': {
+        'strings': {
+          'Loading ...': ' '
+        },
+        'themes': {
+          'responsive': true,
+          'icons': false,
+          'name': 'default-dark'
+        },
+        'check_callback': true,
+        'data': []
+      },
+      'plugins': ['dnd', 'state', 'noclose']
+    },
+    getInputType = (fieldType) => {
+      let type = 'text',
+        extraProps = {}
+
+      try {
+        let number = ['int', 'bigint', 'smallint', 'tinyint', 'varint', 'float', 'double', 'decimal']
+
+        if (!(number.some((type) => type == fieldType)))
+          throw 0
+
+        type = 'number'
+
+        extraProps.step = ['float', 'double', 'decimal'].some((type) => type == fieldType) ? 'any' : '1'
+      } catch (e) {}
+
+      if (fieldType == 'boolean')
+        type = 'switch'
+
+      if (fieldType == 'uuid')
+        extraProps.default = 'uuid()'
+
+      if (fieldType == 'timeuuid')
+        extraProps.default = 'now()'
+
+      return {
+        type,
+        extraProps
+      }
+    },
+    isInsertionAsJSON = $('#rightClickActionsMetadata').attr('data-as-json') === 'true',
+    handleNode = (nodeObject, parentID = '#') => {
+      let nodeID = getRandomID(30),
+        nodeStructure = {
+          'id': nodeID,
+          'parent': parentID,
+          'state': {
+            'opened': true,
+            'selected': false
+          },
+          'a_attr': {
+            'name': `${nodeObject.name}`,
+            'type': `${nodeObject.type}`,
+            'field-type': `${nodeObject.fieldType}`,
+            'partition': `${nodeObject.isPartition == true}`,
+            'static-id': `${nodeID}`,
+            'mandatory': nodeObject.isMandatory,
+            'no-empty-value': nodeObject.noEmptyValue == true
+          }
+        },
+        manipulatedType = getInputType(nodeObject.type),
+        defaultValue = manipulatedType.extraProps.default || null,
+        inputStep = manipulatedType.step ? `step="${manipulatedType.step}"` : '',
+        isIgnoranceCheckboxShown = false
+
+      try {
+        isIgnoranceCheckboxShown = parentID == '#' && nodeObject.fieldType != 'udt-field'
+      } catch (e) {}
+
+      defaultValue = defaultValue && !isInsertionAsJSON ? `value="${defaultValue}"` : ''
+
+      let inputFieldUIElement = `
+          <div class="form-outline form-white ignored-applied null-related" style="z-index:1;">
+            <div class="clear-field hide" ${manipulatedType.type == 'checkbox' ? 'hidden' : ''}>
+              <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                <ion-icon name="close"></ion-icon>
+              </div>
+            </div>
+            <input type="${manipulatedType.type}" data-field-type="${nodeObject.type}" class="form-control ${manipulatedType.type != 'checkbox' ? 'has-clear-button' : ''}" id="_${getRandomID(10)}" ${defaultValue} ${inputStep}>
+            <label class="form-label">
+              <span mulang="value" capitalize></span>
+            </label>
+          </div>`,
+        fieldActions = ``
+
+      try {
+        if (manipulatedType.type != 'switch')
+          throw 0
+
+        let switchBtnID = getRandomID(10)
+
+        inputFieldUIElement = `
+          <div class="form-check form-switch form-white ignored-applied null-related">
+            <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="_${switchBtnID}" data-field-type="${nodeObject.type}">
+            <label class="form-check-label uppercase" for="_${switchBtnID}" onclick="handleLabelClickEvent(this)">false</label>
+          </div>`
+      } catch (e) {}
+
+      try {
+        if (!(['map', 'set', 'list'].some((type) => `${nodeObject.type}`.includes(`${type}<`))))
+          throw 0
+
+        nodeStructure.a_attr['add-items'] = true
+
+        nodeStructure.a_attr['add-hidden-node'] = getRandomID(30)
+
+        inputFieldUIElement = ``
+
+        fieldActions = `
+          <div class="input-group-text for-insertion for-actions ignored-applied">
+            <span class="actions">
+              <span mulang="actions" capitalize></span>
+              <ion-icon name="right-arrow-filled"></ion-icon>
+            </span>
+            <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="add-item">
+              <ion-icon name="plus"></ion-icon>
+              <span mulang="add item"></span>
+            </button>
+          </div>`
+      } catch (e) {}
+
+      try {
+        if (`${nodeObject.type}` != 'uuid')
+          throw 0
+
+        let dropDownBtnID = getRandomID(30)
+
+        fieldActions = `
+          <div class="input-group-text dropend for-insertion for-actions ignored-applied">
+            <span class="actions">
+              <span mulang="actions" capitalize></span>
+              <ion-icon name="right-arrow-filled"></ion-icon>
+            </span>
+            <button type="button" class="btn btn-light btn-rounded btn-sm dropdown-toggle" data-mdb-ripple-color="dark" data-mdb-dropdown-init aria-expanded="false" id="_${dropDownBtnID}">
+            </button>
+            <ul class="dropdown-menu for-insertion-actions" data-mdb-auto-close="true" aria-labelledby="_${dropDownBtnID}">
+              <li>
+                <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="uuid()">
+                  <ion-icon name="function"></ion-icon> <code>uuid()</code>
+                </a>
+              </li>
+            </ul>
+          </div>`
+
+        if (isInsertionAsJSON)
+          fieldActions = ''
+      } catch (e) {}
+
+      try {
+        if (`${nodeObject.type}` != 'blob')
+          throw 0
+
+        let dropDownBtnID = getRandomID(30)
+
+        fieldActions = `
+          <div class="input-group-text dropend for-insertion for-actions ignored-applied">
+            <span class="actions">
+              <span mulang="actions" capitalize></span>
+              <ion-icon name="right-arrow-filled"></ion-icon>
+            </span>
+            <button type="button" class="btn btn-light btn-rounded btn-sm dropdown-toggle" data-mdb-ripple-color="dark" data-mdb-dropdown-init aria-expanded="false" id="_${dropDownBtnID}">
+            </button>
+            <ul class="dropdown-menu for-insertion-actions" data-mdb-auto-close="true" aria-labelledby="_${dropDownBtnID}">
+              <li>
+                <a class="dropdown-item" href="#" aria-expanded="false" action="upload-item">
+                  <ion-icon name="upload"></ion-icon> <span mulang="upload item" capitalize></span>
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item ${!enableBlobPreview ? 'disabled' : ''}" href="#" aria-expanded="false" action="preview-item" ${!enableBlobPreview ? 'style="color: #898989 !important;"' : ''}>
+                  <ion-icon name="eye-opened"></ion-icon> <span mulang="preview item" capitalize></span>
+                </a>
+              </li>
+            </ul>
+            <l-ring-2 size="20" stroke="2" stroke-length="0.25" bg-opacity="0.25" speed="0.45" color="white"></l-ring-2>
+          </div>`
+      } catch (e) {}
+
+      try {
+        if (`${nodeObject.type}` != 'timeuuid')
+          throw 0
+
+        let dropDownBtnID = getRandomID(30)
+
+        fieldActions = `
+          <div class="input-group-text dropend for-insertion for-actions ignored-applied">
+            <span class="actions">
+              <span mulang="actions" capitalize></span>
+              <ion-icon name="right-arrow-filled"></ion-icon>
+            </span>
+            <button type="button" class="btn btn-light btn-rounded btn-sm dropdown-toggle" data-mdb-ripple-color="dark" data-mdb-dropdown-init aria-expanded="false" id="_${dropDownBtnID}">
+            </button>
+            <ul class="dropdown-menu for-insertion-actions" data-mdb-auto-close="true" aria-labelledby="_${dropDownBtnID}">
+              <li>
+                <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="now()">
+                  <ion-icon name="function"></ion-icon> <code>now()</code>
+                </a>
+              </li>
+            </ul>
+          </div>`
+
+        if (isInsertionAsJSON)
+          fieldActions = ''
+      } catch (e) {}
+
+      try {
+        if (!(['timestamp', 'date', 'duration', 'time'].some((type) => `${nodeObject.type}` == type)))
+          throw 0
+
+        let viewMode = 'YMDHMS',
+          functionBtn = ``
+
+        switch (nodeObject.type) {
+          case 'date': {
+            viewMode = 'YMD'
+            functionBtn = `
+            <li>
+              <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="current_date()">
+                <ion-icon name="function"></ion-icon> <code>current_date()</code>
+              </a>
+            </li>`
+            break
+          }
+          case 'duration': {
+            viewMode = 'HMS-D'
+            break
+          }
+          case 'time': {
+            viewMode = 'HMS'
+            functionBtn = `
+            <li>
+              <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="current_time()">
+                <ion-icon name="function"></ion-icon> <code>current_time()</code>
+              </a>
+            </li>`
+            break
+          }
+          case 'timestamp': {
+            functionBtn = `
+            <li>
+              <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="current_timestamp()">
+                <ion-icon name="function"></ion-icon> <code>current_timestamp()</code>
+              </a>
+            </li>`
+            break
+          }
+        }
+
+        if (isInsertionAsJSON)
+          functionBtn = ''
+
+        let dropDownBtnID = getRandomID(30),
+          pickerTitle = 'date time picker'
+
+        switch (viewMode) {
+          case 'YMD': {
+            pickerTitle = 'date picker'
+            break
+          }
+          case 'HMS': {
+            pickerTitle = 'time picker'
+            break
+          }
+          case 'HMS-D': {
+            pickerTitle = 'duration picker'
+            break
+          }
+        }
+
+        fieldActions = `
+        <div class="input-group-text dropend for-insertion for-actions ignored-applied">
+          <span class="actions">
+            <span mulang="actions" capitalize></span>
+            <ion-icon name="right-arrow-filled"></ion-icon>
+          </span>
+          <button type="button" class="btn btn-light btn-rounded btn-sm dropdown-toggle" data-mdb-ripple-color="dark" data-mdb-dropdown-init aria-expanded="false" id="_${dropDownBtnID}">
+          </button>
+          <ul class="dropdown-menu for-insertion-actions" data-mdb-auto-close="true" aria-labelledby="_${dropDownBtnID}">
+            <li>
+              <a class="dropdown-item" href="#" aria-expanded="false" action="datetimepicker" data-view-mode="${viewMode}">
+                <ion-icon name="${viewMode.startsWith('HMS') ? 'time-outline' : 'calendar'}"></ion-icon> <span mulang="${pickerTitle}" capitalize></span>
+              </a>
+            </li>
+            ${functionBtn}
+          </ul>
+        </div>`
+      } catch (e) {}
+
+      try {
+        if (keyspaceUDTs.find((udt) => nodeObject.type == udt.name) == undefined)
+          throw 0
+
+        inputFieldUIElement = ``
+
+        nodeStructure.a_attr['is-udt'] = true
+      } catch (e) {}
+
+      let nullValueSupport = ``
+
+      try {
+        if (`${nodeObject.fieldType}` != 'regular-column' || nodeStructure.a_attr['add-items'] == true)
+          throw 0
+
+        nullValueSupport = `
+        <div class="input-group-text for-insertion for-null-value ignored-applied">
+          <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="apply-null">
+            <span class="circle changed-bg"></span>
+            <span>NULL</span>
+          </button>
+        </div>`
+      } catch (e) {}
+
+      nodeStructure.text = `
+      <div class="input-group">
+        <div class="input-group-text for-not-ignoring" ${!isIgnoranceCheckboxShown ? 'hidden' : '' }>
+          <div class="not-ignore-checkbox ${nodeObject.fieldType == 'primary-key' ? 'mandatory' : ''}" data-status="true">
+            <div class="circle changed-bg"></div>
+          </div>
+        </div>
+        <div class="input-group-text for-insertion for-name ignored-applied" ${nodeObject.name.length <=0 ? 'hidden' : '' }>
+          <span class="name">
+            <span mulang="name" capitalize></span>
+            <ion-icon name="right-arrow-filled"></ion-icon>
+          </span>
+          <span class="name-value">${nodeObject.name}</span>
+        </div>
+        ${inputFieldUIElement}
+        ${nullValueSupport}
+        <div class="input-group-text for-insertion for-type ignored-applied" style="z-index:0;">
+          <span class="type">
+            <span mulang="type" capitalize></span>
+            <ion-icon name="right-arrow-filled"></ion-icon>
+          </span>
+          <span class="type-value">${EscapeHTML(nodeObject.type)}</span>
+        </div>
+        ${fieldActions}
+      </div>`
+
+      return nodeStructure
+    },
+    handleUDT = (udtObject, parentID = '#', returnStructure = false) => {
+      let udtGroupStrcuture = []
+
+      try {
+        let udtID = getRandomID(30),
+          udtNodeStructure = {
+            'id': udtID,
+            'parent': parentID,
+            'state': {
+              'opened': true,
+              'selected': false
+            },
+            'a_attr': {
+              'name': `${udtObject.name}`,
+              'type': `${udtObject.type}`,
+              'field-type': 'udt-column',
+              'static-id': `${udtID}`,
+              'mandatory': false,
+              'no-empty-value': true
+            }
+          }
+
+        udtNodeStructure.text = `
+        <div class="input-group">
+          <div class="input-group-text for-not-ignoring" ${parentID != '#' ? 'hidden' : ''}>
+            <div class="not-ignore-checkbox" data-status="true">
+              <div class="circle changed-bg"></div>
+            </div>
+          </div>
+          <div class="input-group-text for-insertion for-name ignored-applied"  ${udtObject.name.length <= 0 ? 'hidden' : ''}>
+            <span class="name">
+              <span mulang="name" capitalize></span>
+              <ion-icon name="right-arrow-filled"></ion-icon>
+            </span>
+            <span class="name-value">${udtObject.name}</span>
+          </div>
+          <div class="input-group-text for-insertion for-type ignored-applied" style="z-index:0;">
+            <span class="type">
+              <span mulang="type" capitalize></span>
+              <ion-icon name="right-arrow-filled"></ion-icon>
+            </span>
+            <span class="type-value">${EscapeHTML(udtObject.type)}</span>
+          </div>
+        </div>`
+
+        if (returnStructure) {
+          udtGroupStrcuture.push(udtNodeStructure)
+        } else {
+          groupStructure.udtColumns.core.data.push(udtNodeStructure)
+        }
+
+
+        for (let i = 0; i < udtObject.field_names.length; i++) {
+          let fieldName = udtObject.field_names[i],
+            fieldType = udtObject.field_types[i]
+
+
+          fieldType = removeFrozenKeyword(fieldType)
+
+          try {
+            let fieldUDT = keyspaceUDTs.find((udt) => fieldType == udt.name)
+
+            if (fieldUDT == undefined)
+              throw 0
+
+            let fieldUDTStructure = handleUDT({
+              ...fieldUDT,
+              name: fieldName,
+              type: fieldType
+            }, udtID, returnStructure)
+
+            if (returnStructure)
+              udtGroupStrcuture.push(fieldUDTStructure)
+
+            continue
+          } catch (e) {}
+
+          try {
+            let fieldNodeStructure = handleNode({
+              name: fieldName,
+              type: fieldType,
+              fieldType: 'udt-field',
+              isMandatory: false,
+              noEmptyValue: true
+            }, udtID)
+
+            if (returnStructure) {
+              udtGroupStrcuture.push(fieldNodeStructure)
+            } else {
+              groupStructure.udtColumns.core.data.push(fieldNodeStructure)
+            }
+          } catch (e) {}
+        }
+      } catch (e) {}
+
+      if (returnStructure)
+        return udtGroupStrcuture
+
+    },
+    groupStructure = {},
+    groups = ['primaryKey', 'regularColumns', 'collectionColumns', 'udtColumns']
+
+  if (singleNode != null)
+    return singleNode.isUDT ? handleUDT(singleNode, '#', true) : handleNode(singleNode)
+
+  for (let group of groups)
+    groupStructure[group] = JSON.parse(JSON.stringify(treeStructure))
+
+  for (let key of keys) {
+    try {
+      let keyNodeStructure = handleNode({
+        ...key,
+        fieldType: 'primary-key',
+        isMandatory: true
+      })
+
+      groupStructure.primaryKey.core.data.push(keyNodeStructure)
+    } catch (e) {}
+  }
+
+  for (let column of columns) {
+    try {
+      let columnNodeStructure = handleNode({
+          ...column,
+          fieldType: 'regular-column',
+          isMandatory: false
+        }),
+        isTypeCollection = ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`))
+
+      if (isTypeCollection) {
+        groupStructure.collectionColumns.core.data.push(columnNodeStructure)
+      } else {
+        groupStructure.regularColumns.core.data.push(columnNodeStructure)
+      }
+    } catch (e) {}
+  }
+
+  for (let udt of udts)
+    handleUDT(udt)
+
+  return groupStructure
+}
+
+/**
+ * https://nodejs.org/api/net.html#netisipinput
+ * Returns `6` if input is an IPv6 address
+ * Returns `4` if input is an IPv4 address in dot-decimal notation with no leading zeroes
+ * Otherwise, returns 0
+ */
+const isIP = require('net').isIP
+
+const isUUID = require('uuid').validate
+
+let addDoubleQuotes = (text) => {
+  try {
+    if (typeof text == 'string' && `${text}` != `${text}`.toLowerCase() && !`${text}`.startsWith('"'))
+      text = `"${text}"`
+  } catch (e) {}
+
+  return text
+}
+
+let getBlobType = (blobHEXString, callback) => {
+  let blobBytes = []
+
+  try {
+    blobBytes = ConvertHEX.hexToBytes(`${blobHEXString}`.slice(0, 24))
+  } catch (e) {}
+
+  DetectFileType.fromBuffer(blobBytes, (err, result) => callback(err, result))
+}
+
+let getCheckedValue = (groupName) => {
+  let selectedValue = '',
+    radioButtons = document.getElementsByName(groupName);
+
+  for (let i = 0; i < radioButtons.length; i++) {
+    if (radioButtons[i].checked) {
+      selectedValue = radioButtons[i].value
+      break
+    }
+  }
+
+  return selectedValue
+}
+
+let removeFrozenKeyword = (text, attemptNum = 1) => {
+  try {
+    if (`${text}`.match(/frozen</) == null || attemptNum >= 100)
+      return text
+
+    text = text.replace(/frozen<([^>]*)>/g, '$1')
+
+    return removeFrozenKeyword(text, ++attemptNum)
+  } catch (e) {
+    return text
+  }
 }

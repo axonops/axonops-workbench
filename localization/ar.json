@@ -234,7 +234,7 @@
       "logging system": "نظام التسجيل",
       "logging": "تسجيل",
       "logout": "تسجيل خروج",
-      "mandatory field": "حقل إجباري",
+      "mandatory": "إجباري",
       "maximum number": "الرقم الأقصى",
       "metadata for the cluster connected to by [b]$data[/b] has been copied to the clipboard, the size is $data": "تم نسخ البيانات الوصفية للعنقود المُتصَل به من خلال [b]$data[/b]، حجم البيانات هو $data",
       "missing variables": "المتغيرات المفقودة",

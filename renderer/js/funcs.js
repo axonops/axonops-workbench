@@ -1119,8 +1119,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             return
 
           // For `durable_writes`, it should be displayed if its value is only `false`
-          if (attribute == 'durable_writes' && object[attribute] != 'false')
-            return
+          // if (attribute == 'durable_writes' && object[attribute] != 'false')
+          //   return
 
           let materialIcon = object[attribute] ? 'check' : 'close'
 

@@ -12665,7 +12665,7 @@
             }
 
             for (let field of filterdFields) {
-              dataFieldsContainer.prepend($(getFieldElement()).show(function() {
+              dataFieldsContainer.append($(getFieldElement()).show(function() {
                 let row = $(this)
 
                 row.attr('data-original-field', 'true')
@@ -12859,7 +12859,7 @@
             return
           } catch (e) {}
 
-          dataFieldsContainer.prepend($(getFieldElement()).show(function() {
+          dataFieldsContainer.append($(getFieldElement()).show(function() {
             let row = $(this)
 
             setTimeout(() => {
@@ -13068,7 +13068,7 @@
                 field.type = extractData
               } catch (e) {}
 
-              dataUDTFieldsContainer.prepend($(getFieldElement(keyspaceUDTs)).show(function() {
+              dataUDTFieldsContainer.append($(getFieldElement(keyspaceUDTs)).show(function() {
                 let row = $(this)
 
                 row.attr('data-original-field', 'true')
@@ -13234,7 +13234,7 @@
             return
           } catch (e) {}
 
-          dataUDTFieldsContainer.prepend($(getFieldElement(keyspaceUDTs)).show(function() {
+          dataUDTFieldsContainer.append($(getFieldElement(keyspaceUDTs)).show(function() {
             let row = $(this)
 
             setTimeout(() => {

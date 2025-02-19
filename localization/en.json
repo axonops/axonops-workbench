@@ -230,7 +230,7 @@
       "local clusters feature with Docker management tool requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again": "local clusters feature with Docker management tool requires the current user to be in the [code]docker[/code] group in [b]Linux[/b], please make sure this requirement is met then try again",
       "local clusters feature with Podman management tool requires [code]podman-compose[/code] to be installed, please make sure it's installed and accessible before attempting to $data": "local clusters feature with Podman management tool requires [code]podman-compose[/code] to be installed, please make sure it's installed and accessible before attempting to $data",
       "local clusters": "local clusters",
-      "log info, actions, processes and related": "log info, actions, processes and related",
+      "log info, actions, processes and related": "log info, actions, processes and related to a file",
       "logging system": "logging system",
       "logging": "logging",
       "logout": "logout",

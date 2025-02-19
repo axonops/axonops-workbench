@@ -13760,7 +13760,7 @@
           }
 
           try {
-            if (descOrder.length <= 0)
+            if (descOrder.length <= 0 || clusteringKeys.length <= 0)
               throw 0
 
             descOrder = ` WITH CLUSTERING ORDER BY (` + (clusteringKeys.map((key) => `${key.name} ${order.desc.includes(key.name) ? 'DESC' : 'ASC'}`)).join(', ') + `)`
@@ -16002,7 +16002,7 @@
           }
 
           try {
-            if (descOrder.length <= 0)
+            if (descOrder.length <= 0 || clusteringKeys.length <= 0)
               throw 0
 
             descOrder = ` WITH CLUSTERING ORDER BY (` + (clusteringKeys.map((key) => `${key.name} ${order.desc.includes(key.name) ? 'DESC' : 'ASC'}`)).join(', ') + `)`

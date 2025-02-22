@@ -2112,7 +2112,7 @@
                                       action: 'insertRow',
                                       click: `() => views.main.webContents.send('insert-row', {
                                         tableName: '${clickedNode.attr('name')}',
-                                        tables: '${JSON.stringify(keyspaceJSONObj.tables) || []}',
+                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
                                         udts: '${JSON.stringify(keyspaceUDTs) || []}',
                                         tabID: '_${cqlshSessionContentID}',
                                         keyspaceName: '${keyspaceName}',
@@ -2128,7 +2128,7 @@
                                       action: 'insertRow',
                                       click: `() => views.main.webContents.send('insert-row', {
                                         tableName: '${clickedNode.attr('name')}',
-                                        tables: '${JSON.stringify(keyspaceJSONObj.tables) || []}',
+                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
                                         udts: '${JSON.stringify(keyspaceUDTs) || []}',
                                         tabID: '_${cqlshSessionContentID}',
                                         keyspaceName: '${keyspaceName}',
@@ -2143,7 +2143,7 @@
                                       action: 'alterTable',
                                       click: `() => views.main.webContents.send('alter-table', {
                                         tableName: '${clickedNode.attr('name')}',
-                                        tables: '${JSON.stringify(keyspaceJSONObj.tables) || []}',
+                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
                                         udts: '${JSON.stringify(keyspaceUDTs) || []}',
                                         numOfUDTs: ${keyspaceUDTs.length},
                                         tabID: '_${cqlshSessionContentID}',
@@ -2158,6 +2158,18 @@
                                       label: I18next.capitalize(I18next.t('drop table')),
                                       action: 'dropTable',
                                       click: `() => views.main.webContents.send('drop-table', {
+                                        tableName: '${clickedNode.attr('name')}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        keyspaceName: '${keyspaceName}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`,
+                                      visible: nodeType == 'table'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('truncate table')),
+                                      action: 'truncateTable',
+                                      click: `() => views.main.webContents.send('truncate-table', {
                                         tableName: '${clickedNode.attr('name')}',
                                         tabID: '_${cqlshSessionContentID}',
                                         keyspaceName: '${keyspaceName}',
@@ -9767,7 +9779,9 @@
 
       IPCRenderer.on('drop-keyspace', (_, data) => {
         let keyspaceName = addDoubleQuotes(`${data.keyspaceName}`),
-          dropKeyspaceEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+          dropKeyspaceEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#extraDataActions .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+
+        $(`div.modal#extraDataActions div.editor-container`).removeClass('truncate')
 
         if (minifyText(keyspaceName).length <= 0)
           return
@@ -9784,7 +9798,7 @@
 
         setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
 
-        openDropDataDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible`, [keyspaceName])) + '.', (confirmed) => {
+        openExtraDataActionsDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible`, [keyspaceName])) + '.', (confirmed) => {
           if (!confirmed)
             return
 
@@ -9907,7 +9921,9 @@
       IPCRenderer.on('drop-udt', (_, data) => {
         let udtName = addDoubleQuotes(`${data.udtName}`),
           keyspaceName = addDoubleQuotes(`${data.keyspaceName}`),
-          dropUDTEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+          dropUDTEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#extraDataActions .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+
+        $(`div.modal#extraDataActions div.editor-container`).removeClass('truncate')
 
         if ([udtName, keyspaceName].some((name) => minifyText(name).length <= 0))
           return
@@ -9927,7 +9943,7 @@
 
         setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
 
-        openDropDataDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the defined type [b]$data[/b] in the keyspace [b]$data[/b]? This action is irreversible, and, by executing this command, the UDT [b]$data[/b] will be dropped [b]immediately[/b]` + '.', [udtName, keyspaceName, udtName])) + '.', (confirmed) => {
+        openExtraDataActionsDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the defined type [b]$data[/b] in the keyspace [b]$data[/b]? This action is irreversible, and, by executing this command, the UDT [b]$data[/b] will be dropped [b]immediately[/b]`, [udtName, keyspaceName, udtName])) + '.', (confirmed) => {
           if (!confirmed)
             return
 
@@ -10091,6 +10107,7 @@
       })
 
       IPCRenderer.on('alter-table', (_, data) => {
+        console.log("HERE...");
         let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
 
         try {
@@ -10296,7 +10313,9 @@
       IPCRenderer.on('drop-table', (_, data) => {
         let tableName = addDoubleQuotes(`${data.tableName}`),
           keyspaceName = addDoubleQuotes(`${data.keyspaceName}`),
-          dropUDTEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+          dropTableEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#extraDataActions .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+
+        $(`div.modal#extraDataActions div.editor-container`).removeClass('truncate')
 
         if ([tableName, keyspaceName].some((name) => minifyText(name).length <= 0))
           return
@@ -10311,12 +10330,12 @@
         let dropStatement = `DROP TABLE ${keyspaceName}.${tableName};`
 
         try {
-          dropUDTEditor.setValue(dropStatement)
+          dropTableEditor.setValue(dropStatement)
         } catch (e) {}
 
         setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
 
-        openDropDataDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the table [b]$data[/b] in the keyspace [b]$data[/b]? This action is irreversible, and, by executing this command, the table [b]$data[/b] will be dropped [b]immediately[/b]` + '.', [tableName, keyspaceName, tableName])) + '.', (confirmed) => {
+        openExtraDataActionsDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the table [b]$data[/b] in the keyspace [b]$data[/b]? This action is irreversible, and, by executing this command, the table [b]$data[/b] will be dropped [b]immediately[/b]`, [tableName, keyspaceName, tableName])) + '.', (confirmed) => {
           if (!confirmed)
             return
 
@@ -10333,7 +10352,60 @@
 
           try {
             let statementInputField = $(`textarea#${data.textareaID}`)
-            statementInputField.val(dropUDTEditor.getValue())
+            statementInputField.val(dropTableEditor.getValue())
+            statementInputField.trigger('input').focus()
+            AutoSize.update(statementInputField[0])
+          } catch (e) {}
+
+          try {
+            setTimeout(() => $(`button#${data.btnID}`).click(), 100)
+          } catch (e) {}
+        })
+      })
+
+      IPCRenderer.on('truncate-table', (_, data) => {
+        let tableName = addDoubleQuotes(`${data.tableName}`),
+          keyspaceName = addDoubleQuotes(`${data.keyspaceName}`),
+          truncateTableEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#extraDataActions .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+
+        $(`div.modal#extraDataActions div.editor-container`).addClass('truncate')
+
+        if ([tableName, keyspaceName].some((name) => minifyText(name).length <= 0))
+          return
+
+        try {
+          $('#generalPurposeDialog').attr({
+            'data-keyspacename': `${keyspaceName}`,
+            'data-tablename': `${tableName}`
+          })
+        } catch (e) {}
+
+        let truncateStatement = `CONSISTENCY ALL;` + OS.EOL + `TRUNCATE TABLE ${keyspaceName}.${tableName};`
+
+        try {
+          truncateTableEditor.setValue(truncateStatement)
+        } catch (e) {}
+
+        setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
+
+        openExtraDataActionsDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to truncate data in the table [b]$data[/b] in the keyspace [b]$data[/b]? this operation is irreversible and will permanently delete all data in the table. Key consequences include:[br][ul][li]All rows in the specified table will be removed immediately.[/li][li]Materialized views derived from this table will also be truncated.[/li][li]Snapshots: If your Cassandra cluster is configured to take snapshots before truncation, a snapshot of the table's current data will be created for recovery purposes. Remember to remove this snapshot if they are not needed.[/li][ul][li]Clean up snapshots: Use [code]nodetool clearsnapshot[/code] to remove snapshots if they are no longer needed.[/li][li]Disable automatic snapshots: Modify [code]cassandra.yaml[/code] to disable snapshots if you do not want this behavior.[/li][/ul][/ul]Please confirm that you want to proceed with this operation, understanding its irreversible nature and potential impact on snapshots`, [tableName, keyspaceName, tableName])) + '.', (confirmed) => {
+          if (!confirmed)
+            return
+
+          try {
+            getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
+          } catch (e) {}
+
+          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+
+          try {
+            activeWorkarea.find('div.terminal-container').hide()
+            activeWorkarea.find('div.interactive-terminal-container').show()
+          } catch (e) {}
+
+          try {
+            let statementInputField = $(`textarea#${data.textareaID}`)
+            statementInputField.val(truncateTableEditor.getValue())
             statementInputField.trigger('input').focus()
             AutoSize.update(statementInputField[0])
           } catch (e) {}

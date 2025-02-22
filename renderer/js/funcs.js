@@ -2691,7 +2691,7 @@ let openDialog = (text, callback, noBackdrop = false, checkBox = '', dialogEleme
     $('div.modal-backdrop:last-of-type').remove()
 }
 
-let openDropDataDialog = (text, callback) => openDialog(text, callback, false, '', $('div#actionDataDrop'))
+let openExtraDataActionsDialog = (text, callback) => openDialog(text, callback, false, '', $('div#extraDataActions'))
 
 /**
  * Print a custom message in the app's terminals

@@ -1496,7 +1496,7 @@ div.modal {
   }
 }
 
-div.modal#actionDataDrop {
+div.modal#extraDataActions {
   div.editor-container {
     position: relative;
     width: 100%;
@@ -1506,6 +1506,10 @@ div.modal#actionDataDrop {
     border-radius: 7px;
     overflow: hidden;
     background: #1e1e1e;
+
+    &.truncate {
+      height: 55px;
+    }
 
     .editor {
       @include position();

@@ -635,6 +635,7 @@
                     // CQL description
                     cqlDescriptionContentID,
                     cqlDescriptionSearchInputID,
+                    cqlDescriptionsCloseAllBtnID,
                     // Query tracing
                     queryTracingContentID,
                     queryTracingSearchInputID,
@@ -658,7 +659,7 @@
                     // Restart and close the work area
                     restartWorkareaBtnID,
                     closeWorkareaBtnID
-                  ] = getRandomID(20, 31)
+                  ] = getRandomID(20, 32)
 
                   /**
                    * Define tabs that shown only to sandbox projects
@@ -931,12 +932,17 @@
                              </div>
                              <div class="tab-pane fade _empty" tab="cql-description" id="_${cqlDescriptionContentID}" role="tabpanel">
                                <div class="descriptions-container">
-                                 <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
+                                 <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;width: calc(100% - 45px);">
                                    <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
                                    <input type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlDescriptionSearchInputID}">
                                    <label class="form-label">
                                      <span mulang="search for CQL description" capitalize-first></span>
                                    </label>
+                                   <div class="close-all-descriptions">
+                                     <button type="button" id="_${cqlDescriptionsCloseAllBtnID}" class="btn btn-sm btn-dark btn-secondary ripple-surface-light" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="close all descriptions" capitalize data-title="Close All Descriptions">
+                                       <ion-icon name="close"></ion-icon>
+                                     </button>
+                                   </div>
                                  </div>
                                  <div class="descriptions">
                                  </div>
@@ -1150,6 +1156,10 @@
                             // Show/hide it based on the result of whether or not it contains the search text
                             $(this).toggle(descriptionContent.search(searchValue))
                           })
+                        })
+
+                        $(`button#_${cqlDescriptionsCloseAllBtnID}`).click(function() {
+                          $(`div.tab-pane[tab="cql-description"]#_${cqlDescriptionContentID}`).find('div.descriptions').find('button.close-description').click()
                         })
                       })
                     }
@@ -2102,7 +2112,7 @@
                                       action: 'insertRow',
                                       click: `() => views.main.webContents.send('insert-row', {
                                         tableName: '${clickedNode.attr('name')}',
-                                        tables: '${JSON.stringify(keyspaceJSONObj.tables) || []}',
+                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
                                         udts: '${JSON.stringify(keyspaceUDTs) || []}',
                                         tabID: '_${cqlshSessionContentID}',
                                         keyspaceName: '${keyspaceName}',
@@ -2118,7 +2128,7 @@
                                       action: 'insertRow',
                                       click: `() => views.main.webContents.send('insert-row', {
                                         tableName: '${clickedNode.attr('name')}',
-                                        tables: '${JSON.stringify(keyspaceJSONObj.tables) || []}',
+                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
                                         udts: '${JSON.stringify(keyspaceUDTs) || []}',
                                         tabID: '_${cqlshSessionContentID}',
                                         keyspaceName: '${keyspaceName}',
@@ -2133,7 +2143,7 @@
                                       action: 'alterTable',
                                       click: `() => views.main.webContents.send('alter-table', {
                                         tableName: '${clickedNode.attr('name')}',
-                                        tables: '${JSON.stringify(keyspaceJSONObj.tables) || []}',
+                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
                                         udts: '${JSON.stringify(keyspaceUDTs) || []}',
                                         numOfUDTs: ${keyspaceUDTs.length},
                                         tabID: '_${cqlshSessionContentID}',
@@ -2148,6 +2158,18 @@
                                       label: I18next.capitalize(I18next.t('drop table')),
                                       action: 'dropTable',
                                       click: `() => views.main.webContents.send('drop-table', {
+                                        tableName: '${clickedNode.attr('name')}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        keyspaceName: '${keyspaceName}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`,
+                                      visible: nodeType == 'table'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('truncate table')),
+                                      action: 'truncateTable',
+                                      click: `() => views.main.webContents.send('truncate-table', {
                                         tableName: '${clickedNode.attr('name')}',
                                         tabID: '_${cqlshSessionContentID}',
                                         keyspaceName: '${keyspaceName}',
@@ -9378,6 +9400,10 @@
           let descriptionScope = data.scope.replace(/>/gm, '-').replace('table-', '-table-'),
             descriptionFileName = Sanitize(`${descriptionScope}-${formatTimestamp(new Date().getTime(), true)}.cql`).replace(/\s+/gm, '_') || 'cql_desc.cql'
 
+          try {
+            descriptionFileName = Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), clusterElement.attr('data-folder'), descriptionFileName)
+          } catch (e) {}
+
           let dialogID = getRandomID(5),
             dialogData = {
               id: dialogID,
@@ -9471,9 +9497,16 @@
         // Description's UI element structure
         let element = `
             <div class="description" data-scope="${data.scope}">
-              <span class="badge rounded-pill badge-secondary">
-                <a href="#_${editorContainerID}">${scope}</a>
-              </span>
+              <div class="sticky-header">
+                <span class="badge rounded-pill badge-secondary description-scope">
+                  <a href="#_${editorContainerID}">${scope}</a>
+                </span>
+                <div class="close-description">
+                  <button type="button" class="btn btn-sm btn-tertiary close-description" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-mulang="close description" capitalize data-title="Close Description">
+                    <ion-icon name="close"></ion-icon>
+                  </button>
+                </div>
+              </div>
               <div class="inner-content">
                 <div class="editor" id="_${editorContainerID}"></div>
               </div>
@@ -9495,10 +9528,12 @@
                 absolute: true
               }),
               // Point at the expandation/shrinking button
-              expandBtnElement = $(this).find('button.expand-editor'); // This semicolon is critical here
+              expandBtnElement = $(this).find('button.expand-editor'),
+              closeDescriptionBtnElement = $(this).find('button.close-description'); // This semicolon is critical here
 
             // Create a tooltip object for the button
             getElementMDBObject(expandBtnElement, 'Tooltip')
+            getElementMDBObject(closeDescriptionBtnElement, 'Tooltip')
 
             // Once the button is clicked
             expandBtnElement.click(function() {
@@ -9547,6 +9582,13 @@
 
               // Click the attached anchor in the description's UI element
               setTimeout(() => $(main).find('a')[0].click(), 210)
+            })
+
+            closeDescriptionBtnElement.click(function() {
+              main.remove()
+
+              if (cqlDescriptionsContainer.children('div.description').length <= 0)
+                cqlDescriptionsTabContent.addClass('_empty').find('input').trigger('input')
             })
 
             // Click the expandation button
@@ -9737,7 +9779,9 @@
 
       IPCRenderer.on('drop-keyspace', (_, data) => {
         let keyspaceName = addDoubleQuotes(`${data.keyspaceName}`),
-          dropKeyspaceEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+          dropKeyspaceEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#extraDataActions .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+
+        $(`div.modal#extraDataActions div.editor-container`).removeClass('truncate')
 
         if (minifyText(keyspaceName).length <= 0)
           return
@@ -9754,7 +9798,7 @@
 
         setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
 
-        openDropDataDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible`, [keyspaceName])) + '.', (confirmed) => {
+        openExtraDataActionsDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the keyspace [b]$data[/b]? This action is irreversible`, [keyspaceName])) + '.', (confirmed) => {
           if (!confirmed)
             return
 
@@ -9877,7 +9921,9 @@
       IPCRenderer.on('drop-udt', (_, data) => {
         let udtName = addDoubleQuotes(`${data.udtName}`),
           keyspaceName = addDoubleQuotes(`${data.keyspaceName}`),
-          dropUDTEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+          dropUDTEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#extraDataActions .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+
+        $(`div.modal#extraDataActions div.editor-container`).removeClass('truncate')
 
         if ([udtName, keyspaceName].some((name) => minifyText(name).length <= 0))
           return
@@ -9897,7 +9943,7 @@
 
         setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
 
-        openDropDataDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the defined type [b]$data[/b] in the keyspace [b]$data[/b]? This action is irreversible, and, by executing this command, the UDT [b]$data[/b] will be dropped [b]immediately[/b]` + '.', [udtName, keyspaceName, udtName])) + '.', (confirmed) => {
+        openExtraDataActionsDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the defined type [b]$data[/b] in the keyspace [b]$data[/b]? This action is irreversible, and, by executing this command, the UDT [b]$data[/b] will be dropped [b]immediately[/b]`, [udtName, keyspaceName, udtName])) + '.', (confirmed) => {
           if (!confirmed)
             return
 
@@ -10061,6 +10107,7 @@
       })
 
       IPCRenderer.on('alter-table', (_, data) => {
+        console.log("HERE...");
         let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
 
         try {
@@ -10266,7 +10313,9 @@
       IPCRenderer.on('drop-table', (_, data) => {
         let tableName = addDoubleQuotes(`${data.tableName}`),
           keyspaceName = addDoubleQuotes(`${data.keyspaceName}`),
-          dropUDTEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#actionDataDrop .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+          dropTableEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#extraDataActions .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+
+        $(`div.modal#extraDataActions div.editor-container`).removeClass('truncate')
 
         if ([tableName, keyspaceName].some((name) => minifyText(name).length <= 0))
           return
@@ -10281,12 +10330,12 @@
         let dropStatement = `DROP TABLE ${keyspaceName}.${tableName};`
 
         try {
-          dropUDTEditor.setValue(dropStatement)
+          dropTableEditor.setValue(dropStatement)
         } catch (e) {}
 
         setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
 
-        openDropDataDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the table [b]$data[/b] in the keyspace [b]$data[/b]? This action is irreversible, and, by executing this command, the table [b]$data[/b] will be dropped [b]immediately[/b]` + '.', [tableName, keyspaceName, tableName])) + '.', (confirmed) => {
+        openExtraDataActionsDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to drop the table [b]$data[/b] in the keyspace [b]$data[/b]? This action is irreversible, and, by executing this command, the table [b]$data[/b] will be dropped [b]immediately[/b]`, [tableName, keyspaceName, tableName])) + '.', (confirmed) => {
           if (!confirmed)
             return
 
@@ -10303,7 +10352,60 @@
 
           try {
             let statementInputField = $(`textarea#${data.textareaID}`)
-            statementInputField.val(dropUDTEditor.getValue())
+            statementInputField.val(dropTableEditor.getValue())
+            statementInputField.trigger('input').focus()
+            AutoSize.update(statementInputField[0])
+          } catch (e) {}
+
+          try {
+            setTimeout(() => $(`button#${data.btnID}`).click(), 100)
+          } catch (e) {}
+        })
+      })
+
+      IPCRenderer.on('truncate-table', (_, data) => {
+        let tableName = addDoubleQuotes(`${data.tableName}`),
+          keyspaceName = addDoubleQuotes(`${data.keyspaceName}`),
+          truncateTableEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#extraDataActions .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+
+        $(`div.modal#extraDataActions div.editor-container`).addClass('truncate')
+
+        if ([tableName, keyspaceName].some((name) => minifyText(name).length <= 0))
+          return
+
+        try {
+          $('#generalPurposeDialog').attr({
+            'data-keyspacename': `${keyspaceName}`,
+            'data-tablename': `${tableName}`
+          })
+        } catch (e) {}
+
+        let truncateStatement = `CONSISTENCY ALL;` + OS.EOL + `TRUNCATE TABLE ${keyspaceName}.${tableName};`
+
+        try {
+          truncateTableEditor.setValue(truncateStatement)
+        } catch (e) {}
+
+        setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
+
+        openExtraDataActionsDialog(I18next.capitalizeFirstLetter(I18next.replaceData(`are you sure you want to truncate data in the table [b]$data[/b] in the keyspace [b]$data[/b]? this operation is irreversible and will permanently delete all data in the table. Key consequences include:[br][ul][li]All rows in the specified table will be removed immediately.[/li][li]Materialized views derived from this table will also be truncated.[/li][li]Snapshots: If your Cassandra cluster is configured to take snapshots before truncation, a snapshot of the table's current data will be created for recovery purposes. Remember to remove this snapshot if they are not needed.[/li][ul][li]Clean up snapshots: Use [code]nodetool clearsnapshot[/code] to remove snapshots if they are no longer needed.[/li][li]Disable automatic snapshots: Modify [code]cassandra.yaml[/code] to disable snapshots if you do not want this behavior.[/li][/ul][/ul]Please confirm that you want to proceed with this operation, understanding its irreversible nature and potential impact on snapshots`, [tableName, keyspaceName, tableName])) + '.', (confirmed) => {
+          if (!confirmed)
+            return
+
+          try {
+            getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
+          } catch (e) {}
+
+          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+
+          try {
+            activeWorkarea.find('div.terminal-container').hide()
+            activeWorkarea.find('div.interactive-terminal-container').show()
+          } catch (e) {}
+
+          try {
+            let statementInputField = $(`textarea#${data.textareaID}`)
+            statementInputField.val(truncateTableEditor.getValue())
             statementInputField.trigger('input').focus()
             AutoSize.update(statementInputField[0])
           } catch (e) {}
@@ -12635,7 +12737,7 @@
             }
 
             for (let field of filterdFields) {
-              dataFieldsContainer.prepend($(getFieldElement()).show(function() {
+              dataFieldsContainer.append($(getFieldElement()).show(function() {
                 let row = $(this)
 
                 row.attr('data-original-field', 'true')
@@ -12829,7 +12931,7 @@
             return
           } catch (e) {}
 
-          dataFieldsContainer.prepend($(getFieldElement()).show(function() {
+          dataFieldsContainer.append($(getFieldElement()).show(function() {
             let row = $(this)
 
             setTimeout(() => {
@@ -13038,7 +13140,7 @@
                 field.type = extractData
               } catch (e) {}
 
-              dataUDTFieldsContainer.prepend($(getFieldElement(keyspaceUDTs)).show(function() {
+              dataUDTFieldsContainer.append($(getFieldElement(keyspaceUDTs)).show(function() {
                 let row = $(this)
 
                 row.attr('data-original-field', 'true')
@@ -13204,7 +13306,7 @@
             return
           } catch (e) {}
 
-          dataUDTFieldsContainer.prepend($(getFieldElement(keyspaceUDTs)).show(function() {
+          dataUDTFieldsContainer.append($(getFieldElement(keyspaceUDTs)).show(function() {
             let row = $(this)
 
             setTimeout(() => {
@@ -13531,6 +13633,13 @@
               } catch (e) {}
             }
 
+            try {
+              let commentTextarea = $('textarea#counterTableCommentOption')
+
+              if (`${commentTextarea.val()}` != commentTextarea.data('original-value'))
+                alteredOptions.push(`${alteredOptions.length <= 0 ? 'WITH' : 'AND'} comment = '${commentTextarea.val().replace(/(^|[^'])'(?!')/g, "$1''")}'`)
+            } catch (e) {}
+
             dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...alteringStatements, ...alteredOptions, ...droppedColumns].length <= 0 ? '' : null)
 
             let statement = [...alteringStatements, ...droppedColumns].map((statement) => `ALTER TABLE ${keyspaceName}.${counterTableName} ${statement}`).join(';' + OS.EOL) + ';'
@@ -13679,6 +13788,19 @@
             }
           } catch (e) {}
 
+          // Add comment
+          try {
+            let comment = $('textarea#counterTableCommentOption').val()
+
+            if (`${comment}`.length <= 0)
+              throw 0
+
+            tableOptions.push({
+              name: 'comment',
+              value: (comment || '').replace(/(^|[^'])'(?!')/g, "$1''")
+            })
+          } catch (e) {}
+
           dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
 
           let manipulatedKeysAndColumns = ([...partitionKeys, ...clusteringKeys, ...counterColumns].map((key) => {
@@ -13760,7 +13882,7 @@
           }
 
           try {
-            if (descOrder.length <= 0)
+            if (descOrder.length <= 0 || clusteringKeys.length <= 0)
               throw 0
 
             descOrder = ` WITH CLUSTERING ORDER BY (` + (clusteringKeys.map((key) => `${key.name} ${order.desc.includes(key.name) ? 'DESC' : 'ASC'}`)).join(', ') + `)`
@@ -15041,7 +15163,7 @@
               throw 0
 
             try {
-              fields = JSON.parse(fields)
+              fields = JSON.parse(repairJSON(fields))
             } catch (e) {
               fields = []
             }
@@ -15054,6 +15176,17 @@
             for (let field of fields) {
               if (field.name == undefined)
                 continue
+
+              try {
+                if (field.name != 'comment')
+                  throw 0
+
+                $('textarea#counterTableCommentOption').data('original-value', `${field.value}`)
+
+                $('textarea#counterTableCommentOption').val(`${field.value}`).trigger('input')
+
+                continue
+              } catch (e) {}
 
               dataFieldsContainer.append($(getTableOptionFieldElement(true)).show(function() {
                 let row = $(this)
@@ -15198,6 +15331,17 @@
 
             for (let optionName of optionsNames) {
               let optionValue = options[optionName]
+
+              try {
+                if (optionName != 'comment')
+                  throw 0
+
+                $('textarea#counterTableCommentOption').data('original-value', `${optionValue}`)
+
+                $('textarea#counterTableCommentOption').val(`${optionValue}`).trigger('input')
+
+                continue
+              } catch (e) {}
 
               try {
                 if (typeof optionValue == 'object')
@@ -15645,6 +15789,13 @@
               } catch (e) {}
             }
 
+            try {
+              let commentTextarea = $('textarea#standardTableCommentOption')
+
+              if (`${commentTextarea.val()}` != commentTextarea.data('original-value'))
+                alteredOptions.push(`${alteredOptions.length <= 0 ? 'WITH' : 'AND'} comment = '${commentTextarea.val().replace(/(^|[^'])'(?!')/g, "$1''")}'`)
+            } catch (e) {}
+
             dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...droppedColumns, ...addedColumns, ...alteredOptions].length <= 0 ? '' : null)
 
             try {
@@ -15878,6 +16029,19 @@
             }
           } catch (e) {}
 
+          // Add comment
+          try {
+            let comment = $('textarea#standardTableCommentOption').val()
+
+            if (`${comment}`.length <= 0)
+              throw 0
+
+            tableOptions.push({
+              name: 'comment',
+              value: (comment || '').replace(/(^|[^'])'(?!')/g, "$1''")
+            })
+          } catch (e) {}
+
           dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
 
           let manipulatedKeys = ([...partitionKeys, ...clusteringKeys].map((key) => {
@@ -16002,7 +16166,7 @@
           }
 
           try {
-            if (descOrder.length <= 0)
+            if (descOrder.length <= 0 || clusteringKeys.length <= 0)
               throw 0
 
             descOrder = ` WITH CLUSTERING ORDER BY (` + (clusteringKeys.map((key) => `${key.name} ${order.desc.includes(key.name) ? 'DESC' : 'ASC'}`)).join(', ') + `)`
@@ -17473,7 +17637,7 @@
                 let allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field, div.standard-table-udt-column-field').not(fieldRow[0])
 
                 for (let dataField of allDataFields) {
-                  let dataStandardColumnNameElement = $(dataField).find('input.columnName, input.clusteringKeyName, input.columnName')
+                  let dataStandardColumnNameElement = $(dataField).find('input.partitionKeyName, input.columnName, input.clusteringKeyName, input.columnName')
 
                   if (triggerInput)
                     dataStandardColumnNameElement.trigger('input', false)
@@ -17885,7 +18049,7 @@
                 let allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-udt-column-field').not(fieldRow[0])
 
                 for (let dataField of allDataFields) {
-                  let dataStandardColumnNameElement = $(dataField).find('input.columnName, input.clusteringKeyName, input.columnName')
+                  let dataStandardColumnNameElement = $(dataField).find('input.partitionKeyName, input.columnName, input.clusteringKeyName, input.columnName')
 
                   if (triggerInput)
                     dataStandardColumnNameElement.trigger('input', false)
@@ -18050,7 +18214,7 @@
               throw 0
 
             try {
-              fields = JSON.parse(fields)
+              fields = JSON.parse(repairJSON(fields))
             } catch (e) {
               fields = []
             }
@@ -18063,6 +18227,17 @@
             for (let field of fields) {
               if (field.name == undefined)
                 continue
+
+              try {
+                if (field.name != 'comment')
+                  throw 0
+
+                $('textarea#standardTableCommentOption').data('original-value', `${field.value}`)
+
+                $('textarea#standardTableCommentOption').val(`${field.value}`).trigger('input')
+
+                continue
+              } catch (e) {}
 
               dataFieldsContainer.append($(getTableOptionFieldElement(true)).show(function() {
                 let row = $(this)
@@ -18207,6 +18382,17 @@
 
             for (let optionName of optionsNames) {
               let optionValue = options[optionName]
+
+              try {
+                if (optionName != 'comment')
+                  throw 0
+
+                $('textarea#standardTableCommentOption').data('original-value', `${optionValue}`)
+
+                $('textarea#standardTableCommentOption').val(`${optionValue}`).trigger('input')
+
+                continue
+              } catch (e) {}
 
               try {
                 if (typeof optionValue == 'object')
@@ -18500,6 +18686,52 @@
             } catch (e) {}
           })
         }
+      }
+
+      {
+        $('textarea#standardTableCommentOption').add('textarea#counterTableCommentOption').on('input', function() {
+          try {
+            let originalValue = $(this).data('original-value')
+
+            $('a#standardTableCommentOptionUndoChanges').add('a#counterTableCommentOptionUndoChanges').toggleClass('disabled', !(originalValue != $(this).val()))
+          } catch (e) {}
+
+          setTimeout(() => {
+            try {
+              if ($(this).attr('id').includes('standard')) {
+                updateActionStatusForStandardTables()
+              } else {
+                updateActionStatusForCounterTables()
+              }
+            } catch (e) {}
+          })
+        })
+
+        $('a#standardTableCommentOptionUndoChanges').click(function() {
+          let relatedTextarea = $(`textarea#standardTableCommentOption`),
+            originalValue = relatedTextarea.data('original-value')
+
+          relatedTextarea.val(originalValue).trigger('input')
+
+          setTimeout(() => {
+            try {
+              updateActionStatusForStandardTables()
+            } catch (e) {}
+          })
+        })
+
+        $('a#counterTableCommentOptionUndoChanges').click(function() {
+          let relatedTextarea = $(`textarea#counterTableCommentOption`),
+            originalValue = relatedTextarea.data('original-value')
+
+          relatedTextarea.val(originalValue).trigger('input')
+
+          setTimeout(() => {
+            try {
+              updateActionStatusForCounterTables()
+            } catch (e) {}
+          })
+        })
       }
     }, 5000)
   }
@@ -19189,9 +19421,7 @@
       if (isInsertionAsJSON) {
         try {
           extraOptions = ` DEFAULT ${$('input#defaultOmittedColumnsValue').val()}${extraOptions}`
-        } catch (e) {
-          console.log(extraOptions);
-        }
+        } catch (e) {}
 
         statement = writeConsistencyLevel +
           `INSERT INTO ${keyspaceName}.${tableName} JSON '{` + OS.EOL +

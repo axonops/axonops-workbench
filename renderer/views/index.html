@@ -1988,9 +1988,25 @@
                     <span mulang="this keyspace has no UDTs" class="no-udts" style="display:none;" capitalize-first></span>
                   </div>
                 </div>
+                <div class="fields-badge-action" style="display: flex; justify-content: flex-start;">
+                  <span class="badge badge-secondary">
+                    <span mulang="comment option" capitalize></span>
+                  </span>
+                  <a id="standardTableCommentOptionUndoChanges" style="translateY(1px);" class="btn btn-link btn-rounded btn-sm disabled" data-mdb-ripple-color="light" href="#" role="button">
+                    <ion-icon name="undo" role="img" class="md hydrated" aria-label="undo"></ion-icon>
+                  </a>
+                </div>
+                <div class="comment-textarea" style="margin-top: 15px;">
+                  <div class="form-outline form-white" style="margin-bottom: 15px;">
+                    <textarea spellcheck="false" style="height:60px;" type="text" class="form-control form-icon-trailing form-control-lg" id="standardTableCommentOption"></textarea>
+                    <label class="form-label">
+                      <span mulang="table comment" capitalize-first></span>
+                    </label>
+                  </div>
+                </div>
                 <div class="show-standard-table-options-container">
                   <a action="show-standard-table-options-container" class="btn btn-link btn-rounded btn-sm showStandardTableOptionsContainer" data-mdb-ripple-color="light" href="#" role="button">
-                    <ion-icon name="arrow-down" role="img" class="md hydrated" aria-label="arrow-down"></ion-icon> <span mulang="show table options" capitalize=""></span>
+                    <ion-icon name="arrow-down" role="img" class="md hydrated" aria-label="arrow-down"></ion-icon> <span mulang="show other table options" capitalize=""></span>
                   </a>
                 </div>
                 <div class="standard-table-options-container" style="display:none;">
@@ -2081,9 +2097,25 @@
                     <span mulang="add column by clicking the + button" capitalize-first></span>
                   </div>
                 </div>
+                <div class="fields-badge-action" style="display: flex; justify-content: flex-start;">
+                  <span class="badge badge-secondary">
+                    <span mulang="comment option" capitalize></span>
+                  </span>
+                  <a id="counterTableCommentOptionUndoChanges" style="translateY(1px);" class="btn btn-link btn-rounded btn-sm disabled" data-mdb-ripple-color="light" href="#" role="button">
+                    <ion-icon name="undo" role="img" class="md hydrated" aria-label="undo"></ion-icon>
+                  </a>
+                </div>
+                <div class="comment-textarea" style="margin-top: 15px;">
+                  <div class="form-outline form-white" style="margin-bottom: 15px;">
+                    <textarea spellcheck="false" style="height:60px;" type="text" class="form-control form-icon-trailing form-control-lg" id="counterTableCommentOption"></textarea>
+                    <label class="form-label">
+                      <span mulang="table comment" capitalize-first></span>
+                    </label>
+                  </div>
+                </div>
                 <div class="show-counter-table-options-container">
                   <a action="show-counter-table-options-container" class="btn btn-link btn-rounded btn-sm showCounterTableOptionsContainer" data-mdb-ripple-color="light" href="#" role="button">
-                    <ion-icon name="arrow-down" role="img" class="md hydrated" aria-label="arrow-down"></ion-icon> <span mulang="show table options" capitalize=""></span>
+                    <ion-icon name="arrow-down" role="img" class="md hydrated" aria-label="arrow-down"></ion-icon> <span mulang="show other table options" capitalize=""></span>
                   </a>
                 </div>
                 <div class="counter-table-options-container" style="display:none;">
@@ -2280,10 +2312,10 @@
     </div>
 
     <!-- General purpose dialog -->
-    <div class="modal top fade" id="actionDataDrop" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+    <div class="modal top fade" id="extraDataActions" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-body">
+          <div class="modal-body" style="padding-top: 15px;">
             <div class="text"></div>
             <div class="editor-container">
               <div class="editor"></div>

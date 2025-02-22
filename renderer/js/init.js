@@ -792,7 +792,7 @@ $(document).on('initialize', () => {
     let monacoPath = Path.join(__dirname, '..', '..', 'node_modules', 'monaco-editor', 'min'),
       editorUIElement = $('div.modal#addEditClusterDialog div.modal-body div.editor-container div.editor'),
       rightClickActionsKeyspaceEditorUIElement = $('div.modal#rightClickActionsMetadata div.modal-body div.action-editor div.editor'),
-      dropKeyspaceEditorUIElement = $('div.modal#actionDataDrop .editor')
+      dropKeyspaceEditorUIElement = $('div.modal#extraDataActions .editor')
 
     // Initialize the editor
     let amdLoader = require(Path.join(monacoPath, 'vs', 'loader.js')),

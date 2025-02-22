@@ -1119,8 +1119,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             return
 
           // For `durable_writes`, it should be displayed if its value is only `false`
-          if (attribute == 'durable_writes' && object[attribute] != 'false')
-            return
+          // if (attribute == 'durable_writes' && object[attribute] != 'false')
+          //   return
 
           let materialIcon = object[attribute] ? 'check' : 'close'
 
@@ -1584,38 +1584,46 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       // Table's triggers
       {
-        let triggersStructure = {
-          id: triggersID,
-          parent: tableID,
-          text: `Triggers (<span>${table.triggers.length}</span>)`,
-          type: 'default',
-          icon: normalizePath(Path.join(extraIconsPath, 'trigger.png'))
-        }
-
-        treeStructure.core.data.push(triggersStructure)
-
-        if (isCounterTable)
-          treeStructure.core.data.push({
-            ...triggersStructure,
-            id: `${triggersID}_${counterTablesID}`,
-            parent: `${tableID}_${counterTablesID}`
-          })
-
-        // Loop through triggers
-        table.triggers.forEach((trigger) => {
-          // Get a random ID for the trigger
-          let triggerID = getRandomID(30)
-
-          // Build a tree view for the trigger
-          buildTreeViewForChild(triggersID, triggerID, `Trigger`, trigger, 'trigger')
-
+        try {
           if (isCounterTable)
-            buildTreeViewForChild(`${triggersID}_${counterTablesID}`, `${triggerID}_${counterTablesID}`, `Trigger`, trigger, 'trigger')
-        })
+            throw 0
+
+          let triggersStructure = {
+            id: triggersID,
+            parent: tableID,
+            text: `Triggers (<span>${table.triggers.length}</span>)`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'trigger.png'))
+          }
+
+          treeStructure.core.data.push(triggersStructure)
+
+          // if (isCounterTable)
+          //   treeStructure.core.data.push({
+          //     ...triggersStructure,
+          //     id: `${triggersID}_${counterTablesID}`,
+          //     parent: `${tableID}_${counterTablesID}`
+          //   })
+
+          // Loop through triggers
+          table.triggers.forEach((trigger) => {
+            // Get a random ID for the trigger
+            let triggerID = getRandomID(30)
+
+            // Build a tree view for the trigger
+            buildTreeViewForChild(triggersID, triggerID, `Trigger`, trigger, 'trigger')
+
+            // if (isCounterTable)
+            //   buildTreeViewForChild(`${triggersID}_${counterTablesID}`, `${triggerID}_${counterTablesID}`, `Trigger`, trigger, 'trigger')
+          })
+        } catch (e) {}
       }
 
       // Show a `Views` node/leaf if the current table has at least one view
       try {
+        if (isCounterTable)
+          throw 0
+
         /**
          * Views' container that will be under the table container
          * Get a random ID for the views' parent node
@@ -1633,12 +1641,12 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Append the views' container to the tree structure
         treeStructure.core.data.push(viewsStructure)
 
-        if (isCounterTable)
-          treeStructure.core.data.push({
-            ...viewsStructure,
-            id: `${viewsID}_${counterTablesID}`,
-            parent: `${tableID}_${counterTablesID}`
-          })
+        // if (isCounterTable)
+        //   treeStructure.core.data.push({
+        //     ...viewsStructure,
+        //     id: `${viewsID}_${counterTablesID}`,
+        //     parent: `${tableID}_${counterTablesID}`
+        //   })
 
         // If the current table doesn't have any materialized view then skip this try-catch block
         if (table.views.length <= 0)
@@ -1662,10 +1670,10 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             keyspace: keyspace.name
           })
 
-          if (isCounterTable)
-            buildTreeViewForChild(`${viewsID}_${counterTablesID}`, `${viewID}_${counterTablesID}`, `View`, view, 'view', {
-              keyspace: keyspace.name
-            })
+          // if (isCounterTable)
+          //   buildTreeViewForChild(`${viewsID}_${counterTablesID}`, `${viewID}_${counterTablesID}`, `View`, view, 'view', {
+          //     keyspace: keyspace.name
+          //   })
 
           // Loop through the view's children, starting from the clustering keys
           let clusteringKeysStructure = {
@@ -1740,12 +1748,12 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           treeStructure.core.data.push(columnsStructure)
 
-          if (isCounterTable)
-            treeStructure.core.data.push({
-              ...columnsStructure,
-              id: `${columnsID}_${counterTablesID}`,
-              parent: `${viewID}_${counterTablesID}`
-            })
+          // if (isCounterTable)
+          //   treeStructure.core.data.push({
+          //     ...columnsStructure,
+          //     id: `${columnsID}_${counterTablesID}`,
+          //     parent: `${viewID}_${counterTablesID}`
+          //   })
 
           // Loop through columns
           view.columns.forEach((column) => {
@@ -1758,14 +1766,17 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             // Build a tree view for the column
             buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
 
-            if (isCounterTable)
-              buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, 'column')
+            // if (isCounterTable)
+            //   buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, 'column')
           })
         })
       } catch (e) {}
 
       // Show an `Indexes` node/leaf if the current table has at least one index
       try {
+        if (isCounterTable)
+          throw 0
+
         /**
          * Indexes' container that will be under the table container
          * Get a random ID for the indexes' parent node
@@ -1783,12 +1794,12 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Append the indexes' container to the tree structure
         treeStructure.core.data.push(indexesStructure)
 
-        if (isCounterTable)
-          treeStructure.core.data.push({
-            ...indexesStructure,
-            id: `${indexesID}_${counterTablesID}`,
-            parent: `${tableID}_${counterTablesID}`
-          })
+        // if (isCounterTable)
+        //   treeStructure.core.data.push({
+        //     ...indexesStructure,
+        //     id: `${indexesID}_${counterTablesID}`,
+        //     parent: `${tableID}_${counterTablesID}`
+        //   })
 
         // If the current table doesn't have any index then skip this try-catch block
         if (table.indexes.length <= 0)
@@ -1814,11 +1825,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             table: table.name
           })
 
-          if (isCounterTable)
-            buildTreeViewForChild(`${indexesID}_${counterTablesID}`, `${indexID}_${counterTablesID}`, `Index`, index, 'index', {
-              keyspace: keyspace.name,
-              table: table.name
-            })
+          // if (isCounterTable)
+          //   buildTreeViewForChild(`${indexesID}_${counterTablesID}`, `${indexID}_${counterTablesID}`, `Index`, index, 'index', {
+          //     keyspace: keyspace.name,
+          //     table: table.name
+          //   })
 
           // Push the index's kind's tree view's node structure
           treeStructure.core.data.push({
@@ -1828,13 +1839,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             type: 'default'
           })
 
-          if (isCounterTable)
-            treeStructure.core.data.push({
-              id: `${kindID}_${counterTablesID}`,
-              parent: `${indexID}_${counterTablesID}`,
-              text: `Kind: <span>${I18next.capitalizeFirstLetter(EscapeHTML(index.kind.toLowerCase()))}</span>`,
-              type: 'default'
-            })
+          // if (isCounterTable)
+          //   treeStructure.core.data.push({
+          //     id: `${kindID}_${counterTablesID}`,
+          //     parent: `${indexID}_${counterTablesID}`,
+          //     text: `Kind: <span>${I18next.capitalizeFirstLetter(EscapeHTML(index.kind.toLowerCase()))}</span>`,
+          //     type: 'default'
+          //   })
         })
       } catch (e) {}
     })
@@ -2680,7 +2691,7 @@ let openDialog = (text, callback, noBackdrop = false, checkBox = '', dialogEleme
     $('div.modal-backdrop:last-of-type').remove()
 }
 
-let openDropDataDialog = (text, callback) => openDialog(text, callback, false, '', $('div#actionDataDrop'))
+let openExtraDataActionsDialog = (text, callback) => openDialog(text, callback, false, '', $('div#extraDataActions'))
 
 /**
  * Print a custom message in the app's terminals

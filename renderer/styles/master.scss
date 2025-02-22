@@ -3806,6 +3806,10 @@ div.tab-content {
               filter: invert(1);
             }
           }
+
+          div.description:first-of-type {
+            margin-top: 10px !important;
+          }
         }
       }
 
@@ -3887,6 +3891,15 @@ div.tab-content {
                 }
               }
 
+              div.sticky-header {
+                width: 100%;
+                position: sticky;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 15;
+              }
+
               div.expand-editor {
                 background: #1e1e1e;
                 position: absolute;
@@ -3919,6 +3932,72 @@ div.tab-content {
                     top: -1px;
                   }
                 }
+              }
+
+              span.badge.description-scope {
+                background: #a1a3a4;
+                color: #363940;
+                cursor: pointer;
+                user-select: none;
+                -webkit-user-drag: none;
+                z-index: 1;
+                transform: translateX(10px);
+              }
+
+              div.close-description {
+                background: #a1a3a4;
+                position: absolute;
+                top: 0;
+                right: 0;
+                padding: 5px;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                box-shadow: 0 0 0 5px #17181a;
+                overflow: hidden;
+
+                button {
+                  position: absolute;
+                  inset: 0;
+                  margin: auto;
+                  transform: rotate(-90deg);
+                  transition: opacity0.2s ease-in-out;
+
+                  &:hover {
+                    opacity: 0.9;
+                  }
+
+                  ion-icon {
+                    color: #363940;
+                    font-size: 165%;
+                    opacity: 1;
+                    position: relative;
+                    top: -1px;
+                  }
+                }
+              }
+            }
+          }
+
+          div.close-all-descriptions {
+            width: 40px;
+            height: 44px;
+            position: absolute;
+            top: 1px;
+            right: -45px;
+            opacity: 0.65;
+
+            button {
+              position: absolute;
+              inset: 0;
+              margin: auto;
+
+              ion-icon {
+                font-size: 200%;
+                position: absolute;
+                inset: 0;
+                margin: auto;
+                color: #1e1e1e;
               }
             }
           }

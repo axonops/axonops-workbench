@@ -1319,9 +1319,9 @@
 }
 
 {
-  $("#actionDataDrop")[0].addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize'))
+  $("#extraDataActions")[0].addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize'))
 
-  $('div.modal#actionDataDrop div.editor-container').mutate('show', () => $(window.visualViewport).trigger('resize'))
+  $('div.modal#extraDataActions div.editor-container').mutate('show', () => $(window.visualViewport).trigger('resize'))
 }
 
 {

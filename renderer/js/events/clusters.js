@@ -83,9 +83,7 @@
           cluster.name = cluster.name || cluster.folder
           cluster.host = `127.0.0.1:${cluster.ports.cassandra}`
         } catch (e) {
-          try {
-            errorLog(e, 'connections')
-          } catch (e) {}
+          log.warning('[connections]', {'error': e})
         }
 
         // Define the cluster's ID
@@ -156,9 +154,7 @@
           // Check the SSH passphrase
           secrets += secretsInfo.sshPassphrase != undefined ? `data-ssh-passphrase="${secretsInfo.sshPassphrase}" ` : ''
         } catch (e) {
-          try {
-            errorLog(e, 'connections')
-          } catch (e) {}
+          log.warning('[connections]', {'error': e})
         }
 
         // This variable will hold the requirement of DB auth and SSH credentials in UI attributes if needed
@@ -175,9 +171,7 @@
           // Check the SSH credentials
           credentials += cluster.info.credentials.ssh != undefined ? ` data-credentials-ssh="true"` : ''
         } catch (e) {
-          try {
-            errorLog(e, 'connections')
-          } catch (e) {}
+          log.warning('[connections]', {'error': e})
         }
 
         /**
@@ -370,9 +364,7 @@
                 isSSHTunnelNeeded = clusterElement.getAllAttributes('data-ssh')
 
                 // Add log for this request
-                try {
-                  addLog(`Request to test the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                } catch (e) {}
+               log.debug('Request to test the connection', {'cluster': getAttributes(clusterElement, ['data-name', 'data-id'])})
 
                 // If the cluster has an active work area and the process to be executed is not disconnecting with the cluster then stop the process and show feedback to the user
                 if (hasWorkarea == 'true' && !isProcessDisconnect)
@@ -515,9 +507,7 @@
                   maximumRunningClusters = isNaN(maximumRunningClusters) || maximumRunningClusters < 1 ? 10 : maximumRunningClusters
 
                   // Add log for this request
-                  try {
-                    addLog(`Request to connect '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                  } catch (e) {}
+                  log.debug('Request to connect', {'cluster': getAttributes(clusterElement, ['data-name', 'data-id'])})
 
                   // If the currently running clusters are more than or equal to the maximum allowed number and this is not the sandbox workspace then end the process and show feedback to the user
                   if (([numRunningClusters, numAttemptingClusters]).some((num) => num >= maximumRunningClusters) && !isSandbox)
@@ -1578,9 +1568,7 @@
                               try {
                                 Clipboard.writeText(resultBeautified)
                               } catch (e) {
-                                try {
-                                  errorLog(e, 'connections')
-                                } catch (e) {}
+                                log.warning('Failed to write to clipboard', {'error': e})
                               }
 
                               // Give feedback to the user
@@ -1649,9 +1637,7 @@
                               return `${(val[1] - val[0]).toFixed(2)}ms`
                             }
                           } catch (e) {
-                            try {
-                              errorLog(e, 'connections')
-                            } catch (e) {}
+                            log.warning('Something went wrong with timeline chart', {'error': e})
                           }
 
                           /**
@@ -1672,9 +1658,7 @@
                               return `${parseFloat(activity.formattedValue).toFixed(2)}ms`
                             }
                           } catch (e) {
-                            try {
-                              errorLog(e, 'connections')
-                            } catch (e) {}
+                            log.warning('Something went wrong with pie chart', {'error': e})
                           }
 
                           /**
@@ -2420,23 +2404,17 @@
 
                                 })
                               } catch (e) {
-                                try {
-                                  errorLog(e, 'connections')
-                                } catch (e) {}
+                                log.warning('Something went wrong initializing metadata differentiation', {'error': e})
                               }
 
                               // Hide the loading indicator in the tree view section
                               setTimeout(() => metadataContent.parent().removeClass('loading'), 150)
                             } catch (e) {
-                              try {
-                                errorLog(e, 'connections')
-                              } catch (e) {}
+                              log.warning('Something went wrong getting cluster metadata', {'cluster': clusterID, 'error': e})
                             }
                           })
                         } catch (e) {
-                          try {
-                            errorLog(e, 'connections')
-                          } catch (e) {}
+                          log.warning('Something went wrong processing metadata', {'refresh': refresh, 'error': e})
                         }
                       }
                       // End of the check metadata function
@@ -2602,9 +2580,7 @@
                                 try {
                                   Clipboard.writeText(contentBeautified)
                                 } catch (e) {
-                                  try {
-                                    errorLog(e, 'connections')
-                                  } catch (e) {}
+                                  log.warning('Failed to write to clipboard', {'error': e})
                                 }
 
                                 // Give feedback to the user
@@ -2947,9 +2923,7 @@
                                         try {
                                           Clipboard.writeText(contentBeautified)
                                         } catch (e) {
-                                          try {
-                                            errorLog(e, 'connections')
-                                          } catch (e) {}
+                                          log.warning('Failed to write to clipboard', {'error': e})
                                         }
 
                                         // Give feedback to the user
@@ -3166,9 +3140,7 @@
                       terminal = terminalObjects[terminalID]
 
                       // Add log
-                      try {
-                        addLog(`CQL console created for the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
-                      } catch (e) {}
+                      log.info('CQLSH session created', {'connection': getAttributes(clusterElement, ['data-name', 'data-id'])})
 
                       /**
                        * Custom terminal options
@@ -3441,10 +3413,9 @@
                             } catch (e) {}
                           }, 1000)
                         })
+
                       } catch (e) {
-                        try {
-                          errorLog(e, 'connections')
-                        } catch (e) {}
+                        log.warning('Something went wrong configuring terminal', {'error': e})
                       }
                       // End of handling the app's basic terminal
                     } catch (e) {}
@@ -4094,11 +4065,7 @@
                         terminalBash = new XTerm({
                           theme: XTermThemes.Atom
                         })
-
-                        // Add log
-                        try {
-                          addLog(`Created a bash session for local cluster ${getAttributes(clusterElement, ['data-id'])}`)
-                        } catch (e) {}
+                        log.info('Created a bash session for local cluster', {'cluster': getAttributes(clusterElement, ['data-id'])})
 
                         /**
                          * Custom terminal options
@@ -4246,10 +4213,9 @@
                         })
                         // End of handling the app's terminal
                       }
+
                     } catch (e) {
-                      try {
-                        errorLog(e, 'connections')
-                      } catch (e) {}
+                      log.warning('Something went wrong configuring bash session', {'error': e})
                     }
                     // End of handling the bash session's terminal
 
@@ -4268,9 +4234,7 @@
                           try {
                             Clipboard.writeText(metadataBeautified)
                           } catch (e) {
-                            try {
-                              errorLog(e, 'connections')
-                            } catch (e) {}
+                            log.warning('Failed to write to clipboard', {'error': e})
                           }
 
                           // Give feedback to the user
@@ -4293,9 +4257,7 @@
                           $(`div.btn[data-id="${searchInMetadataBtnID}"]`).trigger('click', true)
 
                           // Add log about this refreshing process
-                          try {
-                            addLog(`Request to refresh the metadata of the cluster connected to by '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                          } catch (e) {}
+                          log.info('Request to refresh the metadata of the cluster', {'cluster': getAttributes(clusterElement, ['data-name', 'data-id'])})
 
                           // Reset the metadata trigger
                           isMetadataFetched = false
@@ -4424,9 +4386,7 @@
                               // Enable the button again
                               $(this).removeAttr('disabled').removeClass('disabled refreshing')
                             } catch (e) {
-                              try {
-                                errorLog(e, 'connections')
-                              } catch (e) {}
+                              log.warning('Failed to get cluster metadata', {'cluster': clusterID, 'error': e})
                             }
                           })
                         })
@@ -4482,9 +4442,7 @@
                           } catch (e) {}
 
                           // Add log a about the request
-                          try {
-                            addLog(`Request to save a schema snapshot of the metadata of the cluster connected to by '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                          } catch (e) {}
+                          log.info('Request to save a schema snapshot of the metadata', {'cluster': getAttributes(clusterElement, ['data-name', 'data-id'])})
 
                           // Minimize the size of the metadata by compression
                           try {
@@ -4587,9 +4545,7 @@
                                 $(this).find('a[action="load"]').click(async function() {
                                   try {
                                     // Add log about this loading process
-                                    try {
-                                      addLog(`Request to load a schema snapshot in path '${snapshotPath}' related to the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                                    } catch (e) {}
+                                    log.info('Request to load a schema snapshot', {'path': snapshotPath, 'connection': getAttributes(clusterElement, ['data-name', 'data-id'])})
 
                                     // Read the snapshot's content
                                     let snapshotContent = await FS.readFileSync(snapshotPath, 'utf8')
@@ -4627,9 +4583,7 @@
                                     // Close the modal/dialog
                                     $('div.modal#loadSnapshot').find('button.btn-close').click()
                                   } catch (e) {
-                                    try {
-                                      errorLog(e, 'connections')
-                                    } catch (e) {}
+                                    log.warning('Failed to load snapshot', {'error': e})
 
                                     // If any error has occurred then show feedback to the user about the failure
                                     showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]', [snapshot.attr('data-name')])) + '.', 'failure')
@@ -4643,10 +4597,7 @@
                                     let callbackFunction = (err) => {
                                       // If any error has occurred then show feedback to the user and skip the upcoming code
                                       if (err) {
-                                        // Add error log
-                                        try {
-                                          errorLog(e, 'connections')
-                                        } catch (e) {}
+                                        log.warning('Failed to delete snapshot', {'error': e})
 
                                         // Show feedback to the user
                                         showToast(I18next.capitalize(I18next.t('delete schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it', [snapshotName])) + '.', 'failure')
@@ -4677,9 +4628,7 @@
                                   }
 
                                   // Add log about this deletion process
-                                  try {
-                                    addLog(`Request to delete a snapshot in path '${snapshotPath}' related to the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                                  } catch (e) {}
+                                  log.info('Request to delete a snapshot', {'path': snapshotPath, 'connection': getAttributes(clusterElement, ['data-name', 'data-id'])})
 
                                   // If no need for confirmation then call the deletion function and skip the upcoming code
                                   try {
@@ -4759,9 +4708,7 @@
                       setTimeout(() => {
                         $(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).on('click', (event, moveToWorkspace = true) => {
                           // Add log for this action
-                          try {
-                            addLog(`Request to close/refresh the work area of the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                          } catch (e) {}
+                          log.info('Request to close/refresh the work area of the connection', {'cluster': getAttributes(clusterElement, ['data-name', 'data-id'])})
 
                           // Ask the user for credentials again if they're required
                           try {
@@ -4839,9 +4786,7 @@
                             // Reset the button's text
                             setTimeout(() => $(`button[button-id="${startProjectBtnID}"]`).children('span').attr('mulang', 'start').text(I18next.t('start')))
                           } catch (e) {
-                            try {
-                              errorLog(e, 'connections')
-                            } catch (e) {}
+                            log.warning('Failed to close sandbox project', {'error': e})
                           }
 
                           // Point at the current active work aree
@@ -5104,20 +5049,13 @@
                             method: 'append'
                           }
 
-                          try {
-                            // If there's no need to handle an overflow then skip this try-catch block
-                            if (!hideSwitcher)
-                              throw 0
-
+                          // Handle an overflow
+                          if (hideSwitcher) {
                             // Update the adding function's attributes
                             addingFunction = {
                               element: clusterSwitcher.children('div.more-clusters'),
                               method: 'after'
                             }
-                          } catch (e) {
-                            try {
-                              errorLog(e, 'connections')
-                            } catch (e) {}
                           }
 
                           // Append the switcher to the container
@@ -5160,9 +5098,7 @@
                                   clusterElement = $(`div[content="clusters"] div.clusters-container div.clusters[workspace-id="${workspaceID}"] div.cluster[data-id="${clusterID}"]`)
 
                                 // Add log about this action
-                                try {
-                                  addLog(`Switch to the work area of the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                                } catch (e) {}
+                                log.info('Switch to the work area of the connection', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                                 // Set the workspace's color on the UI
                                 setUIColor(getAttributes(workspaceElement, 'data-color'))
@@ -5210,9 +5146,7 @@
                         }, 200)
                       })
                     } catch (e) {
-                      try {
-                        errorLog(e, 'connections')
-                      } catch (e) {}
+                      log.warning('Failed to add the cluster switcher to the container', {'error': e})
                     }
 
                     // Allow for resizing the left side of the work area taking into account all affected elements
@@ -5492,9 +5426,7 @@
 
                                 setTimeout(() => icon.attr('name', 'copy-solid'), 150);
                               } catch (e) {
-                                try {
-                                  errorLog(e, 'connections')
-                                } catch (e) {}
+                                log.warning('Failed to write to clipboard', {'error': e})
                               }
 
                             })
@@ -5593,7 +5525,7 @@
                 $(`button[button-id="${testConnectionBtnID}"]`).trigger('click', true)
               })
 
-              // Flag to tell if the starting process of docker/sandbox project ha been terminated or not
+              // Flag to tell if the starting process of docker/sandbox project has been terminated or not
               let isStartingProcessTerminated = false
 
               // This try-catch block is only for the sandbox/docker projects
@@ -5629,9 +5561,7 @@
                       numAttemptingSandbox = $(`div[content="clusters"] div.clusters-container div.cluster[data-is-sandbox="true"].test-connection`).length
 
                     // Add log for this request
-                    try {
-                      addLog(`Request to start a local cluster '${getAttributes(clusterElement, ['data-id'])}'`, 'action')
-                    } catch (e) {}
+                    log.info('Request to start a local cluster', {'cluster': getAttributes(clusterElement, ['data-id'])})
 
                     // Manipulate the maximum number, set it to the default value `1` if needed
                     maximumRunningSandbox = isNaN(maximumRunningSandbox) || maximumRunningSandbox < 1 ? 1 : maximumRunningSandbox
@@ -5699,14 +5629,12 @@
                         let projects = await Modules.Docker.getProjects()
 
                         // Get the current project's object
-                        let currentProject = projects.filter((project) => project.folder == getAttributes(clusterElement, 'data-folder'))
+                        let currentProject = projects.find((project) => project.folder == getAttributes(clusterElement, 'data-folder'))
 
                         // Set Cassandra's version
-                        clusterElement.attr('data-cassandra-version', currentProject[0].cassandraVersion)
+                        clusterElement.attr('data-cassandra-version', currentProject.cassandraVersion)
                       } catch (e) {
-                        try {
-                          errorLog(e, 'connections')
-                        } catch (e) {}
+                        log.warning('Something went wrong getting current project', {'error': e})
                       }
 
                       /**
@@ -5984,10 +5912,9 @@
                     })
                   })
                 })
+
               } catch (e) {
-                try {
-                  errorLog(e, 'connections')
-                } catch (e) {}
+                log.warning('Something went wrong starting local project', {'error': e})
               }
 
               // Clicks the settings button
@@ -6006,9 +5933,7 @@
                   hasWorkarea = getAttributes(clusterElement, 'data-workarea')
 
                 // Add log about edit cluster
-                try {
-                  addLog(`Attempt to edit local cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                } catch (e) {}
+                log.info('Attempt to edit local cluster', getAttributes(clusterElement, ['data-name', 'data-id']))
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
@@ -6115,9 +6040,7 @@
                       val: (!([undefined, '22'].includes(currentCluster.ssh.port))) ? currentCluster.ssh.port : ''
                     })
                   } catch (e) {
-                    try {
-                      errorLog(e, 'connections')
-                    } catch (e) {}
+                    log.warning('Something went wrong processing ssh-related input', {'error': e})
                   }
 
                   // Loop through all inputs in the `inputs` array and set their proper values
@@ -6197,43 +6120,37 @@
                         })
 
                         // Check if SSH username is provided
-                        try {
-                          if (currentCluster.info.secrets.sshUsername == undefined)
-                            throw 0
-
-                          // Decrypt the SSH username
-                          sshUsername = decrypt(key, currentCluster.info.secrets.sshUsername)
-
-                          // Push it to the `inputs` array; to be shown in the dialog
-                          inputs.push({
-                            section: 'none',
-                            key: 'ssh-username',
-                            val: sshUsername
-                          })
-                        } catch (e) {
+                        if (currentCluster.info.secrets.sshUsername != undefined) {
                           try {
-                            errorLog(e, 'connections')
-                          } catch (e) {}
+                            // Decrypt the SSH username
+                            sshUsername = decrypt(key, currentCluster.info.secrets.sshUsername)
+
+                            // Push it to the `inputs` array; to be shown in the dialog
+                            inputs.push({
+                              section: 'none',
+                              key: 'ssh-username',
+                              val: sshUsername
+                            })
+                          } catch (e) {
+                            log.warning('Something went wrong processing ssh username', {'error': e})
+                          }
                         }
 
                         // Check if SSH password is provided
-                        try {
-                          if (currentCluster.info.secrets.sshPassword == undefined)
-                            throw 0
-
-                          // Decrypt the SSHS password
-                          sshPassword = decrypt(key, currentCluster.info.secrets.sshPassword)
-
-                          // Push it to the `inputs` array
-                          inputs.push({
-                            section: 'none',
-                            key: 'ssh-password',
-                            val: sshPassword
-                          })
-                        } catch (e) {
+                        if (currentCluster.info.secrets.sshPassword != undefined) {
                           try {
-                            errorLog(e, 'connections')
-                          } catch (e) {}
+                            // Decrypt the SSHS password
+                            sshPassword = decrypt(key, currentCluster.info.secrets.sshPassword)
+
+                            // Push it to the `inputs` array
+                            inputs.push({
+                              section: 'none',
+                              key: 'ssh-password',
+                              val: sshPassword
+                            })
+                          } catch (e) {
+                            log.warning('Something went wrong processing ssh password', {'error': e})
+                          }
                         }
 
                         // Loop through secrets' inputs and set their value
@@ -6250,9 +6167,7 @@
                         })
                       })
                     } catch (e) {
-                      try {
-                        errorLog(e, 'connections')
-                      } catch (e) {}
+                      log.warning('Something went wrong processing cluster secrets', {'error': e})
                     }
                   } else {
                     /**
@@ -6321,9 +6236,7 @@
                 let confirmText = I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the connection [b]$data[/b] in the workspace [b]$data[/b]?', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]))
 
                 // Add log
-                try {
-                  addLog(`Request to delete ${isSandbox ? 'local cluster' : 'connection'} ${getAttributes(clusterElement, ['data-name', 'data-id'])}`, 'action')
-                } catch (e) {}
+                log.info('Request to delete', {'type': isSandbox ? 'local cluster' : 'connection', 'id': getAttributes(clusterElement, ['data-name', 'data-id'])})
 
                 // If the current workspace is sandbox then change the text
                 if (isSandbox)
@@ -6561,9 +6474,7 @@
                   FS.readFile(cqlshrcPath, 'utf8', (err, content) => {
                     // With an error occurs stop the checking process
                     if (err) {
-                      try {
-                        errorLog(err, 'clusters')
-                      } catch (e) {}
+                      log.error('Failed to read CQLSH.RC', {'path': cqlshrcPath, 'error': err})
 
                       return
                     }
@@ -6598,9 +6509,7 @@
                     })
                   })
                 } catch (e) {
-                  try {
-                    errorLog(e, 'connections')
-                  } catch (e) {}
+                  log.warning('Failed to process CQLSH.RC', {'path': cqlshrcPath, 'error': err})
                 }
 
                 // Show feedback to the user when the connection is established through the SSH tunnel
@@ -6651,9 +6560,7 @@
                     }
                   })
                 } catch (e) {
-                  try {
-                    errorLog(e, 'connections')
-                  } catch (e) {}
+                  log.warning('Something went wrong processing credentials', {'error': e})
                 }
 
                 // Check if there is SSH tunnel creation info
@@ -6727,17 +6634,14 @@
                   workspaceID: getActiveWorkspaceID()
                 })
               } catch (e) {
-                try {
-                  errorLog(e, 'connections')
-                } catch (e) {}
+                log.warning('Something went wrong creating PTY instance', {'workspace': workspaceID, 'error': e})
               }
             }
           }))
           // End of the process when appending a cluster in the container
+
         } catch (e) {
-          try {
-            errorLog(e, 'connections')
-          } catch (e) {}
+          log.warning('Something went wrong appending cluster', {'error': e})
         }
       })
     })
@@ -7768,9 +7672,7 @@
               sshTunnelCreationRequestID = getRandomID(30)
 
               // Add log about this request
-              try {
-                addLog(`Request to test connection that could be added/updated`, 'action')
-              } catch (e) {}
+              log.info('Request to test connection that could be added/updated')
 
               // Attempt to close the created SSH tunnel - if exists -
               try {
@@ -7969,9 +7871,7 @@
                         try {
                           await FS.unlinkSync(tempConfigFile)
                         } catch (e) {
-                          try {
-                            errorLog(e, 'connections')
-                          } catch (e) {}
+                          log.warning('Failed to remove temporary config file', {'path': tempConfigFile, 'error': e})
                         }
 
                         // Remove the test connection class
@@ -8036,9 +7936,7 @@
                       try {
                         await FS.unlinkSync(tempConfigFile)
                       } catch (e) {
-                        try {
-                          errorLog(e, 'connections')
-                        } catch (e) {}
+                        log.warning('Failed to remove temporary config file', {'path': tempConfigFile, 'error': e})
                       }
 
                       /**
@@ -8414,9 +8312,7 @@
                 editingMode = getAttributes($(`div.modal#addEditClusterDialog`), 'data-edit-cluster-id') != undefined
 
               // Add log about this request
-              try {
-                addLog(`Request to add/edit new connection after a successful test`, 'action')
-              } catch (e) {}
+              log.info('Request to add/edit new connection after a successful test')
 
               try {
                 // If the provided cluster's name is valid then skip this try-catch block
@@ -8648,9 +8544,7 @@
                       'data-credentials-ssh': secrets.ssh != undefined || !saveSSHCredentials && (secrets != null && secrets.sshUsername != null && secrets.sshPassword != null) ? 'true' : null,
                     })
                   } catch (e) {
-                    try {
-                      errorLog(e, 'connections')
-                    } catch (e) {}
+                    log.warning('Failed to update secrets data', {'error': e})
                   }
 
                   // Remove all test connection status classes
@@ -8788,9 +8682,7 @@
                   sshTunnel = true
                 }
               } catch (e) {
-                try {
-                  errorLog(e, 'connections')
-                } catch (e) {}
+                log.warning('Failed to check secrets', {'error': e})
               }
 
               try {
@@ -8815,9 +8707,7 @@
                 finalCluster.ssh.dstAddr = $('[info-section="none"][info-key="ssh-dest-addr"]').val() || '127.0.0.1'
                 finalCluster.ssh.dstPort = $('[info-section="none"][info-key="ssh-dest-port"]').val() || $('[info-section="connection"][info-key="port"]').val()
               } catch (e) {
-                try {
-                  errorLog(e, 'connections')
-                } catch (e) {}
+                log.warning('Something went wrong setting up cluster ssh', {'error': e})
               }
 
               // Determine the proper function to be called based on whether the current mode is `edit` or not

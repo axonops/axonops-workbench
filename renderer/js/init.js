@@ -766,7 +766,7 @@ $(document).on('initialize', () => {
   // ldrs.js
   {
     let ldrsPath = Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js'),
-      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'momentum', 'ring2']
+      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'momentum', 'ring2', 'wobble']
 
     try {
       import(ldrsPath).then((loaders) => usedLoaders.forEach((loader) => loaders[loader].register()))

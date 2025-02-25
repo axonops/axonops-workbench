@@ -2832,11 +2832,11 @@ div.tab-content {
 
       div.interactive-terminal-container {
         div.container-header {
-          width: calc(100% - 185px);
+          width: calc(100% - 240px);
         }
 
         div.session-content {
-          height: calc(100% - 185px);
+          height: calc(100% - 240px);
           overflow-y: scroll;
           font-size: 85%;
           padding-bottom: 40px;
@@ -2891,6 +2891,34 @@ div.tab-content {
                 pre {
                   width: 100%;
                   white-space: pre-wrap;
+                }
+
+                &.executing {
+                  position: relative;
+
+                  span.spinner {
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    left: 1px;
+                    height: 25px;
+                    width: 25px;
+                    display: inline;
+                    overflow: hidden;
+                    vertical-align: middle;
+                    display: flex;
+                    flex-direction: column;
+                    flex-wrap: nowrap;
+                    align-content: center;
+                    align-items: center;
+                    justify-content: center;
+                  }
+
+                  pre {
+                    transition: all 0.2s ease-in-out;
+                    display: inline;
+                    margin-left: 35px !important;
+                  }
                 }
               }
 
@@ -3152,7 +3180,7 @@ div.tab-content {
           justify-content: center;
           align-items: center;
           align-content: center;
-          height: calc(100% - 185px);
+          height: calc(100% - 240px);
           width: 100%;
           text-align: -webkit-center;
           @extend .no-select;
@@ -3188,7 +3216,7 @@ div.tab-content {
         }
 
         div.container-footer {
-          height: 100px;
+          height: 155px;
           margin-top: 20px;
           box-shadow: 0 -10px 20px 10px #17181a;
           position: relative;
@@ -3202,7 +3230,7 @@ div.tab-content {
 
             div.history-items-clear-all {
               position: absolute;
-              bottom: 110px;
+              bottom: 165px;
               left: calc(50% + 15px);
               border: 0;
               outline: 0;
@@ -3241,7 +3269,7 @@ div.tab-content {
             div.history-items {
               background: #262626;
               position: absolute;
-              bottom: 110px;
+              bottom: 165px;
               background-color: #262626;
               border: 0;
               outline: 0;
@@ -3364,7 +3392,7 @@ div.tab-content {
             }
 
             div.textarea {
-              width: calc(100% - 100px);
+              width: calc(100% - 49px);
 
               textarea {
                 height: 45px;
@@ -3629,6 +3657,47 @@ div.tab-content {
                   filter: opacity(0.95);
                 }
               }
+            }
+          }
+        }
+
+        div.session-actions {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          align-content: center;
+          align-items: center;
+          justify-content: flex-start;
+          height: 40px;
+          margin-bottom: 15px;
+          opacity: 0.81;
+
+          div.session-action {
+            button {
+              transform: scale(0.81);
+              transition: opacity 0.2s ease-in-out;
+
+              ion-icon {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                margin: auto;
+                transform: translateX(20px);
+                font-size: 150%;
+              }
+
+              span {
+                margin-left: 20px;
+              }
+            }
+
+            &:first-of-type {
+              margin-left: -19px;
+            }
+
+            &:not(:last-of-type) {
+              margin-right: -25px;
             }
           }
         }

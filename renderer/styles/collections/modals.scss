@@ -1517,6 +1517,75 @@ div.modal#extraDataActions {
   }
 }
 
+div.modal#executeCQLFiles {
+  div.modal-body {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  div.cql-file {
+    margin: 20px 0;
+
+    div.sort-handler {
+      cursor: grab;
+      width: 25px;
+      height: 25px;
+      border-radius: 5px;
+      position: relative;
+      display: inline-block;
+      vertical-align: top;
+      transform: translateY(5px);
+
+      ion-icon {
+        font-size: 130%;
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        transform: translateX(-1px) translateY(-1px);
+      }
+    }
+
+    div.file-info {
+      width: calc(100% - 76px);
+      display: inline-block;
+      margin: 0 5px;
+      vertical-align: top;
+
+      div.path {
+        background: #383838;
+        padding: 4px 7px;
+        border-radius: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 3px;
+        direction: rtl;
+        text-align: left;
+      }
+
+      div.metadata {
+        opacity: 0.85;
+      }
+    }
+
+    a.remove-cql-file {
+      height: 25px;
+      width: 25px;
+      position: relative;
+      display: inline-block;
+      vertical-align: top;
+      transform: translateY(5px);
+
+      ion-icon {
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        color: #d7d7d7;
+      }
+    }
+  }
+}
+
 div.add-buttons {
   display: flex;
   flex-direction: row;

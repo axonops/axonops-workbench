@@ -878,6 +878,20 @@
                                    </div>
                                  </div>
                                  <div class="container-footer">
+                                   <div class="session-actions">
+                                   <div class="session-action" action="history">
+                                     <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light" disabled>
+                                       <ion-icon name="history"></ion-icon>
+                                       <span mulang="statements history"></span>
+                                     </button>
+                                   </div>
+                                    <div class="session-action" action="execute-file" hidden>
+                                      <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
+                                        <ion-icon name="files"></ion-icon>
+                                        <span mulang="execute CQL file(s)"></span>
+                                      </button>
+                                    </div>
+                                   </div>
                                    <div class="top">
                                      <div class="history-items"></div>
                                      <div class="history-items-clear-all">
@@ -886,7 +900,7 @@
                                          <span mulang="clear all statements"></span>
                                        </button>
                                      </div>
-                                     <div class="history">
+                                     <div class="history" style="display: none;">
                                        <button class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
                                          <ion-icon name="history"></ion-icon>
                                        </button>
@@ -1445,7 +1459,6 @@
                         setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
                       }))
                     }
-
 
                     /**
                      * Inner function to handle the `click` event of a session's link in the terminal
@@ -3671,6 +3684,25 @@
                           return
                         } catch (e) {}
 
+                        try {
+                          if (!(minifyText(statement).startsWith('source_')))
+                            throw 0
+
+                          statement = JSON.parse(`${statement}`.slice(8))
+
+                          addBlock(sessionContainer, blockID, `Executing ${statement.length} CQL file(s).`, (element) => {
+                            let statementTextContainer = element.find('div.statement').children('div.text')
+
+                            statementTextContainer.addClass('executing')
+
+                            statementTextContainer.prepend($(`<span class="spinner"><l-wobble size="25" speed="0.77" color="#e53935"></l-wobble></span>`).hide(function() {
+                              setTimeout(() => $(this).fadeIn('fast'), 150)
+                            }))
+                          })
+
+                          return
+                        } catch (e) {}
+
                         executeBtn.parent().addClass('busy')
 
                         {
@@ -3710,7 +3742,7 @@
                             Store.set(clusterID, [...new Set(history)])
 
                             // Enable the history button
-                            workareaElement.find('div.history').find('button.btn').attr('disabled', null)
+                            workareaElement.find('div.session-action[action="history"]').find('button.btn').attr('disabled', null)
 
                             // Reset the history current index
                             lastData.history = -1
@@ -5407,7 +5439,7 @@
                       let historyItemsContainer = $(this).find('div.history-items'),
                         historyItemsClearAllButton = $(this).find('div.history-items-clear-all'),
                         // Point at the history show button
-                        historyBtn = $(this).find('div.history').find('button.btn'),
+                        historyBtn = $(this).find('div.session-action[action="history"]').find('button.btn'),
                         // Get the current saved items
                         savedHistoryItems = Store.get(clusterID) || []
 
@@ -5570,6 +5602,130 @@
                           historyBtn.attr('disabled', 'disabled')
 
                           showToast(I18next.capitalize(I18next.t('clear all statements')), I18next.capitalizeFirstLetter(I18next.replaceData('all history statements for connection [b]$data[/b] have been successfully cleared', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                        } catch (e) {}
+                      })
+                    }
+
+                    {
+                      let executeFilesModal = $('div.modal#executeCQLFiles'),
+                        filesContainer = executeFilesModal.find('div.cql-files-container'),
+                        filesExecutionBtn = $(this).find('div.session-action[action="execute-file"]').find('button.btn')
+
+                      try {
+                        filesExecutionBtn.unbind('click')
+                      } catch (e) {}
+
+                      filesExecutionBtn.click(function() {
+                        // Get a random ID for the dialog request
+                        let requestID = getRandomID(10),
+                          // Set other attributes to be used to create the dialog
+                          data = {
+                            id: requestID,
+                            title: I18next.capitalizeFirstLetter(I18next.t('select file(s) to be imported')),
+                            properties: ['openFile', 'multiSelections', 'showHiddenFiles']
+                          }
+
+                        // Send a request to the main thread to create a dialog
+                        IPCRenderer.send('dialog:create', data)
+
+                        // Listen for the response - folders' paths - and call the check workspaces inner function
+                        IPCRenderer.on(`dialog:${requestID}`, (_, filesPaths) => {
+                          if (filesPaths.length <= 0)
+                            return
+
+                          filesContainer.children('div.cql-file').remove()
+
+                          try {
+                            filesPaths = filesPaths.sort((a, b) => {
+                              let baseNameA = Path.basename(minifyText(a)),
+                                baseNameB = Path.basename(minifyText(b))
+
+                              if (baseNameA < baseNameB)
+                                return -1
+
+                              if (baseNameA > baseNameB)
+                                return 1
+
+                              return 0
+                            })
+                          } catch (e) {}
+
+                          for (let filePath of filesPaths) {
+                            filePath = `${filePath}`
+
+                            try {
+                              let fileStats = FS.statSync(filePath)
+
+                              let element = `
+                                  <div class="cql-file">
+                                    <div class="sort-handler" style="cursor:grab;">
+                                      <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
+                                    </div>
+                                    <div class="file-info">
+                                      <div class="path">${filePath.slice(1)}</div>
+                                      <div class="metadata">
+                                        <span class="badge rounded-pill badge-secondary"><span mulang="size" capitalize></span>: ${Bytes(fileStats.size)}</span>
+                                      </div>
+                                    </div>
+                                    <a class="btn btn-link btn-rounded btn-sm remove-cql-file" data-mdb-ripple-color="light" href="#" role="button">
+                                      <ion-icon name="trash"></ion-icon>
+                                    </a>
+                                  </div>`
+
+                              filesContainer.append($(element).show(function() {
+                                let cqlFileElement = $(this)
+
+                                cqlFileElement.data('path', filePath)
+
+                                cqlFileElement.find('a.btn.remove-cql-file').click(function() {
+                                  cqlFileElement.remove()
+
+                                  try {
+                                    if (filesContainer.children('div.cql-file').length <= 0)
+                                      getElementMDBObject(executeFilesModal, 'Modal').hide()
+                                  } catch (e) {}
+                                })
+
+                                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+                              }))
+                            } catch (e) {}
+                          }
+
+                          try {
+                            getElementMDBObject(executeFilesModal, 'Modal').show()
+                          } catch (e) {}
+                        })
+                      })
+
+                      setTimeout(() => {
+                        try {
+                          filesContainer.sortable({
+                            handle: '.sort-handler',
+                            animation: 150,
+                            ghostClass: 'ghost-field'
+                          })
+                        } catch (e) {}
+                      }, 1000)
+
+                      $('button#executeCQLFilesBtn').click(function() {
+                        let pathsArray = [],
+                          PathsElements = filesContainer.children('div.cql-file').get()
+
+                        try {
+                          pathsArray = PathsElements.map((path) => $(path).data('path'))
+                        } catch (e) {}
+
+                        try {
+                          let statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`)
+                          statementInputField.val(`SOURCE_ ${JSON.stringify(pathsArray)}`).trigger('input')
+                        } catch (e) {}
+
+                        try {
+                          getElementMDBObject(executeFilesModal, 'Modal').hide()
+                        } catch (e) {}
+
+                        try {
+                          setTimeout(() => $(`button#_${executeStatementBtnID}`).click())
                         } catch (e) {}
                       })
                     }
@@ -10107,7 +10263,6 @@
       })
 
       IPCRenderer.on('alter-table', (_, data) => {
-        console.log("HERE...");
         let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
 
         try {
@@ -12098,7 +12253,12 @@
           } catch (e) {}
 
           try {
-            dataCenters = dataCenters.filter((datacenter, index, datacenters) => datacenters.findIndex(_datacenter => _datacenter.name === datacenter.name) === index)
+            dataCenters = dataCenters.reduce((datacenters, datacenter) => {
+              if (!datacenters.find(_datacenter => _datacenter.datacenter === datacenter.datacenter))
+                datacenters.push(datacenter);
+
+              return datacenters
+            }, [])
           } catch (e) {}
 
           $(this).parent().find('div.invalid-feedback span[mulang][capitalize-first]').attr('mulang', 'SimpleStrategy is intended for development purposes only').text(I18next.capitalizeFirstLetter(I18next.t('SimpleStrategy is intended for development purposes only')))

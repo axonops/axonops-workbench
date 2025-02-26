@@ -47,6 +47,7 @@
         "Keywords": "cassandra;axonops;development;workbench",
         "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench.png"
       },
+      "executableArgs": ["--no-sandbox"],
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
@@ -305,7 +306,7 @@
     }
   },
   "scripts": {
-    "start": "electron .",
+    "start": "electron . --no-sandbox",
     "rebuild": "electron-rebuild -w -f",
     "dev": "electron --trace-warnings --inspect .",
     "win": "electron-builder --win --publish never",

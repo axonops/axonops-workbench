@@ -116,6 +116,14 @@ const URL = require('url'),
   DotEnv = require('dotenv')
 
 /**
+ * Electron logging module
+ * Used for logging
+ */
+const log = require('electron-log/main')
+// Initialize logging for renderers
+log.initialize();
+
+/**
  * Check if the app is in production environment
  * https://www.electronjs.org/docs/latest/api/app#appispackaged-readonly
  *
@@ -130,11 +138,15 @@ global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), (pro
  */
 const Modules = []
 
+// Enque log messages until configuration is finished
+log.buffering.begin();
+
 try {
   // Define the folder's path of the custom node modules
-  let modulesFilesPath = Path.join(__dirname, '..', 'custom_node_modules', 'main'),
-    // Read all files inside the folder
-    modulesFiles = FS.readdirSync(modulesFilesPath)
+  let modulesFilesPath = Path.join(__dirname, '..', 'custom_node_modules', 'main')
+  log.debug('Loading modules...', {'path': modulesFilesPath})
+  // Read all files inside the folder
+  let modulesFiles = FS.readdirSync(modulesFilesPath)
 
   /**
    * Loop through each module file
@@ -157,16 +169,38 @@ try {
 
       // Import the module
       Modules[moduleName] = require(Path.join(modulesFilesPath, moduleFile))
-    } catch (e) {}
+      log.info('Loaded module', {'module': moduleName})
+    } catch (e) {
+      log.warning('Failed to load module', {'module': moduleName, 'error': e})
+    }
   })
-} catch (e) {}
+} catch (e) {
+  log.warning('Failure loading modules', {'error': e})
+}
+
+// Logging configuration
+log.transports.file.level = false
+log.transports.console.level = 'debug'
+
+Modules.Config.getConfig((config) => {
+  if (config.get('security', 'loggingEnabled')) {
+    log.transports.file.level = 'debug'
+    log.info('Logging to file enabled', {'path': log.transports.file.getFile().path, 'hooks': log.hooks.length})
+  }
+})
+
+// Write logs to console (and file, if enabled)
+log.buffering.commit();
 
 // Load environment variables from .env file
 try {
+  let envFilePath = Path.join(__dirname, '..', '.env')
   DotEnv.config({
-    path: Path.join(__dirname, '..', '.env')
+    path: envFilePath
   })
-} catch (e) {}
+} catch (e) {
+  log.warning('Failed to load environment variables file', {'path': envFilePath, 'error': e})
+}
 
 // Flag to tell whether or not dev tools are enabled
 const isDevToolsEnabled = process.env.AXONOPS_DEV_TOOLS == 'true'
@@ -179,19 +213,11 @@ const isDevToolsEnabled = process.env.AXONOPS_DEV_TOOLS == 'true'
  */
 global.eventEmitter = new EventEmitter()
 
-// Import the set customized logging addition function and make it global across the entire thread
-global.addLog = null
-
-// Set the proper add log function
-try {
-  global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
-} catch (e) {}
-
 // Object that will hold all views/windows of the app
 let views = {
   // The main view/window object
   main: null,
-  // A view/window as a loding screen
+  // A view/window as a loading screen
   intro: null,
   // A view/window for all background processes
   backgroundProcesses: null
@@ -200,9 +226,7 @@ let views = {
 // An array that will save all cqlsh instances with their ID given by the renderer thread
 let CQLSHInstances = [],
   // Whether or not the user wants to completely quit the application. This occurs when all renderer threads are terminated or closed
-  isMacOSForcedClose = false,
-  // A `logging` object which will be created once the app is ready
-  logging = null
+  isMacOSForcedClose = false
 
 /**
  * Create a window with different passed properties
@@ -229,7 +253,10 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
       protocol: 'file:',
       slashes: true
     }))
-  } catch (e) {}
+  } catch (e) {
+    log.warning('Failed to load view file', {'path': viewPath, 'error': e})
+    // TODO: it's an exceptional situation, must be error+abort, not warning
+  }
 
   // Whether or not the window should be at the center of the screen
   if (extraProperties.center)
@@ -263,7 +290,10 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
     if (extraProperties.openDevTools)
       try {
         windowObject.webContents.openDevTools()
-      } catch (e) {}
+      } catch (e) {
+        // Electron-log won't be available in renderer at that moment
+        console.log('Failed to open DevTools', {'view': viewPath, 'error': e})
+      }
 
     // Send the window's content's ID
     try {
@@ -271,9 +301,14 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
     } catch (e) {}
 
     // Attempt to call the callback function
-    try {
-      callback()
-    } catch (e) {}
+    if (callback instanceof Function) {
+      try {
+        callback()
+      } catch (e) {
+        // Electron-log won't be available in renderer at that moment
+        console.log('Failed to execute callback for a created window ', {'view': viewPath, 'error': e})
+      }
+    }
   })
 
   // When the window is closed, the event has finished; set the window object reference to `null`
@@ -429,16 +464,20 @@ App.on('ready', () => {
   // Once a `loaded` event is received from the main view
   IPCMain.on('loaded', () => {
     status.loaded = true
+    log.info('Renderer is loaded')
   })
 
   IPCMain.on('initialized', () => {
     status.initialized = true
+    log.info('Renderer is initialized')
   })
 
   let checkStatus = () => {
     setTimeout(() => {
-      if (!status.loaded || !status.initialized)
+      if (!status.loaded || !status.initialized) {
+        log.debug('Waiting initialization...', {'Loaded': status.loaded.toString(), 'Initialized': status.initialized.toString()})
         return checkStatus()
+      }
 
       // Trigger after 1s of loading the main view
       setTimeout(() => {
@@ -675,46 +714,7 @@ App.on('second-instance', () => {
     IPCMain.on('pty:cqlsh:initialize', () => Modules.Pty.initializeCQLSH(views.main))
   }
 
-  /**
-   * Requests related to the logging system
-   * All requests have the prefix `logging:`
-   */
-  {
-    // Initialize the logging system
-    IPCMain.on('logging:init', (_, data) => {
-      // Create a `logging` object and refer to it via the global `logging` variable
-      try {
-        logging = new Modules.Logging.Logging(data)
-      } catch (e) {}
-    })
-
-    /**
-     * Add a new log text
-     *
-     * Adding a new log can be processed via two methods:
-     * First is using the `ipcMain` module, this method is used by the renderer threads
-     * Second is by triggering a custom event using the `eventEmitter` module, this method is used inside the main thread
-     */
-    {
-      // Define the event's name and its function/method
-      let event = {
-        name: 'logging:add',
-        func: (_, data) => {
-          try {
-            logging.addLog(data)
-          } catch (e) {}
-        }
-      }
-
-      // Add a custom event to be triggered inside the main thread
-      eventEmitter.addListener(event.name, event.func)
-
-      // Listen to `add` log request from the renderer thread
-      IPCMain.on(event.name, event.func)
-    }
-  }
-
-  /**
+   /**
    * Requests to perform processes in the background
    * Processes will be executed in the `views.backgroundProcesses` view
    */

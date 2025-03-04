@@ -525,5 +525,83 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
         }
       })
     }
+
+    {
+      let handleCQLExecution = (data) => {
+        let finalContent = '',
+          count = 0,
+          errors = [],
+          totalExecutions = 0
+
+        try {
+          IPCRenderer.removeAllListeners(`pty:data:${data.id}`)
+        } catch (e) {}
+
+        IPCRenderer.on(`pty:data:${data.id}`, (_, _data) => {
+          try {
+            count += 1
+
+            finalContent = `${finalContent}${_data.output}`
+
+            // If no output has been detected then skip this try-catch block
+            if (!finalContent.includes('KEYWORD:OUTPUT:COMPLETED:ALL'))
+              throw 0
+
+            totalExecutions += 1
+
+            // Get the detected output of each statement
+            let detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:OUTPUT:COMPLETED:ALL/gm)
+
+            try {
+              for (let output of detectedOutput) {
+                finalContent = finalContent.replace(output, '')
+
+                let statementOutputRegex = /KEYWORD:OUTPUT:STARTED([\s\S]*?)KEYWORD:OUTPUT:COMPLETED/gm,
+                  // Define variable to initially hold the regex's match
+                  matches,
+                  // The index of loop's pointer
+                  loopIndex = -1
+
+                while ((matches = statementOutputRegex.exec(output)) !== null) {
+                  // Increase the loop; to match the identifier of the current output's statement
+                  loopIndex = loopIndex + 1
+
+                  // Avoid infinite loops with zero-width matches
+                  if (matches.index === statementOutputRegex.lastIndex)
+                    statementOutputRegex.lastIndex++
+
+                  matches.forEach((match, groupIndex) => {
+                    // Ignore specific group
+                    if (groupIndex != 1)
+                      return
+
+                    let isErrorFound = `${match}`.indexOf('KEYWORD:ERROR:STARTED') != -1
+
+                    if (isErrorFound)
+                      errors.push(`${match}`)
+                  })
+                }
+              }
+            } catch (e) {}
+
+            if (!(count % 100 == 0 || minifyText(_data.output).includes('keyword:output:source:completed')))
+              return
+
+            let finalData = {
+              ...data,
+              totalExecutions,
+              errors: JSON.stringify(errors),
+              isFinished: minifyText(_data.output).includes('keyword:output:source:completed')
+            }
+
+            IPCRenderer.send(`cql:file:execute:data`, finalData)
+
+            errors = []
+          } catch (e) {}
+        })
+      }
+
+      IPCRenderer.on('cql:file:execute', (_, data) => handleCQLExecution(data))
+    }
   }
 }))

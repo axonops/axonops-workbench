@@ -1583,6 +1583,26 @@ div.modal#executeCQLFiles {
         color: #d7d7d7;
       }
     }
+
+    &.invalid {
+      div.file-info {
+        div.path {
+          background: #4a2d32;
+        }
+
+        div.metadata {
+          span {
+            background: #4a2d32;
+            color: #f9f9f9;
+          }
+        }
+      }
+    }
+  }
+
+  div.terminate-on-error {
+    transform: scale(0.9) translateX(-21px);
+    margin-bottom: 15px;
   }
 }
 

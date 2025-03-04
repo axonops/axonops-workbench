@@ -581,9 +581,22 @@ App.on('second-instance', () => {
     // Send a command to the pty instance
     IPCMain.on('pty:command', (_, data) => {
       try {
+        if (!data.isSourceCommand)
+          throw 0
+
+        CQLSHInstances[data.id].sourceCommand(data.cmd, data.blockID, views.backgroundProcesses)
+
+        views.backgroundProcesses.webContents.send('cql:file:execute', data)
+
+        return
+      } catch (e) {}
+
+      try {
         CQLSHInstances[data.id].command(data.cmd, data.blockID)
       } catch (e) {}
     })
+
+    IPCMain.on('cql:file:execute:data', (_, data) => views.main.webContents.send(`cql:file:execute:data:${data.id}`, data))
 
     // Send a realtime data to the pty instance - while the user is acutally typing
     IPCMain.on('pty:data', (_, data) => {

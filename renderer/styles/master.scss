@@ -3015,6 +3015,53 @@ div.tab-content {
                   pre {
                     white-space: pre-wrap;
                   }
+
+                  &.all-errors {
+                    cursor: default;
+
+                    pre {
+                      background: #2e2c2c;
+                      border-radius: 5px;
+                      padding: 5px;
+                      margin-top: 10px !important;
+                    }
+                  }
+                }
+
+                &.error[data-count] {
+                  div.sub-output-content:not(.all-errors) {
+                    transition: all 0.2s ease-in-out;
+                    @extend .no-select;
+                    cursor: pointer;
+
+                    &:hover {
+                      opacity: 0.8;
+                    }
+                  }
+
+                  span.arrow {
+                    height: 17px;
+                    display: inline-block;
+                    width: 17px;
+                    position: relative;
+                    margin-right: 0;
+                    top: 3px;
+                    opacity: 0.75;
+                    @extend .no-select;
+                    transition: transform 0.15s ease-in-out;
+
+                    ion-icon {
+                      position: absolute;
+                      inset: 0;
+                      margin: auto;
+                      font-size: 190%;
+                      transform: rotate(-90deg) translate(-2px, -2px);
+                    }
+
+                    &.show {
+                      transform: rotate(90deg);
+                    }
+                  }
                 }
               }
 

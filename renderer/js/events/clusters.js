@@ -885,7 +885,7 @@
                                        <span mulang="statements history"></span>
                                      </button>
                                    </div>
-                                    <div class="session-action" action="execute-file" hidden>
+                                    <div class="session-action" action="execute-file">
                                       <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
                                         <ion-icon name="files"></ion-icon>
                                         <span mulang="execute CQL file(s)"></span>
@@ -2502,7 +2502,12 @@
                           // Get the block's statement/command
                           blockStatement = blockElement.find('div.statement div.text').text(),
                           // Define the content of the `no-output` element
-                          noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span>.</no-output>'
+                          noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span>.</no-output>',
+                          isSourceCommand = blockElement.attr('data-is-source-command') != undefined
+
+                        try {
+                          isOutputIncomplete = isSourceCommand ? !(allOutput.includes('KEYWORD:OUTPUT:SOURCE:COMPLETED')) : isOutputIncomplete
+                        } catch (e) {}
 
                         // Update the block's output
                         blocksOutput[data.blockID] = `${blocksOutput[data.blockID] || ''}${data.output}`
@@ -3688,16 +3693,246 @@
                           if (!(minifyText(statement).startsWith('source_')))
                             throw 0
 
-                          statement = JSON.parse(`${statement}`.slice(8))
+                          // Add the statement to the cluster's history space
+                          {
+                            // Get current saved statements
+                            let history = Store.get(clusterID) || []
+
+                            /**
+                             * Maximum allowed statements to be saved are 30 for each cluster
+                             * When this value is exceeded the oldest statement should be removed
+                             */
+                            if (history.length > 50)
+                              history.pop()
+
+                            statement = removeComments(statement, true)
+
+                            // Add the statement at the very beginning of the array
+                            history.unshift(statement)
+
+                            // Remove any duplication
+                            Store.set(clusterID, [...new Set(history)])
+
+                            // Enable the history button
+                            workareaElement.find('div.session-action[action="history"]').find('button.btn').attr('disabled', null)
+
+                            // Reset the history current index
+                            lastData.history = -1
+                          }
+
+                          {
+                            workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
+                              'opacity': '0.3',
+                              'pointer-events': 'none'
+                            })
+
+                            workareaElement.find('div.metadata-content').css({
+                              'opacity': '0.75',
+                              'pointer-events': 'none',
+                              'transition': 'all 0.2s ease-in-out'
+                            })
+
+                            workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', '')
+
+                            workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').addClass('disabled')
+                          }
+
+                          let isExecutionTerminatedOnError = statement.slice(`${statement}`.indexOf(' |')).includes('true')
+
+                          statement = JSON.parse(`${statement}`.slice(8, `${statement}`.indexOf(' |')))
 
                           addBlock(sessionContainer, blockID, `Executing ${statement.length} CQL file(s).`, (element) => {
                             let statementTextContainer = element.find('div.statement').children('div.text')
 
+                            element.attr('data-is-source-command', 'true')
+
                             statementTextContainer.addClass('executing')
 
-                            statementTextContainer.prepend($(`<span class="spinner"><l-wobble size="25" speed="0.77" color="#e53935"></l-wobble></span>`).hide(function() {
-                              setTimeout(() => $(this).fadeIn('fast'), 150)
+                            executeBtn.parent().addClass('busy')
+
+                            {
+                              try {
+                                clearTimeout(killProcessTimeout)
+                              } catch (e) {}
+
+                              try {
+                                killProcessBtn.parent().addClass('show')
+                              } catch (e) {}
+                            }
+
+                            statementTextContainer.prepend($(`<span class="spinner"><l-wobble size="25" speed="0.77" color="#f0f0f0"></l-wobble></span>`).hide(function() {
+                              let wobbleSpinner = $(this)
+
+                              setTimeout(() => wobbleSpinner.fadeIn('fast'), 150)
+
+                              // The sub output structure UI
+                              let blockElement = $(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`)
+
+                              let handleFileExecution = (fileIndex = 0) => {
+                                if (fileIndex >= statement.length) {
+                                  if (statement.length > 1)
+                                    blockElement.children('div.output').append($(`
+                                    <div class="sub-output info">
+                                      <div class="sub-output-content">All files have been executed.</div>
+                                    </div>`))
+
+                                  statementTextContainer.removeClass('executing')
+
+                                  executeBtn.parent().removeClass('busy')
+
+                                  killProcessBtn.parent().removeClass('show')
+
+                                  wobbleSpinner.hide()
+
+                                  {
+                                    workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
+                                      'opacity': '',
+                                      'pointer-events': ''
+                                    })
+
+                                    workareaElement.find('div.metadata-content').css({
+                                      'opacity': '',
+                                      'pointer-events': '',
+                                      'transition': ''
+                                    })
+
+                                    workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', null)
+
+                                    workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').removeClass('disabled')
+                                  }
+
+                                  return
+                                }
+
+                                let filePath = statement[fileIndex],
+                                  showErrorsBtnID = getRandomID(10),
+                                  fileExecutionInfoID = getRandomID(10),
+                                  element = `
+                                    <div class="sub-output info incomplete-statement">
+                                      <div class="sub-output-content">${fileIndex + 1}: Executing file '${filePath}'</div>
+                                    </div>
+                                    <div class="sub-output" data-id="${fileExecutionInfoID}_executed" data-count="0" hidden>
+                                      <div class="sub-output-content">-</div>
+                                    </div>
+                                    <div class="sub-output error" data-id="${fileExecutionInfoID}_error" data-count="0" hidden>
+                                      <span class="arrow"><ion-icon name="arrow-down"></ion-icon></span>
+                                      <div class="sub-output-content" onclick="$(this).parent().children('div.sub-output-content.all-errors').slideToggle('fast');$(this).parent().children('span.arrow').toggleClass('show');" style="display: inline;"><span>-</span></div>
+                                      <div class="sub-output-content all-errors" style="display: none;"></div>
+                                    </div>
+                                    <div class="sub-output info" data-id="${fileExecutionInfoID}_info" hidden>
+                                      <div class="sub-output-content">The file has been fully executed.</div>
+                                    </div>`
+
+                                blockElement.children('div.output').children('div.executing').hide()
+
+                                setTimeout(() => {
+                                  IPCRenderer.send('pty:command', {
+                                    id: clusterID,
+                                    cmd: `SOURCE '${filePath}${isExecutionTerminatedOnError ? '{KEYWORD:STOPONERROR:TRUE}' : ''}'`,
+                                    blockID,
+                                    isSourceCommand: true
+                                  })
+                                })
+
+                                blockElement.children('div.output').append($(element).show(function() {
+                                  setTimeout(() => {
+                                    try {
+                                      blockElement.parent().animate({
+                                        scrollTop: blockElement.parent().get(0).scrollHeight
+                                      }, 100)
+                                    } catch (e) {}
+                                  }, 500)
+                                }))
+
+                                try {
+                                  IPCRenderer.removeAllListeners(`cql:file:execute:data:${clusterID}`)
+                                } catch (e) {}
+
+                                let ansiToHTML = new ANSIToHTML(),
+                                  errorsCount = 0
+
+                                IPCRenderer.on(`cql:file:execute:data:${clusterID}`, (_, data) => {
+                                  let errors = []
+
+                                  try {
+                                    errors = JSON.parse(data.errors)
+                                  } catch (e) {}
+
+                                  errorsCount += errors.length
+
+                                  try {
+                                    errors = errors.map((error) => {
+                                      try {
+                                        if (OS.platform() != 'win32')
+                                          throw 0
+
+                                        error = error.replace(/\n(?![^<]*<\/span>)/gim, '')
+                                      } catch (e) {}
+
+                                      // Manipulate the content
+                                      error = error.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
+                                        .replace(createRegex(OS.EOL, 'g'), '<br>')
+                                        .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>')
+                                        .replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
+                                        .replace('[OUTPUT:INFO]', '')
+                                        .replace(/\r?\n?KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\r?\n?/gmi, '')
+
+                                      error = ansiToHTML.toHtml(error)
+
+                                      error = StripTags(error)
+
+                                      return error
+                                    })
+                                  } catch (e) {}
+
+                                  {
+                                    let errorsContainer = $(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).find('div.sub-output-content.all-errors')
+
+                                    for (let error of errors)
+                                      errorsContainer.html(`${errorsContainer.html()}<pre>${error}</pre>`)
+                                  }
+
+                                  if (errors.length != 0)
+                                    $(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).attr('hidden', null).find('div.sub-output-content:not(.all-errors)').find('span').text(`${errorsCount} error(s) occured in this execution cycle.`)
+
+                                  $(`div.sub-output[data-id="${fileExecutionInfoID}_executed"]`).attr('hidden', null).text(`${data.totalExecutions} statement(s) executed in this execution cycle.`)
+
+                                  if (!data.isFinished)
+                                    return
+
+                                  $(`div.sub-output[data-id="${fileExecutionInfoID}_info"]`).attr('hidden', null)
+
+                                  handleFileExecution(++fileIndex)
+                                })
+                              }
+
+                              handleFileExecution()
                             }))
+
+                            setTimeout(() => {
+                              element.find('div.btn[action="copy"]').parent().css('width', '30px')
+
+                              element.find('div.btn[action="copy"]').hide()
+
+                              element.find('div.btn[action="delete"]').unbind('click')
+
+                              element.find('div.btn[action="delete"]').click(() => {
+                                // Remove the block from the session
+                                element.remove()
+
+                                try {
+                                  // Point at the session's statements' container
+                                  let sessionContainer = $(`#_${cqlshSessionContentID}_container`)
+
+                                  // If there's still one block then skip this try-catch block
+                                  if (sessionContainer.find('div.block').length > 0)
+                                    throw 0
+
+                                  // Show the emptiness class
+                                  sessionContainer.parent().find(`div.empty-statements`).addClass('show')
+                                } catch (e) {}
+                              })
+                            })
                           })
 
                           return
@@ -3771,11 +4006,56 @@
                       })
 
                       killProcessBtn.click(function() {
+                        let blockElement = $(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`),
+                          isSourceCommand = blockElement.attr('data-is-source-command') != undefined
+
+                        if (isSourceCommand)
+                          IPCRenderer.send('pty:command', {
+                            id: clusterID,
+                            cmd: `\r\r`,
+                            blockID
+                          })
+
                         IPCRenderer.send('pty:command', {
                           id: clusterID,
                           cmd: `KEYWORD:STATEMENT:IGNORE-${Math.floor(Math.random() * 999) + 1}`,
                           blockID
                         })
+
+                        try {
+                          if (!isSourceCommand)
+                            throw 0
+
+                          blockElement.children('div.output').append($(`
+                            <div class="sub-output info">
+                              <div class="sub-output-content">The execution process has been terminated.</div>
+                            </div>`))
+
+                          blockElement.find('div.statement').children('div.text').removeClass('executing')
+
+                          executeBtn.parent().removeClass('busy')
+
+                          killProcessBtn.parent().removeClass('show')
+
+                          blockElement.find('div.statement').find('span.spinner').hide()
+
+                          {
+                            workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
+                              'opacity': '',
+                              'pointer-events': ''
+                            })
+
+                            workareaElement.find('div.metadata-content').css({
+                              'opacity': '',
+                              'pointer-events': '',
+                              'transition': ''
+                            })
+
+                            workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', null)
+
+                            workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').removeClass('disabled')
+                          }
+                        } catch (e) {}
                       }).hover(() => hintsContainer.hide(), () => hintsContainer.show())
 
                       // The statement's input field's value has been updated
@@ -5465,9 +5745,26 @@
                           // Decrement the index
                           index += 1
 
+                          let isSourceCommand = historyItem.startsWith('SOURCE_'),
+                            filesPaths = [],
+                            isExecutionTerminatedOnError = true
+
+                          try {
+                            if (!isSourceCommand)
+                              throw 0
+
+                            isExecutionTerminatedOnError = historyItem.slice(`${historyItem}`.indexOf(' |')).includes('true')
+
+                            filesPaths = JSON.parse(`${historyItem}`.slice(8, `${historyItem}`.indexOf(' |')))
+
+                            let numOfFiles = filesPaths.length
+
+                            historyItem = `Execute ${numOfFiles} CQL file(s).`
+                          } catch (e) {}
+
                           // The history item structure UI
                           let element = `
-                               <div class="history-item" data-index="${index}">
+                               <div class="history-item" data-index="${index}" data-is-source-command="${isSourceCommand}">
                                  <div class="index">${index < 10 ? '0' : ''}${index}</div>
                                  <div class="inner-content">
                                    <pre>${historyItem}</pre>
@@ -5490,12 +5787,42 @@
                             // Point at the statement input field
                             let statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`)
 
+                            try {
+                              if ($(this).attr('data-is-source-command') != 'true')
+                                throw 0
+
+                              $(this).children('div.action-copy').css({
+                                'opacity': '0.2',
+                                'pointer - events': 'none',
+                                'cursor': 'default'
+                              })
+                            } catch (e) {}
+
                             // Clicks the item to be typed in the input field
                             $(this).find('div.click-area').click(function() {
+                              // Click the backdrop element to close the history items' container
+                              $(`div.backdrop:last`).click()
+
                               // Get the index of the saved item in the array
                               let statementIndex = parseInt($(this).parent().attr('data-index')) - 1,
                                 // Get the statement's content
                                 statement = savedHistoryItems[statementIndex]
+
+                              try {
+                                if ($(this).parent().attr('data-is-source-command') != 'true')
+                                  throw 0
+
+                                let executionBtn = $(this).closest('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"]').find('button.btn')
+
+                                executionBtn.data('filesPaths', filesPaths)
+                                executionBtn.data('isExecutionTerminatedOnError', isExecutionTerminatedOnError)
+
+                                executionBtn.trigger('click')
+
+                                $(`div.backdrop:last`).click()
+
+                                return
+                              } catch (e) {}
 
                               // Set the statement
                               statementInputField.val(statement).trigger('input').focus()
@@ -5507,9 +5834,6 @@
                               try {
                                 getElementMDBObject(statementInputField).update()
                               } catch (e) {}
-
-                              // Click the backdrop element to close the history items' container
-                              $(`div.backdrop:last`).click()
                             })
 
                             $(this).find('div.action-copy').find('span.btn').click(() => {
@@ -5625,17 +5949,19 @@
                             properties: ['openFile', 'multiSelections', 'showHiddenFiles']
                           }
 
-                        // Send a request to the main thread to create a dialog
-                        IPCRenderer.send('dialog:create', data)
-
                         // Listen for the response - folders' paths - and call the check workspaces inner function
-                        IPCRenderer.on(`dialog:${requestID}`, (_, filesPaths) => {
+                        let handleFilesPaths = (filesPaths, isExecutionTerminatedOnError = true, noSort = false) => {
                           if (filesPaths.length <= 0)
                             return
 
                           filesContainer.children('div.cql-file').remove()
 
+                          $('input#terminateFileExecutionOnError').prop('checked', isExecutionTerminatedOnError)
+
                           try {
+                            if (noSort)
+                              throw 0
+
                             filesPaths = filesPaths.sort((a, b) => {
                               let baseNameA = Path.basename(minifyText(a)),
                                 baseNameB = Path.basename(minifyText(b))
@@ -5654,23 +5980,30 @@
                             filePath = `${filePath}`
 
                             try {
-                              let fileStats = FS.statSync(filePath)
+                              let fileStats = {
+                                size: 0
+                              }
+
+                              try {
+                                fileStats = FS.statSync(filePath)
+                              } catch (e) {}
 
                               let element = `
-                                  <div class="cql-file">
-                                    <div class="sort-handler" style="cursor:grab;">
-                                      <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
-                                    </div>
-                                    <div class="file-info">
-                                      <div class="path">${filePath.slice(1)}</div>
-                                      <div class="metadata">
-                                        <span class="badge rounded-pill badge-secondary"><span mulang="size" capitalize></span>: ${Bytes(fileStats.size)}</span>
+                                    <div class="cql-file ${fileStats.size <= 0 ? 'invalid' : ''}">
+                                      <div class="sort-handler" style="cursor:grab;">
+                                        <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
                                       </div>
-                                    </div>
-                                    <a class="btn btn-link btn-rounded btn-sm remove-cql-file" data-mdb-ripple-color="light" href="#" role="button">
-                                      <ion-icon name="trash"></ion-icon>
-                                    </a>
-                                  </div>`
+                                      <div class="file-info">
+                                        <div class="path">${filePath.slice(1)}</div>
+                                        <div class="metadata">
+                                          <span class="badge rounded-pill badge-secondary" ${fileStats.size <= 0 ? 'hidden' : ''}><span mulang="size" capitalize></span>: ${Bytes(fileStats.size)}</span>
+                                          <span class="badge rounded-pill badge-secondary" ${fileStats.size > 0 ? 'hidden' : ''}>The file is either missing or inaccessible</span>
+                                        </div>
+                                      </div>
+                                      <a class="btn btn-link btn-rounded btn-sm remove-cql-file" data-mdb-ripple-color="light" href="#" role="button">
+                                        <ion-icon name="trash"></ion-icon>
+                                      </a>
+                                    </div>`
 
                               filesContainer.append($(element).show(function() {
                                 let cqlFileElement = $(this)
@@ -5694,7 +6027,21 @@
                           try {
                             getElementMDBObject(executeFilesModal, 'Modal').show()
                           } catch (e) {}
-                        })
+                        }
+
+                        if ($(this).data('filesPaths') != null) {
+                          handleFilesPaths([...$(this).data('filesPaths')], $(this).data('isExecutionTerminatedOnError'), true)
+
+                          $(this).data('filesPaths', null)
+                          $(this).data('isExecutionTerminatedOnError', null)
+
+                          return
+                        }
+
+                        // Send a request to the main thread to create a dialog
+                        IPCRenderer.send('dialog:create', data)
+
+                        IPCRenderer.on(`dialog:${requestID}`, (_, filesPaths) => handleFilesPaths(filesPaths))
                       })
 
                       setTimeout(() => {
@@ -5709,7 +6056,8 @@
 
                       $('button#executeCQLFilesBtn').click(function() {
                         let pathsArray = [],
-                          PathsElements = filesContainer.children('div.cql-file').get()
+                          PathsElements = filesContainer.children('div.cql-file').get(),
+                          isExecutionTerminatedOnError = $('input#terminateFileExecutionOnError').prop('checked')
 
                         try {
                           pathsArray = PathsElements.map((path) => $(path).data('path'))
@@ -5717,7 +6065,8 @@
 
                         try {
                           let statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`)
-                          statementInputField.val(`SOURCE_ ${JSON.stringify(pathsArray)}`).trigger('input')
+
+                          statementInputField.val(`SOURCE_ ${JSON.stringify(pathsArray)} |${isExecutionTerminatedOnError}|`).trigger('input')
                         } catch (e) {}
 
                         try {

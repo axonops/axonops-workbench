@@ -6256,13 +6256,13 @@
                         // If Docker doesn't exist then show feedback to the user and skip the upcoming code
                         if (!dockerExists) {
                           if (selectedManagementTool != 'podman')
-                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('local clusters feature with Docker management tool requires either [code]docker compose[/code] or [code]docker-compose[/code] to be installed, please make sure at least one of them is installed and accessible before attempting to $data', [I18next.t('start local cluster')])) + '.', 'failure')
+                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('local clusters feature with Docker management tool requires [code]docker compose[/code] to be installed, please make sure it is installed and accessible before attempting to $data', [I18next.t('start local cluster')])) + '.', 'failure')
 
                           try {
                             if (selectedManagementTool != 'podman')
                               throw 0
 
-                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData(`local clusters feature with Podman management tool requires [code]podman-compose[/code] to be installed, please make sure it's installed and accessible before attempting to $data`, [I18next.t('start local cluster')])) + '.', 'failure')
+                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData(`local clusters feature with Podman management tool requires [code]podman compose[/code] to be installed, please make sure it's installed and accessible before attempting to $data`, [I18next.t('start local cluster')])) + '.', 'failure')
                           } catch (e) {}
 
                           startPostProcess()

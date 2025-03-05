@@ -392,9 +392,6 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                     if (!isSandbox || isSandboxDockerInfoShown)
                       throw 0
 
-                    // Show the toast to the user
-                    // showToast(I18next.capitalize(I18next.t('local clusters feature requires docker')), I18next.capitalizeFirstLetter(I18next.t('starting or stopping a sandbox project may prompt an authentication request due to its reliance on [code]docker[/code] and [code]docker-compose[/code]')) + '.')
-
                     // Update the global variable which tells if the info toast has been shown or not
                     isSandboxDockerInfoShown = true
                   } catch (e) {}

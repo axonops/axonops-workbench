@@ -1119,8 +1119,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             return
 
           // For `durable_writes`, it should be displayed if its value is only `false`
-          // if (attribute == 'durable_writes' && object[attribute] != 'false')
-          //   return
+          if (attribute == 'durable_writes' && object[attribute])
+            return
 
           let materialIcon = object[attribute] ? 'check' : 'close'
 
@@ -1440,7 +1440,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             // Get rid of `is_reversed` attribute
             if (!isClusteringKey)
               delete column.is_reversed
-            
+
           // Build a tree view for the column
           buildTreeViewForChild(columnsID, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'column'))
 

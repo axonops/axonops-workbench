@@ -1171,7 +1171,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       } catch (e) {}
 
       try {
-        if (object['is_reversed'] == undefined)
+        if (object['is_reversed'] == undefined || icon != 'clustering-key')
           throw 0
 
         let attribute = object['is_reversed']
@@ -1432,17 +1432,20 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         // Loop through columns
         table.columns.forEach((column) => {
-          // Get rid of `is_reversed` attribute
-          delete column.is_reversed
-
           // Get a random ID for the column
-          let columnID = getRandomID(30)
+          let columnID = getRandomID(30),
+            isPartitionKey = table.partition_key.find((partitionKey) => column.name == partitionKey.name) != undefined,
+            isClusteringKey = table.clustering_key.find((clusteringKey) => column.name == clusteringKey.name) != undefined
 
+            // Get rid of `is_reversed` attribute
+            if (!isClusteringKey)
+              delete column.is_reversed
+            
           // Build a tree view for the column
-          buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
+          buildTreeViewForChild(columnsID, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'column'))
 
           if (isCounterTable)
-            buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, 'column')
+            buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'column'))
         })
       }
 

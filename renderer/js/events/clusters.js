@@ -1727,6 +1727,7 @@
 
                     // Listen to data sent from the pty instance which are fetched from the cqlsh tool
                     IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
+
                       // If the session is paused then nothing would be printed
                       if (isSessionPaused || ['print metadata', 'print cql_desc', 'check connection'].some((command) => `${data.output}`.includes(command)))
                         return
@@ -16202,9 +16203,12 @@
           } catch (e) {}
 
           try {
+            // if (dialogElement.find('div[action="standard-tables"]').find('.is-invalid:not(.ignore-invalid)').length <= 0 &&
+            //   dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field.row').length > 0 &&
+            //   dialogElement.find('div[action="standard-tables"]').find('div.standard-table-column-field.row, div.standard-table-udt-column-field.row').length > 0 &&
+            //   minifyText(standardTableName).length > 0)
             if (dialogElement.find('div[action="standard-tables"]').find('.is-invalid:not(.ignore-invalid)').length <= 0 &&
               dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field.row').length > 0 &&
-              dialogElement.find('div[action="standard-tables"]').find('div.standard-table-column-field.row, div.standard-table-udt-column-field.row').length > 0 &&
               minifyText(standardTableName).length > 0)
               throw 0
 

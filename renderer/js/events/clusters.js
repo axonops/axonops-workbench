@@ -12590,6 +12590,8 @@
 
         isAlterState = isAlterState != null && isAlterState == 'alter'
 
+        setTimeout(() => $('#keyspaceName').trigger('input'))
+
         setTimeout(() => {
           dialogElement.find('div[for-strategy]').hide()
 

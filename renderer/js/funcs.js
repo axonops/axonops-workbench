@@ -1107,7 +1107,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          *
          * Define the attributes' names
          */
-        let attributes = ['virtual', 'durable_writes', 'is_static', 'is_reversed']
+        let attributes = ['virtual', 'durable_writes', 'is_static']
 
         if (parentType == 'partitionKeys')
           attributes = attributes.slice(0, -2)
@@ -1124,14 +1124,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           let materialIcon = object[attribute] ? 'check' : 'close'
 
-          if (attribute == 'is_reversed')
-            materialIcon = materialIcon == 'check' ? 'arrow_upward' : 'arrow_downward'
-
           // Otherwise, define that attribute's structure
           let structure = {
             id: getRandomID(30),
             parent: childID,
-            text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: ${attribute == 'is_reversed' ? (object[attribute] ? 'DESC' : 'ASC') : ''} <span class="material-icons for-treeview">${materialIcon}</span>`,
+            text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: <span class="material-icons for-treeview">${materialIcon}</span>`,
             type: 'default'
           }
 
@@ -1171,6 +1168,17 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         // Otherwise, add the type to the node's text
         structure.text = `${structure.text}: <span>${EscapeHTML(object.cql_type)}</span>`
+      } catch (e) {}
+
+      try {
+        if (object['is_reversed'] == undefined)
+          throw 0
+
+        let attribute = object['is_reversed']
+
+        materialIcon = attribute ? 'arrow_downward' : 'arrow_upward'
+
+        structure.text = `${structure.text} <span class="is-reversed-node">${attribute ? 'DESC' : 'ASC'} <span class="material-icons for-treeview">${materialIcon}</span></span>`
       } catch (e) {}
     },
     sortItemsAlphabetically = (array, sortBy) => {

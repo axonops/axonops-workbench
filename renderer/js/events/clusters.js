@@ -8064,6 +8064,12 @@
             let update = async () => {
               isUpdatingEditor = true // Change the value to `true`; to prevent collisions
 
+              try {
+                let timestampGenerator = cqlshValues.connection.timestamp_generator
+
+                cqlshValues.connection.timestamp_generator = timestampGenerator == 'Not Set' ? 'DISABLED' : timestampGenerator
+              } catch (e) {}
+
               // Get final values - from the input fields - as JSON object
               let finalValues = await variablesManipulation(workspaceID, cqlshValues),
                 // Apply the final values to the editor's content
@@ -19393,6 +19399,28 @@
     })
 
     $('input#writeConsistencyLevel').add('input#defaultOmittedColumnsValue').on('focus', () => $('#rightClickActionsMetadata').scrollTop($('#rightClickActionsMetadata').height()))
+
+    $('input#timestampGenerator').on('focus', () => setTimeout(() => {
+      $('div.modal#addEditClusterDialog').find('div.side-right').scrollTop($('div.modal#addEditClusterDialog').find('div.side-right').height())
+
+      $('#timestampGenerator').closest('div.modal-section').find('ul.dropdown-menu').css('transform', 'translate(0px, -26px)')
+    }))
+
+    {
+      setTimeout(() => {
+        $('#timestampGenerator').on('input', function() {
+          console.log("HERE....");
+        })
+
+        $(`div.dropdown[for-select="timestampGenerator"] ul.dropdown-menu`).find('a').click(function() {
+          // Point at the input field related to the list
+          let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)
+
+          // Update the input's value
+          selectElement.val($(this).attr('value')).trigger('input')
+        })
+      })
+    }
 
     $('input#ttl').add($('input#insertionTimestamp')).each(function() {
       let clearField = $(this).parent().parent().find('div.clear-field')

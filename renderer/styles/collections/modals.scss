@@ -707,6 +707,20 @@ div.modal {
       }
     }
   }
+
+  &#addEditClusterDialog {
+    div.modal-body {
+      height: 470px;
+    }
+
+    div.side-right {
+      overflow-y: hidden !important;
+
+      div.modal-section {
+        height: 440px !important;
+      }
+    }
+  }
 }
 
 input[type="file"],

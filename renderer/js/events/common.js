@@ -871,7 +871,7 @@
   // Show/hide the languages' list once the associated input is focused on/out
   setTimeout(() => {
     // Define the app's settings model selector path
-    let dialog = 'div.modal#appSettings, div.modal#rightClickActionsMetadata'
+    let dialog = 'div.modal#appSettings, div.modal#rightClickActionsMetadata, div.modal#addEditClusterDialog'
 
     // Loop through the dropdown element of each select element
     $(`${dialog}`).find('div.dropdown[for-select]').each(function() {

@@ -11542,6 +11542,10 @@
                             handleNodeCreationDeletion()
                           } catch (e) {}
                         }
+
+                        try {
+                          updateActionStatusForInsertRow()
+                        } catch (e) {}
                       })
                     }
 
@@ -19501,8 +19505,30 @@
         typeValueSpan.css('width', `${spanWidth - widthDifference}px`).addClass('overflow')
       })
 
+      let isPrimaryKeyMissingFields = false
+
       try {
-        if (allNodes.filter(`:not(.ignored)`).find('.is-invalid:not(.ignore-invalid)').length <= 0)
+        let primaryKeyAddButtons = $('#tableFieldsPrimaryKeysTree').find('button[action="add-item"]').get()
+
+        for (let addItemBtn of primaryKeyAddButtons) {
+          let button = $(addItemBtn),
+            relatedNode = button.closest('a.jstree-anchor'),
+            hasChildren = relatedTreesObjects.primaryKey.get_node(relatedNode.attr('add-hidden-node')).children_d.length > 0
+
+          if (!hasChildren) {
+            isPrimaryKeyMissingFields = true
+
+            relatedNode.addClass('invalid')
+
+            continue
+          }
+
+          relatedNode.removeClass('invalid')
+        }
+      } catch (e) {}
+
+      try {
+        if (allNodes.filter(`:not(.ignored)`).find('.is-invalid:not(.ignore-invalid)').length <= 0 && !isPrimaryKeyMissingFields)
           throw 0
 
         dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
@@ -19850,7 +19876,7 @@
         fieldsValues = fieldsValues.concat(fields.values)
       }
 
-      dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...fieldsNames, ...fieldsValues].length <= 0 ? '' : null)
+      dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...fieldsNames, ...fieldsValues].length <= 0 || isPrimaryKeyMissingFields ? '' : null)
 
       let fields = []
 

@@ -113,7 +113,7 @@ port = 9042
 ;; The time type to be used by the cqlsh tool
 ;; Client-Side (Desktop Time) = MonotonicTimestampGenerator (default)
 ;; Server-Side (Cassandra Server Time) = None
-; timestamp_generator = MonotonicTimestampGenerator
+timestamp_generator = None
 
 
 

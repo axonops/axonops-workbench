@@ -1031,3 +1031,23 @@ div.tippy-content.no-padding {
 .badge-secondary {
   opacity: 0.95;
 }
+
+a.jstree-anchor {
+  span.is-reversed-node {
+    background: #353535;
+    display: inline-block;
+    height: 20px;
+    line-height: 20px;
+    width: fit-content;
+    text-align: center;
+    border-radius: 20px;
+    transform: scale(0.75) translateY(-1px);
+    padding-left: 9px;
+    vertical-align: middle;
+    margin-left: -6px;
+
+    span.material-icons {
+      bottom: 1px;
+    }
+  }
+}

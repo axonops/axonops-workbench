@@ -653,6 +653,27 @@
                     <span mulang="default" capitalize></span>: 9042
                   </div>
                 </div>
+                <div class="form-outline form-white" style="z-index: 2;">
+                  <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" style="background-color: inherit; cursor: pointer;" id="timestampGenerator" info-section="connection" info-key="timestamp_generator" value="Not Set"
+                    readonly noopacity>
+                  <label class="form-label">
+                    <span mulang="used time type" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                  <div class="form-helper">
+                    The time type to be used by the cqlsh tool in insertion processes.
+                  </div>
+                </div>
+                <div class="dropdown" for-select="timestampGenerator">
+                  <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                  <ul class="dropdown-menu top-margin" style="width: 100% !important;">
+                    <li><a class="dropdown-item" href="#" value="Not Set">Not Set</a></li>
+                    <li><a class="dropdown-item" href="#" value="MonotonicTimestampGenerator">MonotonicTimestampGenerator - Client-Side Time (Desktop Time)</a></li>
+                    <li><a class="dropdown-item" href="#" value="None">None - Server-Side Time (Cassandra Server Time)</a></li>
+                  </ul>
+                </div>
               </div>
               <div class="modal-section" section="authentication" hidden>
                 <div class="form-outline form-white margin-bottom file" data-mulang="cassandra credentials" capitalize file-info="Cassandra Credentials" role="file-selector" file-name="-">
@@ -1823,7 +1844,7 @@
                   </ul>
                 </div>
                 <div for-strategy="SimpleStrategy">
-                  <div class="form-outline form-white margin-bottom replication-factor">
+                  <div class="form-outline form-white margin-bottom replication-factor" style="margin-top: 20px;">
                     <input type="number" class="form-control form-control-lg" min="1" value="1" id="keyspaceReplicationFactorSimpleStrategy">
                     <label class="form-label">
                       <span class="dynamic-rf" mulang="replication factor" capitalize></span>

@@ -110,6 +110,11 @@ port = 9042
 ;; A timeout in seconds for executing queries
 ; request_timeout = 10
 
+;; The time type to be used by the cqlsh tool
+;; Client-Side (Desktop Time) = MonotonicTimestampGenerator (default)
+;; Server-Side (Cassandra Server Time) = None
+timestamp_generator = None
+
 
 
 [csv]

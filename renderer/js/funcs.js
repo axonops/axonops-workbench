@@ -1107,7 +1107,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          *
          * Define the attributes' names
          */
-        let attributes = ['virtual', 'durable_writes', 'is_static', 'is_reversed']
+        let attributes = ['virtual', 'durable_writes', 'is_static']
 
         if (parentType == 'partitionKeys')
           attributes = attributes.slice(0, -2)
@@ -1119,19 +1119,16 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             return
 
           // For `durable_writes`, it should be displayed if its value is only `false`
-          // if (attribute == 'durable_writes' && object[attribute] != 'false')
-          //   return
+          if (attribute == 'durable_writes' && object[attribute])
+            return
 
           let materialIcon = object[attribute] ? 'check' : 'close'
-
-          if (attribute == 'is_reversed')
-            materialIcon = materialIcon == 'check' ? 'arrow_upward' : 'arrow_downward'
 
           // Otherwise, define that attribute's structure
           let structure = {
             id: getRandomID(30),
             parent: childID,
-            text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: ${attribute == 'is_reversed' ? (object[attribute] ? 'DESC' : 'ASC') : ''} <span class="material-icons for-treeview">${materialIcon}</span>`,
+            text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: <span class="material-icons for-treeview">${materialIcon}</span>`,
             type: 'default'
           }
 
@@ -1171,6 +1168,17 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         // Otherwise, add the type to the node's text
         structure.text = `${structure.text}: <span>${EscapeHTML(object.cql_type)}</span>`
+      } catch (e) {}
+
+      try {
+        if (object['is_reversed'] == undefined || icon != 'clustering-key')
+          throw 0
+
+        let attribute = object['is_reversed']
+
+        materialIcon = attribute ? 'arrow_downward' : 'arrow_upward'
+
+        structure.text = `${structure.text} <span class="is-reversed-node">${attribute ? 'DESC' : 'ASC'} <span class="material-icons for-treeview">${materialIcon}</span></span>`
       } catch (e) {}
     },
     sortItemsAlphabetically = (array, sortBy) => {
@@ -1304,91 +1312,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           isCounterTable: true
         })
 
-      // Define an inner function to handle the appending process of options to the tree structure
-      let appendOptions = (options, parentID) => {
-        // Loop through the passed `options`
-        Object.keys(options).forEach((option) => {
-          // Manipulate the option's key/text
-          let text = I18next.capitalize(`${option}`.replace(/\_/g, ' ')),
-            // Get the option's value
-            value = options[option]
-
-          // Don't show `CDC` option if its value is `NULL`
-          if (`${text}`.toLowerCase() == 'cdc' && `${value}`.toLowerCase() == 'null')
-            return
-
-          // If the value is one of the defined values in the array, then set the value to `NULL`
-          value = [undefined, null].includes(value) ? 'NULL' : value
-
-          try {
-            /**
-             * Handle if the option's value is actually a JSON object that has other sub-options
-             * If the option's value is not an object, then skip this try-catch block
-             */
-            if (typeof value != 'object')
-              throw 0
-
-            // Get a random ID for the current parent's options node
-            let parentOptionsID = getRandomID(30),
-              // Define the node/leaf structure
-              parentOptionsStructure = {
-                id: parentOptionsID,
-                parent: parentID, // Under the options' container node
-                text: `${EscapeHTML(text)}`,
-                type: 'default',
-                icon: normalizePath(`${text}`.toLowerCase() == 'compaction' ? Path.join(extraIconsPath, 'compaction.png') : Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
-              }
-
-            // Push the node
-            treeStructure.core.data.push(parentOptionsStructure)
-
-            if (isCounterTable)
-              treeStructure.core.data.push({
-                ...parentOptionsStructure,
-                id: `${parentOptionsID}_${counterTablesID}`,
-                parent: `${parentID}_${counterTablesID}`
-              })
-
-            // Make a recursive call to the same function
-            return appendOptions(value, parentOptionsID)
-          } catch (e) {}
-
-          /**
-           * Reaching here means the current option's value is not an object
-           * Get a random ID for the option's node
-           */
-          let optionID = getRandomID(30),
-            // Define the node/leaf structure
-            optionStructure = {
-              id: optionID,
-              parent: parentID, // Under the options' node
-              text: `${text}: <span>${EscapeHTML(value)}</span>`,
-              type: 'default',
-              icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
-            }
-
-          // Push the node
-          treeStructure.core.data.push(optionStructure)
-
-          if (isCounterTable)
-            treeStructure.core.data.push({
-              ...optionStructure,
-              id: `${optionID}_${counterTablesID}`,
-              parent: `${parentID}_${counterTablesID}`
-            })
-        })
-      }
-
-      try {
-        if (table.options.length <= 0)
-          throw 0
-
-        appendOptions({
-          compaction: table.options['compaction'],
-          bloom_filter_fp_chance: table.options['bloom_filter_fp_chance']
-        }, tableID)
-      } catch (e) {}
-
       // Table's primary keys
       {
         let primaryKeysStructure = {
@@ -1509,19 +1432,109 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         // Loop through columns
         table.columns.forEach((column) => {
-          // Get rid of `is_reversed` attribute
-          delete column.is_reversed
-
           // Get a random ID for the column
-          let columnID = getRandomID(30)
+          let columnID = getRandomID(30),
+            isPartitionKey = table.partition_key.find((partitionKey) => column.name == partitionKey.name) != undefined,
+            isClusteringKey = table.clustering_key.find((clusteringKey) => column.name == clusteringKey.name) != undefined
+
+            // Get rid of `is_reversed` attribute
+            if (!isClusteringKey)
+              delete column.is_reversed
 
           // Build a tree view for the column
-          buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
+          buildTreeViewForChild(columnsID, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'column'))
 
           if (isCounterTable)
-            buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, 'column')
+            buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'column'))
         })
       }
+
+      // Define an inner function to handle the appending process of options to the tree structure
+      let appendOptions = (options, parentID) => {
+        // Loop through the passed `options`
+        Object.keys(options).forEach((option) => {
+          // Manipulate the option's key/text
+          let text = I18next.capitalize(`${option}`.replace(/\_/g, ' ')),
+            // Get the option's value
+            value = options[option]
+
+          // Don't show `CDC` option if its value is `NULL`
+          if (`${text}`.toLowerCase() == 'cdc' && `${value}`.toLowerCase() == 'null')
+            return
+
+          // If the value is one of the defined values in the array, then set the value to `NULL`
+          value = [undefined, null].includes(value) ? 'NULL' : value
+
+          try {
+            /**
+             * Handle if the option's value is actually a JSON object that has other sub-options
+             * If the option's value is not an object, then skip this try-catch block
+             */
+            if (typeof value != 'object')
+              throw 0
+
+            // Get a random ID for the current parent's options node
+            let parentOptionsID = getRandomID(30),
+              // Define the node/leaf structure
+              parentOptionsStructure = {
+                id: parentOptionsID,
+                parent: parentID, // Under the options' container node
+                text: `${EscapeHTML(text)}`,
+                type: 'default',
+                icon: normalizePath(`${text}`.toLowerCase() == 'compaction' ? Path.join(extraIconsPath, 'compaction.png') : Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
+              }
+
+            // Push the node
+            treeStructure.core.data.push(parentOptionsStructure)
+
+            if (isCounterTable)
+              treeStructure.core.data.push({
+                ...parentOptionsStructure,
+                id: `${parentOptionsID}_${counterTablesID}`,
+                parent: `${parentID}_${counterTablesID}`
+              })
+
+            // Make a recursive call to the same function
+            return appendOptions(value, parentOptionsID)
+          } catch (e) {}
+
+          /**
+           * Reaching here means the current option's value is not an object
+           * Get a random ID for the option's node
+           */
+          let optionID = getRandomID(30),
+            // Define the node/leaf structure
+            optionStructure = {
+              id: optionID,
+              parent: parentID, // Under the options' node
+              text: `${text}: <span>${EscapeHTML(value)}</span>`,
+              type: 'default',
+              icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
+            }
+
+          // Push the node
+          treeStructure.core.data.push(optionStructure)
+
+          if (isCounterTable)
+            treeStructure.core.data.push({
+              ...optionStructure,
+              id: `${optionID}_${counterTablesID}`,
+              parent: `${parentID}_${counterTablesID}`
+            })
+        })
+      }
+
+      try {
+        if (table.options.length <= 0)
+          throw 0
+
+        appendOptions({
+          compaction: {
+            ...table.options['compaction'],
+            bloom_filter_fp_chance: table.options['bloom_filter_fp_chance']
+          }
+        }, tableID)
+      } catch (e) {}
 
       // Display the `Options` node/leaf if there is at least one option available for the current table
       try {

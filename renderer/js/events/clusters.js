@@ -1727,6 +1727,7 @@
 
                     // Listen to data sent from the pty instance which are fetched from the cqlsh tool
                     IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
+
                       // If the session is paused then nothing would be printed
                       if (isSessionPaused || ['print metadata', 'print cql_desc', 'check connection'].some((command) => `${data.output}`.includes(command)))
                         return
@@ -8063,6 +8064,12 @@
             let update = async () => {
               isUpdatingEditor = true // Change the value to `true`; to prevent collisions
 
+              try {
+                let timestampGenerator = cqlshValues.connection.timestamp_generator
+
+                cqlshValues.connection.timestamp_generator = timestampGenerator == 'Not Set' ? 'DISABLED' : timestampGenerator
+              } catch (e) {}
+
               // Get final values - from the input fields - as JSON object
               let finalValues = await variablesManipulation(workspaceID, cqlshValues),
                 // Apply the final values to the editor's content
@@ -11535,6 +11542,10 @@
                             handleNodeCreationDeletion()
                           } catch (e) {}
                         }
+
+                        try {
+                          updateActionStatusForInsertRow()
+                        } catch (e) {}
                       })
                     }
 
@@ -12588,6 +12599,8 @@
           isAlterState = $('div.modal#rightClickActionsMetadata').attr('data-state')
 
         isAlterState = isAlterState != null && isAlterState == 'alter'
+
+        setTimeout(() => $('#keyspaceName').trigger('input'))
 
         setTimeout(() => {
           dialogElement.find('div[for-strategy]').hide()
@@ -16202,9 +16215,12 @@
           } catch (e) {}
 
           try {
+            // if (dialogElement.find('div[action="standard-tables"]').find('.is-invalid:not(.ignore-invalid)').length <= 0 &&
+            //   dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field.row').length > 0 &&
+            //   dialogElement.find('div[action="standard-tables"]').find('div.standard-table-column-field.row, div.standard-table-udt-column-field.row').length > 0 &&
+            //   minifyText(standardTableName).length > 0)
             if (dialogElement.find('div[action="standard-tables"]').find('.is-invalid:not(.ignore-invalid)').length <= 0 &&
               dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field.row').length > 0 &&
-              dialogElement.find('div[action="standard-tables"]').find('div.standard-table-column-field.row, div.standard-table-udt-column-field.row').length > 0 &&
               minifyText(standardTableName).length > 0)
               throw 0
 
@@ -19388,6 +19404,28 @@
 
     $('input#writeConsistencyLevel').add('input#defaultOmittedColumnsValue').on('focus', () => $('#rightClickActionsMetadata').scrollTop($('#rightClickActionsMetadata').height()))
 
+    $('input#timestampGenerator').on('focus', () => setTimeout(() => {
+      $('div.modal#addEditClusterDialog').find('div.side-right').scrollTop($('div.modal#addEditClusterDialog').find('div.side-right').height())
+
+      $('#timestampGenerator').closest('div.modal-section').find('ul.dropdown-menu').css('transform', 'translate(0px, -26px)')
+    }))
+
+    {
+      setTimeout(() => {
+        $('#timestampGenerator').on('input', function() {
+          console.log("HERE....");
+        })
+
+        $(`div.dropdown[for-select="timestampGenerator"] ul.dropdown-menu`).find('a').click(function() {
+          // Point at the input field related to the list
+          let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)
+
+          // Update the input's value
+          selectElement.val($(this).attr('value')).trigger('input')
+        })
+      })
+    }
+
     $('input#ttl').add($('input#insertionTimestamp')).each(function() {
       let clearField = $(this).parent().parent().find('div.clear-field')
 
@@ -19467,8 +19505,30 @@
         typeValueSpan.css('width', `${spanWidth - widthDifference}px`).addClass('overflow')
       })
 
+      let isPrimaryKeyMissingFields = false
+
       try {
-        if (allNodes.filter(`:not(.ignored)`).find('.is-invalid:not(.ignore-invalid)').length <= 0)
+        let primaryKeyAddButtons = $('#tableFieldsPrimaryKeysTree').find('button[action="add-item"]').get()
+
+        for (let addItemBtn of primaryKeyAddButtons) {
+          let button = $(addItemBtn),
+            relatedNode = button.closest('a.jstree-anchor'),
+            hasChildren = relatedTreesObjects.primaryKey.get_node(relatedNode.attr('add-hidden-node')).children_d.length > 0
+
+          if (!hasChildren) {
+            isPrimaryKeyMissingFields = true
+
+            relatedNode.addClass('invalid')
+
+            continue
+          }
+
+          relatedNode.removeClass('invalid')
+        }
+      } catch (e) {}
+
+      try {
+        if (allNodes.filter(`:not(.ignored)`).find('.is-invalid:not(.ignore-invalid)').length <= 0 && !isPrimaryKeyMissingFields)
           throw 0
 
         dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
@@ -19816,7 +19876,7 @@
         fieldsValues = fieldsValues.concat(fields.values)
       }
 
-      dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...fieldsNames, ...fieldsValues].length <= 0 ? '' : null)
+      dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...fieldsNames, ...fieldsValues].length <= 0 || isPrimaryKeyMissingFields ? '' : null)
 
       let fields = []
 

@@ -19412,10 +19412,6 @@
 
     {
       setTimeout(() => {
-        $('#timestampGenerator').on('input', function() {
-          console.log("HERE....");
-        })
-
         $(`div.dropdown[for-select="timestampGenerator"] ul.dropdown-menu`).find('a').click(function() {
           // Point at the input field related to the list
           let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)

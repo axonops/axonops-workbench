@@ -347,7 +347,7 @@
     "axios": "^1.8.2",
     "better-sqlite3": "^11.8.1",
     "bytes": "^3.1.2",
-    "chart.js": "^4.4.7",
+    "chart.js": "^4.4.8",
     "cheerio": "^1.0.0",
     "co": "^4.6.0",
     "configparser": "^0.3.10",

@@ -655,8 +655,8 @@
                 </div>
                 <div class="form-outline form-white" style="z-index: 2;">
                   <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                  <input type="text" class="form-control form-icon-trailing form-control-lg" style="background-color: inherit; cursor: pointer;" id="timestampGenerator" info-section="connection" info-key="timestamp_generator" value="Not Set"
-                    readonly noopacity>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" style="background-color: inherit; cursor: pointer;" id="timestampGenerator" info-section="connection" info-key="timestamp_generator" value="Not Set" readonly
+                    noopacity>
                   <label class="form-label">
                     <span mulang="used time type" capitalize></span>
                   </label>
@@ -1245,6 +1245,21 @@
                             Docker
                           </div>
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row flex margin-bottom more-margin flex-advanced for-management-tools-settings">
+                  <div class="col-md-3">
+                  </div>
+                  <div class="col-md-9 extra-paths-input" for-form="toolExtraPaths">
+                    <div class="form-outline form-white" form="toolExtraPaths">
+                      <input type="text" class="form-control form-control-lg" id="toolExtraPaths">
+                      <label for="toolExtraPaths" class="form-label">
+                        <span mulang="tool location extra paths" capitalize></span>
+                      </label>
+                      <div class="form-helper">
+                        Hint: Paths are separated by a pipe <code>/path1/|/path2/</code>.
                       </div>
                     </div>
                   </div>

@@ -875,6 +875,18 @@ let convertTableToTabulator = (json, container, callback) => {
              */
             let element = row.getElement()
 
+
+
+            $(element).find('div:contains("<span")').each(function() {
+              try {
+                let spanTxt =  `${$(this).text().match(/<span(.*?)<\/span>\s*/)[0]}`
+
+                $(this).text($(this).text().replace(/<span(.*?)<\/span>\s*/, ''))
+
+                $(this).prepend($(spanTxt))
+              } catch (e) {}
+            })
+
             // Search for any field in the row that contain specific keyword for object
             $(element).find('div:contains("-OBJECT-")').each(function() {
               try {

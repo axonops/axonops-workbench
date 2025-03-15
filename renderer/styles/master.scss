@@ -3888,6 +3888,24 @@ div.tab-content {
 
               div.left-chart {
                 width: 70%;
+                position: relative;
+
+                button.zoom-reset {
+                  position: absolute;
+                  right: 5px;
+                  top: -10px;
+                  margin: auto;
+                  width: 30px;
+                  height: 30px;
+                  border-radius: 50%;
+                  background: rgb(63, 65, 70);
+                  color: rgb(167, 167, 167);
+
+                  ion-icon {
+                    font-size: 150%;
+                    transform: translateY(-4px);
+                  }
+                }
               }
 
               div.right-chart {
@@ -3920,6 +3938,38 @@ div.tab-content {
               vertical-align: middle;
               margin-right: 3px;
               filter: invert(1);
+            }
+
+            div.sources {
+              background: #3a3a3a;
+              padding: 5px 0;
+              margin-left: 10px;
+              margin-right: 10px;
+              border-radius: 8px;
+              vertical-align: middle;
+              display: flex;
+              flex-direction: row;
+              flex-wrap: wrap;
+              align-content: flex-start;
+              justify-content: flex-start;
+              align-items: flex-start;
+              transform-origin: left;
+              transform: scale(0.9);
+              width: calc(100% + 10% - 10px);
+              margin-top: 12px;
+              margin-bottom: 5px;
+
+              button {
+                margin: 2px 5px;
+
+                span.badge {
+                  text-transform: none;
+                  background: var(--mdb-gray-400);
+                  margin-left: 1px !important;
+                  vertical-align: middle;
+                  display: inline-block;
+                }
+              }
             }
           }
 

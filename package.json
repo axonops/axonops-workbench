@@ -25,9 +25,11 @@
       "main/bin",
       "config"
     ],
-    "publish": [{
-      "provider": "github"
-    }],
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ],
     "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
@@ -47,7 +49,9 @@
         "Keywords": "cassandra;axonops;development;workbench",
         "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench.png"
       },
-      "executableArgs": ["--no-sandbox"],
+      "executableArgs": [
+        "--no-sandbox"
+      ],
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
@@ -348,6 +352,7 @@
     "better-sqlite3": "^11.8.1",
     "bytes": "^3.1.2",
     "chart.js": "^4.4.7",
+    "chartjs-plugin-zoom": "^2.2.0",
     "cheerio": "^1.0.0",
     "co": "^4.6.0",
     "configparser": "^0.3.10",

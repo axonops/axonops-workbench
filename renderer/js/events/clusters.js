@@ -1498,14 +1498,57 @@
                         if (result == null)
                           return
 
+                        let dataCenters = JSON.parse(clusterElement.attr('data-datacenters'))
+
+                        try {
+                          result = result.map((activity) => {
+
+                            try {
+                              activity.data_center = dataCenters.find((dataCenter) => dataCenter.address == activity.source).datacenter
+                            } catch (e) {}
+
+                            activity.color = invertColor(getRandomColor())
+
+                            return activity
+                          })
+                        } catch (e) {}
+
+                        let groupedResult = groupActivitiesBySource([...result]),
+                          totalSourcesElapsedTime = Object.keys(groupedResult).map((source) => {
+                            let elapsedTime = 0
+
+                            try {
+                              let initTime = 0
+
+                              elapsedTime = groupedResult[source].reduce((accumulator, activity) => accumulator + Math.abs(activity.source_elapsed), initTime)
+                            } catch (e) {}
+
+                            elapsedTime = (elapsedTime / 1000)
+
+                            return {
+                              source,
+                              elapsedTime
+                            }
+                          })
+
+
                         // Get random IDs for the different elements of the query tracing section
                         let [
+                          tableBodyID,
                           canvasTimelineID,
                           canvasPieChartID,
-                          tableBodyID
-                        ] = getRandomID(20, 3),
+                          sourcesContainerID,
+                          zoomResetBtnID
+                        ] = getRandomID(20, 5),
                           // Generate random color for each activity in the query tracing's result
-                          colors = getRandomColor(result.length).map((color) => invertColor(color))
+                          sourcesColors = getRandomColor(Object.keys(groupedResult).length)
+
+                        try {
+                          if (!Array.isArray(sourcesColors))
+                            sourcesColors = [sourcesColors]
+                        } catch (e) {}
+
+                        sourcesColors = sourcesColors.map((color) => invertColor(color))
 
                         // Remove the `empty` class; in order to show the query tracing's content
                         $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`).removeClass('_empty')
@@ -1514,30 +1557,27 @@
                         let element = `
                              <div class="query" data-session-id="${sessionID}">
                                <span class="badge rounded-pill badge-secondary id-time">#${sessionID} <ion-icon name="time"></ion-icon> ${formatTimeUUID(sessionID)}</span>
+                               <div class="sources" id="_${sourcesContainerID}">
+                                 <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="all">
+                                   <span source-ip>All</span>
+                                 </button>
+                               </div>
                                <div class="info-left">
-                                 <div class="left-chart"><canvas data-canvas-id="${canvasTimelineID}" width="100%"></canvas></div>
+                                 <div class="left-chart">
+                                   <canvas data-canvas-id="${canvasTimelineID}" width="100%"></canvas>
+                                   <button type="button" class="btn btn-tertiary zoom-reset" data-mdb-ripple-color="light" id="_${zoomResetBtnID}">
+                                     <ion-icon name="zoom-reset"></ion-icon>
+                                   </button>
+                                 </div>
                                  <div class="right-chart"><canvas data-canvas-id="${canvasPieChartID}" width="100%"></canvas></div>
                                </div>
                                <div class="info-right">
-                                 <div class="copy-tracing">
+                                 <div class="copy-tracing" style="z-index: 1;">
                                    <div class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-title="Copy the tracing result" data-mulang="copy the tracing result" capitalize-first>
                                      <ion-icon name="copy-solid"></ion-icon>
                                    </div>
                                  </div>
-                                 <table class="table table-bordered">
-                                   <thead>
-                                     <tr>
-                                       <th scope="col" style="width: 40%;"><span mulang="activity" capitalize></span></th>
-                                       <th scope="col"><span mulang="time" capitalize></span></th>
-                                       <th scope="col"><span mulang="source" capitalize></span></th>
-                                       <th scope="col"><span mulang="source port" capitalize></span></th>
-                                       <th scope="col"><span mulang="source elapsed" capitalize></span></th>
-                                       <th scope="col"><span mulang="thread" capitalize></span></th>
-                                     </tr>
-                                   </thead>
-                                   <tbody data-body-id="${tableBodyID}">
-                                   </tbody>
-                                 </table>
+                                 <div class="activities-table" id="_${tableBodyID}"></div>
                                </div>
                              </div>`
 
@@ -1557,25 +1597,53 @@
                             setTimeout(() => $(this).find('span.badge').click(() => $(`tbody[data-body-id="${tableBodyID}"]`).parent().toggle()))
                           }
 
+                          let activitesTabulatorObject = null
+
                           // Append each activity in the query tracing's table
                           {
                             setTimeout(() => {
-                              // Loop through each activity
-                              result.forEach((activity, index) => {
-                                // Each activity is shown as a row in the result's table
-                                let element = `
-                                     <tr>
-                                       <td><span class="color" style="background-color:${colors[index]}"></span> ${activity.activity}</td>
-                                       <td>${formatTimeUUID(activity.event_id, true)}</td>
-                                       <td>${activity.source}</td>
-                                       <td>${activity.source_port || '-'}</td>
-                                       <td>${((index == 0 ? activity.source_elapsed : activity.source_elapsed - result[index - 1].source_elapsed) / 1000).toFixed(2)}ms</td>
-                                       <td>${activity.thread}</td>
-                                     </tr>`
+                              let tableData = [...result]
 
-                                // Append the activity to the table
-                                $(this).find(`tbody[data-body-id="${tableBodyID}"]`).append($(element))
-                              })
+                              try {
+                                let index = -1
+
+                                tableData = tableData.map((sourceActivity) => {
+                                  index += 1
+
+                                  sourceActivity.activity = `<span class="color" style="background-color:${sourceActivity.color}"></span> ${sourceActivity.activity}`
+
+                                  sourceActivity.event_id = `${formatTimeUUID(sourceActivity.event_id, true)}`
+
+                                  sourceActivity.source_elapsed_new = `${((index == 0 ? sourceActivity.source_elapsed : sourceActivity.source_elapsed - result[index - 1].source_elapsed) / 1000).toFixed(2)}ms`
+
+                                  return sourceActivity
+                                })
+
+                                tableData = tableData.map((sourceActivity) => {
+                                  sourceActivity.source_elapsed = `${sourceActivity.source_elapsed_new}`
+
+                                  delete sourceActivity.source_elapsed_new
+
+                                  delete sourceActivity.color
+
+                                  return {
+                                    "Activity": sourceActivity.activity,
+                                    "Source": sourceActivity.source,
+                                    "Source Data Center": sourceActivity.data_center,
+                                    "Source Elapsed": sourceActivity.source_elapsed,
+                                    "Source Port": sourceActivity.source_port,
+                                    "Thread": sourceActivity.thread,
+                                    "Event ID": sourceActivity.event_id,
+                                    "Session ID": sourceActivity.session_id
+                                  }
+                                })
+                              } catch (e) {}
+
+                              convertTableToTabulator(JSON.stringify(tableData), $(`div[id="_${tableBodyID}"]`), (tabulatorObject) => setTimeout(() => {
+                                activitesTabulatorObject = tabulatorObject
+
+                                tabulatorObject.redraw()
+                              }))
                             })
                           }
 
@@ -1609,9 +1677,9 @@
                             data: {
                               datasets: [{
                                 data: null,
-                                backgroundColor: colors
+                                backgroundColor: []
                               }],
-                              labels: result.map((query) => query.activity)
+                              labels: []
                             },
                             options: {
                               indexAxis: 'y',
@@ -1650,11 +1718,30 @@
                           // Set the special configuration for the timeline chart
                           try {
                             timeLineChartConfig.type = 'bar'
-                            timeLineChartConfig.data.datasets[0].data = result.map((query, index) => [index == 0 ? 0 : result[index - 1].source_elapsed / 1000, query.source_elapsed / 1000])
+                            // timeLineChartConfig.data.datasets[0].data = result.map((query, index) => [index == 0 ? 0 : result[index - 1].source_elapsed / 1000, query.source_elapsed / 1000])
 
                             timeLineChartConfig.options.elements = {}
                             timeLineChartConfig.options.elements.bar = {
                               borderWidth: 1
+                            }
+
+                            timeLineChartConfig.options.plugins.zoom = {
+                              pan: {
+                                enabled: true,
+                                mode: 'xy',
+                                modifierKey: 'ctrl'
+                              },
+                              zoom: {
+                                wheel: {
+                                  enabled: true,
+                                  speed: 0.05,
+                                  modifierKey: 'ctrl'
+                                },
+                                pinch: {
+                                  enabled: true
+                                },
+                                mode: 'xy',
+                              }
                             }
 
                             timeLineChartConfig.options.plugins.tooltip.callbacks.label = (activity) => {
@@ -1678,7 +1765,7 @@
                           // Set the special configuration for the pie chart
                           try {
                             pieChartConfig.type = 'doughnut'
-                            pieChartConfig.data.datasets[0].data = result.map((query, index) => parseFloat((query.source_elapsed / 1000) - (index == 0 ? 0 : result[index - 1].source_elapsed / 1000)))
+                            // pieChartConfig.data.datasets[0].data = result.map((query, index) => parseFloat((query.source_elapsed / 1000) - (index == 0 ? 0 : result[index - 1].source_elapsed / 1000)))
                             pieChartConfig.data.datasets[0].borderColor = 'rgba(0, 0, 0, 0)'
 
                             pieChartConfig.options.plugins.tooltip.callbacks.label = (activity) => {
@@ -1698,6 +1785,99 @@
                             [canvasTimelineID, timeLineChartConfig],
                             [canvasPieChartID, pieChartConfig]
                           ]).forEach((chart, index) => setTimeout(() => queryTracingChartsObjects[chart[0]] = new Chart($(`canvas[data-canvas-id="${chart[0]}"]`)[0], chart[1]), 50 * index))
+
+                          let handleSourceBtnClick = function() {
+                            if ($(this).hasClass('active'))
+                              return
+
+                            let sourceIP = $(this).attr('data-source')
+
+                            $(`div.sources[id="_${sourcesContainerID}"]`).children('button').each(function() {
+                              try {
+                                activitesTabulatorObject.removeFilter('Source', 'like', $(this).attr('data-source'))
+                              } catch (e) {}
+                            })
+
+                            if (sourceIP != 'all')
+                              activitesTabulatorObject.setFilter('Source', 'like', sourceIP)
+
+                            $(`div.sources[id="_${sourcesContainerID}"]`).children('button').removeClass('btn-dark active').addClass('btn-secondary')
+
+                            $(this).removeClass('btn-secondary').addClass('btn-dark active')
+
+                            let chartData = $(this).data('chart-data')
+
+                            let pieChart = queryTracingChartsObjects[canvasPieChartID],
+                              timeLineChart = queryTracingChartsObjects[canvasTimelineID]
+
+                            pieChart.data.labels = chartData.labels
+                            pieChart.data.datasets[0].data = chartData.dataset.doughnut
+                            pieChart.data.datasets[0].backgroundColor = chartData.backgroundColor
+
+                            pieChart.update()
+
+                            timeLineChart.data.labels = chartData.labels
+                            timeLineChart.data.datasets[0].data = chartData.dataset.timeline
+                            timeLineChart.data.datasets[0].backgroundColor = chartData.backgroundColor
+
+                            timeLineChart.update()
+
+                            timeLineChart.resetZoom()
+                          }
+
+                          {
+                            let showAllSourcesBtn = $(this).find(`div.sources[id="_${sourcesContainerID}"]`).children('button[data-source="all"]'),
+                              data = {
+                                labels: Object.keys(groupedResult),
+                                backgroundColor: sourcesColors,
+                                dataset: {
+                                  timeline: totalSourcesElapsedTime.map((sourceInfo) => [0, sourceInfo.elapsedTime]),
+                                  doughnut: totalSourcesElapsedTime.map((sourceInfo) => sourceInfo.elapsedTime)
+                                }
+                              }
+
+                            showAllSourcesBtn.data('chart-data', data)
+
+                            showAllSourcesBtn.click(handleSourceBtnClick)
+
+                            setTimeout(() => showAllSourcesBtn.trigger('click'), 1000)
+                          }
+
+                          setTimeout(() => $(this).find(`button[id="_${zoomResetBtnID}"]`).click(() => queryTracingChartsObjects[canvasTimelineID].resetZoom()))
+
+                          let sourceIndex = 0
+                          for (let sourceIP of Object.keys(groupedResult)) {
+                            let sourceActivites = groupedResult[sourceIP],
+                              dataCenter = '',
+                              sourceColor = sourcesColors[sourceIndex],
+                              data = {
+                                labels: sourceActivites.map((sourceActivity) => sourceActivity.activity),
+                                backgroundColor: sourceActivites.map((sourceActivity) => sourceActivity.color),
+                                dataset: {
+                                  timeline: sourceActivites.map((sourceActivity, index) => [index == 0 ? 0 : sourceActivites[index - 1].source_elapsed / 1000, sourceActivity.source_elapsed / 1000]),
+                                  doughnut: sourceActivites.map((sourceActivity, index) => parseFloat((sourceActivity.source_elapsed / 1000) - (index == 0 ? 0 : sourceActivites[index - 1].source_elapsed / 1000)))
+                                }
+                              }
+
+                              ++sourceIndex
+
+                            try {
+                              dataCenter = dataCenters.find((dataCenter) => dataCenter.address == sourceIP).datacenter
+                            } catch (e) {}
+
+                            let element = `
+                                <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="${sourceIP}">
+                                  <span class="color" style="bottom: 0px; background-color:${sourceColor}"></span>
+                                  <span source-ip>${sourceIP}</span>
+                                  <span class="badge badge-dark ms-2 rounded-pill" ${dataCenter == '' ? 'hidden' : ''}>${dataCenter}</span>
+                                </button>`
+
+                            $(this).find(`div.sources[id="_${sourcesContainerID}"]`).append($(element).show(function() {
+                              $(this).data('chart-data', data)
+
+                              $(this).click(handleSourceBtnClick)
+                            }))
+                          }
                         }))
                       })
                     }
@@ -7388,13 +7568,15 @@
        */
       let startTestConnection = async (sshCreation = null) => {
         // Define an SSH port object to be passed if needed
-        let sshPort = {},
+        let sshInfo = {},
           // Get a random ID for the connection test's request
           requestID = getRandomID(10)
 
         // If the `sshCreation` object has been passed then use the random used port in the creation process instead of the one the user has passed
-        if (sshCreation != null)
-          sshPort.port = sshCreation.port
+        if (sshCreation != null) {
+          sshInfo.sshPort = sshCreation.port
+          sshInfo.sshHost = sshCreation.host
+        }
 
         // Get variables manifest and values
         try {
@@ -7428,7 +7610,7 @@
           processID: testConnectionProcessID,
           requestID,
           ...testData,
-          ...sshPort
+          ...sshInfo
         })
 
         // Once a response from the main thread has been received
@@ -19412,10 +19594,6 @@
 
     {
       setTimeout(() => {
-        $('#timestampGenerator').on('input', function() {
-          console.log("HERE....");
-        })
-
         $(`div.dropdown[for-select="timestampGenerator"] ul.dropdown-menu`).find('a').click(function() {
           // Point at the input field related to the list
           let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)

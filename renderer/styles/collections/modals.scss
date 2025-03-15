@@ -2070,3 +2070,44 @@ ul.dropdown-menu.top-margin {
   opacity: 0.85;
   transform: translateY(-1px) translateX(-5px) scale(0.85);
 }
+
+div.extra-paths-input[for-form="toolExtraPaths"] {
+  display: none;
+}
+
+div.form-outline[form="toolExtraPaths"] {
+  margin-bottom: 8px;
+
+  input {
+    width: 100%;
+    position: relative;
+    margin-bottom: 0 !important;
+  }
+
+  input,
+  label {
+    z-index: 2;
+  }
+
+  div.form-notch-middle {
+    position: relative !important;
+
+    &:after,
+    &:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -1px;
+      margin: auto;
+      width: 2px;
+      height: calc(100% - 0px);
+      background: #262626;
+    }
+
+    &:after {
+      right: -1px;
+      left: auto;
+    }
+  }
+}

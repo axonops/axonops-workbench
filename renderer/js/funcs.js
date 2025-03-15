@@ -875,6 +875,18 @@ let convertTableToTabulator = (json, container, callback) => {
              */
             let element = row.getElement()
 
+
+
+            $(element).find('div:contains("<span")').each(function() {
+              try {
+                let spanTxt =  `${$(this).text().match(/<span(.*?)<\/span>\s*/)[0]}`
+
+                $(this).text($(this).text().replace(/<span(.*?)<\/span>\s*/, ''))
+
+                $(this).prepend($(spanTxt))
+              } catch (e) {}
+            })
+
             // Search for any field in the row that contain specific keyword for object
             $(element).find('div:contains("-OBJECT-")').each(function() {
               try {
@@ -1437,9 +1449,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             isPartitionKey = table.partition_key.find((partitionKey) => column.name == partitionKey.name) != undefined,
             isClusteringKey = table.clustering_key.find((clusteringKey) => column.name == clusteringKey.name) != undefined
 
-            // Get rid of `is_reversed` attribute
-            if (!isClusteringKey)
-              delete column.is_reversed
+          // Get rid of `is_reversed` attribute
+          if (!isClusteringKey)
+            delete column.is_reversed
 
           // Build a tree view for the column
           buildTreeViewForChild(columnsID, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'column'))
@@ -4887,4 +4899,17 @@ let removeFrozenKeyword = (text, attemptNum = 1) => {
   } catch (e) {
     return text
   }
+}
+
+let groupActivitiesBySource = (activities) => {
+  let groupedActivities = {}
+
+  activities.forEach((activity) => {
+    if (!groupedActivities[activity.source])
+      groupedActivities[activity.source] = []
+
+    groupedActivities[activity.source].push(activity)
+  })
+
+  return groupedActivities
 }

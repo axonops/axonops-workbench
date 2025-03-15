@@ -482,8 +482,7 @@
         containersManagementTool = (['docker', 'podman'].some((tool) => `${containersManagementTool}` == `${tool}`)) ? containersManagementTool : 'none'
       } catch (e) {}
 
-      $(`div.management-tools.settings-dialog div.tool[tool="${containersManagementTool}"]`).addClass('selected')
-
+      $(`div.management-tools.settings-dialog div.tool[tool="${containersManagementTool}"]`).addClass('selected').click()
 
       $('input#basicCQLSH[type="checkbox"]').prop('checked', basicCQLSHEnabled == 'true')
 
@@ -769,7 +768,8 @@
         autoUpdateWithNotification = $('input#autoUpdateWithNotification[type="checkbox"]').prop('checked'),
         // Get chosen display language and if it's from right to left
         [chosenDisplayLanguage, languageRTL] = getAttributes($('input#languageUI'), ['hidden-value', 'rtl']),
-        containersManagementTool = 'none'
+        containersManagementTool = 'none',
+        toolExtraPaths = $('input#toolExtraPaths').val()
 
       // Set RTL class if the language needs that
       $('body').toggleClass('rtl', languageRTL == 'true')
@@ -815,6 +815,9 @@
           config.set('ui', 'language', chosenDisplayLanguage)
           config.set('updates', 'checkForUpdates', checkForUpdatesOnLanuch)
           config.set('updates', 'autoUpdate', autoUpdateWithNotification)
+
+          if (containersManagementTool != 'none')
+            config.set('containersManagementToolsPaths', containersManagementTool, toolExtraPaths)
 
           // Set the updated settings
           Modules.Config.setConfig(config)
@@ -1290,11 +1293,62 @@
 
     $('div.management-tools-hint.settings-dialog').slideDown(350)
   })
+}
+
+{
+  let toolExtraPathsDivElement = $('div.extra-paths-input[for-form="toolExtraPaths"]'),
+    toolExtraPathsInput = $('input#toolExtraPaths'),
+    pathIsAbsolute = OS.platform() == 'win32' ? Path.win32.isAbsolute : Path.isAbsolute
 
   $('div.management-tools.settings-dialog div.tool[tool]').click(function() {
     $('div.management-tools.settings-dialog div.tool').removeClass('selected')
 
     $(this).addClass('selected')
+
+    // For tool's location extra paths feature
+    {
+      toolExtraPathsDivElement.slideDown('fast')
+
+      let selectedTool = $(this).attr('tool')
+
+      Modules.Config.getConfig((config) => {
+        let extraPaths = config.get('containersManagementToolsPaths', selectedTool) || ''
+
+        toolExtraPathsInput.val(`${extraPaths}`).trigger('input')
+
+        setTimeout(() => {
+          try {
+            getElementMDBObject(toolExtraPathsInput).update()
+          } catch (e) {}
+        })
+      })
+    }
+  })
+
+  toolExtraPathsInput.on('input', function() {
+    let paths = `${$(this).val()}`
+
+    if (paths.length <= 0)
+      return toolExtraPathsInput.removeClass('is-invalid')
+
+    paths = paths.split('|')
+
+    let isInvalidPathFound = false
+
+    for (let path of paths) {
+      let isPathValid = pathIsAbsolute(path) && pathIsAccessible(path)
+
+      if (isPathValid)
+        continue
+
+      isInvalidPathFound = true
+
+      break
+    }
+
+    toolExtraPathsInput.toggleClass('is-invalid', isInvalidPathFound)
+
+    $('button#saveSettings').attr('disabled', isInvalidPathFound ? '' : null)
   })
 }
 

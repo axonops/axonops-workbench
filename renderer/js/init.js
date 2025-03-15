@@ -761,6 +761,14 @@ $(document).on('initialize', () => {
   // Chart.js
   {
     loadScript(Path.join(__dirname, '..', '..', 'node_modules', 'chart.js', 'dist', 'chart.umd.js'))
+
+    setTimeout(() => {
+      try {
+        const ZoomPlugin = require('chartjs-plugin-zoom')
+
+        Chart.register(ZoomPlugin)
+      } catch (e) {}
+    }, 500)
   }
 
   // ldrs.js

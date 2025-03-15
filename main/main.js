@@ -1029,6 +1029,12 @@ App.on('second-instance', () => {
 
     return info
   })
+
+  IPCMain.on('badge:update', (_, numOfActiveWorkareas) => {
+    try {
+      App.setBadgeCount(numOfActiveWorkareas)
+    } catch (e) {}
+  })
 }
 
 /**

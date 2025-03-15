@@ -1381,3 +1381,25 @@
 {
   $("#rightClickActionsMetadata")[0].addEventListener('hidden.mdb.modal', () => $("#rightClickActionsMetadata").removeClass('insertion-action'))
 }
+
+
+// Check and update the app's icon's badge in macOS based on the currently active work areas (connections)
+{
+  try {
+    if (OS.platform() != 'darwin')
+      throw 0
+
+    let numOfActiveWorkareas = 0
+
+    setInterval(() => {
+      let numUpdate = $('div.body div.right div.content div[content="workarea"] div.workarea').length
+
+      if (numUpdate == numOfActiveWorkareas)
+        return
+
+      IPCRenderer.send('badge:update', numUpdate)
+
+      numOfActiveWorkareas = numUpdate
+    }, 1500)
+  } catch (e) {}
+}

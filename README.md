@@ -33,9 +33,9 @@ and for the daily internal builds (used for testing and development purposes) us
 brew install --cask axonopsworkbench-internal
 ```
 
-#### Docker on OSX
+#### Docker or Podman on OSX
 
-AxonOps Workbench requires docker with the docker-compose plugin to start up and run local Apache Cassandra clusters.
+AxonOps Workbench requires docker with the docker compose plugin or podman with podman compse to start up and run local Apache Cassandra clusters.
 
 `docker` does not run nativably on OSX. You usually need an additional application such as [Rancher Desktop](https://rancherdesktop.io/),
 [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/) or [Colima](https://github.com/abiosoft/colima).

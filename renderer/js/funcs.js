@@ -879,7 +879,7 @@ let convertTableToTabulator = (json, container, callback) => {
 
             $(element).find('div:contains("<span")').each(function() {
               try {
-                let spanTxt =  `${$(this).text().match(/<span(.*?)<\/span>\s*/)[0]}`
+                let spanTxt = `${$(this).text().match(/<span(.*?)<\/span>\s*/)[0]}`
 
                 $(this).text($(this).text().replace(/<span(.*?)<\/span>\s*/, ''))
 

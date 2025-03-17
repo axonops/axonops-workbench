@@ -46,7 +46,7 @@ AxonOps Workbench requires docker with the docker-compose plugin to start up and
 
 ```
 cd ~/.docker/cli-plugins
-ln -s ${brew --prefix)/bin/docker-compose .
+ln -s $(brew --prefix)/bin/docker-compose .
 ```
 
 ## Features

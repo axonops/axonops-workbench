@@ -697,134 +697,171 @@ let repairJSON = (json) => {
  *
  * @Parameters:
  * {string} `json` the JSON string to be manipulated
- * {boolean} `?isExpandOn` flag to tell if the expandation feature is enabled in cqlsh
  *
  * @Return: {object} the JSON in table array format, and the manipulated JSON
  */
-let convertJSONToTable = (json, isExpandOn = false) => {
-  // Attempt to repair the passed JSON string
-  json = repairJSON(json)
-
-  /**
-   * Split the JSON string by new line
-   * CQLSH return each record/row in seperated line
-   */
-  try {
-    json = JSON.parse(json)
-
-    if (json.length == undefined) {
-      json = JSON.stringify(json)
-      throw 0
-    }
-  } catch (e) {
-    json = `${json}`.split('\n')
-  }
-
-  let stringJSON = '',
-    foundJSON = []
-
-  try {
-    if (OS.platform() != 'win32')
-      throw 0
-
-    json.forEach((record) => {
-      stringJSON += `${record}`;
-
+let convertJSONToTable = (json, callback) => {
+  let tempFilePath = '',
+    conversionProcess = () => {
       try {
-        let match = `${stringJSON}`.match(
-          /\{[\s\S]+\}/gm
-        )
-
-        if (match == null)
-          return
-
-        foundJSON.push(match[0]);
-
-        stringJSON = stringJSON.replace(/\{[\s\S]+\}/gm, '')
+        FS.unlink(`${tempFilePath}`, () => {})
       } catch (e) {}
-    })
-  } catch (e) {}
 
-  try {
-    // Convert each record/row to JSON object inside array
-    let jsonObject = [...(foundJSON.length != 0 ? foundJSON : json)].map((item) => {
-      let finalItem = item
+      /**
+       * Split the JSON string by new line
+       * CQLSH return each record/row in seperated line
+       */
+      try {
+        json = JSON.parse(json)
+
+        if (json.length == undefined) {
+          json = JSON.stringify(json)
+          throw 0
+        }
+      } catch (e) {
+        json = `${json}`.split('\n')
+      }
+
+      let stringJSON = '',
+        foundJSON = []
 
       try {
-        if (typeof finalItem === 'object')
+        if (OS.platform() != 'win32')
           throw 0
 
-        finalItem = JSON.parse(repairJSON(item))
+        json.forEach((record) => {
+          stringJSON += `${record}`;
+
+          try {
+            let match = `${stringJSON}`.match(
+              /\{[\s\S]+\}/gm
+            )
+
+            if (match == null)
+              return
+
+            foundJSON.push(match[0]);
+
+            stringJSON = stringJSON.replace(/\{[\s\S]+\}/gm, '')
+          } catch (e) {}
+        })
       } catch (e) {}
 
-      return finalItem
+      try {
+        // Convert each record/row to JSON object inside array
+        let jsonObject = [...(foundJSON.length != 0 ? foundJSON : json)].map((item) => {
+          let finalItem = item
+
+          try {
+            if (typeof finalItem === 'object')
+              throw 0
+
+            finalItem = JSON.parse(repairJSON(item))
+          } catch (e) {}
+
+          return finalItem
+        })
+
+        // Loop through each record
+        for (let i = 0; i < jsonObject.length; i++) {
+          // Point at the record
+          let record = jsonObject[i]
+
+          // Loop through each column inside the current record
+          Object.keys(record).forEach((key) => {
+            // Get the value of the current column
+            let data = record[key]
+
+            try {
+              // Process only for Windows
+              if (OS.platform() != 'win32')
+                throw 0
+
+              // If the data is `undefined`
+              if (data == undefined) {
+                // Delete it from the record with its key
+                delete jsonObject[i][key]
+
+                // Skip the remaining code in this try-catch block
+                throw 0
+              }
+
+              // If the key has characters - like new line -
+              if (minifyText(key) != key) {
+                // Minify the key and add it to the record
+                jsonObject[i][minifyText(key)] = data
+
+                // Delete the old key
+                delete jsonObject[i][key]
+              }
+            } catch (e) {}
+
+            // If the value type is not `object` then skip the upcoming code
+            if (typeof data != 'object')
+              return
+
+            // Convert the data of type `object` to be string
+            try {
+              record[key] = JSON.stringify(data)
+            } catch (e) {
+              record[key] = `${data}`
+            } finally {
+              // Add keyword to be recognized once the Tabulator object is created
+              record[key] += '-OBJECT-'
+            }
+          })
+        }
+
+        // Convert the final manipulated JSON object to HTML table string
+        let tableHTML = ConvertJSONTable(jsonObject)
+
+        // Return final result
+        return {
+          table: tableHTML,
+          json: jsonObject
+        }
+      } catch (e) {}
+
+      /**
+       * Reaching here means the conversion wasn't successful
+       * Return empty string
+       */
+      return ''
+    }
+
+  try {
+    if (!pathIsAccessible(`${json.trim()}`))
+      throw 0
+
+    tempFilePath = `${json.trim()}`
+
+    FS.readFile(tempFilePath, 'utf8', (err, data) => {
+      if (err)
+        return callback('')
+
+      json = data
+
+      return callback(conversionProcess())
+
+      let compressedJSON = Base64.toByteArray(data)
+
+      Zlib.gunzip(compressedJSON, (_err, buffer) => {
+        if (_err)
+          return callback('')
+
+        json = buffer.toString()
+
+        return callback(conversionProcess())
+      })
     })
 
-    // Loop through each record
-    for (let i = 0; i < jsonObject.length; i++) {
-      // Point at the record
-      let record = jsonObject[i]
+    return
+  } catch (e) {
+    // Attempt to repair the passed JSON string
+    json = repairJSON(json)
+  }
 
-      // Loop through each column inside the current record
-      Object.keys(record).forEach((key) => {
-        // Get the value of the current column
-        let data = record[key]
-
-        try {
-          // Process only for Windows
-          if (OS.platform() != 'win32')
-            throw 0
-
-          // If the data is `undefined`
-          if (data == undefined) {
-            // Delete it from the record with its key
-            delete jsonObject[i][key]
-
-            // Skip the remaining code in this try-catch block
-            throw 0
-          }
-
-          // If the key has characters - like new line -
-          if (minifyText(key) != key) {
-            // Minify the key and add it to the record
-            jsonObject[i][minifyText(key)] = data
-
-            // Delete the old key
-            delete jsonObject[i][key]
-          }
-        } catch (e) {}
-
-        // If the value type is not `object` then skip the upcoming code
-        if (typeof data != 'object')
-          return
-
-        // Convert the data of type `object` to be string
-        try {
-          record[key] = JSON.stringify(data)
-        } catch (e) {
-          record[key] = `${data}`
-        } finally {
-          // Add keyword to be recognized once the Tabulator object is created
-          record[key] += '-OBJECT-'
-        }
-      })
-    }
-
-    // Convert the final manipulated JSON object to HTML table string
-    let tableHTML = ConvertJSONTable(jsonObject)
-
-    // Return final result
-    return {
-      table: tableHTML,
-      json: jsonObject
-    }
-  } catch (e) {}
-
-  /**
-   * Reaching here means the conversion wasn't successful
-   * Return empty string
-   */
-  return ''
+  callback(conversionProcess())
 }
 
 /**
@@ -838,86 +875,84 @@ let convertJSONToTable = (json, isExpandOn = false) => {
  * @Return: {object} the Tabulator table object
  */
 let convertTableToTabulator = (json, container, callback) => {
-  // Convert the passed JSON string to HTML table
-  let convertedJSON = convertJSONToTable(json),
+  convertJSONToTable(json, (convertedJSON) => {
     // Get a random ID for the table
-    tableID = getRandomID(20),
-    // The variable which is going to hold the Tabulator object
-    tabulatorTable
+    let tableID = getRandomID(20),
+      // The variable which is going to hold the Tabulator object
+      tabulatorTable
 
-  // Append the HTML table to the passed container
-  container.append($(`<div id="_${tableID}"></div>`).show(function() {
-    try {
-      setTimeout(() => {
-        // Create a Tabulator object with set properties
-        tabulatorTable = new Tabulator(`div#_${tableID}`, {
-          layout: 'fitDataStretch',
-          columns: convertedJSON.table[0].map((column) => {
-            return {
-              title: column,
-              field: column,
-              headerFilter: 'input'
+    // Append the HTML table to the passed container
+    container.append($(`<div id="_${tableID}"></div>`).show(function() {
+      try {
+        setTimeout(() => {
+          // Create a Tabulator object with set properties
+          tabulatorTable = new Tabulator(`div#_${tableID}`, {
+            layout: 'fitDataStretch',
+            columns: convertedJSON.table[0].map((column) => {
+              return {
+                title: column,
+                field: column,
+                headerFilter: 'input'
+              }
+            }),
+            data: convertedJSON.json,
+            resizableColumnFit: true,
+            resizableRowGuide: true,
+            movableColumns: true,
+            pagination: 'local',
+            paginationSize: 10,
+            paginationSizeSelector: [5, 10, 20, 40, 60, 80, 100],
+            paginationCounter: 'rows',
+            rowFormatter: function(row) {
+              /**
+               * Format some data in the rows
+               *
+               * Get the row's HTML UI element
+               */
+              let element = row.getElement()
+
+              $(element).find('div:contains("<span")').each(function() {
+                try {
+                  let spanTxt = `${$(this).text().match(/<span(.*?)<\/span>\s*/)[0]}`
+
+                  $(this).text($(this).text().replace(/<span(.*?)<\/span>\s*/, ''))
+
+                  $(this).prepend($(spanTxt))
+                } catch (e) {}
+              })
+
+              // Search for any field in the row that contain specific keyword for object
+              $(element).find('div:contains("-OBJECT-")').each(function() {
+                try {
+                  // Add CSS properties
+                  $(this).css({
+                    'padding-left': '25px'
+                  })
+
+                  // Manipulate the field's content
+                  let content = `${$(this).text()}`.replace(/\-OBJECT\-/g, '')
+
+                  // Create a JSON/Object view for the content
+                  $(this).text('').jsonViewer(JSON.parse(content), {
+                    collapsed: true,
+                    withLinks: false
+                  })
+
+                  // Make sure to redraw the table with each open/close of the object viewer
+                  setTimeout(() => $(this).find('a').click(() => setTimeout(() => tabulatorTable.redraw())))
+                } catch (e) {}
+              })
             }
-          }),
-          data: convertedJSON.json,
-          resizableColumnFit: true,
-          resizableRowGuide: true,
-          movableColumns: true,
-          pagination: 'local',
-          paginationSize: 10,
-          paginationSizeSelector: [5, 10, 20, 40, 60, 80, 100],
-          paginationCounter: 'rows',
-          rowFormatter: function(row) {
-            /**
-             * Format some data in the rows
-             *
-             * Get the row's HTML UI element
-             */
-            let element = row.getElement()
+          })
 
-
-
-            $(element).find('div:contains("<span")').each(function() {
-              try {
-                let spanTxt = `${$(this).text().match(/<span(.*?)<\/span>\s*/)[0]}`
-
-                $(this).text($(this).text().replace(/<span(.*?)<\/span>\s*/, ''))
-
-                $(this).prepend($(spanTxt))
-              } catch (e) {}
-            })
-
-            // Search for any field in the row that contain specific keyword for object
-            $(element).find('div:contains("-OBJECT-")').each(function() {
-              try {
-                // Add CSS properties
-                $(this).css({
-                  'padding-left': '25px'
-                })
-
-                // Manipulate the field's content
-                let content = `${$(this).text()}`.replace(/\-OBJECT\-/g, '')
-
-                // Create a JSON/Object view for the content
-                $(this).text('').jsonViewer(JSON.parse(content), {
-                  collapsed: true,
-                  withLinks: false
-                })
-
-                // Make sure to redraw the table with each open/close of the object viewer
-                setTimeout(() => $(this).find('a').click(() => setTimeout(() => tabulatorTable.redraw())))
-              } catch (e) {}
-            })
-          }
+          tabulatorTable.on('columnsLoaded', () => callback(tabulatorTable))
         })
-
-        tabulatorTable.on('columnsLoaded', () => callback(tabulatorTable))
-      })
-    } catch (e) {
-      // Return `null` as a critical error has occured
-      callback(null)
-    }
-  }))
+      } catch (e) {
+        // Return `null` as a critical error has occured
+        callback(null)
+      }
+    }))
+  })
 }
 
 /**
@@ -3805,7 +3840,7 @@ let clearTemp = () => {
        * Check if the item ends with the `.cwb` or `.metadata` extensions
        * The `.cwb` item is a `cqlsh.rc` config file created for test connection and it should be removed
        */
-      if (['cwb', 'metadata', 'tmp', 'cqldesc', 'checkconn', 'aocwtmp'].some((extension) => item.endsWith(`.${extension}`)) || item.startsWith('preview_item_')) {
+      if (['cwb', 'metadata', 'tmp', 'cqldesc', 'checkconn', 'aocwtmp', '_wb.txt'].some((extension) => item.endsWith(`.${extension}`)) || item.startsWith('preview_item_')) {
         // Remove that temporary config file
         try {
           FS.removeSync(Path.join(tempFolder, item))

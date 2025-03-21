@@ -3052,10 +3052,7 @@
                                     if (`${match}`.indexOf('KEYWORD:JSON:STARTED') <= -1)
                                       throw 0
 
-                                    jsonString = manipulateOutput(match).match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
-
-                                    if (OS.platform() == 'win32')
-                                      jsonString = jsonString.replace(/\\"/g, `\"`)
+                                    jsonString = `${match}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
 
                                     // Convert the JSON string to HTML table related to a Tabulator object
                                     convertTableToTabulator(jsonString, outputElement.find('div.sub-output-content'), (_tabulatorObject) => {

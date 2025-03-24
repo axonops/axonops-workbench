@@ -1,4 +1,4 @@
-# AxonOps™ Workbench
+# AxonOps Workbench
 
 [AxonOps Workbench](https://axonops.com/workbench/) is a desktop application built for Cassandra DB developers and DBAs. Kafka support is coming soon! 
 

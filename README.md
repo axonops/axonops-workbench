@@ -148,6 +148,21 @@ The current builds are still in development and are not necessarily backwards co
 - In the Windows Credential Manager, remove all credentials with prefix AxonOps.
 - In the registries - using the regedit tool -, navigate to Computer\HKEY_LOCAL_MACHINE\SOFTWARE\AxonOpsWorkbenchClustersSecrets - it can also be AxonOpsDeveloperWorkbenchClustersSecrets -, delete the entire key/folder.
 
+## Acknowledgements
+
+AxonOps Workbench builds upon the foundation laid by several open-source projects, particularly Apache Cassandra. We extend our sincere gratitude to the Apache Cassandra community for their outstanding work and contributions to the field of distributed databases.
+
+Apache Cassandra is a free and open-source, distributed, wide-column store, NoSQL database management system designed to handle large amounts of data across many commodity servers, providing high availability with no single point of failure.
+
+### Apache Cassandra Resources
+
+- **Official Website**: [cassandra.apache.org](https://cassandra.apache.org/)
+- **Source Code**: Available on [GitHub](https://github.com/apache/cassandra) or the Apache Git repository at `gitbox.apache.org/repos/asf/cassandra.git`
+- **Documentation**: Comprehensive guides and references available at the [Apache Cassandra website](https://cassandra.apache.org/)
+
+AxonOps Workbench incorporates and extends functionality from various Cassandra tools and utilities, enhancing them to provide a seamless desktop experience for Cassandra DB developers and DBAs.
+
+We encourage users to explore and contribute to the main Apache Cassandra project, as well as to provide feedback and suggestions for AxonOps Workbench through our [GitHub discussions](https://github.com/axonops/axonops-workbench/discussions/categories/ideas) and [issues](https://github.com/axonops/axonops-workbench/issues/new/choose) pages.
 
 ***
 

@@ -2420,11 +2420,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
  *
  * @Return: {string || object} one suggestion, or group - array - of suggestions
  */
-let suggestionSearch = (needle, haystack) => {
+let suggestionSearch = (needle, haystack, checkDoubleQuotes = false) => {
   let result = [] // Final result which be returned
 
   // Lowered the case for the `needle`
   needle = needle.toLowerCase()
+
+  if (checkDoubleQuotes)
+    needle = needle.replace(/^\"*(.*?)\"*$/g, '$1')
 
   // Filter the `haystack` by keeping values that start with the `needle`
   result = haystack.filter((val) => (`${val}`.toLowerCase()).startsWith(needle))
@@ -4469,7 +4472,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
       defaultValue = defaultValue && !isInsertionAsJSON ? `value="${defaultValue}"` : ''
 
       let inputFieldUIElement = `
-          <div class="form-outline form-white ignored-applied null-related" style="z-index:1;">
+          <div data-is-main-input="true" class="form-outline form-white ignored-applied null-related" style="z-index:1;">
             <div class="clear-field hide" ${manipulatedType.type == 'checkbox' ? 'hidden' : ''}>
               <div class="btn btn-tertiary" data-mdb-ripple-color="light">
                 <ion-icon name="close"></ion-icon>
@@ -4489,7 +4492,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
         let switchBtnID = getRandomID(10)
 
         inputFieldUIElement = `
-          <div class="form-check form-switch form-white ignored-applied null-related">
+          <div data-is-main-input="true" class="form-check form-switch form-white ignored-applied null-related">
             <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="_${switchBtnID}" data-field-type="${nodeObject.type}">
             <label class="form-check-label uppercase" for="_${switchBtnID}" onclick="handleLabelClickEvent(this)">false</label>
           </div>`

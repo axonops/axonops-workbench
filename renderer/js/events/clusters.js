@@ -1907,7 +1907,6 @@
 
                     // Listen to data sent from the pty instance which are fetched from the cqlsh tool
                     IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
-
                       // If the session is paused then nothing would be printed
                       if (isSessionPaused || ['print metadata', 'print cql_desc', 'check connection'].some((command) => `${data.output}`.includes(command)))
                         return
@@ -4298,7 +4297,7 @@
                             throw 0
 
                           // Get the recognized keyspace name
-                          let keyspace = closestWord.slice(0, closestWord.indexOf('.')),
+                          let keyspace = closestWord.slice(0, closestWord.indexOf('.')).replace(/^\"*(.*?)\"*$/g, '$1'),
                             // Attempt to get its tables
                             tables = metadataInfo[keyspace]
 
@@ -4324,7 +4323,7 @@
                         lastData.closestWord = closestWord
 
                         // Get the suggestions based on the closest word
-                        let suggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray)
+                        let suggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray, isSuggestKeyspaces || isKeyspace)
 
                         // Keep related suggestions and remove the rest
                         try {
@@ -4375,7 +4374,7 @@
 
                             // The suggestion UI structure
                             let element = `
-                                 <span class="btn suggestion badge rounded-pill ripple-surface-light" data-index="${index}" data-suggestion="${suggestion}" data-selected="false" data-mdb-ripple-color="light" style="display:none">${suggestion}</span>`
+                               <span ${isSuggestKeyspaces || isKeyspace ? 'data-double-quote-check="true"' : ''} class="btn suggestion badge rounded-pill ripple-surface-light" data-index="${index}" data-suggestion="${suggestion}" data-selected="false" data-mdb-ripple-color="light" style="display:none">${suggestion}</span>`
 
                             // Append the suggestion and handle the `click` event
                             suggestionsList.append($(element).delay(50 * index).fadeIn(100 * (index + 1)).click(function() {
@@ -4524,28 +4523,67 @@
 
                           // Get the selected suggestion's content/text
                           let selectedSuggestionContent = selectedSuggestion.attr('data-suggestion'),
+                            isDoubleQuotesCheckNeeded = selectedSuggestion.attr('data-double-quote-check') == 'true',
                             // Get the statement/textarea's content/text
-                            currentStatementContent = $(this).val()
+                            currentStatementContent = $(this).val(),
+                            areDoubleQuotesAdded = false
 
-                          // Set the suggestion's text to be lower case if needed
-                          if (lastData.closestWord.at(-1) != `${lastData.closestWord.at(-1) || ''}`.toUpperCase())
-                            selectedSuggestionContent = selectedSuggestionContent.toLowerCase()
+                          if (isDoubleQuotesCheckNeeded) {
+                            selectedSuggestionContent = addDoubleQuotes(selectedSuggestionContent)
 
-                          // Update the selected suggestion's content by slicing what already has been typed by the user
-                          selectedSuggestionContent = selectedSuggestionContent.slice(lastData.closestWord.length)
+                            areDoubleQuotesAdded = selectedSuggestionContent.startsWith('"')
+                          } else {
+                            // Set the suggestion's text to be lower case if needed
+                            if (lastData.closestWord.at(-1) != `${lastData.closestWord.at(-1) || ''}`.toUpperCase())
+                              selectedSuggestionContent = selectedSuggestionContent.toLowerCase()
+
+                            // Update the selected suggestion's content by slicing what already has been typed by the user
+                            selectedSuggestionContent = selectedSuggestionContent.slice(lastData.closestWord.length)
+                          }
 
                           // Define initially the suggestion's prefix content
                           let suggestionPrefixContent = currentStatementContent.slice(lastData.cursorPosition)
 
-                          // Update the prefix content by remove the previous suggestion if it already has been added
-                          if (suggestionPrefixContent.indexOf(lastData.suggestion) != -1)
-                            suggestionPrefixContent = `${suggestionPrefixContent.slice(0, suggestionPrefixContent.indexOf(lastData.suggestion))}${suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(lastData.suggestion) + lastData.suggestion.length)}`
+                          if (isDoubleQuotesCheckNeeded) {
+                            // Update the prefix content by remove the previous suggestion if it already has been added
+                            if (lastData.suggestion.indexOf(suggestionPrefixContent) != -1 && suggestionPrefixContent.length != 0) {
+                              try {
+                                if (suggestionPrefixContent == lastData.suggestion || `${lastData.closestWord}${suggestionPrefixContent}` == lastData.suggestion) {
+                                  suggestionPrefixContent = ''
+
+                                  throw 0
+                                }
+
+                                let tempTxt = ''
+                                for (let i = 0; i < suggestionPrefixContent.length; ++i) {
+                                 tempTxt += `${suggestionPrefixContent[i]}`
+
+                                 if(lastData.suggestion.endsWith(`${lastData.closestWord}${tempTxt}`)) {
+                                   let newPrefix = suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(tempTxt) + tempTxt.length)
+
+                                   suggestionPrefixContent = newPrefix
+                                   break
+                                 }
+                                }
+                              } catch (e) {}
+                            }
+                          } else {
+                            // Update the prefix content by remove the previous suggestion if it already has been added
+                            if (suggestionPrefixContent.indexOf(lastData.suggestion) != -1)
+                              suggestionPrefixContent = `${suggestionPrefixContent.slice(0, suggestionPrefixContent.indexOf(lastData.suggestion))}${suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(lastData.suggestion) + lastData.suggestion.length)}`
+                          }
+
+                          if (isDoubleQuotesCheckNeeded && suggestionPrefixContent.startsWith(lastData.suggestion))
+                            suggestionPrefixContent = suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(lastData.suggestion) + lastData.suggestion.length)
 
                           // Update the statement's text/content
-                          currentStatementContent = `${currentStatementContent.slice(0, lastData.cursorPosition)}${selectedSuggestionContent}${suggestionPrefixContent}`
+                          currentStatementContent = currentStatementContent.slice(0, lastData.cursorPosition - (isDoubleQuotesCheckNeeded ? lastData.closestWord.length : 0)) + `${selectedSuggestionContent}${suggestionPrefixContent}`
 
                           // Update the last saved suggestion
                           lastData.suggestion = `${selectedSuggestionContent}`
+
+                          if (isDoubleQuotesCheckNeeded)
+                            lastData.suggestion = lastData.suggestion.slice(lastData.suggestion.indexOf(lastData.closestWord) + lastData.closestWord.length)
 
                           // Set the final statement's text/content
                           $(this).val(currentStatementContent).focus()
@@ -4553,7 +4591,7 @@
                           // Update the cursor's position inside the textarea
                           {
                             // Define the updated cursor's position
-                            let cursorPosition = lastData.cursorPosition + selectedSuggestionContent.length
+                            let cursorPosition = lastData.cursorPosition + selectedSuggestionContent.length + (isDoubleQuotesCheckNeeded && suggestionPrefixContent.length > 0 ? 1 : 0)
 
                             // Set it inside the textarea
                             $(this)[0].setSelectionRange(cursorPosition, cursorPosition)
@@ -10389,7 +10427,7 @@
 
         $('input#keyspaceDurableWrites').prop('checked', true)
 
-        $('#rightClickActionsMetadata').removeClass('show-editor')
+        $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
 
         rightClickActionsMetadataModal.show()
       })
@@ -10460,7 +10498,7 @@
         $('input#keyspaceDurableWrites').prop('checked', metadataInfo.durable_writes)
         $('input#keyspaceDurableWrites').attr('set-value', metadataInfo.durable_writes)
 
-        $('#rightClickActionsMetadata').removeClass('show-editor')
+        $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
 
         rightClickActionsMetadataModal.show()
       })
@@ -10549,7 +10587,7 @@
         $('div.modal#rightClickActionsMetadata').find('span[mulang].no-udt').toggle(data.numOfUDTs <= 0)
         $('div.modal#rightClickActionsMetadata').find('span[mulang].exist-udt').toggle(data.numOfUDTs > 0)
 
-        $('#rightClickActionsMetadata').removeClass('show-editor')
+        $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
 
         rightClickActionsMetadataModal.show()
       })
@@ -10601,7 +10639,7 @@
           $(`a[action]#addDataField`).add($(`a[action]#addUDTDataField`)).trigger('click', JSON.stringify(fields))
         } catch (e) {}
 
-        $('#rightClickActionsMetadata').removeClass('show-editor')
+        $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
 
         rightClickActionsMetadataModal.show()
       })
@@ -10720,7 +10758,7 @@
 
         $('div.modal#rightClickActionsMetadata div[action="standard-tables"]').show()
 
-        $('#rightClickActionsMetadata').removeClass('show-editor')
+        $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
 
         try {
           let cassandraVersion = $(`div[content="clusters"] div.clusters-container div.cluster[data-id="${activeClusterID}"]`).attr('data-cassandra-version')
@@ -10775,7 +10813,7 @@
 
         $('div.modal#rightClickActionsMetadata div[action="counter-tables"]').show()
 
-        $('#rightClickActionsMetadata').removeClass('show-editor')
+        $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
 
         try {
           let cassandraVersion = $(`div[content="clusters"] div.clusters-container div.cluster[data-id="${activeClusterID}"]`).attr('data-cassandra-version')
@@ -10863,7 +10901,7 @@
 
           $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
 
-          $('#rightClickActionsMetadata').removeClass('show-editor')
+          $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
 
           $(`a[action]#addCounterTablePartitionKey`).trigger('click', JSON.stringify(partitionKeys))
 
@@ -10967,7 +11005,7 @@
 
         $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
 
-        $('#rightClickActionsMetadata').removeClass('show-editor')
+        $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
 
         $(`a[action]#addStandardTablePartitionKey`).trigger('click', JSON.stringify(partitionKeys))
 
@@ -19438,21 +19476,22 @@
   }
 
   {
-    let tippyInstance = null,
-      dateTimePickerObject = null
+    let tippyInstance = [],
+      dateTimePickerObject = []
 
-    $('button#insertionTimestampPicker').click(function(_, isInitProcess = false) {
+    $('button#insertionTimestampPicker, button#deleteTimestampPicker').click(function(_, isInitProcess = false) {
       try {
-        let tippyReference = $('button#insertionTimestampPicker')
+        let tippyReference = $(this),
+          id = $(this).attr('id')
 
-        if (tippyInstance != null) {
+        if (tippyInstance[id] != null) {
           try {
-            tippyInstance.enable()
-            setTimeout(() => tippyInstance.show())
+            tippyInstance[id].enable()
+            setTimeout(() => tippyInstance[id].show())
           } catch (e) {}
 
           try {
-            dateTimePickerObject.setValue(new Date())
+            dateTimePickerObject[id].setValue(new Date())
           } catch (e) {}
 
           throw 0
@@ -19462,7 +19501,7 @@
           isDataCleared = false,
           viewMode = 'YMDHMS'
 
-        tippyInstance = tippy(tippyReference[0], {
+        tippyInstance[id] = tippy(tippyReference[0], {
           content: `<div id="_${pickerContainerID}"></div>`,
           appendTo: () => document.body,
           allowHTML: true,
@@ -19485,7 +19524,7 @@
               setTimeout(() => $(instance.popper).find('div.tippy-content').addClass('no-padding'))
 
               setTimeout(() => {
-                dateTimePickerObject = $(`div#_${pickerContainerID}`).datetimepicker({
+                dateTimePickerObject[id] = $(`div#_${pickerContainerID}`).datetimepicker({
                   date: new Date(),
                   viewMode,
                   onClear: () => {
@@ -19551,8 +19590,7 @@
       } catch (e) {}
     })
 
-    setTimeout(() => $('button#insertionTimestampPicker').trigger('click', true), 3000)
-
+    setTimeout(() => $('button#insertionTimestampPicker, button#deleteTimestampPicker').trigger('click', true), 3000)
 
     setTimeout(() => {
       // Point at the list container

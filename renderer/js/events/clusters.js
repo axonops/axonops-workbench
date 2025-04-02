@@ -844,7 +844,7 @@
                                </div>
                                <div class="action" action="close">
                                  <div class="btn-container">
-                                   <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Close the work area" data-mulang="close the work area" capitalize-first data-id="${closeWorkareaBtnID}">
+                                   <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Close and disconnect" data-mulang="close and disconnect" capitalize-first data-id="${closeWorkareaBtnID}">
                                      <ion-icon name="close"></ion-icon>
                                    </div>
                                  </div>

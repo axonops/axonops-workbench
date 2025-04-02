@@ -2169,29 +2169,28 @@
                                   ]
                                 }]
 
+                                let commands = {
+                                  ddl: [],
+                                  dql: [],
+                                  dml: [],
+                                  dcl: []
+                                }
+
                                 try {
                                   if (['cluster'].every((type) => nodeType != type))
                                     throw 0
 
-                                  contextMenu = contextMenu.concat([{
-                                      type: 'separator'
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('actions')),
-                                      enabled: false
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('create keyspace')),
-                                      action: 'createKeyspace',
-                                      click: `() => views.main.webContents.send('create-keyspace', {
+                                  commands.ddl.push({
+                                    label: I18next.capitalize(I18next.t('create keyspace')),
+                                    action: 'createKeyspace',
+                                    click: `() => views.main.webContents.send('create-keyspace', {
                                         datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
                                         keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
                                         tabID: '_${cqlshSessionContentID}',
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
                                       })`
-                                    }
-                                  ])
+                                  })
                                 } catch (e) {}
 
                                 try {
@@ -2229,11 +2228,7 @@
                                       type: 'separator',
                                     }])
 
-                                  contextMenu = contextMenu.concat([{
-                                      label: I18next.capitalize(I18next.t('actions')),
-                                      enabled: false
-                                    },
-                                    {
+                                  commands.ddl = commands.ddl.concat([{
                                       label: I18next.capitalize(I18next.t('create UDT')),
                                       action: 'createUDT',
                                       click: `() => views.main.webContents.send('create-udt', {
@@ -2299,8 +2294,10 @@
                                         btnID: '_${executeStatementBtnID}'
                                       })`,
                                       visible: nodeType == 'udt'
-                                    },
-                                    {
+                                    }
+                                  ])
+
+                                  commands.dml = commands.dml.concat([{
                                       label: I18next.capitalize(I18next.t('insert row as JSON')),
                                       action: 'insertRow',
                                       click: `() => views.main.webContents.send('insert-row', {
@@ -2330,8 +2327,10 @@
                                         btnID: '_${executeStatementBtnID}'
                                       })`,
                                       visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
-                                    },
-                                    {
+                                    }
+                                  ])
+
+                                  commands.ddl = commands.ddl.concat([{
                                       label: I18next.capitalize(I18next.t('alter table')),
                                       action: 'alterTable',
                                       click: `() => views.main.webContents.send('alter-table', {
@@ -2358,20 +2357,23 @@
                                         btnID: '_${executeStatementBtnID}'
                                       })`,
                                       visible: nodeType == 'table'
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('truncate table')),
-                                      action: 'truncateTable',
-                                      click: `() => views.main.webContents.send('truncate-table', {
+                                    }
+                                  ])
+
+                                  commands.ddl.push({
+                                    label: I18next.capitalize(I18next.t('truncate table')),
+                                    action: 'truncateTable',
+                                    click: `() => views.main.webContents.send('truncate-table', {
                                         tableName: '${clickedNode.attr('name')}',
                                         tabID: '_${cqlshSessionContentID}',
                                         keyspaceName: '${keyspaceName}',
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
                                       })`,
-                                      visible: nodeType == 'table'
-                                    },
-                                    {
+                                    visible: nodeType == 'table'
+                                  })
+
+                                  commands.ddl = commands.ddl.concat([{
                                       label: I18next.capitalize(I18next.t('alter keyspace')),
                                       action: 'alterKeyspace',
                                       click: `() => views.main.webContents.send('alter-keyspace', {
@@ -2405,23 +2407,49 @@
                                   if (nodeType != 'keyspaces')
                                     throw 0
 
-                                  contextMenu = [{
-                                      label: I18next.capitalize(I18next.t('actions')),
-                                      enabled: false
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('create keyspace')),
-                                      action: 'createKeyspace',
-                                      click: `() => views.main.webContents.send('create-keyspace', {
+                                  commands.ddl.push({
+                                    label: I18next.capitalize(I18next.t('create keyspace')),
+                                    action: 'createKeyspace',
+                                    click: `() => views.main.webContents.send('create-keyspace', {
                                         datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
                                         keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
                                         tabID: '_${cqlshSessionContentID}',
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
                                       })`
-                                    }
-                                  ]
+                                  })
                                 } catch (e) {}
+
+                                if (contextMenu.length > 0 && contextMenu.find((item) => item.type == 'separator') == undefined)
+                                  contextMenu = contextMenu.concat([{
+                                    type: 'separator',
+                                  }])
+
+                                contextMenu = contextMenu.concat([{
+                                    label: I18next.capitalize(I18next.t('Commands')),
+                                    enabled: false
+                                  },
+                                  {
+                                    label: I18next.capitalize(I18next.t('DDL (Data Definition Language)')),
+                                    enabled: commands.ddl.length > 0 && commands.ddl.some((command) => command.visible != false),
+                                    submenu: commands.ddl
+                                  },
+                                  {
+                                    label: I18next.capitalize(I18next.t('DQL (Data Query Language)')),
+                                    enabled: commands.dql.length > 0 && commands.dql.some((command) => command.visible != false),
+                                    submenu: commands.dql
+                                  },
+                                  {
+                                    label: I18next.capitalize(I18next.t('DML (Data Manipulation Language)')),
+                                    enabled: commands.dml.length > 0 && commands.dml.some((command) => command.visible != false),
+                                    submenu: commands.dml
+                                  },
+                                  {
+                                    label: I18next.capitalize(I18next.t('DCL (Data Control Language)')),
+                                    enabled: commands.dcl.length > 0 && commands.dcl.some((command) => command.visible != false),
+                                    submenu: commands.dcl
+                                  }
+                                ])
 
                                 // Send a request to the main thread regards pop-up a menu
                                 IPCRenderer.send('show-context-menu', JSON.stringify(contextMenu))
@@ -6730,7 +6758,7 @@
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
-                  return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                  return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
 
                 // Change the dialog's title
                 $(`${dialog}`).find('h5.modal-title').text(`${I18next.capitalize(I18next.t('connection settings'))} ${getAttributes(clusterElement, 'data-name')}`)

@@ -4556,14 +4556,14 @@
 
                                 let tempTxt = ''
                                 for (let i = 0; i < suggestionPrefixContent.length; ++i) {
-                                 tempTxt += `${suggestionPrefixContent[i]}`
+                                  tempTxt += `${suggestionPrefixContent[i]}`
 
-                                 if(lastData.suggestion.endsWith(`${lastData.closestWord}${tempTxt}`)) {
-                                   let newPrefix = suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(tempTxt) + tempTxt.length)
+                                  if (lastData.suggestion.endsWith(`${lastData.closestWord}${tempTxt}`)) {
+                                    let newPrefix = suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(tempTxt) + tempTxt.length)
 
-                                   suggestionPrefixContent = newPrefix
-                                   break
-                                 }
+                                    suggestionPrefixContent = newPrefix
+                                    break
+                                  }
                                 }
                               } catch (e) {}
                             }
@@ -6752,9 +6752,10 @@
                 /**
                  * Reset some elements in the dialog
                  *
-                 * Disable the save/edit button
+                 * Enable the save/edit button
                  */
-                $('button#addCluster').attr('disabled', 'disabled')
+                $('button#addCluster').attr('disabled', null)
+
                 // Hide passwords
                 $(`[info-section="none"][info-key="password"]`).attr('type', 'password')
                 $('span.reveal-password div.btn ion-icon').attr('name', 'eye-opened')
@@ -7700,7 +7701,7 @@
                 showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
 
                 // Enable or disable the save button based on the test's result
-                $('#addCluster').attr('disabled', 'disabled')
+                $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
 
                 // Skip the upcoming code
                 throw 0
@@ -8334,7 +8335,7 @@
 
         // When change occurs in any of the input fields - except the cluster's name - the `SAVE THE CLUSTER` button will be disabled
         {
-          $(`${dialog}-right div.modal-section [info-section][info-key]:not([info-key="clusterName"])`).on('input', () => $('#addCluster').attr('disabled', 'disabled'))
+          $(`${dialog}-right div.modal-section [info-section][info-key]:not([info-key="clusterName"])`).on('input', () => $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null))
         }
 
         /**
@@ -8710,7 +8711,7 @@
                         button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
                         // Disable the `SAVE CLUSTER` button
-                        $('#addCluster').attr('disabled', 'disabled')
+                        $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
 
                         // Show feedback to the user
                         showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
@@ -8811,7 +8812,7 @@
                         let notConnected = !result.connected || [undefined, null].includes(result.version) || result.terminated != undefined
 
                         // Enable or disable the save button based on the test's result
-                        $('#addCluster').attr('disabled', !notConnected ? null : 'disabled')
+                        $('#addCluster').attr('disabled', !notConnected || getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') != undefined ? null : 'disabled')
 
                         // If the provided data center doesn't exist
                         if (!isDataCenterExists) {
@@ -8824,7 +8825,7 @@
                           showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
 
                           // Enable or disable the save button based on the test's result
-                          $('#addCluster').attr('disabled', 'disabled')
+                          $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
 
                           // Skip the upcoming code
                           throw 0
@@ -8944,7 +8945,7 @@
                   showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('failed to complete the test process, please check the privileges of the app to read/write'))}.`, 'failure')
 
                   // Disable the `SAVE CLUSTER` button
-                  $('#addCluster').attr('disabled', 'disabled')
+                  $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
 
                   // Skip the upcoming code
                   return
@@ -9069,7 +9070,7 @@
                   button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
                   // Disable the `SAVE CLUSTER` button
-                  $('#addCluster').attr('disabled', 'disabled')
+                  $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
                 })
 
                 // Skip the upcoming code

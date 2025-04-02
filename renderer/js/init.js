@@ -774,7 +774,7 @@ $(document).on('initialize', () => {
   // ldrs.js
   {
     let ldrsPath = Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js'),
-      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'momentum', 'ring2', 'wobble']
+      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'momentum', 'ring2', 'wobble', 'hatch']
 
     try {
       import(ldrsPath).then((loaders) => usedLoaders.forEach((loader) => loaders[loader].register()))
@@ -877,7 +877,7 @@ $(document).on('initialize', () => {
             }
 
             // Disable the save cluster button
-            $('#addCluster').attr('disabled', 'disabled')
+            $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
 
             // Detected sensitive data - username, password -
             let detectedSensitiveData = false,

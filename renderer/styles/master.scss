@@ -5037,6 +5037,38 @@ div#selectContainersManagementTool {
     pointer-events: none;
   }
 }
+
+div.btn-group.delete-applied-to {
+  filter: grayscale(0.35);
+
+  label {
+    box-shadow: none !important;
+
+    ion-icon.column-icon {
+      transform-origin: center;
+      transform: rotate(90deg);
+    }
+  }
+}
+
+button#countAffectedRows {
+  l-hatch {
+    position: relative;
+    bottom: -1px;
+    right: -4px;
+    width: 0;
+    opacity: 0;
+    transition: width 0.2s ease-in-out, opacity 0.05s ease-in-out;
+  }
+
+  &.counting {
+    l-hatch {
+      width: 12px;
+      opacity: 0.9;
+      transition: width 0.2s ease-in-out, opacity 0.2s ease-in-out 0.15s;
+    }
+  }
+}
 /**
 * Import right-to-left style
 */

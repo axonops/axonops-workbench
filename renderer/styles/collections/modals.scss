@@ -1687,132 +1687,211 @@ div.standard-table-options-sub-container {
   }
 }
 
-div.input-group-text.for-insertion {
-  border-color: #4e4e4e;
-  position: relative;
-  height: 36px;
-  opacity: 0.9;
-  font-size: 95%;
+div.input-group-text {
+  &.for-deletion,
+  &.for-insertion,
+  &.selection {
+    border-color: #4e4e4e;
+    position: relative;
+    height: 36px;
+    opacity: 0.9;
+    font-size: 95%;
 
-  &.for-actions,
-  &.for-name,
-  &.for-null-value,
-  &.for-type {
-    background: #393939;
-  }
-
-  &.for-type {
-    span.type-value.overflow {
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-  }
-
-  &.for-actions,
-  &.for-null-value {
-    padding-right: 1px;
-
-    button {
-      ion-icon {
-        transform: translateY(-1px);
-      }
+    &.for-actions,
+    &.for-name,
+    &.for-null-value,
+    &.for-operators,
+    &.for-type {
+      background: #393939;
     }
 
-    l-ring-2 {
-      position: absolute;
-      inset: 0;
-      margin: auto;
-      background: rgba(59, 59, 59, 0.7);
-      width: -webkit-fill-available;
-      height: -webkit-fill-available;
-      z-index: 2;
-      transition: opacity 0.15s ease-in-out;
-      opacity: 0;
-      pointer-events: none;
-
-      &.show {
-        opacity: 1;
-        pointer-events: all;
-      }
-    }
-  }
-
-  &.for-null-value {
-    padding: 0 5px;
-    transition: width 0.1s ease-in-out;
-
-    button {
-      transition: width 0.1s ease-in-out, opacity 0.1s ease-in-out;
-
-      span.circle {
-        width: 0;
-        height: 10px;
-        display: inline-block;
-        border-radius: 50%;
-        transition: opacity 0.1s ease-in-out 0.05s, width 0.1s ease-in-out 0s;
-        opacity: 0;
+    &.for-operators {
+      div[data-is-main-input="true"] {
+        margin-right: -13px;
+        background: #262626;
       }
 
-      &:hover {
-        opacity: 0.9;
-      }
+      div.operators {
+        height: 100%;
+        transform: scale(0.87);
+        transform-origin: right;
+        font-family: 'Terminal', monospace;
 
-      &.applied {
-        opacity: 1;
+        span {
+          margin: 0 1px;
+          border-radius: 5px;
+          overflow: hidden;
+        }
 
-        span.circle {
-          width: 10px;
-          opacity: 1;
+        button,
+        label {
+          box-shadow: none !important;
+          text-shadow: none !important;
+          width: 33px;
+          text-align: center;
+          vertical-align: middle;
+          padding: 1px;
+          line-height: 23px;
+        }
+
+        button.expand-range {
+          height: 30.22px;
+          position: relative;
+          bottom: 2px;
+          left: -5px;
+          transition: all 0.1s ease-in-out;
+          border-radius: 5px;
+
+          ion-icon {
+            font-size: 180%;
+            transform: rotate(90deg);
+            position: relative;
+            left: 2px;
+          }
+
+          &:hover {
+            left: -4px;
+          }
         }
       }
     }
-  }
 
-  button {
-    transform: scale(0.85);
-  }
-
-  ul.dropdown-menu {
-    left: 10px !important;
-    top: -2px !important;
-    opacity: 1 !important;
-  }
-
-  span.actions,
-  span.name,
-  span.type {
-    background: #414141;
-    margin-left: -13px;
-    height: 36px;
-    position: relative;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-content: center;
-    align-items: center;
-    padding: 0 9px;
-    margin-right: 10px;
-
-    &.actions {
-      margin-right: 2px;
+    &.for-type {
+      span.type-value.overflow {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
     }
 
-    span {
-      text-shadow: none;
-      font-size: 95%;
-      margin-right: 3px;
+    &.for-actions,
+    &.for-null-value {
+      padding-right: 1px;
+
+      button {
+        ion-icon {
+          transform: translateY(-1px);
+        }
+      }
+
+      l-ring-2 {
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        background: rgba(59, 59, 59, 0.7);
+        width: -webkit-fill-available;
+        height: -webkit-fill-available;
+        z-index: 2;
+        transition: opacity 0.15s ease-in-out;
+        opacity: 0;
+        pointer-events: none;
+
+        &.show {
+          opacity: 1;
+          pointer-events: all;
+        }
+      }
     }
 
-    ion-icon {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      right: -10px;
-      margin: auto;
-      font-size: 180%;
-      transform: rotate(180deg);
-      color: #393939;
+    &.for-null-value {
+      padding: 0 5px;
+      transition: width 0.1s ease-in-out;
+
+      button {
+        transition: width 0.1s ease-in-out, opacity 0.1s ease-in-out;
+
+        span.circle {
+          width: 0;
+          height: 10px;
+          display: inline-block;
+          border-radius: 50%;
+          transition: opacity 0.1s ease-in-out 0.05s, width 0.1s ease-in-out 0s;
+          opacity: 0;
+        }
+
+        &:hover {
+          opacity: 0.9;
+        }
+
+        &.applied {
+          opacity: 1;
+
+          span.circle {
+            width: 10px;
+            opacity: 1;
+          }
+        }
+      }
+    }
+
+    button {
+      transform: scale(0.85);
+    }
+
+    ul.dropdown-menu {
+      left: 10px !important;
+      top: -2px !important;
+      opacity: 1 !important;
+    }
+
+    span.actions,
+    span.name,
+    span.operator,
+    span.type {
+      background: #414141;
+      margin-left: -13px;
+      height: 36px;
+      position: relative;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-content: center;
+      align-items: center;
+      padding: 0 9px;
+      margin-right: 10px;
+
+      &.actions {
+        margin-right: 2px;
+      }
+
+      span {
+        text-shadow: none;
+        font-size: 95%;
+        margin-right: 3px;
+      }
+
+      ion-icon {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: -10px;
+        margin: auto;
+        font-size: 180%;
+        transform: rotate(180deg);
+        color: #393939;
+      }
+    }
+  }
+}
+
+a.jstree-anchor.show-range-operators {
+  div[data-is-main-input="true"] {
+    display: none;
+  }
+
+  div.input-group-text.for-operators {
+    div.btn-group.operators {
+      transform-origin: left;
+      margin-left: 3.67px !important;
+
+      button.expand-range {
+        left: 4px !important;
+
+        ion-icon {
+          transition: transform 0.1s ease-in-out;
+          transform: rotate(-90deg);
+        }
+      }
     }
   }
 }
@@ -1861,7 +1940,8 @@ div.input-group-text.for-not-ignoring {
   }
 }
 
-div[action="insert-row"] {
+div[action="insert-row"],
+div[action="delete-row-column"] {
   margin: -30px -16px -16px;
   padding: 5px 0;
 
@@ -1983,10 +2063,10 @@ div[action="insert-row"] {
   }
 
   input.has-clear-button {
-    width: calc(100% - 20px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding-right: 35px;
   }
 
   input[type="checkbox"][role="switch"] {

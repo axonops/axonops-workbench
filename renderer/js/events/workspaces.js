@@ -683,7 +683,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                         if (clusterWorkarea.length <= 0)
                           continue
 
-                        showToast(I18next.capitalize(I18next.t('delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to delete the workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
+                        showToast(I18next.capitalize(I18next.t('delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to delete the workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'warning')
 
                         return
                       }

@@ -143,6 +143,13 @@ li.jstree-node {
 .jstree-anchor {
   span {
     font-weight: 500;
+
+    &.type-value {
+      max-width: 100px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
   }
 }
 

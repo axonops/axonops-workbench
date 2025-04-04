@@ -1654,7 +1654,7 @@
                   AxonOps is a registered trademark of AxonOps Limited. Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache
                   Software Foundation (<span class="link"><span class="content">http://www.apache.org/</span>
                     <ion-icon name="external-link"></ion-icon>
-                  </span>) or its subsidiaries in Canada, the United States and/or other countries.  Elasticsearch is a trademark of 
+                  </span>) or its subsidiaries in Canada, the United States and/or other countries. Elasticsearch is a trademark of
                   Elasticsearch B.V., registered in the U.S. and in other countries. Docker is a trademark or registered trademark of Docker, Inc. in the United States and/or other countries.
                 </div>
               </div>
@@ -2324,6 +2324,105 @@
                     </ul>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div action="delete-row-column" style="margin-top: -20px;">
+              <div class="fields-badge-action" style="padding: 10px; padding-left: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="settings" capitalize></span>
+                </span>
+              </div>
+              <div class="row flex" style="margin-bottom: 15px;">
+                <div class="col-md-4">
+                  <span mulang="applied to" capitalize></span>:
+                </div>
+                <div class="col-md-8">
+                  <div class="btn-group delete-applied-to">
+                    <input type="radio" class="btn-check" name="deleteAppliedTo" id="deleteAppliedToRow" autocomplete="off" checked />
+                    <label class="btn btn-secondary btn-light btn-sm" for="deleteAppliedToRow" data-mdb-ripple-init>
+                      <ion-icon name="row"></ion-icon>
+                      <span mulang="rows"></span>
+                    </label>
+                    <input type="radio" class="btn-check" name="deleteAppliedTo" id="deleteAppliedToColumn" autocomplete="off" />
+                    <label class="btn btn-secondary btn-light btn-sm" for="deleteAppliedToColumn" data-mdb-ripple-init>
+                      <ion-icon name="row" class="column-icon"></ion-icon>
+                      <span mulang="columns"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="row flex" style="margin-bottom: 10px;">
+                <div class="col-md-4">
+                  <span mulang="affected rows count" capitalize></span>:
+                </div>
+                <div class="col-md-8">
+                  <button id="countAffectedRows" type="button" class="btn btn-secondary btn-sm" data-mdb-ripple-color="dark" disabled>
+                    <span mulang="count"></span>
+                    <l-hatch size="12" stroke="2" speed="2.5" color="#262626"></l-hatch>
+                  </button>
+                </div>
+              </div>
+
+              <div class="fields-badge-action" id="deletePrimaryKeyBadge" style="padding: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="primary key" capitalize></span>
+                </span>
+              </div>
+              <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeyTreeDeleteAction"></div>
+
+              <div class="fields-badge-action" id="deleteRegularColumnsBadge" style="padding: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="regular columns" capitalize></span>
+                </span>
+              </div>
+              <div class="table-fields-tree children-transform" id="tableFieldsRegularColumnsTreeDeleteAction"></div>
+
+              <div class="fields-badge-action" id="deleteCollectionColumnsBadge" style="padding: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="collection types columns" capitalize></span>
+                </span>
+              </div>
+              <div class="table-fields-tree children-transform" id="tableFieldsCollectionColumnsTreeDeleteAction"></div>
+
+              <div class="fields-badge-action" id="deleteUDTColumnsBadge" style="padding: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="UDT columns" capitalize></span>
+                </span>
+              </div>
+              <div class="table-fields-tree children-transform" id="tableFieldsUDTColumnsTreeDeleteAction"></div>
+
+              <div class="fields-badge-action" style="padding: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="extra options" capitalize></span>
+                </span>
+              </div>
+              <div class="row flex data-insertion-timestamp-row">
+                <div class="col-md-7">
+                  <div class="form-outline form-white">
+                    <div class="clear-field hide">
+                      <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                        <ion-icon name="close"></ion-icon>
+                      </div>
+                    </div>
+                    <input type="number" class="form-control" id="deleteTimestamp">
+                    <label for="deleteTimestamp" class="form-label">
+                      <span mulang="delete data older than timestamp" capitalize></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-5">
+                  <button type="button" class="btn btn-light btn-rounded btn-sm ripple-surface-dark" style="margin-left: 10px;
+    opacity: 0.8;" id="deleteTimestampPicker">
+                    <ion-icon name="calendar" role="img" class="md hydrated" aria-label="calendar"></ion-icon> <span mulang="date time picker" capitalize></span>
+                  </button>
+                </div>
+              </div>
+              <div class="form-check margin-bottom" style="padding-left: 32px;">
+                <input class="form-check-input" type="checkbox" value id="deleteIfExistsOption">
+                <label class="form-check-label" for="deleteIfExistsOption">
+                  <span mulang="include" capitalize></span> <code>IF EXISTS</code> <span mulang="keyword"></span>.
+                </label>
               </div>
             </div>
 

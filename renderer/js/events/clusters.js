@@ -376,7 +376,7 @@
 
                 // If the cluster has an active work area and the process to be executed is not disconnecting with the cluster then stop the process and show feedback to the user
                 if (hasWorkarea == 'true' && !isProcessDisconnect)
-                  return showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to test it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                  return showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to test it', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
 
                 // Handle if the process is disconnecting with the cluster
                 if (isProcessDisconnect)
@@ -632,6 +632,8 @@
                     bashSessionContentID,
                     terminalContainerID,
                     terminalBashContainerID,
+                    containerFooterID,
+                    containerEmptyStatementsID,
                     // CQL description
                     cqlDescriptionContentID,
                     cqlDescriptionSearchInputID,
@@ -659,7 +661,7 @@
                     // Restart and close the work area
                     restartWorkareaBtnID,
                     closeWorkareaBtnID
-                  ] = getRandomID(20, 32)
+                  ] = getRandomID(20, 34)
 
                   /**
                    * Define tabs that shown only to sandbox projects
@@ -669,6 +671,8 @@
                   let axonopsTab = '',
                     // Define the Bash Session tab's content, as AxonOps, it's empty by default
                     bashSessionTab = ''
+
+                  let consoleEditor
 
                   try {
                     // If the current workspace is not the sandbox then skip this try-catch block
@@ -871,13 +875,13 @@
                                    </div>
                                  </div>
                                  <div class="session-content" id="_${cqlshSessionContentID}_container"></div>
-                                 <div class="empty-statements show">
+                                 <div class="empty-statements show" id="_${containerEmptyStatementsID}">
                                    <div class="container">
                                      <div class="semi-colon">;</div>
                                      <div class="message"><span mulang="start now by executing cql statement" capitalize-first></span></div>
                                    </div>
                                  </div>
-                                 <div class="container-footer">
+                                 <div class="container-footer" id="_${containerFooterID}">
                                    <div class="session-actions">
                                    <div class="session-action" action="history">
                                      <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light" disabled>
@@ -936,6 +940,7 @@
                                    <div class="bottom">
                                      <div class="suggestions-list"></div>
                                    </div>
+                                   <div class="console-editor"></div>
                                  </div>
                                </div>
                                <div class="loading">
@@ -2330,10 +2335,10 @@
                                     }
                                   ])
 
-                                  commands.ddl = commands.ddl.concat([{
-                                      label: I18next.capitalize(I18next.t('alter table')),
-                                      action: 'alterTable',
-                                      click: `() => views.main.webContents.send('alter-table', {
+                                  commands.ddl.push({
+                                    label: I18next.capitalize(I18next.t('alter table')),
+                                    action: 'alterTable',
+                                    click: `() => views.main.webContents.send('alter-table', {
                                         tableName: '${clickedNode.attr('name')}',
                                         tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
                                         udts: '${JSON.stringify(keyspaceUDTs) || []}',
@@ -2344,9 +2349,27 @@
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
                                       })`,
-                                      visible: nodeType == 'table'
-                                    },
-                                    {
+                                    visible: nodeType == 'table'
+                                  })
+
+                                  commands.dml.push({
+                                    label: I18next.capitalize(I18next.t('delete row/colum')),
+                                    action: 'insertRow',
+                                    click: `() => views.main.webContents.send('delete-row-column', {
+                                        tableName: '${clickedNode.attr('name')}',
+                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        keyspaceName: '${keyspaceName}',
+                                        isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`,
+                                    // visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                    visible: false
+                                  })
+
+                                  commands.ddl = commands.ddl.concat([{
                                       label: I18next.capitalize(I18next.t('drop table')),
                                       action: 'dropTable',
                                       click: `() => views.main.webContents.send('drop-table', {
@@ -2357,23 +2380,19 @@
                                         btnID: '_${executeStatementBtnID}'
                                       })`,
                                       visible: nodeType == 'table'
-                                    }
-                                  ])
-
-                                  commands.ddl.push({
-                                    label: I18next.capitalize(I18next.t('truncate table')),
-                                    action: 'truncateTable',
-                                    click: `() => views.main.webContents.send('truncate-table', {
+                                    }, {
+                                      label: I18next.capitalize(I18next.t('truncate table')),
+                                      action: 'truncateTable',
+                                      click: `() => views.main.webContents.send('truncate-table', {
                                         tableName: '${clickedNode.attr('name')}',
                                         tabID: '_${cqlshSessionContentID}',
                                         keyspaceName: '${keyspaceName}',
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
                                       })`,
-                                    visible: nodeType == 'table'
-                                  })
-
-                                  commands.ddl = commands.ddl.concat([{
+                                      visible: nodeType == 'table'
+                                    },
+                                    {
                                       label: I18next.capitalize(I18next.t('alter keyspace')),
                                       action: 'alterKeyspace',
                                       click: `() => views.main.webContents.send('alter-keyspace', {
@@ -3857,7 +3876,12 @@
                         blockID = getRandomID(10)
 
                         // Clear the statement's input field and make sure it's focused on it
-                        setTimeout(() => statementInputField.val('').trigger('input').focus().attr('style', null))
+                        setTimeout(() => statementInputField.val('').trigger('input').attr('style', null))
+
+                        setTimeout(() => {
+                          consoleEditor.setValue('')
+                          consoleEditor.focus()
+                        })
 
                         try {
                           let isClearCommand = (['clear', 'cls']).some((command) => statement.startsWith(minifyText(command)))
@@ -4626,6 +4650,249 @@
                           }
                         } catch (e) {}
                       })
+
+                      {
+                        setTimeout(() => {
+                          let enhancedConsoleFooter = workareaElement.find(`div#_${containerFooterID}`),
+                            emptyStatements = workareaElement.find(`div#_${containerEmptyStatementsID}`),
+                            cqlshSessionContent = workareaElement.find(`div#_${cqlshSessionContentID}_container`),
+                            historyItemsContainer = workareaElement.find('div.history-items'),
+                            clearHistoryItemsBtn = workareaElement.find('div.history-items-clear-all'),
+                            baseHeightFooter = enhancedConsoleFooter.outerHeight(),
+                            updateLayoutTimeout
+
+                          // Make the left side resizable
+                          enhancedConsoleFooter.resizable({
+                            handles: 'n', // [N]orth
+                            minHeight: baseHeightFooter,
+                            maxHeight: baseHeightFooter * 2
+                          }).bind({
+                            resize: function(_, __) {
+                              enhancedConsoleFooter.css('top', '0px')
+
+                              emptyStatements.add(cqlshSessionContent).css('height', `calc(100% - ${240 + (enhancedConsoleFooter.outerHeight() - baseHeightFooter)}px)`)
+
+                              historyItemsContainer.add(clearHistoryItemsBtn).css('bottom', `${165 + (enhancedConsoleFooter.outerHeight() - baseHeightFooter)}px`)
+
+                              try {
+                                clearTimeout(updateLayoutTimeout)
+                              } catch (e) {}
+
+                              updateLayoutTimeout = setTimeout(() => {
+                                try {
+                                  consoleEditor.layout()
+                                } catch (e) {}
+                              }, 200)
+
+                            }
+                          })
+                        }, 3000)
+                      }
+
+                      {
+                        try {
+                          consoleEditor = monaco.editor.create(workareaElement.find('div.console-editor')[0], {
+                            value: '', // This is the default content of the `cqlsh.rc` file
+                            language: 'sql', // This language is the perfect one that supports the `cqlsh.rc` file content's syntax highlighting
+                            minimap: {
+                              enabled: false
+                            },
+                            glyphMargin: true, // This option allows to render an object in the line numbering side
+                            suggest: {
+                              showFields: false,
+                              showFunctions: false,
+                              showWords: false
+                            },
+                            padding: {
+                              top: 7,
+                              bottom: 7
+                            },
+                            wordBasedSuggestions: 'off',
+                            padding: {
+                              top: 10,
+                              bottom: 10
+                            },
+                            theme: 'vs-dark',
+                            scrollBeyondLastLine: true,
+                            mouseWheelZoom: true,
+                            fontSize: 14
+                          })
+
+                          consoleEditor.getModel().onDidChangeContent(() => statementInputField.val(consoleEditor.getValue()).trigger('input'))
+
+                          consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => executeBtn.trigger('click'))
+
+                          consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyL, () => $(document).trigger('clearEnhancedConsole'))
+
+                          consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow, () => {
+                            try {
+                              // Get the saved statements
+                              let history = Store.get(clusterID) || []
+
+                              // If there's no saved history then simply skip this try-catch block
+                              if (history.length <= 0)
+                                throw 0
+
+                              // Increment/decrement the current history's index based on the pressed key
+                              lastData.history += 1
+
+                              // Get the selected statement
+                              let statement = history[lastData.history]
+
+                              // If the statement is `undefined` then the index is out of range
+                              if (statement == undefined) {
+                                // Normalize the index
+                                lastData.history = 0
+
+                                // Update the selected statement
+                                statement = history[lastData.history]
+                              }
+
+                              consoleEditor.setValue(statement)
+                              consoleEditor.focus()
+
+                              let lastLine = consoleEditor.getModel().getLineCount(),
+                                lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
+
+                              consoleEditor.setPosition({
+                                lineNumber: lastLine,
+                                column: lastColumn
+                              })
+                            } catch (e) {}
+                          })
+
+                          consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.DownArrow, () => {
+                            try {
+                              // Get the saved statements
+                              let history = Store.get(clusterID) || []
+
+                              // If there's no saved history then simply skip this try-catch block
+                              if (history.length <= 0)
+                                throw 0
+
+                              // Increment/decrement the current history's index based on the pressed key
+                              lastData.history += -1
+
+                              // Get the selected statement
+                              let statement = history[lastData.history]
+
+                              // If the statement is `undefined` then the index is out of range
+                              if (statement == undefined) {
+                                // Normalize the index
+                                lastData.history = history.length - 1
+
+                                // Update the selected statement
+                                statement = history[lastData.history]
+                              }
+
+                              consoleEditor.setValue(statement)
+                              consoleEditor.focus()
+
+                              let lastLine = consoleEditor.getModel().getLineCount(),
+                                lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
+
+                              consoleEditor.setPosition({
+                                lineNumber: lastLine,
+                                column: lastColumn
+                              })
+                            } catch (e) {}
+                          })
+
+                          monaco.languages.registerCompletionItemProvider('sql', {
+                            triggerCharacters: [' ', '.', '"', '*', ';'],
+                            provideCompletionItems: function(model, position) {
+                              let statement = model.getValueInRange(new monaco.Range(position.lineNumber, 1, position.lineNumber, position.column)),
+                                closestWord = '',
+                                WordAtPosition = model.getWordAtPosition(position),
+                                range = WordAtPosition ?
+                                new monaco.Range(position.lineNumber, WordAtPosition.startColumn, position.lineNumber, position.column) :
+                                new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+                                suggestions = []
+
+                              // Get the closest word to the cursor in the input field
+                              try {
+                                closestWord = WordAtPosition.word
+                              } catch (e) {}
+
+                              try {
+                                if (closestWord.length <= 0)
+                                  closestWord = /\S+$/.exec(statement)[0]
+                              } catch (e) {}
+
+                              // The default array for suggestions is the CQL keywords with the commands
+                              let suggestionsArray = Modules.Consts.CQLKeywords.concat(Modules.Consts.CQLSHCommands),
+                                // Get the keyspaces and their tables from the last metadata
+                                metadataInfo = getMetadataInfo(),
+                                // Get keyspaces' names
+                                keyspaces = Object.keys(metadataInfo),
+                                // Flag to tell if keyspace has been found and it's time to suggest its tables
+                                isKeyspace = false,
+                                // Flag to tell if suggestions should be the keyspaces only
+                                isSuggestKeyspaces = false
+
+                              try {
+                                /**
+                                 * Determine whether or not keyspaces and their tables should be shown as suggestions
+                                 *
+                                 * Get the content before the cursor's position
+                                 */
+                                let contentBeforeCursor = statement
+
+                                // Check the content against defined regex patterns
+                                isSuggestKeyspaces = Object.keys(Modules.Consts.CQLRegexPatterns).some((type) => Modules.Consts.CQLRegexPatterns[type].Patterns.some((regex) => contentBeforeCursor.match(regex) != null))
+
+                                // If the closest word to the cursor doesn't have `.` then skip this try-catch block
+                                if (!isSuggestKeyspaces || !closestWord.includes('.'))
+                                  throw 0
+
+                                // Get the recognized keyspace name
+                                let keyspace = closestWord.slice(0, closestWord.indexOf('.')).replace(/^\"*(.*?)\"*$/g, '$1'),
+                                  // Attempt to get its tables
+                                  tables = metadataInfo[keyspace]
+
+                                // If the attempt failed then skip this try-catch block
+                                if (tables == undefined)
+                                  throw 0
+
+                                /**
+                                 * Update associated variables
+                                 *
+                                 * Update the flag to be `true`
+                                 */
+                                isKeyspace = true
+
+                                // Update the suggestions' array
+                                suggestionsArray = tables
+
+                                // Update the closest word to be what after `.`
+                                closestWord = closestWord.slice(closestWord.indexOf('.') + 1)
+                              } catch (e) {}
+
+                              let finalSuggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray, isSuggestKeyspaces || isKeyspace)
+
+                              if ((JSON.stringify(finalSuggestions) == JSON.stringify(suggestionsArray)) && !(isSuggestKeyspaces || isKeyspace))
+                                return {
+                                  suggestions: []
+                                }
+
+                              suggestions = finalSuggestions.map((suggestion) => {
+                                insertText = (isSuggestKeyspaces || isKeyspace) ? addDoubleQuotes(`${suggestion}`) : suggestion
+
+                                return {
+                                  label: suggestion,
+                                  kind: monaco.languages.CompletionItemKind.Keyword,
+                                  insertText,
+                                  range
+                                }
+                              })
+
+                              return {
+                                suggestions
+                              }
+                            }
+                          })
+                        } catch (e) {}
+                      }
                     }
                     // End of hanlding the interactive terminal
 
@@ -6066,10 +6333,16 @@
                               } catch (e) {}
 
                               // Set the statement
-                              statementInputField.val(statement).trigger('input').focus()
+                              consoleEditor.setValue(statement)
+                              consoleEditor.focus()
 
-                              // Update the size of the textarea
-                              AutoSize.update(statementInputField[0])
+                              let lastLine = consoleEditor.getModel().getLineCount(),
+                                lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
+
+                              consoleEditor.setPosition({
+                                lineNumber: lastLine,
+                                column: lastColumn
+                              })
 
                               // Update the MDB object
                               try {
@@ -7087,7 +7360,7 @@
 
                   // If there's a work area already then stop the deletion process
                   if (clusterWorkarea.length != 0)
-                    return showToast(I18next.capitalize(I18next.t(isSandbox ? 'delete local cluster' : 'delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData(isSandbox ? 'there\'s an active work area for the local cluster [b]$data[/b], please consider to close it before attempting to delete the local cluster again' : 'this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                    return showToast(I18next.capitalize(I18next.t(isSandbox ? 'delete local cluster' : 'delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData(isSandbox ? 'there\'s an active work area for the local cluster [b]$data[/b], please consider to close it before attempting to delete the local cluster again' : 'this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
 
                   try {
                     // If the current workspace is not the sandbox then skip this try-catch block
@@ -12657,6 +12930,430 @@
           })
         })
       })
+
+      {
+        let tableFieldsDeleteTreeContainers = {
+          primaryKey: $('div#tableFieldsPrimaryKeyTreeDeleteAction'),
+          columnsRegular: $('div#tableFieldsRegularColumnsTreeDeleteAction'),
+          columnsCollection: $('div#tableFieldsCollectionColumnsTreeDeleteAction'),
+          columnsUDT: $('div#tableFieldsUDTColumnsTreeDeleteAction')
+        }
+
+        IPCRenderer.on('delete-row-column', (_, data) => {
+          let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+          $('button#executeActionStatement').attr({
+            'data-tab-id': `${data.tabID}`,
+            'data-textarea-id': `${data.textareaID}`,
+            'data-btn-id': `${data.btnID}`
+          })
+
+          $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'delete row/column').html(`${I18next.capitalize(I18next.t('delete row/column'))} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
+
+          $('#rightClickActionsMetadata').attr('data-keyspace-tables', `${data.tables}`)
+
+          $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
+
+          try {
+            for (let container of Object.keys(tableFieldsDeleteTreeContainers)) {
+              try {
+                tableFieldsDeleteTreeContainers[container].jstree('destroy')
+              } catch (e) {}
+            }
+          } catch (e) {}
+
+          let keys = [],
+            columns = [],
+            udts = [],
+            keyspaceUDTs = []
+
+          try {
+            let tableObj = JSON.parse(JSONRepair(data.tables)).find((table) => table.name == data.tableName)
+
+            try {
+              keys = tableObj.primary_key.map((key) => {
+                let isPartition = tableObj.partition_key.find((partitionKey) => partitionKey.name == key.name) != undefined
+
+                return {
+                  name: key.name,
+                  type: key.cql_type,
+                  isPartition
+                }
+              })
+            } catch (e) {}
+
+            try {
+              columns = tableObj.columns.filter((column) => tableObj.primary_key.find((key) => key.name == column.name) == undefined)
+                .map((column) => {
+                  return {
+                    name: column.name,
+                    type: column.cql_type
+                  }
+                })
+            } catch (e) {}
+
+            try {
+              try {
+                keyspaceUDTs = JSON.parse(JSONRepair(data.udts))
+              } catch (e) {}
+
+              for (let column of columns) {
+                let udtStructure = {},
+                  manipulatedColumnType = column.type
+
+                manipulatedColumnType = removeFrozenKeyword(`${manipulatedColumnType}`)
+
+                try {
+                  manipulatedColumnType = `${manipulatedColumnType}`.match(/<(.*?)>$/)[1];
+                } catch (e) {}
+
+                let udtObject = keyspaceUDTs.find((udt) => udt.name == manipulatedColumnType)
+
+                if (udtObject == undefined || ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))
+                  continue
+
+                udtStructure = {
+                  ...udtObject,
+                  ...column
+                }
+
+                udts.push(udtStructure)
+              }
+
+              columns = columns.filter((column) => udts.find((udt) => udt.name == column.name) == undefined)
+            } catch (e) {}
+          } catch (e) {}
+
+          let groupStructure = buildTableFieldsTreeview(keys, columns, udts, keyspaceUDTs, false),
+            handleHiddenNodes = (treeData) => {
+              let index = 0
+
+              while (index < treeData.length) {
+                const node = treeData[index]
+
+                try {
+                  if (Array.isArray(node)) {
+                    processArray(node)
+
+                    index++
+
+                    continue
+                  }
+
+                  if (node.a_attr['add-hidden-node'] !== undefined) {
+                    treeData.splice(index + 1, 0, {
+                      id: node.a_attr['add-hidden-node'],
+                      parent: node.parent,
+                      state: {
+                        opened: true,
+                        selected: false
+                      },
+                      text: ``
+                    })
+
+                    index++
+                  }
+                } catch (e) {}
+
+                index++
+
+              }
+              return treeData;
+            },
+            handleNodeCreationDeletion = () => {
+              let allInsertionRelatedInputs = $('#rightClickActionsMetadata').find('div[action="delete-row-column"]').find('input').get()
+
+              for (let inputDOM of allInsertionRelatedInputs) {
+                let input = $(inputDOM),
+                  [
+                    inputCassandraType,
+                    inputHTMLType,
+                    inputID
+                  ] = getAttributes(input, ['data-field-type', 'type', 'id']),
+                  inputSavedValue = effectedNodes[inputID] || ''
+
+                if (inputSavedValue == undefined || inputSavedValue.length <= 0)
+                  continue
+
+                try {
+                  if (inputHTMLType != 'checkbox')
+                    throw 0
+
+                  input.prop('checked', !(inputSavedValue != 'true')).trigger('change')
+
+                  continue
+                } catch (e) {}
+
+                try {
+                  if (inputCassandraType != 'blob')
+                    throw 0
+
+                  input.val(inputSavedValue.inputValue).trigger('input')
+
+                  input.data('value', inputSavedValue.dataValue)
+
+                  continue
+                } catch (e) {}
+
+                // Not `blob` or `boolean`
+                try {
+                  input.val(inputSavedValue).trigger('input')
+                } catch (e) {}
+              }
+
+              setTimeout(() => {
+                try {
+                  updateActionStatusForInsertRow()
+                } catch (e) {}
+              })
+            }
+
+          try {
+            for (let treeViewType of Object.keys(groupStructure))
+              groupStructure[treeViewType].core.data = handleHiddenNodes(groupStructure[treeViewType].core.data)
+          } catch (e) {}
+
+          {
+            let primaryKeyTreeElements = tableFieldsDeleteTreeContainers.primaryKey.add('div#deletePrimaryKeyBadge')
+
+            try {
+              if (keys.length <= 0)
+                throw 0
+
+              primaryKeyTreeElements.show()
+
+              tableFieldsDeleteTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
+            } catch (e) {
+              primaryKeyTreeElements.hide()
+            }
+          }
+
+          {
+            let columnsRegularTreeElements = tableFieldsDeleteTreeContainers.columnsRegular.add('div#deleteRegularColumnsBadge')
+
+            try {
+              if (!(columns.some((column) => ['map', 'set', 'list'].every((type) => !(`${column.type}`.includes(`${type}<`))))))
+                throw 0
+
+              columnsRegularTreeElements.show()
+
+              tableFieldsDeleteTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
+            } catch (e) {
+              columnsRegularTreeElements.hide()
+            }
+          }
+
+          {
+            let columnsCollectionTreeElements = tableFieldsDeleteTreeContainers.columnsCollection.add('div#deleteCollectionColumnsBadge')
+
+            try {
+              if (!(columns.some((column) => ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))))
+                throw 0
+
+              columnsCollectionTreeElements.show()
+
+              tableFieldsDeleteTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
+            } catch (e) {
+              columnsCollectionTreeElements.hide()
+            }
+          }
+
+          {
+            let columnsUDTTreeElements = tableFieldsDeleteTreeContainers.columnsUDT.add('div#deleteUDTColumnsBadge')
+            try {
+              if (udts.length <= 0)
+                throw 0
+
+              columnsUDTTreeElements.show()
+
+              tableFieldsDeleteTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
+            } catch (e) {
+              columnsUDTTreeElements.hide()
+            }
+          }
+
+          setTimeout(() => {
+            for (let container of Object.keys(tableFieldsDeleteTreeContainers)) {
+              let tableFieldsTreeContainer = tableFieldsDeleteTreeContainers[container]
+
+              try {
+                tableFieldsTreeContainer.unbind('loaded.jstree')
+                tableFieldsTreeContainer.unbind('select_node.jstree')
+                tableFieldsTreeContainer.unbind('create_node.jstree')
+                tableFieldsTreeContainer.unbind('delete_node.jstree')
+                tableFieldsTreeContainer.unbind('hide_node.jstree')
+              } catch (e) {}
+
+              tableFieldsTreeContainer.on('loaded.jstree', () => {
+                tableFieldsTreeContainer.find('a.jstree-anchor[add-hidden-node]').each(function() {
+                  let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${$(this).attr('add-hidden-node')}"]`)
+
+                  hiddenNode.find('a.jstree-anchor').addClass('hidden-node')
+
+                  hiddenNode.css('margin-top', '-45px')
+
+                  hiddenNode.children('a').css('pointer-events', 'none')
+                })
+
+                // Handle Primary key of the table
+                try {
+                  if (container != 'primaryKey')
+                    throw 0
+
+                  let nodes = tableFieldsTreeContainer.find('a.jstree-anchor:not(.hidden-node)').get()
+
+                  for (let node of nodes) {
+                    let isPartition = $(node).attr('partition') == 'true',
+                      isCollectionType = $(node).attr('add-items') == 'true',
+                      rangeOperatorsBtnID = `_${getRandomID(10)}`,
+                      operatorsContainerID = `_${getRandomID(10)}`,
+                      rangeOperators = `
+                      <span>
+                        <input type="radio" class="btn-check range-operator" name="${operatorsContainerID}" id="_operator_less_than" autocomplete="off" data-operator="<">
+                        <label class="btn btn-secondary btn-light btn-sm range-operator" for="_operator_less_than" data-mdb-ripple-init><</label>
+                      </span>
+                      <span>
+                        <input type="radio" class="btn-check range-operator" name="${operatorsContainerID}" id="_operator_greater_than" autocomplete="off" data-operator=">">
+                        <label class="btn btn-secondary btn-light btn-sm range-operator" for="_operator_greater_than" data-mdb-ripple-init>></label>
+                      </span>
+                      <span>
+                        <input type="radio" class="btn-check range-operator" name="${operatorsContainerID}" id="_operator_less_than_equal" autocomplete="off" data-operator="<=">
+                        <label class="btn btn-secondary btn-light btn-sm range-operator" for="_operator_less_than_equal" data-mdb-ripple-init><=</label>
+                      </span>
+                      <span>
+                        <input type="radio" class="btn-check range-operator" name="${operatorsContainerID}" id="_operator_greater_than_equal" autocomplete="off" data-operator=">=">
+                        <label class="btn btn-secondary btn-light btn-sm range-operator" for="_operator_greater_than_equal" data-mdb-ripple-init>>=</label>
+                      </span>
+                      <button id="${rangeOperatorsBtnID}" type="button" class="btn btn-secondary btn-light btn-sm expand-range" data-mdb-ripple-init>
+                        <ion-icon name="arrow-up"></ion-icon>
+                      </button>`,
+                      operatorsContainer = `
+                      <div class="input-group-text for-deletion for-operators ignored-applied" style="z-index:0;">
+                        <span class="operator">
+                          <span mulang="operator" capitalize></span>
+                          <ion-icon name="right-arrow-filled"></ion-icon>
+                        </span>
+                        <div class="btn-group operators">
+                        <span>
+                          <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_equal" autocomplete="off" data-operator="=" checked>
+                          <label class="btn btn-secondary btn-light btn-sm" for="_operator_equal" data-mdb-ripple-init>=</label>
+                          </span>
+                          <span>
+                          <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_in" autocomplete="off" data-operator="IN">
+                          <label class="btn btn-secondary btn-light btn-sm" for="_operator_in" data-mdb-ripple-init>IN</label>
+                          </span>
+                          ${!isPartition && !isCollectionType ? rangeOperators : ''}
+                        </div>
+                      </div>`
+
+                    $(node).find('div.input-group').addClass('custom-width')
+
+                    $(node).find('div.input-group').append($(operatorsContainer).show(function() {
+                      let operatorsContainerElement = $(this)
+
+                      setTimeout(() => {
+                        $(this).find('label.btn').click(function() {
+                          $(this).parent().find(`input[id="${$(this).attr('for')}"]`).trigger('click')
+                        })
+                      })
+
+                      setTimeout(() => $(this).find('label[for="_operator_in"]').parent().remove())
+
+                      setTimeout(() => $(this).find('.range-operator').hide())
+
+                      setTimeout(() => $(this).find(`button#${rangeOperatorsBtnID}`).click(function() {
+                        let areOperatorsShown = $(node).hasClass('show-range-operators')
+
+                        $(node).toggleClass('show-range-operators', !areOperatorsShown)
+
+                        $(this).closest('div.for-operators').find('.range-operator').toggle(!areOperatorsShown)
+
+                        $(this).closest('div.for-operators').css('width', areOperatorsShown ? '' : '100%')
+                      }))
+
+                      $(this).find(`input[name="${operatorsContainerID}"]`).on('change', function() {
+                        let spanParent = $(this).parent(),
+                          spanIndex = spanParent.index()
+
+                        if (spanIndex <= 1)
+                          return
+
+                        let operatorsGroup = spanParent.closest('div.btn-group.operators')
+
+                        spanParent.prependTo(operatorsGroup)
+
+                        setTimeout(() => operatorsGroup.children('span').get().forEach((span, index) => $(span).children('label').toggleClass('range-operator', index > 1)))
+
+                        setTimeout(() => operatorsContainerElement.find(`button#${rangeOperatorsBtnID}`).click())
+                      })
+
+                      setTimeout(() => {
+                        let clondedInput = $($(node).find('div.input-group').find('div.form-outline[data-is-main-input="true"]').clone(true))
+
+                        if (isCollectionType) {
+                          clondedInput = $($(node).find('div.input-group').find('div.input-group-text.for-actions').clone(true))
+
+                          clondedInput.css('width', '100%')
+                        }
+
+                        setTimeout(() => {
+                          $(node).find('div.input-group').append((clondedInput.length != 0 ? clondedInput : $('<u></u>')).show(function() {
+                            $(node).find('div[class^="form-"], div.input-group-text.for-null-value, div.for-actions').not($(this)).remove()
+
+                            setTimeout(() => {
+                              $(node).find('input[type="text"]').each(function() {
+                                $(this).val('').trigger('input')
+
+                                let mdbObject = getElementMDBObject($(this))
+
+                                setTimeout(() => mdbObject.update(), 500)
+                              })
+                            })
+
+                            setTimeout(() => Modules.Localization.applyLanguageSpecific($(node).find('span[mulang], [data-mulang]')))
+
+                            setTimeout(() => {
+                              try {
+                                let groupedOperators = $(node).find('div.btn-group.operators'),
+                                  scaleFactor = 0.87,
+                                  originalWidth = groupedOperators[0].getBoundingClientRect().width / scaleFactor,
+                                  newWidth = groupedOperators[0].getBoundingClientRect().width
+
+                                let marginLeftAdjustment = (originalWidth - newWidth) - 4
+
+                                groupedOperators.css("margin-left", -marginLeftAdjustment + 'px');
+                              } catch (e) {}
+                            }, 200)
+                          }))
+                        })
+                      })
+                    }))
+
+                    if (isPartition)
+                      continue
+
+                    // Handle clustering key(s)
+                    $(node).attr('mandatory', 'false')
+
+                    $(node).find('div.not-ignore-checkbox').removeClass('mandatory')
+                  }
+
+                  tableFieldsTreeContainer.find('a.jstree-anchor').find('input[type="text"]').get().forEach((input, index) => $(input).toggleClass('disabled', index != 0))
+                } catch (e) {}
+
+                setTimeout(() => Modules.Localization.applyLanguageSpecific(tableFieldsTreeContainer.find('span[mulang], [data-mulang]')))
+              })
+            }
+          })
+
+          $('div.modal#rightClickActionsMetadata div[action]').hide()
+          $('div.modal#rightClickActionsMetadata div[action="delete-row-column"]').show()
+
+          $('#rightClickActionsMetadata').addClass('insertion-action').removeClass('show-editor')
+
+          rightClickActionsMetadataModal.show()
+        })
+      }
     }
   }
 

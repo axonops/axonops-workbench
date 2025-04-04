@@ -688,6 +688,10 @@
       if (!e.ctrlKey || e.keyCode != 76)
         return
 
+      $(document).trigger('clearEnhancedConsole')
+    })
+
+    $(document).on('clearEnhancedConsole', () => {
       let interactiveTerminal = $(`div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"] div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-content`)
 
       if (interactiveTerminal.length <= 0)

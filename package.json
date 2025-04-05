@@ -349,7 +349,7 @@
     "appdata-path": "^1.0.0",
     "autosize": "^6.0.1",
     "axios": "^1.8.2",
-    "better-sqlite3": "^11.8.1",
+    "better-sqlite3": "^11.9.0",
     "bytes": "^3.1.2",
     "chart.js": "^4.4.8",
     "chartjs-plugin-zoom": "^2.2.0",

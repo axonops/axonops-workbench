@@ -33,21 +33,14 @@ and for the daily internal builds (used for testing and development purposes) us
 brew install --cask axonopsworkbench-internal
 ```
 
-#### Docker or Podman on OSX
+#### Docker or Podman
 
-If you want to run local clusters using AxonOps Workbench, it requires docker with the docker compose plugin or podman with podman compse to start up and run local Apache Cassandra clusters.
+If you want to run local clusters using AxonOps Workbench, it requires Docker or Podman _(with compose plugin - this is installed by default on recent versions of Docker and Podman)_ to start up and run local Apache Cassandra clusters.
 
-`docker` does not run nativably on OSX. You usually need an additional application such as [Rancher Desktop](https://rancherdesktop.io/),
-[Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/) or [Colima](https://github.com/abiosoft/colima).
+Make sure you have one of these installed. Workbench will run docker/podman from the default install location. If you have it installed in a non default way, you can add the additional paths to the settings in the app.
 
-- Ensure you list the [path where the docker command](./docs/docker-settings.png) is in the configuration
-- Make sure you have installed the `docker-compose` plugin. If you're using `brew`, it's a simple as `brew install docker-compose`
-- Ensure there is a symlink to the docker-compose binary in the configuration
+<img width="864" alt="Screenshot 2025-04-15 at 11 09 58" src="https://github.com/user-attachments/assets/3696af51-2f13-44eb-956a-7b8751c8abd9" />
 
-```
-cd ~/.docker/cli-plugins
-ln -s $(brew --prefix)/bin/docker-compose .
-```
 
 ## Features
 

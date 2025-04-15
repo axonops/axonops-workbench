@@ -35,9 +35,9 @@ brew install --cask axonopsworkbench-internal
 
 ## Docker or Podman
 
-If you want to run local clusters using AxonOps Workbench, it requires Docker or Podman with compose plugin _(Note: this is installed by default on recent versions of Docker and Podman)_ to start up and run local Apache Cassandra clusters.
+To run local clusters using AxonOps Workbench, you must have either Docker or Podman installed, along with the Compose plugin. Recent versions of both Docker and Podman include the Compose plugin by default.
 
-Make sure you have one of these installed. Workbench will run docker/podman from the default install location. If you have it installed in a non default way, you can add the additional paths to the settings in the app.
+Please ensure that Docker or Podman is installed on your system. AxonOps Workbench will use Docker or Podman from their standard installation paths. If you have installed Docker or Podman in a non-default location, you can specify the custom installation paths in the Workbench application settings.
 
 <img width="864" alt="Screenshot 2025-04-15 at 11 09 58" src="https://github.com/user-attachments/assets/3696af51-2f13-44eb-956a-7b8751c8abd9" />
 

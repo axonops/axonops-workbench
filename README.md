@@ -12,7 +12,7 @@ Go to https://axonops.com/workbench/download/ to download the latest release for
 
 ### Homebrew (not GA yet - better to download as above)
 
-For MacOS it is also possible to install the AxonOps Workbench using [brew](https://brew.sh/)
+For MacOS internal and development builds, it is also possible to install the AxonOps Workbench using [brew](https://brew.sh/)
 
 ```sh
 # Optional: set applications directory to your $HOME

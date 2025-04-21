@@ -22468,9 +22468,11 @@
               field.type = `set<${field.type}>`
           } catch (e) {}
 
+          let finalFieldName = `${field.name}`
+
           try {
             if (field.fieldOperator != undefined)
-              field.name = `${field.name} ${getOperatorSymbol(field.fieldOperator)}`
+              finalFieldName = `${field.name} ${getOperatorSymbol(field.fieldOperator)}`
           } catch (e) {}
 
           try {
@@ -22516,10 +22518,10 @@
                 continue
 
               if (field.parent == '#')
-                names.push(`${field.name}` + (!isInsertionAsJSON ? `, -- ${field.type}` : ''))
+                names.push(`${finalFieldName}` + (!isInsertionAsJSON ? `, -- ${field.type}` : ''))
 
               if (field.parent != '#' && isUDT)
-                names.push(`${field.name}`)
+                names.push(`${finalFieldName}`)
 
               values.push(field.isMapItem ? `${fieldValue}` : (`${fieldValue}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : '')))
 
@@ -22573,10 +22575,10 @@
                 continue
 
               if (field.parent == '#')
-                names.push(`${field.name}` + (!isInsertionAsJSON ? `, -- ${field.type}` : ''))
+                names.push(`${finalFieldName}` + (!isInsertionAsJSON ? `, -- ${field.type}` : ''))
 
               if (field.parent != '#' && isUDT)
-                names.push(`${field.name}`)
+                names.push(`${finalFieldName}`)
 
               values.push(`${joinedValue}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : ''))
 
@@ -22650,7 +22652,7 @@
                 value = !isInsertionAsJSON ? 'NULL' : 'null'
 
               if (field.parent == '#' || isUDT)
-                names.push(isUDT ? `${field.name}` : (`${field.name}` + (!isInsertionAsJSON ? `, -- ${field.type}` : '')))
+                names.push(isUDT ? `${finalFieldName}` : (`${finalFieldName}` + (!isInsertionAsJSON ? `, -- ${field.type}` : '')))
 
               values.push(isUDT || isCollection ? `${value}` : (`${value}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : '')))
             } catch (e) {}
@@ -22710,8 +22712,17 @@
       try {
         let temp = []
 
-        for (let i = 0; i < manipulatedFields.allNonPKColumns.names.length; i++)
-          temp.push(`${manipulatedFields.allNonPKColumns.names[i]} ${manipulatedFields.allNonPKColumns.values[i]}`)
+        console.log(manipulatedFields.allNonPKColumns);
+
+        for (let i = 0; i < manipulatedFields.allNonPKColumns.names.length; i++) {
+          let name = manipulatedFields.allNonPKColumns.names[i],
+            value = manipulatedFields.allNonPKColumns.values[i]
+
+          if ([name, value].some((attribute) => `${attribute}` == 'undefined'))
+            continue
+
+          temp.push(`${name} ${value}`)
+        }
 
         otherFields = temp.join(' AND ')
       } catch (e) {}

@@ -86,7 +86,7 @@ jobs:
           sed -i.bak "s/%CQLSH_VERSION%/$CQLSH_BUILD_VERSION/g" renderer/views/index.html
           rm -f renderer/views/index.html.bak
         env:
-          CQLSH_BUILD_VERSION: "0.16.0"
+          CQLSH_BUILD_VERSION: "0.16.2"
           CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download' }}"
 
       - name: Setup Python v3.12
@@ -264,15 +264,22 @@ jobs:
         with:
           node-version: 20.17.0
 
+      - name: Install AxonOps Developer Workbench dependencies
+        run: |
+          npm cache clean --force
+          npm i
+
       - name: Generate SBOM 1/2
         uses: anchore/sbom-action@v0
         with:
           artifact-name: sbom.spdx.json
+          root-directory: ${{ github.workspace }}
 
       - name: Generate SBOM 2/2
         uses: anchore/sbom-action@v0
         with:
           artifact-name: sbom.cyclonedx.json
+          root-directory: ${{ github.workspace }}
           format: cyclonedx-json
 
 # Release choco and brew

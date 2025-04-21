@@ -12,7 +12,7 @@ Go to https://axonops.com/workbench/download/ to download the latest release for
 
 ### Homebrew
 
-For MacOS it is also possible to install the AxonOps Workbench using [brew](https://brew.sh/)
+For MacOS builds, it is also possible to install the AxonOps Workbench using [brew](https://brew.sh/)
 
 ```sh
 # Optional: set applications directory to your $HOME
@@ -33,21 +33,14 @@ and for the daily internal builds (used for testing and development purposes) us
 brew install --cask axonopsworkbench-internal
 ```
 
-#### Docker or Podman on OSX
+## Docker or Podman
 
-AxonOps Workbench requires docker with the docker compose plugin or podman with podman compse to start up and run local Apache Cassandra clusters.
+To run local clusters using AxonOps Workbench, you must have either Docker or Podman installed, along with the Compose plugin. Recent versions of both Docker and Podman include the Compose plugin by default.
 
-`docker` does not run nativably on OSX. You usually need an additional application such as [Rancher Desktop](https://rancherdesktop.io/),
-[Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/) or [Colima](https://github.com/abiosoft/colima).
+Please ensure that Docker or Podman is installed on your system. AxonOps Workbench will use Docker or Podman from their standard installation paths. If you have installed Docker or Podman in a non-default location, you can specify the custom installation paths in the Workbench application settings.
 
-- Ensure you list the [path where the docker command](./docs/docker-settings.png) is in the configuration
-- Make sure you have installed the `docker-compose` plugin. If you're using `brew`, it's a simple as `brew install docker-compose`
-- Ensure there is a symlink to the docker-compose binary in the configuration
+<img width="864" alt="Screenshot 2025-04-15 at 11 09 58" src="https://github.com/user-attachments/assets/3696af51-2f13-44eb-956a-7b8751c8abd9" />
 
-```
-cd ~/.docker/cli-plugins
-ln -s $(brew --prefix)/bin/docker-compose .
-```
 
 ## Features
 

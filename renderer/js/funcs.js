@@ -255,7 +255,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
    * Set the proper time-out
    * This is performed either by just setting it to a fixed value, or based on the text's length with a maximum time of 20s
    */
-  let minTimeout = 5500,
+  let minTimeout = 7000,
     maxTimeout = 20000,
     timeout = minTimeout
 
@@ -4014,6 +4014,7 @@ let setUIColor = (workspaceColor) => {
           .form-check-input[type=radio]:not([no-color]):checked:after {border-color: ${backgroundColor.hover.replace('70%', '35%')} !important; background-color: ${backgroundColor.hover.replace('70%', '35%')} !important;}
           .form-check-input[type=radio]:not([no-color]):checked {background: ${backgroundColor.hover.replace('70%', '25%')} !important;}
           .changed-color {color: ${textColor} !important}
+          .actions-bg {background: ${backgroundColor.default.replace('70%', '5%')} !important; box-shadow: inset 0px 0px 20px 0px ${backgroundColor.default.replace('70%', '10%')} !important;}
           .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active, form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus, .form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus {border-color: ${backgroundColor.default} !important}
           ion-icon[name="lock-closed"] {color: ${backgroundColor.default} !important}
           .jstree-default-dark .jstree-search {background: ${backgroundColor.hover.replace('70%', '15%')} !important;}
@@ -4391,7 +4392,7 @@ let handleLabelClickEvent = (label) => {
   checkBoxInput.prop('checked', !checkBoxInput.prop('checked')).trigger('input')
 }
 
-let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs = [], enableBlobPreview = false, singleNode = null) => {
+let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs = [], enableBlobPreview = false, singleNode = null, addItemBtnToAll = false) => {
   let treeStructure = {
       'dnd': {
         'is_draggable': false,
@@ -4435,426 +4436,469 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
       if (fieldType == 'timeuuid')
         extraProps.default = 'now()'
 
+      if (addItemBtnToAll)
+        extraProps.default = ''
+
       return {
         type,
         extraProps
       }
     },
     isInsertionAsJSON = $('#rightClickActionsMetadata').attr('data-as-json') === 'true',
-    handleNode = (nodeObject, parentID = '#') => {
-      let nodeID = getRandomID(30),
-        nodeStructure = {
-          'id': nodeID,
-          'parent': parentID,
-          'state': {
-            'opened': true,
-            'selected': false
-          },
-          'a_attr': {
-            'name': `${nodeObject.name}`,
-            'type': `${nodeObject.type}`,
-            'field-type': `${nodeObject.fieldType}`,
-            'partition': `${nodeObject.isPartition == true}`,
-            'static-id': `${nodeID}`,
-            'mandatory': nodeObject.isMandatory,
-            'no-empty-value': nodeObject.noEmptyValue == true
-          }
-        },
-        manipulatedType = getInputType(nodeObject.type),
-        defaultValue = manipulatedType.extraProps.default || null,
-        inputStep = manipulatedType.step ? `step="${manipulatedType.step}"` : '',
-        isIgnoranceCheckboxShown = false
-
-      try {
-        isIgnoranceCheckboxShown = parentID == '#' && nodeObject.fieldType != 'udt-field'
-      } catch (e) {}
-
-      defaultValue = defaultValue && !isInsertionAsJSON ? `value="${defaultValue}"` : ''
-
-      let inputFieldUIElement = `
-          <div data-is-main-input="true" class="form-outline form-white ignored-applied null-related" style="z-index:1;">
-            <div class="clear-field hide" ${manipulatedType.type == 'checkbox' ? 'hidden' : ''}>
-              <div class="btn btn-tertiary" data-mdb-ripple-color="light">
-                <ion-icon name="close"></ion-icon>
-              </div>
-            </div>
-            <input type="${manipulatedType.type}" data-field-type="${nodeObject.type}" class="form-control ${manipulatedType.type != 'checkbox' ? 'has-clear-button' : ''}" id="_${getRandomID(10)}" ${defaultValue} ${inputStep}>
-            <label class="form-label">
-              <span mulang="value" capitalize></span>
-            </label>
-          </div>`,
-        fieldActions = ``
-
-      try {
-        if (manipulatedType.type != 'switch')
-          throw 0
-
-        let switchBtnID = getRandomID(10)
-
-        inputFieldUIElement = `
-          <div data-is-main-input="true" class="form-check form-switch form-white ignored-applied null-related">
-            <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="_${switchBtnID}" data-field-type="${nodeObject.type}">
-            <label class="form-check-label uppercase" for="_${switchBtnID}" onclick="handleLabelClickEvent(this)">false</label>
-          </div>`
-      } catch (e) {}
-
-      try {
-        if (!(['map', 'set', 'list'].some((type) => `${nodeObject.type}`.includes(`${type}<`))))
-          throw 0
-
-        nodeStructure.a_attr['add-items'] = true
-
-        nodeStructure.a_attr['add-hidden-node'] = getRandomID(30)
-
-        inputFieldUIElement = ``
-
-        fieldActions = `
-          <div class="input-group-text for-insertion for-actions ignored-applied">
-            <span class="actions">
-              <span mulang="actions" capitalize></span>
-              <ion-icon name="right-arrow-filled"></ion-icon>
-            </span>
-            <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="add-item">
-              <ion-icon name="plus"></ion-icon>
-              <span mulang="add item"></span>
-            </button>
-          </div>`
-      } catch (e) {}
-
-      try {
-        if (`${nodeObject.type}` != 'uuid')
-          throw 0
-
-        let dropDownBtnID = getRandomID(30)
-
-        fieldActions = `
-          <div class="input-group-text dropend for-insertion for-actions ignored-applied">
-            <span class="actions">
-              <span mulang="actions" capitalize></span>
-              <ion-icon name="right-arrow-filled"></ion-icon>
-            </span>
-            <button type="button" class="btn btn-light btn-rounded btn-sm dropdown-toggle" data-mdb-ripple-color="dark" data-mdb-dropdown-init aria-expanded="false" id="_${dropDownBtnID}">
-            </button>
-            <ul class="dropdown-menu for-insertion-actions" data-mdb-auto-close="true" aria-labelledby="_${dropDownBtnID}">
-              <li>
-                <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="uuid()">
-                  <ion-icon name="function"></ion-icon> <code>uuid()</code>
-                </a>
-              </li>
-            </ul>
-          </div>`
-
-        if (isInsertionAsJSON)
-          fieldActions = ''
-      } catch (e) {}
-
-      try {
-        if (`${nodeObject.type}` != 'blob')
-          throw 0
-
-        let dropDownBtnID = getRandomID(30)
-
-        fieldActions = `
-          <div class="input-group-text dropend for-insertion for-actions ignored-applied">
-            <span class="actions">
-              <span mulang="actions" capitalize></span>
-              <ion-icon name="right-arrow-filled"></ion-icon>
-            </span>
-            <button type="button" class="btn btn-light btn-rounded btn-sm dropdown-toggle" data-mdb-ripple-color="dark" data-mdb-dropdown-init aria-expanded="false" id="_${dropDownBtnID}">
-            </button>
-            <ul class="dropdown-menu for-insertion-actions" data-mdb-auto-close="true" aria-labelledby="_${dropDownBtnID}">
-              <li>
-                <a class="dropdown-item" href="#" aria-expanded="false" action="upload-item">
-                  <ion-icon name="upload"></ion-icon> <span mulang="upload item" capitalize></span>
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item ${!enableBlobPreview ? 'disabled' : ''}" href="#" aria-expanded="false" action="preview-item" ${!enableBlobPreview ? 'style="color: #898989 !important;"' : ''}>
-                  <ion-icon name="eye-opened"></ion-icon> <span mulang="preview item" capitalize></span>
-                </a>
-              </li>
-            </ul>
-            <l-ring-2 size="20" stroke="2" stroke-length="0.25" bg-opacity="0.25" speed="0.45" color="white"></l-ring-2>
-          </div>`
-      } catch (e) {}
-
-      try {
-        if (`${nodeObject.type}` != 'timeuuid')
-          throw 0
-
-        let dropDownBtnID = getRandomID(30)
-
-        fieldActions = `
-          <div class="input-group-text dropend for-insertion for-actions ignored-applied">
-            <span class="actions">
-              <span mulang="actions" capitalize></span>
-              <ion-icon name="right-arrow-filled"></ion-icon>
-            </span>
-            <button type="button" class="btn btn-light btn-rounded btn-sm dropdown-toggle" data-mdb-ripple-color="dark" data-mdb-dropdown-init aria-expanded="false" id="_${dropDownBtnID}">
-            </button>
-            <ul class="dropdown-menu for-insertion-actions" data-mdb-auto-close="true" aria-labelledby="_${dropDownBtnID}">
-              <li>
-                <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="now()">
-                  <ion-icon name="function"></ion-icon> <code>now()</code>
-                </a>
-              </li>
-            </ul>
-          </div>`
-
-        if (isInsertionAsJSON)
-          fieldActions = ''
-      } catch (e) {}
-
-      try {
-        if (!(['timestamp', 'date', 'duration', 'time'].some((type) => `${nodeObject.type}` == type)))
-          throw 0
-
-        let viewMode = 'YMDHMS',
-          functionBtn = ``
-
-        switch (nodeObject.type) {
-          case 'date': {
-            viewMode = 'YMD'
-            functionBtn = `
-            <li>
-              <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="current_date()">
-                <ion-icon name="function"></ion-icon> <code>current_date()</code>
-              </a>
-            </li>`
-            break
-          }
-          case 'duration': {
-            viewMode = 'HMS-D'
-            break
-          }
-          case 'time': {
-            viewMode = 'HMS'
-            functionBtn = `
-            <li>
-              <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="current_time()">
-                <ion-icon name="function"></ion-icon> <code>current_time()</code>
-              </a>
-            </li>`
-            break
-          }
-          case 'timestamp': {
-            functionBtn = `
-            <li>
-              <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="current_timestamp()">
-                <ion-icon name="function"></ion-icon> <code>current_timestamp()</code>
-              </a>
-            </li>`
-            break
-          }
-        }
-
-        if (isInsertionAsJSON)
-          functionBtn = ''
-
-        let dropDownBtnID = getRandomID(30),
-          pickerTitle = 'date time picker'
-
-        switch (viewMode) {
-          case 'YMD': {
-            pickerTitle = 'date picker'
-            break
-          }
-          case 'HMS': {
-            pickerTitle = 'time picker'
-            break
-          }
-          case 'HMS-D': {
-            pickerTitle = 'duration picker'
-            break
-          }
-        }
-
-        fieldActions = `
-        <div class="input-group-text dropend for-insertion for-actions ignored-applied">
-          <span class="actions">
-            <span mulang="actions" capitalize></span>
-            <ion-icon name="right-arrow-filled"></ion-icon>
-          </span>
-          <button type="button" class="btn btn-light btn-rounded btn-sm dropdown-toggle" data-mdb-ripple-color="dark" data-mdb-dropdown-init aria-expanded="false" id="_${dropDownBtnID}">
-          </button>
-          <ul class="dropdown-menu for-insertion-actions" data-mdb-auto-close="true" aria-labelledby="_${dropDownBtnID}">
-            <li>
-              <a class="dropdown-item" href="#" aria-expanded="false" action="datetimepicker" data-view-mode="${viewMode}">
-                <ion-icon name="${viewMode.startsWith('HMS') ? 'time-outline' : 'calendar'}"></ion-icon> <span mulang="${pickerTitle}" capitalize></span>
-              </a>
-            </li>
-            ${functionBtn}
-          </ul>
-        </div>`
-      } catch (e) {}
-
-      try {
-        if (keyspaceUDTs.find((udt) => nodeObject.type == udt.name) == undefined)
-          throw 0
-
-        inputFieldUIElement = ``
-
-        nodeStructure.a_attr['is-udt'] = true
-      } catch (e) {}
-
-      let nullValueSupport = ``
-
-      try {
-        if (`${nodeObject.fieldType}` != 'regular-column' || nodeStructure.a_attr['add-items'] == true)
-          throw 0
-
-        nullValueSupport = `
-        <div class="input-group-text for-insertion for-null-value ignored-applied">
-          <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="apply-null">
-            <span class="circle changed-bg"></span>
-            <span>NULL</span>
-          </button>
-        </div>`
-      } catch (e) {}
-
-      nodeStructure.text = `
-      <div class="input-group">
-        <div class="input-group-text for-not-ignoring" ${!isIgnoranceCheckboxShown ? 'hidden' : '' }>
-          <div class="not-ignore-checkbox ${nodeObject.fieldType == 'primary-key' ? 'mandatory' : ''}" data-status="true">
-            <div class="circle changed-bg"></div>
-          </div>
-        </div>
-        <div class="input-group-text for-insertion for-name ignored-applied" ${nodeObject.name.length <=0 ? 'hidden' : '' }>
-          <span class="name">
-            <span mulang="name" capitalize></span>
-            <ion-icon name="right-arrow-filled"></ion-icon>
-          </span>
-          <span class="name-value">${nodeObject.name}</span>
-        </div>
-        ${inputFieldUIElement}
-        ${nullValueSupport}
-        <div class="input-group-text for-insertion for-type ignored-applied" style="z-index:0;">
-          <span class="type">
-            <span mulang="type" capitalize></span>
-            <ion-icon name="right-arrow-filled"></ion-icon>
-          </span>
-          <span class="type-value">${EscapeHTML(nodeObject.type)}</span>
-        </div>
-        ${fieldActions}
-      </div>`
-
-      return nodeStructure
-    },
-    handleUDT = (udtObject, parentID = '#', returnStructure = false) => {
-      let udtGroupStrcuture = []
-
-      try {
-        let udtID = getRandomID(30),
-          udtNodeStructure = {
-            'id': udtID,
+    handlers = {
+      node: (nodeObject, parentID = '#', ignoreAddItemBtnToAll = false) => {
+        let nodeID = getRandomID(30),
+          nodeStructure = {
+            'id': nodeID,
             'parent': parentID,
             'state': {
               'opened': true,
               'selected': false
             },
             'a_attr': {
-              'name': `${udtObject.name}`,
-              'type': `${udtObject.type}`,
-              'field-type': 'udt-column',
-              'static-id': `${udtID}`,
-              'mandatory': false,
-              'no-empty-value': true
+              'name': `${nodeObject.name}`,
+              'type': `${nodeObject.type}`,
+              'field-type': `${nodeObject.fieldType}`,
+              'partition': `${nodeObject.isPartition == true}`,
+              'static-id': `${nodeID}`,
+              'mandatory': nodeObject.isMandatory,
+              'no-empty-value': nodeObject.noEmptyValue == true
+            }
+          },
+          manipulatedType = getInputType(nodeObject.type),
+          defaultValue = manipulatedType.extraProps.default || null,
+          inputStep = manipulatedType.step ? `step="${manipulatedType.step}"` : '',
+          isIgnoranceCheckboxShown = false,
+          forceToAddItemBtnToAll = !ignoreAddItemBtnToAll && addItemBtnToAll
+
+        try {
+          isIgnoranceCheckboxShown = parentID == '#' && nodeObject.fieldType != 'udt-field'
+        } catch (e) {}
+
+        defaultValue = defaultValue && !isInsertionAsJSON ? `value="${defaultValue}"` : ''
+
+        let inputFieldUIElement = `
+            <div data-is-main-input="true" class="form-outline form-white ignored-applied null-related" style="z-index:1;">
+              <div class="clear-field hide" ${manipulatedType.type == 'checkbox' ? 'hidden' : ''}>
+                <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                  <ion-icon name="close"></ion-icon>
+                </div>
+              </div>
+              <input type="${manipulatedType.type}" data-field-type="${nodeObject.type}" class="form-control ${manipulatedType.type != 'checkbox' ? 'has-clear-button' : ''}" id="_${getRandomID(10)}" ${defaultValue} ${inputStep}>
+              <label class="form-label">
+                <span mulang="value" capitalize></span>
+              </label>
+              <div class="focus-area"></div>
+            </div>`,
+          fieldActions = ``
+
+        try {
+          if (manipulatedType.type != 'switch')
+            throw 0
+
+          let switchBtnID = getRandomID(10)
+
+          inputFieldUIElement = `
+            <div data-is-main-input="true" class="form-check form-switch form-white ignored-applied null-related">
+              <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="_${switchBtnID}" data-field-type="${nodeObject.type}">
+              <label class="form-check-label uppercase" for="_${switchBtnID}" onclick="handleLabelClickEvent(this)">false</label>
+              <div class="focus-area checkbox"></div>
+            </div>`
+        } catch (e) {}
+
+        try {
+          if (`${nodeObject.type}` != 'uuid')
+            throw 0
+
+          let dropDownBtnID = getRandomID(30)
+
+          fieldActions = `
+            <div class="input-group-text dropend for-insertion for-actions ignored-applied">
+              <span class="actions">
+                <span mulang="actions" capitalize></span>
+                <ion-icon name="right-arrow-filled"></ion-icon>
+              </span>
+              <button type="button" class="btn btn-light btn-rounded btn-sm dropdown-toggle" data-mdb-ripple-color="dark" data-mdb-dropdown-init aria-expanded="false" id="_${dropDownBtnID}">
+              </button>
+              <ul class="dropdown-menu for-insertion-actions" data-mdb-auto-close="true" aria-labelledby="_${dropDownBtnID}">
+                <li>
+                  <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="uuid()">
+                    <ion-icon name="function"></ion-icon> <code>uuid()</code>
+                  </a>
+                </li>
+              </ul>
+            </div>`
+
+          if (isInsertionAsJSON)
+            fieldActions = ''
+        } catch (e) {}
+
+        try {
+          if (`${nodeObject.type}` != 'blob')
+            throw 0
+
+          let dropDownBtnID = getRandomID(30)
+
+          fieldActions = `
+            <div class="input-group-text dropend for-insertion for-actions ignored-applied">
+              <span class="actions">
+                <span mulang="actions" capitalize></span>
+                <ion-icon name="right-arrow-filled"></ion-icon>
+              </span>
+              <button type="button" class="btn btn-light btn-rounded btn-sm dropdown-toggle" data-mdb-ripple-color="dark" data-mdb-dropdown-init aria-expanded="false" id="_${dropDownBtnID}">
+              </button>
+              <ul class="dropdown-menu for-insertion-actions" data-mdb-auto-close="true" aria-labelledby="_${dropDownBtnID}">
+                <li>
+                  <a class="dropdown-item" href="#" aria-expanded="false" action="upload-item">
+                    <ion-icon name="upload"></ion-icon> <span mulang="upload item" capitalize></span>
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item ${!enableBlobPreview ? 'disabled' : ''}" href="#" aria-expanded="false" action="preview-item" ${!enableBlobPreview ? 'style="color: #898989 !important;"' : ''}>
+                    <ion-icon name="eye-opened"></ion-icon> <span mulang="preview item" capitalize></span>
+                  </a>
+                </li>
+              </ul>
+              <l-ring-2 size="20" stroke="2" stroke-length="0.25" bg-opacity="0.25" speed="0.45" color="white"></l-ring-2>
+            </div>`
+        } catch (e) {}
+
+        try {
+          if (`${nodeObject.type}` != 'timeuuid')
+            throw 0
+
+          let dropDownBtnID = getRandomID(30)
+
+          fieldActions = `
+            <div class="input-group-text dropend for-insertion for-actions ignored-applied">
+              <span class="actions">
+                <span mulang="actions" capitalize></span>
+                <ion-icon name="right-arrow-filled"></ion-icon>
+              </span>
+              <button type="button" class="btn btn-light btn-rounded btn-sm dropdown-toggle" data-mdb-ripple-color="dark" data-mdb-dropdown-init aria-expanded="false" id="_${dropDownBtnID}">
+              </button>
+              <ul class="dropdown-menu for-insertion-actions" data-mdb-auto-close="true" aria-labelledby="_${dropDownBtnID}">
+                <li>
+                  <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="now()">
+                    <ion-icon name="function"></ion-icon> <code>now()</code>
+                  </a>
+                </li>
+              </ul>
+            </div>`
+
+          if (isInsertionAsJSON)
+            fieldActions = ''
+        } catch (e) {}
+
+        try {
+          if (!(['timestamp', 'date', 'duration', 'time'].some((type) => `${nodeObject.type}` == type)))
+            throw 0
+
+          let viewMode = 'YMDHMS',
+            functionBtn = ``
+
+          switch (nodeObject.type) {
+            case 'date': {
+              viewMode = 'YMD'
+              functionBtn = `
+              <li>
+                <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="current_date()">
+                  <ion-icon name="function"></ion-icon> <code>current_date()</code>
+                </a>
+              </li>`
+              break
+            }
+            case 'duration': {
+              viewMode = 'HMS-D'
+              break
+            }
+            case 'time': {
+              viewMode = 'HMS'
+              functionBtn = `
+              <li>
+                <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="current_time()">
+                  <ion-icon name="function"></ion-icon> <code>current_time()</code>
+                </a>
+              </li>`
+              break
+            }
+            case 'timestamp': {
+              functionBtn = `
+              <li>
+                <a class="dropdown-item" href="#" aria-expanded="false" action="function" data-function="current_timestamp()">
+                  <ion-icon name="function"></ion-icon> <code>current_timestamp()</code>
+                </a>
+              </li>`
+              break
             }
           }
 
-        udtNodeStructure.text = `
+          if (isInsertionAsJSON)
+            functionBtn = ''
+
+          let dropDownBtnID = getRandomID(30),
+            pickerTitle = 'date time picker'
+
+          switch (viewMode) {
+            case 'YMD': {
+              pickerTitle = 'date picker'
+              break
+            }
+            case 'HMS': {
+              pickerTitle = 'time picker'
+              break
+            }
+            case 'HMS-D': {
+              pickerTitle = 'duration picker'
+              break
+            }
+          }
+
+          fieldActions = `
+          <div class="input-group-text dropend for-insertion for-actions ignored-applied">
+            <span class="actions">
+              <span mulang="actions" capitalize></span>
+              <ion-icon name="right-arrow-filled"></ion-icon>
+            </span>
+            <button type="button" class="btn btn-light btn-rounded btn-sm dropdown-toggle" data-mdb-ripple-color="dark" data-mdb-dropdown-init aria-expanded="false" id="_${dropDownBtnID}">
+            </button>
+            <ul class="dropdown-menu for-insertion-actions" data-mdb-auto-close="true" aria-labelledby="_${dropDownBtnID}">
+              <li>
+                <a class="dropdown-item" href="#" aria-expanded="false" action="datetimepicker" data-view-mode="${viewMode}">
+                  <ion-icon name="${viewMode.startsWith('HMS') ? 'time-outline' : 'calendar'}"></ion-icon> <span mulang="${pickerTitle}" capitalize></span>
+                </a>
+              </li>
+              ${functionBtn}
+            </ul>
+          </div>`
+        } catch (e) {}
+
+        try {
+          let isCollectionType = (['map', 'set', 'list'].some((type) => `${nodeObject.type}`.includes(`${type}<`)))
+
+          if (!forceToAddItemBtnToAll && !isCollectionType)
+            throw 0
+
+          nodeStructure.a_attr['add-items'] = true
+
+          nodeStructure.a_attr['add-hidden-node'] = getRandomID(30)
+
+          if (forceToAddItemBtnToAll && isCollectionType)
+            nodeStructure.a_attr['is-collection-type'] = true
+
+          if (!forceToAddItemBtnToAll && isCollectionType)
+            inputFieldUIElement = ``
+
+          fieldActions = `
+            <div class="input-group-text for-insertion for-actions ignored-applied">
+              <span class="actions">
+                <span mulang="actions" capitalize></span>
+                <ion-icon name="right-arrow-filled"></ion-icon>
+              </span>
+              <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="add-item">
+                <ion-icon name="plus"></ion-icon>
+                <span mulang="add item"></span>
+              </button>
+            </div>`
+        } catch (e) {}
+
+        try {
+          if (keyspaceUDTs.find((udt) => nodeObject.type == udt.name) == undefined)
+            throw 0
+
+          inputFieldUIElement = ``
+
+          nodeStructure.a_attr['is-udt'] = true
+        } catch (e) {}
+
+        let nullValueSupport = ``
+
+        try {
+          if (`${nodeObject.fieldType}` != 'regular-column' || nodeStructure.a_attr['add-items'] == true)
+            throw 0
+
+          nullValueSupport = `
+          <div class="input-group-text for-insertion for-null-value ignored-applied">
+            <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="apply-null">
+              <span class="circle changed-bg"></span>
+              <span>NULL</span>
+            </button>
+          </div>`
+        } catch (e) {}
+
+        nodeStructure.text = `
         <div class="input-group">
-          <div class="input-group-text for-not-ignoring" ${parentID != '#' ? 'hidden' : ''}>
-            <div class="not-ignore-checkbox" data-status="true">
+          <div class="input-group-text for-not-ignoring" ${!isIgnoranceCheckboxShown ? 'hidden' : '' }>
+            <div class="not-ignore-checkbox ${nodeObject.fieldType == 'primary-key' ? 'mandatory' : ''}" data-status="true">
               <div class="circle changed-bg"></div>
             </div>
           </div>
-          <div class="input-group-text for-insertion for-name ignored-applied"  ${udtObject.name.length <= 0 ? 'hidden' : ''}>
+          <div class="input-group-text for-insertion for-name ignored-applied" ${nodeObject.name.length <=0 ? 'hidden' : '' }>
             <span class="name">
               <span mulang="name" capitalize></span>
               <ion-icon name="right-arrow-filled"></ion-icon>
             </span>
-            <span class="name-value">${udtObject.name}</span>
+            <span class="name-value">${nodeObject.name}</span>
           </div>
+          ${inputFieldUIElement}
+          ${nullValueSupport}
           <div class="input-group-text for-insertion for-type ignored-applied" style="z-index:0;">
             <span class="type">
               <span mulang="type" capitalize></span>
               <ion-icon name="right-arrow-filled"></ion-icon>
             </span>
-            <span class="type-value">${EscapeHTML(udtObject.type)}</span>
+            <span class="type-value">${EscapeHTML(nodeObject.type)}</span>
           </div>
+          ${fieldActions}
         </div>`
 
-        if (returnStructure) {
-          udtGroupStrcuture.push(udtNodeStructure)
-        } else {
-          groupStructure.udtColumns.core.data.push(udtNodeStructure)
-        }
+        return nodeStructure
+      },
+      udt: (udtObject, parentID = '#', returnStructure = false) => {
+        let udtGroupStrcuture = [],
+          isForPrimaryKey = false
 
+        try {
+          if (returnStructure != 'PRIMARYKEY')
+            throw 0
+          isForPrimaryKey = true
 
-        for (let i = 0; i < udtObject.field_names.length; i++) {
-          let fieldName = udtObject.field_names[i],
-            fieldType = udtObject.field_types[i]
+          returnStructure = false
+        } catch (e) {}
 
-
-          fieldType = removeFrozenKeyword(fieldType)
-
-          try {
-            let fieldUDT = keyspaceUDTs.find((udt) => fieldType == udt.name)
-
-            if (fieldUDT == undefined)
-              throw 0
-
-            let fieldUDTStructure = handleUDT({
-              ...fieldUDT,
-              name: fieldName,
-              type: fieldType
-            }, udtID, returnStructure)
-
-            if (returnStructure)
-              udtGroupStrcuture.push(fieldUDTStructure)
-
-            continue
-          } catch (e) {}
-
-          try {
-            let fieldNodeStructure = handleNode({
-              name: fieldName,
-              type: fieldType,
-              fieldType: 'udt-field',
-              isMandatory: false,
-              noEmptyValue: true
-            }, udtID)
-
-            if (returnStructure) {
-              udtGroupStrcuture.push(fieldNodeStructure)
-            } else {
-              groupStructure.udtColumns.core.data.push(fieldNodeStructure)
+        try {
+          let udtID = getRandomID(30),
+            udtNodeStructure = {
+              'id': udtID,
+              'parent': parentID,
+              'state': {
+                'opened': true,
+                'selected': false
+              },
+              'a_attr': {
+                'name': `${udtObject.name}`,
+                'type': `${udtObject.type}`,
+                'field-type': 'udt-column',
+                'static-id': `${udtID}`,
+                'partition': `${udtObject.isPartition == true}`,
+                'mandatory': false,
+                'no-empty-value': true
+              }
             }
-          } catch (e) {}
-        }
-      } catch (e) {}
 
-      if (returnStructure)
-        return udtGroupStrcuture
+          udtNodeStructure.text = `
+          <div class="input-group">
+            <div class="input-group-text for-not-ignoring" ${parentID != '#' ? 'hidden' : ''}>
+              <div class="not-ignore-checkbox" data-status="true">
+                <div class="circle changed-bg"></div>
+              </div>
+            </div>
+            <div class="input-group-text for-insertion for-name ignored-applied"  ${udtObject.name.length <= 0 ? 'hidden' : ''}>
+              <span class="name">
+                <span mulang="name" capitalize></span>
+                <ion-icon name="right-arrow-filled"></ion-icon>
+              </span>
+              <span class="name-value">${udtObject.name}</span>
+            </div>
+            <div class="input-group-text for-insertion for-type ignored-applied" style="z-index:0;">
+              <span class="type">
+                <span mulang="type" capitalize></span>
+                <ion-icon name="right-arrow-filled"></ion-icon>
+              </span>
+              <span class="type-value">${EscapeHTML(udtObject.type)}</span>
+            </div>
+          </div>`
 
+          if (returnStructure) {
+            udtGroupStrcuture.push(udtNodeStructure)
+          } else {
+            groupStructure[!isForPrimaryKey ? 'udtColumns' : 'primaryKey'].core.data.push(udtNodeStructure)
+          }
+
+          for (let i = 0; i < udtObject.field_names.length; i++) {
+            let fieldName = udtObject.field_names[i],
+              fieldType = udtObject.field_types[i]
+
+            fieldType = removeFrozenKeyword(fieldType)
+
+            try {
+              let fieldUDT = keyspaceUDTs.find((udt) => fieldType == udt.name)
+
+              if (fieldUDT == undefined)
+                throw 0
+
+              let fieldUDTStructure = handlers.udt({
+                ...fieldUDT,
+                name: fieldName,
+                type: fieldType
+              }, udtID, returnStructure)
+
+              if (returnStructure)
+                udtGroupStrcuture.push(fieldUDTStructure)
+
+              continue
+            } catch (e) {}
+
+            try {
+              let fieldNodeStructure = handlers.node({
+                name: fieldName,
+                type: fieldType,
+                fieldType: 'udt-field',
+                isMandatory: false,
+                isPartition: udtObject.isPartition,
+                noEmptyValue: true
+              }, udtID, true)
+
+              if (returnStructure) {
+                udtGroupStrcuture.push(fieldNodeStructure)
+              } else {
+                groupStructure[!isForPrimaryKey ? 'udtColumns' : 'primaryKey'].core.data.push(fieldNodeStructure)
+              }
+            } catch (e) {}
+          }
+        } catch (e) {}
+
+        if (returnStructure)
+          return udtGroupStrcuture
+
+      }
     },
     groupStructure = {},
     groups = ['primaryKey', 'regularColumns', 'collectionColumns', 'udtColumns']
 
   if (singleNode != null)
-    return singleNode.isUDT ? handleUDT(singleNode, '#', true) : handleNode(singleNode)
+    return singleNode.isUDT ? handlers.udt(singleNode, '#', true) : handlers.node(singleNode)
 
   for (let group of groups)
     groupStructure[group] = JSON.parse(JSON.stringify(treeStructure))
 
   for (let key of keys) {
+    let keyUDT = keyspaceUDTs.find((udt) => removeFrozenKeyword(key.type) == udt.name),
+      isKeyUDT = keyUDT != undefined
+
     try {
-      let keyNodeStructure = handleNode({
-        ...key,
-        fieldType: 'primary-key',
-        isMandatory: true
-      })
+      if (isKeyUDT)
+        key.type = removeFrozenKeyword(key.type)
+    } catch (e) {}
+
+    let keyNodeObject = {
+      ...key,
+      fieldType: 'primary-key',
+      isMandatory: true
+    }
+
+    try {
+      if (!isKeyUDT)
+        throw 0
+
+      keyNodeObject = {
+        ...keyUDT,
+        ...keyNodeObject
+      }
+    } catch (e) {}
+
+    try {
+      let keyNodeStructure = handlers[isKeyUDT ? 'udt' : 'node'](keyNodeObject, '#', isKeyUDT ? 'PRIMARYKEY' : false)
 
       groupStructure.primaryKey.core.data.push(keyNodeStructure)
     } catch (e) {}
@@ -4862,7 +4906,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
 
   for (let column of columns) {
     try {
-      let columnNodeStructure = handleNode({
+      let columnNodeStructure = handlers.node({
           ...column,
           fieldType: 'regular-column',
           isMandatory: false
@@ -4878,7 +4922,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
   }
 
   for (let udt of udts)
-    handleUDT(udt)
+    handlers.udt(udt)
 
   return groupStructure
 }
@@ -4918,7 +4962,7 @@ let getCheckedValue = (groupName) => {
 
   for (let i = 0; i < radioButtons.length; i++) {
     if (radioButtons[i].checked) {
-      selectedValue = radioButtons[i].value
+      selectedValue = radioButtons[i].getAttribute('id')
       break
     }
   }

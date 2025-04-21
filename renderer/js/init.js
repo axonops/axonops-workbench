@@ -781,6 +781,15 @@ $(document).on('initialize', () => {
     } catch (e) {}
   }
 
+  // text-extensions
+  {
+    try {
+      import(Path.join(__dirname, '..', '..', 'node_modules', 'text-extensions', 'index.js')).then((extensions) => {
+        Modules.Consts.SupportedTextFilesExtenstions = [...Modules.Consts.SupportedTextFilesExtenstions.concat(extensions.default)]
+      })
+    } catch (e) {}
+  }
+
   // Lottie Files Player
   {
     loadScript(Path.join(__dirname, '..', 'js', 'external', 'lottie-player.js'))

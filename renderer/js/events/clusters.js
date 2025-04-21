@@ -198,7 +198,7 @@
                 <span mulang="connect"></span>
               </button>
             </div>
-            <div class="actions">
+            <div class="actions actions-bg">
               <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the connection folder"
                 data-mulang="open the connection folder" capitalize-first>
                 <ion-icon name="folder-open"></ion-icon>
@@ -2365,8 +2365,7 @@
                                         textareaID: '_${cqlshSessionStatementInputID}',
                                         btnID: '_${executeStatementBtnID}'
                                       })`,
-                                    // visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
-                                    visible: false
+                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                   })
 
                                   commands.ddl = commands.ddl.concat([{
@@ -4715,7 +4714,8 @@
                             theme: 'vs-dark',
                             scrollBeyondLastLine: true,
                             mouseWheelZoom: true,
-                            fontSize: 14
+                            fontSize: 14,
+                            fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace"
                           })
 
                           consoleEditor.getModel().onDidChangeContent(() => statementInputField.val(consoleEditor.getValue()).trigger('input'))
@@ -6460,7 +6460,16 @@
                           data = {
                             id: requestID,
                             title: I18next.capitalizeFirstLetter(I18next.t('select file(s) to be imported')),
-                            properties: ['openFile', 'multiSelections', 'showHiddenFiles']
+                            properties: ['openFile', 'multiSelections', 'showHiddenFiles'],
+                            filters: [{
+                                name: I18next.capitalize(I18next.t('supported text files')),
+                                extensions: Modules.Consts.SupportedTextFilesExtenstions
+                              },
+                              {
+                                name: I18next.capitalize(I18next.t('all files')),
+                                extensions: ['*']
+                              }
+                            ]
                           }
 
                         // Listen for the response - folders' paths - and call the check workspaces inner function
@@ -7857,7 +7866,7 @@
           throw 0
 
         // Show feedback to the user about having sensitive data in the `cqlsh.rc` file
-        showToast(I18next.capitalize(I18next.t('test connection')), `<code>cqlsh.rc</code> ${I18next.t('content for this connection contains a sensitive data (username, password and alike), please consider to remove them before attempting to connect again')}.`, 'failure')
+        showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t(`workbench stores sensitive data encrypted and securely using the appropriate secure storage mechanism for your OS. The [code]cqlsh.rc[/code] content added contains sensitive information (such as username, password or a path to a credentials file), which is not permitted. Please remove this sensitive data before attempting to connect again`)) + '.', 'failure')
 
         // Enable the `CONNECT` button
         testConnectionBtn.removeAttr('disabled')
@@ -8495,7 +8504,7 @@
       miniCluster.toggleClass('clickable', !noColor)
 
       // Update the mini cluster's background color
-      miniCluster.css('background', !noColor ? (getAttributes(workspaceElement, 'data-color').trim().length != 0 ? `rgb(${workspaceColorRGB} / 70%)` : '#7c7c7c') : '')
+      // miniCluster.css('background', !noColor ? (getAttributes(workspaceElement, 'data-color').trim().length != 0 ? `rgb(${workspaceColorRGB} / 70%)` : '#7c7c7c') : '')
     }
   })
   // End of `getClusters` and `refreshClusters` events
@@ -8875,7 +8884,7 @@
                   throw 0
 
                 // Show feedback to the user about having sensitive data in the `cqlsh.rc` config file's content
-                showToast(I18next.capitalize(I18next.t('test connection')), `<code>cqlsh.rc</code> ${I18next.t('content for this connection contains a sensitive data (username, password and alike), please consider to remove them before attempting to connect again')}.`, 'failure')
+                showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t(`workbench stores sensitive data encrypted and securely using the appropriate secure storage mechanism for your OS. The [code]cqlsh.rc[/code] content added contains sensitive information (such as username, password or a path to a credentials file), which is not permitted. Please remove this sensitive data before attempting to connect again`)) + '.', 'failure')
 
                 // Enable the `TEST CONNECTION` button
                 button.add('#switchEditor').removeAttr('disabled', 'disabled')
@@ -10381,7 +10390,8 @@
     })
   }
 
-  let updateActionStatusForInsertRow
+  let updateActionStatusForInsertRow,
+    updateActionStatusForDeleteRowColumn
 
   // Handle the request of getting a CQL description of the cluster, keyspace in it, or a table
   {
@@ -11663,6 +11673,10 @@
 
               primaryKeyTreeElements.show()
 
+              try {
+                groupStructure.primaryKey.core.data = groupStructure.primaryKey.core.data.filter((field) => field != undefined)
+              } catch (e) {}
+
               tableFieldsTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
             } catch (e) {
               primaryKeyTreeElements.hide()
@@ -11678,6 +11692,10 @@
 
               columnsRegularTreeElements.show()
 
+              try {
+                groupStructure.regularColumns.core.data = groupStructure.regularColumns.core.data.filter((field) => field != undefined)
+              } catch (e) {}
+
               tableFieldsTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
             } catch (e) {
               columnsRegularTreeElements.hide()
@@ -11692,6 +11710,10 @@
                 throw 0
 
               columnsCollectionTreeElements.show()
+
+              try {
+                groupStructure.collectionColumns.core.data = groupStructure.collectionColumns.core.data.filter((field) => field != undefined)
+              } catch (e) {}
 
               tableFieldsTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
             } catch (e) {
@@ -12899,10 +12921,12 @@
                 try {
                   let clickedTarget = $(data.event.target)
 
-                  if (minifyText(clickedTarget[0].tagName) != 'input')
+                  if (!clickedTarget.hasClass('focus-area'))
                     throw 0
 
-                  setTimeout(() => clickedTarget.trigger(clickedTarget.attr('type') == 'checkbox' ? 'click' : 'focus'))
+                  let relatedInput = clickedTarget.parent().children('input')
+
+                  setTimeout(() => relatedInput.trigger(relatedInput.attr('type') == 'checkbox' ? 'click' : 'focus'))
                 } catch (e) {}
 
                 setTimeout(() => {
@@ -12940,418 +12964,1441 @@
         }
 
         IPCRenderer.on('delete-row-column', (_, data) => {
-          let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
-
-          $('button#executeActionStatement').attr({
-            'data-tab-id': `${data.tabID}`,
-            'data-textarea-id': `${data.textareaID}`,
-            'data-btn-id': `${data.btnID}`
-          })
-
-          $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'delete row/column').html(`${I18next.capitalize(I18next.t('delete row/column'))} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
-
-          $('#rightClickActionsMetadata').attr('data-keyspace-tables', `${data.tables}`)
-
-          $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
-
-          try {
-            for (let container of Object.keys(tableFieldsDeleteTreeContainers)) {
-              try {
-                tableFieldsDeleteTreeContainers[container].jstree('destroy')
-              } catch (e) {}
-            }
-          } catch (e) {}
-
-          let keys = [],
-            columns = [],
-            udts = [],
-            keyspaceUDTs = []
-
-          try {
-            let tableObj = JSON.parse(JSONRepair(data.tables)).find((table) => table.name == data.tableName)
+          Modules.Config.getConfig((config) => {
+            let enableBlobPreview = false
 
             try {
-              keys = tableObj.primary_key.map((key) => {
-                let isPartition = tableObj.partition_key.find((partitionKey) => partitionKey.name == key.name) != undefined
-
-                return {
-                  name: key.name,
-                  type: key.cql_type,
-                  isPartition
-                }
-              })
+              enableBlobPreview = config.get('features', 'previewBlob') == 'true'
             } catch (e) {}
 
+            // Get the MDB object of the related modal
+            let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+            // Update the execution button's attributes
+            $('button#executeActionStatement').attr({
+              'data-tab-id': `${data.tabID}`,
+              'data-textarea-id': `${data.textareaID}`,
+              'data-btn-id': `${data.btnID}`
+            })
+
+            $('#rightClickActionsMetadata').attr({
+              'data-state': null,
+              'data-keyspace-name': `${data.keyspaceName}`,
+              'data-table-name': `${data.tableName}`
+            })
+
+            // Update different modal's attributes
+            $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'delete row/column').html(`${I18next.capitalize(I18next.t('delete row/column'))} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
+
+            $('#rightClickActionsMetadata').attr('data-keyspace-tables', `${data.tables}`)
+
+            $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
+
             try {
-              columns = tableObj.columns.filter((column) => tableObj.primary_key.find((key) => key.name == column.name) == undefined)
-                .map((column) => {
+              for (let container of Object.keys(tableFieldsDeleteTreeContainers)) {
+                try {
+                  tableFieldsDeleteTreeContainers[container].jstree('destroy')
+                } catch (e) {}
+              }
+            } catch (e) {}
+
+            let keys = [],
+              columns = [],
+              udts = [],
+              keyspaceUDTs = []
+
+            try {
+              let tableObj = JSON.parse(JSONRepair(data.tables)).find((table) => table.name == data.tableName)
+
+              try {
+                keys = tableObj.primary_key.map((key) => {
+                  let isPartition = tableObj.partition_key.find((partitionKey) => partitionKey.name == key.name) != undefined
+
                   return {
-                    name: column.name,
-                    type: column.cql_type
+                    name: key.name,
+                    type: key.cql_type,
+                    isPartition
                   }
                 })
-            } catch (e) {}
-
-            try {
-              try {
-                keyspaceUDTs = JSON.parse(JSONRepair(data.udts))
               } catch (e) {}
 
-              for (let column of columns) {
-                let udtStructure = {},
-                  manipulatedColumnType = column.type
+              try {
+                columns = tableObj.columns.filter((column) => tableObj.primary_key.find((key) => key.name == column.name) == undefined)
+                  .map((column) => {
+                    return {
+                      name: column.name,
+                      type: column.cql_type
+                    }
+                  })
+              } catch (e) {}
 
-                manipulatedColumnType = removeFrozenKeyword(`${manipulatedColumnType}`)
-
+              try {
                 try {
-                  manipulatedColumnType = `${manipulatedColumnType}`.match(/<(.*?)>$/)[1];
+                  keyspaceUDTs = JSON.parse(JSONRepair(data.udts))
                 } catch (e) {}
 
-                let udtObject = keyspaceUDTs.find((udt) => udt.name == manipulatedColumnType)
+                for (let column of columns) {
+                  let udtStructure = {},
+                    manipulatedColumnType = column.type
 
-                if (udtObject == undefined || ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))
-                  continue
+                  manipulatedColumnType = removeFrozenKeyword(`${manipulatedColumnType}`)
 
-                udtStructure = {
-                  ...udtObject,
-                  ...column
+                  try {
+                    manipulatedColumnType = `${manipulatedColumnType}`.match(/<(.*?)>$/)[1];
+                  } catch (e) {}
+
+                  let udtObject = keyspaceUDTs.find((udt) => udt.name == manipulatedColumnType)
+
+                  if (udtObject == undefined || ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))
+                    continue
+
+                  udtStructure = {
+                    ...udtObject,
+                    ...column
+                  }
+
+                  udts.push(udtStructure)
                 }
 
-                udts.push(udtStructure)
-              }
-
-              columns = columns.filter((column) => udts.find((udt) => udt.name == column.name) == undefined)
+                columns = columns.filter((column) => udts.find((udt) => udt.name == column.name) == undefined)
+              } catch (e) {}
             } catch (e) {}
-          } catch (e) {}
 
-          let groupStructure = buildTableFieldsTreeview(keys, columns, udts, keyspaceUDTs, false),
-            handleHiddenNodes = (treeData) => {
-              let index = 0
+            let groupStructure = buildTableFieldsTreeview(keys, columns, udts, keyspaceUDTs, false, null, true),
+              handleHiddenNodes = (treeData) => {
+                let index = 0
 
-              while (index < treeData.length) {
-                const node = treeData[index]
+                while (index < treeData.length) {
+                  const node = treeData[index]
 
-                try {
-                  if (Array.isArray(node)) {
-                    processArray(node)
+                  try {
+                    if (Array.isArray(node)) {
+                      processArray(node)
 
-                    index++
+                      index++
+
+                      continue
+                    }
+
+                    if (node.a_attr['add-hidden-node'] !== undefined) {
+                      treeData.splice(index + 1, 0, {
+                        id: node.a_attr['add-hidden-node'],
+                        parent: node.parent,
+                        state: {
+                          opened: true,
+                          selected: false
+                        },
+                        text: ``
+                      })
+
+                      index++
+                    }
+                  } catch (e) {}
+
+                  index++
+
+                }
+                return treeData;
+              },
+              handleNodeCreationDeletion = () => {
+                let allInsertionRelatedInputs = $('#rightClickActionsMetadata').find('div[action="delete-row-column"]').find('input').get()
+
+                for (let inputDOM of allInsertionRelatedInputs) {
+                  let input = $(inputDOM),
+                    [
+                      inputCassandraType,
+                      inputHTMLType,
+                      inputID
+                    ] = getAttributes(input, ['data-field-type', 'type', 'id']),
+                    inputSavedValue = effectedNodes[inputID] || ''
+
+                  if (inputSavedValue == undefined || inputSavedValue.length <= 0)
+                    continue
+
+                  try {
+                    if (inputHTMLType != 'checkbox')
+                      throw 0
+
+                    input.prop('checked', !(inputSavedValue != 'true')).trigger('change')
 
                     continue
-                  }
+                  } catch (e) {}
 
-                  if (node.a_attr['add-hidden-node'] !== undefined) {
-                    treeData.splice(index + 1, 0, {
-                      id: node.a_attr['add-hidden-node'],
-                      parent: node.parent,
-                      state: {
-                        opened: true,
-                        selected: false
-                      },
-                      text: ``
-                    })
+                  try {
+                    if (inputCassandraType != 'blob')
+                      throw 0
 
-                    index++
-                  }
-                } catch (e) {}
+                    input.val(inputSavedValue.inputValue).trigger('input')
 
-                index++
+                    input.data('value', inputSavedValue.dataValue)
 
-              }
-              return treeData;
-            },
-            handleNodeCreationDeletion = () => {
-              let allInsertionRelatedInputs = $('#rightClickActionsMetadata').find('div[action="delete-row-column"]').find('input').get()
+                    continue
+                  } catch (e) {}
 
-              for (let inputDOM of allInsertionRelatedInputs) {
-                let input = $(inputDOM),
-                  [
-                    inputCassandraType,
-                    inputHTMLType,
-                    inputID
-                  ] = getAttributes(input, ['data-field-type', 'type', 'id']),
-                  inputSavedValue = effectedNodes[inputID] || ''
+                  // Not `blob` or `boolean`
+                  try {
+                    input.val(inputSavedValue).trigger('input')
+                  } catch (e) {}
+                }
 
-                if (inputSavedValue == undefined || inputSavedValue.length <= 0)
-                  continue
-
-                try {
-                  if (inputHTMLType != 'checkbox')
-                    throw 0
-
-                  input.prop('checked', !(inputSavedValue != 'true')).trigger('change')
-
-                  continue
-                } catch (e) {}
-
-                try {
-                  if (inputCassandraType != 'blob')
-                    throw 0
-
-                  input.val(inputSavedValue.inputValue).trigger('input')
-
-                  input.data('value', inputSavedValue.dataValue)
-
-                  continue
-                } catch (e) {}
-
-                // Not `blob` or `boolean`
-                try {
-                  input.val(inputSavedValue).trigger('input')
-                } catch (e) {}
+                setTimeout(() => {
+                  try {
+                    updateActionStatusForDeleteRowColumn()
+                  } catch (e) {}
+                })
               }
 
-              setTimeout(() => {
-                try {
-                  updateActionStatusForInsertRow()
-                } catch (e) {}
-              })
-            }
-
-          try {
-            for (let treeViewType of Object.keys(groupStructure))
-              groupStructure[treeViewType].core.data = handleHiddenNodes(groupStructure[treeViewType].core.data)
-          } catch (e) {}
-
-          {
-            let primaryKeyTreeElements = tableFieldsDeleteTreeContainers.primaryKey.add('div#deletePrimaryKeyBadge')
-
             try {
-              if (keys.length <= 0)
-                throw 0
+              for (let treeViewType of Object.keys(groupStructure))
+                groupStructure[treeViewType].core.data = handleHiddenNodes(groupStructure[treeViewType].core.data)
+            } catch (e) {}
 
-              primaryKeyTreeElements.show()
-
-              tableFieldsDeleteTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
-            } catch (e) {
-              primaryKeyTreeElements.hide()
-            }
-          }
-
-          {
-            let columnsRegularTreeElements = tableFieldsDeleteTreeContainers.columnsRegular.add('div#deleteRegularColumnsBadge')
-
-            try {
-              if (!(columns.some((column) => ['map', 'set', 'list'].every((type) => !(`${column.type}`.includes(`${type}<`))))))
-                throw 0
-
-              columnsRegularTreeElements.show()
-
-              tableFieldsDeleteTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
-            } catch (e) {
-              columnsRegularTreeElements.hide()
-            }
-          }
-
-          {
-            let columnsCollectionTreeElements = tableFieldsDeleteTreeContainers.columnsCollection.add('div#deleteCollectionColumnsBadge')
-
-            try {
-              if (!(columns.some((column) => ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))))
-                throw 0
-
-              columnsCollectionTreeElements.show()
-
-              tableFieldsDeleteTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
-            } catch (e) {
-              columnsCollectionTreeElements.hide()
-            }
-          }
-
-          {
-            let columnsUDTTreeElements = tableFieldsDeleteTreeContainers.columnsUDT.add('div#deleteUDTColumnsBadge')
-            try {
-              if (udts.length <= 0)
-                throw 0
-
-              columnsUDTTreeElements.show()
-
-              tableFieldsDeleteTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
-            } catch (e) {
-              columnsUDTTreeElements.hide()
-            }
-          }
-
-          setTimeout(() => {
-            for (let container of Object.keys(tableFieldsDeleteTreeContainers)) {
-              let tableFieldsTreeContainer = tableFieldsDeleteTreeContainers[container]
+            {
+              let primaryKeyTreeElements = tableFieldsDeleteTreeContainers.primaryKey.add('div#deletePrimaryKeyBadge')
 
               try {
-                tableFieldsTreeContainer.unbind('loaded.jstree')
-                tableFieldsTreeContainer.unbind('select_node.jstree')
-                tableFieldsTreeContainer.unbind('create_node.jstree')
-                tableFieldsTreeContainer.unbind('delete_node.jstree')
-                tableFieldsTreeContainer.unbind('hide_node.jstree')
-              } catch (e) {}
+                if (keys.length <= 0)
+                  throw 0
 
-              tableFieldsTreeContainer.on('loaded.jstree', () => {
-                tableFieldsTreeContainer.find('a.jstree-anchor[add-hidden-node]').each(function() {
-                  let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${$(this).attr('add-hidden-node')}"]`)
+                primaryKeyTreeElements.show()
 
-                  hiddenNode.find('a.jstree-anchor').addClass('hidden-node')
-
-                  hiddenNode.css('margin-top', '-45px')
-
-                  hiddenNode.children('a').css('pointer-events', 'none')
-                })
-
-                // Handle Primary key of the table
                 try {
-                  if (container != 'primaryKey')
-                    throw 0
-
-                  let nodes = tableFieldsTreeContainer.find('a.jstree-anchor:not(.hidden-node)').get()
-
-                  for (let node of nodes) {
-                    let isPartition = $(node).attr('partition') == 'true',
-                      isCollectionType = $(node).attr('add-items') == 'true',
-                      rangeOperatorsBtnID = `_${getRandomID(10)}`,
-                      operatorsContainerID = `_${getRandomID(10)}`,
-                      rangeOperators = `
-                      <span>
-                        <input type="radio" class="btn-check range-operator" name="${operatorsContainerID}" id="_operator_less_than" autocomplete="off" data-operator="<">
-                        <label class="btn btn-secondary btn-light btn-sm range-operator" for="_operator_less_than" data-mdb-ripple-init><</label>
-                      </span>
-                      <span>
-                        <input type="radio" class="btn-check range-operator" name="${operatorsContainerID}" id="_operator_greater_than" autocomplete="off" data-operator=">">
-                        <label class="btn btn-secondary btn-light btn-sm range-operator" for="_operator_greater_than" data-mdb-ripple-init>></label>
-                      </span>
-                      <span>
-                        <input type="radio" class="btn-check range-operator" name="${operatorsContainerID}" id="_operator_less_than_equal" autocomplete="off" data-operator="<=">
-                        <label class="btn btn-secondary btn-light btn-sm range-operator" for="_operator_less_than_equal" data-mdb-ripple-init><=</label>
-                      </span>
-                      <span>
-                        <input type="radio" class="btn-check range-operator" name="${operatorsContainerID}" id="_operator_greater_than_equal" autocomplete="off" data-operator=">=">
-                        <label class="btn btn-secondary btn-light btn-sm range-operator" for="_operator_greater_than_equal" data-mdb-ripple-init>>=</label>
-                      </span>
-                      <button id="${rangeOperatorsBtnID}" type="button" class="btn btn-secondary btn-light btn-sm expand-range" data-mdb-ripple-init>
-                        <ion-icon name="arrow-up"></ion-icon>
-                      </button>`,
-                      operatorsContainer = `
-                      <div class="input-group-text for-deletion for-operators ignored-applied" style="z-index:0;">
-                        <span class="operator">
-                          <span mulang="operator" capitalize></span>
-                          <ion-icon name="right-arrow-filled"></ion-icon>
-                        </span>
-                        <div class="btn-group operators">
-                        <span>
-                          <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_equal" autocomplete="off" data-operator="=" checked>
-                          <label class="btn btn-secondary btn-light btn-sm" for="_operator_equal" data-mdb-ripple-init>=</label>
-                          </span>
-                          <span>
-                          <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_in" autocomplete="off" data-operator="IN">
-                          <label class="btn btn-secondary btn-light btn-sm" for="_operator_in" data-mdb-ripple-init>IN</label>
-                          </span>
-                          ${!isPartition && !isCollectionType ? rangeOperators : ''}
-                        </div>
-                      </div>`
-
-                    $(node).find('div.input-group').addClass('custom-width')
-
-                    $(node).find('div.input-group').append($(operatorsContainer).show(function() {
-                      let operatorsContainerElement = $(this)
-
-                      setTimeout(() => {
-                        $(this).find('label.btn').click(function() {
-                          $(this).parent().find(`input[id="${$(this).attr('for')}"]`).trigger('click')
-                        })
-                      })
-
-                      setTimeout(() => $(this).find('label[for="_operator_in"]').parent().remove())
-
-                      setTimeout(() => $(this).find('.range-operator').hide())
-
-                      setTimeout(() => $(this).find(`button#${rangeOperatorsBtnID}`).click(function() {
-                        let areOperatorsShown = $(node).hasClass('show-range-operators')
-
-                        $(node).toggleClass('show-range-operators', !areOperatorsShown)
-
-                        $(this).closest('div.for-operators').find('.range-operator').toggle(!areOperatorsShown)
-
-                        $(this).closest('div.for-operators').css('width', areOperatorsShown ? '' : '100%')
-                      }))
-
-                      $(this).find(`input[name="${operatorsContainerID}"]`).on('change', function() {
-                        let spanParent = $(this).parent(),
-                          spanIndex = spanParent.index()
-
-                        if (spanIndex <= 1)
-                          return
-
-                        let operatorsGroup = spanParent.closest('div.btn-group.operators')
-
-                        spanParent.prependTo(operatorsGroup)
-
-                        setTimeout(() => operatorsGroup.children('span').get().forEach((span, index) => $(span).children('label').toggleClass('range-operator', index > 1)))
-
-                        setTimeout(() => operatorsContainerElement.find(`button#${rangeOperatorsBtnID}`).click())
-                      })
-
-                      setTimeout(() => {
-                        let clondedInput = $($(node).find('div.input-group').find('div.form-outline[data-is-main-input="true"]').clone(true))
-
-                        if (isCollectionType) {
-                          clondedInput = $($(node).find('div.input-group').find('div.input-group-text.for-actions').clone(true))
-
-                          clondedInput.css('width', '100%')
-                        }
-
-                        setTimeout(() => {
-                          $(node).find('div.input-group').append((clondedInput.length != 0 ? clondedInput : $('<u></u>')).show(function() {
-                            $(node).find('div[class^="form-"], div.input-group-text.for-null-value, div.for-actions').not($(this)).remove()
-
-                            setTimeout(() => {
-                              $(node).find('input[type="text"]').each(function() {
-                                $(this).val('').trigger('input')
-
-                                let mdbObject = getElementMDBObject($(this))
-
-                                setTimeout(() => mdbObject.update(), 500)
-                              })
-                            })
-
-                            setTimeout(() => Modules.Localization.applyLanguageSpecific($(node).find('span[mulang], [data-mulang]')))
-
-                            setTimeout(() => {
-                              try {
-                                let groupedOperators = $(node).find('div.btn-group.operators'),
-                                  scaleFactor = 0.87,
-                                  originalWidth = groupedOperators[0].getBoundingClientRect().width / scaleFactor,
-                                  newWidth = groupedOperators[0].getBoundingClientRect().width
-
-                                let marginLeftAdjustment = (originalWidth - newWidth) - 4
-
-                                groupedOperators.css("margin-left", -marginLeftAdjustment + 'px');
-                              } catch (e) {}
-                            }, 200)
-                          }))
-                        })
-                      })
-                    }))
-
-                    if (isPartition)
-                      continue
-
-                    // Handle clustering key(s)
-                    $(node).attr('mandatory', 'false')
-
-                    $(node).find('div.not-ignore-checkbox').removeClass('mandatory')
-                  }
-
-                  tableFieldsTreeContainer.find('a.jstree-anchor').find('input[type="text"]').get().forEach((input, index) => $(input).toggleClass('disabled', index != 0))
+                  groupStructure.primaryKey.core.data = groupStructure.primaryKey.core.data.filter((field) => field != undefined)
                 } catch (e) {}
 
-                setTimeout(() => Modules.Localization.applyLanguageSpecific(tableFieldsTreeContainer.find('span[mulang], [data-mulang]')))
-              })
+                tableFieldsDeleteTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
+              } catch (e) {
+                primaryKeyTreeElements.hide()
+              }
             }
+
+            {
+              let columnsRegularTreeElements = tableFieldsDeleteTreeContainers.columnsRegular.add('div#deleteRegularColumnsBadge')
+
+              try {
+                if (!(columns.some((column) => ['map', 'set', 'list'].every((type) => !(`${column.type}`.includes(`${type}<`))))))
+                  throw 0
+
+                columnsRegularTreeElements.show()
+
+                try {
+                  groupStructure.regularColumns.core.data = groupStructure.regularColumns.core.data.filter((field) => field != undefined)
+                } catch (e) {}
+
+                tableFieldsDeleteTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
+              } catch (e) {
+                columnsRegularTreeElements.hide()
+              }
+            }
+
+            {
+              let columnsCollectionTreeElements = tableFieldsDeleteTreeContainers.columnsCollection.add('div#deleteCollectionColumnsBadge')
+
+              try {
+                if (!(columns.some((column) => ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))))
+                  throw 0
+
+                columnsCollectionTreeElements.show()
+
+                try {
+                  groupStructure.collectionColumns.core.data = groupStructure.collectionColumns.core.data.filter((field) => field != undefined)
+                } catch (e) {}
+
+                tableFieldsDeleteTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
+              } catch (e) {
+                columnsCollectionTreeElements.hide()
+              }
+            }
+
+            {
+              let columnsUDTTreeElements = tableFieldsDeleteTreeContainers.columnsUDT.add('div#deleteUDTColumnsBadge')
+              try {
+                if (udts.length <= 0)
+                  throw 0
+
+                columnsUDTTreeElements.show()
+
+                try {
+                  groupStructure.udtColumns.core.data = groupStructure.udtColumns.core.data.filter((field) => field != undefined)
+                } catch (e) {}
+
+                tableFieldsDeleteTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
+              } catch (e) {
+                columnsUDTTreeElements.hide()
+              }
+            }
+
+            setTimeout(() => {
+              for (let container of Object.keys(tableFieldsDeleteTreeContainers)) {
+                let tableFieldsTreeContainer = tableFieldsDeleteTreeContainers[container]
+
+                try {
+                  tableFieldsTreeContainer.unbind('loaded.jstree')
+                  tableFieldsTreeContainer.unbind('select_node.jstree')
+                  tableFieldsTreeContainer.unbind('create_node.jstree')
+                  tableFieldsTreeContainer.unbind('delete_node.jstree')
+                  tableFieldsTreeContainer.unbind('hide_node.jstree')
+                } catch (e) {}
+
+                tableFieldsTreeContainer.on('loaded.jstree', () => {
+                  setTimeout(() => {
+                    try {
+                      updateActionStatusForDeleteRowColumn()
+                    } catch (e) {}
+                  })
+
+                  tableFieldsTreeContainer.find('a.jstree-anchor[add-hidden-node]').each(function() {
+                    let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${$(this).attr('add-hidden-node')}"]`)
+
+                    hiddenNode.css('margin-top', '-45px')
+
+                    hiddenNode.children('a').css('pointer-events', 'none')
+                  })
+
+                  setTimeout(() => {
+                    {
+                      let allAddItemActionBtns = tableFieldsTreeContainer.find('button[action="add-item"]').get()
+
+                      for (let addItemActionBtn of allAddItemActionBtns) {
+                        try {
+                          $(addItemActionBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(addItemActionBtn).click(function() {
+                          let relatedNode = $(this).parent().parent().parent(),
+                            [
+                              id,
+                              type,
+                              fieldType,
+                              mandatory,
+                              hiddenNodeID
+                            ] = getAttributes(relatedNode, ['id', 'type', 'field-type', 'mandatory', 'add-hidden-node']),
+                            isTypeMap = `${type}`.includes('map<'),
+                            relatedTreeObject = relatedNode.closest('div.table-fields-tree').jstree(),
+                            relatedHiddenNode = relatedTreeObject.element.find(`li[id="hiddenNodeID"]`)
+
+                          try {
+                            type = removeFrozenKeyword(`${type}`)
+                          } catch (e) {}
+
+                          try {
+                            type = `${type}`.match(/<(.*?)>$/)[1]
+                          } catch (e) {}
+
+                          try {
+                            if (!isTypeMap)
+                              throw 0
+
+                            type = `${type}`.replace(/\s+/, '').split(',')
+
+                            type = type.map((subType) => {
+                              try {
+                                subType = removeFrozenKeyword(`${subType}`)
+                              } catch (e) {}
+
+                              subType = subType.replace(/(.*?)</gi, '').replace(/>(.*?)/gi, '')
+
+                              return subType
+                            })
+
+                          } catch (e) {}
+
+                          try {
+                            if (typeof type != 'object')
+                              throw 0
+
+                            let itemMainNodeID = getRandomID(30),
+                              itemMainNodeStrucutre = {
+                                id: itemMainNodeID,
+                                parent: hiddenNodeID,
+                                state: {
+                                  opened: true,
+                                  selected: false
+                                },
+                                a_attr: {
+                                  'is-map-item': true
+                                },
+                                text: `
+                            <div class="input-group">
+                              <div class="input-group-text for-deletion for-name ignored-applied">
+                                <span class="name">
+                                  <span mulang="name" capitalize></span>
+                                  <ion-icon name="right-arrow-filled"></ion-icon>
+                                </span>
+                                <span class="name-value">Item #${getRandomID(3)}</span>
+                              </div>
+                              <div class="input-group-text for-deletion for-actions ignored-applied">
+                                <span class="actions">
+                                  <span mulang="actions" capitalize></span>
+                                  <ion-icon name="right-arrow-filled"></ion-icon>
+                                </span>
+                                <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
+                                  <ion-icon name="trash-outline"></ion-icon>
+                                  <span mulang="delete item"></span>
+                                </button>
+                              </div>
+                            </div>`
+                              }
+
+                            let mapKeyUDTObject = keyspaceUDTs.find((udt) => udt.name == type[0]),
+                              mapKeyObject = {
+                                isUDT: mapKeyUDTObject != undefined,
+                                name: ``,
+                                type: type[0],
+                                fieldType: 'collection-map-key',
+                                isMandatory: false,
+                                noEmptyValue: true
+                              },
+                              mapKeyStructure = buildTableFieldsTreeview([], [], [], keyspaceUDTs, enableBlobPreview, mapKeyObject.isUDT ? {
+                                ...mapKeyUDTObject,
+                                ...mapKeyObject
+                              } : mapKeyObject)
+
+                            let mapValueUDTObject = keyspaceUDTs.find((udt) => udt.name == type[1]),
+                              mapValueObject = {
+                                isUDT: mapValueUDTObject != undefined,
+                                name: ``,
+                                type: type[1],
+                                fieldType: 'collection-map-value',
+                                isMandatory: false,
+                                noEmptyValue: true
+                              },
+                              mapValueStructure = buildTableFieldsTreeview([], [], [], keyspaceUDTs, enableBlobPreview, mapValueObject.isUDT ? {
+                                ...mapValueUDTObject,
+                                ...mapValueObject
+                              } : mapValueObject)
+
+                            try {
+                              mapKeyStructure.parent = itemMainNodeID
+                            } catch (e) {}
+
+                            try {
+                              mapValueStructure.parent = itemMainNodeID
+                            } catch (e) {}
+
+                            let allNewNodes = []
+
+                            try {
+                              if (Array.isArray(itemMainNodeStrucutre)) {
+                                allNewNodes = allNewNodes.concat(itemMainNodeStrucutre)
+                              } else {
+                                allNewNodes.push(itemMainNodeStrucutre)
+                              }
+                            } catch (e) {}
+
+                            try {
+                              if (Array.isArray(mapKeyStructure)) {
+                                allNewNodes = allNewNodes.concat(mapKeyStructure)
+                              } else {
+                                allNewNodes.push(mapKeyStructure)
+                              }
+                            } catch (e) {}
+
+                            try {
+                              if (Array.isArray(mapValueStructure)) {
+                                allNewNodes = allNewNodes.concat(mapValueStructure)
+                              } else {
+                                allNewNodes.push(mapValueStructure)
+                              }
+                            } catch (e) {}
+
+                            try {
+                              allNewNodes = flattenArray(allNewNodes)
+                            } catch (e) {}
+
+                            try {
+                              allNewNodes = handleHiddenNodes(allNewNodes)
+                            } catch (e) {}
+
+                            for (let i = 0; i < allNewNodes.length; i++) {
+                              let node = allNewNodes[i]
+
+                              try {
+                                if (node.parent != '#')
+                                  throw 0
+
+                                allNewNodes[i].parent = itemMainNodeID
+                              } catch (e) {}
+
+                              try {
+                                let nodeText = Cheerio.load(allNewNodes[i].text)
+
+                                try {
+                                  nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')
+                                } catch (e) {}
+
+                                allNewNodes[i].text = nodeText('body').html()
+                              } catch (e) {}
+
+                              try {
+                                relatedTreeObject.create_node(allNewNodes[i].parent, allNewNodes[i])
+                              } catch (e) {}
+
+                              try {
+                                handleNodeCreationDeletion()
+                              } catch (e) {}
+                            }
+
+                            return
+                          } catch (e) {}
+
+                          let nodeUDTType = keyspaceUDTs.find((udt) => udt.name == type),
+                            nodeTypeObject = {
+                              isUDT: nodeUDTType != undefined,
+                              name: ``,
+                              type: type,
+                              fieldType: 'collection-type',
+                              isMandatory: false,
+                              noEmptyValue: true
+                            },
+                            nodeTypeStructure = buildTableFieldsTreeview([], [], [], keyspaceUDTs, enableBlobPreview, nodeTypeObject.isUDT ? {
+                              ...nodeUDTType,
+                              ...nodeTypeObject
+                            } : nodeTypeObject)
+
+                          try {
+                            nodeTypeStructure = Array.isArray(nodeTypeStructure) ? flattenArray(nodeTypeStructure) : [nodeTypeStructure]
+                          } catch (e) {}
+
+                          try {
+                            nodeTypeStructure = handleHiddenNodes(nodeTypeStructure)
+                          } catch (e) {}
+
+                          for (let i = 0; i < nodeTypeStructure.length; i++) {
+                            try {
+                              if (nodeTypeStructure[i].parent != '#')
+                                throw 0
+
+                              let nodeText = Cheerio.load(nodeTypeStructure[i].text),
+                                deleteItemBtn = `
+                            <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
+                              <ion-icon name="trash-outline"></ion-icon>
+                              <span mulang="delete item"></span>
+                            </button>`
+
+                              try {
+                                nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')
+                              } catch (e) {}
+
+                              let actionsGroup = nodeText('div.input-group-text.for-actions')
+
+                              if (actionsGroup.length != 0) {
+                                actionsGroup.find('button').before(deleteItemBtn)
+                              } else {
+                                let actionsGroupContainer = `
+                                <div class="input-group-text for-deletion for-actions ignored-applied">
+                                  <span class="actions">
+                                    <span mulang="actions" capitalize></span>
+                                    <ion-icon name="right-arrow-filled"></ion-icon>
+                                  </span>
+                                  ${deleteItemBtn}
+                                </div>`
+
+                                nodeText('div.input-group').append(actionsGroupContainer)
+                              }
+
+                              nodeTypeStructure[i].text = nodeText('body').html()
+
+                              nodeTypeStructure[i].parent = hiddenNodeID
+                            } catch (e) {}
+
+                            try {
+                              relatedTreeObject.create_node(nodeTypeStructure[i].parent, {
+                                ...nodeTypeStructure[i]
+                              })
+                            } catch (e) {}
+
+                            try {
+                              handleNodeCreationDeletion()
+                            } catch (e) {}
+                          }
+
+                          try {
+                            updateActionStatusForDeleteRowColumn()
+                          } catch (e) {}
+                        })
+                      }
+
+                      let allDeleteItemActionBtns = tableFieldsTreeContainer.find('button[action="delete-item"]').get()
+
+                      for (let deleteItemActionBtn of allDeleteItemActionBtns) {
+                        try {
+                          $(deleteItemActionBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(deleteItemActionBtn).click(function() {
+                          let relatedNode = $(this).parent().parent().parent(),
+                            relatedTreeObject = relatedNode.closest('div.table-fields-tree').jstree()
+
+                          try {
+                            let deletedNode = relatedTreeObject.get_node(relatedNode)
+
+                            relatedTreeObject.delete_node(deletedNode)
+
+                            try {
+                              handleNodeCreationDeletion()
+                            } catch (e) {}
+                          } catch (e) {}
+                        })
+                      }
+                    }
+
+                    {
+                      let allClearFieldBtns = tableFieldsTreeContainer.find('div.clear-field div.btn').get()
+
+                      for (let clearFieldBtn of allClearFieldBtns) {
+                        try {
+                          $(clearFieldBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(clearFieldBtn).click(function() {
+                          let relatedNode = $(this).closest('a.jstree-anchor'),
+                            rlatedInutField = relatedNode.find('input'),
+                            inputObject = getElementMDBObject(rlatedInutField)
+
+                          try {
+                            rlatedInutField.val('').trigger('input')
+                          } catch (e) {}
+
+                          try {
+                            inputObject.update()
+                            setTimeout(() => inputObject._deactivate())
+                          } catch (e) {}
+
+                          setTimeout(() => {
+                            try {
+                              updateActionStatusForDeleteRowColumn()
+                            } catch (e) {}
+                          })
+                        })
+                      }
+                    }
+
+                    {
+                      let allNULLApplyBtns = tableFieldsTreeContainer.find('button[action="apply-null"]').get()
+
+                      for (let applyBtn of allNULLApplyBtns) {
+                        try {
+                          $(applyBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(applyBtn).click(function() {
+                          let isNULLApplied = $(this).hasClass('applied')
+
+                          $(this).closest('a.jstree-anchor').find('.null-related').toggleClass('null-applied', !isNULLApplied)
+                          $(this).toggleClass('applied', !isNULLApplied)
+
+                          setTimeout(() => {
+                            try {
+                              updateActionStatusForDeleteRowColumn()
+                            } catch (e) {}
+                          })
+                        })
+                      }
+                    }
+
+                    {
+                      let allOperatorsContainers = tableFieldsTreeContainer.find('div.input-group-text.for-deletion.for-operators').get()
+
+                      for (let operatorsContainerElement of allOperatorsContainers) {
+                        let node = $(operatorsContainerElement).closest('a.jstree-anchor')
+
+                        setTimeout(() => {
+                          try {
+                            $(operatorsContainerElement).find('label.btn').unbind('click')
+                          } catch (e) {}
+
+                          $(operatorsContainerElement).find('label.btn').click(function() {
+                            $(this).parent().find(`input[id="${$(this).attr('for')}"]`).trigger('click')
+                          })
+                        })
+
+                        setTimeout(() => {
+                          try {
+                            if (!isCollectionType)
+                              throw 0
+
+                            $(operatorsContainerElement).find('label[for="_operator_in"]').parent().remove()
+                          } catch (e) {}
+                        })
+
+                        setTimeout(() => {
+                          try {
+                            $(operatorsContainerElement).find(`button[data-id="hidden-operators-btn"]`).unbind('click')
+                          } catch (e) {}
+
+                          $(operatorsContainerElement).find(`button[data-id="hidden-operators-btn"]`).click(function(_, onlyHideUncheckedOps = false) {
+                            let areOperatorsShown = $(node).hasClass('show-hidden-operators')
+
+                            if (onlyHideUncheckedOps)
+                              areOperatorsShown = true
+
+                            $(node).toggleClass('show-hidden-operators', !areOperatorsShown)
+
+                            $(this).toggleClass('expanded', !areOperatorsShown)
+
+                            $(this).closest('div.for-operators').find('div.btn-group.operators').find('span.checked').show()
+
+                            $(this).closest('div.for-operators').find('div.btn-group.operators').find('span:not(.checked)').toggle(!areOperatorsShown)
+
+                            $(this).closest('div.for-operators').css('width', areOperatorsShown ? '' : '100%')
+                          })
+                        })
+
+                        let allOperators = tableFieldsTreeContainer.find('div.btn-group.operators').find('input[type="radio"]')
+
+                        for (let operator of allOperators.get()) {
+                          setTimeout(() => {
+                            try {
+                              $(operator).unbind('change')
+                            } catch (e) {}
+
+                            $(operator).on('change', function() {
+                              let opNode = $(this).closest('a.jstree-anchor'),
+                                allOperatorsInGroup = $(this).closest('div.btn-group.operators').find('input[type="radio"]'),
+                                selectedOperator = $(allOperatorsInGroup).filter(':checked'),
+                                isSelectedOperatorIN = selectedOperator.attr('id') == '_operator_in',
+                                mainInput = opNode.find('div.form-outline[data-is-main-input="true"]').find('input'),
+                                relatedTreeObject = opNode.closest('div.table-fields-tree').jstree()
+
+                              opNode.find('div.form-outline[data-is-main-input="true"]').toggle(!isSelectedOperatorIN)
+
+                              opNode.find('div.input-group-text.for-actions').toggle(isSelectedOperatorIN)
+
+                              let isAddItemsBtnShown = opNode.find('div.input-group-text.for-actions').css('display') != 'none'
+
+                              try {
+                                if (!(isAddItemsBtnShown && !isSelectedOperatorIN))
+                                  throw 0
+
+                                mainInput.val('').trigger('input')
+
+                                let mdbObject = getElementMDBObject(mainInput)
+
+                                setTimeout(() => mdbObject.update())
+                              } catch (e) {}
+
+                              if (isSelectedOperatorIN) {
+                                setTimeout(() => mainInput.val('').trigger('input'))
+                              } else {
+                                try {
+                                  relatedTreeObject.delete_node(relatedTreeObject.get_node(opNode.attr('add-hidden-node')).children_d)
+                                } catch (e) {}
+                              }
+
+                              let spanParent = $(this).parent(),
+                                operatorsGroup = spanParent.closest('div.btn-group.operators'),
+                                hiddenOperatorsBtn = operatorsGroup.find(`button[data-id="hidden-operators-btn"]`)
+
+                              operatorsGroup.children('span').removeClass('checked')
+
+                              spanParent.addClass('checked')
+
+                              if (hiddenOperatorsBtn.length <= 0)
+                                operatorsGroup.children('span').addClass('checked')
+
+                              setTimeout(() => operatorsGroup.children('span').get().forEach((span) => $(span).toggle($(span).hasClass('checked'))))
+
+                              setTimeout(() => hiddenOperatorsBtn.click())
+                            })
+                          })
+
+                          setTimeout(() => {
+                            try {
+                              if (!isCollectionType)
+                                throw 0
+
+                              $(operatorsContainerElement).find('label[for="_operator_in"]').parent().remove()
+                            } catch (e) {}
+                          })
+
+                          setTimeout(() => {
+                            try {
+                              $(operatorsContainerElement).find(`button[data-id="hidden-operators-btn"]`).unbind('click')
+                            } catch (e) {}
+
+                            $(operatorsContainerElement).find(`button[data-id="hidden-operators-btn"]`).click(function(_, onlyHideUncheckedOps = false) {
+                              let areOperatorsShown = $(node).hasClass('show-hidden-operators')
+
+                              if (onlyHideUncheckedOps)
+                                areOperatorsShown = true
+
+                              $(node).toggleClass('show-hidden-operators', !areOperatorsShown)
+
+                              $(this).toggleClass('expanded', !areOperatorsShown)
+
+                              $(this).closest('div.for-operators').find('div.btn-group.operators').find('span.checked').show()
+
+                              $(this).closest('div.for-operators').find('div.btn-group.operators').find('span:not(.checked)').toggle(!areOperatorsShown)
+
+                              $(this).closest('div.for-operators').css('width', areOperatorsShown ? '' : '100%')
+                            })
+                          })
+
+                          setTimeout(() => Modules.Localization.applyLanguageSpecific($(node).find('span[mulang], [data-mulang]')))
+                        }
+
+                        setTimeout(() => Modules.Localization.applyLanguageSpecific($(node).find('span[mulang], [data-mulang]')))
+                      }
+                    }
+
+                    {
+                      setTimeout(() => {
+                        let allHiddenOperatorsBtns = tableFieldsTreeContainer.find('button[data-id="hidden-operators-btn"]').get()
+
+                        for (let hiddenOperatorsBtn of allHiddenOperatorsBtns)
+                          $(hiddenOperatorsBtn).trigger('click', true)
+                      })
+                    }
+                  })
+
+                  setTimeout(() => {
+                    try {
+                      tableFieldsTreeContainer.find('input').unbind('input')
+                      tableFieldsTreeContainer.find('input').unbind('change')
+                    } catch (e) {}
+
+                    tableFieldsTreeContainer.find('input').on('input change', function() {
+                      let [
+                        inputCassandraType,
+                        inputHTMLType,
+                        inputID
+                      ] = getAttributes($(this), ['data-field-type', 'type', 'id']),
+                        relatedNode = $(this).closest('a.jstree-anchor'),
+                        isMandatory = relatedNode.attr('mandatory') == 'true',
+                        isEmptyValueNotAllowed = relatedNode.attr('no-empty-value') == 'true',
+                        isInputEmpty = false,
+                        relatedTreeObject = relatedNode.closest('div.table-fields-tree').jstree()
+
+                      /**
+                       * Using `switch` here won't be suffiecnet as we need, in some cases, to check either one of the types, or both of them
+                       * `boolean` type - `checkbox` input type
+                       */
+                      try {
+                        if (inputHTMLType != 'checkbox')
+                          throw 0
+
+                        $(`label[for="${$(this).attr('id')}"]`).text($(this).prop('checked') ? 'true' : 'false')
+
+                        effectedNodes[inputID] = `${$(this).prop('checked')}`
+
+                        $(this).removeClass('is-invalid')
+                      } catch (e) {}
+
+                      if ($(this).val().length <= 0)
+                        isInputEmpty = true
+
+                      let addIsEmptyClass = true
+
+                      try {
+                        let parentID = relatedTreeObject.get_node(relatedNode.attr('static-id')).parents.at(-2),
+                          parent = relatedTreeObject.get_node(parentID, true),
+                          finalNode = parentID == undefined ? relatedNode : $('#tableFieldsPrimaryKeyTreeDeleteAction').find(`a.jstree-anchor[static-id="${parentID}"]`)
+
+                        if (finalNode.length <= 0)
+                          finalNode = $('#tableFieldsPrimaryKeyTreeDeleteAction').find(`a.jstree-anchor[id="${parentID}_anchor"]`)
+
+                        if (finalNode.attr('is-hidden-node') == 'true')
+                          finalNode = $('#tableFieldsPrimaryKeyTreeDeleteAction').find(`a.jstree-anchor[static-id="${finalNode.attr('related-node-id')}"]`)
+
+                        addIsEmptyClass = isInputEmpty && !$('#tableFieldsPrimaryKeyTreeDeleteAction').find('input:not([type="radio"])').first().closest('a.jstree-anchor').is(finalNode)
+                      } catch (e) {}
+
+                      $(this).add($(this).closest('div.form-outline')).toggleClass('is-empty', addIsEmptyClass)
+
+                      try {
+                        if (!($(this).val().length <= 0))
+                          throw 0
+
+                        relatedNode.find('div.clear-field').addClass('hide')
+
+                        if (inputHTMLType != 'checkbox')
+                          $(this).addClass('is-invalid')
+
+                        setTimeout(() => {
+                          try {
+                            updateActionStatusForDeleteRowColumn()
+                          } catch (e) {}
+                        })
+
+                        return
+                      } catch (e) {}
+
+                      $(this).removeClass('is-invalid')
+
+                      if (inputHTMLType != 'checkbox')
+                        effectedNodes[inputID] = $(this).val()
+
+                      // `inet` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'inet')
+                          throw 0
+
+                        let ipValue = $(this).val(),
+                          isValidIP = isIP(`${ipValue}`) != 0
+
+                        if (minifyText(ipValue).length <= 0)
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidIP)
+                      } catch (e) {}
+
+                      // `uuid` and `timeuuid` Cassandra types - `text` input type
+                      try {
+                        if (!(['uuid', 'timeuuid'].some((type) => inputCassandraType == type)))
+                          throw 0
+
+                        let uuidValue = $(this).val(),
+                          isValidUUID = isUUID(`${uuidValue}`),
+                          uuidFunction = inputCassandraType == 'uuid' ? 'uuid' : 'now'
+
+                        if (minifyText(uuidValue).length <= 0 || uuidValue == `${uuidFunction}()`)
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidUUID)
+                      } catch (e) {}
+
+                      // `timestamp` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'timestamp')
+                          throw 0
+
+                        let timestampValue = $(this).val()
+
+                        try {
+                          timestampValue = !isNaN(timestampValue) ? parseInt(timestampValue) : timestampValue
+                        } catch (e) {}
+
+                        let isValidTimestamp = !isNaN((new Date(timestampValue).getTime()))
+
+                        if (minifyText($(this).val()).length <= 0 || $(this).val() == 'current_timestamp()')
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidTimestamp)
+                      } catch (e) {}
+
+                      // `date` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'date')
+                          throw 0
+
+                        let dateValue = $(this).val(),
+                          isValidDate = (`${dateValue}`.match(/^\d{4}-\d{2}-\d{2}$/) != null || !isNaN(dateValue)) && !(isNaN(new Date(parseInt(dateValue)).getTime()))
+
+                        if (minifyText($(this).val()).length <= 0 || $(this).val() == 'current_date()')
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidDate)
+                      } catch (e) {}
+
+                      // `time` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'time')
+                          throw 0
+
+                        let timeValue = $(this).val(),
+                          isValidTime = (`${timeValue}`.match(/^\d{2}:\d{2}:\d{2}(\.\d+)*$/) != null || !isNaN(timeValue)) && !(isNaN(new Date(parseInt(timeValue)).getTime()))
+
+                        if (minifyText($(this).val()).length <= 0 || $(this).val() == 'current_time()')
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidTime)
+                      } catch (e) {}
+
+                      // `duration` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'duration')
+                          throw 0
+
+                        let durationValue = $(this).val(),
+                          isValidDuration = `${durationValue}`.match(/^P(?!$)(\d+Y)?(\d+M)?(\d+D)?(T(?!$)(\d+H)?(\d+M)?(\d*\.?\d*S)?)?$/) != null
+
+                        if (minifyText($(this).val()).length <= 0)
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidDuration)
+                      } catch (e) {}
+
+                      // `blob` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'blob')
+                          throw 0
+
+                        let blobValue = $(this).val(),
+                          isValidBlob = `${blobValue}`.match(/^(?:0x)[0-9a-fA-F]+(\.\.\.)?$/) != null
+
+                        if (minifyText($(this).val()).length <= 0)
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidBlob)
+
+                        effectedNodes[inputID] = {
+                          inputValue: $(this).val(),
+                          dataValue: $(this).data('value')
+                        }
+                      } catch (e) {}
+
+                      try {
+                        relatedNode.find('div.clear-field').toggleClass('hide', $(this).val().length <= 0)
+                      } catch (e) {}
+
+                      setTimeout(() => {
+                        try {
+                          updateActionStatusForDeleteRowColumn()
+                        } catch (e) {}
+                      })
+                    })
+
+                    let tippyInstances = []
+
+                    setTimeout(() => {
+                      tableFieldsTreeContainer.find('input:not([type="radio"])').trigger('input')
+                      tableFieldsTreeContainer.find('input:not([type="radio"])').trigger('change')
+
+                      tableFieldsTreeContainer.find('button.expand-range.expanded').trigger('click')
+                    })
+                  })
+
+                  // Handle Primary key of the table
+                  try {
+                    if (container != 'primaryKey')
+                      throw 0
+
+                    let nodes = tableFieldsTreeContainer.find('a.jstree-anchor:not(.hidden-node)').get()
+
+                    for (let node of nodes) {
+                      let isRelatedToHiddenNode = false
+
+                      try {
+                        let parentNode = $(node).closest('ul').parent().children('a.jstree-anchor').first()
+
+                        isRelatedToHiddenNode = $(parentNode).closest('li').attr('is-hidden-node') == 'true'
+                      } catch (e) {}
+
+                      if (isRelatedToHiddenNode) {
+                        $(node).attr({
+                          'data-deletion-changes-applied': 'true',
+                          'ignore-disable': 'true'
+                        })
+
+                        $(node).find('div.input-group-text.for-actions').find('button:not([action="delete-item"])').remove()
+                      }
+
+                      let isUDTType = {
+                          column: $(node).attr('field-type') == 'udt-column',
+                          field: $(node).attr('field-type') == 'udt-field'
+                        },
+                        isPartOfMap = `${$(node).attr('field-type')}`.startsWith('collection-map'),
+                        isCollectionFieldType = $(node).attr('field-type') == 'collection-type'
+
+                      setTimeout(() => {
+                        try {
+                          updateActionStatusForDeleteRowColumn()
+                        } catch (e) {}
+                      })
+
+                      if (isRelatedToHiddenNode || $(node).attr('data-deletion-changes-applied') == 'true' || isUDTType.field || isPartOfMap || isCollectionFieldType)
+                        continue
+
+                      $(node).attr('data-deletion-changes-applied', 'true')
+
+                      let isPartition = $(node).attr('partition') == 'true',
+                        isCollectionType = $(node).attr('is-collection-type') == 'true',
+                        isBooleanType = $(node).attr('type') == 'boolean',
+                        hiddenOperatorsBtnID = `_${getRandomID(10)}`,
+                        operatorsContainerID = `_${getRandomID(10)}`,
+                        isTypeAllowed = !(['boolean', 'blob'].some((type) => $(node).attr('type') == type)),
+                        rangeOperators = `
+                        <span>
+                          <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_less_than" autocomplete="off" data-operator="<">
+                          <label class="btn btn-secondary btn-light btn-sm" for="_operator_less_than" data-mdb-ripple-init><</label>
+                        </span>
+                        <span>
+                          <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_greater_than" autocomplete="off" data-operator=">">
+                          <label class="btn btn-secondary btn-light btn-sm" for="_operator_greater_than" data-mdb-ripple-init>></label>
+                        </span>
+                        <span>
+                          <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_less_than_equal" autocomplete="off" data-operator="<=">
+                          <label class="btn btn-secondary btn-light btn-sm" for="_operator_less_than_equal" data-mdb-ripple-init><=</label>
+                        </span>
+                        <span>
+                          <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_greater_than_equal" autocomplete="off" data-operator=">=">
+                          <label class="btn btn-secondary btn-light btn-sm" for="_operator_greater_than_equal" data-mdb-ripple-init>>=</label>
+                        </span>
+                        <button id="${hiddenOperatorsBtnID}" data-id="hidden-operators-btn" type="button" class="btn btn-secondary btn-light btn-sm expand-range expanded" data-mdb-ripple-init>
+                          <ion-icon name="arrow-up"></ion-icon>
+                        </button>`,
+                        operatorsContainer = `
+                        <div class="input-group-text for-deletion for-operators ignored-applied" style="z-index:0;">
+                          <span class="operator">
+                            <span mulang="operator" capitalize></span>
+                            <ion-icon name="right-arrow-filled"></ion-icon>
+                          </span>
+                          <div class="btn-group operators">
+                            <span class="checked">
+                              <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_equal" autocomplete="off" data-operator="=" checked>
+                              <label class="btn btn-secondary btn-light btn-sm" for="_operator_equal" data-mdb-ripple-init>=</label>
+                            </span>
+                            <span>
+                              <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_in" autocomplete="off" data-operator="IN">
+                              <label class="btn btn-secondary btn-light btn-sm" for="_operator_in" data-mdb-ripple-init>IN</label>
+                            </span>
+                            ${!isPartition && !isCollectionType && isTypeAllowed ? rangeOperators : ''}
+                          </div>
+                        </div>`
+
+                      $(node).find('div.input-group').addClass('custom-width')
+
+                      let actionsContainer = $(node).find('div.input-group').find('div.input-group-text.for-actions')
+
+                      actionsContainer.find('span.actions').hide()
+
+                      actionsContainer.find('button').css('transform-origin', 'left')
+
+                      actionsContainer.addClass('block-display')
+
+                      actionsContainer.hide()
+
+                      actionsContainer.css('width', '100%')
+
+                      actionsContainer.before($(operatorsContainer).show(function() {
+                        let operatorsContainerElement = $(this)
+
+                        setTimeout(() => $(this).find('label.btn').click(function() {
+                          $(this).parent().find(`input[id="${$(this).attr('for')}"]`).trigger('click')
+                        }))
+
+                        setTimeout(() => {
+                          try {
+                            if (!isCollectionType && !isUDTType.field && !isPartOfMap && !isBooleanType)
+                              throw 0
+
+                            $(this).find('label[for="_operator_in"]').parent().remove()
+                          } catch (e) {}
+                        })
+
+                        setTimeout(() => $(this).find(`button#${hiddenOperatorsBtnID}`).click(function(_, onlyHideUncheckedOps = false) {
+                          let areOperatorsShown = $(node).hasClass('show-hidden-operators')
+
+                          if (onlyHideUncheckedOps)
+                            areOperatorsShown = true
+
+                          $(node).toggleClass('show-hidden-operators', !areOperatorsShown)
+
+                          $(this).toggleClass('expanded', !areOperatorsShown)
+
+                          $(this).closest('div.for-operators').find('div.btn-group.operators').find('span.checked').show()
+
+                          $(this).closest('div.for-operators').find('div.btn-group.operators').find('span:not(.checked)').toggle(!areOperatorsShown)
+
+                          $(this).closest('div.for-operators').css('width', areOperatorsShown ? '' : '100%')
+                        }))
+
+                        setTimeout(() => {
+                          let nodeOperators = $(this).find(`input[name="${operatorsContainerID}"]`)
+
+                          nodeOperators.on('change', function() {
+                            let selectedOperator = nodeOperators.filter(':checked'),
+                              isSelectedOperatorIN = selectedOperator.attr('id') == '_operator_in',
+                              mainInput = $(node).find('div.form-outline[data-is-main-input="true"]').find('input'),
+                              relatedTreeObject = $(node).closest('div.table-fields-tree').jstree()
+
+                            $(node).find('div.form-outline[data-is-main-input="true"]').toggle(!isSelectedOperatorIN)
+
+                            $(node).find('div.input-group-text.for-actions').toggle(isSelectedOperatorIN)
+
+                            let isAddItemsBtnShown = $(node).find('div.input-group-text.for-actions').css('display') != 'none'
+
+                            try {
+                              if (!(isAddItemsBtnShown && !isSelectedOperatorIN))
+                                throw 0
+
+                              mainInput.val('').trigger('input')
+
+                              let mdbObject = getElementMDBObject(mainInput)
+
+                              setTimeout(() => mdbObject.update())
+                            } catch (e) {}
+
+                            if (isSelectedOperatorIN) {
+                              setTimeout(() => mainInput.val('').trigger('input'))
+                            } else {
+                              try {
+                                relatedTreeObject.delete_node(relatedTreeObject.get_node(opNode.attr('add-hidden-node')).children_d)
+                              } catch (e) {}
+                            }
+
+                            let spanParent = $(this).parent(),
+                              operatorsGroup = spanParent.closest('div.btn-group.operators'),
+                              hiddenOperatorsBtn = operatorsGroup.find(`button#${hiddenOperatorsBtnID}`)
+
+                            operatorsGroup.children('span').removeClass('checked')
+
+                            spanParent.addClass('checked')
+
+                            if (hiddenOperatorsBtn.length <= 0)
+                              operatorsGroup.children('span').addClass('checked')
+
+                            setTimeout(() => operatorsGroup.children('span').get().forEach((span) => $(span).toggle($(span).hasClass('checked'))))
+
+                            setTimeout(() => hiddenOperatorsBtn.click())
+                          })
+                        })
+
+                        setTimeout(() => {
+                          let inputToBeCloned = $(node).find('div.input-group').find('div[data-is-main-input="true"]'),
+                            clondedInput = $(inputToBeCloned.clone(true))
+
+                          setTimeout(() => {
+                            actionsContainer.before((clondedInput.length != 0 ? clondedInput : $('<u></u>')).show(function() {
+                              if (isCollectionType) {
+                                actionsContainer.show()
+
+                                try {
+                                  clondedInput.hide()
+                                } catch (e) {}
+                              }
+
+                              if (!isUDTType.field && !isPartOfMap)
+                                $(node).find('div[class^="form-"], div.input-group-text.for-null-value, div.for-actions').not($(this)).not(actionsContainer).remove()
+
+                              setTimeout(() => {
+                                $(node).find('input:not([type="radio"])').each(function() {
+                                  $(this).val('').trigger('input')
+
+                                  let mdbObject = getElementMDBObject($(this))
+
+                                  setTimeout(() => mdbObject.update(), 500)
+                                })
+                              })
+
+                              setTimeout(() => Modules.Localization.applyLanguageSpecific($(node).find('span[mulang], [data-mulang]')))
+
+                              setTimeout(() => {
+                                try {
+                                  let groupedOperators = $(node).find('div.btn-group.operators'),
+                                    scaleFactor = 0.87,
+                                    originalWidth = groupedOperators[0].getBoundingClientRect().width / scaleFactor,
+                                    newWidth = groupedOperators[0].getBoundingClientRect().width
+
+                                  let marginLeftAdjustment = (originalWidth - newWidth) - 4
+
+                                  groupedOperators.css("margin-left", -marginLeftAdjustment + 'px');
+                                } catch (e) {}
+                              }, 200)
+                            }))
+                          })
+                        })
+                      }))
+
+                      setTimeout(() => $(node).find('div.not-ignore-checkbox').addClass('mandatory'))
+
+
+                      if (isPartition)
+                        continue
+
+                      // Handle clustering key(s)
+                      $(node).attr('mandatory', 'false')
+
+                      $(node).find('div.not-ignore-checkbox').removeClass('mandatory')
+                    }
+
+                    let isUDTColumn = false
+
+                    tableFieldsTreeContainer.find('a.jstree-anchor').get().forEach((nodeAnchor, index) => {
+                      if ($(nodeAnchor).attr('ignore-disable') == 'true')
+                        return
+
+                      if ($(nodeAnchor).attr('field-type') == 'udt-column' && index == 0) {
+                        isUDTColumn = true
+
+                        return
+                      }
+
+                      if ($(nodeAnchor).attr('field-type') == 'udt-field' && isUDTColumn)
+                        return
+
+                      isUDTColumn = false
+
+                      $(nodeAnchor).toggleClass('unavailable', index != 0)
+
+                      $(nodeAnchor).find('input:not([type="radio"])').toggleClass('disabled', index != 0)
+
+                      let buttonsAndInputAreas = $(nodeAnchor).find('.btn, div.focus-area')
+
+                      $(nodeAnchor).find('div[data-is-main-input="true"]').toggleClass('disabled', index != 0)
+
+                      buttonsAndInputAreas.toggleClass('disabled', index != 0)
+
+                      buttonsAndInputAreas.attr('disabled', index != 0 ? '' : null)
+                    })
+                  } catch (e) {}
+
+                  // Handle other columns - regular and UDTs -
+                  try {
+                    if (container == 'primaryKey')
+                      throw 0
+
+                    let nodes = tableFieldsTreeContainer.find('a.jstree-anchor:not(.hidden-node)').get()
+
+                    for (let node of nodes) {
+                      // Add a deletion feature
+                      let deletionBtn = $(`<a action="delete-column" data-mdb-ripple-color="light" href="#" role="button">
+                              <ion-icon name="trash" role="img" class="md hydrated" aria-label="trash"></ion-icon>
+                            </a>`)
+
+                      deletionBtn.click(function() {
+                        $(this).closest('a.jstree-anchor').toggleClass('deleted')
+
+                        try {
+                          setTimeout(() => updateActionStatusForDeleteRowColumn())
+                        } catch (e) {}
+                      })
+
+                      let targetElement = $(node).find('div.not-ignore-checkbox').parent()
+
+                      targetElement.css('width', '26px')
+
+                      targetElement.html(deletionBtn)
+                    }
+
+
+                  } catch (e) {}
+
+                  setTimeout(() => Modules.Localization.applyLanguageSpecific(tableFieldsTreeContainer.find('span[mulang], [data-mulang]')))
+
+                  setTimeout(() => {
+                    for (let inputField of tableFieldsTreeContainer.find('input').get()) {
+                      setTimeout(() => {
+                        try {
+                          let mdbObject = getElementMDBObject($(inputField))
+
+                          setTimeout(() => {
+                            try {
+                              mdbObject.update()
+                            } catch (e) {}
+                          })
+                        } catch (e) {}
+                      })
+                    }
+                  })
+                })
+
+                let triggerLoadEventTimeOut = null,
+                  triggerLoadEvent = () => {
+                    try {
+                      clearTimeout(triggerLoadEventTimeOut)
+                    } catch (e) {}
+
+                    setTimeout(() => {
+                      try {
+                        updateActionStatusForDeleteRowColumn()
+                      } catch (e) {}
+                    })
+
+                    triggerLoadEventTimeOut = setTimeout(() => tableFieldsTreeContainer.trigger('loaded.jstree'))
+                  }
+
+                tableFieldsTreeContainer.on('create_node.jstree', function(e, data) {
+                  let parentNodeID = '_'
+
+                  try {
+                    parentNodeID = data.node.parents.at(-2)
+                  } catch (e) {}
+
+                  try {
+                    let relatedToHiddenNode = tableFieldsTreeContainer.find(`a.jstree-anchor[add-hidden-node="${parentNodeID}"]`)
+
+                    if (relatedToHiddenNode.length <= 0)
+                      throw 0
+
+                    let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${parentNodeID}"]`)
+
+                    hiddenNode.children('a.jstree-anchor').attr({
+                      'is-hidden-node': 'true',
+                      'related-node-id': relatedToHiddenNode.attr('static-id')
+                    })
+
+                    hiddenNode.css('margin-top', '-45px')
+
+                    hiddenNode.children('a').css('pointer-events', 'none')
+                  } catch (e) {}
+
+                  triggerLoadEvent()
+                })
+
+                tableFieldsTreeContainer.on('delete_node.jstree', function(e, data) {
+                  try {
+                    data.instance.hide_node(data.node.id)
+                  } catch (e) {}
+                })
+
+                tableFieldsTreeContainer.on('hide_node.jstree', function(e, data) {
+                  let parentNodeID = '_'
+
+                  try {
+                    parentNodeID = data.node.parents.at(-2)
+                  } catch (e) {}
+
+                  setTimeout(() => {
+                    try {
+                      let relatedToHiddenNode = tableFieldsTreeContainer.find(`a.jstree-anchor[add-hidden-node="${parentNodeID}"]`)
+
+                      if (relatedToHiddenNode.length <= 0)
+                        throw 0
+
+                      let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${parentNodeID}"]`)
+
+                      hiddenNode.children('a.jstree-anchor').attr({
+                        'is-hidden-node': 'true',
+                        'related-node-id': relatedToHiddenNode.attr('static-id')
+                      })
+
+                      hiddenNode.css('margin-top', '-45px')
+
+                      hiddenNode.children('a').css('pointer-events', 'none')
+                    } catch (e) {}
+
+                    setTimeout(() => {
+                      try {
+                        updateActionStatusForDeleteRowColumn()
+                      } catch (e) {}
+
+                      triggerLoadEvent()
+                    })
+                  })
+                })
+
+                tableFieldsTreeContainer.on('select_node.jstree', function(e, data) {
+                  let clickedNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${data.node.id}"]`)
+
+                  try {
+                    let clickedTarget = $(data.event.target)
+
+                    if (!clickedTarget.hasClass('focus-area'))
+                      throw 0
+
+                    let relatedInput = clickedTarget.parent().children('input')
+
+                    setTimeout(() => relatedInput.trigger(relatedInput.attr('type') == 'checkbox' ? 'click' : 'focus').trigger('input'))
+                  } catch (e) {}
+
+                  setTimeout(() => {
+                    try {
+                      data.instance.deselect_all()
+                    } catch (e) {}
+                  }, 100)
+                })
+              }
+            })
+
+            $('div.modal#rightClickActionsMetadata div[action]').hide()
+            $('div.modal#rightClickActionsMetadata div[action="delete-row-column"]').show()
+
+            $('#rightClickActionsMetadata').addClass('insertion-action').removeClass('show-editor')
+
+            rightClickActionsMetadataModal.show()
           })
-
-          $('div.modal#rightClickActionsMetadata div[action]').hide()
-          $('div.modal#rightClickActionsMetadata div[action="delete-row-column"]').show()
-
-          $('#rightClickActionsMetadata').addClass('insertion-action').removeClass('show-editor')
-
-          rightClickActionsMetadataModal.show()
         })
       }
     }
@@ -13671,7 +14718,7 @@
             if (dataCenters.length > 1) {
               $(this).parent().find('div.invalid-feedback span[mulang][capitalize-first]').attr('mulang', 'avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully').text(I18next.capitalizeFirstLetter(I18next.t('avoid switching from SimpleStrategy to NetworkTopologyStrategy in multi-DC clusters; plan carefully')))
 
-              $(this).parent().css('margin-bottom', '70px')
+              $(this).parent().css('margin-bottom', '50px')
             }
           } catch (e) {}
 
@@ -20403,6 +21450,45 @@
     })
   }
 
+  {
+    let deletionTimestampInput = $('input#deleteTimestamp'),
+      clearField = deletionTimestampInput.parent().parent().find('div.clear-field')
+
+    deletionTimestampInput.on('input', function() {
+      try {
+        clearField.toggleClass('hide', $(this).val().length <= 0)
+      } catch (e) {}
+
+      setTimeout(() => {
+        try {
+          updateActionStatusForDeleteRowColumn()
+        } catch (e) {}
+      })
+    })
+
+    clearField.children('div.btn').click(function() {
+      let rlatedInutField = $(this).parent().parent().find('input'),
+        inputObject = getElementMDBObject(rlatedInutField)
+
+      try {
+        rlatedInutField.val('').trigger('input')
+      } catch (e) {}
+
+      try {
+        inputObject.update()
+        setTimeout(() => inputObject._deactivate())
+      } catch (e) {}
+    })
+
+    $('#deleteIfExistsOption').on('change', () => {
+      setTimeout(() => {
+        try {
+          updateActionStatusForDeleteRowColumn()
+        } catch (e) {}
+      })
+    })
+  }
+
   setTimeout(() => {
     let dialogElement = $(`div.modal#rightClickActionsMetadata`),
       actionEditor = monaco.editor.getEditors().find((editor) => dialogElement.find('div.action-editor div.editor div.monaco-editor').is(editor.getDomNode()))
@@ -20933,6 +22019,717 @@
           `${fields}` + OS.EOL +
           `}'${extraOptions};`
       }
+
+      try {
+        actionEditor.setValue(statement)
+      } catch (e) {}
+    }
+
+    updateActionStatusForDeleteRowColumn = () => {
+      let dialogElement = $('#rightClickActionsMetadata'),
+        [
+          keyspaceName,
+          tableName
+        ] = getAttributes(dialogElement, ['data-keyspace-name', 'data-table-name']).map((name) => addDoubleQuotes(name)),
+        relatedTreesObjects = {
+          primaryKey: $('div#tableFieldsPrimaryKeyTreeDeleteAction').jstree(),
+          columns: {
+            regular: $('div#tableFieldsRegularColumnsTreeDeleteAction').jstree(),
+            collection: $('div#tableFieldsCollectionColumnsTreeDeleteAction').jstree(),
+            udt: $('div#tableFieldsUDTColumnsTreeDeleteAction').jstree()
+          }
+        }
+
+      let keyspaceUDTs = []
+
+      try {
+        keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts'))).map((udt) => udt.name)
+      } catch (e) {}
+
+      let allNodes = dialogElement.find('div[action="delete-row-column"]').find(`a.jstree-anchor`)
+
+      allNodes.each(function() {
+        if ($(this)[0].scrollWidth == $(this).innerWidth() || $(this).find('ul.dropdown-menu.for-insertion-actions').hasClass('show'))
+          return
+
+        let widthDifference = Math.abs($(this)[0].scrollWidth - $(this).innerWidth()),
+          typeValueSpan = $(this).find('span.type-value'),
+          spanWidth = typeValueSpan.outerWidth() - 4
+
+        typeValueSpan.css('width', `${spanWidth - widthDifference}px`).addClass('overflow')
+      })
+
+      /**
+       * By looping through each node, the node is enabled based on specific conditions
+       * Start with the primary key
+       */
+      let isPreviousKeyInvalid = {
+          partition: false,
+          clustering: false
+        },
+        handleKeyField = (field, disabled = true) => {
+          $(field).toggleClass('unavailable', disabled)
+          $(field).find('input:not([type="radio"])').toggleClass('disabled', disabled)
+          let buttonsAndInputAreas = $(field).find('.btn, div.focus-area')
+          $(field).find('div[data-is-main-input="true"]').toggleClass('disabled', disabled)
+          buttonsAndInputAreas.toggleClass('disabled', disabled)
+          buttonsAndInputAreas.attr('disabled', disabled ? '' : null)
+
+          $(`a.jstree-anchor[id="${field.attr('add-hidden-node')}_anchor"]`).attr('is-hidden-node', 'true')
+
+          if ($(field).attr('is-collection-type') == 'true')
+            $(field).find('.is-invalid').removeClass('is-invalid')
+        },
+        getAllChildrenInOrder = (treeObjectName, childID = '#') => {
+          let children = [],
+            relatedTreeObject = typeof treeObjectName == 'string' ? relatedTreesObjects[treeObjectName] : relatedTreesObjects[treeObjectName[0]][treeObjectName[1]]
+
+          let node = relatedTreeObject.get_node(childID)
+
+          if (childID != '#')
+            children.push(childID)
+
+          for (let _childID of node.children)
+            children = children.concat(getAllChildrenInOrder(treeObjectName, _childID))
+
+          return children
+        },
+        allPrimaryKeyFields = getAllChildrenInOrder('primaryKey').map((childID) => {
+          return {
+            id: childID,
+            element: $(`a.jstree-anchor[static-id="${childID}"]`)
+          }
+        }),
+        checkFieldIsParititon = (fieldID, parentID, lastCheck = false, lastParentID = null) => {
+          let isFieldPartition = $(`a.jstree-anchor[static-id="${fieldID}"]`).attr('partition') == 'true',
+            fieldParentID = relatedTreesObjects.primaryKey.get_parent(fieldID)
+
+          lastCheck = isFieldPartition
+
+          try {
+            if (fieldParentID != '#' || isFieldPartition)
+              throw 0
+
+            let parentNode = allPrimaryKeyFields.find((field) => field.element.attr('add-hidden-node') == lastParentID)
+
+            if (parentNode == undefined)
+              parentNode = allPrimaryKeyFields.find((field) => field.id == lastParentID)
+
+            if (parentNode == undefined)
+              throw 0
+
+            return parentNode.element.attr('partition') == 'true'
+          } catch (e) {}
+
+          lastParentID = fieldParentID
+
+          if (isFieldPartition)
+            return lastCheck
+
+          return checkFieldIsParititon(fieldParentID, relatedTreesObjects.primaryKey.get_parent(fieldParentID), lastCheck, lastParentID)
+        },
+        allPartitionKeysValidationStatus = [],
+        allClusteringKeysValidationStatus = []
+
+      // For clustering key(s)
+      let arePrecedingColumnsWithEquOp = true
+
+      for (let primaryKeyField of allPrimaryKeyFields) {
+        let field = primaryKeyField.element
+
+        if (field.length <= 0 || field.attr('is-hidden-node') == 'true')
+          continue
+
+        let isFieldPartition = checkFieldIsParititon(primaryKeyField.id, '#', false)
+
+        // Partition key(s)
+        try {
+          if (!isFieldPartition)
+            throw 0
+
+          handleKeyField(field, isPreviousKeyInvalid.partition)
+
+          let doesFieldHasChildren = false,
+            isINOperatorChecked = field.find('div.btn-group.operators').find(`input[type="radio"]`).filter(':checked').attr('id') == '_operator_in' || field.attr('is-collection-type') == 'true'
+
+          doesFieldHasChildren = isINOperatorChecked
+
+          try {
+            if (!isINOperatorChecked)
+              throw 0
+
+            let relatedHiddenNodeChildrenLength = relatedTreesObjects.primaryKey.get_node(field.attr('add-hidden-node')).children_d.length
+
+            doesFieldHasChildren = relatedHiddenNodeChildrenLength > 0
+          } catch (e) {}
+
+          isPreviousKeyInvalid.partition = (field.find('.is-invalid:not(.ignore-invalid):not([type="radio"])').length > 0 && !field.hasClass('unavailable')) || field.hasClass('unavailable')
+
+          if (isINOperatorChecked)
+            isPreviousKeyInvalid.partition = !doesFieldHasChildren || field.hasClass('unavailable')
+
+          allPartitionKeysValidationStatus.push(isPreviousKeyInvalid.partition)
+
+          continue
+        } catch (e) {}
+
+        // For the first clustering key
+        if (allPartitionKeysValidationStatus.includes(true)) {
+          handleKeyField(field, true)
+
+          continue
+        }
+
+        let fieldCheckedOperator = getCheckedValue(field.find('div.btn-group.operators').find('input[type="radio"]').attr('name'))
+
+        if (arePrecedingColumnsWithEquOp) {
+          field.find('div.btn-group.operators').find('label.btn').removeClass('disabled')
+
+          field.removeClass('invalid')
+
+          arePrecedingColumnsWithEquOp = fieldCheckedOperator == '_operator_equal'
+        } else {
+          setTimeout(() => field.find('div.btn-group.operators').find('label.btn').filter(':not([for="_operator_equal"])').addClass('disabled'))
+
+          field.toggleClass('invalid', fieldCheckedOperator != '_operator_equal')
+        }
+
+        if (fieldCheckedOperator == '')
+          field.removeClass('invalid')
+
+        let isLVL1InvalidKeywordFound = `${isPreviousKeyInvalid.clustering}` == 'LVL1'
+
+        if (isLVL1InvalidKeywordFound) {
+          if (relatedTreesObjects.is_leaf(field.id)) {
+            isPreviousKeyInvalid.clustering = false
+          } else {
+            isPreviousKeyInvalid.clustering = true
+          }
+        }
+
+        try {
+          handleKeyField(field, isPreviousKeyInvalid.clustering)
+
+          let doesFieldHasChildren = false,
+            isINOperatorChecked = field.find('div.btn-group.operators').find(`input[type="radio"]`).filter(':checked').attr('id') == '_operator_in' || field.attr('is-collection-type') == 'true'
+
+          doesFieldHasChildren = isINOperatorChecked
+
+          try {
+            if (!isINOperatorChecked)
+              throw 0
+
+            let relatedHiddenNodeChildrenLength = relatedTreesObjects.primaryKey.get_node(field.attr('add-hidden-node')).children_d.length
+
+            doesFieldHasChildren = relatedHiddenNodeChildrenLength > 0
+          } catch (e) {}
+
+          isPreviousKeyInvalid.clustering = (field.find('.is-invalid:not(.ignore-invalid):not([type="radio"])').length > 0 && !field.hasClass('unavailable')) || field.hasClass('unavailable') || field.hasClass('invalid')
+
+          if (isINOperatorChecked)
+            isPreviousKeyInvalid.clustering = !doesFieldHasChildren || field.hasClass('unavailable') || field.hasClass('invalid')
+        } catch (e) {}
+
+        if ((fieldCheckedOperator == '_operator_in' || isLVL1InvalidKeywordFound) && !field.hasClass('invalid'))
+          isPreviousKeyInvalid.clustering = 'LVL1'
+
+        if (fieldCheckedOperator != '_operator_equal')
+          isPreviousKeyInvalid.clustering = true
+
+        allClusteringKeysValidationStatus.push(isPreviousKeyInvalid.clustering != false)
+      }
+
+      relatedTreesObjects = {
+        primaryKey: $('div#tableFieldsPrimaryKeyTreeDeleteAction').jstree(),
+        columns: {
+          regular: $('div#tableFieldsRegularColumnsTreeDeleteAction').jstree(),
+          collection: $('div#tableFieldsCollectionColumnsTreeDeleteAction').jstree(),
+          udt: $('div#tableFieldsUDTColumnsTreeDeleteAction').jstree()
+        }
+      }
+
+      let allColumns = [...getAllChildrenInOrder(['columns', 'regular']), ...getAllChildrenInOrder(['columns', 'collection']), ...getAllChildrenInOrder(['columns', 'udt'])].map((childID) => {
+        return {
+          id: childID,
+          element: $(`a.jstree-anchor[static-id="${childID}"]`)
+        }
+      })
+
+      for (let column of allColumns) {
+        let field = column.element
+
+        if (field.length <= 0 || field.attr('is-hidden-node') == 'true')
+          continue
+
+        if ([...allClusteringKeysValidationStatus, ...allPartitionKeysValidationStatus].includes(true)) {
+          handleKeyField(field, true)
+
+          continue
+        }
+
+        handleKeyField(field, false)
+      }
+
+      try {
+        if (allNodes.filter(`:not(.ignored):not(.unavailable)`).find('.is-invalid:not(.ignore-invalid):not([type="radio"]):not(.is-empty)').length <= 0)
+          throw 0
+
+        dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+
+        return
+      } catch (e) {}
+
+      let fieldsNames = [],
+        fieldsValues = [],
+        passedFields = [],
+        isInsertionAsJSON = $('#rightClickActionsMetadata').attr('data-as-json') === 'true'
+
+      let handleFieldsPre = (treeObject, mainNodeID = '#') => {
+        let relatedFieldsArray = []
+
+        try {
+          treeObject.get_node(mainNodeID)
+        } catch (e) {
+          return relatedFieldsArray
+        }
+
+        for (let currentNodeID of treeObject.get_node(mainNodeID).children) {
+          try {
+
+            let currentNode = $(`a.jstree-anchor[static-id="${currentNodeID}"]`)
+
+            try {
+              if (currentNode.length <= 0)
+                currentNode = $(`a.jstree-anchor[id="${currentNodeID}_anchor"]`)
+            } catch (e) {}
+
+            let [
+              fieldName,
+              fieldType,
+              isMandatory,
+              isMapItem
+            ] = getAttributes(currentNode, ['name', 'type', 'mandatory', 'is-map-item']),
+              fieldValue = currentNode.find('input').last(),
+              isNULL = false,
+              fieldOperator = currentNode.find('input[type="radio"]:checked').attr('id'),
+              isColumnToBeDeleted = currentNode.hasClass('deleted'),
+              isColumnIgnored = fieldValue.hasClass('is-empty') || currentNode.hasClass('unavailable')
+
+            if (passedFields.includes(currentNodeID))
+              continue
+
+            passedFields.push(currentNodeID)
+
+            try {
+              fieldValue = fieldValue.attr('type') == 'checkbox' ? fieldValue.prop('checked') : fieldValue.val()
+            } catch (e) {}
+
+            try {
+              isNULL = $(currentNode).find('button[action="apply-null"]').hasClass('applied')
+            } catch (e) {}
+
+            let isIgnored = currentNode.hasClass('ignored')
+
+            if ((isIgnored || (`${fieldValue}`.length <= 0 && !isNULL)) && !isColumnToBeDeleted)
+              continue
+
+            try {
+              isMapItem = isMapItem != undefined
+            } catch (e) {}
+
+            // Check if the type is collection
+            try {
+              if (!(['map', 'set', 'list'].some((type) => `${fieldType}`.includes(`${type}<`))) && !isMapItem && fieldOperator != '_operator_in')
+                throw 0
+
+              let hiddenNodeID = currentNode.attr(isMapItem ? 'id' : 'add-hidden-node')
+
+              relatedFieldsArray.push({
+                name: addDoubleQuotes(fieldName),
+                type: fieldType,
+                value: fieldValue,
+                id: hiddenNodeID,
+                parent: mainNodeID,
+                fieldOperator,
+                isMapItem,
+                isDeleted: isColumnToBeDeleted,
+                isIgnored: isColumnIgnored,
+                isNULL
+              })
+
+              relatedFieldsArray[hiddenNodeID] = handleFieldsPre(treeObject, hiddenNodeID)
+
+              continue
+            } catch (e) {}
+
+            // Check if the type is UDT
+            try {
+              let manipulatedType = `${fieldType}`
+
+              try {
+                if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
+
+                manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
+              } catch (e) {}
+
+              try {
+                manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
+              } catch (e) {}
+
+              if (!(keyspaceUDTs.includes(manipulatedType)))
+                throw 0
+
+              relatedFieldsArray.push({
+                name: addDoubleQuotes(fieldName),
+                type: fieldType,
+                value: fieldValue,
+                id: currentNodeID,
+                parent: mainNodeID,
+                fieldOperator,
+                isDeleted: isColumnToBeDeleted,
+                isIgnored: isColumnIgnored,
+                isMapItem,
+                isUDT: true,
+                isNULL
+              })
+
+              relatedFieldsArray[currentNodeID] = handleFieldsPre(treeObject, currentNodeID)
+
+              continue
+            } catch (e) {}
+
+            // Standard type
+            relatedFieldsArray.push({
+              name: addDoubleQuotes(fieldName),
+              type: fieldType,
+              value: fieldValue,
+              id: currentNodeID,
+              parent: mainNodeID,
+              fieldOperator,
+              isDeleted: isColumnToBeDeleted,
+              isIgnored: isColumnIgnored,
+              isMapItem,
+              isNULL
+            })
+
+          } catch (e) {}
+        }
+
+        return relatedFieldsArray
+      }
+
+      // Start with the primary key
+      let primaryKeyFields = handleFieldsPre(relatedTreesObjects.primaryKey),
+        columnsRegularFields = handleFieldsPre(relatedTreesObjects.columns.regular),
+        columnsCollectionFields = handleFieldsPre(relatedTreesObjects.columns.collection),
+        columnsUDTFields = handleFieldsPre(relatedTreesObjects.columns.udt)
+
+      let getOperatorSymbol = (operator) => {
+        let symbol = '='
+
+        switch (operator) {
+          case '_operator_in':
+            symbol = 'IN'
+            break;
+
+          case '_operator_less_than':
+            symbol = '<'
+            break;
+
+          case '_operator_greater_than':
+            symbol = '>'
+            break;
+
+          case '_operator_less_than_equal':
+            symbol = '<='
+            break;
+
+          case '_operator_greater_than_equal':
+            symbol = '>='
+            break;
+        }
+
+        return symbol
+      }
+
+      let handleFieldsPost = (fields, isUDT = false, isCollection = false, parentType = null) => {
+        let names = [],
+          values = [],
+          isInsertionAsJSON = true
+
+        for (let field of fields) {
+          try {
+            if (field.parent == '#')
+              field.fieldOperator = field.fieldOperator || '_operator_equal'
+          } catch (e) {}
+
+          try {
+            if (field.fieldOperator == '_operator_in')
+              field.type = `set<${field.type}>`
+          } catch (e) {}
+
+          try {
+            if (field.fieldOperator != undefined)
+              field.name = `${field.name} ${getOperatorSymbol(field.fieldOperator)}`
+          } catch (e) {}
+
+          try {
+            if ((['name', 'type', 'value'].every((attribute) => field[attribute] == undefined) && !field.isMapItem) || field.isIgnored)
+              continue
+
+            let value = ''
+
+            // Handle collection type - and `IN` operator -
+            try {
+              if (!(['map', 'set', 'list'].some((type) => `${field.type}`.includes(`${type}<`))) && !field.isMapItem)
+                throw 0
+
+              let items = []
+
+              // Check if there're no added items
+              try {
+                items = fields[field.id]
+
+                if (fields[field.id].length <= 0)
+                  continue
+              } catch (e) {}
+
+              let fieldValue = handleFieldsPost(items, false, true, parentType || field.type)
+
+              try {
+                let isUDTType = false
+
+                try {
+                  isUDTType = fieldValue.values[1].startsWith('{') && fieldValue.values[1].endsWith('}')
+                } catch (e) {}
+
+                fieldValue = fieldValue.values.join(field.isMapItem ? ': ' : ', ')
+
+                if (parentType != null && (`${parentType}`.includes(`list<`) || `${parentType}`.includes(`set<`)) && (field.isMapItem || `${field.type}`.includes(`map<`))) {
+                  fieldValue = `{${fieldValue}}`
+                } else if (field.parent == '#' || isUDT) {
+                  fieldValue = `${field.type}`.includes(`list<`) || (`${field.type}`.includes(`set<`) && isInsertionAsJSON) ? (field.fieldOperator != '_operator_in' ? `[${fieldValue}]` : `(${fieldValue})`) : (`${field.type}`.includes(`set<`) || (`${field.type}`.includes(`map<`) && !isUDTType) ? `{${fieldValue}}` : `${fieldValue}`)
+                }
+              } catch (e) {}
+
+              if (fieldValue == '{  }')
+                continue
+
+              if (field.parent == '#')
+                names.push(`${field.name}` + (!isInsertionAsJSON ? `, -- ${field.type}` : ''))
+
+              if (field.parent != '#' && isUDT)
+                names.push(`${field.name}`)
+
+              values.push(field.isMapItem ? `${fieldValue}` : (`${fieldValue}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : '')))
+
+              continue
+            } catch (e) {}
+
+            // Handle UDT type
+            try {
+              let manipulatedType = `${field.type}`
+
+              try {
+                if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
+
+                manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
+              } catch (e) {}
+
+              try {
+                manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
+              } catch (e) {}
+
+              if (!(keyspaceUDTs.includes(manipulatedType)))
+                throw 0
+
+              let subFields = []
+
+              // Check if there're no added items
+              try {
+                subFields = fields[field.id]
+
+                if (fields[field.id].length <= 0)
+                  continue
+              } catch (e) {}
+
+              let fieldValue = handleFieldsPost(subFields, true, false),
+                joinedValue = []
+
+              try {
+                for (let i = 0; i < fieldValue.names.length; i++) {
+
+                  let subFieldName = addDoubleQuotes(fieldValue.names[i])
+
+                  joinedValue.push(`${subFieldName}: ${fieldValue.values[i]}`)
+                }
+
+                joinedValue = joinedValue.join(', ')
+
+                joinedValue = `{ ${joinedValue} }`
+              } catch (e) {}
+
+              if (joinedValue == '{  }')
+                continue
+
+              if (field.parent == '#')
+                names.push(`${field.name}` + (!isInsertionAsJSON ? `, -- ${field.type}` : ''))
+
+              if (field.parent != '#' && isUDT)
+                names.push(`${field.name}`)
+
+              values.push(`${joinedValue}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : ''))
+
+              continue
+            } catch (e) {}
+
+            // Standard type
+            try {
+              let isSingleQuotesNeeded = false
+
+              value = `${field.value}`
+
+              try {
+                if (isInsertionAsJSON) {
+                  isSingleQuotesNeeded = true
+                  throw 0
+                }
+
+                try {
+                  if (['text', 'varchar', 'ascii', 'inet'].some((type) => type == field.type))
+                    isSingleQuotesNeeded = true
+                } catch (e) {}
+
+                try {
+                  if (field.type != 'time')
+                    throw 0
+
+                  if (IsTimestamp(value)) {
+                    try {
+                      value = formatTimestamp(parseInt(value), false, true).split(/\s+/)[1]
+                    } catch (e) {}
+                  }
+
+                  if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
+                    isSingleQuotesNeeded = true
+                } catch (e) {}
+
+                try {
+                  if (field.type != 'date')
+                    throw 0
+
+                  if (IsTimestamp(value)) {
+                    try {
+                      value = `toDate(${value})`
+                    } catch (e) {}
+                  }
+
+                  if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
+                    isSingleQuotesNeeded = true
+                } catch (e) {}
+
+                try {
+                  if (field.type != 'timestamp')
+                    throw 0
+
+                  if (ValidateDate(value, 'boolean'))
+                    value = `toTimestamp('${value}')`
+                } catch (e) {}
+              } catch (e) {}
+
+              try {
+                if (!isSingleQuotesNeeded)
+                  throw 0
+
+                value = `${value}`.replace(/(^|[^'])'(?!')/g, "$1''")
+
+                value = `'${value}'`
+              } catch (e) {}
+
+              if (field.isNULL)
+                value = !isInsertionAsJSON ? 'NULL' : 'null'
+
+              if (field.parent == '#' || isUDT)
+                names.push(isUDT ? `${field.name}` : (`${field.name}` + (!isInsertionAsJSON ? `, -- ${field.type}` : '')))
+
+              values.push(isUDT || isCollection ? `${value}` : (`${value}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : '')))
+            } catch (e) {}
+          } catch (e) {}
+        }
+
+        return {
+          names,
+          values
+        }
+      }
+
+      let allNonPKColumns = [...columnsRegularFields, ...columnsCollectionFields, ...columnsUDTFields]
+
+      let deletedColumns = '',
+        usingTimestamp = '',
+        primaryKey = '',
+        otherFields = ''
+
+      // Get deleted columns
+      try {
+        deletedColumns = allNonPKColumns.filter((column) => column.isDeleted)
+
+        deletedColumns = (deletedColumns.map((column) => `${addDoubleQuotes(column.name)}`)).join(', ')
+
+        if (deletedColumns.length != 0)
+          deletedColumns = ` ${deletedColumns}`
+      } catch (e) {}
+
+      // Using timestamp
+      try {
+        let timestamp = parseInt($('#deleteTimestamp').val())
+
+        if (`${timestamp}`.length <= 0 || isNaN(timestamp))
+          throw 0
+
+        usingTimestamp = `USING TIMESTAMP ${timestamp}` + OS.EOL
+      } catch (e) {}
+
+      let manipulatedFields = {
+        primaryKey: handleFieldsPost(primaryKeyFields),
+        allNonPKColumns: handleFieldsPost(allNonPKColumns)
+      }
+
+      console.log(allNonPKColumns);
+      console.log(manipulatedFields.allNonPKColumns);
+
+      try {
+        let temp = []
+
+        for (let i = 0; i < manipulatedFields.primaryKey.names.length; i++)
+          temp.push(`${manipulatedFields.primaryKey.names[i]} ${manipulatedFields.primaryKey.values[i]}`)
+
+        primaryKey = temp.join(' AND ')
+      } catch (e) {}
+
+      try {
+        let temp = []
+
+        for (let i = 0; i < manipulatedFields.allNonPKColumns.names.length; i++)
+          temp.push(`${manipulatedFields.allNonPKColumns.names[i]} ${manipulatedFields.allNonPKColumns.values[i]}`)
+
+        otherFields = temp.join(' AND ')
+      } catch (e) {}
+
+      if (otherFields.length != 0)
+        otherFields = OS.EOL + `IF ${otherFields}`
+
+      // Check if `IF EXISTS` is checked
+      try {
+        if (!$('#deleteIfExistsOption').prop('checked'))
+          throw 0
+
+        otherFields = OS.EOL + `IF EXISTS`
+      } catch (e) {}
+
+      dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+
+      let statement = `DELETE${deletedColumns} FROM ${keyspaceName}.${tableName}` + OS.EOL + `${usingTimestamp}WHERE ${primaryKey}${otherFields};`
 
       try {
         actionEditor.setValue(statement)

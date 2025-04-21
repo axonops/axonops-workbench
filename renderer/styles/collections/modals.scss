@@ -1721,6 +1721,10 @@ div.input-group-text {
           margin: 0 1px;
           border-radius: 5px;
           overflow: hidden;
+
+          div.form-notch {
+            display: none;
+          }
         }
 
         button,
@@ -1738,7 +1742,7 @@ div.input-group-text {
           height: 30.22px;
           position: relative;
           bottom: 2px;
-          left: -5px;
+          left: 1px;
           transition: all 0.1s ease-in-out;
           border-radius: 5px;
 
@@ -1750,7 +1754,14 @@ div.input-group-text {
           }
 
           &:hover {
-            left: -4px;
+            left: 3px;
+          }
+
+          &.expanded {
+            ion-icon {
+              transform: rotate(-90deg);
+              transition: transform 0.1s ease-in-out;
+            }
           }
         }
       }
@@ -1951,7 +1962,7 @@ div[action="delete-row-column"] {
     a.jstree-anchor {
       width: calc(100% - 40px);
       height: 45px;
-      bottom: 5px;
+      bottom: 8px;
       background: transparent !important;
       cursor: default;
 
@@ -1986,6 +1997,22 @@ div[action="delete-row-column"] {
     div.input-group {
       top: 4px;
       padding-left: 3px;
+
+      div.focus-area {
+        background: transparent;
+        position: absolute;
+        inset: 0;
+        margin: auto;
+        cursor: text;
+
+        &.checkbox {
+          cursor: pointer;
+        }
+
+        &.disabled {
+          pointer-events: none;
+        }
+      }
     }
   }
 
@@ -2189,5 +2216,110 @@ div.form-outline[form="toolExtraPaths"] {
       right: -1px;
       left: auto;
     }
+  }
+}
+
+.block-display {
+  display: block;
+}
+
+.form-outline {
+  text-shadow: none;
+}
+
+div[data-is-main-input="true"] {
+  &.disabled {
+    filter: grayscale(1);
+    pointer-events: none;
+
+    &.form-switch {
+      input,
+      label {
+        opacity: 0.5;
+      }
+    }
+
+    div.form-notch {
+      filter: brightness(0.7);
+    }
+  }
+}
+
+div[action="delete-row-column"] div.table-fields-tree {
+  position: relative;
+
+  &:before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 16px;
+    margin: auto;
+    background: #262626;
+    width: 5px;
+    height: 31px;
+    z-index: 1;
+  }
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    right: 0;
+    left: 0;
+    margin: auto;
+    height: 8px;
+    background: #262626;
+  }
+}
+
+a.jstree-anchor {
+  &.show-hidden-operators {
+    div[data-is-main-input="true"],
+    div.input-group-text.for-actions {
+      display: none !important;
+    }
+
+    div.btn-group.operators {
+      margin-left: 4px !important;
+      transform-origin: left !important;
+    }
+  }
+
+  &.deleted {
+    div.input-group {
+      background: repeating-linear-gradient(45deg, rgba(244, 67, 54, 0.2), rgba(244, 67, 54, 0.2) 10px, transparent 10px, transparent 20px);
+    }
+  }
+}
+
+div#tableFieldsRegularColumnsTreeDeleteAction {
+  a[action="delete-column"] {
+    width: 20px;
+    height: 20px;
+    transition: all 0.15s ease-in-out;
+    color: rgba(255, 255, 255, 0.9) !important;
+
+    ion-icon {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      font-size: 120%;
+    }
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+}
+
+div.form-outline.is-empty {
+  label.form-label {
+    color: #dc9e4c !important;
+  }
+
+  div.form-notch-leading,
+  div.form-notch-middle,
+  div.form-notch-trailing {
+    border-color: #dc9e4c !important;
   }
 }

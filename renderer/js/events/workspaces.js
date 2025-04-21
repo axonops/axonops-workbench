@@ -112,6 +112,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         // Determine if the color of the button needs to be black based on the lightening of the color
         backgroundColor += TinyColor(workspace.color).isLight() ? `color: #252525;"` : `"`
 
+        let connectionsMiniIconsBackgroundColor = TinyColor(workspace.color).isValid() ? `style="background: rgb(${color} / 25%);"` : ''
+
         // Workspace UI element structure
         let element = `
               <div class="workspace ${inAccessible ? 'inaccessible' : ''} ${isSandbox ? 'sandbox' : ''}" data-id="${workspaceID}" data-name="${workspace.name}" data-folder="${workspace.folder}" data-color="${workspace.color}"
@@ -119,7 +121,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 <ion-icon name="sandbox" ${!isSandbox ? 'hidden' : '' }></ion-icon>
                 <div class="header">
                   <div class="title workspace-name">${isSandbox ? '<span mulang="local clusters" capitalize></span>' : workspace.name}</div>
-                  <div class="_clusters"></div>
+                  <div class="_clusters" ${connectionsMiniIconsBackgroundColor}></div>
                 </div>
                 <div class="footer">
                   <div class="button">
@@ -179,13 +181,16 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
                 // Get all clusters in the workspace
                 Modules.Clusters.getClusters(workspaceID).then((clusters) => {
+                  clustersList.toggleClass('show', clusters.length > 0)
+
                   // Loop through each cluster
-                  for (let cluster of clusters) {
+                  for (let cluster of (clusters || []).slice(0, 12)) {
                     // Set the cluster's host
                     let clusterHost = cluster.host.length > 20 ? `${cluster.host.slice(0, 20)}...` : cluster.host,
+                      backgroundColor = TinyColor(workspace.color).isValid() ? `style="background: rgb(${color} / 100%);"` : '',
                       // The cluster UI element structure
                       element = `
-                        <div class="_cluster" _cluster-id="${cluster.info.id}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="${cluster.name}<br>${clusterHost}" data-mdb-html="true"></div>`
+                        <div class="_cluster" ${backgroundColor} _cluster-id="${cluster.info.id}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="${cluster.name}<br>${clusterHost}" data-mdb-html="true"></div>`
 
                     // Append cluster to the list
                     clustersList.append($(element).show(function() {
@@ -983,6 +988,10 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
             // Update the loading's background color
             workspaceElement.find('div.loading').css('background', `rgb(${colorRGB} / 10%)`)
+
+            workspaceElement.find('div._clusters').css('background', `rgb(${colorRGB} / 25%)`)
+
+            workspaceElement.find('div._clusters').children('div._cluster').css('background', `rgb(${colorRGB} / 100%)`)
 
             // Update the workspace switcher's background color
             try {

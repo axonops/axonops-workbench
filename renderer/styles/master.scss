@@ -1915,31 +1915,35 @@ div.body {
                 div._clusters {
                   width: fit-content;
                   height: 25px;
-                  background: #2c2c2c;
-                  border-radius: 4px;
+                  border-radius: 8px;
                   display: flex;
-                  flex: {
-                    direction: row;
-                    wrap: nowrap;
-                  }
-                  align: {
-                    items: center;
-                    content: center;
-                  }
+                  flex-direction: row;
+                  flex-wrap: nowrap;
+                  align-items: center;
+                  align-content: center;
                   justify-content: flex-start;
                   margin-bottom: 15px;
-                  opacity: 0.9;
+                  padding: 0 1px;
+                  opacity: 0.75;
+                  opacity: 0;
+                  pointer-events: none;
+
+                  &.show {
+                    opacity: 1;
+                    pointer-events: all;
+                  }
 
                   div._cluster {
-                    width: 15px;
-                    height: 15px;
-                    background: #4e4e4e;
-                    border-radius: 4px;
+                    width: 14px;
+                    height: 14px;
+                    border-radius: 5px;
                     margin: 0 4px;
+                    opacity: 0.3;
                     transition: background 0.2s ease-in-out;
 
                     &.clickable {
                       cursor: pointer;
+                      opacity: 1;
                     }
                   }
                 }
@@ -2091,6 +2095,7 @@ div.body {
               div.footer {
                 div.actions {
                   width: 80px;
+                  border-radius: 10px;
                 }
               }
 

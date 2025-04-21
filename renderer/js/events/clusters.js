@@ -22697,9 +22697,6 @@
         allNonPKColumns: handleFieldsPost(allNonPKColumns)
       }
 
-      console.log(allNonPKColumns);
-      console.log(manipulatedFields.allNonPKColumns);
-
       try {
         let temp = []
 
@@ -22711,8 +22708,6 @@
 
       try {
         let temp = []
-
-        console.log(manipulatedFields.allNonPKColumns);
 
         for (let i = 0; i < manipulatedFields.allNonPKColumns.names.length; i++) {
           let name = manipulatedFields.allNonPKColumns.names[i],

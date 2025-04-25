@@ -2345,65 +2345,126 @@
                 </div>
               </div> -->
 
-              <div class="fields-badge-action" id="deletePrimaryKeyBadge" style="padding: 10px;">
-                <span class="badge badge-secondary">
-                  <span mulang="primary key" capitalize></span>
-                </span>
-              </div>
-              <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeyTreeDeleteAction"></div>
-
-              <div class="fields-badge-action" id="deleteRegularColumnsBadge" style="padding: 10px;">
-                <span class="badge badge-secondary">
-                  <span mulang="regular columns" capitalize></span>
-                </span>
-              </div>
-              <div class="table-fields-tree children-transform" id="tableFieldsRegularColumnsTreeDeleteAction"></div>
-
-              <div class="fields-badge-action" id="deleteCollectionColumnsBadge" style="padding: 10px;">
-                <span class="badge badge-secondary">
-                  <span mulang="collection types columns" capitalize></span>
-                </span>
-              </div>
-              <div class="table-fields-tree children-transform" id="tableFieldsCollectionColumnsTreeDeleteAction"></div>
-
-              <div class="fields-badge-action" id="deleteUDTColumnsBadge" style="padding: 10px;">
-                <span class="badge badge-secondary">
-                  <span mulang="UDT columns" capitalize></span>
-                </span>
-              </div>
-              <div class="table-fields-tree children-transform" id="tableFieldsUDTColumnsTreeDeleteAction"></div>
-
-              <div class="fields-badge-action" style="padding: 10px;">
-                <span class="badge badge-secondary">
-                  <span mulang="extra options" capitalize></span>
-                </span>
-              </div>
-              <div class="row flex data-insertion-timestamp-row">
-                <div class="col-md-7">
-                  <div class="form-outline form-white">
-                    <div class="clear-field hide">
-                      <div class="btn btn-tertiary" data-mdb-ripple-color="light">
-                        <ion-icon name="close"></ion-icon>
-                      </div>
+              <div class="types-of-transactions">
+                <div class="sections">
+                  <div class="section">
+                    <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="standard">
+                      Standard
                     </div>
-                    <input type="number" class="form-control" id="deleteTimestamp">
-                    <label for="deleteTimestamp" class="form-label">
-                      <span mulang="delete data older than timestamp" capitalize></span>
-                    </label>
+                  </div>
+                  <div class="section">
+                    <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="lwt">
+                      Lightweight Transaction (LWT)
+                    </div>
                   </div>
                 </div>
-                <div class="col-md-5">
-                  <button type="button" class="btn btn-light btn-rounded btn-sm ripple-surface-dark" style="margin-left: 10px;
-    opacity: 0.8;" id="deleteTimestampPicker">
-                    <ion-icon name="calendar" role="img" class="md hydrated" aria-label="calendar"></ion-icon> <span mulang="date time picker" capitalize></span>
-                  </button>
+              </div>
+              <div section="standard">
+                <div class="fields-badge-action" id="deletePrimaryKeyBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="primary key" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeyTreeDeleteAction"></div>
+
+                <div class="fields-badge-action" id="deleteNonPKColumns" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="delete columns" capitalize></span>
+                  </span>
+                </div>
+                <div id="tableFieldsNonPKColumnsDeleteAction">
+                  <div class="form-outline form-white margin-bottom" style="margin-bottom:10px;">
+                    <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                    <input spellcheck="false" type="text" class="form-control form-icon-trailing" id="toBeDeletedColumnsFilter">
+                    <label class="form-label">
+                      <span mulang="filter columns by name or type" capitalize-first></span>
+                    </label>
+                  </div>
+                  <div class="columns">
+                  </div>
+                  <div id="noColumnMatched">
+                    No column matches the filtering text.
+                  </div>
+                </div>
+
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="extra options" capitalize></span>
+                  </span>
+                </div>
+                <div class="row flex data-insertion-timestamp-row">
+                  <div class="col-md-7">
+                    <div class="form-outline form-white">
+                      <div class="clear-field hide">
+                        <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                          <ion-icon name="close"></ion-icon>
+                        </div>
+                      </div>
+                      <input type="number" class="form-control" id="deleteTimestamp" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
+                        data-title="<div>When you use a timestamp in a <code>DELETE</code> statement, Cassandra will:</div><ul style='margin-bottom: auto;'><li>Apply the delete operation with the specified timestamp.<li>Use this timestamp to determine which operations take precedence in case of conflicts.<li>Only delete elements that are older than the specified timestamp (matching the <code>WHERE</code> conditions).</ul>"
+                        data-tippy-delay="[500, 0]">
+                      <label for="deleteTimestamp" class="form-label">
+                        <span mulang="delete data older than timestamp" capitalize></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-md-5">
+                    <button type="button" class="btn btn-light btn-rounded btn-sm ripple-surface-dark" style="margin-left: 10px;
+      opacity: 0.8;" id="deleteTimestampPicker">
+                      <ion-icon name="calendar" role="img" class="md hydrated" aria-label="calendar"></ion-icon> <span mulang="date time picker" capitalize></span>
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div class="form-check margin-bottom" style="padding-left: 32px;">
-                <input class="form-check-input" type="checkbox" value id="deleteIfExistsOption">
-                <label class="form-check-label" for="deleteIfExistsOption">
-                  <span mulang="include" capitalize></span> <code>IF EXISTS</code> <span mulang="keyword"></span>.
-                </label>
+              <div section="lwt" style="display: none;">
+                <div class="lwt-hint">
+                  <ion-icon name="info-circle-outline" class="management-tools-hint-icon localclusters-dialog"></ion-icon> Lightweight transactions (LWTs) provide strong consistency but can impact performance and scalability. Use them only when
+                  required.
+                </div>
+
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="Options" capitalize></span>
+                  </span>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
+                  <input class="form-check-input" type="radio" name="lwtDeleteOptions" value id="deleteNoSelectOption" checked>
+                  <label class="form-check-label" for="deleteNoSelectOption">
+                    No Selection.
+                  </label>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
+                  <input class="form-check-input" type="radio" name="lwtDeleteOptions" value id="deleteIfExistsOption">
+                  <label class="form-check-label" for="deleteIfExistsOption">
+                    Include <code>IF EXISTS</code> keyword.
+                  </label>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px;">
+                  <input class="form-check-input" type="radio" name="lwtDeleteOptions" value id="deleteIfColumnOption">
+                  <label class="form-check-label" for="deleteIfColumnOption">
+                    Use <code>IF column =</code>.
+                  </label>
+                </div>
+
+
+                <div class="fields-badge-action" id="deleteRegularColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="regular columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsRegularColumnsTreeDeleteAction"></div>
+                <div class="fields-badge-action" id="deleteCollectionColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="collection types columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsCollectionColumnsTreeDeleteAction"></div>
+                <div class="fields-badge-action" id="deleteUDTColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="UDT columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsUDTColumnsTreeDeleteAction"></div>
               </div>
             </div>
 

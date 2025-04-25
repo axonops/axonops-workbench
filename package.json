@@ -257,7 +257,7 @@
         "./main/bin/keys_generator/_internal/lib-dynload/syslog.cpython-312-darwin.so",
         "./main/bin/keys_generator/_internal/lib-dynload/termios.cpython-312-darwin.so",
         "./main/bin/keys_generator/_internal/lib-dynload/unicodedata.cpython-312-darwin.so",
-        "./main/bin/keys_generator/_internal/lib-dynload/zlib.cpython-312-darwin.so",    
+        "./main/bin/keys_generator/_internal/lib-dynload/zlib.cpython-312-darwin.so",
         "./main/bin/keys_generator/keys_generator",
         "./main/bin/cqlsh/cqlsh"
       ],

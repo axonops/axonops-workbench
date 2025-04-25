@@ -3090,8 +3090,8 @@
 
                                   // Handle if the content has JSON string
                                   try {
-                                    // If the statement is not `SELECT` then don't attempt to render a table
-                                    if (statementIdentifier.toLowerCase().indexOf('select') <= -1 || isJSONKeywordFound || connectionLost)
+                                    // If the statement is not `SELECT` or 'DELETE' then don't attempt to render a table
+                                    if (['select', 'delete'].every((command) => statementIdentifier.toLowerCase().indexOf(command) <= -1) || isJSONKeywordFound || connectionLost)
                                       throw 0
 
                                     if (`${match}`.indexOf('KEYWORD:JSON:STARTED') <= -1)
@@ -11630,7 +11630,21 @@
                   if (inputHTMLType != 'checkbox')
                     throw 0
 
-                  input.prop('checked', !(inputSavedValue != 'true')).trigger('change')
+                  if (input.attr('data-set-indeterminate') == 'true') {
+                    input.attr('data-set-indeterminate', null)
+
+                    input.prop('indeterminate', true)
+
+                    input.trigger('change')
+
+                    throw 0
+                  }
+
+                  input.prop('checked', !(inputSavedValue != 'true'))
+
+                  input.prop('indeterminate', inputSavedValue == 'indeterminate')
+
+                  input.trigger('change')
 
                   continue
                 } catch (e) {}
@@ -12254,9 +12268,15 @@
                       if (inputHTMLType != 'checkbox')
                         throw 0
 
-                      $(`label[for="${$(this).attr('id')}"]`).text($(this).prop('checked') ? 'true' : 'false')
+                      if ($(this).attr('data-set-indeterminate') == 'true') {
+                        $(this).attr('data-set-indeterminate', null)
 
-                      effectedNodes[inputID] = `${$(this).prop('checked')}`
+                        $(this).prop('indeterminate', true)
+                      }
+
+                      $(`label[for="${$(this).attr('id')}"]`).text($(this).prop('indeterminate') ? 'not set' : ($(this).prop('checked') ? 'true' : 'false'))
+
+                      effectedNodes[inputID] = $(this).prop('indeterminate') ? 'indeterminate' : `${$(this).prop('checked')}`
                     } catch (e) {}
 
                     if (inputHTMLType != 'checkbox')
@@ -12926,7 +12946,29 @@
 
                   let relatedInput = clickedTarget.parent().children('input')
 
-                  setTimeout(() => relatedInput.trigger(relatedInput.attr('type') == 'checkbox' ? 'click' : 'focus'))
+                  setTimeout(() => {
+                    try {
+                      if (relatedInput.attr('type') != 'checkbox')
+                        throw 0
+
+                      if (relatedInput.prop('indeterminate')) {
+                        relatedInput.prop('indeterminate', false)
+                        relatedInput.prop('checked', true)
+                        relatedInput.trigger('change')
+                      } else {
+                        if (!(relatedInput.prop('checked'))) {
+                          relatedInput.prop('indeterminate', true)
+                          relatedInput.trigger('change')
+                        } else {
+                          relatedInput.trigger('click')
+                        }
+                      }
+
+                      return
+                    } catch (e) {}
+
+                    relatedInput.trigger('focus')
+                  })
                 } catch (e) {}
 
                 setTimeout(() => {
@@ -13119,7 +13161,21 @@
                     if (inputHTMLType != 'checkbox')
                       throw 0
 
-                    input.prop('checked', !(inputSavedValue != 'true')).trigger('change')
+                    if (input.attr('data-set-indeterminate') == 'true') {
+                      input.attr('data-set-indeterminate', null)
+
+                      input.prop('indeterminate', true)
+
+                      input.trigger('change')
+
+                      throw 0
+                    }
+
+                    input.prop('checked', inputSavedValue == 'indeterminate' ? true : !(inputSavedValue != 'true'))
+
+                    input.prop('indeterminate', inputSavedValue == 'indeterminate')
+
+                    input.trigger('change')
 
                     continue
                   } catch (e) {}
@@ -13172,12 +13228,16 @@
               }
             }
 
+            let areNonPKColumnsExist = false
+
             {
               let columnsRegularTreeElements = tableFieldsDeleteTreeContainers.columnsRegular.add('div#deleteRegularColumnsBadge')
 
               try {
                 if (!(columns.some((column) => ['map', 'set', 'list'].every((type) => !(`${column.type}`.includes(`${type}<`))))))
                   throw 0
+
+                areNonPKColumnsExist = true
 
                 columnsRegularTreeElements.show()
 
@@ -13198,6 +13258,8 @@
                 if (!(columns.some((column) => ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))))
                   throw 0
 
+                areNonPKColumnsExist = true
+
                 columnsCollectionTreeElements.show()
 
                 try {
@@ -13216,6 +13278,8 @@
                 if (udts.length <= 0)
                   throw 0
 
+                areNonPKColumnsExist = true
+
                 columnsUDTTreeElements.show()
 
                 try {
@@ -13226,6 +13290,52 @@
               } catch (e) {
                 columnsUDTTreeElements.hide()
               }
+            }
+
+            $('div#tableFieldsNonPKColumnsDeleteAction').add('div#deleteNonPKColumns').toggle(areNonPKColumnsExist)
+
+            $('input#deleteIfColumnOption').attr('disabled', !areNonPKColumnsExist ? '' : null)
+
+            $('input#deleteNoSelectOption').prop('checked', true)
+
+            $('div[action="delete-row-column"] div[section="standard"]').click()
+
+            try {
+              $('#deleteTimestamp').val('').trigger('input')
+
+              getElementMDBObject($('#deleteTimestamp')).update()
+            } catch (e) {}
+
+            let deleteNonPKColumnsContainer = $('div#tableFieldsNonPKColumnsDeleteAction div.columns')
+
+            deleteNonPKColumnsContainer.children('div.column').remove()
+
+            for (let nonPKColumn of [...columns, ...udts]) {
+              try {
+                let columnType = EscapeHTML(`${nonPKColumn.type}`).slice(0, 20),
+                  element = `
+                    <div data-name="${nonPKColumn.name}" data-type="${nonPKColumn.type}" class="column btn btn-tertiary" data-mdb-ripple-color="light">
+                      <ion-icon name="trash"></ion-icon>
+                      <div class="name">${nonPKColumn.name}</div>
+                      <div class="type">
+                        ${columnType}${nonPKColumn.type.length > 20 ? '...' : ''}
+                      </div>
+                    </div>`
+
+                deleteNonPKColumnsContainer.append($(element).show((function() {
+                  let columnBtn = $(this)
+
+                  setTimeout(() => $(this).click(() => {
+                    columnBtn.add($('#tableFieldsRegularColumnsTreeDeleteAction, #tableFieldsCollectionColumnsTreeDeleteAction').find(`a.jstree-anchor[name="${$(this).attr('data-name')}"][type="${$(this).attr('data-type')}"]`)).toggleClass('deleted')
+
+                    try {
+                      updateActionStatusForDeleteRowColumn()
+                    } catch (e) {}
+
+                    $('input#toBeDeletedColumnsFilter').trigger('input')
+                  }))
+                })))
+              } catch (e) {}
             }
 
             setTimeout(() => {
@@ -13778,9 +13888,15 @@
                         if (inputHTMLType != 'checkbox')
                           throw 0
 
-                        $(`label[for="${$(this).attr('id')}"]`).text($(this).prop('checked') ? 'true' : 'false')
+                        if ($(this).attr('data-set-indeterminate') == 'true') {
+                          $(this).attr('data-set-indeterminate', null)
 
-                        effectedNodes[inputID] = `${$(this).prop('checked')}`
+                          $(this).prop('indeterminate', true)
+                        }
+
+                        $(`label[for="${$(this).attr('id')}"]`).text($(this).prop('indeterminate') ? 'not set' : ($(this).prop('checked') ? 'true' : 'false'))
+
+                        effectedNodes[inputID] = $(this).prop('indeterminate') ? 'indeterminate' : `${$(this).prop('checked')}`
 
                         $(this).removeClass('is-invalid')
                       } catch (e) {}
@@ -14248,7 +14364,9 @@
                             </a>`)
 
                       deletionBtn.click(function() {
-                        $(this).closest('a.jstree-anchor').toggleClass('deleted')
+                        let nodeAnchor = $(this).closest('a.jstree-anchor')
+
+                        nodeAnchor.add($('div#tableFieldsNonPKColumnsDeleteAction div.columns').find(`div.column[data-name="${nodeAnchor.attr('name')}"][data-type="${nodeAnchor.attr('type')}"]`)).toggleClass('deleted')
 
                         try {
                           setTimeout(() => updateActionStatusForDeleteRowColumn())
@@ -14380,7 +14498,29 @@
 
                     let relatedInput = clickedTarget.parent().children('input')
 
-                    setTimeout(() => relatedInput.trigger(relatedInput.attr('type') == 'checkbox' ? 'click' : 'focus').trigger('input'))
+                    setTimeout(() => {
+                      try {
+                        if (relatedInput.attr('type') != 'checkbox')
+                          throw 0
+
+                        if (relatedInput.prop('indeterminate')) {
+                          relatedInput.prop('indeterminate', false)
+                          relatedInput.prop('checked', true)
+                          relatedInput.trigger('change')
+                        } else {
+                          if (!(relatedInput.prop('checked'))) {
+                            relatedInput.prop('indeterminate', true)
+                            relatedInput.trigger('change')
+                          } else {
+                            relatedInput.trigger('click').trigger('input')
+                          }
+                        }
+
+                        return
+                      } catch (e) {}
+
+                      relatedInput.trigger('focus').trigger('input')
+                    })
                   } catch (e) {}
 
                   setTimeout(() => {
@@ -21480,12 +21620,53 @@
       } catch (e) {}
     })
 
-    $('#deleteIfExistsOption').on('change', () => {
+    $('#deleteIfExistsOption, #deleteIfColumnOption, #deleteNoSelectOption').on('change', () => {
       setTimeout(() => {
         try {
           updateActionStatusForDeleteRowColumn()
         } catch (e) {}
       })
+    })
+
+    let deleteRowColumnAction = $('div[action="delete-row-column"]'),
+      sectionsButtons = deleteRowColumnAction.find('div.btn[section]')
+
+    sectionsButtons.click(function() {
+      if ($(this).hasClass('active'))
+        return
+
+      sectionsButtons.removeClass('active')
+
+      $(this).addClass('active')
+
+      deleteRowColumnAction.children('div[section]').hide()
+
+      deleteRowColumnAction.children(`div[section="${$(this).attr('section')}"]`).show()
+    })
+
+    $('input#toBeDeletedColumnsFilter').on('input', function() {
+      let filteringText = `${$(this).val()}`,
+        deleteNonPKColumns = $('div#tableFieldsNonPKColumnsDeleteAction div.columns').children('div.column.btn')
+
+      if (filteringText.length <= 0) {
+        deleteNonPKColumns.show()
+
+        $('#noColumnMatched').hide()
+        $('div#tableFieldsNonPKColumnsDeleteAction div.columns').show()
+
+        return
+      }
+
+      deleteNonPKColumns.hide()
+
+      let matchedColumns = deleteNonPKColumns.filter(function() {
+        return minifyText($(this).text()).includes(filteringText) || $(this).hasClass('deleted')
+      })
+
+      $('#noColumnMatched').toggle(matchedColumns.length <= 0)
+      $('div#tableFieldsNonPKColumnsDeleteAction div.columns').toggle(matchedColumns.length > 0)
+
+      matchedColumns.show()
     })
   }
 
@@ -21588,6 +21769,10 @@
           ] = getAttributes(currentNode, ['name', 'type', 'mandatory', 'is-map-item']),
             fieldValue = currentNode.find('input'),
             isNULL = false
+
+          // Check if the field is boolean
+          if (fieldValue.attr('type') == 'checkbox' && fieldValue.prop('indeterminate'))
+            continue
 
           if (passedFields.includes(currentNodeID))
             continue
@@ -22315,6 +22500,10 @@
               isColumnToBeDeleted = currentNode.hasClass('deleted'),
               isColumnIgnored = fieldValue.hasClass('is-empty') || currentNode.hasClass('unavailable')
 
+            // Check if the field is boolean
+            if (fieldValue.attr('type') == 'checkbox' && fieldValue.prop('indeterminate'))
+              continue
+
             if (passedFields.includes(currentNodeID))
               continue
 
@@ -22592,11 +22781,6 @@
               value = `${field.value}`
 
               try {
-                if (isInsertionAsJSON) {
-                  isSingleQuotesNeeded = true
-                  throw 0
-                }
-
                 try {
                   if (['text', 'varchar', 'ascii', 'inet'].some((type) => type == field.type))
                     isSingleQuotesNeeded = true
@@ -22649,7 +22833,7 @@
               } catch (e) {}
 
               if (field.isNULL)
-                value = !isInsertionAsJSON ? 'NULL' : 'null'
+                value = 'NULL'
 
               if (field.parent == '#' || isUDT)
                 names.push(isUDT ? `${finalFieldName}` : (`${finalFieldName}` + (!isInsertionAsJSON ? `, -- ${field.type}` : '')))
@@ -22724,6 +22908,17 @@
 
       if (otherFields.length != 0)
         otherFields = OS.EOL + `IF ${otherFields}`
+
+      let lwtOption = getCheckedValue('lwtDeleteOptions')
+
+      switch (lwtOption) {
+        case 'deleteIfExistsOption':
+          otherFields = OS.EOL + `IF EXISTS`
+          break
+        case 'deleteNoSelectOption':
+          otherFields = ''
+          break
+      }
 
       // Check if `IF EXISTS` is checked
       try {

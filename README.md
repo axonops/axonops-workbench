@@ -126,9 +126,9 @@ npm run win
 
 See the `packages.json` for other build options.
 
-### Tidying up between beta release installs
+### Tidying up between development release installs
 
-The current builds are still in development and are not necessarily backwards compatible, so do this before taking a new beta release
+The development builds and are not necessarily backwards compatible, so you may need to tidy up the keychain (see below).
 
 #### Linux and macOS:
 

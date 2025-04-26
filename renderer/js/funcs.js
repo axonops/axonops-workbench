@@ -4500,8 +4500,8 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
 
           inputFieldUIElement = `
             <div data-is-main-input="true" class="form-check form-switch form-white ignored-applied null-related">
-              <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="_${switchBtnID}" data-field-type="${nodeObject.type}">
-              <label class="form-check-label uppercase" for="_${switchBtnID}" onclick="handleLabelClickEvent(this)">false</label>
+              <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="_${switchBtnID}" data-field-type="${nodeObject.type}" data-set-indeterminate="true">
+              <label class="form-check-label uppercase" for="_${switchBtnID}" onclick="handleLabelClickEvent(this)">not set</label>
               <div class="focus-area checkbox"></div>
             </div>`
         } catch (e) {}
@@ -4910,7 +4910,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
           ...column,
           fieldType: 'regular-column',
           isMandatory: false
-        }),
+        }, '#', true),
         isTypeCollection = ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`))
 
       if (isTypeCollection) {
@@ -4961,7 +4961,7 @@ let getCheckedValue = (groupName) => {
     radioButtons = document.getElementsByName(groupName);
 
   for (let i = 0; i < radioButtons.length; i++) {
-    if (radioButtons[i].checked) {
+    if ($(radioButtons[i]).prop('checked')) {
       selectedValue = radioButtons[i].getAttribute('id')
       break
     }

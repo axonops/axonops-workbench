@@ -2323,3 +2323,157 @@ div.form-outline.is-empty {
     border-color: #dc9e4c !important;
   }
 }
+
+div[action="delete-row-column"] div.types-of-transactions {
+  background: #202023;
+  border-radius: 10px;
+  box-shadow: 0 0 0 5px #262626;
+  width: calc(100% - 20px);
+  margin: 0 10px 10px;
+
+  div.sections {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-around;
+    align-items: center;
+    align-content: center;
+
+    div.section {
+      border-radius: 5px;
+      width: 100%;
+
+      ion-icon[name="external-link"] {
+        margin-left: 5px;
+        position: relative;
+        bottom: 1px;
+      }
+
+      div.btn {
+        width: 100%;
+        text: {
+          align: center;
+          transform: capitalize;
+        }
+        padding-left: 5px;
+        color: inherit;
+        transition: opacity 0.2s ease-in-out;
+        opacity: 0.5;
+
+        &:hover {
+          opacity: 0.8;
+        }
+
+        &.active {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+
+input[type="radio"][name="lwtDeleteOptions"] {
+  transform: scale(0.85) translateY(-1px);
+  transform-origin: left;
+  margin-right: 0;
+}
+
+div#tableFieldsNonPKColumnsDeleteAction {
+  width: calc(100% - 30px);
+  margin-left: 10px;
+
+  div.columns {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    max-height: 260px;
+    overflow-y: scroll;
+
+    div.column {
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-content: center;
+      align-items: flex-start;
+      justify-content: flex-start;
+      margin-right: 10px;
+      margin-bottom: 5px;
+      padding-left: 5px;
+      padding-right: 5px;
+      color: inherit;
+      text-transform: none;
+      transition: 0.2s opacity ease-in-out;
+
+      &.deleted {
+        &:after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          margin: auto;
+          pointer-events: none;
+          background: repeating-linear-gradient(45deg, rgba(244, 67, 54, 0.15), rgba(244, 67, 54, 0.15) 10px, transparent 10px, transparent 20px);
+        }
+      }
+
+      ion-icon {
+        vertical-align: middle;
+        position: relative;
+        top: 2px;
+        opacity: 0.9;
+      }
+
+      div.name {
+        font-weight: 600;
+        position: relative;
+        top: 1px;
+      }
+
+      div.type {
+        font-size: 95%;
+        margin-left: 5px;
+        margin-right: 5px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2px 4px;
+        border-radius: 5px;
+        position: relative;
+        transform: scale(0.95);
+      }
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+}
+
+div#noColumnMatched {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 5px;
+  font-size: 90%;
+  border-radius: 5px;
+  margin-bottom: 24px;
+  display: none;
+}
+
+div.lwt-hint {
+  background: rgba(123, 181, 255, 0.1);
+  font-size: 85%;
+  padding: 0 5px;
+  border-radius: 5px;
+  cursor: default;
+  width: calc(100% - 20px);
+  margin-left: 10px;
+  margin-top: 15px;
+  margin-bottom: 5px;
+
+  ion-icon {
+    font-size: 150%;
+    bottom: 1px;
+    margin-right: -1px;
+  }
+}

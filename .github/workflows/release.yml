@@ -105,7 +105,6 @@ jobs:
 
       - name: Get credits and add them to the database
         run: |
-          sudo apt-get -y install libsecret-1-dev libsecret-tools
           cd get_credits
           npm cache clean --force
           npm i

@@ -3208,7 +3208,9 @@
                                       // Handle the download options
                                       {
                                         // Download the table as CSV
-                                        outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', 'statement_block.csv'))
+                                        outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), clusterElement.attr('data-folder'), 'statement_block.csv')))
+
+                                        // Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), clusterElement.attr('data-folder'), descriptionFileName)
 
                                         // Download the table as PDF
                                         outputElement.find('div.option[option="pdf"]').click(() => tabulatorObject.download('pdf', 'statement_block.pdf', {
@@ -4875,6 +4877,8 @@
                                   suggestions: []
                                 }
 
+                              console.log(finalSuggestions);
+
                               suggestions = finalSuggestions.map((suggestion) => {
                                 insertText = (isSuggestKeyspaces || isKeyspace) ? addDoubleQuotes(`${suggestion}`) : suggestion
 
@@ -6003,7 +6007,7 @@
                                  * Trigger the `resize` function of the window
                                  * This will fit and resize related elements in the work area - especially the terminal -
                                  */
-                                $(window.visualViewport).trigger('resize')
+                                setTimeout(() => $(window.visualViewport).trigger('resize'), 500)
                               })
                             })
 
@@ -15077,6 +15081,7 @@
               <label class="form-label">
                 <span mulang="field name" capitalize></span>
               </label>
+              <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
             </div>
           </div>
           <div class="col-md-6" col="fieldDataType">
@@ -15481,6 +15486,8 @@
                     } catch (e) {}
                   })
 
+                  let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
                   $(this).find('input.fieldName').on('input', function(_, triggerInput = true) {
                     let fieldName = $(this).val(),
                       fieldRow = $(this).parent().parent().parent(),
@@ -15514,7 +15521,22 @@
                       }
                     } catch (e) {}
 
-                    $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0)
+                    let isError = isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0
+
+                    $(this).toggleClass('is-invalid', isError)
+
+                    errorWarningIcon.toggleClass('show', isError && minifyText(fieldName).length > 0)
+
+                    try {
+                      if (!isError)
+                        throw 0
+
+                      let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                      tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                      tooltip.enable()
+                    } catch (e) {}
 
                     dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -15678,6 +15700,8 @@
                 dataFieldsContainer.children('div.empty-fields').fadeIn(250)
               })
 
+              let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
               $(this).find('input.fieldName').on('input', function(_, triggerInput = true) {
                 let fieldName = $(this).val(),
                   fieldRow = $(this).parent().parent().parent(),
@@ -15711,7 +15735,22 @@
                   }
                 } catch (e) {}
 
-                $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0)
+                let isError = isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0
+
+                $(this).toggleClass('is-invalid', isError)
+
+                errorWarningIcon.toggleClass('show', isError && minifyText(fieldName).length > 0)
+
+                try {
+                  if (!isError)
+                    throw 0
+
+                  let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                  tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                  tooltip.enable()
+                } catch (e) {}
 
                 dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -15883,6 +15922,8 @@
                     } catch (e) {}
                   })
 
+                  let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
                   $(this).find('input.fieldName').on('input', function(_, triggerInput = true) {
                     let fieldName = $(this).val(),
                       fieldRow = $(this).parent().parent().parent(),
@@ -15916,7 +15957,22 @@
                       }
                     } catch (e) {}
 
-                    $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0)
+                    let isError = isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0
+
+                    $(this).toggleClass('is-invalid', isError)
+
+                    errorWarningIcon.toggleClass('show', isError && minifyText(fieldName).length > 0)
+
+                    try {
+                      if (!isError)
+                        throw 0
+
+                      let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                      tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                      tooltip.enable()
+                    } catch (e) {}
 
                     dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -16052,6 +16108,8 @@
                 dataUDTFieldsContainer.children('div.empty-fields').fadeIn(250)
               })
 
+              let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
               $(this).find('input.fieldName').on('input', function(_, triggerInput = true) {
                 let fieldName = $(this).val(),
                   fieldRow = $(this).parent().parent().parent(),
@@ -16085,7 +16143,22 @@
                   }
                 } catch (e) {}
 
-                $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0)
+                let isError = isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0
+
+                $(this).toggleClass('is-invalid', isError)
+
+                errorWarningIcon.toggleClass('show', isError && minifyText(fieldName).length > 0)
+
+                try {
+                  if (!isError)
+                    throw 0
+
+                  let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                  tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                  tooltip.enable()
+                } catch (e) {}
 
                 dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -16501,7 +16574,10 @@
           })).join('')
 
           try {
-            primaryKeys = `(` + (partitionKeys.map((key) => key.name)).join(', ') + `)`
+            primaryKeys = (partitionKeys.map((key) => key.name)).join(', ')
+
+            if (partitionKeys.length > 1)
+              primaryKeys = `(${primaryKeys})`
           } catch (e) {}
 
           try {
@@ -16687,6 +16763,7 @@
                       <label class="form-label">
                         <span mulang="key name" capitalize></span>
                       </label>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-5" col="partitionKeyType">
@@ -16948,6 +17025,8 @@
                 })
               })
 
+              let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
               $(this).find('input.partitionKeyName').on('input', function(_, triggerInput = true) {
                 let partitionKeyName = $(this).val(),
                   fieldRow = $(this).parent().parent().parent(),
@@ -16981,7 +17060,22 @@
                   }
                 } catch (e) {}
 
-                $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(partitionKeyName).length <= 0)
+                let isError = isNameDuplicated || isNameInvalid || minifyText(partitionKeyName).length <= 0
+
+                $(this).toggleClass('is-invalid', isError)
+
+                errorWarningIcon.toggleClass('show', isError && minifyText(partitionKeyName).length > 0)
+
+                try {
+                  if (!isError)
+                    throw 0
+
+                  let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                  tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                  tooltip.enable()
+                } catch (e) {}
 
                 dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -17167,6 +17261,7 @@
                       <label class="form-label">
                         <span mulang="key name" capitalize></span>
                       </label>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-4" col="clusteringKeyType">
@@ -17457,6 +17552,8 @@
                 $(this).find('span').text(`${newSort}`)
               })
 
+              let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
               $(this).find('input.clusteringKeyName').on('input', function(_, triggerInput = true) {
                 let clusteringKeyName = $(this).val(),
                   fieldRow = $(this).parent().parent().parent(),
@@ -17490,7 +17587,22 @@
                   }
                 } catch (e) {}
 
-                $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(clusteringKeyName).length <= 0)
+                let isError = isNameDuplicated || isNameInvalid || minifyText(clusteringKeyName).length <= 0
+
+                $(this).toggleClass('is-invalid', isError)
+
+                errorWarningIcon.toggleClass('show', isError && minifyText(clusteringKeyName).length > 0)
+
+                try {
+                  if (!isError)
+                    throw 0
+
+                  let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                  tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                  tooltip.enable()
+                } catch (e) {}
 
                 dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -17623,6 +17735,7 @@
                     <label class="form-label">
                       <span mulang="counter column name" capitalize></span>
                     </label>
+                    <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
                   </div>
                 </div>
                 <div class="col-md-1">
@@ -17707,6 +17820,8 @@
               dataFieldsContainer.children('div.empty-counter-table-columns').fadeIn(250)
             })
 
+            let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
             $(this).find('input.counterColumnName').on('input', function(_, triggerInput = true) {
               let counterColumnName = $(this).val(),
                 fieldRow = $(this).parent().parent().parent(),
@@ -17740,7 +17855,22 @@
                 }
               } catch (e) {}
 
-              $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(counterColumnName).length <= 0)
+              let isError = isNameDuplicated || isNameInvalid || minifyText(counterColumnName).length <= 0
+
+              $(this).toggleClass('is-invalid', isError)
+
+              errorWarningIcon.toggleClass('show', isError && minifyText(counterColumnName).length > 0)
+
+              try {
+                if (!isError)
+                  throw 0
+
+                let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                tooltip.enable()
+              } catch (e) {}
 
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -17782,6 +17912,7 @@
                     <label class="form-label">
                       <span mulang="option name" capitalize></span>
                     </label>
+                    <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -17860,6 +17991,8 @@
                   })
                 })
 
+                let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
                 $(this).find('input.tableOptionName').on('input', function(_, triggerInput = true) {
                   let tableOptionName = $(this).val(),
                     fieldRow = $(this).parent().parent().parent(),
@@ -17900,7 +18033,22 @@
                     }
                   } catch (e) {}
 
-                  $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0)
+                  let isError = isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0
+
+                  $(this).toggleClass('is-invalid', isError)
+
+                  errorWarningIcon.toggleClass('show', isError && minifyText(tableOptionName).length > 0)
+
+                  try {
+                    if (!isError)
+                      throw 0
+
+                    let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                    tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                    tooltip.enable()
+                  } catch (e) {}
 
                   dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -18021,6 +18169,8 @@
                   })
                 })
 
+                let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
                 $(this).find('input.tableOptionName').on('input', function(_, triggerInput = true) {
                   let tableOptionName = $(this).val(),
                     fieldRow = $(this).parent().parent().parent(),
@@ -18061,7 +18211,22 @@
                     }
                   } catch (e) {}
 
-                  $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0)
+                  let isError = isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0
+
+                  $(this).toggleClass('is-invalid', isError)
+
+                  errorWarningIcon.toggleClass('show', isError && minifyText(tableOptionName).length > 0)
+
+                  try {
+                    if (!isError)
+                      throw 0
+
+                    let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                    tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                    tooltip.enable()
+                  } catch (e) {}
 
                   dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -18144,6 +18309,8 @@
               dataFieldsContainer.children('div.empty-counter-table-options').fadeIn(250)
             })
 
+            let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
             $(this).find('input.tableOptionName').on('input', function(_, triggerInput = true) {
               let tableOptionName = $(this).val(),
                 fieldRow = $(this).parent().parent().parent(),
@@ -18177,7 +18344,22 @@
                 }
               } catch (e) {}
 
-              $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0)
+              let isError = isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0
+
+              $(this).toggleClass('is-invalid', isError)
+
+              errorWarningIcon.toggleClass('show', isError && minifyText(tableOptionName).length > 0)
+
+              try {
+                if (!isError)
+                  throw 0
+
+                let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                tooltip.enable()
+              } catch (e) {}
 
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -18788,7 +18970,10 @@
           }).join('')
 
           try {
-            primaryKeys = `(` + (partitionKeys.map((key) => key.name)).join(', ') + `)`
+            primaryKeys = (partitionKeys.map((key) => key.name)).join(', ')
+
+            if (partitionKeys.length > 1)
+              primaryKeys = `(${primaryKeys})`
           } catch (e) {}
 
           try {
@@ -18974,6 +19159,7 @@
                     <label class="form-label">
                       <span mulang="key name" capitalize></span>
                     </label>
+                    <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
                   </div>
                 </div>
                 <div class="col-md-5" col="partitionKeyType">
@@ -19238,6 +19424,8 @@
                 })
               })
 
+              let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
               $(this).find('input.partitionKeyName').on('input', function(_, triggerInput = true) {
                 let partitionKeyName = $(this).val(),
                   fieldRow = $(this).parent().parent().parent(),
@@ -19271,7 +19459,22 @@
                   }
                 } catch (e) {}
 
-                $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(partitionKeyName).length <= 0)
+                let isError = isNameDuplicated || isNameInvalid || minifyText(partitionKeyName).length <= 0
+
+                $(this).toggleClass('is-invalid', isError)
+
+                errorWarningIcon.toggleClass('show', isError && minifyText(partitionKeyName).length > 0)
+
+                try {
+                  if (!isError)
+                    throw 0
+
+                  let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                  tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                  tooltip.enable()
+                } catch (e) {}
 
                 dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -19457,6 +19660,7 @@
                       <label class="form-label">
                         <span mulang="key name" capitalize></span>
                       </label>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-4" col="clusteringKeyType">
@@ -19717,6 +19921,8 @@
                 $(this).find('span').text(`${newSort}`)
               })
 
+              let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
               $(this).find('input.clusteringKeyName').on('input', function(_, triggerInput = true) {
                 let clusteringKeyName = $(this).val(),
                   fieldRow = $(this).parent().parent().parent(),
@@ -19750,7 +19956,22 @@
                   }
                 } catch (e) {}
 
-                $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(clusteringKeyName).length <= 0)
+                let isError = isNameDuplicated || isNameInvalid || minifyText(clusteringKeyName).length <= 0
+
+                $(this).toggleClass('is-invalid', isError)
+
+                errorWarningIcon.toggleClass('show', isError && minifyText(clusteringKeyName).length > 0)
+
+                try {
+                  if (!isError)
+                    throw 0
+
+                  let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                  tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                  tooltip.enable()
+                } catch (e) {}
 
                 dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -19939,6 +20160,7 @@
                       <label class="form-label">
                         <span mulang="column name" capitalize></span>
                       </label>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-4" col="columnType">
@@ -20269,6 +20491,8 @@
               dataFieldsContainer.children('div.empty-standard-table-columns').fadeIn(250)
             })
 
+            let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
             $(this).find('input.columnName').on('input', function(_, triggerInput = true) {
               let columnName = $(this).val(),
                 fieldRow = $(this).parent().parent().parent(),
@@ -20302,7 +20526,22 @@
                 }
               } catch (e) {}
 
-              $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(columnName).length <= 0)
+              let isError = isNameDuplicated || isNameInvalid || minifyText(columnName).length <= 0
+
+              $(this).toggleClass('is-invalid', isError)
+
+              errorWarningIcon.toggleClass('show', isError && minifyText(columnName).length > 0)
+
+              try {
+                if (!isError)
+                  throw 0
+
+                let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                tooltip.enable()
+              } catch (e) {}
 
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -20491,6 +20730,7 @@
                       <label class="form-label">
                         <span mulang="column name" capitalize></span>
                       </label>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-4" col="columnType">
@@ -20681,6 +20921,8 @@
               dataFieldsContainer.children('div.empty-standard-table-udt-columns').fadeIn(250)
             })
 
+            let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
             $(this).find('input.columnName').on('input', function(_, triggerInput = true) {
               let columnName = $(this).val(),
                 fieldRow = $(this).parent().parent().parent(),
@@ -20714,7 +20956,22 @@
                 }
               } catch (e) {}
 
-              $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(columnName).length <= 0)
+              let isError = isNameDuplicated || isNameInvalid || minifyText(columnName).length <= 0
+
+              $(this).toggleClass('is-invalid', isError)
+
+              errorWarningIcon.toggleClass('show', isError && minifyText(columnName).length > 0)
+
+              try {
+                if (!isError)
+                  throw 0
+
+                let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                tooltip.enable()
+              } catch (e) {}
 
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -20836,6 +21093,7 @@
                     <label class="form-label">
                       <span mulang="option name" capitalize></span>
                     </label>
+                    <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -20914,6 +21172,8 @@
                   })
                 })
 
+                let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
                 $(this).find('input.tableOptionName').on('input', function(_, triggerInput = true) {
                   let tableOptionName = $(this).val(),
                     fieldRow = $(this).parent().parent().parent(),
@@ -20954,7 +21214,22 @@
                     }
                   } catch (e) {}
 
-                  $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0)
+                  let isError = isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0
+
+                  $(this).toggleClass('is-invalid', isError)
+
+                  errorWarningIcon.toggleClass('show', isError && minifyText(tableOptionName).length > 0)
+
+                  try {
+                    if (!isError)
+                      throw 0
+
+                    let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                    tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                    tooltip.enable()
+                  } catch (e) {}
 
                   dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -21075,6 +21350,8 @@
                   })
                 })
 
+                let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
                 $(this).find('input.tableOptionName').on('input', function(_, triggerInput = true) {
                   let tableOptionName = $(this).val(),
                     fieldRow = $(this).parent().parent().parent(),
@@ -21115,7 +21392,22 @@
                     }
                   } catch (e) {}
 
-                  $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0)
+                  let isError = isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0
+
+                  $(this).toggleClass('is-invalid', isError)
+
+                  errorWarningIcon.toggleClass('show', isError && minifyText(tableOptionName).length > 0)
+
+                  try {
+                    if (!isError)
+                      throw 0
+
+                    let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                    tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                    tooltip.enable()
+                  } catch (e) {}
 
                   dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
@@ -21198,6 +21490,8 @@
               dataFieldsContainer.children('div.empty-standard-table-options').fadeIn(250)
             })
 
+            let errorWarningIcon = $(this).find('ion-icon.error-warning')
+
             $(this).find('input.tableOptionName').on('input', function(_, triggerInput = true) {
               let tableOptionName = $(this).val(),
                 fieldRow = $(this).parent().parent().parent(),
@@ -21231,7 +21525,22 @@
                 }
               } catch (e) {}
 
-              $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0)
+              let isError = isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0
+
+              $(this).toggleClass('is-invalid', isError)
+
+              errorWarningIcon.toggleClass('show', isError && minifyText(tableOptionName).length > 0)
+
+              try {
+                if (!isError)
+                  throw 0
+
+                let tooltip = getElementMDBObject(errorWarningIcon, 'Tooltip')
+
+                tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
+
+                tooltip.enable()
+              } catch (e) {}
 
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 

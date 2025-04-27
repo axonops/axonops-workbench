@@ -1067,3 +1067,31 @@ div.activities-table {
 input {
   font-family: 'Main', 'Minor', 'SimplifiedChinese', sans-serif;
 }
+
+div.tooltip-info {
+  cursor: help;
+  background: rgba(123, 181, 255, 0.1);
+  width: 25px;
+  height: 25px;
+  position: relative;
+  border-radius: 50%;
+  transition: background 0.2s ease-in-out;
+
+  ion-icon {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    font-size: 135%;
+    transition: opacity 0.2s ease-in-out;
+    opacity: 0.9;
+    transform: translateX(1px);
+  }
+
+  &:hover {
+    background: rgba(123, 181, 255, 0.25);
+
+    ion-icon {
+      opacity: 1;
+    }
+  }
+}

@@ -2877,7 +2877,7 @@ div.tab-content {
               justify-content: space-between;
               align-items: flex-start;
               width: fit-content;
-              max-width: 50%;
+              max-width: 80%;
               border-radius: 10px;
               position: relative;
               bottom: 15px;
@@ -2948,22 +2948,21 @@ div.tab-content {
             div.info-badges {
               display: flex;
               flex-direction: row;
-              flex-wrap: nowrap;
-              align-content: center;
+              flex-wrap: wrap;
               align-items: center;
               position: absolute;
               top: 0;
               right: 0;
               margin: 5px;
+              max-width: 20%;
+              justify-content: flex-end;
 
               div.badge {
                 opacity: 0.85;
                 position: relative;
                 top: 3px;
-              }
-
-              div.prompt {
-                margin-right: 5px;
+                margin-left: 3px;
+                margin-bottom: 3px;
               }
             }
 

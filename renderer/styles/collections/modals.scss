@@ -2477,3 +2477,23 @@ div.lwt-hint {
     margin-right: -1px;
   }
 }
+
+ion-icon.error-warning {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  margin: auto;
+  transform: translateX(-6px);
+  font-size: 120%;
+  color: #dc4c64;
+  cursor: help;
+  transition: opacity 0.2s;
+  opacity: 0;
+  pointer-events: none;
+
+  &.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+}

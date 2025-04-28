@@ -18,21 +18,7 @@
 {
   $(window.visualViewport).on('resize', () => {
     // Resize all created editors
-    try {
-      // Get all editors
-      let editors = monaco.editor.getEditors()
-
-      try {
-        editors = editors.concat(diffEditors)
-      } catch (e) {}
-
-      // Loop through each one of them and resize it
-      editors.forEach((editor) => {
-        try {
-          editor.layout()
-        } catch (e) {}
-      })
-    } catch (e) {}
+    resizeEditors()
 
     // Resize all created terminals
     try {
@@ -93,6 +79,26 @@
       (['workspaces', 'clusters']).forEach((type) => updateSwitcherView(type))
     } catch (e) {}
   })
+
+  let resizeEditors = () => {
+    try {
+      // Get all editors
+      let editors = monaco.editor.getEditors()
+
+      try {
+        editors = editors.concat(diffEditors)
+      } catch (e) {}
+
+      // Loop through each one of them and resize it
+      editors.forEach((editor) => {
+        try {
+          editor.layout()
+        } catch (e) {}
+      })
+    } catch (e) {}
+  }
+
+  setInterval(() => resizeEditors(), 1000)
 }
 
 // Handle clicking on different sections buttons in the left side

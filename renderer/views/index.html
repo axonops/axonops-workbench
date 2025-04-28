@@ -2400,15 +2400,20 @@
                           <ion-icon name="close"></ion-icon>
                         </div>
                       </div>
-                      <input type="number" class="form-control" id="deleteTimestamp" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
-                        data-title="<div>When you use a timestamp in a <code>DELETE</code> statement, Cassandra will:</div><ul style='margin-bottom: auto;'><li>Apply the delete operation with the specified timestamp.<li>Use this timestamp to determine which operations take precedence in case of conflicts.<li>Only delete elements that are older than the specified timestamp (matching the <code>WHERE</code> conditions).</ul>"
-                        data-tippy-delay="[500, 0]">
+                      <input type="number" class="form-control" id="deleteTimestamp">
                       <label for="deleteTimestamp" class="form-label">
                         <span mulang="delete data older than timestamp" capitalize></span>
                       </label>
                     </div>
                   </div>
-                  <div class="col-md-5">
+                  <div class="col-md-1" style="width: fit-content; padding-left: 7px; margin-right: 4px;">
+                    <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
+                      data-title="<div>When you use a timestamp in a <code>DELETE</code> statement, Cassandra will:</div><ul style='margin-bottom: auto;'><li>Apply the delete operation with the specified timestamp.<li>Use this timestamp to determine which operations take precedence in case of conflicts.<li>Only delete elements that are older than the specified timestamp (matching the <code>WHERE</code> conditions).</ul>"
+                      data-tippy-delay="[100, 0]">
+                      <ion-icon name="info-circle-outline"></ion-icon>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
                     <button type="button" class="btn btn-light btn-rounded btn-sm ripple-surface-dark" style="margin-left: 10px;
       opacity: 0.8;" id="deleteTimestampPicker">
                       <ion-icon name="calendar" role="img" class="md hydrated" aria-label="calendar"></ion-icon> <span mulang="date time picker" capitalize></span>

@@ -40,13 +40,6 @@
     "linux": {
       "icon": "./renderer/assets/images/",
       "category": "Development",
-      "desktop": {
-        "Name": "AxonOps Workbench",
-        "Common": "AxonOps Workbench",
-        "Terminal": false,
-        "Keywords": "cassandra;axonops;development;workbench",
-        "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench.png"
-      },
       "executableArgs": [
         "--no-sandbox"
       ],
@@ -67,9 +60,7 @@
       "extraFiles": [
         "./resources/workbenchcassandra.provisionprofile"
       ],
-      "notarize": {
-        "teamId": "UJ776LUP23"
-      },
+      "notarize": true,
       "binaries": [
         "./main/bin/cqlsh/_internal/Crypto/Cipher/_ARC4.abi3.so",
         "./main/bin/cqlsh/_internal/Crypto/Cipher/_Salsa20.abi3.so",

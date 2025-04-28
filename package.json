@@ -43,6 +43,15 @@
       "executableArgs": [
         "--no-sandbox"
       ],
+      "desktop": {
+        "entry": {
+          "Name": "AxonOps Workbench",
+          "Common": "AxonOps Workbench",
+          "Terminal": false,
+          "Keywords": "cassandra;axonops;development;workbench",
+          "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench.png"
+        }
+      },
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "mac": {

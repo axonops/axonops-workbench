@@ -40,16 +40,18 @@
     "linux": {
       "icon": "./renderer/assets/images/",
       "category": "Development",
-      "desktop": {
-        "Name": "AxonOps Workbench",
-        "Common": "AxonOps Workbench",
-        "Terminal": false,
-        "Keywords": "cassandra;axonops;development;workbench",
-        "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench.png"
-      },
       "executableArgs": [
         "--no-sandbox"
       ],
+      "desktop": {
+        "entry": {
+          "Name": "AxonOps Workbench",
+          "Common": "AxonOps Workbench",
+          "Terminal": false,
+          "Keywords": "cassandra;axonops;development;workbench",
+          "Icon": "/usr/share/icons/hicolor/256x256/apps/axonops-workbench.png"
+        }
+      },
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "mac": {
@@ -67,9 +69,7 @@
       "extraFiles": [
         "./resources/workbenchcassandra.provisionprofile"
       ],
-      "notarize": {
-        "teamId": "UJ776LUP23"
-      },
+      "notarize": true,
       "binaries": [
         "./main/bin/cqlsh/_internal/Crypto/Cipher/_ARC4.abi3.so",
         "./main/bin/cqlsh/_internal/Crypto/Cipher/_Salsa20.abi3.so",
@@ -307,11 +307,11 @@
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",
     "electron": "^31.6.0",
-    "electron-builder": "^24.13.3",
+    "electron-builder": "^26.0.11",
     "license-checker": "^25.0.1"
   },
   "optionalDependencies": {
-    "electron-installer-debian": "^3.1.0"
+    "electron-installer-debian": "^3.2.0"
   },
   "dependencies": {
     "@ramumb/strip-tags": "^0.1.3",

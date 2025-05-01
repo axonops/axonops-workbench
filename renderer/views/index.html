@@ -2365,19 +2365,14 @@
                 required.
               </div>
 
-              <div class="fields-badge-action" style="padding: 10px; justify-content: flex-start; height: 45px;">
+              <div class="fields-badge-action" style="padding: 10px;">
                 <span class="badge badge-secondary">
                   <span mulang="consistency level" capitalize></span>
                 </span>
-                <div class="tooltip-info lwtConsistencyLevelTooltip" style="margin-left: 5px; display:none;" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
-                  data-title="<p style='margin-bottom: 10px;'>Understanding SERIAL vs LOCAL_SERIAL</p><ul><li><strong>SERIAL</strong>: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.</li><li><strong>LOCAL_SERIAL</strong>: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments</li></ul><p style=' margin-bottom: 10px;'>Recommended Consistency Level Combinations for LWTs</p><table class='lwtConsistencyLevelTooltipTable'><thead><tr><th>Deployment Scenario</th><th>Write Consistency Level</th><th>Serial Consistency Level</th></tr></thead><tbody><tr><td><strong>Multi-DC Strong Consistency</strong></td><td><code>EACH_QUORUM</code></td><td><code>SERIAL</code></td></tr><tr><td><strong>Multi-DC High Performance</strong></td><td><code>LOCAL_QUORUM</code></td><td><code>LOCAL_SERIAL</code></td></tr><tr><td><strong>Single-DC Clusters</strong></td><td><code>QUORUM</code></td><td><code>SERIAL</code></td></tr></tbody></table>"
-                  data-tippy-delay="[100, 0]">
-                  <ion-icon name="info-circle-outline"></ion-icon>
-                </div>
               </div>
               <div class="row flex consistency-level-row">
                 <div class="col-md-12" consistency="write">
-                  <div class="form-outline form-white" style="z-index: 2; width: calc(100% - 10px);">
+                  <div class="form-outline form-white" style="z-index: 2; width: calc(100% - 35px);">
                     <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
                     <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="deleteWriteConsistencyLevel" value="NOT SET" readonly noopacity>
                     <label class="form-label">
@@ -2386,9 +2381,14 @@
                     <div class="valid-feedback"></div>
                     <div class="invalid-feedback"></div>
                   </div>
+                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true"
+                    data-title="Consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.<br><br>However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:<br><code>R + W > RF</code><br>(Read replicas + Write replicas > Replication Factor)<br><br>Example: With <code>RF=3</code>, using <code>QUORUM (2)</code> for both reads and writes ensures strong consistency <code>(2+2>3)</code> while maintaining availability and tolerance to failure."
+                    data-tippy-delay="[100, 0]">
+                    <ion-icon name="info-circle-outline" style="transform: translateX(0px);"></ion-icon>
+                  </div>
                   <div class="dropdown" for-select="deleteWriteConsistencyLevel">
                     <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
-                    <ul class="dropdown-menu top-margin">
+                    <ul class="dropdown-menu top-margin" style="width: calc(100% - 35px) !important;">
                       <li><a class="dropdown-item" href="#" value="NOT SET">NOT SET</a></li>
                       <li><a class="dropdown-item" href="#" value="ANY">ANY</a></li>
                       <li><a class="dropdown-item" href="#" value="LOCAL_ONE">LOCAL_ONE</a></li>
@@ -2403,7 +2403,7 @@
                   </div>
                 </div>
                 <div class="col-md-6" consistency="serial" style="display: none;">
-                  <div class="form-outline form-white" style="z-index: 2; width: calc(100% - 10px);">
+                  <div class="form-outline form-white" style="z-index: 2; width: calc(100% - 35px);">
                     <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
                     <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="deleteSerialConsistencyLevel" value="NOT SET" readonly noopacity>
                     <label class="form-label">
@@ -2412,9 +2412,14 @@
                     <div class="valid-feedback"></div>
                     <div class="invalid-feedback"></div>
                   </div>
+                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true"
+                    data-title="<p style='margin-bottom: 10px;'>Understanding SERIAL vs LOCAL_SERIAL</p><ul><li><strong>SERIAL</strong>: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.</li><li><strong>LOCAL_SERIAL</strong>: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments</li></ul><p style=' margin-bottom: 10px;'>Recommended Consistency Level Combinations for LWTs</p><table style='width: 100%;' class='lwtConsistencyLevelTooltipTable'><thead><tr><th>Deployment Scenario</th><th>Write Consistency Level</th><th>Serial Consistency Level</th></tr></thead><tbody><tr><td><strong>Multi-DC Strong Consistency</strong></td><td><code>EACH_QUORUM</code></td><td><code>SERIAL</code></td></tr><tr><td><strong>Multi-DC High Performance</strong></td><td><code>LOCAL_QUORUM</code></td><td><code>LOCAL_SERIAL</code></td></tr><tr><td><strong>Single-DC Clusters</strong></td><td><code>QUORUM</code></td><td><code>SERIAL</code></td></tr></tbody></table>"
+                    data-tippy-delay="[100, 0]" data-tippy-maxWidth="590">
+                    <ion-icon name="info-circle-outline" style="transform: translateX(0px);"></ion-icon>
+                  </div>
                   <div class="dropdown" for-select="deleteSerialConsistencyLevel">
                     <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
-                    <ul class="dropdown-menu top-margin">
+                    <ul class="dropdown-menu top-margin" style="width: calc(100% - 35px) !important;">
                       <li><a class="dropdown-item" href="#" value="NOT SET">NOT SET</a></li>
                       <li><a class="dropdown-item" href="#" value="SERIAL">SERIAL</a></li>
                       <li><a class="dropdown-item" href="#" value="LOCAL_SERIAL">LOCAL_SERIAL</a></li>

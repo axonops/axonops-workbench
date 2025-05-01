@@ -13301,6 +13301,7 @@
             $('input#deleteIfColumnOption').attr('disabled', !areNonPKColumnsExist ? '' : null)
 
             $('input#deleteNoSelectOption').prop('checked', true)
+            $('input#deleteNoSelectOption').trigger('change')
 
             $('div[action="delete-row-column"] div[section="standard"]').click()
 
@@ -21929,12 +21930,26 @@
       } catch (e) {}
     })
 
-    $('#deleteIfExistsOption, #deleteIfColumnOption, #deleteNoSelectOption').on('change', () => {
+    $('input[type="radio"][name="lwtDeleteOptions"]').on('change', function() {
       setTimeout(() => {
         try {
           updateActionStatusForDeleteRowColumn()
         } catch (e) {}
+
+        $('input#deleteWriteConsistencyLevel').trigger('input')
       })
+
+      if ($(this).attr('id') == 'deleteNoSelectOption') {
+        $('#rightClickActionsMetadata').find('div[consistency="write"]').removeClass('col-md-6').addClass('col-md-12')
+
+        $('#rightClickActionsMetadata').find('div[consistency="serial"]').hide()
+
+        $('div.lwtConsistencyLevelTooltip').hide()
+      } else {
+        $('#rightClickActionsMetadata').find('div[consistency="write"], div[consistency="serial"]').removeClass('col-md-12').addClass('col-md-6').show()
+
+        $('div.lwtConsistencyLevelTooltip').fadeIn('fast')
+      }
     })
 
     let deleteRowColumnAction = $('div[action="delete-row-column"]'),
@@ -21950,7 +21965,11 @@
 
       deleteRowColumnAction.children('div[section]').hide()
 
-      deleteRowColumnAction.children(`div[section="${$(this).attr('section')}"]`).show()
+      let section = $(this).attr('section')
+
+      deleteRowColumnAction.children(`div[section="${section}"]`).show()
+
+      $('div.lwt-hint').toggle(section == 'lwt')
     })
 
     $('input#toBeDeletedColumnsFilter').on('input', function() {
@@ -22518,6 +22537,28 @@
         actionEditor.setValue(statement)
       } catch (e) {}
     }
+
+    setTimeout(() => {
+      // Point at the list container
+      let consistencyLevelsContainer = $(`div.dropdown[for-select="deleteWriteConsistencyLevel"] ul.dropdown-menu, div.dropdown[for-select="deleteSerialConsistencyLevel"] ul.dropdown-menu`)
+
+      // Once one of the items is clicked
+      consistencyLevelsContainer.find('a').click(function() {
+        // Point at the input field related to the list
+        let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)
+
+        // Update the input's value
+        selectElement.val($(this).attr('value')).trigger('input')
+
+        setTimeout(() => {
+          try {
+            updateActionStatusForDeleteRowColumn()
+          } catch (e) {}
+        })
+      })
+    })
+
+    $('input#deleteWriteConsistencyLevel').add('input#deleteSerialConsistencyLevel').on('focus', () => $('#rightClickActionsMetadata').scrollTop($('#rightClickActionsMetadata').height()))
 
     updateActionStatusForDeleteRowColumn = () => {
       let dialogElement = $('#rightClickActionsMetadata'),
@@ -23237,13 +23278,72 @@
         otherFields = OS.EOL + `IF EXISTS`
       } catch (e) {}
 
+      // Get consistency level
+      let writeConsistencyLevel = '',
+        serialConsistencyLevel = ''
+
+      try {
+        let writeLevel = $('#deleteWriteConsistencyLevel').val()
+
+        if (writeLevel == 'NOT SET')
+          throw 0
+
+        writeConsistencyLevel = `CONSISTENCY ${writeLevel};` + OS.EOL
+      } catch (e) {}
+
+      try {
+        if (lwtOption == 'deleteNoSelectOption')
+          throw 0
+
+        let serialLevel = $('#deleteSerialConsistencyLevel').val()
+
+        if (serialLevel == 'NOT SET')
+          throw 0
+
+        serialConsistencyLevel = `SERIAL CONSISTENCY ${serialLevel};` + OS.EOL
+      } catch (e) {}
+
       dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
 
-      let statement = `DELETE${deletedColumns} FROM ${keyspaceName}.${tableName}` + OS.EOL + `${usingTimestamp}WHERE ${primaryKey}${otherFields};`
+      let statement = `${writeConsistencyLevel}${serialConsistencyLevel}DELETE${deletedColumns} FROM ${keyspaceName}.${tableName}` + OS.EOL + `${usingTimestamp}WHERE ${primaryKey}${otherFields};`
 
       try {
         actionEditor.setValue(statement)
       } catch (e) {}
     }
+
+    setTimeout(() => {
+      $('input#deleteWriteConsistencyLevel').add('input#deleteSerialConsistencyLevel').on('input', () => {
+        let lwtOption = getCheckedValue('lwtDeleteOptions')
+
+        if (lwtOption == 'deleteNoSelectOption') {
+          $('div.consistency-level-warning').hide()
+          return
+        }
+
+        let warningTxt = '',
+          writeConsistencyLevel = $('input#deleteWriteConsistencyLevel').val(),
+          serialConsistencyLevel = $('input#deleteSerialConsistencyLevel').val()
+
+        if (writeConsistencyLevel == 'EACH_QUORUM' && serialConsistencyLevel == 'LOCAL_SERIAL')
+          warningTxt = `Cross-DC inconsistency risk: Writes enforce global quorum (EACH_QUORUM) but LWT checks only local DC state (LOCAL_SERIAL). This may cause cross-DC inconsistencies`
+
+        if (writeConsistencyLevel == 'LOCAL_QUORUM' && serialConsistencyLevel == 'SERIAL')
+          warningTxt = `Protocol mismatch: Local writes (LOCAL_QUORUM) cannot satisfy global LWT requirements (SERIAL)`
+
+        if (writeConsistencyLevel == 'ANY' && serialConsistencyLevel != 'NOT SET')
+          warningTxt = `Atomicity violation: Hinted handoffs (ANY) prevent guaranteed transaction isolation`
+
+        if (writeConsistencyLevel == 'ONE' && serialConsistencyLevel == 'SERIAL')
+          warningTxt = `Insufficient replication: Single-replica writes (ONE) cannot support global LWT consensus (SERIAL)`
+
+        if (writeConsistencyLevel == 'ALL' && serialConsistencyLevel == 'LOCAL_SERIAL')
+          warningTxt = `Resource conflict: Full replication (ALL) requirement negates localized LWT benefits (LOCAL_SERIAL)`
+
+        $('div.consistency-level-warning').toggle(warningTxt.length > 0)
+
+        $('div.consistency-level-warning span').html(warningTxt)
+      })
+    })
   }, 5000)
 }

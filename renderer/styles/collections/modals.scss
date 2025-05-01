@@ -2460,6 +2460,7 @@ div#noColumnMatched {
   display: none;
 }
 
+div.consistency-level-warning,
 div.lwt-hint {
   background: rgba(123, 181, 255, 0.1);
   font-size: 85%;
@@ -2470,11 +2471,16 @@ div.lwt-hint {
   margin-left: 10px;
   margin-top: 15px;
   margin-bottom: 5px;
+  display: none;
 
   ion-icon {
     font-size: 150%;
     bottom: 1px;
     margin-right: -1px;
+  }
+
+  &.consistency-level-warning {
+    background: rgba(255, 234, 123, 0.1);
   }
 }
 
@@ -2495,5 +2501,22 @@ ion-icon.error-warning {
   &.show {
     opacity: 1;
     pointer-events: all;
+  }
+}
+
+table.lwtConsistencyLevelTooltipTable {
+  background: #212121;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 14px;
+
+  * {
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  td,
+  th {
+    padding: 7px;
   }
 }

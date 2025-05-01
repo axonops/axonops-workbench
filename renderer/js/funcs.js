@@ -1154,7 +1154,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          *
          * Define the attributes' names
          */
-        let attributes = ['virtual', 'durable_writes', 'is_static']
+        let attributes = ['virtual', 'durable_writes']
 
         if (parentType == 'partitionKeys')
           attributes = attributes.slice(0, -2)
@@ -1198,10 +1198,6 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             }
           } catch (e) {}
 
-          // Display the `is_static` attribute only if it's `true`
-          if (attribute == 'is_static' && !object[attribute])
-            return
-
           // Append that attribute to the child
           treeStructure.core.data.push(structure)
         })
@@ -1215,6 +1211,15 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         // Otherwise, add the type to the node's text
         structure.text = `${structure.text}: <span>${EscapeHTML(object.cql_type)}</span>`
+      } catch (e) {}
+
+      try {
+        if (object['is_static'] == undefined)
+          throw 0
+
+        let attribute = object['is_static']
+
+        structure.text = `${structure.text}${attribute ? ' <span class="is-static-node">STATIC</span>' : ''}`
       } catch (e) {}
 
       try {
@@ -1378,6 +1383,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             parent: `${tableID}_${counterTablesID}`
           })
 
+        sortItemsAlphabetically(table.primary_key, 'name')
+
         // Loop through primary keys
         table.primary_key.forEach((primaryKey) => {
           // Get a random ID for the key
@@ -1411,6 +1418,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             parent: `${tableID}_${counterTablesID}`
           })
 
+        sortItemsAlphabetically(table.partition_key, 'name')
+
         // Loop through keys
         table.partition_key.forEach((partitionKey) => {
           // Get a random ID for the key
@@ -1443,6 +1452,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             parent: `${tableID}_${counterTablesID}`
           })
 
+        sortItemsAlphabetically(table.clustering_key, 'name')
+
         // Loop through clustering keys
         table.clustering_key.forEach((clusteringKey) => {
           // Get a random ID for the key
@@ -1453,6 +1464,46 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           if (isCounterTable)
             buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'clustering-key')
+        })
+      }
+
+      {
+        let staticColumns = table.columns.filter((column) => column['is_static']),
+          staticColumnsStructure = {
+            id: `${columnsID}_static`,
+            parent: tableID,
+            text: `Static Columns (<span>${staticColumns.length}</span>)`,
+            type: 'default',
+            icon: normalizePath(Path.join(extraIconsPath, 'static-column.png'))
+          }
+
+        treeStructure.core.data.push(staticColumnsStructure)
+
+        if (isCounterTable)
+          treeStructure.core.data.push({
+            ...staticColumnsStructure,
+            id: `${columnsID}_${counterTablesID}_static`,
+            parent: `${tableID}_${counterTablesID}`
+          })
+
+        sortItemsAlphabetically(staticColumns, 'name')
+
+        // Loop through columns
+        staticColumns.forEach((column) => {
+          // Get a random ID for the column
+          let columnID = getRandomID(30),
+            isPartitionKey = table.partition_key.find((partitionKey) => column.name == partitionKey.name) != undefined,
+            isClusteringKey = table.clustering_key.find((clusteringKey) => column.name == clusteringKey.name) != undefined
+
+          // Get rid of `is_reversed` attribute
+          if (!isClusteringKey)
+            delete column.is_reversed
+
+          // Build a tree view for the column
+          buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'static-column'))
+
+          if (isCounterTable)
+            buildTreeViewForChild(`${columnsID}_${counterTablesID}_static`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'static-column'))
         })
       }
 
@@ -1477,22 +1528,27 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         sortItemsAlphabetically(table.columns, 'name')
 
+        let allColumns = ([...table.partition_key, ...table.clustering_key, ...table.columns] || table.columns)
+
+        allColumns = removeArrayDuplicates(allColumns, 'name')
+
         // Loop through columns
-        table.columns.forEach((column) => {
+        allColumns.forEach((column) => {
           // Get a random ID for the column
           let columnID = getRandomID(30),
             isPartitionKey = table.partition_key.find((partitionKey) => column.name == partitionKey.name) != undefined,
-            isClusteringKey = table.clustering_key.find((clusteringKey) => column.name == clusteringKey.name) != undefined
+            isClusteringKey = table.clustering_key.find((clusteringKey) => column.name == clusteringKey.name) != undefined,
+            isStatic = column['is_static']
 
           // Get rid of `is_reversed` attribute
           if (!isClusteringKey)
             delete column.is_reversed
 
           // Build a tree view for the column
-          buildTreeViewForChild(columnsID, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'column'))
+          buildTreeViewForChild(columnsID, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : (isStatic ? 'static-column' : 'column')))
 
           if (isCounterTable)
-            buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'column'))
+            buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : (isStatic ? 'static-column' : 'column')))
         })
       }
 
@@ -1728,6 +1784,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               parent: `${viewID}_${counterTablesID}`
             })
 
+          sortItemsAlphabetically(view.clustering_key, 'name')
+
           // Loop through clustering keys
           view.clustering_key.forEach((clusteringKey) => {
             // Get a random ID for the key
@@ -1759,6 +1817,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               parent: `${viewID}_${counterTablesID}`
             })
 
+          sortItemsAlphabetically(view.partition_key, 'name')
+
           // Loop through keys
           view.partition_key.forEach((partitionKey) => {
             // Get a random ID for the key
@@ -1771,6 +1831,34 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               buildTreeViewForChild(`${partitionKeysID}_${partitionKeyID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, partitionKey, 'partition-key', 'partitionKeys')
           })
           // End of view's partition keys
+
+          {
+            // View's columns
+            let staticColumns = view.columns.filter((column) => column['is_static']),
+              staticColumnsStructure = {
+                id: `${columnsID}_static`,
+                parent: viewID,
+                text: `Columns (<span>${staticColumns.length}</span>)`,
+                type: 'default',
+                icon: normalizePath(Path.join(extraIconsPath, 'static-column.png'))
+              }
+
+            treeStructure.core.data.push(staticColumnsStructure)
+
+            sortItemsAlphabetically(staticColumns, 'name')
+
+            // Loop through columns
+            staticColumns.forEach((column) => {
+              // Get rid of `is_reversed` attribute
+              delete column.is_reversed
+
+              // Get a random ID for the column
+              let columnID = getRandomID(30)
+
+              // Build a tree view for the column
+              buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, 'static-column')
+            })
+          }
 
           // View's columns
           let columnsStructure = {
@@ -1790,8 +1878,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           //     parent: `${viewID}_${counterTablesID}`
           //   })
 
+          sortItemsAlphabetically(view.columns, 'name')
+
+          let allColumns = ([...view.partition_key, ...view.clustering_key, ...view.columns] || view.columns)
+
+          allColumns = removeArrayDuplicates(allColumns, 'name')
+
           // Loop through columns
-          view.columns.forEach((column) => {
+          allColumns.forEach((column) => {
             // Get rid of `is_reversed` attribute
             delete column.is_reversed
 
@@ -1799,7 +1893,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             let columnID = getRandomID(30)
 
             // Build a tree view for the column
-            buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
+            buildTreeViewForChild(columnsID, columnID, `Column`, column, column['is_static'] ? 'static-column' : 'column')
 
             // if (isCounterTable)
             //   buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, 'column')
@@ -1951,6 +2045,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         treeStructure.core.data.push(clusteringKeysStructure)
 
+        sortItemsAlphabetically(view.clustering_key, 'name')
+
         // Loop through clustering keys
         view.clustering_key.forEach((clusteringKey) => {
           // Get a random ID for the key
@@ -1972,6 +2068,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         treeStructure.core.data.push(partitionKeysStructure)
 
+        sortItemsAlphabetically(view.partition_key, 'name')
+
         // Loop through keys
         view.partition_key.forEach((partitionKey) => {
           // Get a random ID for the key
@@ -1981,6 +2079,34 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
         })
         // End of view's partition keys
+
+        {
+          // View's columns
+          let staticColumns = view.columns.filter((column) => column['is_static']),
+            staticColumnsStructure = {
+              id: `${columnsID}_static`,
+              parent: viewID,
+              text: `Columns (<span>${staticColumns.length}</span>)`,
+              type: 'default',
+              icon: normalizePath(Path.join(extraIconsPath, 'static-column.png'))
+            }
+
+          treeStructure.core.data.push(staticColumnsStructure)
+
+          sortItemsAlphabetically(view.staticColumns, 'name')
+
+          // Loop through columns
+          staticColumns.forEach((column) => {
+            // Get rid of `is_reversed` attribute
+            delete column.is_reversed
+
+            // Get a random ID for the column
+            let columnID = getRandomID(30)
+
+            // Build a tree view for the column
+            buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, 'static-column')
+          })
+        }
 
         // View's columns
         let columnsStructure = {
@@ -1993,8 +2119,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         treeStructure.core.data.push(columnsStructure)
 
+        sortItemsAlphabetically(view.columns, 'name')
+
+        let allColumns = ([...view.partition_key, ...view.clustering_key, ...view.columns] || view.columns)
+
+        allColumns = removeArrayDuplicates(allColumns, 'name')
+
         // Loop through columns
-        view.columns.forEach((column) => {
+        allColumns.forEach((column) => {
           // Get rid of `is_reversed` attribute
           delete column.is_reversed
 
@@ -2002,7 +2134,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let columnID = getRandomID(30)
 
           // Build a tree view for the column
-          buildTreeViewForChild(columnsID, columnID, `Column`, column, 'column')
+          buildTreeViewForChild(columnsID, columnID, `Column`, column, column['is_static'] ? 'static-column' : 'column')
         })
       })
     } catch (e) {}
@@ -4995,3 +5127,5 @@ let groupActivitiesBySource = (activities) => {
 
   return groupedActivities
 }
+
+let removeArrayDuplicates = (arr, attr) => arr.filter((stObj, i, a) => a.findIndex(ndObj => ndObj[attr] === stObj[attr]) === i)

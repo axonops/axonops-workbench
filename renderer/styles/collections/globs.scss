@@ -1040,7 +1040,8 @@ div.tippy-content.no-padding {
 }
 
 a.jstree-anchor {
-  span.is-reversed-node {
+  span.is-reversed-node,
+  span.is-static-node {
     background: #353535;
     display: inline-block;
     height: 20px;
@@ -1055,6 +1056,10 @@ a.jstree-anchor {
 
     span.material-icons {
       bottom: 1px;
+    }
+
+    &.is-static-node {
+      padding: 0 9px;
     }
   }
 }

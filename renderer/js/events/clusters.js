@@ -21939,16 +21939,14 @@
         $('input#deleteWriteConsistencyLevel').trigger('input')
       })
 
+      $('#deleteTimestamp').attr('disabled', $(this).attr('id') == 'deleteNoSelectOption' ? null : '')
+
       if ($(this).attr('id') == 'deleteNoSelectOption') {
         $('#rightClickActionsMetadata').find('div[consistency="write"]').removeClass('col-md-6').addClass('col-md-12')
 
         $('#rightClickActionsMetadata').find('div[consistency="serial"]').hide()
-
-        $('div.lwtConsistencyLevelTooltip').hide()
       } else {
         $('#rightClickActionsMetadata').find('div[consistency="write"], div[consistency="serial"]').removeClass('col-md-12').addClass('col-md-6').show()
-
-        $('div.lwtConsistencyLevelTooltip').fadeIn('fast')
       }
     })
 
@@ -22573,7 +22571,8 @@
             collection: $('div#tableFieldsCollectionColumnsTreeDeleteAction').jstree(),
             udt: $('div#tableFieldsUDTColumnsTreeDeleteAction').jstree()
           }
-        }
+        },
+        lwtOption = getCheckedValue('lwtDeleteOptions')
 
       let keyspaceUDTs = []
 
@@ -22802,7 +22801,7 @@
           continue
         }
 
-        handleKeyField(field, false)
+        handleKeyField(field, lwtOption != 'deleteIfColumnOption')
       }
 
       try {
@@ -23216,16 +23215,6 @@
           deletedColumns = ` ${deletedColumns}`
       } catch (e) {}
 
-      // Using timestamp
-      try {
-        let timestamp = parseInt($('#deleteTimestamp').val())
-
-        if (`${timestamp}`.length <= 0 || isNaN(timestamp))
-          throw 0
-
-        usingTimestamp = `USING TIMESTAMP ${timestamp}` + OS.EOL
-      } catch (e) {}
-
       let manipulatedFields = {
         primaryKey: handleFieldsPost(primaryKeyFields),
         allNonPKColumns: handleFieldsPost(allNonPKColumns)
@@ -23259,8 +23248,6 @@
       if (otherFields.length != 0)
         otherFields = OS.EOL + `IF ${otherFields}`
 
-      let lwtOption = getCheckedValue('lwtDeleteOptions')
-
       switch (lwtOption) {
         case 'deleteIfExistsOption':
           otherFields = OS.EOL + `IF EXISTS`
@@ -23269,6 +23256,19 @@
           otherFields = ''
           break
       }
+
+      // Using timestamp
+      try {
+        if (lwtOption != 'deleteNoSelectOption')
+          throw 0
+
+        let timestamp = parseInt($('#deleteTimestamp').val())
+
+        if (`${timestamp}`.length <= 0 || isNaN(timestamp))
+          throw 0
+
+        usingTimestamp = `USING TIMESTAMP ${timestamp}` + OS.EOL
+      } catch (e) {}
 
       // Check if `IF EXISTS` is checked
       try {

@@ -1099,4 +1099,12 @@ div.tooltip-info {
       opacity: 1;
     }
   }
+
+  &.absolute {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 5px;
+    margin: auto;
+  }
 }

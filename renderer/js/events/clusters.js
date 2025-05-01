@@ -21909,6 +21909,8 @@
         clearField.toggleClass('hide', $(this).val().length <= 0)
       } catch (e) {}
 
+      $('#deleteTimestamp').toggleClass('is-invalid', $('#deleteTimestamp').val().length > 0 && getCheckedValue('lwtDeleteOptions') != 'deleteNoSelectOption')
+
       setTimeout(() => {
         try {
           updateActionStatusForDeleteRowColumn()
@@ -21931,14 +21933,6 @@
     })
 
     $('input[type="radio"][name="lwtDeleteOptions"]').on('change', function() {
-      setTimeout(() => {
-        try {
-          updateActionStatusForDeleteRowColumn()
-        } catch (e) {}
-
-        $('input#deleteWriteConsistencyLevel').trigger('input')
-      })
-
       $('#deleteTimestamp').attr('disabled', $(this).attr('id') == 'deleteNoSelectOption' ? null : '')
 
       if ($(this).attr('id') == 'deleteNoSelectOption') {
@@ -21948,6 +21942,14 @@
       } else {
         $('#rightClickActionsMetadata').find('div[consistency="write"], div[consistency="serial"]').removeClass('col-md-12').addClass('col-md-6').show()
       }
+
+      setTimeout(() => {
+        try {
+          updateActionStatusForDeleteRowColumn()
+        } catch (e) {}
+
+        $('input#deleteWriteConsistencyLevel').add('#deleteTimestamp').trigger('input')
+      })
     })
 
     let deleteRowColumnAction = $('div[action="delete-row-column"]'),
@@ -22804,11 +22806,25 @@
         handleKeyField(field, lwtOption != 'deleteIfColumnOption')
       }
 
+      $(`div[action="delete-row-column"] div.types-of-transactions div.sections div.section div.btn`).removeClass('invalid')
+
       try {
-        if (allNodes.filter(`:not(.ignored):not(.unavailable)`).find('.is-invalid:not(.ignore-invalid):not([type="radio"]):not(.is-empty)').length <= 0)
+        let allInvalidNodes = allNodes.filter(`:not(.ignored):not(.unavailable)`).find('.is-invalid:not(.ignore-invalid):not([type="radio"]):not(.is-empty)')
+
+        if (allInvalidNodes.length <= 0 && !$('#deleteTimestamp').hasClass('is-invalid'))
           throw 0
 
         dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+
+        for (let invalidNode of allInvalidNodes) {
+          try {
+            $(`div[action="delete-row-column"] div.types-of-transactions div.sections div.section div.btn[section="${$(invalidNode).closest('div[section]').attr('section')}"]`).addClass('invalid')
+          } catch (e) {}
+        }
+
+
+        if ($('#deleteTimestamp').hasClass('is-invalid'))
+          $(`div[action="delete-row-column"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
 
         return
       } catch (e) {}

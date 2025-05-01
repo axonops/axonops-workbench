@@ -2464,7 +2464,7 @@
                     <span mulang="extra options" capitalize></span>
                   </span>
                 </div>
-                <div class="row flex data-insertion-timestamp-row">
+                <div class="row flex data-insertion-timestamp-row" style="align-items: flex-start;">
                   <div class="col-md-7">
                     <div class="form-outline form-white">
                       <div class="clear-field hide">
@@ -2476,9 +2476,12 @@
                       <label for="deleteTimestamp" class="form-label">
                         <span mulang="delete data older than timestamp" capitalize></span>
                       </label>
+                      <div class="invalid-feedback" style="white-space: nowrap;">
+                        Please choose between using a Lightweight Transaction (LWT) or setting a timestamp. You cannot use both.
+                      </div>
                     </div>
                   </div>
-                  <div class="col-md-1" style="width: fit-content; padding-left: 7px; margin-right: 4px;">
+                  <div class="col-md-1" style="top: 5px; width: fit-content; padding-left: 7px; margin-right: 4px;">
                     <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
                       data-title="<div>When you use a timestamp in a <code>DELETE</code> statement, Cassandra will:</div><ul style='margin-bottom: auto;'><li>Apply the delete operation with the specified timestamp.<li>Use this timestamp to determine which operations take precedence in case of conflicts.<li>Only delete elements that are older than the specified timestamp (matching the <code>WHERE</code> conditions).</ul>"
                       data-tippy-delay="[100, 0]">

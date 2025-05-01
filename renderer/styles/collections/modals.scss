@@ -2367,6 +2367,18 @@ div[action="delete-row-column"] div.types-of-transactions {
         &.active {
           opacity: 1;
         }
+
+        &.invalid:after {
+          content: '';
+          width: 8px;
+          height: 8px;
+          background: #bf334b;
+          border-radius: 50%;
+          display: inline-block;
+          position: relative;
+          bottom: 5px;
+          left: 2px;
+        }
       }
     }
   }

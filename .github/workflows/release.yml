@@ -5,6 +5,14 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+  packages: write
+  actions: read
+  id-token: write
+  pull-requests: read
+  statuses: write
+
 defaults:
   run:
     shell: bash
@@ -98,7 +106,7 @@ jobs:
       - name: Install python dependencies
         run: pip3 install -r requirements.txt
 
-      - name: Setup Node.js v20.17.0
+      - name: Setup Node.js v20.19.0
         uses: actions/setup-node@v4
         with:
           node-version: 20.17.0

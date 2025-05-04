@@ -15077,6 +15077,10 @@
         // Add the `show-editor` class if it is not added, otherwise it'll be removed
         dialogElement.toggleClass('show-editor', !editorShown)
 
+        try {
+          dialogBody.css('height', !editorShown && dialogBody.height() > $('body').height() ? `${$('body').height() - 200}px` : '')
+        } catch (e) {}
+
         // Update the current scroll value if the editor is not shown already, otherwise, keep the current saved value
         scrollValue = !editorShown ? dialogBody[0].scrollTop : scrollValue
 

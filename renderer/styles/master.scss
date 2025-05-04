@@ -3279,6 +3279,7 @@ div.tab-content {
             align-items: flex-start;
             justify-content: flex-start;
 
+            div.change-consistency-levels,
             div.history-items-clear-all {
               position: absolute;
               bottom: 165px;
@@ -3289,6 +3290,11 @@ div.tab-content {
               pointer-events: none;
               transform: translateX(-10px);
               transition: all 0.4s ease-in-out;
+
+              &.change-consistency-levels {
+                left: auto;
+                right: calc(350px + 50px + 15px);
+              }
 
               button {
                 background: rgb(38, 38, 38);
@@ -3317,6 +3323,7 @@ div.tab-content {
               }
             }
 
+            div.consistency-levels,
             div.history-items {
               background: #262626;
               position: absolute;
@@ -3334,6 +3341,75 @@ div.tab-content {
               pointer-events: none;
               transform: translateY(5px);
               transition: all 0.4s ease-in-out;
+
+              &.consistency-levels {
+                width: 350px;
+                right: 50px;
+                overflow: hidden;
+                padding: 0;
+
+                table {
+                  width: 100%;
+                  font-size: 85%;
+                  border-radius: 5px;
+                  overflow: hidden;
+                  @extend .no-select;
+
+                  th {
+                    font-weight: bold;
+
+                    &:after {
+                      content: '';
+                      position: absolute;
+                      top: 0;
+                      bottom: 0;
+                      right: 0;
+                      margin: auto;
+                      height: 100%;
+                      width: 2px;
+                      background: #262626;
+                    }
+
+                    ion-icon {
+                      display: inline-block;
+                      vertical-align: middle;
+                      transform: rotate(90deg) translateX(-1px);
+                      margin-right: 3px;
+                      opacity: 0.9;
+                    }
+                  }
+
+                  td,
+                  th {
+                    padding: 7px;
+                    width: 50%;
+                  }
+
+                  td {
+                    padding-bottom: 4px;
+                    padding-top: 4px;
+
+                    div.level {
+                      cursor: pointer;
+                      transition: all 0.2s ease-out;
+                      border-radius: 2px;
+                      padding: 3px 5px;
+
+                      &:hover {
+                        padding-left: 7px;
+                        background: #3b3b3b;
+                        opacity: 0.85;
+                      }
+
+                      &.selected {
+                        background: #3b3b3b;
+                        padding: 3px 5px !important;
+                        opacity: 1 !important;
+                      }
+                    }
+                  }
+                }
+              }
 
               &.show {
                 pointer-events: all;
@@ -3744,11 +3820,18 @@ div.tab-content {
           height: 40px;
           margin-bottom: 15px;
           opacity: 0.81;
+          transform: scale(0.81);
+          transform-origin: left;
+          width: 119%;
 
           div.session-action {
+            &:not(:first-of-type) {
+              margin-left: 8px;
+            }
+
             button {
-              transform: scale(0.81);
               transition: opacity 0.2s ease-in-out;
+              position: relative;
 
               ion-icon {
                 position: absolute;
@@ -3765,12 +3848,32 @@ div.tab-content {
               }
             }
 
-            &:first-of-type {
-              margin-left: -19px;
-            }
+            &.consistency-level {
+              display: none;
+              position: absolute;
+              bottom: 0;
+              top: 1px;
+              right: 0;
 
-            &:not(:last-of-type) {
-              margin-right: -25px;
+              button {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                align-content: center;
+                align-items: center;
+                justify-content: flex-start;
+                height: 36px;
+
+                span.badge {
+                  font-size: 105%;
+                  transform-origin: left;
+                  opacity: 0.78;
+                  font-weight: 500;
+                  margin-left: 5px;
+                  background-color: #1e1e1e;
+                  pointer-events: none;
+                }
+              }
             }
           }
         }

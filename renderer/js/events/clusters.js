@@ -883,20 +883,45 @@
                                  </div>
                                  <div class="container-footer" id="_${containerFooterID}">
                                    <div class="session-actions">
-                                   <div class="session-action" action="history">
-                                     <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light" disabled>
-                                       <ion-icon name="history"></ion-icon>
-                                       <span mulang="statements history"></span>
+                                     <div class="session-action" action="history">
+                                       <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light" disabled>
+                                         <ion-icon name="history"></ion-icon>
+                                         <span mulang="statements history"></span>
+                                       </button>
+                                     </div>
+                                     <div class="session-action" action="execute-file">
+                                       <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
+                                         <ion-icon name="files"></ion-icon>
+                                         <span mulang="execute CQL file(s)"></span>
+                                       </button>
+                                     </div>
+                                     <div class="session-action consistency-level" action="consistency-level">
+                                     <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
+                                       <ion-icon name="consistency"></ion-icon>
+                                       <span mulang="consistency level">consistency level</span>:
+                                       <span class="badge rounded-pill badge-dark"><b standard></b></span>
+                                       <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
+                                         data-title="Consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.<br><br>However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:<br><code>R + W > RF</code><br>(Read replicas + Write replicas > Replication Factor)<br><br>Example: With <code>RF=3</code>, using <code>QUORUM (2)</code> for both reads and writes ensures strong consistency <code>(2+2>3)</code> while maintaining availability and tolerance to failure."
+                                         data-tippy-delay="[300, 0]">
+                                         <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
+                                       </div>
+                                       <span class="badge rounded-pill badge-dark"><b serial></b></span>
+                                       <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
+                                         data-title="<p style='margin-bottom: 10px;'>Understanding SERIAL vs LOCAL_SERIAL</p><ul><li><strong>SERIAL</strong>: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.</li><li><strong>LOCAL_SERIAL</strong>: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments</li></ul><p style=' margin-bottom: 10px;'>Recommended Consistency Level Combinations for LWTs</p><table style='width: 100%;' class='lwtConsistencyLevelTooltipTable'><thead><tr><th>Deployment Scenario</th><th>Write Consistency Level</th><th>Serial Consistency Level</th></tr></thead><tbody><tr><td><strong>Multi-DC Strong Consistency</strong></td><td><code>EACH_QUORUM</code></td><td><code>SERIAL</code></td></tr><tr><td><strong>Multi-DC High Performance</strong></td><td><code>LOCAL_QUORUM</code></td><td><code>LOCAL_SERIAL</code></td></tr><tr><td><strong>Single-DC Clusters</strong></td><td><code>QUORUM</code></td><td><code>SERIAL</code></td></tr></tbody></table>"
+                                         data-tippy-delay="[300, 0]" data-tippy-maxWidth="590">
+                                         <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
+                                       </div>
                                      </button>
-                                   </div>
-                                    <div class="session-action" action="execute-file">
-                                      <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
-                                        <ion-icon name="files"></ion-icon>
-                                        <span mulang="execute CQL file(s)"></span>
-                                      </button>
-                                    </div>
+                                     </div>
                                    </div>
                                    <div class="top">
+                                     <div class="consistency-levels"></div>
+                                     <div class="change-consistency-levels">
+                                       <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                                         <ion-icon name="consistency"></ion-icon>
+                                         <span mulang="change levels"></span>
+                                       </button>
+                                     </div>
                                      <div class="history-items"></div>
                                      <div class="history-items-clear-all">
                                        <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
@@ -1720,6 +1745,11 @@
                            */
                           let timeLineChartConfig = JSON.parse(JSON.stringify(chartConfiguration))
 
+                          timeLineChartConfig.options.onClick = (event, element) => {
+                            console.log("HERE");
+                            console.log(element);
+                          }
+
                           // Set the special configuration for the timeline chart
                           try {
                             timeLineChartConfig.type = 'bar'
@@ -1990,6 +2020,14 @@
                             cmd: 'PAGING OFF;EXPAND OFF;'
                           })
                         }, 1000)
+
+                        setTimeout(() => {
+                          IPCRenderer.send('pty:command', {
+                            id: clusterID,
+                            cmd: 'CONSISTENCY;SERIAL CONSISTENCY;',
+                            blockID: getRandomID(10)
+                          })
+                        }, 1500)
 
                         // Remove the loading class
                         $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).removeClass('loading')
@@ -3000,6 +3038,40 @@
                                   }).value
                                 } catch (e) {}
 
+                                try {
+                                  if (!((['consistency', 'serial']).some((command) => minifyText(statementIdentifier) == command)))
+                                    throw 0
+
+                                  let consistencyType = minifyText(statementIdentifier),
+                                    setConsistency = `${match}`.trim()
+
+                                  try {
+                                    setConsistency = setConsistency.match(/\s+([A-Z_]+)\.$/g)[0].trim().replace(/\./g, '')
+                                  } catch (e) {}
+
+                                  try {
+                                    let consistencyLevels = Modules.Consts.ConsistencyLevels[consistencyType == 'consistency' ? 'Regular' : 'Serial']
+
+                                    if (!(consistencyLevels.some((level) => level == setConsistency)))
+                                      throw 0
+
+                                    let consistencyAction = workareaElement.find('div.session-action.consistency-level[action="consistency-level"]')
+
+                                    if (consistencyAction.css('display') == 'none')
+                                      consistencyAction.fadeIn('fast')
+
+                                    consistencyAction.children('button').find(`b[${consistencyType == 'consistency' ? 'standard' : 'serial'}]`).text(setConsistency)
+
+                                    if (activeSessionsConsistencyLevels[activeClusterID] == undefined)
+                                      activeSessionsConsistencyLevels[activeClusterID] = {
+                                        standard: '',
+                                        serial: ''
+                                      }
+
+                                    activeSessionsConsistencyLevels[activeClusterID][consistencyType == 'consistency' ? 'standard' : 'serial'] = setConsistency
+                                  } catch (e) {}
+                                } catch (e) {}
+
                                 // The sub output structure UI
                                 let element = `
                                    <div class="sub-output ${isErrorFound ? 'error' : ''} ${isOutputInfo ? 'info': ''}">
@@ -3073,7 +3145,7 @@
                                     // Define the tabulator object if one is created
                                     tabulatorObject = null,
                                     connectionLost = `${match}`.indexOf('NoHostAvailable:') != -1,
-                                    isJSONKeywordFound = statementsStNextIdentifier.toLowerCase().indexOf('json') != -1
+                                    isJSONKeywordFound = `${statementsStNextIdentifier}`.toLowerCase().indexOf('json') != -1
 
                                   try {
                                     if (!isJSONKeywordFound)
@@ -4309,8 +4381,9 @@
                             // Whether or not the statement is quitting the cqlsh session
                             isQuitCommand = (['quit', 'exit']).some((command) => minifiedStatement.startsWith(minifyText(command))),
                             isClearCommand = (['clear', 'cls']).some((command) => minifiedStatement.startsWith(minifyText(command))),
+                            isConsistencyCommand = (['consistency', 'serial']).some((command) => minifiedStatement.startsWith(minifyText(command))),
                             // Decide whether or not the execution button should be disabled
-                            isExecutionButtonDisabled = minifiedStatement.length <= 0 || ((!isCQLSHCommand && !isQuitCommand && !isClearCommand) && !minifiedStatement.endsWith(';'))
+                            isExecutionButtonDisabled = minifiedStatement.length <= 0 || ((!isCQLSHCommand && !isQuitCommand && !isClearCommand && !isConsistencyCommand) && !minifiedStatement.endsWith(';'))
 
                           // Disable/enable the execution button
                           executeBtn.attr('disabled', isExecutionButtonDisabled ? '' : null)
@@ -4876,8 +4949,6 @@
                                 return {
                                   suggestions: []
                                 }
-
-                              console.log(finalSuggestions);
 
                               suggestions = finalSuggestions.map((suggestion) => {
                                 insertText = (isSuggestKeyspaces || isKeyspace) ? addDoubleQuotes(`${suggestion}`) : suggestion
@@ -6444,6 +6515,101 @@
                           historyBtn.attr('disabled', 'disabled')
 
                           showToast(I18next.capitalize(I18next.t('clear all statements')), I18next.capitalizeFirstLetter(I18next.replaceData('all history statements for connection [b]$data[/b] have been successfully cleared', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                        } catch (e) {}
+                      })
+                    }
+
+                    {
+                      let consistencyLevelsContainer = $(this).find('div.consistency-levels'),
+                        changeLevelsButton = $(this).find('div.change-consistency-levels'),
+                        levelsTableParent
+
+                      $(this).find('div.session-action[action="consistency-level"]').find('button.btn').click(function() {
+                        consistencyLevelsContainer.add(changeLevelsButton).addClass('show')
+
+                        let allLevels = [],
+                          levelsTable = $(`<table><tr><th><ion-icon name="arrow-up-circle"></ion-icon>Standard</th><th><ion-icon name="arrow-up-circle"></ion-icon>Serial</th></tr></table>`)
+
+                        for (let i = 0; i < Modules.Consts.ConsistencyLevels.Regular.length; ++i)
+                          allLevels.push([Modules.Consts.ConsistencyLevels.Regular[i], Modules.Consts.ConsistencyLevels.Serial[i]])
+
+                        for (let levels of allLevels) {
+                          let serialElement = levels[1] == undefined ? '' : `<div class="level ${activeSessionsConsistencyLevels[activeClusterID].serial == levels[1] ? 'selected' : ''}" data-type="serial" data-level-name="${levels[1]}">${levels[1]}</div>`
+
+                          levelsTable.append(`
+                            <tr>
+                              <td type="standard">
+                                <div class="level ${activeSessionsConsistencyLevels[activeClusterID].standard == levels[0] ? 'selected' : ''}" data-type="standard" data-level-name="${levels[0]}">${levels[0]}</div>
+                              </td>
+                              <td type="serial">
+                                ${serialElement}
+                              </td>
+                            </tr>`)
+                        }
+
+                        consistencyLevelsContainer.html('')
+
+                        consistencyLevelsContainer.append($(levelsTable).show(function() {
+                          levelsTableParent = $(this)
+
+                          levelsTableParent.find('div.level').click(function() {
+                            if ($(this).hasClass('selected'))
+                              return
+
+                            levelsTableParent.find(`div.level[data-type="${$(this).attr('data-type')}"]`).removeClass('selected')
+
+                            $(this).addClass('selected')
+                          })
+                        }))
+
+                        // Add a backdrop element
+                        $('body').append($(`<div class="backdrop"></div>`).show(function() {
+                          // Show it with animation
+                          setTimeout(() => $(this).addClass('show'), 50)
+
+                          // Once it's clicked
+                          $(this).click(function() {
+                            // Remove it
+                            $(this).remove()
+
+                            // Hide the history items' container
+                            consistencyLevelsContainer.add(changeLevelsButton).removeClass('show')
+                          })
+                        }))
+                      })
+
+                      changeLevelsButton.find('button').click(function() {
+                        // Click the backdrop element to close the history items' container
+                        $(`div.backdrop:last`).click()
+
+                        try {
+                          // Get set levels
+                          let setLevels = {
+                              standard: levelsTableParent.find(`div.level[data-type="standard"].selected`).attr('data-level-name'),
+                              serial: levelsTableParent.find(`div.level[data-type="serial"].selected`).attr('data-level-name')
+                            },
+                            currentLevels = activeSessionsConsistencyLevels[activeClusterID],
+                            statement = ``
+
+                          if (currentLevels.standard != setLevels.standard)
+                            statement = `CONSISTENCY ${setLevels.standard};`
+
+                          if (currentLevels.serial != setLevels.serial)
+                            statement = `${statement}${statement.length > 0 ? OS.EOL : ''}SERIAL CONSISTENCY ${setLevels.serial};`
+
+                          if (statement.length <= 0)
+                            throw 0
+
+                          try {
+                            let statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`)
+                            statementInputField.val(statement)
+                            statementInputField.trigger('input').focus()
+                            AutoSize.update(statementInputField[0])
+                          } catch (e) {}
+
+                          try {
+                            setTimeout(() => $(`button#_${executeStatementBtnID}`).click(), 100)
+                          } catch (e) {}
                         } catch (e) {}
                       })
                     }
@@ -11500,8 +11666,9 @@
           $('input#ttlMS').prop('checked', true)
           $('input#insertionTimestamp').val('')
 
-          $('div.dropdown[for-select="writeConsistencyLevel"]').find(`a[value="NOT SET"]`).click()
-
+          try {
+            $('div.dropdown[for-select="writeConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].standard}"]`).click()
+          } catch (e) {}
 
           $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'insert row').html(`${I18next.capitalize(I18next.t('insert row'))} ${isInsertionAsJSON ? '(JSON)' : ''} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
 
@@ -13032,6 +13199,14 @@
               'data-keyspace-name': `${data.keyspaceName}`,
               'data-table-name': `${data.tableName}`
             })
+
+            try {
+              $('div.dropdown[for-select="deleteWriteConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].standard}"]`).click()
+            } catch (e) {}
+
+            try {
+              $('div.dropdown[for-select="deleteSerialConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].serial}"]`).click()
+            } catch (e) {}
 
             // Update different modal's attributes
             $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'delete row/column').html(`${I18next.capitalize(I18next.t('delete row/column'))} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
@@ -14901,6 +15076,10 @@
 
         // Add the `show-editor` class if it is not added, otherwise it'll be removed
         dialogElement.toggleClass('show-editor', !editorShown)
+
+        try {
+          dialogBody.css('height', !editorShown && dialogBody.height() > $('body').height() ? `${$('body').height() - 200}px` : '')
+        } catch (e) {}
 
         // Update the current scroll value if the editor is not shown already, otherwise, keep the current saved value
         scrollValue = !editorShown ? dialogBody[0].scrollTop : scrollValue
@@ -22510,7 +22689,7 @@
       try {
         let setLevel = $('#writeConsistencyLevel').val()
 
-        if (setLevel == 'NOT SET')
+        if (setLevel == activeSessionsConsistencyLevels[activeClusterID].standard)
           throw 0
 
         writeConsistencyLevel = `CONSISTENCY ${setLevel};` + OS.EOL
@@ -23301,7 +23480,7 @@
       try {
         let writeLevel = $('#deleteWriteConsistencyLevel').val()
 
-        if (writeLevel == 'NOT SET')
+        if (writeLevel == activeSessionsConsistencyLevels[activeClusterID].standard)
           throw 0
 
         writeConsistencyLevel = `CONSISTENCY ${writeLevel};` + OS.EOL
@@ -23313,7 +23492,7 @@
 
         let serialLevel = $('#deleteSerialConsistencyLevel').val()
 
-        if (serialLevel == 'NOT SET')
+        if (serialLevel == activeSessionsConsistencyLevels[activeClusterID].serial)
           throw 0
 
         serialConsistencyLevel = `SERIAL CONSISTENCY ${serialLevel};` + OS.EOL

@@ -442,7 +442,7 @@
         contentProtection = await Keytar.findPassword('AxonOpsWorkbenchContentProtection') || false,
         assistantAIEnabled = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || false,
         loggingEnabled = config.get('security', 'loggingEnabled'),
-        sandboxProjectsEnabled = config.get('features', 'sandboxProjects'),
+        sandboxProjectsEnabled = config.get('features', 'localClusters'),
         containersManagementTool = config.get('features', 'containersManagementTool') || 'none',
         basicCQLSHEnabled = config.get('features', 'basicCQLSH'),
         checkForUpdates = config.get('updates', 'checkForUpdates'),
@@ -816,7 +816,7 @@
           // Update settings
           Keytar.setPassword('AxonOpsWorkbenchContentProtection', 'value', `${contentProtection}`)
           config.set('security', 'loggingEnabled', loggingEnabled)
-          config.set('features', 'sandboxProjects', sandboxProjectsEnabled)
+          config.set('features', 'localClusters', sandboxProjectsEnabled)
           config.set('features', 'basicCQLSH', basicCQLSHEnabled)
           config.set('features', 'containersManagementTool', containersManagementTool)
           Keytar.setPassword('AxonOpsWorkbenchAIAssistant', 'value', `${assistantAIEnabled}`)

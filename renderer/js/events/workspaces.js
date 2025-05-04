@@ -30,7 +30,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
   // Get the app's config
   Modules.Config.getConfig((config) => {
     // Check the status of whether or not the sandbox projects feature is enabled
-    isSandboxProjectsEnabled = config.get('features', 'sandboxProjects') == 'true'
+    isSandboxProjectsEnabled = config.get('features', 'localClusters') == 'true'
 
     // Get all saved workspaces
     Modules.Workspaces.getWorkspaces().then(async (workspaces) => {

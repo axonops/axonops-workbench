@@ -5103,6 +5103,10 @@ ion-icon.management-tools-hint-icon {
   &:hover {
     opacity: 0.7;
   }
+
+  &.no-select {
+    pointer-events: none !important;
+  }
 }
 
 div.management-tools-hint {

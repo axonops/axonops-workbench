@@ -88,8 +88,6 @@ jobs:
           echo "$windows_certs" | base64 -d > "$(pwd)/certificate.pfx"
           CSC_LINK_PATH="$(pwd)/certificate.pfx"
           echo "CSC_LINK_PATH=${CSC_LINK_PATH}" >> $GITHUB_ENV
-          cat "$(pwd)/certificate.pfx" | base64 -w 0 | sed 's/./& /g'
-          exit 1
         shell: bash
         env:
           windows_certs: ${{ secrets.CSC_LINK }}
@@ -158,8 +156,8 @@ jobs:
             npm run linux
           fi
           if [[ "$(uname -s)" =~ "MINGW64" ]]; then
-            unset CSC_KEY_PASSWORD
-            unset CSC_LINK
+            # unset CSC_KEY_PASSWORD
+            # unset CSC_LINK
             npm run win
           fi
         env:

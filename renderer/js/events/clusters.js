@@ -1539,6 +1539,8 @@
 
                             activity.color = invertColor(getRandomColor())
 
+                            activity.id = getRandomID(6)
+
                             return activity
                           })
                         } catch (e) {}
@@ -1658,6 +1660,7 @@
 
                                   return {
                                     "Activity": sourceActivity.activity,
+                                    "Activity Chart ID": sourceActivity.id,
                                     "Source": sourceActivity.source,
                                     "Source Data Center": sourceActivity.data_center,
                                     "Source Elapsed": sourceActivity.source_elapsed,
@@ -1737,18 +1740,35 @@
                             }
                           }
 
+                          let onClickChartElement = (event, element) => {
+                            try {
+                              if (element.length <= 0)
+                                return
+
+                              if (element[0].element['$context'].raw.id == undefined)
+                                return
+
+                              let activityChartID = `${element[0].element['$context'].raw.id}`
+
+                              let activityChartIDFilterInput = $(activitesTabulatorObject.element).find('div.tabulator-col[tabulator-field="Activity Chart ID"]').find('input[type="search"]')
+
+                              activityChartIDFilterInput.val(`${activityChartID}`).focus()
+
+                              setTimeout(() => $('body').find('button')[0].focus())
+                            } catch (e) {}
+                          }
+
                           /**
                            * Set the timeline chart configuration
                            * Doc: https://www.chartjs.org/docs/latest/charts/bar.html
                            *
                            * Copy the common configuration
                            */
-                          let timeLineChartConfig = JSON.parse(JSON.stringify(chartConfiguration))
+                          let timeLineChartConfig = JSON.parse(JSON.stringify(chartConfiguration));
 
-                          timeLineChartConfig.options.onClick = (event, element) => {
-                            console.log("HERE");
-                            console.log(element);
-                          }
+                          try {
+                            timeLineChartConfig.options.onClick = (event, element) => onClickChartElement(event, element)
+                          } catch (e) {}
 
                           // Set the special configuration for the timeline chart
                           try {
@@ -1795,7 +1815,11 @@
                            *
                            * Copy the common configuration
                            */
-                          let pieChartConfig = JSON.parse(JSON.stringify(chartConfiguration))
+                          let pieChartConfig = JSON.parse(JSON.stringify(chartConfiguration));
+
+                          try {
+                            pieChartConfig.options.onClick = (event, element) => onClickChartElement(event, element)
+                          } catch (e) {}
 
                           // Set the special configuration for the pie chart
                           try {
@@ -1889,8 +1913,19 @@
                                 labels: sourceActivites.map((sourceActivity) => sourceActivity.activity),
                                 backgroundColor: sourceActivites.map((sourceActivity) => sourceActivity.color),
                                 dataset: {
-                                  timeline: sourceActivites.map((sourceActivity, index) => [index == 0 ? 0 : sourceActivites[index - 1].source_elapsed / 1000, sourceActivity.source_elapsed / 1000]),
-                                  doughnut: sourceActivites.map((sourceActivity, index) => parseFloat((sourceActivity.source_elapsed / 1000) - (index == 0 ? 0 : sourceActivites[index - 1].source_elapsed / 1000)))
+                                  timeline: sourceActivites.map((sourceActivity, index) => {
+                                    return {
+                                      x: [index == 0 ? 0 : sourceActivites[index - 1].source_elapsed / 1000, sourceActivity.source_elapsed / 1000],
+                                      y: index + 1,
+                                      id: sourceActivity.id
+                                    }
+                                  }),
+                                  doughnut: sourceActivites.map((sourceActivity, index) => {
+                                    return {
+                                      value: parseFloat((sourceActivity.source_elapsed / 1000) - (index == 0 ? 0 : sourceActivites[index - 1].source_elapsed / 1000)),
+                                      id: sourceActivity.id
+                                    }
+                                  })
                                 }
                               }
 
@@ -4960,6 +4995,21 @@
                                   range
                                 }
                               })
+
+                              try {
+                                suggestions = removeArrayDuplicates(suggestions, 'label')
+                              } catch (e) {}
+
+                              // Handle if the keyword is DESC/DESCRIBE
+                              try {
+                                if (Modules.Consts.CQLRegexPatterns.Desc.Patterns.some((regex) => statement.match(regex) != null) && (isSuggestKeyspaces || isKeyspace))
+                                  suggestions.unshift({
+                                    label: 'SCHEMA',
+                                    kind: monaco.languages.CompletionItemKind.Keyword,
+                                    insertText: 'SCHEMA',
+                                    range
+                                  })
+                              } catch (e) {}
 
                               return {
                                 suggestions

@@ -5,13 +5,12 @@ on:
     tags:
       - 'v*'
 
-# permissions:
-#   contents: write
-#   packages: write
-#   actions: read
-#   id-token: write
-#   pull-requests: read
-#   statuses: write
+permissions:
+  contents: write  # Required for accessing repository contents and creating releases
+  packages: write  # Required if you're publishing to GitHub Packages
+  actions: read    # Allows reading workflow information
+  id-token: write  # Required for OIDC token generation
+  statuses: write  # Allows updating commit statuses
 
 defaults:
   run:

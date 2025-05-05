@@ -32,9 +32,9 @@
     "win": {
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
       "target": [
+        "nsis",
         "msi"
       ],
-      "verifyUpdateCodeSignature": false,
       "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
     },
     "linux": {
@@ -386,7 +386,6 @@
     "value-size": "^1.0.1",
     "xterm-theme": "^1.1.0",
     "xterm-webfont": "^2.0.0",
-    "yargs": "^17.7.2",
-    "tar-fs": ">=2.1.2"
+    "yargs": "^17.7.2"
   }
 }

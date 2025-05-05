@@ -74,7 +74,6 @@ jobs:
           sed -i.bak 's/"version": "[^"]*"/"version": "'"$VERSION"'"/' package.json && rm package.json.bak
           rm -f package.json.bak
 
-
       - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
         run: |
           mkdir -p main/bin
@@ -98,7 +97,7 @@ jobs:
       - name: Install python dependencies
         run: pip3 install -r requirements.txt
 
-      - name: Setup Node.js v20.17.0
+      - name: Setup Node.js v20.19.0
         uses: actions/setup-node@v4
         with:
           node-version: 20.17.0
@@ -141,6 +140,7 @@ jobs:
           if [[ "$(uname -s)" =~ "MINGW64" ]]; then
             unset CSC_KEY_PASSWORD
             unset CSC_LINK
+            unset CSC_LINK_PATH
             npm run win
           fi
         env:

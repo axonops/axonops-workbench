@@ -2280,7 +2280,7 @@
                 <div class="col-md-12">
                   <div class="form-outline form-white" style="z-index: 2; width: calc(100% - 10px);">
                     <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                    <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="writeConsistencyLevel" value="NOT SET" readonly noopacity>
+                    <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="writeConsistencyLevel" value="" readonly noopacity>
                     <label class="form-label">
                       <span mulang="write consistency level" capitalize></span>
                     </label>
@@ -2290,7 +2290,6 @@
                   <div class="dropdown" for-select="writeConsistencyLevel">
                     <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
                     <ul class="dropdown-menu top-margin">
-                      <li><a class="dropdown-item" href="#" value="NOT SET">NOT SET</a></li>
                       <li><a class="dropdown-item" href="#" value="ANY">ANY</a></li>
                       <li><a class="dropdown-item" href="#" value="LOCAL_ONE">LOCAL_ONE</a></li>
                       <li><a class="dropdown-item" href="#" value="ONE">ONE</a></li>
@@ -2361,7 +2360,7 @@
               </div>
 
               <div class="lwt-hint">
-                <ion-icon name="info-circle-outline" class="management-tools-hint-icon localclusters-dialog"></ion-icon> Lightweight transactions (LWTs) provide strong consistency but can impact performance and scalability. Use them only when
+                <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> Lightweight transactions (LWTs) provide strong consistency but can impact performance and scalability. Use them only when
                 required.
               </div>
 
@@ -2374,7 +2373,7 @@
                 <div class="col-md-12" consistency="write">
                   <div class="form-outline form-white" style="z-index: 2; width: calc(100% - 35px);">
                     <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                    <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="deleteWriteConsistencyLevel" value="NOT SET" readonly noopacity>
+                    <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="deleteWriteConsistencyLevel" value="" readonly noopacity>
                     <label class="form-label">
                       <span mulang="write consistency level" capitalize></span>
                     </label>
@@ -2389,7 +2388,6 @@
                   <div class="dropdown" for-select="deleteWriteConsistencyLevel">
                     <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
                     <ul class="dropdown-menu top-margin" style="width: calc(100% - 35px) !important;">
-                      <li><a class="dropdown-item" href="#" value="NOT SET">NOT SET</a></li>
                       <li><a class="dropdown-item" href="#" value="ANY">ANY</a></li>
                       <li><a class="dropdown-item" href="#" value="LOCAL_ONE">LOCAL_ONE</a></li>
                       <li><a class="dropdown-item" href="#" value="ONE">ONE</a></li>
@@ -2405,7 +2403,7 @@
                 <div class="col-md-6" consistency="serial" style="display: none;">
                   <div class="form-outline form-white" style="z-index: 2; width: calc(100% - 35px);">
                     <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                    <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="deleteSerialConsistencyLevel" value="NOT SET" readonly noopacity>
+                    <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="deleteSerialConsistencyLevel" value="" readonly noopacity>
                     <label class="form-label">
                       <span mulang="serial consistency level" capitalize></span>
                     </label>
@@ -2420,7 +2418,6 @@
                   <div class="dropdown" for-select="deleteSerialConsistencyLevel">
                     <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
                     <ul class="dropdown-menu top-margin" style="width: calc(100% - 35px) !important;">
-                      <li><a class="dropdown-item" href="#" value="NOT SET">NOT SET</a></li>
                       <li><a class="dropdown-item" href="#" value="SERIAL">SERIAL</a></li>
                       <li><a class="dropdown-item" href="#" value="LOCAL_SERIAL">LOCAL_SERIAL</a></li>
                     </ul>
@@ -2428,7 +2425,7 @@
                 </div>
               </div>
               <div class="consistency-level-warning">
-                <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon localclusters-dialog"></ion-icon> <span></span>.
+                <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span></span>.
               </div>
 
               <div section="standard">

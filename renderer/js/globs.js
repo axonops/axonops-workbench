@@ -42,6 +42,13 @@ let activeWorkspaceID = '',
    */
   editedClusterObject = null
 
+// For active connections, consistency levels are being stored here:
+// [connectionID]: {
+//   standard: '',
+//   serial: ''
+// }
+let activeSessionsConsistencyLevels = []
+
 /**
  * Store the apps' RSA public key
  * In this way, there's no need to request the key every time from the keys generator tool

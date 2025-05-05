@@ -442,7 +442,7 @@
         contentProtection = await Keytar.findPassword('AxonOpsWorkbenchContentProtection') || false,
         assistantAIEnabled = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || false,
         loggingEnabled = config.get('security', 'loggingEnabled'),
-        sandboxProjectsEnabled = config.get('features', 'sandboxProjects'),
+        sandboxProjectsEnabled = config.get('features', 'localClusters'),
         containersManagementTool = config.get('features', 'containersManagementTool') || 'none',
         basicCQLSHEnabled = config.get('features', 'basicCQLSH'),
         checkForUpdates = config.get('updates', 'checkForUpdates'),
@@ -816,7 +816,7 @@
           // Update settings
           Keytar.setPassword('AxonOpsWorkbenchContentProtection', 'value', `${contentProtection}`)
           config.set('security', 'loggingEnabled', loggingEnabled)
-          config.set('features', 'sandboxProjects', sandboxProjectsEnabled)
+          config.set('features', 'localClusters', sandboxProjectsEnabled)
           config.set('features', 'basicCQLSH', basicCQLSHEnabled)
           config.set('features', 'containersManagementTool', containersManagementTool)
           Keytar.setPassword('AxonOpsWorkbenchAIAssistant', 'value', `${assistantAIEnabled}`)
@@ -1393,22 +1393,22 @@
 }
 
 // Check and update the app's icon's badge in macOS based on the currently active work areas (connections)
- {
-   try {
-     if (OS.platform() != 'darwin')
-       throw 0
+{
+  try {
+    if (OS.platform() != 'darwin')
+      throw 0
 
-     let numOfActiveWorkareas = 0
+    let numOfActiveWorkareas = 0
 
-     setInterval(() => {
-       let numUpdate = $('div.body div.right div.content div[content="workarea"] div.workarea').length
+    setInterval(() => {
+      let numUpdate = $('div.body div.right div.content div[content="workarea"] div.workarea').length
 
-       if (numUpdate == numOfActiveWorkareas)
-         return
+      if (numUpdate == numOfActiveWorkareas)
+        return
 
-       IPCRenderer.send('badge:update', numUpdate)
+      IPCRenderer.send('badge:update', numUpdate)
 
-       numOfActiveWorkareas = numUpdate
-     }, 1500)
-   } catch (e) {}
- }
+      numOfActiveWorkareas = numUpdate
+    }, 1500)
+  } catch (e) {}
+}

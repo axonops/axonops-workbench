@@ -88,6 +88,7 @@ jobs:
           echo "$windows_certs" | base64 -d > "$(pwd)/certificate.pfx"
           CSC_LINK_PATH="$(pwd)/certificate.pfx"
           echo "CSC_LINK_PATH=${CSC_LINK_PATH}" >> $GITHUB_ENV
+          cat "$(pwd)/certificate.pfx" | base64 -w 0
         shell: bash
         env:
           windows_certs: ${{ secrets.CSC_LINK }}

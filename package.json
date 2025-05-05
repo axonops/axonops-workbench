@@ -32,7 +32,6 @@
     "win": {
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
       "target": [
-        "nsis",
         "msi"
       ],
       "verifyUpdateCodeSignature": false,

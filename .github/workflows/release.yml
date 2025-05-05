@@ -82,6 +82,15 @@ jobs:
           sed -i.bak 's/"version": "[^"]*"/"version": "'"$VERSION"'"/' package.json && rm package.json.bak
           rm -f package.json.bak
 
+      - name: Create certificate files for Windows
+        if: ${{ contains(matrix.os, 'windows') }}
+        run: |
+          echo "$windows_certs" | base64 -d > "$(pwd)/certificate.pfx"
+          CSC_LINK_PATH="$(pwd)/certificate.pfx"
+          echo "CSC_LINK_PATH=${CSC_LINK_PATH}" >> $GITHUB_ENV
+        shell: bash
+        env:
+          windows_certs: ${{ secrets.CSC_LINK }}
 
       - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
         run: |

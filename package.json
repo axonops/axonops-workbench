@@ -35,7 +35,8 @@
         "nsis",
         "msi"
       ],
-      "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}"
+      "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}",
+      "sign": false
     },
     "linux": {
       "icon": "./renderer/assets/images/",

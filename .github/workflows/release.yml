@@ -148,7 +148,6 @@ jobs:
           if [[ "$(uname -s)" =~ "MINGW64" ]]; then
             unset CSC_KEY_PASSWORD
             unset CSC_LINK
-            unset CSC_KEY_PASSWORD
             unset CSC_LINK_PATH
             npm run win
           fi

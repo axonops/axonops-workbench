@@ -907,7 +907,7 @@
                                        </div>
                                        <span class="badge rounded-pill badge-dark"><b serial></b></span>
                                        <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
-                                         data-title="<p style='margin-bottom: 10px;'>Understanding SERIAL vs LOCAL_SERIAL</p><ul><li><strong>SERIAL</strong>: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.</li><li><strong>LOCAL_SERIAL</strong>: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments</li></ul><p style=' margin-bottom: 10px;'>Recommended Consistency Level Combinations for LWTs</p><table style='width: 100%;' class='lwtConsistencyLevelTooltipTable'><thead><tr><th>Deployment Scenario</th><th>Write Consistency Level</th><th>Serial Consistency Level</th></tr></thead><tbody><tr><td><strong>Multi-DC Strong Consistency</strong></td><td><code>EACH_QUORUM</code></td><td><code>SERIAL</code></td></tr><tr><td><strong>Multi-DC High Performance</strong></td><td><code>LOCAL_QUORUM</code></td><td><code>LOCAL_SERIAL</code></td></tr><tr><td><strong>Single-DC Clusters</strong></td><td><code>QUORUM</code></td><td><code>SERIAL</code></td></tr></tbody></table>"
+                                         data-title="<p style='margin-bottom: 10px;'>This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL</p><ul><li><strong>SERIAL</strong>: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.</li><li><strong>LOCAL_SERIAL</strong>: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments</li></ul><p style=' margin-bottom: 10px;'>Recommended Consistency Level Combinations for LWTs</p><table style='width: 100%;' class='lwtConsistencyLevelTooltipTable'><thead><tr><th>Deployment Scenario</th><th>Write Consistency Level</th><th>Serial Consistency Level</th></tr></thead><tbody><tr><td><strong>Multi-DC Strong Consistency</strong></td><td><code>EACH_QUORUM</code></td><td><code>SERIAL</code></td></tr><tr><td><strong>Multi-DC High Performance</strong></td><td><code>LOCAL_QUORUM</code></td><td><code>LOCAL_SERIAL</code></td></tr><tr><td><strong>Single-DC Clusters</strong></td><td><code>QUORUM</code></td><td><code>SERIAL</code></td></tr></tbody></table>"
                                          data-tippy-delay="[300, 0]" data-tippy-maxWidth="590">
                                          <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
                                        </div>
@@ -3198,7 +3198,7 @@
                                   // Handle if the content has JSON string
                                   try {
                                     // If the statement is not `SELECT` or 'DELETE' then don't attempt to render a table
-                                    if (['select', 'delete'].every((command) => statementIdentifier.toLowerCase().indexOf(command) <= -1) || isJSONKeywordFound || connectionLost)
+                                    if (['select', 'delete', 'create', 'insert'].every((command) => statementIdentifier.toLowerCase().indexOf(command) <= -1) || isJSONKeywordFound || connectionLost)
                                       throw 0
 
                                     if (`${match}`.indexOf('KEYWORD:JSON:STARTED') <= -1)
@@ -11716,8 +11716,15 @@
           $('input#ttlMS').prop('checked', true)
           $('input#insertionTimestamp').val('')
 
+          $('input#insertNoSelectOption').prop('checked', true)
+          $('input#insertNoSelectOption').trigger('change')
+
           try {
-            $('div.dropdown[for-select="writeConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].standard}"]`).click()
+            $('div.dropdown[for-select="insertWriteConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].standard}"]`).click()
+          } catch (e) {}
+
+          try {
+            $('div.dropdown[for-select="insertSerialConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].serial}"]`).click()
           } catch (e) {}
 
           $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'insert row').html(`${I18next.capitalize(I18next.t('insert row'))} ${isInsertionAsJSON ? '(JSON)' : ''} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
@@ -14881,7 +14888,7 @@
             dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [replicationStrategyFinal, durableWritesFinal].every((str) => `${str}`.length <= 0) ? '' : null)
           } catch (e) {}
 
-          let statement = `${isAlterState ? 'ALTER' : 'CREATE'} KEYSPACE ${keyspaceName}${replicationStrategyFinal}${durableWritesFinal};`
+          let statement = `${isAlterState ? 'ALTER' : 'CREATE'} KEYSPACE${!isAlterState ? ' IF NOT EXISTS' : ''} ${keyspaceName}${replicationStrategyFinal}${durableWritesFinal};`
 
           try {
             actionEditor.setValue(statement)
@@ -15592,7 +15599,7 @@
 
           dataFieldsText = OS.EOL + dataFieldsText
 
-          let statement = `CREATE TYPE ${keyspaceName}.${udtName} (${dataFieldsText});`
+          let statement = `CREATE TYPE IF NOT EXISTS ${keyspaceName}.${udtName} (${dataFieldsText});`
 
           dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
 
@@ -16845,7 +16852,7 @@
             descOrder = ''
           }
 
-          let statement = `CREATE TABLE ${keyspaceName}.${counterTableName} (` + OS.EOL + `${manipulatedKeysAndColumns}` + `    PRIMARY KEY (${primaryKeys})` + OS.EOL + ')' + `${descOrder}` + `${tableOptions}` + ';'
+          let statement = `CREATE TABLE IF NOT EXISTS ${keyspaceName}.${counterTableName} (` + OS.EOL + `${manipulatedKeysAndColumns}` + `    PRIMARY KEY (${primaryKeys})` + OS.EOL + ')' + `${descOrder}` + `${tableOptions}` + ';'
 
           try {
             actionEditor.setValue(statement)
@@ -19241,7 +19248,7 @@
             descOrder = ''
           }
 
-          let statement = `CREATE TABLE ${keyspaceName}.${standardTableName} (` + OS.EOL + `${manipulatedKeys}${manipulatedColumns}` + `    PRIMARY KEY (${primaryKeys})` + OS.EOL + ')' + `${descOrder}` + `${tableOptions}` + ';'
+          let statement = `CREATE TABLE IF NOT EXISTS ${keyspaceName}.${standardTableName} (` + OS.EOL + `${manipulatedKeys}${manipulatedColumns}` + `    PRIMARY KEY (${primaryKeys})` + OS.EOL + ')' + `${descOrder}` + `${tableOptions}` + ';'
 
           try {
             actionEditor.setValue(statement)
@@ -22046,11 +22053,11 @@
 
     setTimeout(() => {
       // Point at the list container
-      let writeConsistencyLevelsContainer = $(`div.dropdown[for-select="writeConsistencyLevel"] ul.dropdown-menu`),
+      let insertConsistencyLevelsContainers = $(`div.dropdown[for-select="insertWriteConsistencyLevel"] ul.dropdown-menu, div.dropdown[for-select="insertSerialConsistencyLevel"] ul.dropdown-menu`),
         defaultOmittedColumnsValueContainer = $(`div.dropdown[for-select="defaultOmittedColumnsValue"] ul.dropdown-menu`)
 
       // Once one of the items is clicked
-      writeConsistencyLevelsContainer.add(defaultOmittedColumnsValueContainer).find('a').click(function() {
+      insertConsistencyLevelsContainers.add(defaultOmittedColumnsValueContainer).find('a').click(function() {
         // Point at the input field related to the list
         let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)
 
@@ -22067,8 +22074,6 @@
         })
       })
     })
-
-    $('input#writeConsistencyLevel').add('input#defaultOmittedColumnsValue').on('focus', () => $('#rightClickActionsMetadata').scrollTop($('#rightClickActionsMetadata').height()))
 
     $('input#timestampGenerator').on('focus', () => setTimeout(() => {
       $('div.modal#addEditClusterDialog').find('div.side-right').scrollTop($('div.modal#addEditClusterDialog').find('div.side-right').height())
@@ -22095,6 +22100,9 @@
         try {
           clearField.toggleClass('hide', $(this).val().length <= 0)
         } catch (e) {}
+
+        if ($(this).is($('input#insertionTimestamp')))
+          $(this).toggleClass('is-invalid', $(this).val().length > 0 && getCheckedValue('lwtInsertOptions') != 'insertNoSelectOption')
 
         setTimeout(() => {
           try {
@@ -22244,7 +22252,8 @@
             collection: $('div#tableFieldsCollectionColumnsTree').jstree(),
             udt: $('div#tableFieldsUDTColumnsTree').jstree()
           }
-        }
+        },
+        lwtOption = getCheckedValue('lwtInsertOptions')
 
       let keyspaceUDTs = []
 
@@ -22288,7 +22297,7 @@
       } catch (e) {}
 
       try {
-        if (allNodes.filter(`:not(.ignored)`).find('.is-invalid:not(.ignore-invalid)').length <= 0 && !isPrimaryKeyMissingFields)
+        if (allNodes.filter(`:not(.ignored)`).find('.is-invalid:not(.ignore-invalid)').length <= 0 && !isPrimaryKeyMissingFields && !$('#insertionTimestamp').hasClass('is-invalid'))
           throw 0
 
         dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
@@ -22692,8 +22701,9 @@
 
       // Extra options
       let extraOptions = '',
-        // Write consistency level
-        writeConsistencyLevel = ''
+        // Get consistency level
+        writeConsistencyLevel = '',
+        serialConsistencyLevel = ''
 
       // TTL
       try {
@@ -22722,6 +22732,9 @@
 
       // Data insertion timestamp
       try {
+        if (lwtOption != 'insertNoSelectOption')
+          throw 0
+
         let insertionTimestamp = $('#insertionTimestamp').val()
 
         if (`${insertionTimestamp}`.length <= 0)
@@ -22735,18 +22748,36 @@
       if (extraOptions.length != 0)
         extraOptions = ` USING ${extraOptions}`
 
-      // Write consistency level
-      try {
-        let setLevel = $('#writeConsistencyLevel').val()
+      if (lwtOption != 'insertNoSelectOption')
+        extraOptions = ` IF NOT EXISTS${extraOptions}`
 
-        if (setLevel == activeSessionsConsistencyLevels[activeClusterID].standard)
+      try {
+        let writeLevel = $('#insertWriteConsistencyLevel').val()
+
+        writeConsistencyLevel = `CONSISTENCY ${writeLevel};`
+
+        if (writeLevel == activeSessionsConsistencyLevels[activeClusterID].standard)
+          writeConsistencyLevel = `-- ${writeConsistencyLevel} Note: CQL session already using this CL`
+
+        writeConsistencyLevel = `${writeConsistencyLevel}` + OS.EOL
+      } catch (e) {}
+
+      try {
+        if (lwtOption == 'insertNoSelectOption')
           throw 0
 
-        writeConsistencyLevel = `CONSISTENCY ${setLevel};` + OS.EOL
+        let serialLevel = $('#insertSerialConsistencyLevel').val()
+
+        serialConsistencyLevel = `SERIAL CONSISTENCY ${serialLevel};`
+
+        if (serialLevel == activeSessionsConsistencyLevels[activeClusterID].serial)
+          serialConsistencyLevel = `-- ${serialConsistencyLevel} Note: CQL session already using this CL`
+
+        serialConsistencyLevel = `${serialConsistencyLevel}` + OS.EOL
       } catch (e) {}
 
       let statement =
-        writeConsistencyLevel +
+        `${writeConsistencyLevel}${serialConsistencyLevel}` +
         `INSERT INTO ${keyspaceName}.${tableName} (` + OS.EOL +
         `${fieldsNames}` + OS.EOL + `) VALUES (` + OS.EOL +
         `${fieldsValues}` + OS.EOL + `)${extraOptions};`
@@ -22756,7 +22787,7 @@
           extraOptions = ` DEFAULT ${$('input#defaultOmittedColumnsValue').val()}${extraOptions}`
         } catch (e) {}
 
-        statement = writeConsistencyLevel +
+        statement = `${writeConsistencyLevel}${serialConsistencyLevel}` +
           `INSERT INTO ${keyspaceName}.${tableName} JSON '{` + OS.EOL +
           `${fields}` + OS.EOL +
           `}'${extraOptions};`
@@ -22786,8 +22817,6 @@
         })
       })
     })
-
-    $('input#deleteWriteConsistencyLevel').add('input#deleteSerialConsistencyLevel').on('focus', () => $('#rightClickActionsMetadata').scrollTop($('#rightClickActionsMetadata').height()))
 
     updateActionStatusForDeleteRowColumn = () => {
       let dialogElement = $('#rightClickActionsMetadata'),
@@ -23050,7 +23079,6 @@
             $(`div[action="delete-row-column"] div.types-of-transactions div.sections div.section div.btn[section="${$(invalidNode).closest('div[section]').attr('section')}"]`).addClass('invalid')
           } catch (e) {}
         }
-
 
         if ($('#deleteTimestamp').hasClass('is-invalid'))
           $(`div[action="delete-row-column"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
@@ -23530,10 +23558,12 @@
       try {
         let writeLevel = $('#deleteWriteConsistencyLevel').val()
 
-        if (writeLevel == activeSessionsConsistencyLevels[activeClusterID].standard)
-          throw 0
+        writeConsistencyLevel = `CONSISTENCY ${writeLevel};`
 
-        writeConsistencyLevel = `CONSISTENCY ${writeLevel};` + OS.EOL
+        if (writeLevel == activeSessionsConsistencyLevels[activeClusterID].standard)
+          writeConsistencyLevel = `-- ${writeConsistencyLevel} Note: CQL session already using this CL`
+
+        writeConsistencyLevel = `${writeConsistencyLevel}` + OS.EOL
       } catch (e) {}
 
       try {
@@ -23542,10 +23572,12 @@
 
         let serialLevel = $('#deleteSerialConsistencyLevel').val()
 
-        if (serialLevel == activeSessionsConsistencyLevels[activeClusterID].serial)
-          throw 0
+        serialConsistencyLevel = `SERIAL CONSISTENCY ${serialLevel};`
 
-        serialConsistencyLevel = `SERIAL CONSISTENCY ${serialLevel};` + OS.EOL
+        if (serialLevel == activeSessionsConsistencyLevels[activeClusterID].serial)
+          serialConsistencyLevel = `-- ${serialConsistencyLevel} Note: CQL session already using this CL`
+
+        serialConsistencyLevel = `${serialConsistencyLevel}` + OS.EOL
       } catch (e) {}
 
       dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
@@ -23558,36 +23590,58 @@
     }
 
     setTimeout(() => {
-      $('input#deleteWriteConsistencyLevel').add('input#deleteSerialConsistencyLevel').on('input', () => {
-        let lwtOption = getCheckedValue('lwtDeleteOptions')
+      for (let action of ['delete', 'insert']) {
+        $(`input#${action}WriteConsistencyLevel`).add(`input#${action}SerialConsistencyLevel`).on('input', () => {
+          let lwtOption = getCheckedValue(action == 'delete' ? 'lwtDeleteOptions' : 'lwtInsertOptions')
 
-        if (lwtOption == 'deleteNoSelectOption') {
-          $('div.consistency-level-warning').hide()
-          return
-        }
+          if (lwtOption == `${action}NoSelectOption`) {
+            $(`div.consistency-level-warning-${action}`).hide()
+            return
+          }
 
-        let warningTxt = '',
-          writeConsistencyLevel = $('input#deleteWriteConsistencyLevel').val(),
-          serialConsistencyLevel = $('input#deleteSerialConsistencyLevel').val()
+          let warningTxt = '',
+            writeConsistencyLevel = $(`input#${action}WriteConsistencyLevel`).val(),
+            serialConsistencyLevel = $(`input#${action}SerialConsistencyLevel`).val()
 
-        if (writeConsistencyLevel == 'EACH_QUORUM' && serialConsistencyLevel == 'LOCAL_SERIAL')
-          warningTxt = `Cross-DC inconsistency risk: Writes enforce global quorum (EACH_QUORUM) but LWT checks only local DC state (LOCAL_SERIAL). This may cause cross-DC inconsistencies`
+          if (writeConsistencyLevel == 'EACH_QUORUM' && serialConsistencyLevel == 'LOCAL_SERIAL')
+            warningTxt = `Cross-DC inconsistency risk: Writes enforce global quorum (EACH_QUORUM) but LWT checks only local DC state (LOCAL_SERIAL). This may cause cross-DC inconsistencies`
 
-        if (writeConsistencyLevel == 'LOCAL_QUORUM' && serialConsistencyLevel == 'SERIAL')
-          warningTxt = `Protocol mismatch: Local writes (LOCAL_QUORUM) cannot satisfy global LWT requirements (SERIAL)`
+          if (writeConsistencyLevel == 'LOCAL_QUORUM' && serialConsistencyLevel == 'SERIAL')
+            warningTxt = `Protocol mismatch: Local writes (LOCAL_QUORUM) cannot satisfy global LWT requirements (SERIAL)`
 
-        if (writeConsistencyLevel == 'ANY' && serialConsistencyLevel != 'NOT SET')
-          warningTxt = `Atomicity violation: Hinted handoffs (ANY) prevent guaranteed transaction isolation`
+          if (writeConsistencyLevel == 'ANY' && serialConsistencyLevel != 'NOT SET')
+            warningTxt = `Atomicity violation: Hinted handoffs (ANY) prevent guaranteed transaction isolation`
 
-        if (writeConsistencyLevel == 'ONE' && serialConsistencyLevel == 'SERIAL')
-          warningTxt = `Insufficient replication: Single-replica writes (ONE) cannot support global LWT consensus (SERIAL)`
+          if (writeConsistencyLevel == 'ONE' && serialConsistencyLevel == 'SERIAL')
+            warningTxt = `Insufficient replication: Single-replica writes (ONE) cannot support global LWT consensus (SERIAL)`
 
-        if (writeConsistencyLevel == 'ALL' && serialConsistencyLevel == 'LOCAL_SERIAL')
-          warningTxt = `Resource conflict: Full replication (ALL) requirement negates localized LWT benefits (LOCAL_SERIAL)`
+          if (writeConsistencyLevel == 'ALL' && serialConsistencyLevel == 'LOCAL_SERIAL')
+            warningTxt = `Resource conflict: Full replication (ALL) requirement negates localized LWT benefits (LOCAL_SERIAL)`
 
-        $('div.consistency-level-warning').toggle(warningTxt.length > 0)
+          $(`div.consistency-level-warning-${action}`).toggle(warningTxt.length > 0)
 
-        $('div.consistency-level-warning span').html(warningTxt)
+          $(`div.consistency-level-warning-${action} span`).html(warningTxt)
+        })
+      }
+    })
+
+    $('input[type="radio"][name="lwtInsertOptions"]').on('change', function() {
+      $('#insertionTimestamp').attr('disabled', $(this).attr('id') == 'insertNoSelectOption' ? null : '')
+
+      if ($(this).attr('id') == 'insertNoSelectOption') {
+        $('#rightClickActionsMetadata').find('div[insert-consistency="write"]').removeClass('col-md-6').addClass('col-md-12')
+
+        $('#rightClickActionsMetadata').find('div[insert-consistency="serial"]').hide()
+      } else {
+        $('#rightClickActionsMetadata').find('div[insert-consistency="write"], div[insert-consistency="serial"]').removeClass('col-md-12').addClass('col-md-6').show()
+      }
+
+      setTimeout(() => {
+        try {
+          updateActionStatusForInsertRow()
+        } catch (e) {}
+
+        $('input#insertWriteConsistencyLevel').add($('#insertionTimestamp')).trigger('input')
       })
     })
   }, 5000)

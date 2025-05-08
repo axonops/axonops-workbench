@@ -2384,10 +2384,13 @@ div[action="delete-row-column"] div.types-of-transactions {
   }
 }
 
-input[type="radio"][name="lwtDeleteOptions"] {
-  transform: scale(0.85) translateY(-1px);
-  transform-origin: left;
-  margin-right: 0;
+input[type="radio"] {
+  &[name="lwtDeleteOptions"],
+  &[name="lwtInsertOptions"] {
+    transform: scale(0.85) translateY(-1px);
+    transform-origin: left;
+    margin-right: 0;
+  }
 }
 
 div#tableFieldsNonPKColumnsDeleteAction {
@@ -2472,8 +2475,10 @@ div#noColumnMatched {
   display: none;
 }
 
-div.consistency-level-warning,
-div.lwt-hint {
+div.consistency-level-warning-delete,
+div.consistency-level-warning-insert,
+div.lwt-hint,
+div.lwt-hint-insert {
   background: rgba(123, 181, 255, 0.1);
   font-size: 85%;
   padding: 0 5px;
@@ -2485,13 +2490,20 @@ div.lwt-hint {
   margin-bottom: 5px;
   display: none;
 
+  &.lwt-hint-insert {
+    display: block;
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+
   ion-icon {
     font-size: 150%;
     bottom: 1px;
     margin-right: -1px;
   }
 
-  &.consistency-level-warning {
+  &.consistency-level-warning-delete,
+  &.consistency-level-warning-insert {
     background: rgba(255, 234, 123, 0.1);
   }
 }

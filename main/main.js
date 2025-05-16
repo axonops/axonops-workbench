@@ -701,6 +701,20 @@ App.on('second-instance', () => {
       } catch (e) {}
     })
 
+    // Get logs folder's path and current session's log file name if possible
+    IPCMain.handle('logging:get:info', () => {
+      let loggingSessionFileName = null
+
+      try {
+        loggingSessionFileName = logging.logginSessionFileName
+      } catch (e) {}
+
+      return {
+        folder: Path.join(extraResourcesPath != null ? App.getPath('logs') : Path.join(__dirname, '..', 'data', 'logging')),
+        file: loggingSessionFileName
+      }
+    })
+
     /**
      * Add a new log text
      *

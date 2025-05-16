@@ -211,6 +211,48 @@ $(document).on('initialize', () => {
     // Convert the flag to a boolean instead of a string
     isLoggingEnabled = isLoggingEnabled == 'false' ? false : true
 
+    // Get logs info
+    setTimeout(() => {
+      IPCRenderer.invoke('logging:get:info').then((info) => {
+        try {
+          if (info.file == null) {
+            $(`div.row.for-logging-info div.logs-info.file`).parent().hide()
+
+            $(`div.row.for-logging-info div.logs-info.folder`).parent().removeClass('col-md-6').addClass('col-md-12')
+
+            throw 0
+          }
+
+          $(`div.row.for-logging-info div.logs-info.file span`).text(info.file)
+          $(`div.row.for-logging-info div.logs-info.file button`).data('path', Path.join(info.folder, info.file))
+        } catch (e) {}
+
+        try {
+          if (info.folder == null) {
+            $(`div.row.for-logging-info div.logs-info.folder`).parent().hide()
+
+            $(`div.row.for-logging-info div.logs-info.file`).parent().removeClass('col-md-6').addClass('col-md-12')
+
+            throw 0
+          }
+
+          $(`div.row.for-logging-info div.logs-info.folder span`).text(info.folder)
+          $(`div.row.for-logging-info div.logs-info.folder button`).data('path', info.folder)
+        } catch (e) {}
+
+        // Handle click events
+        $(`div.row.for-logging-info div.logs-info span`).click(function() {
+          $(this).selectContent()
+        })
+
+        $(`div.row.for-logging-info div.logs-info button`).click(function() {
+          try {
+            Open($(this).data('path'))
+          } catch (e) {}
+        })
+      })
+    }, 5000)
+
     // If the logging feature is not enabled then skip the upcoming code
     if (!isLoggingEnabled)
       return

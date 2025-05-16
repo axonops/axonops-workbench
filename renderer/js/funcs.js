@@ -5042,7 +5042,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
           ...column,
           fieldType: 'regular-column',
           isMandatory: false
-        }, '#', true),
+        }, '#'),
         isTypeCollection = ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`))
 
       if (isTypeCollection) {

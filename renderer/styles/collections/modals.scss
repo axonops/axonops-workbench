@@ -2407,6 +2407,7 @@ div#tableFieldsNonPKColumnsDeleteAction {
     margin-bottom: 15px;
     max-height: 260px;
     overflow-y: scroll;
+    @include scrollbar(#2c2c2c, #262626);
 
     div.column {
       background: rgba(255, 255, 255, 0.08);
@@ -2477,6 +2478,7 @@ div#noColumnMatched {
 
 div.consistency-level-warning-delete,
 div.consistency-level-warning-insert,
+div.in-operator-error,
 div.lwt-hint,
 div.lwt-hint-insert {
   background: rgba(123, 181, 255, 0.1);
@@ -2505,6 +2507,10 @@ div.lwt-hint-insert {
   &.consistency-level-warning-delete,
   &.consistency-level-warning-insert {
     background: rgba(255, 234, 123, 0.1);
+  }
+
+  &.in-operator-error {
+    background: rgba(255,122,122,.1);
   }
 }
 

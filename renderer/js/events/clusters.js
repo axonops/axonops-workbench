@@ -13251,6 +13251,8 @@
               'data-btn-id': `${data.btnID}`
             })
 
+            $('#rightClickActionsMetadata').find('div.modal-body').css('height', 'auto')
+
             $('#rightClickActionsMetadata').attr({
               'data-state': null,
               'data-keyspace-name': `${data.keyspaceName}`,
@@ -13948,7 +13950,8 @@
                       let allOperatorsContainers = tableFieldsTreeContainer.find('div.input-group-text.for-deletion.for-operators').get()
 
                       for (let operatorsContainerElement of allOperatorsContainers) {
-                        let node = $(operatorsContainerElement).closest('a.jstree-anchor')
+                        let node = $(operatorsContainerElement).closest('a.jstree-anchor'),
+                          isCollectionType = $(node).attr('is-collection-type') == 'true'
 
                         setTimeout(() => {
                           try {
@@ -14314,8 +14317,8 @@
 
                   // Handle Primary key of the table
                   try {
-                    if (container != 'primaryKey')
-                      throw 0
+                    // if (container != 'primaryKey')
+                    //   throw 0
 
                     let nodes = tableFieldsTreeContainer.find('a.jstree-anchor:not(.hidden-node)').get()
 
@@ -14331,7 +14334,7 @@
                       if (isRelatedToHiddenNode) {
                         $(node).attr({
                           'data-deletion-changes-applied': 'true',
-                          'ignore-disable': 'true'
+                          'ignore-disable': container == 'primaryKey' ? 'true' : null
                         })
 
                         $(node).find('div.input-group-text.for-actions').find('button:not([action="delete-item"])').remove()
@@ -14455,6 +14458,9 @@
                               isSelectedOperatorIN = selectedOperator.attr('id') == '_operator_in',
                               mainInput = $(node).find('div.form-outline[data-is-main-input="true"]').find('input'),
                               relatedTreeObject = $(node).closest('div.table-fields-tree').jstree()
+
+
+                            console.log("HERE2...");
 
                             $(node).find('div.form-outline[data-is-main-input="true"]').toggle(!isSelectedOperatorIN)
 
@@ -14616,8 +14622,6 @@
 
                       targetElement.html(deletionBtn)
                     }
-
-
                   } catch (e) {}
 
                   setTimeout(() => Modules.Localization.applyLanguageSpecific(tableFieldsTreeContainer.find('span[mulang], [data-mulang]')))
@@ -22853,6 +22857,9 @@
         typeValueSpan.css('width', `${spanWidth - widthDifference}px`).addClass('overflow')
       })
 
+      $(`div[action="delete-row-column"]`).find('div.in-operator-error').hide()
+      $(`div[action="delete-row-column"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).removeClass('invalid')
+
       /**
        * By looping through each node, the node is enabled based on specific conditions
        * Start with the primary key
@@ -22958,6 +22965,8 @@
           } catch (e) {}
 
           isPreviousKeyInvalid.partition = (field.find('.is-invalid:not(.ignore-invalid):not([type="radio"])').length > 0 && !field.hasClass('unavailable')) || field.hasClass('unavailable')
+
+          field.toggleClass('invalid', isINOperatorChecked && !doesFieldHasChildren && !field.hasClass('unavailable'))
 
           if (isINOperatorChecked)
             isPreviousKeyInvalid.partition = !doesFieldHasChildren || field.hasClass('unavailable')
@@ -23067,7 +23076,14 @@
       $(`div[action="delete-row-column"] div.types-of-transactions div.sections div.section div.btn`).removeClass('invalid')
 
       try {
-        let allInvalidNodes = allNodes.filter(`:not(.ignored):not(.unavailable)`).find('.is-invalid:not(.ignore-invalid):not([type="radio"]):not(.is-empty)')
+        let allInvalidNodes = allNodes.filter(`:not(.ignored):not(.unavailable)`)
+
+        allInvalidNodes = allInvalidNodes.filter(function() {
+          let mainInput = $(this).find('.is-invalid:not(.ignore-invalid):not([type="radio"]):not(.is-empty)'),
+            isINOperatorChecked = $(this).find('input[id="_operator_in"]:checked')
+
+          return $(this).hasClass('invalid') || (mainInput.length != 0 && isINOperatorChecked.length <= 0)
+        })
 
         if (allInvalidNodes.length <= 0 && !$('#deleteTimestamp').hasClass('is-invalid'))
           throw 0
@@ -23102,7 +23118,6 @@
 
         for (let currentNodeID of treeObject.get_node(mainNodeID).children) {
           try {
-
             let currentNode = $(`a.jstree-anchor[static-id="${currentNodeID}"]`)
 
             try {
@@ -23120,7 +23135,8 @@
               isNULL = false,
               fieldOperator = currentNode.find('input[type="radio"]:checked').attr('id'),
               isColumnToBeDeleted = currentNode.hasClass('deleted'),
-              isColumnIgnored = fieldValue.hasClass('is-empty') || currentNode.hasClass('unavailable')
+              isColumnIgnored = fieldValue.hasClass('is-empty') || currentNode.hasClass('unavailable'),
+              isPartition = currentNode.attr('partition') == 'true'
 
             // Check if the field is boolean
             if (fieldValue.attr('type') == 'checkbox' && fieldValue.prop('indeterminate'))
@@ -23141,7 +23157,7 @@
 
             let isIgnored = currentNode.hasClass('ignored')
 
-            if ((isIgnored || (`${fieldValue}`.length <= 0 && !isNULL)) && !isColumnToBeDeleted)
+            if ((isIgnored || (`${fieldValue}`.length <= 0 && !isNULL && fieldOperator != '_operator_in')) && !isColumnToBeDeleted)
               continue
 
             try {
@@ -23162,6 +23178,7 @@
                 id: hiddenNodeID,
                 parent: mainNodeID,
                 fieldOperator,
+                isPartition,
                 isMapItem,
                 isDeleted: isColumnToBeDeleted,
                 isIgnored: isColumnIgnored,
@@ -23197,6 +23214,7 @@
                 id: currentNodeID,
                 parent: mainNodeID,
                 fieldOperator,
+                isPartition,
                 isDeleted: isColumnToBeDeleted,
                 isIgnored: isColumnIgnored,
                 isMapItem,
@@ -23217,6 +23235,7 @@
               id: currentNodeID,
               parent: mainNodeID,
               fieldOperator,
+              isPartition,
               isDeleted: isColumnToBeDeleted,
               isIgnored: isColumnIgnored,
               isMapItem,
@@ -23234,6 +23253,54 @@
         columnsRegularFields = handleFieldsPre(relatedTreesObjects.columns.regular),
         columnsCollectionFields = handleFieldsPre(relatedTreesObjects.columns.collection),
         columnsUDTFields = handleFieldsPre(relatedTreesObjects.columns.udt)
+
+      let isNonEqualityOpFound = {
+        primaryKey: false,
+        otherColumns: false
+      }
+
+      // Check if any column has an operator rather than equal
+      try {
+        isNonEqualityOpFound.otherColumns = ([...columnsRegularFields, ...columnsCollectionFields, ...columnsUDTFields]).some((column) => {
+          let _isNonEqualityOpFound = false
+
+          try {
+            _isNonEqualityOpFound = column.fieldOperator != undefined && column.fieldOperator != '_operator_equal'
+          } catch (e) {}
+
+          return _isNonEqualityOpFound
+        })
+
+        // No need to check the primary key in case all operators are `=`
+        if (!isNonEqualityOpFound.otherColumns)
+          throw 0
+
+        isNonEqualityOpFound.primaryKey = primaryKeyFields.some((primaryKey) => {
+          let _isNonEqualityOpFound = false
+
+          if (!primaryKey.isPartition)
+            return _isNonEqualityOpFound
+
+          try {
+            _isNonEqualityOpFound = primaryKey.fieldOperator != undefined && primaryKey.fieldOperator != '_operator_equal'
+          } catch (e) {}
+
+          return _isNonEqualityOpFound
+        })
+      } catch (e) {}
+
+      try {
+        if (!(isNonEqualityOpFound.primaryKey && isNonEqualityOpFound.otherColumns))
+          throw 0
+
+        $(`div[action="delete-row-column"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
+
+        $(`div[action="delete-row-column"]`).find('div.in-operator-error').show()
+
+        dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+
+        return
+      } catch (e) {}
 
       let getOperatorSymbol = (operator) => {
         let symbol = '='
@@ -23287,7 +23354,7 @@
           } catch (e) {}
 
           try {
-            if ((['name', 'type', 'value'].every((attribute) => field[attribute] == undefined) && !field.isMapItem) || field.isIgnored)
+            if ((['name', 'type', 'value'].every((attribute) => field[attribute] == undefined) && !field.isMapItem))
               continue
 
             let value = ''
@@ -23471,8 +23538,6 @@
         }
       }
 
-      let allNonPKColumns = [...columnsRegularFields, ...columnsCollectionFields, ...columnsUDTFields]
-
       let deletedColumns = '',
         usingTimestamp = '',
         primaryKey = '',
@@ -23480,7 +23545,7 @@
 
       // Get deleted columns
       try {
-        deletedColumns = allNonPKColumns.filter((column) => column.isDeleted)
+        deletedColumns = [...columnsRegularFields, ...columnsCollectionFields, ...columnsUDTFields].filter((column) => column.isDeleted)
 
         deletedColumns = (deletedColumns.map((column) => `${addDoubleQuotes(column.name)}`)).join(', ')
 
@@ -23490,7 +23555,11 @@
 
       let manipulatedFields = {
         primaryKey: handleFieldsPost(primaryKeyFields),
-        allNonPKColumns: handleFieldsPost(allNonPKColumns)
+        allNonPKColumns: {
+          regular: handleFieldsPost(columnsRegularFields),
+          collection: handleFieldsPost(columnsCollectionFields),
+          udt: handleFieldsPost(columnsUDTFields)
+        }
       }
 
       try {
@@ -23505,14 +23574,16 @@
       try {
         let temp = []
 
-        for (let i = 0; i < manipulatedFields.allNonPKColumns.names.length; i++) {
-          let name = manipulatedFields.allNonPKColumns.names[i],
-            value = manipulatedFields.allNonPKColumns.values[i]
+        for (let nonPKColumns of Object.keys(manipulatedFields.allNonPKColumns)) {
+          for (let i = 0; i < manipulatedFields.allNonPKColumns[nonPKColumns].names.length; i++) {
+            let name = manipulatedFields.allNonPKColumns[nonPKColumns].names[i],
+              value = manipulatedFields.allNonPKColumns[nonPKColumns].values[i]
 
-          if ([name, value].some((attribute) => `${attribute}` == 'undefined'))
-            continue
+            if ([name, value].some((attribute) => `${attribute}` == 'undefined'))
+              continue
 
-          temp.push(`${name} ${value}`)
+            temp.push(`${name} ${value}`)
+          }
         }
 
         otherFields = temp.join(' AND ')

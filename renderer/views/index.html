@@ -1100,6 +1100,35 @@
                     </div>
                   </div>
                 </div>
+                <div class="row flex margin-bottom flex-advanced for-logging-info">
+                  <div class="col-md-4"></div>
+                  <div class="col-md-8" style="width: 77%;">
+                    <div class="row flex">
+                      <div class="col-md-6">
+                        <label class="form-label">
+                          <span mulang="logs folder" capitalize></span>
+                        </label>
+                        <div class="logs-info folder">
+                          <span>/test/</span>
+                          <button type="button" class="btn btn-tertiary btn-sm">
+                            <ion-icon name="folder-open" role="img" class="md hydrated"></ion-icon>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">
+                          <span mulang="session log file" capitalize></span>
+                        </label>
+                        <div class="logs-info file">
+                          <span></span>
+                          <button type="button" class="btn btn-tertiary btn-sm">
+                            <ion-icon name="text-file-filled" role="img" class="md hydrated"></ion-icon>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="modal-section" section="languages" hidden>
                 <div class="row flex">
@@ -2496,6 +2525,10 @@
                   <span class="badge badge-secondary">
                     <span mulang="primary key" capitalize></span>
                   </span>
+                </div>
+                <div class="in-operator-error" style="margin-top: 0px; margin-bottom: 10px;">
+                  <ion-icon name="error-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> The <code>IN</code> operator for partition key is not supported in case LWT option is selected and a column has an operator rather than
+                  <code>=</code>.
                 </div>
                 <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeyTreeDeleteAction"></div>
 

@@ -5138,15 +5138,80 @@ div.management-tools-hint {
   }
 }
 
-div.row.for-management-tools-settings {
-  margin-bottom: 16px !important;
-  margin-top: -11px;
-  transform: scale(0.9);
-  transform-origin: top;
+div.row {
+  &.for-logging-info,
+  &.row.for-management-tools-settings {
+    transform: scale(0.9);
+    transform-origin: top;
 
-  div.col-md-9 {
-    position: relative;
-    left: -15px;
+    div.col-md-9 {
+      position: relative;
+      left: -15px;
+    }
+  }
+
+  &.row.for-management-tools-settings {
+    margin-bottom: 16px !important;
+    margin-top: -11px;
+  }
+
+  &.for-logging-info {
+    margin-top: 35px;
+
+    div.col-md-8 {
+      position: relative;
+      left: -15px;
+    }
+
+    div.logs-info {
+      background: #353535;
+      vertical-align: middle;
+      padding: 6px 10px;
+      border-radius: 7px;
+      align-items: center;
+      height: 40px;
+      position: relative;
+      overflow: hidden;
+
+      &.folder {
+        margin-right: 5px;
+      }
+
+      span {
+        width: calc(100% - 25px);
+        display: inline-block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      button {
+        background: rgb(67, 67, 67);
+        text-align: center;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        margin: auto;
+        width: 30px;
+        border-radius: 0;
+
+        ion-icon {
+          position: absolute;
+          color: #e3e3e3;
+          opacity: 0.7;
+          inset: 0;
+          margin: auto;
+          font-size: 125%;
+        }
+      }
+
+      &.file {
+        button ion-icon {
+          font-size: 139%;
+        }
+      }
+    }
   }
 }
 

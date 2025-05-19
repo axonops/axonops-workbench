@@ -2207,6 +2207,25 @@
               </div>
             </div>
             <div action="insert-row">
+              <div class="types-of-transactions">
+                <div class="sections">
+                  <div class="section">
+                    <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="standard">
+                      Standard
+                    </div>
+                  </div>
+                  <div class="section">
+                    <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="lwt">
+                      Lightweight Transaction (LWT)
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="lwt-hint-insert">
+                <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> Lightweight transactions (LWTs) provide strong consistency but can impact performance and scalability. Use them only
+                when
+                required.
+              </div>
               <div class="fields-badge-action" style="padding: 10px;">
                 <span class="badge badge-secondary">
                   <span mulang="consistency level" capitalize></span>
@@ -2270,149 +2289,146 @@
               <div class="consistency-level-warning-insert">
                 <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span></span>.
               </div>
+              <div section="standard">
+                <div class="fields-badge-action" id="insertPrimaryKeyBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="primary key" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeysTree"></div>
 
-              <div class="fields-badge-action" style="padding: 10px;">
-                <span class="badge badge-secondary">
-                  <span mulang="LWT Options" capitalize></span>
-                </span>
-              </div>
-              <div class="lwt-hint-insert">
-                <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> Lightweight transactions (LWTs) provide strong consistency but can impact performance and scalability. Use them only
-                when
-                required.
-              </div>
-              <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
-                <input class="form-check-input" type="radio" name="lwtInsertOptions" value id="insertNoSelectOption" checked>
-                <label class="form-check-label" for="insertNoSelectOption">
-                  No Selection.
-                </label>
-              </div>
-              <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
-                <input class="form-check-input" type="radio" name="lwtInsertOptions" value id="insertIfNotExistsOption">
-                <label class="form-check-label" for="insertIfNotExistsOption">
-                  Include <code>IF NOT EXISTS</code> keyword.
-                </label>
-              </div>
+                <div class="fields-badge-action" id="insertRegularColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="regular columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsRegularColumnsTree"></div>
 
-              <div class="fields-badge-action" id="insertPrimaryKeyBadge" style="padding: 10px;">
-                <span class="badge badge-secondary">
-                  <span mulang="primary key" capitalize></span>
-                </span>
-              </div>
-              <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeysTree"></div>
+                <div class="fields-badge-action" id="insertCollectionColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="collection types columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsCollectionColumnsTree"></div>
 
-              <div class="fields-badge-action" id="insertRegularColumnsBadge" style="padding: 10px;">
-                <span class="badge badge-secondary">
-                  <span mulang="regular columns" capitalize></span>
-                </span>
-              </div>
-              <div class="table-fields-tree children-transform" id="tableFieldsRegularColumnsTree"></div>
+                <div class="fields-badge-action" id="insertUDTColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="UDT columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsUDTColumnsTree"></div>
 
-              <div class="fields-badge-action" id="insertCollectionColumnsBadge" style="padding: 10px;">
-                <span class="badge badge-secondary">
-                  <span mulang="collection types columns" capitalize></span>
-                </span>
-              </div>
-              <div class="table-fields-tree children-transform" id="tableFieldsCollectionColumnsTree"></div>
+                <div class="fields-badge-action" id="extraOptionsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="extra options" capitalize></span>
+                  </span>
+                </div>
 
-              <div class="fields-badge-action" id="insertUDTColumnsBadge" style="padding: 10px;">
-                <span class="badge badge-secondary">
-                  <span mulang="UDT columns" capitalize></span>
-                </span>
-              </div>
-              <div class="table-fields-tree children-transform" id="tableFieldsUDTColumnsTree"></div>
+                <div class="row flex data-ttl-row">
+                  <div class="col-md-6">
+                    <div class="form-outline form-white">
+                      <div class="clear-field hide">
+                        <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                          <ion-icon name="close"></ion-icon>
+                        </div>
+                      </div>
+                      <input type="number" class="form-control" id="ttl">
+                      <label for="ttl" class="form-label">
+                        <span mulang="Data Time-To-Live" capitalize></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="ttlValueType" id="ttlMS" value="ms" checked>
+                      <label class="form-check-label" for="ttlMS">ms</label>
+                    </div>
 
-              <div class="fields-badge-action" id="extraOptionsBadge" style="padding: 10px;">
-                <span class="badge badge-secondary">
-                  <span mulang="extra options" capitalize></span>
-                </span>
-              </div>
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="ttlValueType" id="ttlS" value="s">
+                      <label class="form-check-label" for="ttlS">s</label>
+                    </div>
 
-              <div class="row flex data-ttl-row">
-                <div class="col-md-6">
-                  <div class="form-outline form-white">
-                    <div class="clear-field hide">
-                      <div class="btn btn-tertiary" data-mdb-ripple-color="light">
-                        <ion-icon name="close"></ion-icon>
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="ttlValueType" id="ttlM" value="m">
+                      <label class="form-check-label" for="ttlM">m</label>
+                    </div>
+
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="ttlValueType" id="ttlH" value="h">
+                      <label class="form-check-label" for="ttlH">h</label>
+                    </div>
+
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="ttlValueType" id="ttlD" value="d">
+                      <label class="form-check-label" for="ttlD">d</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row flex data-insertion-timestamp-row" style="align-items: flex-start;">
+                  <div class="col-md-6">
+                    <div class="form-outline form-white">
+                      <div class="clear-field hide">
+                        <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                          <ion-icon name="close"></ion-icon>
+                        </div>
+                      </div>
+                      <input type="number" class="form-control" id="insertionTimestamp">
+                      <label for="insertionTimestamp" class="form-label">
+                        <span mulang="data insertion timestamp" capitalize></span>
+                      </label>
+                      <div class="invalid-feedback" style="white-space: nowrap;">
+                        Please choose between using a Lightweight Transaction (LWT) or setting a timestamp. You cannot use both.
                       </div>
                     </div>
-                    <input type="number" class="form-control" id="ttl">
-                    <label for="ttl" class="form-label">
-                      <span mulang="Data Time-To-Live" capitalize></span>
-                    </label>
+                  </div>
+                  <div class="col-md-6">
+                    <button type="button" class="btn btn-light btn-rounded btn-sm ripple-surface-dark" style="margin-left: 10px;
+      opacity: 0.8;" id="insertionTimestampPicker">
+                      <ion-icon name="calendar" role="img" class="md hydrated" aria-label="calendar"></ion-icon> <span mulang="date time picker" capitalize></span>
+                    </button>
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
-                    <input class="form-check-input" type="radio" name="ttlValueType" id="ttlMS" value="ms" checked>
-                    <label class="form-check-label" for="ttlMS">ms</label>
-                  </div>
 
-                  <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
-                    <input class="form-check-input" type="radio" name="ttlValueType" id="ttlS" value="s">
-                    <label class="form-check-label" for="ttlS">s</label>
-                  </div>
-
-                  <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
-                    <input class="form-check-input" type="radio" name="ttlValueType" id="ttlM" value="m">
-                    <label class="form-check-label" for="ttlM">m</label>
-                  </div>
-
-                  <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
-                    <input class="form-check-input" type="radio" name="ttlValueType" id="ttlH" value="h">
-                    <label class="form-check-label" for="ttlH">h</label>
-                  </div>
-
-                  <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
-                    <input class="form-check-input" type="radio" name="ttlValueType" id="ttlD" value="d">
-                    <label class="form-check-label" for="ttlD">d</label>
-                  </div>
-                </div>
-              </div>
-
-              <div class="row flex data-insertion-timestamp-row" style="align-items: flex-start;">
-                <div class="col-md-6">
-                  <div class="form-outline form-white">
-                    <div class="clear-field hide">
-                      <div class="btn btn-tertiary" data-mdb-ripple-color="light">
-                        <ion-icon name="close"></ion-icon>
-                      </div>
+                <div class="row flex default-omitted-columns-value-row">
+                  <div class="col-md-12">
+                    <div class="form-outline form-white invalid-warning" style="z-index: 2; width: calc(100% - 10px);">
+                      <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                      <input type="text" class="form-control form-icon-trailing ignore-invalid" style="background-color: inherit; cursor: pointer;" id="defaultOmittedColumnsValue" value="UNSET" readonly noopacity>
+                      <label class="form-label">
+                        <span mulang="default omitted columns value" capitalize></span>
+                      </label>
+                      <div class="valid-feedback"></div>
+                      <div class="invalid-feedback">Any column omitted from the JSON map its value will be set to <code>NULL</code>.</div>
                     </div>
-                    <input type="number" class="form-control" id="insertionTimestamp">
-                    <label for="insertionTimestamp" class="form-label">
-                      <span mulang="data insertion timestamp" capitalize></span>
-                    </label>
-                    <div class="invalid-feedback" style="white-space: nowrap;">
-                      Please choose between using a Lightweight Transaction (LWT) or setting a timestamp. You cannot use both.
+                    <div class="dropdown" for-select="defaultOmittedColumnsValue">
+                      <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                      <ul class="dropdown-menu top-margin">
+                        <li><a class="dropdown-item" href="#" value="UNSET">UNSET</a></li>
+                        <li><a class="dropdown-item" href="#" value="NULL">NULL</a></li>
+                      </ul>
                     </div>
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <button type="button" class="btn btn-light btn-rounded btn-sm ripple-surface-dark" style="margin-left: 10px;
-    opacity: 0.8;" id="insertionTimestampPicker">
-                    <ion-icon name="calendar" role="img" class="md hydrated" aria-label="calendar"></ion-icon> <span mulang="date time picker" capitalize></span>
-                  </button>
-                </div>
               </div>
-
-              <div class="row flex default-omitted-columns-value-row">
-                <div class="col-md-12">
-                  <div class="form-outline form-white invalid-warning" style="z-index: 2; width: calc(100% - 10px);">
-                    <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                    <input type="text" class="form-control form-icon-trailing ignore-invalid" style="background-color: inherit; cursor: pointer;" id="defaultOmittedColumnsValue" value="UNSET" readonly noopacity>
-                    <label class="form-label">
-                      <span mulang="default omitted columns value" capitalize></span>
-                    </label>
-                    <div class="valid-feedback"></div>
-                    <div class="invalid-feedback">Any column omitted from the JSON map its value will be set to <code>NULL</code>.</div>
-                  </div>
-                  <div class="dropdown" for-select="defaultOmittedColumnsValue">
-                    <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
-                    <ul class="dropdown-menu top-margin">
-                      <li><a class="dropdown-item" href="#" value="UNSET">UNSET</a></li>
-                      <li><a class="dropdown-item" href="#" value="NULL">NULL</a></li>
-                    </ul>
-                  </div>
+              <div section="lwt" style="display: none;">
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="options" capitalize></span>
+                  </span>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
+                  <input class="form-check-input" type="radio" name="lwtInsertOptions" value id="insertNoSelectOption" checked>
+                  <label class="form-check-label" for="insertNoSelectOption">
+                    No Selection.
+                  </label>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
+                  <input class="form-check-input" type="radio" name="lwtInsertOptions" value id="insertIfNotExistsOption">
+                  <label class="form-check-label" for="insertIfNotExistsOption">
+                    Include <code>IF NOT EXISTS</code> keyword.
+                  </label>
                 </div>
               </div>
             </div>
@@ -2527,15 +2543,17 @@
                   </span>
                 </div>
                 <div class="in-operator-error" style="margin-top: 0px; margin-bottom: 10px;">
-                  <ion-icon name="error-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> The <code>IN</code> operator for partition key is not supported in case LWT option is selected and a column has an operator rather than
-                  <code>=</code>.
+                  <ion-icon name="error-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> The <code>IN</code> operator for partition key(s) is not supported in case a LWT option is selected.
                 </div>
                 <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeyTreeDeleteAction"></div>
-
                 <div class="fields-badge-action" id="deleteNonPKColumns" style="padding: 10px;">
                   <span class="badge badge-secondary">
                     <span mulang="delete columns" capitalize></span>
                   </span>
+                </div>
+                <div class="delete-columns-hint">
+                  <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> When executing a delete command for column(s) all primary key columns must be defined unless deleting a static
+                  column. With static columns, these can be deleted with only the partition key columns defined.
                 </div>
                 <div id="tableFieldsNonPKColumnsDeleteAction">
                   <div class="form-outline form-white margin-bottom" style="margin-bottom:10px;">
@@ -2614,6 +2632,10 @@
                   </label>
                 </div>
 
+                <div id="non-pk-columns-warning" class="non-pk-columns-warning" style="display: block;">
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span>All primary key columns must be in the standard WHERE clause to apply LWT conditions to
+                    columns that are not a prt of the primary key</span>.
+                </div>
 
                 <div class="fields-badge-action" id="deleteRegularColumnsBadge" style="padding: 10px;">
                   <span class="badge badge-secondary">

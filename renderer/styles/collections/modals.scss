@@ -1949,6 +1949,23 @@ div.input-group-text.for-not-ignoring {
       opacity: 0.5;
     }
   }
+
+  div.pk-type-icon {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    background: #262626;
+    pointer-events: none;
+    @extend .no-select;
+
+    img {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      height: -webkit-fill-available;
+      transform: scale(0.75) translateX(-7px);
+    }
+  }
 }
 
 div[action="insert-row"],
@@ -2269,6 +2286,7 @@ div[action="delete-row-column"] div.table-fields-tree {
     margin: auto;
     height: 8px;
     background: #262626;
+    z-index: -1;
   }
 }
 
@@ -2324,60 +2342,66 @@ div.form-outline.is-empty {
   }
 }
 
-div[action="delete-row-column"] div.types-of-transactions {
-  background: #202023;
-  border-radius: 10px;
-  box-shadow: 0 0 0 5px #262626;
-  width: calc(100% - 20px);
-  margin: 0 10px 10px;
+div.modal#rightClickActionsMetadata {
+  div.modal-body {
+    div[action] {
+      div.types-of-transactions {
+        background: #202023;
+        border-radius: 10px;
+        box-shadow: 0 0 0 5px #262626;
+        width: calc(100% - 20px);
+        margin: 0 10px 10px;
 
-  div.sections {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: space-around;
-    align-items: center;
-    align-content: center;
+        div.sections {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          justify-content: space-around;
+          align-items: center;
+          align-content: center;
 
-    div.section {
-      border-radius: 5px;
-      width: 100%;
+          div.section {
+            border-radius: 5px;
+            width: 100%;
 
-      ion-icon[name="external-link"] {
-        margin-left: 5px;
-        position: relative;
-        bottom: 1px;
-      }
+            ion-icon[name="external-link"] {
+              margin-left: 5px;
+              position: relative;
+              bottom: 1px;
+            }
 
-      div.btn {
-        width: 100%;
-        text: {
-          align: center;
-          transform: capitalize;
-        }
-        padding-left: 5px;
-        color: inherit;
-        transition: opacity 0.2s ease-in-out;
-        opacity: 0.5;
+            div.btn {
+              width: 100%;
+              text: {
+                align: center;
+                transform: capitalize;
+              }
+              padding-left: 5px;
+              color: inherit;
+              transition: opacity 0.2s ease-in-out;
+              opacity: 0.5;
 
-        &:hover {
-          opacity: 0.8;
-        }
+              &:hover {
+                opacity: 0.8;
+              }
 
-        &.active {
-          opacity: 1;
-        }
+              &.active {
+                opacity: 1;
+              }
 
-        &.invalid:after {
-          content: '';
-          width: 7px;
-          height: 7px;
-          background: #bf334b;
-          border-radius: 50%;
-          display: inline-block;
-          position: relative;
-          bottom: 5px;
-          left: 2px;
+              &.invalid:after {
+                content: '';
+                width: 7px;
+                height: 7px;
+                background: #bf334b;
+                border-radius: 50%;
+                display: inline-block;
+                position: relative;
+                bottom: 5px;
+                left: 2px;
+              }
+            }
+          }
         }
       }
     }
@@ -2449,6 +2473,7 @@ div#tableFieldsNonPKColumnsDeleteAction {
         top: 1px;
       }
 
+      div.is-static,
       div.type {
         font-size: 95%;
         margin-left: 5px;
@@ -2458,6 +2483,14 @@ div#tableFieldsNonPKColumnsDeleteAction {
         border-radius: 5px;
         position: relative;
         transform: scale(0.95);
+      }
+
+      div.is-static {
+        margin-right: 0;
+        margin-left: 0;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+        background: transparent;
+        color: rgba(255, 255, 255, 0.8);
       }
 
       &:hover {
@@ -2476,11 +2509,14 @@ div#noColumnMatched {
   display: none;
 }
 
+div.consistency-level-enhanced-console-info,
 div.consistency-level-warning-delete,
 div.consistency-level-warning-insert,
+div.delete-columns-hint,
 div.in-operator-error,
 div.lwt-hint,
-div.lwt-hint-insert {
+div.lwt-hint-insert,
+div.non-pk-columns-warning {
   background: rgba(123, 181, 255, 0.1);
   font-size: 85%;
   padding: 0 5px;
@@ -2492,10 +2528,14 @@ div.lwt-hint-insert {
   margin-bottom: 5px;
   display: none;
 
-  &.lwt-hint-insert {
+  &.delete-columns-hint {
     display: block;
     margin-top: 0;
     margin-bottom: 10px;
+  }
+
+  &.delete-columns-hint {
+    width: calc(100% - 30px);
   }
 
   ion-icon {
@@ -2505,12 +2545,24 @@ div.lwt-hint-insert {
   }
 
   &.consistency-level-warning-delete,
-  &.consistency-level-warning-insert {
+  &.consistency-level-warning-insert,
+  &.non-pk-columns-warning {
     background: rgba(255, 234, 123, 0.1);
   }
 
   &.in-operator-error {
     background: rgba(255,122,122,.1);
+  }
+
+  &.consistency-level-enhanced-console-info {
+    display: block;
+    padding: 0;
+    margin: 2px 0 5px;
+
+    ion-icon {
+      bottom: 1px;
+      left: 3px;
+    }
   }
 }
 
@@ -2549,4 +2601,51 @@ table.lwtConsistencyLevelTooltipTable {
   th {
     padding: 7px;
   }
+}
+
+a.jstree-anchor {
+  div.operators-dropdown-focusarea {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    pointer-events: all;
+    cursor: pointer;
+  }
+
+  &.unavailable {
+    div.operators-dropdown-focusarea {
+      pointer-events: none;
+      cursor: default;
+    }
+
+    div.form-outline.operators-dropdown {
+      ion-icon[name="arrow-down"] {
+        opacity: 0.5;
+      }
+    }
+  }
+}
+
+div#tableFieldsRegularColumnsTreeDeleteAction {
+  z-index: 4;
+}
+
+div#tableFieldsCollectionColumnsTreeDeleteAction {
+  z-index: 3;
+}
+
+div#tableFieldsUDTColumnsTreeDeleteAction {
+  z-index: 2;
+}
+
+div#tableFieldsPrimaryKeyTreeDeleteAction {
+  z-index: 1;
+}
+
+a[data-operator-id].disabled {
+  color: gray !important;
+}
+
+ul.dropdown-menu.operators-dropdown {
+  font-family: 'Terminal';
 }

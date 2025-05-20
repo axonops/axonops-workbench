@@ -1,9 +1,0 @@
-[
-  {
-    "ports": { "axonops": 35449, "cassandra": 43309 },
-    "axonops": false,
-    "folder": "18f8f",
-    "cassandraVersion": "5.0",
-    "nodes": 1
-  }
-]

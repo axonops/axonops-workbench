@@ -651,6 +651,18 @@ let formatTimeUUID = (uuid, withMilliSeconds = false) => {
 let repairJSON = (json) => {
   let result = json // Final result which be returned
 
+  try {
+    if (OS.platform() != 'win32')
+      throw 0
+
+    result = `${result}`.replace(/'comment'\s*:\s*'(.*?)',\s*'compaction'/g, (_, match) => {
+
+      let modifiedComment = match.replace(/"/g, '\\"');
+
+      return `'comment': '${modifiedComment}', 'compaction'`;
+    })
+  } catch (e) {}
+
   // Add a log about this process -  without logging the result afterward -
   try {
     addLog(`Repair a string-format JSON '${json.slice(0, 20)}...'`, 'process')

@@ -82,10 +82,10 @@
           cluster.info.secrets = undefined
           cluster.name = cluster.name || cluster.folder
           cluster.host = `127.0.0.1:${cluster.ports.cassandra}`
-        } catch (e) {errorLog(e, 'connections');
+        } catch (e) {
           try {
-            // errorLog(e, 'connections')
-          } catch (e) {errorLog(e, 'connections');}
+            errorLog(e, 'connections')
+          } catch (e) {}
         }
 
         // Define the cluster's ID
@@ -155,10 +155,10 @@
 
           // Check the SSH passphrase
           secrets += secretsInfo.sshPassphrase != undefined ? `data-ssh-passphrase="${secretsInfo.sshPassphrase}" ` : ''
-        } catch (e) {errorLog(e, 'connections');
+        } catch (e) {
           try {
-            // errorLog(e, 'connections')
-          } catch (e) {errorLog(e, 'connections');}
+            errorLog(e, 'connections')
+          } catch (e) {}
         }
 
         // This variable will hold the requirement of DB auth and SSH credentials in UI attributes if needed
@@ -174,10 +174,10 @@
 
           // Check the SSH credentials
           credentials += cluster.info.credentials.ssh != undefined ? ` data-credentials-ssh="true"` : ''
-        } catch (e) {errorLog(e, 'connections');
+        } catch (e) {
           try {
-            // errorLog(e, 'connections')
-          } catch (e) {errorLog(e, 'connections');}
+            errorLog(e, 'connections')
+          } catch (e) {}
         }
 
         /**
@@ -278,7 +278,7 @@
             <div class="text"><ion-icon class="management-tool" name="${containersManagementTool}"></ion-icon></div>
             <div class="_placeholder" hidden></div>
           </div>`
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         // Cluster UI element structure
         let element = `
@@ -372,7 +372,7 @@
                 // Add log for this request
                 try {
                   addLog(`Request to test the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // If the cluster has an active work area and the process to be executed is not disconnecting with the cluster then stop the process and show feedback to the user
                 if (hasWorkarea == 'true' && !isProcessDisconnect)
@@ -427,7 +427,7 @@
 
                     // Add `one-only` class and either one of the two classes `ssh` and `auth`
                     clusterCredentialsDialog.addClass(`one-only ${credentialsAuth == undefined ? 'ssh' : 'auth'}`)
-                  } catch (e) {errorLog(e, 'connections');
+                  } catch (e) {
                     // Both credentials are needed so remove all class related to the need of one of them only
                     clusterCredentialsDialog.removeClass(`one-only ssh auth`)
                   }
@@ -446,7 +446,7 @@
 
                   // Skip the upcoming code
                   return
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // Disable the `CONNECT` button
                 $(`button[button-id="${connectBtnID}"]`).attr('disabled', '')
@@ -468,8 +468,8 @@
                   // Attempt to close SSH tunnel if it exists
                   try {
                     IPCRenderer.send('ssh-tunnel:close', clusterID)
-                  } catch (e) {errorLog(e, 'connections');}
-                } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
+                } catch (e) {}
 
                 // Reset the status of the connection with the cluster
                 clusterElement.children('div.status')
@@ -517,7 +517,7 @@
                   // Add log for this request
                   try {
                     addLog(`Request to connect '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   // If the currently running clusters are more than or equal to the maximum allowed number and this is not the sandbox workspace then end the process and show feedback to the user
                   if (([numRunningClusters, numAttemptingClusters]).some((num) => num >= maximumRunningClusters) && !isSandbox)
@@ -567,7 +567,7 @@
 
                       // Handle the margin of the first cluster
                       setTimeout(() => handleClusterSwitcherMargin())
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       // If the current shown work area is the cluster's one then skip this try-catch block
@@ -579,8 +579,8 @@
 
                       // Skip the upcoming code
                       return
-                    } catch (e) {errorLog(e, 'connections');}
-                  } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
+                  } catch (e) {}
 
                   // Handle when connection is lost with the cluster
                   try {
@@ -597,7 +597,7 @@
 
                     // Skip the upcoming code
                     return
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     // If the `restart` flag is `true` then skip this try-catch block
@@ -612,7 +612,7 @@
 
                     // Fade in the work area content container
                     setTimeout(() => content.removeAttr('hidden').hide().fadeIn(200), 150)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   // If no need to create a work area then skip the upcoming code
                   if (skipCreationWorkarea)
@@ -702,7 +702,7 @@
                          </span>
                        </a>
                      </li>`
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   // Cluster work area's UI element structure
                   let element = `
@@ -1094,7 +1094,7 @@
                           try {
                             let object = getElementMDBObject($(this), 'Input')
                             object.update()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       }, 1000)
 
@@ -1341,7 +1341,7 @@
                               delete highlight.type
                               return highlight
                             })
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             if (type != 'old')
@@ -1351,11 +1351,11 @@
                               delete highlight.type
                               return highlight
                             })
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             metadataDiffEditors[type].decorations = metadataDiffEditors[type].object.deltaDecorations([], finalHighlights)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -1390,7 +1390,7 @@
                         statementText = Highlight.highlight(removeComments(statementText, true), {
                           language: 'cql'
                         }).value
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // The statement's block UI structure
                       let element = `
@@ -1456,7 +1456,7 @@
                             $(this).parent().animate({
                               scrollTop: $(this).parent().get(0).scrollHeight
                             }, 100)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         }, 250)
 
                         // Skip the upcoming code if the block is not an info
@@ -1481,7 +1481,7 @@
 
                               // Show the emptiness class
                               sessionContainer.parent().find(`div.empty-statements`).addClass('show')
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           })
                         })
 
@@ -1535,7 +1535,7 @@
 
                             try {
                               activity.data_center = dataCenters.find((dataCenter) => dataCenter.address == activity.source).datacenter
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             activity.color = invertColor(getRandomColor())
 
@@ -1543,7 +1543,7 @@
 
                             return activity
                           })
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         let groupedResult = groupActivitiesBySource([...result]),
                           totalSourcesElapsedTime = Object.keys(groupedResult).map((source) => {
@@ -1553,7 +1553,7 @@
                               let initTime = 0
 
                               elapsedTime = groupedResult[source].reduce((accumulator, activity) => accumulator + Math.abs(activity.source_elapsed), initTime)
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             elapsedTime = (elapsedTime / 1000)
 
@@ -1578,7 +1578,7 @@
                         try {
                           if (!Array.isArray(sourcesColors))
                             sourcesColors = [sourcesColors]
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         sourcesColors = sourcesColors.map((color) => invertColor(color))
 
@@ -1670,7 +1670,7 @@
                                     "Session ID": sourceActivity.session_id
                                   }
                                 })
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               convertTableToTabulator(JSON.stringify(tableData), $(`div[id="_${tableBodyID}"]`), (tabulatorObject) => setTimeout(() => {
                                 activitesTabulatorObject = tabulatorObject
@@ -1691,10 +1691,10 @@
                               // Copy the result to the clipboard
                               try {
                                 Clipboard.writeText(resultBeautified)
-                              } catch (e) {errorLog(e, 'connections');
+                              } catch (e) {
                                 try {
-                                  // errorLog(e, 'connections')
-                                } catch (e) {errorLog(e, 'connections');}
+                                  errorLog(e, 'connections')
+                                } catch (e) {}
                               }
 
                               // Give feedback to the user
@@ -1755,7 +1755,7 @@
                               activityChartIDFilterInput.val(`${activityChartID}`).focus()
 
                               setTimeout(() => $('body').find('button')[0].focus())
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           }
 
                           /**
@@ -1768,7 +1768,7 @@
 
                           try {
                             timeLineChartConfig.options.onClick = (event, element) => onClickChartElement(event, element)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Set the special configuration for the timeline chart
                           try {
@@ -1803,10 +1803,10 @@
                               let val = JSON.parse(activity.formattedValue)
                               return `${(val[1] - val[0]).toFixed(2)}ms`
                             }
-                          } catch (e) {errorLog(e, 'connections');
+                          } catch (e) {
                             try {
-                              // errorLog(e, 'connections')
-                            } catch (e) {errorLog(e, 'connections');}
+                              errorLog(e, 'connections')
+                            } catch (e) {}
                           }
 
                           /**
@@ -1819,7 +1819,7 @@
 
                           try {
                             pieChartConfig.options.onClick = (event, element) => onClickChartElement(event, element)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Set the special configuration for the pie chart
                           try {
@@ -1830,10 +1830,10 @@
                             pieChartConfig.options.plugins.tooltip.callbacks.label = (activity) => {
                               return `${parseFloat(activity.formattedValue).toFixed(2)}ms`
                             }
-                          } catch (e) {errorLog(e, 'connections');
+                          } catch (e) {
                             try {
-                              // errorLog(e, 'connections')
-                            } catch (e) {errorLog(e, 'connections');}
+                              errorLog(e, 'connections')
+                            } catch (e) {}
                           }
 
                           /**
@@ -1854,7 +1854,7 @@
                             $(`div.sources[id="_${sourcesContainerID}"]`).children('button').each(function() {
                               try {
                                 activitesTabulatorObject.removeFilter('Source', 'like', $(this).attr('data-source'))
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             })
 
                             if (sourceIP != 'all')
@@ -1933,7 +1933,7 @@
 
                             try {
                               dataCenter = dataCenters.find((dataCenter) => dataCenter.address == sourceIP).datacenter
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             let element = `
                                 <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="${sourceIP}">
@@ -1973,7 +1973,7 @@
 
                     try {
                       IPCRenderer.removeAllListeners(`pty:data:${clusterID}`)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     // Listen to data sent from the pty instance which are fetched from the cqlsh tool
                     IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
@@ -2007,7 +2007,7 @@
                         showToast(I18next.t('activate connection'), I18next.capitalizeFirstLetter(I18next.replaceData(`failed to finalize the creation of the work area as the connection [b]$data[/b] has been lost. Consider to close this workarea and test the connection before trying again`, [getAttributes(clusterElement, 'data-name')]) + '.'), 'failure')
 
                         return
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // Check if the received data contains the `tracing session` keyword
                       try {
@@ -2019,7 +2019,7 @@
 
                         // Remove any duplication
                         detectedSessionsID = [...new Set(detectedSessionsID)]
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // Check if `CQLSH-STARTED` has been received
                       try {
@@ -2096,12 +2096,12 @@
                             followsCaret: true, // Optional
                             ignoreCharChanges: true // Optional: Treat each word/line as a diff, rather than individual characters
                           });
-                        } catch (e) {errorLog(e, 'connections');
+                        } catch (e) {
 
                         } finally {
 
                         }
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       /**
                        * Inner function to check if the metadata has been fetched or not
@@ -2127,11 +2127,19 @@
                           // Get the cluster's metadata
                           Modules.Clusters.getMetadata(clusterID, (metadata) => {
                             try {
-                              if (OS.platform() == 'win32')
-                                metadata = metadata.replace(/\\"/g, `\"`)
-
                               // Convert the metadata from JSON string to an object
-                              metadata = JSON.parse(metadata)
+                              try {
+                                metadata = JSON.parse(metadata)
+                              } catch (e) {
+                                try {
+                                  if (OS.platform() != 'win32')
+                                    throw 0
+
+                                  metadata = metadata.replace(/\\"/g, `\"`)
+
+                                  metadata = JSON.parse(metadata)
+                                } catch (e) {}
+                              }
 
                               // Update latest metadata
                               latestMetadata = metadata
@@ -2149,7 +2157,7 @@
 
                               try {
                                 jsTreeObject.unbind('contextmenu')
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               /**
                                * Create a listener to the event `contextmenu`
@@ -2181,7 +2189,7 @@
 
                                   // Point at the clicked element's parent `a`
                                   clickedNode = clickedNode.parent()
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 // If after the manipulation the final element is not an anchor or doesn't have a required attribute then skip the process
                                 if (!clickedNode.is('a') || clickedNode.attr('allow-right-context') != 'true')
@@ -2221,7 +2229,7 @@
 
                                   // And finally add the index itself
                                   scope += `index>${targetName}`
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 let contextMenu = [{
                                   label: I18next.capitalize(I18next.t('get CQL description')),
@@ -2269,7 +2277,7 @@
                                         btnID: '_${executeStatementBtnID}'
                                       })`
                                   })
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 try {
                                   if (['keyspace', 'udts-parent', 'udt', 'tables-parent', 'counter-tables-parent', 'table'].every((type) => nodeType != type) || clickedNode.attr('data-is-virtual') != null)
@@ -2283,14 +2291,14 @@
                                       contextMenu = []
 
                                     targetName = keyspaceName
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
 
                                   let keyspaceInfo = metadata.keyspaces.find((keyspace) => keyspace.name == targetName),
                                     isSystemKeyspace = Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == keyspaceInfo.name)
 
                                   try {
                                     $('#rightClickActionsMetadata').attr('data-keyspace-info', `${JSON.stringify(keyspaceInfo)}`)
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
 
                                   let replicationStrategy = JSON.parse(repairJSON(`${keyspaceInfo.replication_strategy}`) || `{}`)
 
@@ -2492,7 +2500,7 @@
 
                                   if (isSystemKeyspace)
                                     contextMenu = contextMenu.filter((item) => item.action != 'dropKeyspace')
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 try {
                                   if (nodeType != 'keyspaces')
@@ -2509,7 +2517,7 @@
                                         btnID: '_${executeStatementBtnID}'
                                       })`
                                   })
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 if (contextMenu.length > 0 && contextMenu.find((item) => item.type == 'separator') == undefined)
                                   contextMenu = contextMenu.concat([{
@@ -2577,8 +2585,8 @@
                                     // If there's at least one result for this search then attempt to click the first result
                                     try {
                                       lastSearchResults[0].click()
-                                    } catch (e) {errorLog(e, 'connections');}
-                                  } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
+                                  } catch (e) {}
                                 })
 
                                 // Clicks either the previous or the next buttons/arrows
@@ -2606,7 +2614,7 @@
 
                                     // Add the click animation class to the reached result
                                     setTimeout(() => $(lastSearchResults[currentIndex]).addClass('animate-click'), 50)
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
                                 })
                               }
 
@@ -2636,14 +2644,14 @@
                                         snapshotTakenTime = toBeLoadedMetadata.time
 
                                         delete toBeLoadedMetadata.time
-                                      } catch (e) {errorLog(e, 'connections');}
+                                      } catch (e) {}
 
                                       try {
                                         if (snapshotTakenTime.length <= 0)
                                           throw 0
 
                                         snapshotTakenTime = ` (${formatTimestamp(snapshotTakenTime)})`
-                                      } catch (e) {errorLog(e, 'connections');}
+                                      } catch (e) {}
 
                                       // The old side's badge will be updated with the snapshot name
                                       setTimeout(() => {
@@ -2654,7 +2662,7 @@
                                       $(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
 
                                       $(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
 
                                     // Create an editor for the old metadata content
                                     metadataDiffEditors.old.object = createEditor('old', toBeLoadedMetadata)
@@ -2706,7 +2714,7 @@
 
                                           try {
                                             diffEditor.revealLineInCenter(lineNumber)
-                                          } catch (e) {errorLog(e, 'connections');}
+                                          } catch (e) {}
                                         }))
                                       }) // This semicolon is critical here
                                     })
@@ -2722,7 +2730,7 @@
                                       (new ResizeObserver(() => {
                                         try {
                                           diffEditor.layout()
-                                        } catch (e) {errorLog(e, 'connections');}
+                                        } catch (e) {}
                                       })).observe(workareaElement[0])
                                     })
 
@@ -2731,24 +2739,24 @@
                                   })
 
                                 })
-                              } catch (e) {errorLog(e, 'connections');
+                              } catch (e) {
                                 try {
-                                  // errorLog(e, 'connections')
-                                } catch (e) {errorLog(e, 'connections');}
+                                  errorLog(e, 'connections')
+                                } catch (e) {}
                               }
 
                               // Hide the loading indicator in the tree view section
                               setTimeout(() => metadataContent.parent().removeClass('loading'), 150)
-                            } catch (e) {errorLog(e, 'connections');
+                            } catch (e) {
                               try {
-                                // errorLog(e, 'connections')
-                              } catch (e) {errorLog(e, 'connections');}
+                                errorLog(e, 'connections')
+                              } catch (e) {}
                             }
                           })
-                        } catch (e) {errorLog(e, 'connections');
+                        } catch (e) {
                           try {
-                            // errorLog(e, 'connections')
-                          } catch (e) {errorLog(e, 'connections');}
+                            errorLog(e, 'connections')
+                          } catch (e) {}
                         }
                       }
                       // End of the check metadata function
@@ -2767,7 +2775,7 @@
                           // Skip the upcoming code in this try-catch block
                           throw 0
                         }
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       /**
                        * For the app's terminal
@@ -2806,7 +2814,7 @@
 
                         try {
                           isOutputIncomplete = isSourceCommand ? !(allOutput.includes('KEYWORD:OUTPUT:SOURCE:COMPLETED')) : isOutputIncomplete
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         // Update the block's output
                         blocksOutput[data.blockID] = `${blocksOutput[data.blockID] || ''}${data.output}`
@@ -2824,17 +2832,17 @@
                           statementsIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[(.*?)\]/i)[1].split(',')
                           // Manipulate them
                           statementsIdentifiers = statementsIdentifiers.map((identifier) => identifier.trim())
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           statementsStNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[(.*?)\]/i)[1].split(',')
                           statementsStNextIdentifiers = statementsStNextIdentifiers.map((identifier) => identifier.trim())
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           statementsNdNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[.*?\]\[(.*?)\]/i)[1].split(',')
                           statementsNdNextIdentifiers = statementsNdNextIdentifiers.map((identifier) => identifier.trim())
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         // Handle if the statement's execution process has stopped
                         try {
@@ -2844,7 +2852,7 @@
                           // Attempt to clear the killing process button showing state
                           try {
                             clearTimeout(killProcessTimeout)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Hide the button if there's no incomplete output
                           if (!isOutputIncomplete)
@@ -2856,7 +2864,7 @@
                               killProcessBtn.parent().addClass('show')
                               setTimeout(() => hintsContainer.addClass('show'), 1000)
                             }, 1500)
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           if (!isOutputIgnored || blockElement.children('div.output').find('div.incomplete-statement').length != 0)
@@ -2901,7 +2909,7 @@
 
                                     // Skip the upcoming code
                                     return
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
 
                                   // Just get the output's text
                                   outputGroup.push($(this).text())
@@ -2918,10 +2926,10 @@
                                 // Copy content to the clipboard
                                 try {
                                   Clipboard.writeText(contentBeautified)
-                                } catch (e) {errorLog(e, 'connections');
+                                } catch (e) {
                                   try {
-                                    // errorLog(e, 'connections')
-                                  } catch (e) {errorLog(e, 'connections');}
+                                    errorLog(e, 'connections')
+                                  } catch (e) {}
                                 }
 
                                 // Give feedback to the user
@@ -2948,7 +2956,7 @@
 
                                     // Play the emptiness animation
                                     queriesContainer.find('lottie-player')[0].play()
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
                                 }, 500)
 
                                 // Remove the block from the session
@@ -2964,7 +2972,7 @@
 
                                   // Show the emptiness class
                                   sessionContainer.parent().find(`div.empty-statements`).addClass('show')
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
                               })
                             })
 
@@ -2973,12 +2981,12 @@
                                 blockElement.parent().animate({
                                   scrollTop: blockElement.parent().get(0).scrollHeight
                                 }, 100)
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             }, 500)
                           }))
 
                           return
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         // If no output has been detected then skip this try-catch block
                         if (!finalContent.includes('KEYWORD:OUTPUT:COMPLETED:ALL'))
@@ -3037,32 +3045,32 @@
                                     // Make sure to clear the previous timeout
                                     try {
                                       clearTimeout(refreshMetadataTimeout)
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
 
                                     // Set the timeout to be triggerd and refresh the metadata
                                     refreshMetadataTimeout = setTimeout(() => $(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(), 1000)
                                   }
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 try {
                                   if (!(['select'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1)))
                                     throw 0
 
                                   noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span> - <span mulang="no data found" capitalize-first></span>.</no-output>'
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 try {
                                   if (`${statementIdentifier}`.toLowerCase() != 'begin' || !([statementsStNextIdentifier, statementsNdNextIdentifier].some((identifier) => `${identifier}`.toLowerCase() == 'batch')))
                                     throw 0
 
                                   noOutputElement = '<no-output>Batch <span mulang="CQL statement executed" capitalize-first></span>.</no-output>'
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 let isOutputHighlighted = false
 
                                 try {
                                   isOutputHighlighted = (['desc', 'describe'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound))
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 try {
                                   if (!isOutputHighlighted)
@@ -3071,7 +3079,7 @@
                                   match = Highlight.highlight(match, {
                                     language: 'cql'
                                   }).value
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 let isConsistencyCommand = false
 
@@ -3084,7 +3092,7 @@
 
                                   try {
                                     setConsistency = setConsistency.match(/\s+([A-Z_]+)\.$/g)[0].trim().replace(/\./g, '')
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
 
                                   try {
                                     let consistencyLevels = Modules.Consts.ConsistencyLevels[consistencyType == 'consistency' ? 'Regular' : 'Serial']
@@ -3108,8 +3116,8 @@
                                     activeSessionsConsistencyLevels[activeClusterID][consistencyType == 'consistency' ? 'standard' : 'serial'] = setConsistency
 
                                     isConsistencyCommand = true
-                                  } catch (e) {errorLog(e, 'connections');}
-                                } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
+                                } catch (e) {}
 
                                 // The sub output structure UI
                                 let element = `
@@ -3155,7 +3163,7 @@
 
                                       // Show the badge with the number of statements
                                       blockElement.find('div.statements-count').text(`${numberOfStatements} statements`).hide().fadeIn('fast')
-                                    } catch (e) {errorLog(e, 'connections');
+                                    } catch (e) {
                                       // Hide the badge
                                       blockElement.find('div.statements-count').hide()
                                     }
@@ -3197,7 +3205,7 @@
                                     outputElement.find('div.sub-actions').children('div.sub-action[sub-action="download"]').hide()
 
                                     outputElement.addClass('actions-shown')
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
 
                                   // Handle if the content has JSON string
                                   try {
@@ -3226,7 +3234,7 @@
 
                                       try {
                                         clearTimeout(killProcessTimeout)
-                                      } catch (e) {errorLog(e, 'connections');}
+                                      } catch (e) {}
 
                                       if (!isOutputIncomplete)
                                         hintsContainer.add(killProcessBtn.parent()).removeClass('show')
@@ -3237,7 +3245,7 @@
 
                                           setTimeout(() => hintsContainer.addClass('show'), 1000)
                                         }, 1500)
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
 
                                     // Show the block
                                     blockElement.show().addClass('show')
@@ -3248,12 +3256,12 @@
                                         blockElement.parent().animate({
                                           scrollTop: blockElement.parent().get(0).scrollHeight
                                         }, 100)
-                                      } catch (e) {errorLog(e, 'connections');}
+                                      } catch (e) {}
                                     }, 100)
 
                                     // Skip the upcoming code
                                     return
-                                  } catch (e) {errorLog(e, 'connections');} finally {
+                                  } catch (e) {} finally {
                                     // Execute this code whatever the case is
                                     setTimeout(() => {
                                       // Unbind all events regards the actions' buttons of the block
@@ -3278,7 +3286,7 @@
 
                                             // Skip the upcoming code
                                             return
-                                          } catch (e) {errorLog(e, 'connections');}
+                                          } catch (e) {}
 
                                           // Just get the output's text
                                           outputGroup.push($(this).text())
@@ -3295,10 +3303,10 @@
                                         // Copy content to the clipboard
                                         try {
                                           Clipboard.writeText(contentBeautified)
-                                        } catch (e) {errorLog(e, 'connections');
+                                        } catch (e) {
                                           try {
-                                            // errorLog(e, 'connections')
-                                          } catch (e) {errorLog(e, 'connections');}
+                                            errorLog(e, 'connections')
+                                          } catch (e) {}
                                         }
 
                                         // Give feedback to the user
@@ -3341,7 +3349,7 @@
 
                                           try {
                                             sessionID = detectedSessionsID.filter((sessionID) => sessionID != null)[0]
-                                          } catch (e) {errorLog(e, 'connections');}
+                                          } catch (e) {}
 
                                           try {
                                             // If there's no session ID exists then skip this try-catch block
@@ -3357,7 +3365,7 @@
 
                                             // Add listener to the `click` event
                                             tracingButton.click(() => clickEvent(true, sessionID))
-                                          } catch (e) {errorLog(e, 'connections');}
+                                          } catch (e) {}
                                         }, 2000)
 
                                         // Clicks the deletion button
@@ -3380,7 +3388,7 @@
 
                                               // Play the emptiness animation
                                               queriesContainer.find('lottie-player')[0].play()
-                                            } catch (e) {errorLog(e, 'connections');}
+                                            } catch (e) {}
                                           }, 500)
 
                                           // Remove the block from the session
@@ -3396,7 +3404,7 @@
 
                                             // Show the emptiness class
                                             sessionContainer.parent().find(`div.empty-statements`).addClass('show')
-                                          } catch (e) {errorLog(e, 'connections');}
+                                          } catch (e) {}
                                         })
                                       }
                                     })
@@ -3407,7 +3415,7 @@
                                       throw 0
 
                                     match = match.replace(/\n(?![^<]*<\/span>)/gim, '')
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
 
                                   // Manipulate the content
                                   match = match.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
@@ -3441,7 +3449,7 @@
                               })
                             }
                           }
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         // Show the current active prefix/prompt
                         setTimeout(() => blockElement.find('div.prompt').text(minifyText(prefix).slice(0, -1)).hide().fadeIn('fast'), 1000)
@@ -3451,7 +3459,7 @@
 
                           try {
                             clearTimeout(killProcessTimeout)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           if (!isOutputIncomplete)
                             hintsContainer.add(killProcessBtn.parent()).removeClass('show')
@@ -3462,7 +3470,7 @@
 
                               setTimeout(() => hintsContainer.addClass('show'), 1000)
                             }, 1500)
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         // Show the block
                         blockElement.show().addClass('show')
@@ -3473,9 +3481,9 @@
                             blockElement.parent().animate({
                               scrollTop: blockElement.parent().get(0).scrollHeight
                             }, 100)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         }, 100)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       try {
                         // Check if the query tracing feature has been enabled/disabled
@@ -3493,7 +3501,7 @@
                           if (data.output.toLowerCase().indexOf('disabled tracing') != -1)
                             queryTracingHint.show()
                         }
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // Set the prompt which has been got from cqlsh tool
                       activePrefix = ''
@@ -3506,7 +3514,7 @@
                         // Got a prompt, adopt it
                         activePrefix = `${prompt[0]} `
                         prefix = activePrefix
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                     // The listener to data sent from the pty instance has been finished
 
@@ -3525,7 +3533,7 @@
                       // Add log
                       try {
                         addLog(`CQL console created for the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       /**
                        * Custom terminal options
@@ -3576,7 +3584,7 @@
 
                           try {
                             IPCRenderer.removeAllListeners(`pty:data-basic:${clusterID}`)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Listen to data sent from the pty instance regards the basic terminal
                           IPCRenderer.on(`pty:data-basic:${clusterID}`, (_, data) => {
@@ -3587,7 +3595,7 @@
 
                               // Print/write the data to the terminal
                               terminal.write(data.output)
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           })
 
                           /**
@@ -3632,7 +3640,7 @@
 
                               // Click the close connection button after a while
                               setTimeout(() => workareaElement.find('div.cluster-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             // Send the character in realtime to the pty instance
                             IPCRenderer.send('pty:data', {
@@ -3696,7 +3704,7 @@
 
                               // Return `false` to make sure the handler of xtermjs won't be executed
                               return false
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             /**
                              * Handle the terminal's buffer clearing process on Windows
@@ -3714,7 +3722,7 @@
 
                               // Return `false` to make sure the handler of xtermjs won't be executed
                               return false
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             /**
                              * Handle the termination of the terminal's session
@@ -3729,7 +3737,7 @@
 
                               // Return `false` to make sure the handler of xtermjs won't be executed
                               return false
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             /**
                              * Handle the copying process of selected text in the terminal
@@ -3747,11 +3755,11 @@
                               // Attempt to write the selected text in the terminal
                               try {
                                 Clipboard.writeText(terminal.getSelection())
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               // Return `false` to make sure the handler of xtermjs won't be executed
                               return false
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           })
 
                           /**
@@ -3795,16 +3803,16 @@
                                 // Prevent any default behavior
                                 e.preventDefault()
                               })
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           }, 1000)
                         })
-                      } catch (e) {errorLog(e, 'connections');
+                      } catch (e) {
                         try {
-                          // errorLog(e, 'connections')
-                        } catch (e) {errorLog(e, 'connections');}
+                          errorLog(e, 'connections')
+                        } catch (e) {}
                       }
                       // End of handling the app's basic terminal
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     /*
                      * Point at killing the current process
@@ -3899,7 +3907,7 @@
                           // Loop through each keyspace and set its tables' names in array
                           for (let keyspace of keyspaces)
                             result[keyspace.name] = keyspace.tables.map((table) => table.name)
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         // Return the final result
                         return result
@@ -3946,13 +3954,13 @@
                               setTimeout(() => {
                                 try {
                                   terminal.clear()
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
                               }, 1000)
                             })
 
                             // Update the attribute; to not perform this process again
                             basicTerminal.attr('data-initialized', 'true')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // If the process is only initialization then skip the upcoming code
                           if (onlyInit)
@@ -3963,7 +3971,7 @@
 
                           // Hide the interactive terminal
                           interactiveTerminal.hide()
-                        } catch (e) {errorLog(e, 'connections');
+                        } catch (e) {
                           /**
                            * Reaching here means the basic terminal is already shown
                            *
@@ -4011,7 +4019,7 @@
                           sessionContainer.children('div.block').find('div.actions div.btn[action="delete"]').click()
 
                           return
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           if (!((['quit', 'exit']).some((command) => minifyText(statement).startsWith(minifyText(command)))))
@@ -4031,7 +4039,7 @@
 
                           // Skip the upcoming code in the execution button
                           return
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           if (!(minifyText(statement).startsWith('source_')))
@@ -4097,11 +4105,11 @@
                             {
                               try {
                                 clearTimeout(killProcessTimeout)
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               try {
                                 killProcessBtn.parent().addClass('show')
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             }
 
                             statementTextContainer.prepend($(`<span class="spinner"><l-wobble size="25" speed="0.77" color="#f0f0f0"></l-wobble></span>`).hide(function() {
@@ -4184,13 +4192,13 @@
                                       blockElement.parent().animate({
                                         scrollTop: blockElement.parent().get(0).scrollHeight
                                       }, 100)
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
                                   }, 500)
                                 }))
 
                                 try {
                                   IPCRenderer.removeAllListeners(`cql:file:execute:data:${clusterID}`)
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 let ansiToHTML = new ANSIToHTML(),
                                   errorsCount = 0
@@ -4200,7 +4208,7 @@
 
                                   try {
                                     errors = JSON.parse(data.errors)
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
 
                                   errorsCount += errors.length
 
@@ -4211,7 +4219,7 @@
                                           throw 0
 
                                         error = error.replace(/\n(?![^<]*<\/span>)/gim, '')
-                                      } catch (e) {errorLog(e, 'connections');}
+                                      } catch (e) {}
 
                                       // Manipulate the content
                                       error = error.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
@@ -4227,7 +4235,7 @@
 
                                       return error
                                     })
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
 
                                   {
                                     let errorsContainer = $(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).find('div.sub-output-content.all-errors')
@@ -4274,20 +4282,20 @@
 
                                   // Show the emptiness class
                                   sessionContainer.parent().find(`div.empty-statements`).addClass('show')
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
                               })
                             })
                           })
 
                           return
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         executeBtn.parent().addClass('busy')
 
                         {
                           try {
                             clearTimeout(killProcessTimeout)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           hintsContainer.add(killProcessBtn.parent()).removeClass('show')
 
@@ -4334,11 +4342,11 @@
                           //
                           //   // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
                           //   statement = statement.replace(pattern, '$1 JSON')
-                          // } catch (e) {errorLog(e, 'connections');}
+                          // } catch (e) {}
 
                           try {
                             statement = statement.trim()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Send the command to the main thread to be executed
                           IPCRenderer.send('pty:command', {
@@ -4399,7 +4407,7 @@
 
                             workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').removeClass('disabled')
                           }
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       }).hover(() => hintsContainer.hide(), () => hintsContainer.show())
 
                       // The statement's input field's value has been updated
@@ -4488,7 +4496,7 @@
 
                           // Update the closest word to be what after `.`
                           closestWord = closestWord.slice(closestWord.indexOf('.') + 1)
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         // Update the latest saved closest word to the cursor
                         lastData.closestWord = closestWord
@@ -4514,7 +4522,7 @@
                             // Suggestion is not related, remove it
                             $(this).remove()
                           })
-                        } catch (e) {errorLog(e, 'connections');
+                        } catch (e) {
                           suggestionsList.children('span.suggestion').remove()
                         }
 
@@ -4648,7 +4656,7 @@
 
                           // Update the size of the textarea
                           AutoSize.update($(this)[0])
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         // `ENTER` key press/down
                         try {
@@ -4660,7 +4668,7 @@
 
                           // Click the statement's execution button
                           executeBtn.trigger('click')
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         // `TAB` key press/down
                         try {
@@ -4736,7 +4744,7 @@
                                     break
                                   }
                                 }
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             }
                           } else {
                             // Update the prefix content by remove the previous suggestion if it already has been added
@@ -4767,7 +4775,7 @@
                             // Set it inside the textarea
                             $(this)[0].setSelectionRange(cursorPosition, cursorPosition)
                           }
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       })
 
                       {
@@ -4795,12 +4803,12 @@
 
                               try {
                                 clearTimeout(updateLayoutTimeout)
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               updateLayoutTimeout = setTimeout(() => {
                                 try {
                                   consoleEditor.layout()
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
                               }, 200)
 
                             }
@@ -4878,7 +4886,7 @@
                                 lineNumber: lastLine,
                                 column: lastColumn
                               })
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           })
 
                           consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.DownArrow, () => {
@@ -4915,7 +4923,7 @@
                                 lineNumber: lastLine,
                                 column: lastColumn
                               })
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           })
 
                           monaco.languages.registerCompletionItemProvider('sql', {
@@ -4932,12 +4940,12 @@
                               // Get the closest word to the cursor in the input field
                               try {
                                 closestWord = WordAtPosition.word
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               try {
                                 if (closestWord.length <= 0)
                                   closestWord = /\S+$/.exec(statement)[0]
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               // The default array for suggestions is the CQL keywords with the commands
                               let suggestionsArray = Modules.Consts.CQLKeywords.concat(Modules.Consts.CQLSHCommands),
@@ -4986,7 +4994,7 @@
 
                                 // Update the closest word to be what after `.`
                                 closestWord = closestWord.slice(closestWord.indexOf('.') + 1)
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               let finalSuggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray, isSuggestKeyspaces || isKeyspace)
 
@@ -5008,7 +5016,7 @@
 
                               try {
                                 suggestions = removeArrayDuplicates(suggestions, 'label')
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               // Handle if the keyword is DESC/DESCRIBE
                               try {
@@ -5019,14 +5027,14 @@
                                     insertText: 'SCHEMA',
                                     range
                                   })
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               return {
                                 suggestions
                               }
                             }
                           })
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       }
                     }
                     // End of hanlding the interactive terminal
@@ -5053,7 +5061,7 @@
                         // Add log
                         try {
                           addLog(`Created a bash session for local cluster ${getAttributes(clusterElement, ['data-id'])}`)
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         /**
                          * Custom terminal options
@@ -5201,10 +5209,10 @@
                         })
                         // End of handling the app's terminal
                       }
-                    } catch (e) {errorLog(e, 'connections');
+                    } catch (e) {
                       try {
-                        // errorLog(e, 'connections')
-                      } catch (e) {errorLog(e, 'connections');}
+                        errorLog(e, 'connections')
+                      } catch (e) {}
                     }
                     // End of handling the bash session's terminal
 
@@ -5222,10 +5230,10 @@
                           // Copy metadata to the clipboard
                           try {
                             Clipboard.writeText(metadataBeautified)
-                          } catch (e) {errorLog(e, 'connections');
+                          } catch (e) {
                             try {
-                              // errorLog(e, 'connections')
-                            } catch (e) {errorLog(e, 'connections');}
+                              errorLog(e, 'connections')
+                            } catch (e) {}
                           }
 
                           // Give feedback to the user
@@ -5242,7 +5250,7 @@
                           if (jsTreeObject != null)
                             try {
                               $(`div.metadata-content[data-id="${metadataContentID}"]`).jstree('destroy')
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                           // Trigger the `click` event for the search in metadata tree view button; to make sure it's reset
                           $(`div.btn[data-id="${searchInMetadataBtnID}"]`).trigger('click', true)
@@ -5250,7 +5258,7 @@
                           // Add log about this refreshing process
                           try {
                             addLog(`Request to refresh the metadata of the cluster connected to by '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Reset the metadata trigger
                           isMetadataFetched = false
@@ -5314,7 +5322,7 @@
                             searchTimeout = setTimeout(() => {
                               try {
                                 $(metadataContent).jstree(true).search($(this).val(), true, false)
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             }, 500)
                           })
                         }
@@ -5378,10 +5386,10 @@
 
                               // Enable the button again
                               $(this).removeAttr('disabled').removeClass('disabled refreshing')
-                            } catch (e) {errorLog(e, 'connections');
+                            } catch (e) {
                               try {
-                                // errorLog(e, 'connections')
-                              } catch (e) {errorLog(e, 'connections');}
+                                errorLog(e, 'connections')
+                              } catch (e) {}
                             }
                           })
                         })
@@ -5434,21 +5442,21 @@
                             metadata.time = parseInt($(`span[data-id="${newMetadataTimeID}"]`).attr('data-time')) || new Date().getTime()
 
                             metadata = JSON.stringify(metadata)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Add log a about the request
                           try {
                             addLog(`Request to save a schema snapshot of the metadata of the cluster connected to by '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Minimize the size of the metadata by compression
                           try {
                             metadata = JSON.stringify(JSON.parse(metadata))
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             suffix = Sanitize(suffix)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // If there's a suffix then add it to the name
                           if (suffix.trim().length != 0)
@@ -5495,7 +5503,7 @@
 
                               // Reset the `check` attribute; so the next time it clicks the snapshots will be checked
                               actionsMultiple.find('a[action="select"]').attr('check', 'true')
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             // Point at the snapshot's dialog/modal then get the snapshots' container
                             let snapshotsContainer = $('#loadSnapshot').find('div.snapshots')
@@ -5544,7 +5552,7 @@
                                     // Add log about this loading process
                                     try {
                                       addLog(`Request to load a schema snapshot in path '${snapshotPath}' related to the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
 
                                     // Read the snapshot's content
                                     let snapshotContent = await FS.readFileSync(snapshotPath, 'utf8')
@@ -5558,7 +5566,7 @@
                                       snapshotTakenTime = snapshotContent.time
 
                                       delete snapshotContent.time
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
 
                                     // Update the old editor's value
                                     metadataDiffEditors.old.object.setValue(applyJSONBeautify(snapshotContent, true))
@@ -5568,7 +5576,7 @@
                                         throw 0
 
                                       snapshotTakenTime = ` (${formatTimestamp(snapshotTakenTime)})`
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
 
                                     // Update the old side's badge
                                     $(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: ${snapshot.attr('data-name')}${snapshotTakenTime}`)
@@ -5581,10 +5589,10 @@
 
                                     // Close the modal/dialog
                                     $('div.modal#loadSnapshot').find('button.btn-close').click()
-                                  } catch (e) {errorLog(e, 'connections');
+                                  } catch (e) {
                                     try {
-                                      // errorLog(e, 'connections')
-                                    } catch (e) {errorLog(e, 'connections');}
+                                      errorLog(e, 'connections')
+                                    } catch (e) {}
 
                                     // If any error has occurred then show feedback to the user about the failure
                                     showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]', [snapshot.attr('data-name')])) + '.', 'failure')
@@ -5600,8 +5608,8 @@
                                       if (err) {
                                         // Add error log
                                         try {
-                                          // errorLog(e, 'connections')
-                                        } catch (e) {errorLog(e, 'connections');}
+                                          errorLog(e, 'connections')
+                                        } catch (e) {}
 
                                         // Show feedback to the user
                                         showToast(I18next.capitalize(I18next.t('delete schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it', [snapshotName])) + '.', 'failure')
@@ -5634,13 +5642,13 @@
                                   // Add log about this deletion process
                                   try {
                                     addLog(`Request to delete a snapshot in path '${snapshotPath}' related to the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
 
                                   // If no need for confirmation then call the deletion function and skip the upcoming code
                                   try {
                                     if (info.noConfirm)
                                       return deleteSnapshot(info.checked)
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
 
                                   // Open the confirmation dialog and wait for the response
                                   openDialog(I18next.capitalizeFirstLetter(I18next.replaceData('do you want to delete the snapshot [b]$data[/b]? once you confirm, there is no undo', [snapshotName])), (response) => {
@@ -5716,7 +5724,7 @@
                           // Add log for this action
                           try {
                             addLog(`Request to close/refresh the work area of the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Ask the user for credentials again if they're required
                           try {
@@ -5729,7 +5737,7 @@
                                 throw 0
 
                               clusterElement.removeAttr('data-username data-password data-got-credentials')
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               // If there's no need to ask for the SSH credentials then skip this try-catch block
@@ -5737,8 +5745,8 @@
                                 throw 0
 
                               clusterElement.removeAttr('data-ssh-username data-ssh-password data-got-credentials')
-                            } catch (e) {errorLog(e, 'connections');}
-                          } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
+                          } catch (e) {}
 
                           try {
                             // If the current workspace is not the sandbox or it's not a `close` event then skip this try-catch block
@@ -5793,10 +5801,10 @@
 
                             // Reset the button's text
                             setTimeout(() => $(`button[button-id="${startProjectBtnID}"]`).children('span').attr('mulang', 'start').text(I18next.t('start')))
-                          } catch (e) {errorLog(e, 'connections');
+                          } catch (e) {
                             try {
-                              // errorLog(e, 'connections')
-                            } catch (e) {errorLog(e, 'connections');}
+                              errorLog(e, 'connections')
+                            } catch (e) {}
                           }
 
                           // Point at the current active work aree
@@ -5817,14 +5825,14 @@
                            */
                           try {
                             IPCRenderer.removeAllListeners(`pty:data:${clusterID}`)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           setTimeout(() => {
                             // Remove both editors in the metadata differentiation section
                             (['old', 'new']).forEach((type) => {
                               try {
                                 metadataDiffEditors[type].object.getModel().dispose()
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             })
 
                             // Remove the terminal and all its components
@@ -5833,7 +5841,7 @@
                               terminal._core.dispose()
                               terminal._addonManager.dispose()
                               terminal = null
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               // If the clicked button is not for restarting the work area then skip this try-catch block
@@ -5865,7 +5873,7 @@
                                     // Reload it after 1s of creation
                                     try {
                                       setTimeout(() => webView.reloadIgnoringCache(), 1000)
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
 
                                     // Once the content inside the webview is ready/loaded
                                     webView.addEventListener('dom-ready', () => {
@@ -5880,12 +5888,12 @@
 
                                   // Clicks the globe icon in the cluster's info
                                   $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
                               }, 1000)
 
                               // Skip the upcoming code - as it's for closing the work area
                               return
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             // Update the work-area attribute
                             clusterElement.attr('data-workarea', 'false')
@@ -5933,13 +5941,13 @@
 
                                     // Show feedback to the user
                                     setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('post'), getAttributes(clusterElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
-                                  } catch (e) {errorLog(e, 'connections');
+                                  } catch (e) {
                                     // Show success feedback to the user if the error is `0` code
                                     if (e == 0)
                                       setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
                                   }
                                 })
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             })
 
                             // Clicks the `ENTER` button for the cluster's workspace
@@ -5967,7 +5975,7 @@
 
                                 // Reset the cluster's connection status
                                 clusterElement.find('div.status').removeClass('show success failure')
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             })
 
                             setTimeout(() => {
@@ -6069,10 +6077,10 @@
                               element: clusterSwitcher.children('div.more-clusters'),
                               method: 'after'
                             }
-                          } catch (e) {errorLog(e, 'connections');
+                          } catch (e) {
                             try {
-                              // errorLog(e, 'connections')
-                            } catch (e) {errorLog(e, 'connections');}
+                              errorLog(e, 'connections')
+                            } catch (e) {}
                           }
 
                           // Append the switcher to the container
@@ -6090,7 +6098,7 @@
 
                               // And hide the last visible switcher
                               clusterSwitcher.children('div.cluster').filter(':visible').last().hide()
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             setTimeout(() => {
                               // Show the switcher
@@ -6117,7 +6125,7 @@
                                 // Add log about this action
                                 try {
                                   addLog(`Switch to the work area of the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 // Set the workspace's color on the UI
                                 setUIColor(getAttributes(workspaceElement, 'data-color'))
@@ -6164,10 +6172,10 @@
                           }))
                         }, 200)
                       })
-                    } catch (e) {errorLog(e, 'connections');
+                    } catch (e) {
                       try {
-                        // errorLog(e, 'connections')
-                      } catch (e) {errorLog(e, 'connections');}
+                        errorLog(e, 'connections')
+                      } catch (e) {}
                     }
 
                     // Allow for resizing the left side of the work area taking into account all affected elements
@@ -6203,7 +6211,7 @@
                               // Attempt to clear the timeout if it has already been created
                               try {
                                 clearTimeout(global.resizeTriggerOnResize)
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               // Set a global timeout object
                               global.resizeTriggerOnResize = setTimeout(() => $(window.visualViewport).trigger('resize'))
@@ -6282,7 +6290,7 @@
 
                             // Skip the upcoming code
                             return
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Point at the connection status element in the UI
                           let connectionStatusElement = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-id')}"][workarea-id="${workareaID}"]`).find('div.connection-status')
@@ -6332,7 +6340,7 @@
 
                               // Skip the upcoming code
                               return
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               /**
@@ -6347,7 +6355,7 @@
 
                               // Show feedback to the user
                               showToast(I18next.capitalize(I18next.replaceData(`connection $data restored`, [getAttributes(clusterElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           })
                         }
 
@@ -6403,7 +6411,7 @@
                             let numOfFiles = filesPaths.length
 
                             historyItem = `Execute ${numOfFiles} CQL file(s).`
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // The history item structure UI
                           let element = `
@@ -6439,7 +6447,7 @@
                                 'pointer - events': 'none',
                                 'cursor': 'default'
                               })
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             // Clicks the item to be typed in the input field
                             $(this).find('div.click-area').click(function() {
@@ -6465,7 +6473,7 @@
                                 $(`div.backdrop:last`).click()
 
                                 return
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               // Set the statement
                               consoleEditor.setValue(statement)
@@ -6482,7 +6490,7 @@
                               // Update the MDB object
                               try {
                                 getElementMDBObject(statementInputField).update()
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             })
 
                             $(this).find('div.action-copy').find('span.btn').click(() => {
@@ -6496,10 +6504,10 @@
                                 icon.attr('name', 'copy')
 
                                 setTimeout(() => icon.attr('name', 'copy-solid'), 150);
-                              } catch (e) {errorLog(e, 'connections');
+                              } catch (e) {
                                 try {
-                                  // errorLog(e, 'connections')
-                                } catch (e) {errorLog(e, 'connections');}
+                                  errorLog(e, 'connections')
+                                } catch (e) {}
                               }
 
                             })
@@ -6530,7 +6538,7 @@
 
                                 // Skip the upcoming code
                                 return
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               // Click the history button to update the items' list
                               historyBtn.click()
@@ -6575,7 +6583,7 @@
                           historyBtn.attr('disabled', 'disabled')
 
                           showToast(I18next.capitalize(I18next.t('clear all statements')), I18next.capitalizeFirstLetter(I18next.replaceData('all history statements for connection [b]$data[/b] have been successfully cleared', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       })
                     }
 
@@ -6665,12 +6673,12 @@
                             statementInputField.val(statement)
                             statementInputField.trigger('input').focus()
                             AutoSize.update(statementInputField[0])
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             setTimeout(() => $(`button#_${executeStatementBtnID}`).click(), 100)
-                          } catch (e) {errorLog(e, 'connections');}
-                        } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
+                        } catch (e) {}
                       })
                     }
 
@@ -6681,7 +6689,7 @@
 
                       try {
                         filesExecutionBtn.unbind('click')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       filesExecutionBtn.click(function() {
                         // Get a random ID for the dialog request
@@ -6727,7 +6735,7 @@
 
                               return 0
                             })
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           for (let filePath of filesPaths) {
                             filePath = `${filePath}`
@@ -6739,7 +6747,7 @@
 
                               try {
                                 fileStats = FS.statSync(filePath)
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               let element = `
                                     <div class="cql-file ${fileStats.size <= 0 ? 'invalid' : ''}">
@@ -6769,17 +6777,17 @@
                                   try {
                                     if (filesContainer.children('div.cql-file').length <= 0)
                                       getElementMDBObject(executeFilesModal, 'Modal').hide()
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
                                 })
 
                                 setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
                               }))
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           }
 
                           try {
                             getElementMDBObject(executeFilesModal, 'Modal').show()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         }
 
                         if ($(this).data('filesPaths') != null) {
@@ -6804,7 +6812,7 @@
                             animation: 150,
                             ghostClass: 'ghost-field'
                           })
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       }, 1000)
 
                       $('button#executeCQLFilesBtn').click(function() {
@@ -6814,21 +6822,21 @@
 
                         try {
                           pathsArray = PathsElements.map((path) => $(path).data('path'))
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           let statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`)
 
                           statementInputField.val(`SOURCE_ ${JSON.stringify(pathsArray)} |${isExecutionTerminatedOnError}|`).trigger('input')
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           getElementMDBObject(executeFilesModal, 'Modal').hide()
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           setTimeout(() => $(`button#_${executeStatementBtnID}`).click())
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       })
                     }
 
@@ -6846,7 +6854,7 @@
                   $(`button[button-id="${connectBtnID}"]`).click()
 
                   return
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 $(`button[button-id="${testConnectionBtnID}"]`).trigger('click', true)
               })
@@ -6889,7 +6897,7 @@
                     // Add log for this request
                     try {
                       addLog(`Request to start a local cluster '${getAttributes(clusterElement, ['data-id'])}'`, 'action')
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     // Manipulate the maximum number, set it to the default value `1` if needed
                     maximumRunningSandbox = isNaN(maximumRunningSandbox) || maximumRunningSandbox < 1 ? 1 : maximumRunningSandbox
@@ -6961,10 +6969,10 @@
 
                         // Set Cassandra's version
                         clusterElement.attr('data-cassandra-version', currentProject[0].cassandraVersion)
-                      } catch (e) {errorLog(e, 'connections');
+                      } catch (e) {
                         try {
-                          // errorLog(e, 'connections')
-                        } catch (e) {errorLog(e, 'connections');}
+                          errorLog(e, 'connections')
+                        } catch (e) {}
                       }
 
                       /**
@@ -6988,7 +6996,7 @@
                           startPostProcess()
 
                           return
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
 
                         // If `podman` is the selected management tool then check if the host is Linux Ubuntu
@@ -7004,7 +7012,7 @@
                           startPostProcess()
 
                           return
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         // If Docker doesn't exist then show feedback to the user and skip the upcoming code
                         if (!dockerExists) {
@@ -7016,7 +7024,7 @@
                               throw 0
 
                             showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData(`local clusters feature with Podman management tool requires [code]podman compose[/code] to be installed, please make sure it's installed and accessible before attempting to $data`, [I18next.t('start local cluster')])) + '.', 'failure')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           startPostProcess()
 
@@ -7090,14 +7098,14 @@
 
                                 // Clear the termination checking interval
                                 clearInterval(checkingTerminationInterval)
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             }, 500)
 
                             checkingCassandraTimeout = setTimeout(() => {
                               // Make sure to clear the termination check interval
                               try {
                                 clearInterval(checkingTerminationInterval)
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               // Define inner flag to tell if the process has been terminated
                               let isTerminated = false
@@ -7106,11 +7114,11 @@
                               Modules.Docker.checkCassandraInContainer(pinnedToastID, ports.cassandra, (status) => {
                                 try {
                                   clusterElement.attr('data-latest-cassandra-version', `${status.version}`)
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 try {
                                   clusterElement.attr('data-datacenters', `${JSON.stringify(status.datacenters)}`)
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 // If the process has been terminated then skip the upcoming code and stop the process
                                 if (status.terminated || isTerminated) {
@@ -7176,7 +7184,7 @@
                                 try {
                                   clusterElement.attr('data-datacenter', `${status.datacenter}` || 'datacenter1')
                                   clusterElement.find('div[info="data-center"]').children('div.text').text(`${status.datacenter}`)
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 setTimeout(() => {
                                   // Click the hidden `CONNECT` button
@@ -7193,7 +7201,7 @@
                                         $(this).toggle(minifyText($(this).text()).length > 0)
                                       })
                                     }, 2000)
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
 
                                   setTimeout(() => {
                                     // Call the post function
@@ -7216,7 +7224,7 @@
                                         // Reload it after 1s of creation
                                         try {
                                           setTimeout(() => webView.reloadIgnoringCache(), 1000)
-                                        } catch (e) {errorLog(e, 'connections');}
+                                        } catch (e) {}
 
                                         // Once the content inside the webview is ready/loaded
                                         webView.addEventListener('dom-ready', () => {
@@ -7231,7 +7239,7 @@
 
                                       // Clicks the globe icon in the cluster's info
                                       $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
                                   }, 1000)
                                 }, 3000)
                               }, null, checkCassandraProcessID)
@@ -7242,10 +7250,10 @@
                     })
                   })
                 })
-              } catch (e) {errorLog(e, 'connections');
+              } catch (e) {
                 try {
-                  // errorLog(e, 'connections')
-                } catch (e) {errorLog(e, 'connections');}
+                  errorLog(e, 'connections')
+                } catch (e) {}
               }
 
               // Clicks the settings button
@@ -7266,7 +7274,7 @@
                 // Add log about edit cluster
                 try {
                   addLog(`Attempt to edit local cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
@@ -7373,10 +7381,10 @@
                       key: 'ssh-port',
                       val: (!([undefined, '22'].includes(currentCluster.ssh.port))) ? currentCluster.ssh.port : ''
                     })
-                  } catch (e) {errorLog(e, 'connections');
+                  } catch (e) {
                     try {
-                      // errorLog(e, 'connections')
-                    } catch (e) {errorLog(e, 'connections');}
+                      errorLog(e, 'connections')
+                    } catch (e) {}
                   }
 
                   // Loop through all inputs in the `inputs` array and set their proper values
@@ -7414,11 +7422,11 @@
                       // Enable the tooltip and update its content
                       tooltipObject.enable()
                       tooltipObject.setContent(input.val)
-                    } catch (e) {errorLog(e, 'connections');
+                    } catch (e) {
                       try {
                         // Disable the tooltip
                         tooltipObject.disable()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }
                   })
 
@@ -7469,10 +7477,10 @@
                             key: 'ssh-username',
                             val: sshUsername
                           })
-                        } catch (e) {errorLog(e, 'connections');
+                        } catch (e) {
                           try {
-                            // errorLog(e, 'connections')
-                          } catch (e) {errorLog(e, 'connections');}
+                            errorLog(e, 'connections')
+                          } catch (e) {}
                         }
 
                         // Check if SSH password is provided
@@ -7489,10 +7497,10 @@
                             key: 'ssh-password',
                             val: sshPassword
                           })
-                        } catch (e) {errorLog(e, 'connections');
+                        } catch (e) {
                           try {
-                            // errorLog(e, 'connections')
-                          } catch (e) {errorLog(e, 'connections');}
+                            errorLog(e, 'connections')
+                          } catch (e) {}
                         }
 
                         // Loop through secrets' inputs and set their value
@@ -7508,10 +7516,10 @@
                           setTimeout(() => object._deactivate())
                         })
                       })
-                    } catch (e) {errorLog(e, 'connections');
+                    } catch (e) {
                       try {
-                        // errorLog(e, 'connections')
-                      } catch (e) {errorLog(e, 'connections');}
+                        errorLog(e, 'connections')
+                      } catch (e) {}
                     }
                   } else {
                     /**
@@ -7564,7 +7572,7 @@
                       try {
                         // Disable the tooltip
                         tooltipObject.disable()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   }
 
@@ -7582,7 +7590,7 @@
                 // Add log
                 try {
                   addLog(`Request to delete ${isSandbox ? 'local cluster' : 'connection'} ${getAttributes(clusterElement, ['data-name', 'data-id'])}`, 'action')
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // If the current workspace is sandbox then change the text
                 if (isSandbox)
@@ -7629,7 +7637,7 @@
 
                     // Skip the upcoming code - no need to execute it if the workspace is the sandbox -
                     return
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   // Call the cluster's deletion function from the clusters' module
                   Modules.Clusters.deleteCluster(getWorkspaceFolderPath(workspaceID), getAttributes(clusterElement, 'data-folder'), clusterID, (result) => {
@@ -7653,12 +7661,12 @@
                     // Close the SSH tunnel if it exists
                     try {
                       IPCRenderer.send('ssh-tunnel:close', clusterID)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     // Attempt to close the work area of the cluster if exists
                     try {
                       $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.action[action="close"] div.btn-container div.btn').click()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     // Remove the target workspace element
                     $(`div.clusters div.cluster[data-id="${clusterID}"]`).remove()
@@ -7689,7 +7697,7 @@
 
                   // Get the cluster's path
                   elementPath = Path.join(getWorkspaceFolderPath(getAttributes(clusterElement, 'data-workspace-id')), getAttributes(clusterElement, 'data-folder'))
-                } catch (e) {errorLog(e, 'connections');
+                } catch (e) {
                   // Get the sandbox project's path
                   elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters', getAttributes(clusterElement, 'data-folder'))
                 }
@@ -7724,7 +7732,7 @@
                   // Send request to the main thread to terminate the connection test process - if there's any -
                   try {
                     IPCRenderer.send(`pty:test-connection:terminate`, checkCassandraProcessID)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   // Update the ID to be `terminated`; to stop the checking process from being started if it's not yet
                   checkCassandraProcessID = 'terminated'
@@ -7755,7 +7763,7 @@
 
                   // Skip the upcoming code
                   return
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   if (!isSSHTunnelNeeded)
@@ -7764,14 +7772,14 @@
                   // Attempt to close the SSH tunnel if it has already been created
                   try {
                     IPCRenderer.send('ssh-tunnel:close', clusterID)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   // Send a request to terminate the SSH tunnel creation process
                   IPCRenderer.send(`ssh-tunnel:terminate`, sshTunnelCreationRequestID)
 
                   // Show success feedback to the user
                   showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData('the testing process for the connection [b]$data[/b] in workspace [b]$data[/b] has been terminated with success', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), 'success')
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // Send request to the main thread to terminate the current ongoing connection test process
                 IPCRenderer.send(`process:terminate:${testConnectionProcessID}`)
@@ -7822,7 +7830,7 @@
                     if (err) {
                       try {
                         errorLog(err, 'clusters')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       return
                     }
@@ -7850,16 +7858,16 @@
 
                         // Update the SSL attribute
                         clusterElement.attr('ssl-enabled', 'false')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // Update the lockpad status
                       updateSSLLockpadStatus(clusterElement)
                     })
                   })
-                } catch (e) {errorLog(e, 'connections');
+                } catch (e) {
                   try {
-                    // errorLog(e, 'connections')
-                  } catch (e) {errorLog(e, 'connections');}
+                    errorLog(e, 'connections')
+                  } catch (e) {}
                 }
 
                 // Show feedback to the user when the connection is established through the SSH tunnel
@@ -7909,10 +7917,10 @@
                       addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), 'This connection is using the default `cassandra` user.', null, true, 'warning')
                     }
                   })
-                } catch (e) {errorLog(e, 'connections');
+                } catch (e) {
                   try {
-                    // errorLog(e, 'connections')
-                  } catch (e) {errorLog(e, 'connections');}
+                    errorLog(e, 'connections')
+                  } catch (e) {}
                 }
 
                 // Check if there is SSH tunnel creation info
@@ -7934,7 +7942,7 @@
                     ...creationData,
                     ssh: sshTunnel
                   }
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // Check if the current cluster is a sandbox project
                 try {
@@ -7950,7 +7958,7 @@
                       port: getAttributes(clusterElement, 'data-port-cassandra')
                     }
                   }
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // Get variables manifest and values
                 try {
@@ -7976,7 +7984,7 @@
                       ...files
                     }
                   }
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // Send a request to create a pty instance and connect with the cluster
                 IPCRenderer.send('pty:create', {
@@ -7985,18 +7993,18 @@
                   terminalID: info.terminalID,
                   workspaceID: getActiveWorkspaceID()
                 })
-              } catch (e) {errorLog(e, 'connections');
+              } catch (e) {
                 try {
-                  // errorLog(e, 'connections')
-                } catch (e) {errorLog(e, 'connections');}
+                  errorLog(e, 'connections')
+                } catch (e) {}
               }
             }
           }))
           // End of the process when appending a cluster in the container
-        } catch (e) {errorLog(e, 'connections');
+        } catch (e) {
           try {
-            // errorLog(e, 'connections')
-          } catch (e) {errorLog(e, 'connections');}
+            errorLog(e, 'connections')
+          } catch (e) {}
         }
       })
     })
@@ -8077,7 +8085,7 @@
 
         // Skip the upcoming code
         return
-      } catch (e) {errorLog(e, 'connections');}
+      } catch (e) {}
 
       /**
        * Check pre and post-connect scripts
@@ -8109,7 +8117,7 @@
 
         // Skip the upcoming code
         return
-      } catch (e) {errorLog(e, 'connections');}
+      } catch (e) {}
 
       // Define the test data; the cluster's ID and its `cqlsh.rc` file's path
       let testData = {
@@ -8131,7 +8139,7 @@
           username: username,
           password: password
         }
-      } catch (e) {errorLog(e, 'connections');}
+      } catch (e) {}
 
       /**
        * Inner function to start the connection test process with cluster
@@ -8175,7 +8183,7 @@
               ...files
             }
           }
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         // Send test request to the main thread and pass the final `testData`
         IPCRenderer.send('pty:test-connection', {
@@ -8210,7 +8218,7 @@
                * This will prevent showing success/failure of the process after being terminated
                */
               IPCRenderer.removeAllListeners(`pty:test-connection:${requestID}`)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               // If there's no provided data center by the user then skip this try-catch block
@@ -8222,7 +8230,7 @@
 
               // Hold all detected/seen data centers
               allDataCenters = [...new Set(result.datacenters.map((_dataCenter) => _dataCenter.datacenter))]
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Failed to connect with the cluster
             try {
@@ -8264,12 +8272,12 @@
 
                 // Show feedback to the user
                 showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to activate connection [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]))}${error}.`, 'failure')
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Close the SSH tunnel if it exists
               try {
                 IPCRenderer.send('ssh-tunnel:close', getAttributes(clusterElement, 'data-id'))
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               setTimeout(() => {
                 // Test process has finished
@@ -8294,7 +8302,7 @@
                   throw 0
 
                 clusterElement.removeAttr('data-username data-password data-got-credentials')
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // If there's no SSH credentials for the cluster then remove all associated attributes
               try {
@@ -8302,7 +8310,7 @@
                   throw 0
 
                 clusterElement.removeAttr('data-ssh-username data-ssh-password data-ssh-passphrase data-got-credentials')
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               /**
                * Check if we have post-connection scripts to run
@@ -8337,17 +8345,17 @@
 
                     // Show feedback to the user
                     setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('post'), getAttributes(clusterElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
-                  } catch (e) {errorLog(e, 'connections');
+                  } catch (e) {
                     // Show success feedback to the user if the error is `0` code
                     if (e == 0)
                       setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
                   }
                 })
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Skip the upcoming code
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             /**
              * Successfully connected with the cluster
@@ -8368,7 +8376,7 @@
               // If the provided data center is not the same as the one connected with then show feedback to the user
               if (dataCenter != result.datacenter)
                 showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData(`the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]`, [dataCenter, result.datacenter]) + '.'), 'warning')
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Show data center
             if (result.datacenter != undefined) {
@@ -8394,7 +8402,7 @@
 
               // Just warn the user about that unsupported version
               setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Show success feedback to the user
             if (!clickConnectBtn)
@@ -8415,7 +8423,7 @@
                   throw 0
 
                 setTimeout(() => connectBtn.click())
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
             })
           })
         })
@@ -8476,7 +8484,7 @@
 
           // Skip the upcoming code
           return
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         // If there's no pre-connection script to execute then call the test connection function immediately
         startTestConnection(sshCreation)
@@ -8506,7 +8514,7 @@
 
           // Remove all related attributes
           clusterElement.removeAttr('data-username data-password data-got-credentials')
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           // If there are no SSH credentials then skip this try-catch block
@@ -8515,7 +8523,7 @@
 
           // Remove all related attributes
           clusterElement.removeAttr('data-ssh-username data-ssh-password data-got-credentials')
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
       }
 
       /**
@@ -8579,7 +8587,7 @@
 
               // Skip the upcoming code
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             /**
              * Reaching here means we need to decrypt the SSH username at least
@@ -8646,7 +8654,7 @@
           })
         })
         return
-      } catch (e) {errorLog(e, 'connections');}
+      } catch (e) {}
 
       // If there's no need to create an SSH tunnel then simply call the `afterSSHTunnelingCheck` function
       afterSSHTunnelingCheck()
@@ -8680,14 +8688,14 @@
           // Make sure to hide the status' tooltip before doing any update
           try {
             tooltip.hide()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
 
         // If the SSL status for the cluster is not defined yet then skip this try-catch block
         if (enabledSSL == undefined) {
           try {
             tooltip.setContent(defaultTitle)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           // Skip the upcoming code in the try-catch block
           throw 0
@@ -8709,9 +8717,9 @@
 
             // Update the new language's key
             $(tooltip.reference).attr('data-mulang', tooltipContent)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
-      } catch (e) {errorLog(e, 'connections');}
+      } catch (e) {}
     }
 
     /**
@@ -8776,7 +8784,7 @@
           // Remove any notification about an invalid input in the active section
           try {
             $(this).children('div.invalid-inputs').fadeOut('fast')
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
       }
 
@@ -8807,7 +8815,7 @@
             if (getAttributes(input, 'type') == 'file') {
               try {
                 value = input[0].files[0].path
-              } catch (e) {errorLog(e, 'connections');
+              } catch (e) {
                 value = ''
               }
             }
@@ -8823,7 +8831,7 @@
                 let timestampGenerator = cqlshValues.connection.timestamp_generator
 
                 cqlshValues.connection.timestamp_generator = timestampGenerator == 'Not Set' ? 'DISABLED' : timestampGenerator
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Get final values - from the input fields - as JSON object
               let finalValues = await variablesManipulation(workspaceID, cqlshValues),
@@ -8863,7 +8871,7 @@
 
               // Skip the upcoming code
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Set the final value
             cqlshValues[section][key] = value
@@ -8924,7 +8932,7 @@
             (new ResizeObserver(() => {
               try {
                 editor.layout()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
             })).observe(dialogElement.find('div.modal-body')[0])
           })
 
@@ -8955,7 +8963,7 @@
 
               // Skip the upcoming code
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Update the expand's button icon
             $(this).children('ion-icon').attr('name', 'expand')
@@ -9037,12 +9045,12 @@
               // Add log about this request
               try {
                 addLog(`Request to test connection that could be added/updated`, 'action')
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Attempt to close the created SSH tunnel - if exists -
               try {
                 IPCRenderer.send('ssh-tunnel:close', tempClusterID)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Get a temporary random ID for the cluster which is being tested
               tempClusterID = getRandomID(30)
@@ -9060,7 +9068,7 @@
                 // If the hostname is empty or only whitespaces then skip this try-catch block
                 if (hostname.trim().length <= 0 || `${cqlshValues.connection.port}`.length <= 0)
                   throw 0
-              } catch (e) {errorLog(e, 'connections');
+              } catch (e) {
                 /**
                  * Being here means the given hostname is invalid
                  *
@@ -9127,7 +9135,7 @@
 
                 // Skip the upcoming code
                 return
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Check if there's a need to create an SSH tunnel
               try {
@@ -9149,7 +9157,7 @@
 
                 // Set the flag's value
                 isSSHTunnelNeeded = sshTunnel
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // The dialog is testing the connection with the cluster
               dialogElement.addClass('test-connection')
@@ -9178,7 +9186,7 @@
 
                   // If both username and password have been provided then they'll be encrypted
                   waitForEncryption = [username, password].every((secret) => secret.trim().length != 0)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // Inner function inside `afterSSHProcess` function; to start the connection test with cluster
                 let startTestConnection = async () => {
@@ -9221,7 +9229,7 @@
                         ...files
                       }
                     }
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   // If there's a need to wait for the encryption of the username and password before starting the connection test
                   if (waitForEncryption) {
@@ -9235,10 +9243,10 @@
                         // Delete the temp file which contains the `cqlsh.rc` config file's content
                         try {
                           await FS.unlinkSync(tempConfigFile)
-                        } catch (e) {errorLog(e, 'connections');
+                        } catch (e) {
                           try {
-                            // errorLog(e, 'connections')
-                          } catch (e) {errorLog(e, 'connections');}
+                            errorLog(e, 'connections')
+                          } catch (e) {}
                         }
 
                         // Remove the test connection class
@@ -9258,7 +9266,7 @@
 
                         // Skip the upcoming code - end the process -
                         return
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       /**
                        * Reaching here means the received key is valid
@@ -9302,10 +9310,10 @@
                       // Delete the temp file which contains the `cqlsh.rc` config file's content
                       try {
                         await FS.unlinkSync(tempConfigFile)
-                      } catch (e) {errorLog(e, 'connections');
+                      } catch (e) {
                         try {
-                          // errorLog(e, 'connections')
-                        } catch (e) {errorLog(e, 'connections');}
+                          errorLog(e, 'connections')
+                        } catch (e) {}
                       }
 
                       /**
@@ -9336,7 +9344,7 @@
 
                         // Hold all detected/seen data centers
                         allDataCenters = [...new Set(result.datacenters.map((_dataCenter) => _dataCenter.datacenter))]
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       try {
                         // Remove the test connection class
@@ -9395,7 +9403,7 @@
                           // If the provided data center is not the same as the one connected with then show feedback to the user
                           if (dataCenter != result.datacenter)
                             showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData(`the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]`, [dataCenter, result.datacenter]) + '.'), 'warning')
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         /**
                          * Successfully connected with the cluster
@@ -9415,14 +9423,14 @@
 
                           // Just warn the user about that unsupported version
                           setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         // Show feedback to the user
                         showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('connection test has finished with success'))}, ${I18next.capitalizeFirstLetter(suffix)}${executionFeedback}.`, 'success')
 
                         // Refresh workspaces - to ensure synchronization with the latest data -
                         $(document).trigger('refreshWorkspaces')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // Check if there are post-connection scripts to be executed after the connection attempt
                       if (scripts.post.length != 0) {
@@ -9489,7 +9497,7 @@
 
                   // Skip the upcoming code
                   return
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // Call the function which will start the connection test
                 startTestConnection()
@@ -9615,7 +9623,7 @@
 
                 // Skip the upcoming code
                 return
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Call the `afterSSHProcess` function if there's no need to create an SSH tunnel
               if (!sshTunnel)
@@ -9634,14 +9642,14 @@
                 // Attempt to close the SSH tunnel if it has already been created
                 try {
                   IPCRenderer.send('ssh-tunnel:close', tempClusterID)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // Send a request to terminate the SSH tunnel creation process
                 IPCRenderer.send(`ssh-tunnel:terminate`, sshTunnelCreationRequestID)
 
                 // Show success feedback to the user
                 showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData('the testing process of the connection to be added/edited in workspace [b]$data[/b] has been terminated with success', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), 'success')
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Send request to the main thread to terminate the current ongoing connection test process
               IPCRenderer.send(`process:terminate:${testConnectionProcessID}`)
@@ -9649,7 +9657,7 @@
               // Send request to the main thread to terminate the connection test process - if there's any -
               try {
                 IPCRenderer.send(`pty:test-connection:terminate`, checkCassandraProcessID)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Once the termination status is received
               if (!isSSHTunnelNeeded)
@@ -9683,7 +9691,7 @@
               // Add log about this request
               try {
                 addLog(`Request to add/edit new connection after a successful test`, 'action')
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 // If the provided cluster's name is valid then skip this try-catch block
@@ -9705,7 +9713,7 @@
 
                 // Skip the upcoming code - terminate the cluster's saving/updating process -
                 return
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Disable the buttons in the footer
               button.add('#testConnectionCluster').add('#switchEditor').attr('disabled', 'disabled')
@@ -9732,7 +9740,7 @@
 
                 // Skip the upcoming code - terminate the saving/updating process -
                 return
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 // If there's no duplication then skip this try-catch block
@@ -9747,7 +9755,7 @@
 
                 // Skip the upcoming code - terminate the saving/updating process -
                 return
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               /**
                * Reaching here means there's no duplication in the name of the cluster
@@ -9788,7 +9796,7 @@
 
                   // Skip the upcoming code - end the process -
                   return
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 /**
                  * The cluster has been successfully saved/updated
@@ -9839,8 +9847,8 @@
                         // Disable the tooltip
                         try {
                           tooltipObject[0].object.disable()
-                        } catch (e) {errorLog(e, 'connections');}
-                      } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
+                      } catch (e) {}
 
                       /**
                        * If it is `undefined` then it hasn't been found in the `cqlsh.rc` file
@@ -9848,11 +9856,11 @@
                        */
                       try {
                         $(this).val('')
-                      } catch (e) {errorLog(e, 'connections');
+                      } catch (e) {
                         // If the previous set didn't work then try to call the `selected` attribute
                         try {
                           $(this).prop('checked', getAttributes($(this), 'default-value') == 'true' ? true : false)
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       } finally {
                         // Update the object
                         object_.update()
@@ -9860,7 +9868,7 @@
                       }
                     })
                   }, 1000)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   // If the current mode is not `edit` then skip this try-catch block
@@ -9877,12 +9885,12 @@
                   // Update the cluster's name
                   try {
                     clusterUI.find('div.header > div.title').text(newEditedCluster.name)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   // Update the cluster's host
                   try {
                     clusterUI.find('div.info[info="host"] div.text').text(newEditedCluster.host)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   // Hide cassandra and datacenter info elements and show their placeholder
                   (['cassandra', 'data-center']).forEach((info) => {
@@ -9914,10 +9922,10 @@
                       'data-credentials-auth': secrets.auth != undefined || (!saveAuthCredentials && (secrets != null && secrets.username != null && secrets.password != null)) ? 'true' : null,
                       'data-credentials-ssh': secrets.ssh != undefined || !saveSSHCredentials && (secrets != null && secrets.sshUsername != null && secrets.sshPassword != null) ? 'true' : null,
                     })
-                  } catch (e) {errorLog(e, 'connections');
+                  } catch (e) {
                     try {
-                      // errorLog(e, 'connections')
-                    } catch (e) {errorLog(e, 'connections');}
+                      errorLog(e, 'connections')
+                    } catch (e) {}
                   }
 
                   // Remove all test connection status classes
@@ -9925,7 +9933,7 @@
 
                   // Update the global `editedClusterObject` value
                   editedClusterObject = newEditedCluster
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // Refresh clusters for the currently active workspace
                 $(document).trigger('refreshClusters', {
@@ -9969,11 +9977,11 @@
                               let value = encrypt(key, secret.value)
 
                               clusterElement.attr(`data-${secret.name.toLowerCase().replace('ssh', 'ssh-')}`, value)
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           }
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       })
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       if (tempClusterID == null)
@@ -9989,8 +9997,8 @@
                           oldID: tempClusterID,
                           newID: finalCluster.info.id
                         })
-                      } catch (e) {errorLog(e, 'connections');}
-                    } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
+                    } catch (e) {}
 
                     // Show Apache Cassandra version
                     cassandraVersion.children('div._placeholder').hide()
@@ -10054,10 +10062,10 @@
                   waitForEncryption = true
                   sshTunnel = true
                 }
-              } catch (e) {errorLog(e, 'connections');
+              } catch (e) {
                 try {
-                  // errorLog(e, 'connections')
-                } catch (e) {errorLog(e, 'connections');}
+                  errorLog(e, 'connections')
+                } catch (e) {}
               }
 
               try {
@@ -10081,10 +10089,10 @@
                 finalCluster.ssh.port = $('[info-section="none"][info-key="ssh-port"]').val() || 22
                 finalCluster.ssh.dstAddr = $('[info-section="none"][info-key="ssh-dest-addr"]').val() || '127.0.0.1'
                 finalCluster.ssh.dstPort = $('[info-section="none"][info-key="ssh-dest-port"]').val() || $('[info-section="connection"][info-key="port"]').val()
-              } catch (e) {errorLog(e, 'connections');
+              } catch (e) {
                 try {
-                  // errorLog(e, 'connections')
-                } catch (e) {errorLog(e, 'connections');}
+                  errorLog(e, 'connections')
+                } catch (e) {}
               }
 
               // Determine the proper function to be called based on whether the current mode is `edit` or not
@@ -10134,7 +10142,7 @@
 
                     // Stop the process; as something is not correct with the generator tool
                     return
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   // Values will be saved in the `secrets` object
                   finalCluster.info.secrets = [],
@@ -10182,7 +10190,7 @@
 
                 // Skip the upcoming code
                 return
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               /**
                * Reaching here means there's no need to wait for the encryption process
@@ -10243,7 +10251,7 @@
 
                 // Update its state
                 inputObject.update()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
             })
           })
 
@@ -10320,7 +10328,7 @@
                 try {
                   // Disable the tooltip
                   tooltipObject.disable()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // Skip the upcoming code
                 return
@@ -10330,7 +10338,7 @@
                 // Enable the tooltip and update its content
                 tooltipObject.enable()
                 tooltipObject.setContent(selected[0])
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Set the selected file's path
               $(this).val(selected[0]).trigger('input')
@@ -10489,19 +10497,19 @@
           // Attempt to remove its value
           try {
             input.val('')
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           // Reset the checkbox's value
           try {
             input.prop('checked', getAttributes(input, 'default-value') == 'true')
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           // Get its MDB object and update it
           setTimeout(() => {
             try {
               inputObject.update()
               setTimeout(() => inputObject._deactivate())
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Remove the initial indicator's attribute
             input.removeAttr('data-initial')
@@ -10513,7 +10521,7 @@
 
         // Reset editor's content
         editor.setValue(Modules.Consts.CQLSHRC)
-      } catch (e) {errorLog(e, 'connections');}
+      } catch (e) {}
     })
   }
 
@@ -10597,7 +10605,7 @@
 
         // Skip the upcoming code
         return
-      } catch (e) {errorLog(e, 'connections');}
+      } catch (e) {}
 
       /**
        * Reaching here means it's the up arrow
@@ -10670,7 +10678,7 @@
 
           try {
             descriptionFileName = Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), clusterElement.attr('data-folder'), descriptionFileName)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           let dialogID = getRandomID(5),
             dialogData = {
@@ -10704,11 +10712,11 @@
 
                 showToast(I18next.capitalize(I18next.t('save CQL description')), I18next.capitalizeFirstLetter(I18next.replaceData('the cql description has been successfully saved as a text file, the size is $data', [descriptionSize])) + '.', 'success')
               })
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           })
 
           return
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         // The CQL description's tab's container is not empty now, and make sure to clear the empty the search input field
         cqlDescriptionsTabContent.removeClass('_empty').find('input').val('').trigger('input')
@@ -10737,7 +10745,7 @@
             .replace(/keyspace:/gm, 'Keyspace: ')
             .replace(/table:/gm, '<span class="dot"></span> Table: ')
             .replace(/\s+/gm, ' ')
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           // If there's no associated description then skip this try-catch block
@@ -10757,7 +10765,7 @@
 
           // Skip the upcoming code
           return
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         // Get a random ID for the description's editor's container
         let editorContainerID = getRandomID(10)
@@ -10833,7 +10841,7 @@
 
                 // Skip the upcoming code
                 return
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Set the original height
               main.css('height', `${originalHeight}px`)
@@ -10905,14 +10913,14 @@
                     (new ResizeObserver(() => {
                       try {
                         descriptionEditor.layout()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })).observe(workareaElement[0]); // This semicolon is critical here
 
                     // Create observer for the description's UI element
                     (new ResizeObserver(() => {
                       try {
                         descriptionEditor.layout()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })).observe($(this)[0])
                   })
 
@@ -10949,7 +10957,7 @@
 
         try {
           $('#rightClickActionsMetadata').attr('data-keyspaces', `${data.keyspaces}`)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         $('button#executeActionStatement').attr({
           'data-tab-id': `${data.tabID}`,
@@ -10983,15 +10991,15 @@
 
         try {
           metadataInfo.replication_strategy = JSON.parse(repairJSON(metadataInfo.replication_strategy))
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           $('#rightClickActionsMetadata').attr('data-keyspaces', `${data.keyspaces}`)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           $('#generalPurposeDialog').attr('data-keyspacename', `${data.keyspaceName}`)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'alter keyspace').text(I18next.capitalize(I18next.t('alter keyspace')))
 
@@ -11022,7 +11030,7 @@
           $('input#keyspaceReplicationStrategy').attr('disabled', null).css('background-color', 'inherit')
 
           $('input#keyspaceReplicationStrategy').parent().children('ion-icon.trailing').show()
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           if (`${metadataInfo.replication_strategy.class}` != 'NetworkTopologyStrategy')
@@ -11035,7 +11043,7 @@
           $('input#keyspaceReplicationStrategy').attr('disabled', '').css('background-color', '')
 
           $('input#keyspaceReplicationStrategy').parent().children('ion-icon.trailing').hide()
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         $('input#keyspaceDurableWrites').prop('checked', metadataInfo.durable_writes)
         $('input#keyspaceDurableWrites').attr('set-value', metadataInfo.durable_writes)
@@ -11056,13 +11064,13 @@
 
         try {
           $('#generalPurposeDialog').attr('data-keyspacename', `${keyspaceName}`)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         let dropStatement = `DROP KEYSPACE ${keyspaceName};`
 
         try {
           dropKeyspaceEditor.setValue(dropStatement)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
 
@@ -11072,25 +11080,25 @@
 
           try {
             getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
 
           try {
             activeWorkarea.find('div.terminal-container').hide()
             activeWorkarea.find('div.interactive-terminal-container').show()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             let statementInputField = $(`textarea#${data.textareaID}`)
             statementInputField.val(dropKeyspaceEditor.getValue())
             statementInputField.trigger('input').focus()
             AutoSize.update(statementInputField[0])
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             setTimeout(() => $(`button#${data.btnID}`).click(), 100)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
       })
     }
@@ -11179,7 +11187,7 @@
           }
 
           $(`a[action]#addDataField`).add($(`a[action]#addUDTDataField`)).trigger('click', JSON.stringify(fields))
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
 
@@ -11201,13 +11209,13 @@
             'data-keyspacename': `${keyspaceName}`,
             'data-udtname': `${udtName}`
           })
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         let dropStatement = `DROP TYPE ${keyspaceName}.${udtName};`
 
         try {
           dropUDTEditor.setValue(dropStatement)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
 
@@ -11217,25 +11225,25 @@
 
           try {
             getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
 
           try {
             activeWorkarea.find('div.terminal-container').hide()
             activeWorkarea.find('div.interactive-terminal-container').show()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             let statementInputField = $(`textarea#${data.textareaID}`)
             statementInputField.val(dropUDTEditor.getValue())
             statementInputField.trigger('input').focus()
             AutoSize.update(statementInputField[0])
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             setTimeout(() => $(`button#${data.btnID}`).click(), 100)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
       })
     }
@@ -11288,7 +11296,7 @@
           $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-udt-columns').find('span[mulang]').hide()
 
           $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-udt-columns').find('span.no-udts').show()
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         $('#rightClickActionsMetadata div.input-group-text.standard-table-name-keyspace div.keyspace-name').text(`${data.keyspaceName}`)
 
@@ -11312,7 +11320,7 @@
           $(`a[action]#addStandardTableOption`).trigger('click', JSON.stringify([...tableDefaultMetadata, {
             default: true
           }]))
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         $('#rightClickActionsMetadata').find('div.standard-table-options-sub-container a').click()
 
@@ -11367,7 +11375,7 @@
           $(`a[action]#addCounterTableOption`).trigger('click', JSON.stringify([...tableDefaultMetadata, {
             default: true
           }]))
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         $('#rightClickActionsMetadata').find('div.counter-table-options-sub-container a').click()
 
@@ -11390,30 +11398,30 @@
 
           try {
             tableObj = JSON.parse(JSONRepair(data.tables)).find((table) => table.name == tableName)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             partitionKeys = tableObj.partition_key.map((key) => ({
               name: key.name,
               type: key.cql_type
             }))
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             clusteringKeys = tableObj.clustering_key.map((key) => ({
               name: key.name,
               type: key.cql_type
             }))
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             counterColumns = tableObj.columns.filter((column) => minifyText(column.cql_type) == 'counter')
               .map((column) => column.name)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             tableOptions = tableObj.options
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           $('div.modal#rightClickActionsMetadata div[action]').hide()
           $('div.modal#rightClickActionsMetadata div[action="counter-tables"]').show()
@@ -11460,7 +11468,7 @@
           $('#rightClickActionsMetadata').find('div.counter-table-options-sub-container a').click()
 
           return
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         let tableName = `${data.tableName}`,
           tableObj = null,
@@ -11476,7 +11484,7 @@
 
         try {
           tableObj = JSON.parse(JSONRepair(data.tables)).find((table) => table.name == tableName)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           partitionKeys = tableObj.partition_key.map((key) => ({
@@ -11484,7 +11492,7 @@
             type: key.cql_type,
             isStatic: key.is_static
           }))
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           clusteringKeys = tableObj.clustering_key.map((key) => ({
@@ -11492,11 +11500,11 @@
             type: key.cql_type,
             isStatic: key.is_static
           }))
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           tableOptions = tableObj.options
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           keyspaceUDTs = JSON.parse(JSONRepair(data.udts)),
@@ -11507,7 +11515,7 @@
 
             try {
               columnType = columnType.match(/frozen\<(.*?)(\<|\>)/)[1]
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let isColumnDataTypeUDT = keyspaceUDTs.find((udt) => udt.name == columnType)
 
@@ -11517,7 +11525,7 @@
               isStatic: column.is_static
             })
           }
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         $('div.modal#rightClickActionsMetadata div[action]').hide()
         $('div.modal#rightClickActionsMetadata div[action="standard-tables"]').show()
@@ -11570,7 +11578,7 @@
           $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-udt-columns').find('span[mulang]').hide()
 
           $('div.modal#rightClickActionsMetadata').find('div.empty-standard-table-udt-columns').find('span.no-udts').show()
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         rightClickActionsMetadataModal.show()
 
@@ -11592,13 +11600,13 @@
             'data-keyspacename': `${keyspaceName}`,
             'data-tablename': `${tableName}`
           })
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         let dropStatement = `DROP TABLE ${keyspaceName}.${tableName};`
 
         try {
           dropTableEditor.setValue(dropStatement)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
 
@@ -11608,25 +11616,25 @@
 
           try {
             getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
 
           try {
             activeWorkarea.find('div.terminal-container').hide()
             activeWorkarea.find('div.interactive-terminal-container').show()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             let statementInputField = $(`textarea#${data.textareaID}`)
             statementInputField.val(dropTableEditor.getValue())
             statementInputField.trigger('input').focus()
             AutoSize.update(statementInputField[0])
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             setTimeout(() => $(`button#${data.btnID}`).click(), 100)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
       })
 
@@ -11645,13 +11653,13 @@
             'data-keyspacename': `${keyspaceName}`,
             'data-tablename': `${tableName}`
           })
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         let truncateStatement = `CONSISTENCY ALL;` + OS.EOL + `TRUNCATE TABLE ${keyspaceName}.${tableName};`
 
         try {
           truncateTableEditor.setValue(truncateStatement)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
 
@@ -11661,25 +11669,25 @@
 
           try {
             getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
 
           try {
             activeWorkarea.find('div.terminal-container').hide()
             activeWorkarea.find('div.interactive-terminal-container').show()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             let statementInputField = $(`textarea#${data.textareaID}`)
             statementInputField.val(truncateTableEditor.getValue())
             statementInputField.trigger('input').focus()
             AutoSize.update(statementInputField[0])
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             setTimeout(() => $(`button#${data.btnID}`).click(), 100)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
       })
 
@@ -11698,7 +11706,7 @@
 
           try {
             enableBlobPreview = config.get('features', 'previewBlob') == 'true'
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           effectedNodes = {}
 
@@ -11733,11 +11741,11 @@
 
           try {
             $('div.dropdown[for-select="insertWriteConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].standard}"]`).click()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             $('div.dropdown[for-select="insertSerialConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].serial}"]`).click()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'insert row').html(`${I18next.capitalize(I18next.t('insert row'))} ${isInsertionAsJSON ? '(JSON)' : ''} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
 
@@ -11749,9 +11757,9 @@
             for (let container of Object.keys(tableFieldsTreeContainers)) {
               try {
                 tableFieldsTreeContainers[container].jstree('destroy')
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
             }
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           let keys = [],
             columns = [],
@@ -11771,7 +11779,7 @@
                   isPartition
                 }
               })
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               columns = tableObj.columns.filter((column) => tableObj.primary_key.find((key) => key.name == column.name) == undefined)
@@ -11781,12 +11789,12 @@
                     type: column.cql_type
                   }
                 })
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               try {
                 keyspaceUDTs = JSON.parse(JSONRepair(data.udts))
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               for (let column of columns) {
                 let udtStructure = {},
@@ -11796,7 +11804,7 @@
 
                 try {
                   manipulatedColumnType = `${manipulatedColumnType}`.match(/<(.*?)>$/)[1];
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let udtObject = keyspaceUDTs.find((udt) => udt.name == manipulatedColumnType)
 
@@ -11812,8 +11820,8 @@
               }
 
               columns = columns.filter((column) => udts.find((udt) => udt.name == column.name) == undefined)
-            } catch (e) {errorLog(e, 'connections');}
-          } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
+          } catch (e) {}
 
           let groupStructure = buildTableFieldsTreeview(keys, columns, udts, keyspaceUDTs, enableBlobPreview),
             handleHiddenNodes = (treeData) => {
@@ -11844,7 +11852,7 @@
 
                     index++
                   }
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 index++
 
@@ -11887,7 +11895,7 @@
                   input.trigger('change')
 
                   continue
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   if (inputCassandraType != 'blob')
@@ -11898,25 +11906,25 @@
                   input.data('value', inputSavedValue.dataValue)
 
                   continue
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 // Not `blob` or `boolean`
                 try {
                   input.val(inputSavedValue).trigger('input')
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               }
 
               setTimeout(() => {
                 try {
                   updateActionStatusForInsertRow()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
             }
 
           try {
             for (let treeViewType of Object.keys(groupStructure))
               groupStructure[treeViewType].core.data = handleHiddenNodes(groupStructure[treeViewType].core.data)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           {
             let primaryKeyTreeElements = tableFieldsTreeContainers.primaryKey.add('div#insertPrimaryKeyBadge')
@@ -11929,10 +11937,10 @@
 
               try {
                 groupStructure.primaryKey.core.data = groupStructure.primaryKey.core.data.filter((field) => field != undefined)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               tableFieldsTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
-            } catch (e) {errorLog(e, 'connections');
+            } catch (e) {
               primaryKeyTreeElements.hide()
             }
           }
@@ -11948,10 +11956,10 @@
 
               try {
                 groupStructure.regularColumns.core.data = groupStructure.regularColumns.core.data.filter((field) => field != undefined)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               tableFieldsTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
-            } catch (e) {errorLog(e, 'connections');
+            } catch (e) {
               columnsRegularTreeElements.hide()
             }
           }
@@ -11967,10 +11975,10 @@
 
               try {
                 groupStructure.collectionColumns.core.data = groupStructure.collectionColumns.core.data.filter((field) => field != undefined)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               tableFieldsTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
-            } catch (e) {errorLog(e, 'connections');
+            } catch (e) {
               columnsCollectionTreeElements.hide()
             }
           }
@@ -11984,7 +11992,7 @@
               columnsUDTTreeElements.show()
 
               tableFieldsTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
-            } catch (e) {errorLog(e, 'connections');
+            } catch (e) {
               columnsUDTTreeElements.hide()
             }
           }
@@ -11999,7 +12007,7 @@
                 tableFieldsTreeContainer.unbind('create_node.jstree')
                 tableFieldsTreeContainer.unbind('delete_node.jstree')
                 tableFieldsTreeContainer.unbind('hide_node.jstree')
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               tableFieldsTreeContainer.on('loaded.jstree', () => {
                 tableFieldsTreeContainer.find('input').each(function() {
@@ -12008,14 +12016,14 @@
                       let mdbObject = getElementMDBObject($(this))
 
                       mdbObject.update()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   }, 100)
                 })
 
                 setTimeout(() => {
                   try {
                     updateActionStatusForInsertRow()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
 
                 tableFieldsTreeContainer.find('a.jstree-anchor[add-hidden-node]').each(function() {
@@ -12036,7 +12044,7 @@
 
                       try {
                         $(toggleBtn).unbind('click')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       $(toggleBtn).click(() => {
                         for (let subToggleBtn of allActionsMenuToggleBtns) {
@@ -12049,7 +12057,7 @@
                           try {
                             subActionsDropDownElement.hide()
                             subActionsDropDownObject.hide()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         }
 
                         setTimeout(() => {
@@ -12063,7 +12071,7 @@
                               try {
                                 actionsDropDownElement.hide()
                                 actionsDropDownObject.hide()
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             },
                             exceptions: toggleBtn
                           })
@@ -12072,7 +12080,7 @@
                         setTimeout(() => {
                           try {
                             updateActionStatusForInsertRow()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -12084,7 +12092,7 @@
                     for (let addItemActionBtn of allAddItemActionBtns) {
                       try {
                         $(addItemActionBtn).unbind('click')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       $(addItemActionBtn).click(function() {
                         let relatedNode = $(this).parent().parent().parent(),
@@ -12101,11 +12109,11 @@
 
                         try {
                           type = removeFrozenKeyword(`${type}`)
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           type = `${type}`.match(/<(.*?)>$/)[1]
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           if (!isTypeMap)
@@ -12116,14 +12124,14 @@
                           type = type.map((subType) => {
                             try {
                               subType = removeFrozenKeyword(`${subType}`)
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             subType = subType.replace(/(.*?)</gi, '').replace(/>(.*?)/gi, '')
 
                             return subType
                           })
 
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           if (typeof type != 'object')
@@ -12192,11 +12200,11 @@
 
                           try {
                             mapKeyStructure.parent = itemMainNodeID
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             mapValueStructure.parent = itemMainNodeID
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           let allNewNodes = []
 
@@ -12206,7 +12214,7 @@
                             } else {
                               allNewNodes.push(itemMainNodeStrucutre)
                             }
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             if (Array.isArray(mapKeyStructure)) {
@@ -12214,7 +12222,7 @@
                             } else {
                               allNewNodes.push(mapKeyStructure)
                             }
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             if (Array.isArray(mapValueStructure)) {
@@ -12222,15 +12230,15 @@
                             } else {
                               allNewNodes.push(mapValueStructure)
                             }
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             allNewNodes = flattenArray(allNewNodes)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             allNewNodes = handleHiddenNodes(allNewNodes)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           for (let i = 0; i < allNewNodes.length; i++) {
                             let node = allNewNodes[i]
@@ -12240,29 +12248,29 @@
                                 throw 0
 
                               allNewNodes[i].parent = itemMainNodeID
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               let nodeText = Cheerio.load(allNewNodes[i].text)
 
                               try {
                                 nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               allNewNodes[i].text = nodeText('body').html()
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               relatedTreeObject.create_node(allNewNodes[i].parent, allNewNodes[i])
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               handleNodeCreationDeletion()
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           }
 
                           return
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         let nodeUDTType = keyspaceUDTs.find((udt) => udt.name == type),
                           nodeTypeObject = {
@@ -12280,11 +12288,11 @@
 
                         try {
                           nodeTypeStructure = Array.isArray(nodeTypeStructure) ? flattenArray(nodeTypeStructure) : [nodeTypeStructure]
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           nodeTypeStructure = handleHiddenNodes(nodeTypeStructure)
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         for (let i = 0; i < nodeTypeStructure.length; i++) {
                           try {
@@ -12300,7 +12308,7 @@
 
                             try {
                               nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             let actionsGroup = nodeText('div.input-group-text.for-actions')
 
@@ -12322,22 +12330,22 @@
                             nodeTypeStructure[i].text = nodeText('body').html()
 
                             nodeTypeStructure[i].parent = hiddenNodeID
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             relatedTreeObject.create_node(nodeTypeStructure[i].parent, {
                               ...nodeTypeStructure[i]
                             })
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             handleNodeCreationDeletion()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         }
 
                         try {
                           updateActionStatusForInsertRow()
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       })
                     }
 
@@ -12346,7 +12354,7 @@
                     for (let deleteItemActionBtn of allDeleteItemActionBtns) {
                       try {
                         $(deleteItemActionBtn).unbind('click')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       $(deleteItemActionBtn).click(function() {
                         let relatedNode = $(this).parent().parent().parent(),
@@ -12359,8 +12367,8 @@
 
                           try {
                             handleNodeCreationDeletion()
-                          } catch (e) {errorLog(e, 'connections');}
-                        } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
+                        } catch (e) {}
                       })
                     }
                   }
@@ -12371,7 +12379,7 @@
                     for (let ignoreCheckbox of AllIgnoreCheckboxes) {
                       try {
                         $(ignoreCheckbox).unbind('click')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       $(ignoreCheckbox).click(function() {
                         let relatedNode = $(this).closest('a.jstree-anchor'),
@@ -12393,7 +12401,7 @@
                           let hiddenNodeObject = relatedTreeObject.get_node(`${relatedNode.attr('add-hidden-node')}`)
 
                           allChildrenNodes = allChildrenNodes.concat(hiddenNodeObject.children_d)
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         for (let childrenNodeID of allChildrenNodes) {
                           let childrenNode = $(`a[id="${childrenNodeID}_anchor"]`)
@@ -12404,7 +12412,7 @@
                         setTimeout(() => {
                           try {
                             updateActionStatusForInsertRow()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -12416,7 +12424,7 @@
                     for (let clearFieldBtn of allClearFieldBtns) {
                       try {
                         $(clearFieldBtn).unbind('click')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       $(clearFieldBtn).click(function() {
                         let relatedNode = $(this).closest('a.jstree-anchor'),
@@ -12425,17 +12433,17 @@
 
                         try {
                           rlatedInutField.val('').trigger('input')
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           inputObject.update()
                           setTimeout(() => inputObject._deactivate())
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         setTimeout(() => {
                           try {
                             updateActionStatusForInsertRow()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -12447,7 +12455,7 @@
                     for (let applyBtn of allNULLApplyBtns) {
                       try {
                         $(applyBtn).unbind('click')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       $(applyBtn).click(function() {
                         let isNULLApplied = $(this).hasClass('applied')
@@ -12458,7 +12466,7 @@
                         setTimeout(() => {
                           try {
                             updateActionStatusForInsertRow()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -12469,7 +12477,7 @@
                   try {
                     tableFieldsTreeContainer.find('input').unbind('input')
                     tableFieldsTreeContainer.find('input').unbind('change')
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   tableFieldsTreeContainer.find('input').on('input change', function() {
                     let [
@@ -12492,11 +12500,11 @@
                       setTimeout(() => {
                         try {
                           updateActionStatusForInsertRow()
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       })
 
                       return
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     $(this).removeClass('is-invalid')
 
@@ -12517,7 +12525,7 @@
                       $(`label[for="${$(this).attr('id')}"]`).text($(this).prop('indeterminate') ? 'not set' : ($(this).prop('checked') ? 'true' : 'false'))
 
                       effectedNodes[inputID] = $(this).prop('indeterminate') ? 'indeterminate' : `${$(this).prop('checked')}`
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     if (inputHTMLType != 'checkbox')
                       effectedNodes[inputID] = $(this).val()
@@ -12534,7 +12542,7 @@
                         throw $(this).removeClass('is-invalid')
 
                       $(this).toggleClass('is-invalid', !isValidIP)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     // `uuid` and `timeuuid` Cassandra types - `text` input type
                     try {
@@ -12549,7 +12557,7 @@
                         throw $(this).removeClass('is-invalid')
 
                       $(this).toggleClass('is-invalid', !isValidUUID)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     // `timestamp` Cassandra type - `text` input type
                     try {
@@ -12560,7 +12568,7 @@
 
                       try {
                         timestampValue = !isNaN(timestampValue) ? parseInt(timestampValue) : timestampValue
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       let isValidTimestamp = !isNaN((new Date(timestampValue).getTime()))
 
@@ -12568,7 +12576,7 @@
                         throw $(this).removeClass('is-invalid')
 
                       $(this).toggleClass('is-invalid', !isValidTimestamp)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     // `date` Cassandra type - `text` input type
                     try {
@@ -12582,7 +12590,7 @@
                         throw $(this).removeClass('is-invalid')
 
                       $(this).toggleClass('is-invalid', !isValidDate)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     // `time` Cassandra type - `text` input type
                     try {
@@ -12596,7 +12604,7 @@
                         throw $(this).removeClass('is-invalid')
 
                       $(this).toggleClass('is-invalid', !isValidTime)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     // `duration` Cassandra type - `text` input type
                     try {
@@ -12610,7 +12618,7 @@
                         throw $(this).removeClass('is-invalid')
 
                       $(this).toggleClass('is-invalid', !isValidDuration)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     // `blob` Cassandra type - `text` input type
                     try {
@@ -12629,16 +12637,16 @@
                         inputValue: $(this).val(),
                         dataValue: $(this).data('value')
                       }
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       relatedNode.find('div.clear-field').toggleClass('hide', $(this).val().length <= 0)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     setTimeout(() => {
                       try {
                         updateActionStatusForInsertRow()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
 
@@ -12657,7 +12665,7 @@
 
                         try {
                           inputObject.update()
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         break
                       }
@@ -12674,7 +12682,7 @@
                             try {
                               tippyInstance.enable()
                               tippyInstance.show()
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             throw 0
                           }
@@ -12805,7 +12813,7 @@
 
                                             durationInputObject.update()
                                             setTimeout(() => durationInputObject._deactivate())
-                                          } catch (e) {errorLog(e, 'connections');}
+                                          } catch (e) {}
                                         }
 
                                         inputField.val(``).trigger('input')
@@ -12813,12 +12821,12 @@
                                         try {
                                           inputObject.update()
                                           setTimeout(() => inputObject._deactivate())
-                                        } catch (e) {errorLog(e, 'connections');}
+                                        } catch (e) {}
 
                                         setTimeout(() => {
                                           try {
                                             updateActionStatusForInsertRow()
-                                          } catch (e) {errorLog(e, 'connections');}
+                                          } catch (e) {}
                                         })
                                       })
 
@@ -12836,7 +12844,7 @@
 
                                               duration += inputValue
                                             }
-                                          } catch (e) {errorLog(e, 'connections');}
+                                          } catch (e) {}
 
                                           try {
                                             let timeInputFields = [hoursInputID, minutesInputID, secondsInputID],
@@ -12854,7 +12862,7 @@
                                               throw 0
 
                                             duration += `T${tempTxt}`
-                                          } catch (e) {errorLog(e, 'connections');}
+                                          } catch (e) {}
 
                                           duration = duration == 'P' ? '' : duration
 
@@ -12862,25 +12870,25 @@
 
                                           try {
                                             inputObject.update()
-                                          } catch (e) {errorLog(e, 'connections');}
-                                        } catch (e) {errorLog(e, 'connections');} finally {
+                                          } catch (e) {}
+                                        } catch (e) {} finally {
                                           try {
                                             instance.disable()
                                             instance.hide()
-                                          } catch (e) {errorLog(e, 'connections');}
+                                          } catch (e) {}
                                         }
 
                                         setTimeout(() => {
                                           try {
                                             updateActionStatusForInsertRow()
-                                          } catch (e) {errorLog(e, 'connections');}
+                                          } catch (e) {}
                                         })
                                       })
                                     })
                                   }))
 
                                   return
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 setTimeout(() => $(instance.popper).find('div.tippy-content').addClass('no-padding'))
 
@@ -12895,12 +12903,12 @@
                                     try {
                                       inputObject.update()
                                       setTimeout(() => inputObject._deactivate())
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
 
                                     setTimeout(() => {
                                       try {
                                         updateActionStatusForInsertRow()
-                                      } catch (e) {errorLog(e, 'connections');}
+                                      } catch (e) {}
                                     })
                                   },
                                   onDateChange: function() {
@@ -12918,25 +12926,25 @@
                                           throw 0
 
                                         dateTimeValue = new Date(this.getValue()).getTime()
-                                      } catch (e) {errorLog(e, 'connections');}
+                                      } catch (e) {}
 
                                       inputField.val(`${dateTimeValue}`).trigger('input')
 
                                       try {
                                         inputObject.update()
-                                      } catch (e) {errorLog(e, 'connections');}
+                                      } catch (e) {}
 
-                                    } catch (e) {errorLog(e, 'connections');} finally {
+                                    } catch (e) {} finally {
                                       try {
                                         instance.disable()
                                         instance.hide()
-                                      } catch (e) {errorLog(e, 'connections');}
+                                      } catch (e) {}
                                     }
 
                                     setTimeout(() => {
                                       try {
                                         updateActionStatusForInsertRow()
-                                      } catch (e) {errorLog(e, 'connections');}
+                                      } catch (e) {}
                                     })
                                   }
                                 }))
@@ -12946,12 +12954,12 @@
                               try {
                                 instance.disable()
                                 instance.hide()
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             },
                           })
 
                           tippyInstances.push(tippyInstance)
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         break
                       }
@@ -12979,7 +12987,7 @@
                               inputObject.update()
 
                               setTimeout(() => inputObject._deactivate())
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             return
                           }
@@ -12991,7 +12999,7 @@
 
                             try {
                               maxItemSize = Bytes(maxItemSize) || 2097152
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             FS.stat(selectedItem, (err, stats) => {
                               if (err)
@@ -13008,7 +13016,7 @@
                                 showRingSpinner = () => {
                                   try {
                                     clearTimeout(showRingSpinnerTimeout)
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
 
                                   showRingSpinnerTimeout = setTimeout(() => ringSpinnerElement.addClass('show'), 500)
                                 }
@@ -13031,11 +13039,11 @@
 
                                 try {
                                   inputObject.update()
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 try {
                                   clearTimeout(showRingSpinnerTimeout)
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 ringSpinnerElement.removeClass('show')
                               })
@@ -13062,7 +13070,7 @@
 
                             try {
                               itemType = result.ext
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             let requestID = getRandomID(20),
                               ringSpinnerElement = $(this).parent().parent().parent().children('l-ring-2'),
@@ -13070,7 +13078,7 @@
                               showRingSpinner = () => {
                                 try {
                                   clearTimeout(showRingSpinnerTimeout)
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 showRingSpinnerTimeout = setTimeout(() => ringSpinnerElement.addClass('show'), 500)
                               }
@@ -13094,12 +13102,12 @@
 
                               try {
                                 clearTimeout(showRingSpinnerTimeout)
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               ringSpinnerElement.removeClass('show')
                             })
                           })
-                        } catch (e) {errorLog(e, 'connections');
+                        } catch (e) {
                           showToast(I18next.capitalize(I18next.t('preview item')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to finalize the preview process of the current item')) + '.', 'failure')
                         }
 
@@ -13112,7 +13120,7 @@
                     setTimeout(() => {
                       try {
                         updateActionStatusForInsertRow()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
 
@@ -13129,12 +13137,12 @@
                 triggerLoadEvent = () => {
                   try {
                     clearTimeout(triggerLoadEventTimeOut)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
                       updateActionStatusForInsertRow()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   triggerLoadEventTimeOut = setTimeout(() => tableFieldsTreeContainer.trigger('loaded.jstree'))
@@ -13145,7 +13153,7 @@
 
                 try {
                   parentNodeID = data.node.parents.at(-2)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   if (tableFieldsTreeContainer.find(`a.jstree-anchor[add-hidden-node="${parentNodeID}"]`).length <= 0)
@@ -13156,7 +13164,7 @@
                   hiddenNode.css('margin-top', '-45px')
 
                   hiddenNode.children('a').css('pointer-events', 'none')
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 triggerLoadEvent()
               })
@@ -13164,12 +13172,12 @@
               tableFieldsTreeContainer.on('delete_node.jstree', function(e, data) {
                 try {
                   data.instance.hide_node(data.node.id)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 setTimeout(() => {
                   try {
                     updateActionStatusForInsertRow()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
               })
 
@@ -13205,16 +13213,16 @@
                       }
 
                       return
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     relatedInput.trigger('focus')
                   })
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 setTimeout(() => {
                   try {
                     data.instance.deselect_all()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 }, 100)
               })
             }
@@ -13232,7 +13240,7 @@
           setTimeout(() => {
             try {
               updateActionStatusForInsertRow()
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           })
         })
       })
@@ -13251,7 +13259,7 @@
 
             try {
               enableBlobPreview = config.get('features', 'previewBlob') == 'true'
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Get the MDB object of the related modal
             let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
@@ -13273,11 +13281,11 @@
 
             try {
               $('div.dropdown[for-select="deleteWriteConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].standard}"]`).click()
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               $('div.dropdown[for-select="deleteSerialConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].serial}"]`).click()
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Update different modal's attributes
             $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'delete row/column').html(`${I18next.capitalize(I18next.t('delete row/column'))} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
@@ -13290,9 +13298,9 @@
               for (let container of Object.keys(tableFieldsDeleteTreeContainers)) {
                 try {
                   tableFieldsDeleteTreeContainers[container].jstree('destroy')
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               }
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let keys = [],
               columns = [],
@@ -13312,7 +13320,7 @@
                     isPartition
                   }
                 })
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 columns = tableObj.columns.filter((column) => tableObj.primary_key.find((key) => key.name == column.name) == undefined)
@@ -13323,12 +13331,12 @@
                       isStatic: column.is_static
                     }
                   })
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 try {
                   keyspaceUDTs = JSON.parse(JSONRepair(data.udts))
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 for (let column of columns) {
                   let udtStructure = {},
@@ -13338,7 +13346,7 @@
 
                   try {
                     manipulatedColumnType = `${manipulatedColumnType}`.match(/<(.*?)>$/)[1];
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   let udtObject = keyspaceUDTs.find((udt) => udt.name == manipulatedColumnType)
 
@@ -13354,8 +13362,8 @@
                 }
 
                 columns = columns.filter((column) => udts.find((udt) => udt.name == column.name) == undefined)
-              } catch (e) {errorLog(e, 'connections');}
-            } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
+            } catch (e) {}
 
             let groupStructure = buildTableFieldsTreeview(keys, columns, udts, keyspaceUDTs, false, null, true),
               handleHiddenNodes = (treeData) => {
@@ -13386,7 +13394,7 @@
 
                       index++
                     }
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   index++
 
@@ -13432,7 +13440,7 @@
                     input.trigger('change')
 
                     continue
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (inputCassandraType != 'blob')
@@ -13443,25 +13451,25 @@
                     input.data('value', inputSavedValue.dataValue)
 
                     continue
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   // Not `blob` or `boolean`
                   try {
                     input.val(inputSavedValue).trigger('input')
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 }
 
                 setTimeout(() => {
                   try {
                     updateActionStatusForDeleteRowColumn()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
               }
 
             try {
               for (let treeViewType of Object.keys(groupStructure))
                 groupStructure[treeViewType].core.data = handleHiddenNodes(groupStructure[treeViewType].core.data)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             {
               let primaryKeyTreeElements = tableFieldsDeleteTreeContainers.primaryKey.add('div#deletePrimaryKeyBadge')
@@ -13474,10 +13482,10 @@
 
                 try {
                   groupStructure.primaryKey.core.data = groupStructure.primaryKey.core.data.filter((field) => field != undefined)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 tableFieldsDeleteTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
-              } catch (e) {errorLog(e, 'connections');
+              } catch (e) {
                 primaryKeyTreeElements.hide()
               }
             }
@@ -13497,10 +13505,10 @@
 
                 try {
                   groupStructure.regularColumns.core.data = groupStructure.regularColumns.core.data.filter((field) => field != undefined)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 tableFieldsDeleteTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
-              } catch (e) {errorLog(e, 'connections');
+              } catch (e) {
                 columnsRegularTreeElements.hide()
               }
             }
@@ -13518,10 +13526,10 @@
 
                 try {
                   groupStructure.collectionColumns.core.data = groupStructure.collectionColumns.core.data.filter((field) => field != undefined)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 tableFieldsDeleteTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
-              } catch (e) {errorLog(e, 'connections');
+              } catch (e) {
                 columnsCollectionTreeElements.hide()
               }
             }
@@ -13538,10 +13546,10 @@
 
                 try {
                   groupStructure.udtColumns.core.data = groupStructure.udtColumns.core.data.filter((field) => field != undefined)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 tableFieldsDeleteTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
-              } catch (e) {errorLog(e, 'connections');
+              } catch (e) {
                 columnsUDTTreeElements.hide()
               }
             }
@@ -13559,7 +13567,7 @@
               $('#deleteTimestamp').val('').trigger('input')
 
               getElementMDBObject($('#deleteTimestamp')).update()
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let deleteNonPKColumnsContainer = $('div#tableFieldsNonPKColumnsDeleteAction div.columns')
 
@@ -13586,12 +13594,12 @@
 
                     try {
                       updateActionStatusForDeleteRowColumn()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     $('input#toBeDeletedColumnsFilter').trigger('input')
                   }))
                 })))
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
             }
 
             setTimeout(() => {
@@ -13604,13 +13612,13 @@
                   tableFieldsTreeContainer.unbind('create_node.jstree')
                   tableFieldsTreeContainer.unbind('delete_node.jstree')
                   tableFieldsTreeContainer.unbind('hide_node.jstree')
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 tableFieldsTreeContainer.on('loaded.jstree', () => {
                   setTimeout(() => {
                     try {
                       updateActionStatusForDeleteRowColumn()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   tableFieldsTreeContainer.find('a.jstree-anchor[add-hidden-node]').each(function() {
@@ -13628,7 +13636,7 @@
                       for (let addItemActionBtn of allAddItemActionBtns) {
                         try {
                           $(addItemActionBtn).unbind('click')
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         $(addItemActionBtn).click(function() {
                           let relatedNode = $(this).parent().parent().parent(),
@@ -13645,11 +13653,11 @@
 
                           try {
                             type = removeFrozenKeyword(`${type}`)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             type = `${type}`.match(/<(.*?)>$/)[1]
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             if (!isTypeMap)
@@ -13660,14 +13668,14 @@
                             type = type.map((subType) => {
                               try {
                                 subType = removeFrozenKeyword(`${subType}`)
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               subType = subType.replace(/(.*?)</gi, '').replace(/>(.*?)/gi, '')
 
                               return subType
                             })
 
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             if (typeof type != 'object')
@@ -13736,11 +13744,11 @@
 
                             try {
                               mapKeyStructure.parent = itemMainNodeID
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               mapValueStructure.parent = itemMainNodeID
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             let allNewNodes = []
 
@@ -13750,7 +13758,7 @@
                               } else {
                                 allNewNodes.push(itemMainNodeStrucutre)
                               }
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               if (Array.isArray(mapKeyStructure)) {
@@ -13758,7 +13766,7 @@
                               } else {
                                 allNewNodes.push(mapKeyStructure)
                               }
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               if (Array.isArray(mapValueStructure)) {
@@ -13766,15 +13774,15 @@
                               } else {
                                 allNewNodes.push(mapValueStructure)
                               }
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               allNewNodes = flattenArray(allNewNodes)
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               allNewNodes = handleHiddenNodes(allNewNodes)
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             for (let i = 0; i < allNewNodes.length; i++) {
                               let node = allNewNodes[i]
@@ -13784,29 +13792,29 @@
                                   throw 0
 
                                 allNewNodes[i].parent = itemMainNodeID
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               try {
                                 let nodeText = Cheerio.load(allNewNodes[i].text)
 
                                 try {
                                   nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
 
                                 allNewNodes[i].text = nodeText('body').html()
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               try {
                                 relatedTreeObject.create_node(allNewNodes[i].parent, allNewNodes[i])
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               try {
                                 handleNodeCreationDeletion()
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             }
 
                             return
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           let nodeUDTType = keyspaceUDTs.find((udt) => udt.name == type),
                             nodeTypeObject = {
@@ -13824,11 +13832,11 @@
 
                           try {
                             nodeTypeStructure = Array.isArray(nodeTypeStructure) ? flattenArray(nodeTypeStructure) : [nodeTypeStructure]
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             nodeTypeStructure = handleHiddenNodes(nodeTypeStructure)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           for (let i = 0; i < nodeTypeStructure.length; i++) {
                             try {
@@ -13844,7 +13852,7 @@
 
                               try {
                                 nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
 
                               let actionsGroup = nodeText('div.input-group-text.for-actions')
 
@@ -13866,22 +13874,22 @@
                               nodeTypeStructure[i].text = nodeText('body').html()
 
                               nodeTypeStructure[i].parent = hiddenNodeID
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               relatedTreeObject.create_node(nodeTypeStructure[i].parent, {
                                 ...nodeTypeStructure[i]
                               })
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             try {
                               handleNodeCreationDeletion()
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           }
 
                           try {
                             updateActionStatusForDeleteRowColumn()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       }
 
@@ -13890,7 +13898,7 @@
                       for (let deleteItemActionBtn of allDeleteItemActionBtns) {
                         try {
                           $(deleteItemActionBtn).unbind('click')
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         $(deleteItemActionBtn).click(function() {
                           let relatedNode = $(this).parent().parent().parent(),
@@ -13903,8 +13911,8 @@
 
                             try {
                               handleNodeCreationDeletion()
-                            } catch (e) {errorLog(e, 'connections');}
-                          } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
+                          } catch (e) {}
                         })
                       }
                     }
@@ -13915,7 +13923,7 @@
                       for (let clearFieldBtn of allClearFieldBtns) {
                         try {
                           $(clearFieldBtn).unbind('click')
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         $(clearFieldBtn).click(function() {
                           let relatedNode = $(this).closest('a.jstree-anchor'),
@@ -13924,17 +13932,17 @@
 
                           try {
                             rlatedInutField.val('').trigger('input')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           try {
                             inputObject.update()
                             setTimeout(() => inputObject._deactivate())
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           setTimeout(() => {
                             try {
                               updateActionStatusForDeleteRowColumn()
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           })
                         })
                       }
@@ -13946,7 +13954,7 @@
                       for (let applyBtn of allNULLApplyBtns) {
                         try {
                           $(applyBtn).unbind('click')
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         $(applyBtn).click(function() {
                           let isNULLApplied = $(this).hasClass('applied')
@@ -13957,7 +13965,7 @@
                           setTimeout(() => {
                             try {
                               updateActionStatusForDeleteRowColumn()
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           })
                         })
                       }
@@ -13973,7 +13981,7 @@
                         setTimeout(() => {
                           try {
                             $(operatorsContainerElement).find('label.btn').unbind('click')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           $(operatorsContainerElement).find('label.btn').click(function() {
                             $(this).parent().find(`input[id="${$(this).attr('for')}"]`).trigger('click')
@@ -13988,13 +13996,13 @@
                             $(operatorsContainerElement).find('label[for="_operator_in"]').parent().remove()
 
                             $(operatorsContainerElement).find('a.dropdown-item[data-operator-id="_operator_in"]').parent().remove()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
 
                         setTimeout(() => {
                           try {
                             $(operatorsContainerElement).find(`button[data-id="hidden-operators-btn"]`).unbind('click')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           $(operatorsContainerElement).find(`button[data-id="hidden-operators-btn"]`).click(function(_, onlyHideUncheckedOps = false) {
                             let areOperatorsShown = $(node).hasClass('show-hidden-operators')
@@ -14020,7 +14028,7 @@
                           setTimeout(() => {
                             try {
                               $(operator).unbind('change')
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
 
                             $(operator).on('change', function() {
                               let opNode = $(this).closest('a.jstree-anchor'),
@@ -14039,7 +14047,7 @@
                               } else {
                                 try {
                                   relatedTreeObject.delete_node(relatedTreeObject.get_node(opNode.attr('add-hidden-node')).children_d)
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
                               }
 
                               let spanParent = $(this).parent(),
@@ -14059,7 +14067,7 @@
                               $(operatorsContainerElement).find('label[for="_operator_in"]').parent().remove()
 
                               $(operatorsContainerElement).find('a.dropdown-item[data-operator-id="_operator_in"]').parent().remove()
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           })
 
                           setTimeout(() => Modules.Localization.applyLanguageSpecific($(node).find('span[mulang], [data-mulang]')))
@@ -14083,7 +14091,7 @@
                     try {
                       tableFieldsTreeContainer.find('div[data-is-main-input="true"]').find('input').unbind('input')
                       tableFieldsTreeContainer.find('div[data-is-main-input="true"]').find('input').unbind('change')
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     tableFieldsTreeContainer.find('div[data-is-main-input="true"]').find('input').on('input change', function() {
                       let [
@@ -14116,7 +14124,7 @@
                         effectedNodes[inputID] = $(this).prop('indeterminate') ? 'indeterminate' : `${$(this).prop('checked')}`
 
                         $(this).removeClass('is-invalid')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       if ($(this).val().length <= 0)
                         isInputEmpty = true
@@ -14135,7 +14143,7 @@
                           finalNode = $('#tableFieldsPrimaryKeyTreeDeleteAction').find(`a.jstree-anchor[static-id="${finalNode.attr('related-node-id')}"]`)
 
                         addIsEmptyClass = isInputEmpty && !$('#tableFieldsPrimaryKeyTreeDeleteAction').find('input:not([type="radio"])').first().closest('a.jstree-anchor').is(finalNode)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       $(this).add($(this).closest('div.form-outline')).toggleClass('is-empty', addIsEmptyClass)
 
@@ -14151,11 +14159,11 @@
                         setTimeout(() => {
                           try {
                             updateActionStatusForDeleteRowColumn()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
 
                         return
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       $(this).removeClass('is-invalid')
 
@@ -14174,7 +14182,7 @@
                           throw $(this).removeClass('is-invalid')
 
                         $(this).toggleClass('is-invalid', !isValidIP)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // `uuid` and `timeuuid` Cassandra types - `text` input type
                       try {
@@ -14189,7 +14197,7 @@
                           throw $(this).removeClass('is-invalid')
 
                         $(this).toggleClass('is-invalid', !isValidUUID)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // `timestamp` Cassandra type - `text` input type
                       try {
@@ -14200,7 +14208,7 @@
 
                         try {
                           timestampValue = !isNaN(timestampValue) ? parseInt(timestampValue) : timestampValue
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         let isValidTimestamp = !isNaN((new Date(timestampValue).getTime()))
 
@@ -14208,7 +14216,7 @@
                           throw $(this).removeClass('is-invalid')
 
                         $(this).toggleClass('is-invalid', !isValidTimestamp)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // `date` Cassandra type - `text` input type
                       try {
@@ -14222,7 +14230,7 @@
                           throw $(this).removeClass('is-invalid')
 
                         $(this).toggleClass('is-invalid', !isValidDate)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // `time` Cassandra type - `text` input type
                       try {
@@ -14236,7 +14244,7 @@
                           throw $(this).removeClass('is-invalid')
 
                         $(this).toggleClass('is-invalid', !isValidTime)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // `duration` Cassandra type - `text` input type
                       try {
@@ -14250,7 +14258,7 @@
                           throw $(this).removeClass('is-invalid')
 
                         $(this).toggleClass('is-invalid', !isValidDuration)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // `blob` Cassandra type - `text` input type
                       try {
@@ -14269,16 +14277,16 @@
                           inputValue: $(this).val(),
                           dataValue: $(this).data('value')
                         }
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       try {
                         relatedNode.find('div.clear-field').toggleClass('hide', $(this).val().length <= 0)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       setTimeout(() => {
                         try {
                           updateActionStatusForDeleteRowColumn()
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       })
                     })
 
@@ -14303,7 +14311,7 @@
                         let parentNode = $(node).closest('ul').parent().children('a.jstree-anchor').first()
 
                         isRelatedToHiddenNode = $(parentNode).closest('li').attr('is-hidden-node') == 'true'
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       if (isRelatedToHiddenNode) {
                         $(node).attr({
@@ -14324,7 +14332,7 @@
                       setTimeout(() => {
                         try {
                           updateActionStatusForDeleteRowColumn()
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       })
 
                       if (isRelatedToHiddenNode || $(node).attr('data-deletion-changes-applied') == 'true' || isUDTType.field || isPartOfMap || isCollectionFieldType)
@@ -14425,7 +14433,7 @@
                               throw 0
 
                             $(this).find('label[for="_operator_in"]').parent().remove()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
 
                         setTimeout(() => {
@@ -14446,7 +14454,7 @@
                             } else {
                               try {
                                 relatedTreeObject.delete_node(relatedTreeObject.get_node(opNode.attr('add-hidden-node')).children_d)
-                              } catch (e) {errorLog(e, 'connections');}
+                              } catch (e) {}
                             }
 
                             let spanParent = $(this).parent(),
@@ -14469,7 +14477,7 @@
 
                                 try {
                                   clondedInput.hide()
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
                               }
 
                               if (!isUDTType.field && !isPartOfMap)
@@ -14492,7 +14500,7 @@
                                 setTimeout(() => {
                                   try {
                                     selectDropdown.update()
-                                  } catch (e) {errorLog(e, 'connections');}
+                                  } catch (e) {}
                                 }, 500)
 
                                 {
@@ -14505,13 +14513,13 @@
                                   input.on('focus', () => {
                                     try {
                                       input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
 
                                     selectDropdown.show()
                                   }).on('focusout', () => setTimeout(() => {
                                     try {
                                       input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
 
                                     selectDropdown.hide()
                                   }, 100))
@@ -14526,7 +14534,7 @@
 
                                     try {
                                       updateRowsZIndexDeleteAction(isTransformNegative)
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
                                   })
 
                                   $(node).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -14546,7 +14554,7 @@
 
                                     try {
                                       updateActionStatusForDeleteRowColumn()
-                                    } catch (e) {errorLog(e, 'connections');}
+                                    } catch (e) {}
                                   })
                                 }
                               })
@@ -14563,7 +14571,7 @@
                                   let marginLeftAdjustment = (originalWidth - newWidth) - 4
 
                                   groupedOperators.css("margin-left", -marginLeftAdjustment + 'px');
-                                } catch (e) {errorLog(e, 'connections');}
+                                } catch (e) {}
                               }, 200)
                             }))
                           })
@@ -14582,7 +14590,7 @@
                           $(node).find('div.not-ignore-checkbox').parent().append(`<div class="pk-type-icon">
                               <img src="${iconPath}"
                             </div>`)
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       }))
 
                       setTimeout(() => $(node).find('div.not-ignore-checkbox').addClass('mandatory'))
@@ -14625,7 +14633,7 @@
 
                       buttonsAndInputAreas.attr('disabled', index != 0 ? '' : null)
                     })
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   // Handle other columns - regular and UDTs -
                   try {
@@ -14647,7 +14655,7 @@
 
                         try {
                           setTimeout(() => updateActionStatusForDeleteRowColumn())
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       })
 
                       let targetElement = $(node).find('div.not-ignore-checkbox').parent()
@@ -14656,7 +14664,7 @@
 
                       targetElement.html(deletionBtn)
                     }
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => Modules.Localization.applyLanguageSpecific(tableFieldsTreeContainer.find('span[mulang], [data-mulang]')))
 
@@ -14669,9 +14677,9 @@
                           setTimeout(() => {
                             try {
                               mdbObject.update()
-                            } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
                           })
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       })
                     }
                   })
@@ -14681,12 +14689,12 @@
                   triggerLoadEvent = () => {
                     try {
                       clearTimeout(triggerLoadEventTimeOut)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     setTimeout(() => {
                       try {
                         updateActionStatusForDeleteRowColumn()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     triggerLoadEventTimeOut = setTimeout(() => tableFieldsTreeContainer.trigger('loaded.jstree'))
@@ -14697,7 +14705,7 @@
 
                   try {
                     parentNodeID = data.node.parents.at(-2)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     let relatedToHiddenNode = tableFieldsTreeContainer.find(`a.jstree-anchor[add-hidden-node="${parentNodeID}"]`)
@@ -14715,7 +14723,7 @@
                     hiddenNode.css('margin-top', '-45px')
 
                     hiddenNode.children('a').css('pointer-events', 'none')
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   triggerLoadEvent()
                 })
@@ -14723,7 +14731,7 @@
                 tableFieldsTreeContainer.on('delete_node.jstree', function(e, data) {
                   try {
                     data.instance.hide_node(data.node.id)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
 
                 tableFieldsTreeContainer.on('hide_node.jstree', function(e, data) {
@@ -14731,7 +14739,7 @@
 
                   try {
                     parentNodeID = data.node.parents.at(-2)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
@@ -14750,12 +14758,12 @@
                       hiddenNode.css('margin-top', '-45px')
 
                       hiddenNode.children('a').css('pointer-events', 'none')
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     setTimeout(() => {
                       try {
                         updateActionStatusForDeleteRowColumn()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       triggerLoadEvent()
                     })
@@ -14792,16 +14800,16 @@
                         }
 
                         return
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       relatedInput.trigger('focus').trigger('input')
                     })
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
                       data.instance.deselect_all()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   }, 100)
                 })
               }
@@ -14865,7 +14873,7 @@
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (minifyText(replicationStrategy) != 'simplestrategy')
@@ -14875,7 +14883,7 @@
 
               replication.class = 'SimpleStrategy'
               replication.replication_factor = replicationFactor
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (minifyText(replicationStrategy) != 'networktopologystrategy')
@@ -14910,14 +14918,14 @@
 
               if (invalidState)
                 return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let durableWritesSetValue = $('input#keyspaceDurableWrites').attr('set-value'),
               replicationStrategySetValue = ''
 
             try {
               replicationStrategySetValue = JSONRepair(JSON.parse(JSONRepair($('#rightClickActionsMetadata').attr('data-keyspace-info'))).replication_strategy)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let durableWritesFinal = '',
               replicationStrategyFinal = ''
@@ -14927,27 +14935,27 @@
                 throw 0
 
               replicationStrategyFinal = OS.EOL + `WITH replication = ${JSON.stringify(replication).replace(/"/gm, "'")}`
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (isAlterState && `${durableWritesSetValue}` == `${durableWrites}`)
                 throw 0
 
               durableWritesFinal = OS.EOL + (replicationStrategyFinal.length <= 0 ? 'WITH' : 'AND') + ` durable_writes = ${durableWrites}`
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (!isAlterState)
                 throw 0
 
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [replicationStrategyFinal, durableWritesFinal].every((str) => `${str}`.length <= 0) ? '' : null)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let statement = `${isAlterState ? 'ALTER' : 'CREATE'} KEYSPACE${!isAlterState ? ' IF NOT EXISTS' : ''} ${keyspaceName}${replicationStrategyFinal}${durableWritesFinal};`
 
             try {
               actionEditor.setValue(statement)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           }
 
         $('input#keyspaceName').on('input', function() {
@@ -14974,12 +14982,12 @@
             dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
 
             return
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
 
           try {
             keyspaces = JSON.parse(JSONRepair($('#rightClickActionsMetadata').attr('data-keyspaces')))
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             if (keyspaces.length <= 0)
@@ -14992,7 +15000,7 @@
 
             if (isNameDuplicated)
               invalidFeedback.find('span').attr('mulang', 'provided name is already in use').text(I18next.capitalizeFirstLetter(I18next.t('provided name is already in use')))
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             if (`${keyspaceName}`.length <= 0)
@@ -15002,7 +15010,7 @@
 
             if (isNameInvalid)
               invalidFeedback.find('span').attr('mulang', 'provided name is invalid, only alphanumeric and underscores are allowed').text(I18next.capitalizeFirstLetter(I18next.t('provided name is invalid, only alphanumeric and underscores are allowed')))
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid)
 
@@ -15010,7 +15018,7 @@
 
           try {
             updateActionStatusForKeyspaces()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
 
         $('input#keyspaceReplicationStrategy').on('input', function() {
@@ -15031,7 +15039,7 @@
 
             try {
               dataCenters = JSON.parse(JSONRepair($(this).attr('data-datacenters')))
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               dataCenters = dataCenters.reduce((datacenters, datacenter) => {
@@ -15040,7 +15048,7 @@
 
                 return datacenters
               }, [])
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             $(this).parent().find('div.invalid-feedback span[mulang][capitalize-first]').attr('mulang', 'SimpleStrategy is intended for development purposes only').text(I18next.capitalizeFirstLetter(I18next.t('SimpleStrategy is intended for development purposes only')))
 
@@ -15066,11 +15074,11 @@
                 try {
                   if (isAlterState)
                     dataCentersRF = JSON.parse(JSONRepair($('div.modal#rightClickActionsMetadata').attr('data-datacenters-rf')))
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   dataCentersRF = dataCentersRF.filter((datacenter, index, datacenters) => datacenters.findIndex(_datacenter => _datacenter.name === datacenter.name) === index)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 for (let datacenter of dataCenters) {
                   let replicationFactor = parseInt(dataCentersRF[datacenter.datacenter]) || 0
@@ -15080,7 +15088,7 @@
                       throw 0
 
                     replicationFactor = parseInt($('div.modal#rightClickActionsMetadata').attr('data-rf')) || 0
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   let element = `
                         <div class="data-center row" data-datacenter="${datacenter.datacenter}">
@@ -15115,23 +15123,23 @@
 
                         try {
                           updateActionStatusForKeyspaces()
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
                       })
                     })
 
                     setTimeout(() => Modules.Localization.applyLanguageSpecific(dataCenter.find('span[mulang], [data-mulang]')))
                   }))
                 }
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               networkTopologyContainer.show()
 
               try {
                 updateActionStatusForKeyspaces()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             $('span.dynamic-rf').attr('mulang', 'replication factor')
 
@@ -15152,13 +15160,13 @@
 
                 $(this).parent().css('margin-bottom', '50px')
               }
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dialogElement.find('div[for-strategy="SimpleStrategy"]').show()
 
             try {
               updateActionStatusForKeyspaces()
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           }, 150)
         })
 
@@ -15175,7 +15183,7 @@
 
           try {
             updateActionStatusForKeyspaces()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
 
         // Clicks the `SWITCH TO EDITOR` button
@@ -15191,7 +15199,7 @@
 
           try {
             dialogBody.css('height', !editorShown && dialogBody.height() > $('body').height() ? `${$('body').height() - 200}px` : '')
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           // Update the current scroll value if the editor is not shown already, otherwise, keep the current saved value
           scrollValue = !editorShown ? dialogBody[0].scrollTop : scrollValue
@@ -15207,41 +15215,41 @@
               throw 0
 
             updateActionStatusForKeyspaces()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             if (currentActiveAction != 'udts')
               throw 0
 
             updateActionStatusForUDTs()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             if (currentActiveAction != 'counter-tables')
               throw 0
 
             updateActionStatusForCounterTables()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             if (currentActiveAction != 'standard-tables')
               throw 0
 
             updateActionStatusForStandardTables()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             if (currentActiveAction != 'insert-row')
               throw 0
 
             updateActionStatusForInsertRow()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
 
         $('input[type="checkbox"]#keyspaceDurableWrites').on('change', function() {
           try {
             updateActionStatusForKeyspaces()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
 
         $('button#executeActionStatement').click(function() {
@@ -15252,61 +15260,61 @@
               throw 0
 
             updateActionStatusForKeyspaces()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             if (currentActiveAction != 'udts')
               throw 0
 
             updateActionStatusForUDTs()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             if (currentActiveAction != 'insert-row')
               throw 0
 
             updateActionStatusForInsertRow()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             if (currentActiveAction != 'counter-tables')
               throw 0
 
             updateActionStatusForCounterTables()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             if (currentActiveAction != 'standard-tables')
               throw 0
 
             updateActionStatusForStandardTables()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             getElementMDBObject($(`a.nav-link.btn[href="#${$(this).attr('data-tab-id')}"]`), 'Tab').show()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
 
           try {
             activeWorkarea.find('div.terminal-container').hide()
             activeWorkarea.find('div.interactive-terminal-container').show()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             let statementInputField = $(`textarea#${$(this).attr('data-textarea-id')}`)
             statementInputField.val(actionEditor.getValue())
             statementInputField.trigger('input').focus()
             AutoSize.update(statementInputField[0])
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             setTimeout(() => $(`button#${$(this).attr('data-btn-id')}`).click(), 100)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             setTimeout(() => getElementMDBObject($('#rightClickActionsMetadata'), 'Modal').hide(), 50)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
 
         let updateActionStatusForUDTs
@@ -15358,7 +15366,7 @@
 
                 for (let udt of keyspaceUDTs)
                   typesList += `<li><a class="dropdown-item" href="#" value="${udt}">${udt}</a></li>`
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               let [
                 collectionKeyTypeID,
@@ -15471,7 +15479,7 @@
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (!isAlterState)
@@ -15504,7 +15512,7 @@
                         break
                       }
                     }
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (!isChangeInTypeDetected)
@@ -15524,7 +15532,7 @@
                           finalNewFieldType = `frozen<${finalNewFieldType}>`
 
                         statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ALTER ${fieldName} TYPE ${finalNewFieldType};`)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       try {
                         if (!(['map', 'set', 'list'].some((type) => newFieldType == type)))
@@ -15540,9 +15548,9 @@
                         let collectionKeyType = addDoubleQuotes(rowElement.find('input.collectionKeyType').val())
 
                         statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ALTER ${fieldName} TYPE ${newFieldType}<${collectionKeyType}, ${collectionItemType}>;`)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 }
 
                 // The field's name has been changed
@@ -15554,7 +15562,7 @@
                       throw 0
 
                     statements.push(`ALTER TYPE ${keyspaceName}.${udtName} RENAME ${fieldName} TO ${setFieldName};`)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 }
 
                 // A new field has been added
@@ -15576,7 +15584,7 @@
                         finalFieldType = `frozen<${finalFieldType}>`
 
                       statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ADD ${fieldName} ${finalFieldType};`)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       if (!(['map', 'set', 'list'].some((type) => fieldType == type)))
@@ -15593,8 +15601,8 @@
                       let collectionKeyType = rowElement.find('input.collectionKeyType').val()
 
                       statements.push(`ALTER TYPE ${keyspaceName}.${udtName} ADD ${fieldName} ${fieldType}<${collectionKeyType}, ${collectionItemType}>;`)
-                    } catch (e) {errorLog(e, 'connections');}
-                  } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
+                  } catch (e) {}
                 }
               }
 
@@ -15602,10 +15610,10 @@
 
               try {
                 actionEditor.setValue(statements.join(OS.EOL))
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               let currentIndex = 0
@@ -15626,7 +15634,7 @@
                     throw 0
 
                   tempTxt = `${fieldName} frozen<${fieldType}>`
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   if (isUDTDataField)
@@ -15641,7 +15649,7 @@
                     finalFieldType = `${fieldName} ${fieldType}<${collectionKeyType},${collectionItemType}>`
 
                   tempTxt = finalFieldType
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 if (currentIndex != allDataFields.length)
                   tempTxt = `${tempTxt},`
@@ -15650,7 +15658,7 @@
 
                 dataFieldsText += tempTxt + OS.EOL
               }
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dataFieldsText = OS.EOL + dataFieldsText
 
@@ -15660,7 +15668,7 @@
 
             try {
               actionEditor.setValue(statement)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           }
 
           let dataFieldsContainer = dialogElement.find('div.data-fields'),
@@ -15694,7 +15702,7 @@
                     setTimeout(() => {
                       try {
                         dropDownMDBObject.update()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }, 500)
 
                     {
@@ -15709,13 +15717,13 @@
                         input.on('focus', () => {
                           try {
                             input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           selectDropdown.show()
                         }).on('focusout', () => setTimeout(() => {
                           try {
                             input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           selectDropdown.hide()
                         }, 100))
@@ -15735,7 +15743,7 @@
 
                           try {
                             updateRowsZIndex(isTransformNegative)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
 
                         $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -15758,14 +15766,14 @@
                             row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection).removeClass(function(index, className) {
                               return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
                             }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 6}`)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Update the input's value
                           selectElement.val(selectedValue).trigger('input')
 
                           try {
                             updateActionStatusForUDTs()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -15775,7 +15783,7 @@
 
                       try {
                         updateActionStatusForUDTs()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     let errorWarningIcon = $(this).find('ion-icon.error-warning')
@@ -15794,7 +15802,7 @@
                           throw 0
 
                         isNameInvalid = `${fieldName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       try {
                         let allDataFields = dialogElement.find('div[action="udts"]').find('div.data-field.row').not(fieldRow[0])
@@ -15811,7 +15819,7 @@
                           isNameDuplicated = true
                           break
                         }
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       let isError = isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0
 
@@ -15828,13 +15836,13 @@
                         tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                         tooltip.enable()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                       try {
                         updateActionStatusForUDTs()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     setTimeout(() => {
@@ -15858,7 +15866,7 @@
 
                       row.find('input.fieldDataType').val(field.type).trigger('input')
                       row.find('input.fieldDataType').attr('data-original-value', field.type)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       let extractData = field.type.match(/(.+)\<(.*?)\>/)
@@ -15882,17 +15890,17 @@
                         row.find('input.collectionItemType').val(mapValues[1]).trigger('input')
                         row.find('input.collectionItemType').attr('data-original-value', mapValues[1])
                       }
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       updateActionStatusForUDTs()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 }))
               }
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dataFieldsContainer.append($(getFieldElement()).show(function() {
               let row = $(this)
@@ -15903,7 +15911,7 @@
                 setTimeout(() => {
                   try {
                     dropDownMDBObject.update()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 }, 500)
 
                 {
@@ -15918,13 +15926,13 @@
                     input.on('focus', () => {
                       try {
                         input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.show()
                     }).on('focusout', () => setTimeout(() => {
                       try {
                         input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.hide()
                     }, 100))
@@ -15944,7 +15952,7 @@
 
                       try {
                         updateRowsZIndex(isTransformNegative)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -15967,14 +15975,14 @@
                         row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection).removeClass(function(index, className) {
                           return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
                         }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 6}`)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // Update the input's value
                       selectElement.val(selectedValue).trigger('input')
 
                       try {
                         updateActionStatusForUDTs()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
                 }
@@ -15984,7 +15992,7 @@
 
                   try {
                     updateActionStatusForUDTs()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   if (dataFieldsContainer.children('div.data-field.row').length != 0)
                     return
@@ -16008,7 +16016,7 @@
                       throw 0
 
                     isNameInvalid = `${fieldName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     let allDataFields = dialogElement.find('div[action="udts"]').find('div.data-field.row').not(fieldRow[0])
@@ -16025,7 +16033,7 @@
                       isNameDuplicated = true
                       break
                     }
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   let isError = isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0
 
@@ -16042,13 +16050,13 @@
                     tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                     tooltip.enable()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                   try {
                     updateActionStatusForUDTs()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
 
                 setTimeout(() => {
@@ -16065,7 +16073,7 @@
 
                 try {
                   updateActionStatusForUDTs()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
             }))
           })
@@ -16080,14 +16088,14 @@
               keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
               keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (!isAlterState)
                 throw 0
 
               keyspaceUDTs = keyspaceUDTs.filter((udt) => udt != $('input#udtName').val())
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             if (keyspaceUDTs.length <= 0) {
               $('a[action]#addUDTDataField').addClass('disabled')
@@ -16118,7 +16126,7 @@
                   let extractData = field.type.match(/.+\<(.*?)\>/)[1]
 
                   field.type = extractData
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 dataUDTFieldsContainer.append($(getFieldElement(keyspaceUDTs)).show(function() {
                   let row = $(this)
@@ -16131,7 +16139,7 @@
                     setTimeout(() => {
                       try {
                         dropDownMDBObject.update()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }, 500)
 
                     {
@@ -16146,13 +16154,13 @@
                         input.on('focus', () => {
                           try {
                             input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           selectDropdown.show()
                         }).on('focusout', () => setTimeout(() => {
                           try {
                             input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           selectDropdown.hide()
                         }, 100))
@@ -16171,7 +16179,7 @@
 
                           try {
                             updateRowsZIndex(isTransformNegative)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
 
                         $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -16194,14 +16202,14 @@
                             row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection).removeClass(function(index, className) {
                               return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
                             }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 6}`)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Update the input's value
                           selectElement.val(selectedValue).trigger('input')
 
                           try {
                             updateActionStatusForUDTs()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -16211,7 +16219,7 @@
 
                       try {
                         updateActionStatusForUDTs()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     let errorWarningIcon = $(this).find('ion-icon.error-warning')
@@ -16230,7 +16238,7 @@
                           throw 0
 
                         isNameInvalid = `${fieldName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       try {
                         let allDataFields = dialogElement.find('div[action="udts"]').find('div.data-field.row').not(fieldRow[0])
@@ -16247,7 +16255,7 @@
                           isNameDuplicated = true
                           break
                         }
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       let isError = isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0
 
@@ -16264,13 +16272,13 @@
                         tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                         tooltip.enable()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                       try {
                         updateActionStatusForUDTs()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     setTimeout(() => {
@@ -16291,17 +16299,17 @@
 
                       row.find('input.fieldDataType').val(field.type).trigger('input')
                       row.find('input.fieldDataType').attr('data-original-value', field.type)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       updateActionStatusForUDTs()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 }))
               }
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dataUDTFieldsContainer.append($(getFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
@@ -16312,7 +16320,7 @@
                 setTimeout(() => {
                   try {
                     dropDownMDBObject.update()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 }, 500)
 
                 {
@@ -16327,13 +16335,13 @@
                     input.on('focus', () => {
                       try {
                         input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.show()
                     }).on('focusout', () => setTimeout(() => {
                       try {
                         input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.hide()
                     }, 100))
@@ -16352,7 +16360,7 @@
 
                       try {
                         updateRowsZIndex(isTransformNegative)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -16375,14 +16383,14 @@
                         row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection).removeClass(function(index, className) {
                           return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
                         }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 6}`)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // Update the input's value
                       selectElement.val(selectedValue).trigger('input')
 
                       try {
                         updateActionStatusForUDTs()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
                 }
@@ -16392,7 +16400,7 @@
 
                   try {
                     updateActionStatusForUDTs()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   if (dataUDTFieldsContainer.children('div.data-field.row').length != 0)
                     return
@@ -16416,7 +16424,7 @@
                       throw 0
 
                     isNameInvalid = `${fieldName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     let allDataFields = dialogElement.find('div[action="udts"]').find('div.data-field.row').not(fieldRow[0])
@@ -16433,7 +16441,7 @@
                       isNameDuplicated = true
                       break
                     }
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   let isError = isNameDuplicated || isNameInvalid || minifyText(fieldName).length <= 0
 
@@ -16450,13 +16458,13 @@
                     tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                     tooltip.enable()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                   try {
                     updateActionStatusForUDTs()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
 
                 setTimeout(() => {
@@ -16473,7 +16481,7 @@
 
                 try {
                   updateActionStatusForUDTs()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
 
             }))
@@ -16502,11 +16510,11 @@
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               keyspaceUDTs = JSON.parse(JSONRepair($('#rightClickActionsMetadata').attr('data-keyspace-udts')))
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (keyspaceUDTs.length <= 0)
@@ -16519,7 +16527,7 @@
 
               if (isNameDuplicated)
                 invalidFeedback.find('span').attr('mulang', 'provided name is already in use').text(I18next.capitalizeFirstLetter(I18next.t('provided name is already in use')))
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (`${udtName}`.length <= 0)
@@ -16529,7 +16537,7 @@
 
               if (isNameInvalid)
                 invalidFeedback.find('span').attr('mulang', 'provided name is invalid, only alphanumeric and underscores are allowed').text(I18next.capitalizeFirstLetter(I18next.t('provided name is invalid, only alphanumeric and underscores are allowed')))
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid)
 
@@ -16540,7 +16548,7 @@
 
             try {
               updateActionStatusForUDTs()
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           })
         }
 
@@ -16576,7 +16584,7 @@
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let keyspaceName = addDoubleQuotes(dialogElement.find('div[action="counter-tables"]').find('div.keyspace-name').text()),
               allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field, div.counter-table-option-field'),
@@ -16609,7 +16617,7 @@
                     alteringStatements.push(`ALTER ${clusteringKeyName} TYPE ${currentType}`)
 
                   continue
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   if (!$(dataField).hasClass('counter-table-column-field'))
@@ -16632,7 +16640,7 @@
                     alteringStatements.push(`ADD ${counterColumnName} counter`)
 
                   continue
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   if (!$(dataField).hasClass('counter-table-option-field'))
@@ -16644,7 +16652,7 @@
 
                   if (tableOptionName != originalName || tableOptionValue != originalValue)
                     alteredOptions.push(`${alteredOptions.length <= 0 ? 'WITH' : 'AND'} ${tableOptionName} = ${tableOptionValue}`)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               }
 
               try {
@@ -16652,7 +16660,7 @@
 
                 if (`${commentTextarea.val()}` != commentTextarea.data('original-value'))
                   alteredOptions.push(`${alteredOptions.length <= 0 ? 'WITH' : 'AND'} comment = '${commentTextarea.val().replace(/(^|[^'])'(?!')/g, "$1''")}'`)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...alteringStatements, ...alteredOptions, ...droppedColumns].length <= 0 ? '' : null)
 
@@ -16665,14 +16673,14 @@
                 statement = alteringStatements.length <= 0 ? '' : `${statement}` + OS.EOL
 
                 statement += `ALTER TABLE ${keyspaceName}.${counterTableName} ` + alteredOptions.join(' ') + ';'
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 actionEditor.setValue(statement)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let partitionKeys = [],
               clusteringKeys = [],
@@ -16703,7 +16711,7 @@
                       name,
                       type
                     })
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (!isTypeCollection)
@@ -16721,10 +16729,10 @@
                       type,
                       ...tempJSON
                     })
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   order[$(dataField).find('div.btn.field-sort-type').attr('data-current-sort') != 'asc' ? 'desc' : 'asc'].push(name)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   if (!$(dataField).hasClass('counter-table-clustering-key-field'))
@@ -16743,7 +16751,7 @@
                       name,
                       type
                     })
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (!isTypeCollection)
@@ -16761,10 +16769,10 @@
                       type,
                       ...tempJSON
                     })
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   order[$(dataField).find('div.btn.field-sort-type').attr('data-current-sort') != 'asc' ? 'desc' : 'asc'].push(name)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   if (!$(dataField).hasClass('counter-table-column-field'))
@@ -16774,7 +16782,7 @@
                     name: $(dataField).find('input.counterColumnName').val(),
                     type: 'counter'
                   })
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   if (!$(dataField).hasClass('counter-table-option-field'))
@@ -16792,15 +16800,15 @@
 
                     if (defaultName == name && defaultValue == value)
                       continue
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   tableOptions.push({
                     name,
                     value
                   })
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               }
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Add comment
             try {
@@ -16813,7 +16821,7 @@
                 name: 'comment',
                 value: (comment || '').replace(/(^|[^'])'(?!')/g, "$1''")
               })
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
 
@@ -16826,23 +16834,23 @@
 
               try {
                 key.name = addDoubleQuotes(key.name)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 key.type = addDoubleQuotes(key.type)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 key.key = addDoubleQuotes(key.key)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 key.value = addDoubleQuotes(key.value)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 keyspaceUDTs = JSON.parse(JSONRepair($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts'))).map((udt) => udt.name)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               isTypeUDT = keyspaceUDTs.find((udt) => key.type == udt)
 
@@ -16851,7 +16859,7 @@
                   throw 0
 
                 key.type = `frozen<${key.type}>`
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 if (!isTypeCollection)
@@ -16860,7 +16868,7 @@
                 let collectionType = isCollectionMap ? `${key.key}, ${key.value}` : `${key.value}`
 
                 key.type = `frozen<${key.type}<${collectionType}>>`
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               return `    ${key.name} ${key.type},` + OS.EOL
             })).join('')
@@ -16870,14 +16878,14 @@
 
               if (partitionKeys.length > 1)
                 primaryKeys = `(${primaryKeys})`
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (clusteringKeys.length <= 0)
                 throw 0
 
               primaryKeys += `, ` + (clusteringKeys.map((key) => key.name)).join(', ')
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let descOrder = [...order.asc, ...order.desc]
 
@@ -16894,7 +16902,7 @@
               })).join(OS.EOL + '    AND ')
 
               tableOptions = tempTxt
-            } catch (e) {errorLog(e, 'connections');
+            } catch (e) {
               tableOptions = ''
             }
 
@@ -16903,7 +16911,7 @@
                 throw 0
 
               descOrder = ` WITH CLUSTERING ORDER BY (` + (clusteringKeys.map((key) => `${key.name} ${order.desc.includes(key.name) ? 'DESC' : 'ASC'}`)).join(', ') + `)`
-            } catch (e) {errorLog(e, 'connections');
+            } catch (e) {
               descOrder = ''
             }
 
@@ -16911,7 +16919,7 @@
 
             try {
               actionEditor.setValue(statement)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           }
 
           setTimeout(() => {
@@ -16922,7 +16930,7 @@
                 ghostClass: 'ghost-field',
                 onSort: () => updateRowsZIndex()
               })
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           }, 1000)
 
           $('input#countertableName').on('input', function() {
@@ -16948,11 +16956,11 @@
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               keyspaceTables = JSON.parse(JSONRepair($('#rightClickActionsMetadata').attr('data-keyspace-tables')))
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (keyspaceTables.length <= 0)
@@ -16965,7 +16973,7 @@
 
               if (isNameDuplicated)
                 invalidFeedback.find('span').attr('mulang', 'provided name is already in use').text(I18next.capitalizeFirstLetter(I18next.t('provided name is already in use')))
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (`${countertableName}`.length <= 0)
@@ -16975,7 +16983,7 @@
 
               if (isNameInvalid)
                 invalidFeedback.find('span').attr('mulang', 'provided name is invalid, only alphanumeric and underscores are allowed').text(I18next.capitalizeFirstLetter(I18next.t('provided name is invalid, only alphanumeric and underscores are allowed')))
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid)
 
@@ -16986,7 +16994,7 @@
 
             try {
               updateActionStatusForCounterTables()
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           })
 
           $(`a[action]#addCounterTablePartitionKey`).on('click', function(_, fields = null) {
@@ -17035,7 +17043,7 @@
 
                   for (let udt of keyspaceUDTs)
                     typesList += `<li><a class="dropdown-item" data-is-udt="true" href="#" value="${udt}">${udt}</a></li>`
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let [
                   collectionKeyTypeID,
@@ -17136,7 +17144,7 @@
               keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
               keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (fields == null)
@@ -17168,7 +17176,7 @@
                     setTimeout(() => {
                       try {
                         dropDownMDBObject.update()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }, 500)
 
                     {
@@ -17183,7 +17191,7 @@
 
                           try {
                             updateRowsZIndex(isTransformNegative)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
 
                         $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -17214,14 +17222,14 @@
                             row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
 
                             row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Update the input's value
                           selectElement.val(selectedValue).trigger('input')
 
                           try {
                             updateActionStatusForCounterTables()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -17234,7 +17242,7 @@
 
                     try {
                       fieldType = field.type.match(/frozen\<(.*?)(\<|\>)/)[1]
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       if (!(['map', 'set', 'list'].some((type) => type == fieldType)))
@@ -17250,7 +17258,7 @@
                       } else {
                         $(this).find('input.collectionKeyType').val(`${fieldKeyType}`).trigger('input')
                       }
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     $(this).find('div.dropdown[for-data-type="partitionKeyType"]').find(`a[value="${fieldType}"]`).trigger('click')
                   })
@@ -17267,20 +17275,20 @@
 
                   try {
                     updateRowsZIndex()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   $(`a[action]#addCounterTableClusteringKey`).addClass('disabled')
 
                   setTimeout(() => {
                     try {
                       updateActionStatusForCounterTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 }))
               }
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dataFieldsContainer.append($(getPartitionKeyFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
@@ -17291,7 +17299,7 @@
 
                   try {
                     updateActionStatusForCounterTables()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   if (dataFieldsContainer.children('div.counter-table-partition-key-field.row').length != 0)
                     return
@@ -17313,7 +17321,7 @@
                   setTimeout(() => {
                     try {
                       updateActionStatusForCounterTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 })
 
@@ -17333,7 +17341,7 @@
                       throw 0
 
                     isNameInvalid = `${partitionKeyName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field').not(fieldRow[0])
@@ -17350,7 +17358,7 @@
                       isNameDuplicated = true
                       break
                     }
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   let isError = isNameDuplicated || isNameInvalid || minifyText(partitionKeyName).length <= 0
 
@@ -17367,13 +17375,13 @@
                     tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                     tooltip.enable()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                   try {
                     updateActionStatusForCounterTables()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
               })
 
@@ -17383,7 +17391,7 @@
                 setTimeout(() => {
                   try {
                     dropDownMDBObject.update()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 }, 500)
 
                 {
@@ -17398,13 +17406,13 @@
                     input.on('focus', () => {
                       try {
                         input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.show()
                     }).on('focusout', () => setTimeout(() => {
                       try {
                         input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.hide()
                     }, 100))
@@ -17424,7 +17432,7 @@
 
                       try {
                         updateRowsZIndex(isTransformNegative)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -17449,14 +17457,14 @@
                         row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
 
                         row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // Update the input's value
                       selectElement.val(selectedValue).trigger('input')
 
                       try {
                         updateActionStatusForCounterTables()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
                 }
@@ -17474,7 +17482,7 @@
 
               try {
                 updateRowsZIndex()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               if (fields == null)
                 $(`a[action]#addCounterTableClusteringKey`).removeClass('disabled')
@@ -17482,7 +17490,7 @@
               setTimeout(() => {
                 try {
                   updateActionStatusForCounterTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
             }))
           })
@@ -17533,7 +17541,7 @@
 
                   for (let udt of keyspaceUDTs)
                     typesList += `<li><a class="dropdown-item" data-is-udt="true" href="#" value="${udt}">${udt}</a></li>`
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let [
                   collectionKeyTypeID,
@@ -17634,7 +17642,7 @@
               keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
               keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (fields == null)
@@ -17675,7 +17683,7 @@
                     setTimeout(() => {
                       try {
                         dropDownMDBObject.update()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }, 500)
 
                     {
@@ -17693,13 +17701,13 @@
 
                           try {
                             input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           selectDropdown.show()
                         }).on('focusout', () => setTimeout(() => {
                           try {
                             input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           selectDropdown.hide()
                         }, 100))
@@ -17719,7 +17727,7 @@
 
                           try {
                             updateRowsZIndex(isTransformNegative)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
 
                         $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -17747,14 +17755,14 @@
                             row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
 
                             row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Update the input's value
                           selectElement.val(selectedValue).trigger('input')
 
                           try {
                             updateActionStatusForCounterTables()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -17765,7 +17773,7 @@
 
                     try {
                       fieldType = field.type.match(/frozen\<(.*?)(\<|\>)/)[1]
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       if (!(['map', 'set', 'list'].some((type) => type == fieldType)))
@@ -17781,7 +17789,7 @@
                       } else {
                         $(this).find('input.collectionKeyType').val(`${fieldKeyType}`).trigger('input')
                       }
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     $(this).find('div.dropdown[for-data-type="clusteringKeyType"]').find(`a[value="${fieldType}"]`).trigger('click')
                     $(this).find('input.clusteringKeyType').attr('data-original-type', `${fieldType}`)
@@ -17799,18 +17807,18 @@
 
                   try {
                     updateRowsZIndex()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
                       updateActionStatusForCounterTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 }))
               }
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dataFieldsContainer.append($(getClusteringKeyFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
@@ -17822,7 +17830,7 @@
                   setTimeout(() => {
                     try {
                       updateActionStatusForCounterTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   if (dataFieldsContainer.children('div.counter-table-clustering-key-field.row').length != 0)
@@ -17860,7 +17868,7 @@
                       throw 0
 
                     isNameInvalid = `${clusteringKeyName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field').not(fieldRow[0])
@@ -17877,7 +17885,7 @@
                       isNameDuplicated = true
                       break
                     }
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   let isError = isNameDuplicated || isNameInvalid || minifyText(clusteringKeyName).length <= 0
 
@@ -17894,13 +17902,13 @@
                     tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                     tooltip.enable()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                   try {
                     updateActionStatusForCounterTables()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
               })
 
@@ -17910,7 +17918,7 @@
                 setTimeout(() => {
                   try {
                     dropDownMDBObject.update()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 }, 500)
 
                 {
@@ -17925,13 +17933,13 @@
                     input.on('focus', () => {
                       try {
                         input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.show()
                     }).on('focusout', () => setTimeout(() => {
                       try {
                         input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.hide()
                     }, 100))
@@ -17951,7 +17959,7 @@
 
                       try {
                         updateRowsZIndex(isTransformNegative)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -17976,14 +17984,14 @@
                         row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
 
                         row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // Update the input's value
                       selectElement.val(selectedValue).trigger('input')
 
                       try {
                         updateActionStatusForCounterTables()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
                 }
@@ -18001,12 +18009,12 @@
 
               try {
                 updateRowsZIndex()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               setTimeout(() => {
                 try {
                   updateActionStatusForCounterTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
             }))
           })
@@ -18066,7 +18074,7 @@
 
                     try {
                       updateActionStatusForCounterTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   }))
 
                   setTimeout(() => {
@@ -18081,18 +18089,18 @@
 
                   try {
                     updateRowsZIndex()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
                       updateActionStatusForCounterTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 }))
               }
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dataFieldsContainer.append($(getCounterColumnFieldElement()).show(function() {
               let row = $(this)
@@ -18103,7 +18111,7 @@
                 setTimeout(() => {
                   try {
                     updateActionStatusForCounterTables()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
 
                 if (dataFieldsContainer.children('div.counter-table-column-field.row').length != 0)
@@ -18128,7 +18136,7 @@
                     throw 0
 
                   isNameInvalid = `${counterColumnName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field').not(fieldRow[0])
@@ -18145,7 +18153,7 @@
                     isNameDuplicated = true
                     break
                   }
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let isError = isNameDuplicated || isNameInvalid || minifyText(counterColumnName).length <= 0
 
@@ -18162,13 +18170,13 @@
                   tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                   tooltip.enable()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                 try {
                   updateActionStatusForCounterTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
 
               setTimeout(() => {
@@ -18183,12 +18191,12 @@
 
               try {
                 updateRowsZIndex()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               setTimeout(() => {
                 try {
                   updateActionStatusForCounterTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
             }))
           })
@@ -18236,7 +18244,7 @@
 
               try {
                 fields = JSON.parse(repairJSON(fields))
-              } catch (e) {errorLog(e, 'connections');
+              } catch (e) {
                 fields = []
               }
 
@@ -18258,7 +18266,7 @@
                   $('textarea#counterTableCommentOption').val(`${field.value}`).trigger('input')
 
                   continue
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 dataFieldsContainer.append($(getTableOptionFieldElement(true)).show(function() {
                   let row = $(this)
@@ -18279,7 +18287,7 @@
                     setTimeout(() => {
                       try {
                         updateActionStatusForCounterTables()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
 
@@ -18299,14 +18307,14 @@
                         throw 0
 
                       isNameInvalid = `${tableOptionName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       let defaultName = row.attr('data-default-name'),
                         defaultValue = row.attr('data-default-value')
 
                       row.find(`a[action="undo-change"]`).toggleClass('disabled', !(defaultName != row.find('input.tableOptionName').val() || defaultValue != row.find('input.tableOptionValue').val()))
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-option-field').not(fieldRow[0])
@@ -18323,7 +18331,7 @@
                         isNameDuplicated = true
                         break
                       }
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     let isError = isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0
 
@@ -18340,13 +18348,13 @@
                       tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                       tooltip.enable()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                     try {
                       updateActionStatusForCounterTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   $(this).find('input.tableOptionValue').on('input', function(_, triggerInput = true) {
@@ -18363,13 +18371,13 @@
                         defaultValue = row.attr('data-default-value')
 
                       row.find(`a[action="undo-change"]`).toggleClass('disabled', !(defaultName != row.find('input.tableOptionName').val() || defaultValue != row.find('input.tableOptionValue').val()))
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null)
 
                     try {
                       updateActionStatusForCounterTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   setTimeout(() => {
@@ -18384,12 +18392,12 @@
 
                   try {
                     updateRowsZIndex()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
                       updateActionStatusForCounterTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   setTimeout(() => {
@@ -18397,14 +18405,14 @@
                       dataFieldsContainer.animate({
                         scrollTop: dataFieldsContainer.get(0).scrollHeight
                       }, 10)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 }))
               }
 
               if (areDefaultOptions)
                 return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (fields == null)
@@ -18414,7 +18422,7 @@
 
               try {
                 options = fields
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               let optionsNames = Object.keys(options)
 
@@ -18430,12 +18438,12 @@
                   $('textarea#counterTableCommentOption').val(`${optionValue}`).trigger('input')
 
                   continue
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   if (typeof optionValue == 'object')
                     optionValue = JSON.stringify(optionValue)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 optionValue = `${optionValue}`
 
@@ -18457,7 +18465,7 @@
                     setTimeout(() => {
                       try {
                         updateActionStatusForCounterTables()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
 
@@ -18477,14 +18485,14 @@
                         throw 0
 
                       isNameInvalid = `${tableOptionName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       let defaultName = row.attr('data-original-name'),
                         defaultValue = row.attr('data-original-value')
 
                       row.find(`a[action="undo-change"]`).toggleClass('disabled', !(defaultName != row.find('input.tableOptionName').val() || defaultValue != row.find('input.tableOptionValue').val()))
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-option-field').not(fieldRow[0])
@@ -18501,7 +18509,7 @@
                         isNameDuplicated = true
                         break
                       }
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     let isError = isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0
 
@@ -18518,13 +18526,13 @@
                       tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                       tooltip.enable()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                     try {
                       updateActionStatusForCounterTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   $(this).find('input.tableOptionValue').on('input', function(_, triggerInput = true) {
@@ -18541,13 +18549,13 @@
                         defaultValue = row.attr('data-original-value')
 
                       row.find(`a[action="undo-change"]`).toggleClass('disabled', !(defaultName != row.find('input.tableOptionName').val() || defaultValue != row.find('input.tableOptionValue').val()))
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null)
 
                     try {
                       updateActionStatusForCounterTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   setTimeout(() => {
@@ -18562,12 +18570,12 @@
 
                   try {
                     updateRowsZIndex()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
                       updateActionStatusForCounterTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   setTimeout(() => {
@@ -18575,13 +18583,13 @@
                       dataFieldsContainer.animate({
                         scrollTop: dataFieldsContainer.get(0).scrollHeight
                       }, 10)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 }))
               }
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dataFieldsContainer.append($(getTableOptionFieldElement()).show(function() {
               let row = $(this)
@@ -18592,7 +18600,7 @@
                 setTimeout(() => {
                   try {
                     updateActionStatusForCounterTables()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
 
                 if (dataFieldsContainer.children('div.counter-table-option-field.row').length != 0)
@@ -18617,7 +18625,7 @@
                     throw 0
 
                   isNameInvalid = `${tableOptionName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-option-field').not(fieldRow[0])
@@ -18634,7 +18642,7 @@
                     isNameDuplicated = true
                     break
                   }
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let isError = isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0
 
@@ -18651,13 +18659,13 @@
                   tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                   tooltip.enable()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                 try {
                   updateActionStatusForCounterTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
 
               $(this).find('input.tableOptionValue').on('input', function(_, triggerInput = true) {
@@ -18673,7 +18681,7 @@
 
                 try {
                   updateActionStatusForCounterTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
 
               setTimeout(() => {
@@ -18688,12 +18696,12 @@
 
               try {
                 updateRowsZIndex()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               setTimeout(() => {
                 try {
                   updateActionStatusForCounterTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
 
               setTimeout(() => {
@@ -18701,7 +18709,7 @@
                   dataFieldsContainer.animate({
                     scrollTop: dataFieldsContainer.get(0).scrollHeight
                   }, 10)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
             }))
           })
@@ -18718,7 +18726,7 @@
 
               try {
                 tableOptionsContainerResizingObserver.disconnect()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               isShowBtnShown = false
 
@@ -18734,7 +18742,7 @@
 
               try {
                 tableOptionsContainerResizingObserver.disconnect()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               tableOptionsContainerResizingObserver = new ResizeObserver(() => {
                 try {
@@ -18749,13 +18757,13 @@
 
                   try {
                     tableOptionsContainerResizingObserver.disconnect()
-                  } catch (e) {errorLog(e, 'connections');}
-                } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
+                } catch (e) {}
               })
 
               try {
                 tableOptionsContainerResizingObserver.observe(tableOptionsContainer[0])
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
             })
           }
         }
@@ -18790,7 +18798,7 @@
 
             try {
               keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts'))).map((udt) => udt.name)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let standardTableName = addDoubleQuotes($('input#standardtableName').val())
 
@@ -18807,13 +18815,13 @@
 
                 try {
                   isStaticCheckboxFormTooltip[isClusteringKeyFieldFound ? 'disable' : 'enable']()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   isStaticCheckbox.attr('disabled', isClusteringKeyFieldFound ? null : '')
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               }
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               // if (dialogElement.find('div[action="standard-tables"]').find('.is-invalid:not(.ignore-invalid)').length <= 0 &&
@@ -18828,7 +18836,7 @@
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (!isAlterState)
@@ -18872,7 +18880,7 @@
                       type,
                       isStatic
                     })
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (!isTypeCollection && !isTypeUDT)
@@ -18899,8 +18907,8 @@
                       }
 
                     addedColumns.push(columnStructure)
-                  } catch (e) {errorLog(e, 'connections');}
-                } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
+                } catch (e) {}
 
                 try {
                   if (!$(dataField).hasClass('standard-table-option-field'))
@@ -18912,7 +18920,7 @@
 
                   if (tableOptionName != originalName || tableOptionValue != originalValue)
                     alteredOptions.push(`${alteredOptions.length <= 0 ? 'WITH' : 'AND'} ${tableOptionName} = ${tableOptionValue}`)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               }
 
               try {
@@ -18920,13 +18928,13 @@
 
                 if (`${commentTextarea.val()}` != commentTextarea.data('original-value'))
                   alteredOptions.push(`${alteredOptions.length <= 0 ? 'WITH' : 'AND'} comment = '${commentTextarea.val().replace(/(^|[^'])'(?!')/g, "$1''")}'`)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...droppedColumns, ...addedColumns, ...alteredOptions].length <= 0 ? '' : null)
 
               try {
                 droppedColumns = droppedColumns.map((column) => `DROP ${addDoubleQuotes(column)}`)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 addedColumns = addedColumns.map((column) => {
@@ -18939,19 +18947,19 @@
                     keyspaceUDTs = JSON.parse(JSONRepair($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts'))).map((udt) => udt.name)
 
                     isTypeUDT = keyspaceUDTs.find((udt) => column.type == udt)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     column.type = addDoubleQuotes(column.type)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     column.key = addDoubleQuotes(column.key)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     column.value = addDoubleQuotes(column.value)
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (!isTypeCollection)
@@ -18960,14 +18968,14 @@
                     let collectionType = isCollectionMap ? `${column.key}, ${column.value}` : `${column.value}`
 
                     column.type = `${column.type}<${collectionType}>`
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   if ((isTypeCollection || isTypeUDT) && column.isFrozen)
                     column.type = `frozen<${column.type}>`
 
                   return `ADD ${column.name} ${column.type}${column.isStatic ? ' STATIC' : ''}`
                 })
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               let statement = [...addedColumns, ...droppedColumns].map((statement) => `ALTER TABLE ${keyspaceName}.${standardTableName} ${statement}`).join(';' + OS.EOL) + ';'
 
@@ -18978,14 +18986,14 @@
                 statement = ([...addedColumns, ...droppedColumns]).length <= 0 ? '' : `${statement}` + OS.EOL
 
                 statement += `ALTER TABLE ${keyspaceName}.${standardTableName} ` + alteredOptions.join(' ') + ';'
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 actionEditor.setValue(statement)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let partitionKeys = [],
               clusteringKeys = [],
@@ -19016,7 +19024,7 @@
                       name,
                       type
                     })
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (!isTypeCollection)
@@ -19034,8 +19042,8 @@
                       type,
                       ...tempJSON
                     })
-                  } catch (e) {errorLog(e, 'connections');}
-                } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
+                } catch (e) {}
 
                 try {
                   if (!$(dataField).hasClass('standard-table-clustering-key-field'))
@@ -19054,7 +19062,7 @@
                       name,
                       type
                     })
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (!isTypeCollection)
@@ -19072,10 +19080,10 @@
                       type,
                       ...tempJSON
                     })
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   order[$(dataField).find('div.btn.field-sort-type').attr('data-current-sort') != 'asc' ? 'desc' : 'asc'].push(name)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   if (['standard-table-column-field', 'standard-table-udt-column-field'].every((fieldClass) => !$(dataField).hasClass(fieldClass)))
@@ -19098,7 +19106,7 @@
                       type,
                       isStatic
                     })
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
 
                   try {
@@ -19126,8 +19134,8 @@
                       }
 
                     columns.push(columnStructure)
-                  } catch (e) {errorLog(e, 'connections');}
-                } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
+                } catch (e) {}
 
                 try {
                   if (!$(dataField).hasClass('standard-table-option-field'))
@@ -19145,15 +19153,15 @@
 
                     if (defaultName == name && defaultValue == value)
                       continue
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   tableOptions.push({
                     name,
                     value
                   })
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               }
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Add comment
             try {
@@ -19166,7 +19174,7 @@
                 name: 'comment',
                 value: (comment || '').replace(/(^|[^'])'(?!')/g, "$1''")
               })
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
 
@@ -19178,32 +19186,32 @@
 
               try {
                 keyspaceUDTs = JSON.parse(JSONRepair($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts'))).map((udt) => udt.name)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               isTypeUDT = keyspaceUDTs.find((udt) => key.type == udt)
 
               try {
                 key.type = addDoubleQuotes(key.type)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 key.name = addDoubleQuotes(key.name)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 key.value = addDoubleQuotes(key.value)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 key.key = addDoubleQuotes(key.key)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 if (!isTypeUDT)
                   throw 0
 
                 key.type = `frozen<${key.type}>`
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 if (!isTypeCollection)
@@ -19212,7 +19220,7 @@
                 let collectionType = isCollectionMap ? `${key.key}, ${key.value}` : `${key.value}`
 
                 key.type = `frozen<${key.type}<${collectionType}>>`
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               return `    ${key.name} ${key.type},` + OS.EOL
             })).join('')
@@ -19227,24 +19235,24 @@
                 keyspaceUDTs = JSON.parse(JSONRepair($('div.modal#rightClickActionsMetadata').attr('data-keyspace-udts'))).map((udt) => udt.name)
 
                 isTypeUDT = keyspaceUDTs.find((udt) => column.type == udt)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
 
               try {
                 column.type = addDoubleQuotes(column.type)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 column.name = addDoubleQuotes(column.name)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 column.value = addDoubleQuotes(column.value)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 column.key = addDoubleQuotes(column.key)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 if (!isTypeCollection)
@@ -19253,7 +19261,7 @@
                 let collectionType = isCollectionMap ? `${column.key}, ${column.value}` : `${column.value}`
 
                 column.type = `${column.type}<${collectionType}>`
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               if ((isTypeCollection || isTypeUDT) && column.isFrozen)
                 column.type = `frozen<${column.type}>`
@@ -19266,14 +19274,14 @@
 
               if (partitionKeys.length > 1)
                 primaryKeys = `(${primaryKeys})`
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (clusteringKeys.length <= 0)
                 throw 0
 
               primaryKeys += `, ` + (clusteringKeys.map((key) => key.name)).join(', ')
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let descOrder = [...order.asc, ...order.desc]
 
@@ -19290,7 +19298,7 @@
               })).join(OS.EOL + '    AND ')
 
               tableOptions = tempTxt
-            } catch (e) {errorLog(e, 'connections');
+            } catch (e) {
               tableOptions = ''
             }
 
@@ -19299,7 +19307,7 @@
                 throw 0
 
               descOrder = ` WITH CLUSTERING ORDER BY (` + (clusteringKeys.map((key) => `${key.name} ${order.desc.includes(key.name) ? 'DESC' : 'ASC'}`)).join(', ') + `)`
-            } catch (e) {errorLog(e, 'connections');
+            } catch (e) {
               descOrder = ''
             }
 
@@ -19307,7 +19315,7 @@
 
             try {
               actionEditor.setValue(statement)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           }
 
           setTimeout(() => {
@@ -19318,7 +19326,7 @@
                 ghostClass: 'ghost-field',
                 onSort: () => updateRowsZIndex()
               })
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           }, 1000)
 
           $('input#standardtableName').on('input', function() {
@@ -19344,11 +19352,11 @@
               dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               keyspaceTables = JSON.parse(JSONRepair($('#rightClickActionsMetadata').attr('data-keyspace-tables')))
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (keyspaceTables.length <= 0)
@@ -19361,7 +19369,7 @@
 
               if (isNameDuplicated)
                 invalidFeedback.find('span').attr('mulang', 'provided name is already in use').text(I18next.capitalizeFirstLetter(I18next.t('provided name is already in use')))
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (`${standardtableName}`.length <= 0)
@@ -19371,7 +19379,7 @@
 
               if (isNameInvalid)
                 invalidFeedback.find('span').attr('mulang', 'provided name is invalid, only alphanumeric and underscores are allowed').text(I18next.capitalizeFirstLetter(I18next.t('provided name is invalid, only alphanumeric and underscores are allowed')))
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid)
 
@@ -19382,7 +19390,7 @@
 
             try {
               updateActionStatusForStandardTables()
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           })
 
           $(`a[action]#addStandardTablePartitionKey`).on('click', function(_, fields = null) {
@@ -19431,7 +19439,7 @@
 
                   for (let udt of keyspaceUDTs)
                     typesList += `<li><a class="dropdown-item" data-is-udt="true" href="#" value="${udt}">${udt}</a></li>`
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let [
                   collectionKeyTypeID,
@@ -19532,7 +19540,7 @@
               keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
               keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
 
             try {
@@ -19558,7 +19566,7 @@
                     setTimeout(() => {
                       try {
                         dropDownMDBObject.update()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }, 500)
 
                     {
@@ -19573,7 +19581,7 @@
 
                           try {
                             updateRowsZIndex(isTransformNegative)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
 
                         $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -19600,14 +19608,14 @@
                             row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
 
                             row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Update the input's value
                           selectElement.val(selectedValue).trigger('input')
 
                           try {
                             updateActionStatusForStandardTables()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -19644,7 +19652,7 @@
 
                     try {
                       fieldType = field.type.match(/frozen\<(.*?)(\<|\>)/)[1]
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       if (!(['map', 'set', 'list'].some((type) => type == fieldType)))
@@ -19660,7 +19668,7 @@
                       } else {
                         $(this).find('input.collectionKeyType').val(`${fieldKeyType}`).trigger('input')
                       }
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     $(this).find('div.dropdown[for-data-type="partitionKeyType"]').find(`a[value="${fieldType}"]`).trigger('click')
                     $(this).find('input.partitionKeyType').attr('data-original-type', `${fieldType}`)
@@ -19668,18 +19676,18 @@
 
                   try {
                     updateRowsZIndex()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 }))
               }
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dataFieldsContainer.append($(getPartitionKeyFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
@@ -19690,7 +19698,7 @@
 
                   try {
                     updateActionStatusForStandardTables()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   if (dataFieldsContainer.children('div.standard-table-partition-key-field.row').length != 0)
                     return
@@ -19712,7 +19720,7 @@
                   setTimeout(() => {
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 })
 
@@ -19732,7 +19740,7 @@
                       throw 0
 
                     isNameInvalid = `${partitionKeyName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     let allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field').not(fieldRow[0])
@@ -19749,7 +19757,7 @@
                       isNameDuplicated = true
                       break
                     }
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   let isError = isNameDuplicated || isNameInvalid || minifyText(partitionKeyName).length <= 0
 
@@ -19766,13 +19774,13 @@
                     tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                     tooltip.enable()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                   try {
                     updateActionStatusForStandardTables()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
               })
 
@@ -19782,7 +19790,7 @@
                 setTimeout(() => {
                   try {
                     dropDownMDBObject.update()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 }, 500)
 
                 {
@@ -19797,13 +19805,13 @@
                     input.on('focus', () => {
                       try {
                         input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.show()
                     }).on('focusout', () => setTimeout(() => {
                       try {
                         input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.hide()
                     }, 100))
@@ -19823,7 +19831,7 @@
 
                       try {
                         updateRowsZIndex(isTransformNegative)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -19848,14 +19856,14 @@
                         row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
 
                         row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // Update the input's value
                       selectElement.val(selectedValue).trigger('input')
 
                       try {
                         updateActionStatusForStandardTables()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
                 }
@@ -19873,7 +19881,7 @@
 
               try {
                 updateRowsZIndex()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               if (fields == null)
                 $(`a[action]#addStandardTableClusteringKey`).removeClass('disabled')
@@ -19881,7 +19889,7 @@
               setTimeout(() => {
                 try {
                   updateActionStatusForStandardTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
             }))
           })
@@ -19932,7 +19940,7 @@
 
                   for (let udt of keyspaceUDTs)
                     typesList += `<li><a class="dropdown-item" data-is-udt="true" href="#" value="${udt}">${udt}</a></li>`
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let [
                   collectionKeyTypeID,
@@ -20033,7 +20041,7 @@
               keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
               keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (fields == null)
@@ -20058,7 +20066,7 @@
                     setTimeout(() => {
                       try {
                         dropDownMDBObject.update()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }, 500)
 
                     {
@@ -20073,7 +20081,7 @@
 
                           try {
                             updateRowsZIndex(isTransformNegative)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
 
                         $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -20100,14 +20108,14 @@
                             row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
 
                             row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Update the input's value
                           selectElement.val(selectedValue).trigger('input')
 
                           try {
                             updateActionStatusForStandardTables()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -20144,7 +20152,7 @@
 
                     try {
                       fieldType = field.type.match(/frozen\<(.*?)(\<|\>)/)[1]
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       if (!(['map', 'set', 'list'].some((type) => type == fieldType)))
@@ -20160,7 +20168,7 @@
                       } else {
                         $(this).find('input.collectionKeyType').val(`${fieldKeyType}`).trigger('input')
                       }
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     $(this).find('div.dropdown[for-data-type="clusteringKeyType"]').find(`a[value="${fieldType}"]`).trigger('click')
                     $(this).find('input.clusteringKeyType').attr('data-original-type', `${fieldType}`)
@@ -20168,18 +20176,18 @@
 
                   try {
                     updateRowsZIndex()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 }))
               }
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dataFieldsContainer.append($(getClusteringKeyFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
@@ -20191,7 +20199,7 @@
                   setTimeout(() => {
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   if (dataFieldsContainer.children('div.standard-table-clustering-key-field.row').length != 0)
@@ -20229,7 +20237,7 @@
                       throw 0
 
                     isNameInvalid = `${clusteringKeyName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     let allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field').not(fieldRow[0])
@@ -20246,7 +20254,7 @@
                       isNameDuplicated = true
                       break
                     }
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   let isError = isNameDuplicated || isNameInvalid || minifyText(clusteringKeyName).length <= 0
 
@@ -20263,13 +20271,13 @@
                     tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                     tooltip.enable()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                   try {
                     updateActionStatusForStandardTables()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
               })
 
@@ -20279,7 +20287,7 @@
                 setTimeout(() => {
                   try {
                     dropDownMDBObject.update()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 }, 500)
 
                 {
@@ -20294,13 +20302,13 @@
                     input.on('focus', () => {
                       try {
                         input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.show()
                     }).on('focusout', () => setTimeout(() => {
                       try {
                         input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.hide()
                     }, 100))
@@ -20320,7 +20328,7 @@
 
                       try {
                         updateRowsZIndex(isTransformNegative)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -20345,14 +20353,14 @@
                         row.find(`div[col="collectionKeyType"]`).toggle(isCollectionMap)
 
                         row.find(`div[col="collectionItemType"]`).toggle(isTypeCollection)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // Update the input's value
                       selectElement.val(selectedValue).trigger('input')
 
                       try {
                         updateActionStatusForStandardTables()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
                 }
@@ -20370,12 +20378,12 @@
 
               try {
                 updateRowsZIndex()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               setTimeout(() => {
                 try {
                   updateActionStatusForStandardTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
             }))
           })
@@ -20427,7 +20435,7 @@
 
                     for (let udt of keyspaceUDTs)
                       typesList += `<li><a class="dropdown-item" data-is-udt="true" href="#" value="${udt}">${udt}</a></li>`
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   return typesList
                 }
@@ -20545,7 +20553,7 @@
               keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
               keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (fields == null)
@@ -20568,7 +20576,7 @@
                     setTimeout(() => {
                       try {
                         dropDownMDBObject.update()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }, 500)
 
                     {
@@ -20583,7 +20591,7 @@
 
                           try {
                             updateRowsZIndex(isTransformNegative)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
 
                         $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -20599,8 +20607,8 @@
 
                             try {
                               tooltip[isTypeCollection || isTypeUDT ? 'enable' : 'disable']()
-                            } catch (e) {errorLog(e, 'connections');}
-                          } catch (e) {errorLog(e, 'connections');}
+                            } catch (e) {}
+                          } catch (e) {}
 
                           try {
                             if (!mainDropDown)
@@ -20632,14 +20640,14 @@
                             }).addClass(`col-md-${isTypeUDT ? 1 : 3}`).find('label').toggle(!isTypeUDT)
 
                             row.find(`div[col="is-frozen"]`).toggle(isTypeUDT)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
 
                           // Update the input's value
                           selectElement.val(selectedValue).trigger('input')
 
                           try {
                             updateActionStatusForStandardTables()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -20671,32 +20679,32 @@
 
                   try {
                     updateRowsZIndex()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   try {
                     fieldType = `${field.type}`.match(/frozen\<(.*?)(\<|\>)/)[1]
 
                     isFrozen = true
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     fieldType = removeFrozenKeyword(`${field.type}`)
 
                     fieldType = `${fieldType}`.match(/^((.*?)<)/)[2]
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   $(this).find(`a[action="delete-standard-table-column"]`).click(function() {
                     row.toggleClass('deleted')
 
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   setTimeout(() => {
@@ -20713,12 +20721,12 @@
                           throw 0
 
                         fieldKeyType = removeFrozenKeyword(`${fieldKeyType}`)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       if (fieldType == 'map') {
                         try {
                           fieldKeyType = fieldKeyType.match(/.*?<(.*?)>$/)[1]
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         let mapValues = minifyText(fieldKeyType).split(',')
 
@@ -20726,7 +20734,7 @@
                           try {
                             if (`${fieldKeyType}`.includes('frozen<'))
                               mapValues[index] = removeFrozenKeyword(value)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
 
                         $(this).find('input.collectionKeyType').val(`${mapValues[0]}`).trigger('input')
@@ -20735,11 +20743,11 @@
                         try {
                           if (`${fieldKeyType}`.includes('frozen<'))
                             fieldKeyType = removeFrozenKeyword(fieldKeyType)
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         try {
                           fieldKeyType = `${fieldKeyType}`.match(/<(.*?)>$/)[1]
-                        } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
 
                         $(this).find('input.collectionItemType').val(`${fieldKeyType}`).trigger('input')
                       }
@@ -20747,7 +20755,7 @@
                       $(this).find('input.collectionKeyType, input.collectionItemType').addClass('disabled').attr('disabled', 'disabled').css('background-color', '')
 
                       $(this).find('ion-icon[name="arrow-down"]').hide()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     row.find(`ul.dropdown-menu`).find(`a[value="${fieldType}"]`).click()
 
@@ -20763,7 +20771,7 @@
               }
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dataFieldsContainer.append($(getStandardColumnFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
@@ -20774,7 +20782,7 @@
                 setTimeout(() => {
                   try {
                     updateActionStatusForStandardTables()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
 
                 if (dataFieldsContainer.children('div.standard-table-column-field.row').length != 0)
@@ -20799,7 +20807,7 @@
                     throw 0
 
                   isNameInvalid = `${columnName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   let allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field, div.standard-table-udt-column-field').not(fieldRow[0])
@@ -20816,7 +20824,7 @@
                     isNameDuplicated = true
                     break
                   }
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let isError = isNameDuplicated || isNameInvalid || minifyText(columnName).length <= 0
 
@@ -20833,19 +20841,19 @@
                   tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                   tooltip.enable()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                 try {
                   updateActionStatusForStandardTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
 
               $(this).find('input.isStatic, input.isFrozen').on('change', () => {
                 try {
                   updateActionStatusForStandardTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
 
               setTimeout(() => {
@@ -20854,7 +20862,7 @@
                 setTimeout(() => {
                   try {
                     dropDownMDBObject.update()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 }, 500)
 
                 {
@@ -20869,13 +20877,13 @@
                     input.on('focus', () => {
                       try {
                         input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.show()
                     }).on('focusout', () => setTimeout(() => {
                       try {
                         input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.hide()
                     }, 100))
@@ -20895,7 +20903,7 @@
 
                       try {
                         updateRowsZIndex(isTransformNegative)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -20911,8 +20919,8 @@
 
                         try {
                           tooltip[isTypeCollection || isTypeUDT ? 'enable' : 'disable']()
-                        } catch (e) {errorLog(e, 'connections');}
-                      } catch (e) {errorLog(e, 'connections');}
+                        } catch (e) {}
+                      } catch (e) {}
 
                       try {
                         if (!mainDropDown)
@@ -20944,14 +20952,14 @@
                         }).addClass(`col-md-${isTypeUDT ? 1 : 3}`).find('label').toggle(!isTypeUDT)
 
                         row.find(`div[col="is-frozen"]`).toggle(isTypeUDT)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       // Update the input's value
                       selectElement.val(selectedValue).trigger('input')
 
                       try {
                         updateActionStatusForStandardTables()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
                 }
@@ -20983,12 +20991,12 @@
 
               try {
                 updateRowsZIndex()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               setTimeout(() => {
                 try {
                   updateActionStatusForStandardTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
             }))
           })
@@ -21007,7 +21015,7 @@
 
                   for (let udt of keyspaceUDTs)
                     typesList += `<li><a class="dropdown-item" data-is-udt="true" href="#" value="${udt}">${udt}</a></li>`
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let [
                   columnTypeID,
@@ -21077,7 +21085,7 @@
               keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts')))
 
               keyspaceUDTs = keyspaceUDTs.map((udt) => udt.name)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (fields == null)
@@ -21098,14 +21106,14 @@
                     fieldType = field.type.match(/frozen\<(.*?)(\<|\>)/)[1]
 
                     isFrozen = true
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   $(this).find(`a[action="delete-standard-table-udt-column"]`).click(function() {
                     row.toggleClass('deleted')
 
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   setTimeout(() => {
@@ -21137,7 +21145,7 @@
 
                           try {
                             updateRowsZIndex(isTransformNegative)
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
 
                         $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -21150,7 +21158,7 @@
 
                           try {
                             updateActionStatusForStandardTables()
-                          } catch (e) {errorLog(e, 'connections');}
+                          } catch (e) {}
                         })
                       })
                     }
@@ -21182,18 +21190,18 @@
 
                   try {
                     updateRowsZIndex()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 }))
               }
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dataFieldsContainer.append($(getStandardUDTColumnFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
@@ -21204,7 +21212,7 @@
                 setTimeout(() => {
                   try {
                     updateActionStatusForStandardTables()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
 
                 if (dataFieldsContainer.children('div.standard-table-udt-column-field.row').length != 0)
@@ -21229,7 +21237,7 @@
                     throw 0
 
                   isNameInvalid = `${columnName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   let allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-udt-column-field').not(fieldRow[0])
@@ -21246,7 +21254,7 @@
                     isNameDuplicated = true
                     break
                   }
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let isError = isNameDuplicated || isNameInvalid || minifyText(columnName).length <= 0
 
@@ -21263,19 +21271,19 @@
                   tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                   tooltip.enable()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                 try {
                   updateActionStatusForStandardTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
 
               $(this).find('input.isStatic, input.isFrozen').on('change', () => {
                 try {
                   updateActionStatusForStandardTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
 
               setTimeout(() => {
@@ -21295,13 +21303,13 @@
                     input.on('focus', () => {
                       try {
                         input.parent().find('div.invalid-feedback').addClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.show()
                     }).on('focusout', () => setTimeout(() => {
                       try {
                         input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       selectDropdown.hide()
                     }, 100))
@@ -21319,7 +21327,7 @@
 
                       try {
                         updateRowsZIndex(isTransformNegative)
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
 
                     $(this).find(`ul.dropdown-menu`).find('a').click(function() {
@@ -21332,7 +21340,7 @@
 
                       try {
                         updateActionStatusForStandardTables()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
                 }
@@ -21364,12 +21372,12 @@
 
               try {
                 updateRowsZIndex()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               setTimeout(() => {
                 try {
                   updateActionStatusForStandardTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
             }))
           })
@@ -21417,7 +21425,7 @@
 
               try {
                 fields = JSON.parse(repairJSON(fields))
-              } catch (e) {errorLog(e, 'connections');
+              } catch (e) {
                 fields = []
               }
 
@@ -21439,7 +21447,7 @@
                   $('textarea#standardTableCommentOption').val(`${field.value}`).trigger('input')
 
                   continue
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 dataFieldsContainer.append($(getTableOptionFieldElement(true)).show(function() {
                   let row = $(this)
@@ -21460,7 +21468,7 @@
                     setTimeout(() => {
                       try {
                         updateActionStatusForStandardTables()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
 
@@ -21480,14 +21488,14 @@
                         throw 0
 
                       isNameInvalid = `${tableOptionName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       let defaultName = row.attr('data-default-name'),
                         defaultValue = row.attr('data-default-value')
 
                       row.find(`a[action="undo-change"]`).toggleClass('disabled', !(defaultName != row.find('input.tableOptionName').val() || defaultValue != row.find('input.tableOptionValue').val()))
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       let allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-option-field').not(fieldRow[0])
@@ -21504,7 +21512,7 @@
                         isNameDuplicated = true
                         break
                       }
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     let isError = isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0
 
@@ -21521,13 +21529,13 @@
                       tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                       tooltip.enable()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   $(this).find('input.tableOptionValue').on('input', function(_, triggerInput = true) {
@@ -21544,13 +21552,13 @@
                         defaultValue = row.attr('data-default-value')
 
                       row.find(`a[action="undo-change"]`).toggleClass('disabled', !(defaultName != row.find('input.tableOptionName').val() || defaultValue != row.find('input.tableOptionValue').val()))
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null)
 
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   setTimeout(() => {
@@ -21565,12 +21573,12 @@
 
                   try {
                     updateRowsZIndex()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   setTimeout(() => {
@@ -21578,14 +21586,14 @@
                       dataFieldsContainer.animate({
                         scrollTop: dataFieldsContainer.get(0).scrollHeight
                       }, 10)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 }))
               }
 
               if (areDefaultOptions)
                 return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (fields == null)
@@ -21595,7 +21603,7 @@
 
               try {
                 options = fields
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               let optionsNames = Object.keys(options)
 
@@ -21611,12 +21619,12 @@
                   $('textarea#standardTableCommentOption').val(`${optionValue}`).trigger('input')
 
                   continue
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   if (typeof optionValue == 'object')
                     optionValue = JSON.stringify(optionValue)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 optionValue = `${optionValue}`
 
@@ -21638,7 +21646,7 @@
                     setTimeout(() => {
                       try {
                         updateActionStatusForStandardTables()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     })
                   })
 
@@ -21658,14 +21666,14 @@
                         throw 0
 
                       isNameInvalid = `${tableOptionName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       let defaultName = row.attr('data-original-name'),
                         defaultValue = row.attr('data-original-value')
 
                       row.find(`a[action="undo-change"]`).toggleClass('disabled', !(defaultName != row.find('input.tableOptionName').val() || defaultValue != row.find('input.tableOptionValue').val()))
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     try {
                       let allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-option-field').not(fieldRow[0])
@@ -21682,7 +21690,7 @@
                         isNameDuplicated = true
                         break
                       }
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     let isError = isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0
 
@@ -21699,13 +21707,13 @@
                       tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                       tooltip.enable()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   $(this).find('input.tableOptionValue').on('input', function(_, triggerInput = true) {
@@ -21722,13 +21730,13 @@
                         defaultValue = row.attr('data-original-value')
 
                       row.find(`a[action="undo-change"]`).toggleClass('disabled', !(defaultName != row.find('input.tableOptionName').val() || defaultValue != row.find('input.tableOptionValue').val()))
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null)
 
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   setTimeout(() => {
@@ -21743,12 +21751,12 @@
 
                   try {
                     updateRowsZIndex()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   setTimeout(() => {
                     try {
                       updateActionStatusForStandardTables()
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
 
                   setTimeout(() => {
@@ -21756,13 +21764,13 @@
                       dataFieldsContainer.animate({
                         scrollTop: dataFieldsContainer.get(0).scrollHeight
                       }, 10)
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   })
                 }))
               }
 
               return
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             dataFieldsContainer.append($(getTableOptionFieldElement()).show(function() {
               let row = $(this)
@@ -21773,7 +21781,7 @@
                 setTimeout(() => {
                   try {
                     updateActionStatusForStandardTables()
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
                 })
 
                 if (dataFieldsContainer.children('div.standard-table-option-field.row').length != 0)
@@ -21798,7 +21806,7 @@
                     throw 0
 
                   isNameInvalid = `${tableOptionName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   let allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-option-field').not(fieldRow[0])
@@ -21815,7 +21823,7 @@
                     isNameDuplicated = true
                     break
                   }
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let isError = isNameDuplicated || isNameInvalid || minifyText(tableOptionName).length <= 0
 
@@ -21832,13 +21840,13 @@
                   tooltip.setContent(isNameInvalid ? 'Invalid name detected' : 'Name duplication detected')
 
                   tooltip.enable()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
 
                 try {
                   updateActionStatusForStandardTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
 
               $(this).find('input.tableOptionValue').on('input', function(_, triggerInput = true) {
@@ -21854,7 +21862,7 @@
 
                 try {
                   updateActionStatusForStandardTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
 
               setTimeout(() => {
@@ -21869,12 +21877,12 @@
 
               try {
                 updateRowsZIndex()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               setTimeout(() => {
                 try {
                   updateActionStatusForStandardTables()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
 
               setTimeout(() => {
@@ -21882,7 +21890,7 @@
                   dataFieldsContainer.animate({
                     scrollTop: dataFieldsContainer.get(0).scrollHeight
                   }, 10)
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
             }))
           })
@@ -21899,7 +21907,7 @@
 
               try {
                 tableOptionsContainerResizingObserver.disconnect()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               isShowBtnShown = false
 
@@ -21915,7 +21923,7 @@
 
               try {
                 tableOptionsContainerResizingObserver.disconnect()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               tableOptionsContainerResizingObserver = new ResizeObserver(() => {
                 try {
@@ -21930,13 +21938,13 @@
 
                   try {
                     tableOptionsContainerResizingObserver.disconnect()
-                  } catch (e) {errorLog(e, 'connections');}
-                } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
+                } catch (e) {}
               })
 
               try {
                 tableOptionsContainerResizingObserver.observe(tableOptionsContainer[0])
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
             })
           }
         }
@@ -21947,7 +21955,7 @@
               let originalValue = $(this).data('original-value')
 
               $('a#standardTableCommentOptionUndoChanges').add('a#counterTableCommentOptionUndoChanges').toggleClass('disabled', !(originalValue != $(this).val()))
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             setTimeout(() => {
               try {
@@ -21956,7 +21964,7 @@
                 } else {
                   updateActionStatusForCounterTables()
                 }
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
             })
           })
 
@@ -21969,7 +21977,7 @@
             setTimeout(() => {
               try {
                 updateActionStatusForStandardTables()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
             })
           })
 
@@ -21982,11 +21990,11 @@
             setTimeout(() => {
               try {
                 updateActionStatusForCounterTables()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
             })
           })
         }
-      } catch (e) {errorLog(e, 'connections');}
+      } catch (e) {}
     }, 8000)
   }
 
@@ -22003,11 +22011,11 @@
           try {
             tippyInstance[id].enable()
             setTimeout(() => tippyInstance[id].show())
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             dateTimePickerObject[id].setValue(new Date())
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           throw 0
         }
@@ -22050,7 +22058,7 @@
                     try {
                       inputObject.update()
                       setTimeout(() => inputObject._deactivate())
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
                   },
                   onDateChange: function() {
                     isDataCleared = this.getValue() == null
@@ -22067,19 +22075,19 @@
                           throw 0
 
                         dateTimeValue = new Date(this.getValue()).getTime()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
                       inputField.val(`${dateTimeValue}`).trigger('input')
 
                       try {
                         inputObject.update()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
 
-                    } catch (e) {errorLog(e, 'connections');} finally {
+                    } catch (e) {} finally {
                       try {
                         instance.disable()
                         instance.hide()
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }
                   }
                 })
@@ -22091,7 +22099,7 @@
                 try {
                   instance.disable()
                   instance.hide()
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
               })
             }
           },
@@ -22099,10 +22107,10 @@
             try {
               instance.disable()
               instance.hide()
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           },
         })
-      } catch (e) {errorLog(e, 'connections');}
+      } catch (e) {}
     })
 
     setTimeout(() => $('button#insertionTimestampPicker, button#deleteTimestampPicker').trigger('click', true), 3000)
@@ -22126,7 +22134,7 @@
         setTimeout(() => {
           try {
             updateActionStatusForInsertRow()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
       })
     })
@@ -22155,7 +22163,7 @@
       $(this).on('input', function() {
         try {
           clearField.toggleClass('hide', $(this).val().length <= 0)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         if ($(this).is($('input#insertionTimestamp')))
           $(this).toggleClass('is-invalid', $(this).val().length > 0 && getCheckedValue('lwtInsertOptions') != 'insertNoSelectOption')
@@ -22163,7 +22171,7 @@
         setTimeout(() => {
           try {
             updateActionStatusForInsertRow()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
       })
 
@@ -22173,12 +22181,12 @@
 
         try {
           rlatedInutField.val('').trigger('input')
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           inputObject.update()
           setTimeout(() => inputObject._deactivate())
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
       })
     })
 
@@ -22187,7 +22195,7 @@
         setTimeout(() => {
           try {
             updateActionStatusForInsertRow()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
         })
       })
     })
@@ -22200,14 +22208,14 @@
     deletionTimestampInput.on('input', function() {
       try {
         clearField.toggleClass('hide', $(this).val().length <= 0)
-      } catch (e) {errorLog(e, 'connections');}
+      } catch (e) {}
 
       $('#deleteTimestamp').toggleClass('is-invalid', $('#deleteTimestamp').val().length > 0 && getCheckedValue('lwtDeleteOptions') != 'deleteNoSelectOption')
 
       setTimeout(() => {
         try {
           updateActionStatusForDeleteRowColumn()
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
       })
     })
 
@@ -22217,12 +22225,12 @@
 
       try {
         rlatedInutField.val('').trigger('input')
-      } catch (e) {errorLog(e, 'connections');}
+      } catch (e) {}
 
       try {
         inputObject.update()
         setTimeout(() => inputObject._deactivate())
-      } catch (e) {errorLog(e, 'connections');}
+      } catch (e) {}
     })
 
     $('input[type="radio"][name="lwtDeleteOptions"]').on('change', function() {
@@ -22239,7 +22247,7 @@
       setTimeout(() => {
         try {
           updateActionStatusForDeleteRowColumn()
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         $('input#deleteWriteConsistencyLevel').add('#deleteTimestamp').trigger('input')
       })
@@ -22316,7 +22324,7 @@
 
         try {
           keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts'))).map((udt) => udt.name)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         let allNodes = dialogElement.find('div[action="insert-row"]').find(`a.jstree-anchor`)
 
@@ -22353,7 +22361,7 @@
 
             relatedNode.removeClass('invalid')
           }
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         if ($('#insertionTimestamp').hasClass('is-invalid'))
           $(`div[action="insert-row"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
@@ -22367,7 +22375,7 @@
           $(`div[action="insert-row"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
 
           return
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         let fieldsNames = [],
           fieldsValues = [],
@@ -22379,7 +22387,7 @@
 
           try {
             treeObject.get_node(mainNodeID)
-          } catch (e) {errorLog(e, 'connections');
+          } catch (e) {
             return relatedFieldsArray
           }
 
@@ -22389,7 +22397,7 @@
             try {
               if (currentNode.length <= 0)
                 currentNode = $(`a.jstree-anchor[id="${currentNodeID}_anchor"]`)
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let [
               fieldName,
@@ -22411,11 +22419,11 @@
 
             try {
               fieldValue = fieldValue.attr('type') == 'checkbox' ? fieldValue.prop('checked') : fieldValue.val()
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               isNULL = $(currentNode).find('button[action="apply-null"]').hasClass('applied')
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let isIgnored = currentNode.hasClass('ignored')
 
@@ -22424,7 +22432,7 @@
 
             try {
               isMapItem = isMapItem != undefined
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Check if the type is collection
             try {
@@ -22446,7 +22454,7 @@
               relatedFieldsArray[hiddenNodeID] = handleFieldsPre(treeObject, hiddenNodeID)
 
               continue
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Check if the type is UDT
             try {
@@ -22456,11 +22464,11 @@
                 if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
 
                 manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               if (!(keyspaceUDTs.includes(manipulatedType)))
                 throw 0
@@ -22479,7 +22487,7 @@
               relatedFieldsArray[currentNodeID] = handleFieldsPre(treeObject, currentNodeID)
 
               continue
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             // Standard type
             relatedFieldsArray.push({
@@ -22525,7 +22533,7 @@
 
                   if (fields[field.id].length <= 0)
                     continue
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let fieldValue = handleFieldsPost(items, false, true, parentType || field.type)
 
@@ -22534,7 +22542,7 @@
 
                   try {
                     isUDTType = fieldValue.values[1].startsWith('{') && fieldValue.values[1].endsWith('}')
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   fieldValue = fieldValue.values.join(field.isMapItem ? ': ' : ', ')
 
@@ -22543,7 +22551,7 @@
                   } else if (field.parent == '#' || isUDT) {
                     fieldValue = `${field.type}`.includes(`list<`) || (`${field.type}`.includes(`set<`) && isInsertionAsJSON) ? `[${fieldValue}]` : (`${field.type}`.includes(`set<`) || (`${field.type}`.includes(`map<`) && !isUDTType) ? `{${fieldValue}}` : `${fieldValue}`)
                   }
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 if (field.parent == '#')
                   names.push(`${field.name}` + (!isInsertionAsJSON ? `, -- ${field.type}` : ''))
@@ -22554,7 +22562,7 @@
                 values.push(field.isMapItem ? `${fieldValue}` : (`${fieldValue}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : '')))
 
                 continue
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Handle UDT type
               try {
@@ -22564,11 +22572,11 @@
                   if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
 
                   manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 if (!(keyspaceUDTs.includes(manipulatedType)))
                   throw 0
@@ -22581,7 +22589,7 @@
 
                   if (fields[field.id].length <= 0)
                     continue
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let fieldValue = handleFieldsPost(subFields, true, false),
                   joinedValue = []
@@ -22598,7 +22606,7 @@
                       subFieldName = `${subFieldName}`.replace(/"/g, '\\"')
 
                       subFieldName = `"${subFieldName}"`
-                    } catch (e) {errorLog(e, 'connections');}
+                    } catch (e) {}
 
                     joinedValue.push(`${subFieldName}: ${fieldValue.values[i]}`)
                   }
@@ -22606,7 +22614,7 @@
                   joinedValue = joinedValue.join(', ')
 
                   joinedValue = `{ ${joinedValue} }`
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 if (field.parent == '#')
                   names.push(`${field.name}` + (!isInsertionAsJSON ? `, -- ${field.type}` : ''))
@@ -22617,7 +22625,7 @@
                 values.push(`${joinedValue}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : ''))
 
                 continue
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Standard type
               try {
@@ -22634,7 +22642,7 @@
                   try {
                     if (['text', 'varchar', 'ascii', 'inet'].some((type) => type == field.type))
                       isSingleQuotesNeeded = true
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (field.type != 'time')
@@ -22643,12 +22651,12 @@
                     if (IsTimestamp(value)) {
                       try {
                         value = formatTimestamp(parseInt(value), false, true).split(/\s+/)[1]
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }
 
                     if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
                       isSingleQuotesNeeded = true
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (field.type != 'date')
@@ -22657,12 +22665,12 @@
                     if (IsTimestamp(value)) {
                       try {
                         value = `toDate(${value})`
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }
 
                     if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
                       isSingleQuotesNeeded = true
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (field.type != 'timestamp')
@@ -22670,8 +22678,8 @@
 
                     if (ValidateDate(value, 'boolean'))
                       value = `toTimestamp('${value}')`
-                  } catch (e) {errorLog(e, 'connections');}
-                } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
+                } catch (e) {}
 
                 try {
                   if (!isSingleQuotesNeeded)
@@ -22680,7 +22688,7 @@
                   value = `${value}`.replace(/(^|[^'])'(?!')/g, "$1''")
 
                   value = isInsertionAsJSON ? `"${value}"` : `'${value}'`
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 if (field.isNULL)
                   value = !isInsertionAsJSON ? 'NULL' : 'null'
@@ -22689,8 +22697,8 @@
                   names.push(isUDT ? `${field.name}` : (`${field.name}` + (!isInsertionAsJSON ? `, -- ${field.type}` : '')))
 
                 values.push(isUDT || isCollection ? `${value}` : (`${value}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : '')))
-              } catch (e) {errorLog(e, 'connections');}
-            } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
+            } catch (e) {}
           }
 
           return {
@@ -22724,7 +22732,7 @@
 
               try {
                 name = `${name}`.replace(/"/g, '\\"')
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               return `"${name}"`
             })
@@ -22746,22 +22754,22 @@
             let lastFieldName = fieldsNames.at(-1)
 
             fieldsNames[fieldsNames.length - 1] = `${lastFieldName.substring(0, lastFieldName.lastIndexOf(', --'))} --${lastFieldName.substring(lastFieldName.lastIndexOf(', --') + 4)}`
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             let lastFieldValue = fieldsValues.at(-1)
 
             fieldsValues[fieldsValues.length - 1] = `${lastFieldValue.substring(0, lastFieldValue.lastIndexOf(', --'))} --${lastFieldValue.substring(lastFieldValue.lastIndexOf(', --') + 4)}`
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             fieldsNames = fieldsNames.map((name) => `    ${name}`).join(OS.EOL)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           try {
             fieldsValues = fieldsValues.map((value) => `    ${value}`).join(OS.EOL)
-          } catch (e) {errorLog(e, 'connections');}
-        } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
+        } catch (e) {}
 
         // Extra options
         let extraOptions = '',
@@ -22786,13 +22794,13 @@
 
           try {
             ttlValue = parseInt(ttlValue) * (multipliers[ttlValueType] || 1)
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           if (isNaN(ttlValue))
             throw 0
 
           extraOptions = `TTL ${ttlValue}`
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         // Data insertion timestamp
         try {
@@ -22807,7 +22815,7 @@
           let insertionTimestampTxt = `TIMESTAMP ${insertionTimestamp}`
 
           extraOptions = `${extraOptions}` + (extraOptions.length <= 0 ? '' : ' AND ') + insertionTimestampTxt
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         if (extraOptions.length != 0)
           extraOptions = ` USING ${extraOptions}`
@@ -22824,7 +22832,7 @@
             writeConsistencyLevel = `-- ${writeConsistencyLevel} Note: CQL session already using this CL`
 
           writeConsistencyLevel = `${writeConsistencyLevel}` + OS.EOL
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           if (lwtOption == 'insertNoSelectOption')
@@ -22838,7 +22846,7 @@
             serialConsistencyLevel = `-- ${serialConsistencyLevel} Note: CQL session already using this CL`
 
           serialConsistencyLevel = `${serialConsistencyLevel}` + OS.EOL
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         let statement =
           `${writeConsistencyLevel}${serialConsistencyLevel}` +
@@ -22849,7 +22857,7 @@
         if (isInsertionAsJSON) {
           try {
             extraOptions = ` DEFAULT ${$('input#defaultOmittedColumnsValue').val()}${extraOptions}`
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           statement = `${writeConsistencyLevel}${serialConsistencyLevel}` +
             `INSERT INTO ${keyspaceName}.${tableName} JSON '{` + OS.EOL +
@@ -22859,7 +22867,7 @@
 
         try {
           actionEditor.setValue(statement)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
       }
 
       setTimeout(() => {
@@ -22877,7 +22885,7 @@
           setTimeout(() => {
             try {
               updateActionStatusForDeleteRowColumn()
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           })
         })
       })
@@ -22902,7 +22910,7 @@
 
         try {
           keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts'))).map((udt) => udt.name)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         let allNodes = dialogElement.find('div[action="delete-row-column"]').find(`a.jstree-anchor`)
 
@@ -22980,7 +22988,7 @@
                 throw 0
 
               return parentNode.element.attr('partition') == 'true'
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             lastParentID = fieldParentID
 
@@ -23022,7 +23030,7 @@
               let relatedHiddenNodeChildrenLength = relatedTreesObjects.primaryKey.get_node(field.attr('add-hidden-node')).children_d.length
 
               doesFieldHasChildren = relatedHiddenNodeChildrenLength > 0
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             isPreviousKeyInvalid.partition = (field.find('.is-invalid:not(.ignore-invalid):not([type="radio"])').length > 0 && !field.hasClass('unavailable')) || field.hasClass('unavailable')
 
@@ -23034,7 +23042,7 @@
             allPartitionKeysValidationStatus.push(isPreviousKeyInvalid.partition)
 
             continue
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           // For the first clustering key
           if (allPartitionKeysValidationStatus.includes(true)) {
@@ -23094,13 +23102,13 @@
               let relatedHiddenNodeChildrenLength = relatedTreesObjects.primaryKey.get_node(field.attr('add-hidden-node')).children_d.length
 
               doesFieldHasChildren = relatedHiddenNodeChildrenLength > 0
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             isPreviousKeyInvalid.clustering = (field.find('.is-invalid:not(.ignore-invalid):not([type="radio"])').length > 0 && !field.hasClass('unavailable')) || field.hasClass('unavailable') || field.hasClass('invalid')
 
             if (isINOperatorChecked)
               isPreviousKeyInvalid.clustering = !doesFieldHasChildren || field.hasClass('unavailable') || field.hasClass('invalid')
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           if ((fieldCheckedOperator == '_operator_in' || isLVL1InvalidKeywordFound) && !field.hasClass('invalid'))
             isPreviousKeyInvalid.clustering = 'LVL1'
@@ -23164,14 +23172,14 @@
           for (let invalidNode of allInvalidNodes) {
             try {
               $(`div[action="delete-row-column"] div.types-of-transactions div.sections div.section div.btn[section="${$(invalidNode).closest('div[section]').attr('section')}"]`).addClass('invalid')
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           }
 
           if ($('#deleteTimestamp').hasClass('is-invalid'))
             $(`div[action="delete-row-column"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
 
           return
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         let fieldsNames = [],
           fieldsValues = [],
@@ -23183,7 +23191,7 @@
 
           try {
             treeObject.get_node(mainNodeID)
-          } catch (e) {errorLog(e, 'connections');
+          } catch (e) {
             return relatedFieldsArray
           }
 
@@ -23194,7 +23202,7 @@
               try {
                 if (currentNode.length <= 0)
                   currentNode = $(`a.jstree-anchor[id="${currentNodeID}_anchor"]`)
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               let [
                 fieldName,
@@ -23220,11 +23228,11 @@
 
               try {
                 fieldValue = fieldValue.attr('type') == 'checkbox' ? fieldValue.prop('checked') : fieldValue.val()
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               try {
                 isNULL = $(currentNode).find('button[action="apply-null"]').hasClass('applied')
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               let isIgnored = currentNode.hasClass('ignored')
 
@@ -23233,7 +23241,7 @@
 
               try {
                 isMapItem = isMapItem != undefined
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Check if the type is collection
               try {
@@ -23259,7 +23267,7 @@
                 relatedFieldsArray[hiddenNodeID] = handleFieldsPre(treeObject, hiddenNodeID)
 
                 continue
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Check if the type is UDT
               try {
@@ -23269,11 +23277,11 @@
                   if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
 
                   manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 if (!(keyspaceUDTs.includes(manipulatedType)))
                   throw 0
@@ -23296,7 +23304,7 @@
                 relatedFieldsArray[currentNodeID] = handleFieldsPre(treeObject, currentNodeID)
 
                 continue
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Standard type
               relatedFieldsArray.push({
@@ -23313,7 +23321,7 @@
                 isNULL
               })
 
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
           }
 
           return relatedFieldsArray
@@ -23337,11 +23345,11 @@
 
             try {
               _isNonEqualityOpFound = primaryKey.fieldOperator != undefined && primaryKey.fieldOperator != '_operator_equal'
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             return _isNonEqualityOpFound
           })
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           if (!isNonEqualityOpFound || ([...columnsRegularFields, ...columnsCollectionFields, ...columnsUDTFields]).find((column) => column.fieldOperator != undefined) == undefined)
@@ -23354,7 +23362,7 @@
           dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
 
           return
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         let getOperatorSymbol = (operator) => {
           let symbol = '='
@@ -23393,19 +23401,19 @@
             try {
               if (field.parent == '#')
                 field.fieldOperator = field.fieldOperator || '_operator_equal'
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if (field.fieldOperator == '_operator_in')
                 field.type = `set<${field.type}>`
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             let finalFieldName = `${field.name}`
 
             try {
               if (field.fieldOperator != undefined)
                 finalFieldName = `${field.name} ${getOperatorSymbol(field.fieldOperator)}`
-            } catch (e) {errorLog(e, 'connections');}
+            } catch (e) {}
 
             try {
               if ((['name', 'type', 'value'].every((attribute) => field[attribute] == undefined) && !field.isMapItem))
@@ -23426,7 +23434,7 @@
 
                   if (fields[field.id].length <= 0)
                     continue
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let fieldValue = handleFieldsPost(items, false, true, parentType || field.type)
 
@@ -23435,7 +23443,7 @@
 
                   try {
                     isUDTType = fieldValue.values[1].startsWith('{') && fieldValue.values[1].endsWith('}')
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   fieldValue = fieldValue.values.join(field.isMapItem ? ': ' : ', ')
 
@@ -23444,7 +23452,7 @@
                   } else if (field.parent == '#' || isUDT) {
                     fieldValue = `${field.type}`.includes(`list<`) || (`${field.type}`.includes(`set<`) && isInsertionAsJSON) ? (field.fieldOperator != '_operator_in' ? `[${fieldValue}]` : `(${fieldValue})`) : (`${field.type}`.includes(`set<`) || (`${field.type}`.includes(`map<`) && !isUDTType) ? `{${fieldValue}}` : `${fieldValue}`)
                   }
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 if (fieldValue == '{  }')
                   continue
@@ -23458,7 +23466,7 @@
                 values.push(field.isMapItem ? `${fieldValue}` : (`${fieldValue}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : '')))
 
                 continue
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Handle UDT type
               try {
@@ -23468,11 +23476,11 @@
                   if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
 
                   manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 try {
                   manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 if (!(keyspaceUDTs.includes(manipulatedType)))
                   throw 0
@@ -23485,7 +23493,7 @@
 
                   if (fields[field.id].length <= 0)
                     continue
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 let fieldValue = handleFieldsPost(subFields, true, false),
                   joinedValue = []
@@ -23501,7 +23509,7 @@
                   joinedValue = joinedValue.join(', ')
 
                   joinedValue = `{ ${joinedValue} }`
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 if (joinedValue == '{  }')
                   continue
@@ -23515,7 +23523,7 @@
                 values.push(`${joinedValue}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : ''))
 
                 continue
-              } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
 
               // Standard type
               try {
@@ -23527,7 +23535,7 @@
                   try {
                     if (['text', 'varchar', 'ascii', 'inet'].some((type) => type == field.type))
                       isSingleQuotesNeeded = true
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (field.type != 'time')
@@ -23536,12 +23544,12 @@
                     if (IsTimestamp(value)) {
                       try {
                         value = formatTimestamp(parseInt(value), false, true).split(/\s+/)[1]
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }
 
                     if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
                       isSingleQuotesNeeded = true
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (field.type != 'date')
@@ -23550,12 +23558,12 @@
                     if (IsTimestamp(value)) {
                       try {
                         value = `toDate(${value})`
-                      } catch (e) {errorLog(e, 'connections');}
+                      } catch (e) {}
                     }
 
                     if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
                       isSingleQuotesNeeded = true
-                  } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
 
                   try {
                     if (field.type != 'timestamp')
@@ -23563,8 +23571,8 @@
 
                     if (ValidateDate(value, 'boolean'))
                       value = `toTimestamp('${value}')`
-                  } catch (e) {errorLog(e, 'connections');}
-                } catch (e) {errorLog(e, 'connections');}
+                  } catch (e) {}
+                } catch (e) {}
 
                 try {
                   if (!isSingleQuotesNeeded)
@@ -23573,7 +23581,7 @@
                   value = `${value}`.replace(/(^|[^'])'(?!')/g, "$1''")
 
                   value = `'${value}'`
-                } catch (e) {errorLog(e, 'connections');}
+                } catch (e) {}
 
                 if (field.isNULL)
                   value = 'NULL'
@@ -23582,8 +23590,8 @@
                   names.push(isUDT ? `${finalFieldName}` : (`${finalFieldName}` + (!isInsertionAsJSON ? `, -- ${field.type}` : '')))
 
                 values.push(isUDT || isCollection ? `${value}` : (`${value}` + (field.parent == '#' && !isInsertionAsJSON ? `, -- ${field.type}` : '')))
-              } catch (e) {errorLog(e, 'connections');}
-            } catch (e) {errorLog(e, 'connections');}
+              } catch (e) {}
+            } catch (e) {}
           }
 
           return {
@@ -23605,7 +23613,7 @@
 
           if (deletedColumns.length != 0)
             deletedColumns = ` ${deletedColumns}`
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         let manipulatedFields = {
           primaryKey: handleFieldsPost(primaryKeyFields),
@@ -23623,7 +23631,7 @@
             temp.push(`${manipulatedFields.primaryKey.names[i]} ${manipulatedFields.primaryKey.values[i]}`)
 
           primaryKey = temp.join(' AND ')
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           let temp = []
@@ -23641,7 +23649,7 @@
           }
 
           otherFields = temp.join(' AND ')
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         if (otherFields.length != 0)
           otherFields = OS.EOL + `IF ${otherFields}`
@@ -23666,7 +23674,7 @@
             throw 0
 
           usingTimestamp = `USING TIMESTAMP ${timestamp}` + OS.EOL
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         // Check if `IF EXISTS` is checked
         try {
@@ -23674,7 +23682,7 @@
             throw 0
 
           otherFields = OS.EOL + `IF EXISTS`
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         // Get consistency level
         let writeConsistencyLevel = '',
@@ -23689,7 +23697,7 @@
             writeConsistencyLevel = `-- ${writeConsistencyLevel} Note: CQL session already using this CL`
 
           writeConsistencyLevel = `${writeConsistencyLevel}` + OS.EOL
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         try {
           if (lwtOption == 'deleteNoSelectOption')
@@ -23703,7 +23711,7 @@
             serialConsistencyLevel = `-- ${serialConsistencyLevel} Note: CQL session already using this CL`
 
           serialConsistencyLevel = `${serialConsistencyLevel}` + OS.EOL
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
 
         dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
 
@@ -23711,7 +23719,7 @@
 
         try {
           actionEditor.setValue(statement)
-        } catch (e) {errorLog(e, 'connections');}
+        } catch (e) {}
       }
 
       setTimeout(() => {
@@ -23764,12 +23772,12 @@
         setTimeout(() => {
           try {
             updateActionStatusForInsertRow()
-          } catch (e) {errorLog(e, 'connections');}
+          } catch (e) {}
 
           $('input#insertWriteConsistencyLevel').add($('#insertionTimestamp')).trigger('input')
         })
       })
-    } catch (e) {errorLog(e, 'connections');}
+    } catch (e) {}
   }, 8000)
 
   {

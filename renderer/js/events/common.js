@@ -891,7 +891,8 @@
       // Get the MDB object of the current dropdown element
       let selectDropdown = getElementMDBObject($(this), 'Dropdown'),
         // Point at the associated input field
-        input = $(`${dialog}`).find(`input#${$(this).attr('for-select')}`)
+        input = $(`${dialog}`).find(`input#${$(this).attr('for-select')}`),
+        isMultiple = $(this).attr('multiple') != undefined
 
       // Once the associated select element is being focused then show the dropdown element and vice versa
       input.on('focus', () => {
@@ -905,18 +906,46 @@
         } catch (e) {}
 
         selectDropdown.show()
-      }).on('focusout', () => setTimeout(() => {
-        let isInputDisabled = input.hasClass('disabled') || input.attr('disabled') != undefined
 
-        if (isInputDisabled)
-          return selectDropdown.hide()
+        if (!isMultiple)
+          return
 
-        try {
-          input.parent().find('div.invalid-feedback').removeClass('transparent-color')
-        } catch (e) {}
+        setTimeout(() => {
+          $(this).find('ul.dropdown-menu.multiple').oneClickOutside({
+            callback: function() {
+              setTimeout(() => {
+                let isInputDisabled = input.hasClass('disabled') || input.attr('disabled') != undefined
 
-        selectDropdown.hide()
-      }, 100))
+                if (isInputDisabled)
+                  return selectDropdown.hide()
+
+                try {
+                  input.parent().find('div.invalid-feedback').removeClass('transparent-color')
+                } catch (e) {}
+
+                selectDropdown.hide()
+              }, 100)
+            },
+            exceptions: input
+          })
+        }, 100)
+      }).on('focusout', () => {
+        if (isMultiple)
+          return
+
+        setTimeout(() => {
+          let isInputDisabled = input.hasClass('disabled') || input.attr('disabled') != undefined
+
+          if (isInputDisabled)
+            return selectDropdown.hide()
+
+          try {
+            input.parent().find('div.invalid-feedback').removeClass('transparent-color')
+          } catch (e) {}
+
+          selectDropdown.hide()
+        }, 100)
+      })
 
       // Once the parent `form-outline` is clicked trigger the `focus` event
       input.parent().click(() => input.trigger('focus'))

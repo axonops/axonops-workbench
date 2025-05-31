@@ -1212,9 +1212,10 @@ div.modal#rightClickActionsMetadata {
     max-width: 600px !important;
   }
 
-  &.insertion-action {
+  &.insertion-action,
+  &.selection-action {
     div.modal-dialog {
-      max-width: 700px !important;
+      max-width: 900px !important;
     }
   }
 
@@ -1698,11 +1699,50 @@ div.input-group-text {
     font-size: 95%;
 
     &.for-actions,
+    &.for-aggregate-functions,
+    &.for-current-order,
     &.for-name,
     &.for-null-value,
     &.for-operators,
     &.for-type {
       background: #393939;
+    }
+
+    &.for-aggregate-functions {
+      button.column-order-type {
+        width: 85px;
+        opacity: 0.8;
+        color: gray;
+        transition: all 0.15s ease-in-out;
+
+        &:after {
+          content: '';
+          position: absolute;
+          top: 1px;
+          right: -1px;
+          margin: auto;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          box-shadow: 0 0 0 2px #343434;
+          opacity: 0;
+          transition: 0.15s ease-in-out;
+        }
+
+        &.active-order {
+          opacity: 1;
+          color: #4f4f4f;
+
+          &:after {
+            opacity: 1;
+          }
+        }
+
+        ion-icon {
+          font-size: 150%;
+          margin-right: 1px;
+        }
+      }
     }
 
     &.for-operators {
@@ -1969,7 +2009,8 @@ div.input-group-text.for-not-ignoring {
 }
 
 div[action="insert-row"],
-div[action="delete-row-column"] {
+div[action="delete-row-column"],
+div[action="select-row"] {
   margin: -30px -16px -16px;
   padding: 5px 0;
 
@@ -2000,9 +2041,19 @@ div[action="delete-row-column"] {
         transition: opacity 0.2s ease-in-out;
       }
 
+      button.column-order-type {
+        transition: box-shadow 0.15s ease-in-out;
+      }
+
       &.invalid {
         &:after {
           opacity: 1;
+        }
+
+        &.invalid-order {
+          button.column-order-type {
+            box-shadow: inset 0 0 20px 0 #dc4c64 !important;
+          }
         }
       }
     }
@@ -2070,6 +2121,7 @@ div[action="delete-row-column"] {
     margin-top: 5px;
     @extend .no-select;
 
+    &.data-select-aggregate-functions,
     &.data-ttl-row {
       margin-bottom: 17px;
 
@@ -2087,6 +2139,7 @@ div[action="delete-row-column"] {
         input {
           margin-left: 0;
           transform: translateY(1px) translateX(-4px) scale(0.85);
+          margin-right: 0 !important;
         }
       }
     }
@@ -2118,20 +2171,23 @@ div[action="delete-row-column"] {
   }
 }
 
-ul.dropdown-menu.for-insertion-actions {
-  a.dropdown-item {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-content: center;
-    align-items: center;
-    font-size: 90%;
-    text-shadow: none;
+ul.dropdown-menu {
+  &.for-insertion-actions,
+  &.for-selection-actions {
+    a.dropdown-item {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-content: center;
+      align-items: center;
+      font-size: 90%;
+      text-shadow: none;
 
-    ion-icon {
-      font-size: 115%;
-      margin-right: 5px;
-      transform: translateY(-1px);
+      ion-icon {
+        font-size: 115%;
+        margin-right: 5px;
+        transform: translateY(-1px);
+      }
     }
   }
 }
@@ -2184,6 +2240,10 @@ div.table-fields-tree.children-transform {
 ul.dropdown-menu.top-margin {
   margin-top: 25px !important;
   width: calc(100% - 10px) !important;
+
+  &.less {
+    margin-top: 12px !important;
+  }
 }
 
 .badge-dark-1 {
@@ -2262,31 +2322,34 @@ div[data-is-main-input="true"] {
   }
 }
 
-div[action="delete-row-column"] div.table-fields-tree {
-  position: relative;
+div[action="delete-row-column"],
+div[action="select-row"] {
+  div.table-fields-tree {
+    position: relative;
 
-  &:before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 16px;
-    margin: auto;
-    background: #262626;
-    width: 5px;
-    height: 31px;
-    z-index: 1;
-  }
+    &:before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 16px;
+      margin: auto;
+      background: #262626;
+      width: 5px;
+      height: 31px;
+      z-index: 1;
+    }
 
-  &:after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    right: 0;
-    left: 0;
-    margin: auto;
-    height: 8px;
-    background: #262626;
-    z-index: -1;
+    &:after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      right: 0;
+      left: 0;
+      margin: auto;
+      height: 8px;
+      background: #262626;
+      z-index: -1;
+    }
   }
 }
 
@@ -2410,6 +2473,7 @@ div.modal#rightClickActionsMetadata {
 
 input[type="radio"] {
   &[name="lwtDeleteOptions"],
+  &[name="selectAllowFilteringOptions"],
   &[name="lwtInsertOptions"] {
     transform: scale(0.85) translateY(-1px);
     transform-origin: left;
@@ -2417,7 +2481,8 @@ input[type="radio"] {
   }
 }
 
-div#tableFieldsNonPKColumnsDeleteAction {
+div#tableFieldsNonPKColumnsDeleteAction,
+div#tableFieldsNonPKColumnsSelectAction {
   width: calc(100% - 30px);
   margin-left: 10px;
 
@@ -2457,6 +2522,28 @@ div#tableFieldsNonPKColumnsDeleteAction {
           margin: auto;
           pointer-events: none;
           background: repeating-linear-gradient(45deg, rgba(244, 67, 54, 0.15), rgba(244, 67, 54, 0.15) 10px, transparent 10px, transparent 20px);
+        }
+      }
+
+      &:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+        height: 0;
+        transition: height 0.15s ease-in-out;
+        border-radius: 50px;
+      }
+
+      ion-icon {
+        transition: color 0.15s ease-in-out;
+      }
+
+      &.selected {
+        &:after {
+          height: 1px;
         }
       }
 
@@ -2509,6 +2596,7 @@ div#noColumnMatched {
   display: none;
 }
 
+div.allow-filtering-hint,
 div.consistency-level-enhanced-console-info,
 div.consistency-level-warning-delete,
 div.consistency-level-warning-insert,
@@ -2519,7 +2607,8 @@ div.lwt-hint-insert,
 div.non-pk-columns-warning {
   background: rgba(123, 181, 255, 0.1);
   font-size: 85%;
-  padding: 0 5px;
+  line-height: 19px;
+  padding: 4px 5px;
   border-radius: 5px;
   cursor: default;
   width: calc(100% - 20px);
@@ -2626,19 +2715,23 @@ a.jstree-anchor {
   }
 }
 
-div#tableFieldsRegularColumnsTreeDeleteAction {
+div#tableFieldsRegularColumnsTreeDeleteAction,
+div#tableFieldsRegularColumnsTreeSelectAction {
   z-index: 4;
 }
 
-div#tableFieldsCollectionColumnsTreeDeleteAction {
+div#tableFieldsCollectionColumnsTreeDeleteAction,
+div#tableFieldsCollectionColumnsTreeSelectAction {
   z-index: 3;
 }
 
-div#tableFieldsUDTColumnsTreeDeleteAction {
+div#tableFieldsUDTColumnsTreeDeleteAction,
+div#tableFieldsUDTColumnsTreeSelectAction {
   z-index: 2;
 }
 
-div#tableFieldsPrimaryKeyTreeDeleteAction {
+div#tableFieldsPrimaryKeyTreeDeleteAction,
+div#tableFieldsPrimaryKeyTreeSelectAction {
   z-index: 1;
 }
 
@@ -2648,4 +2741,33 @@ a[data-operator-id].disabled {
 
 ul.dropdown-menu.operators-dropdown {
   font-family: 'Terminal';
+}
+
+div.input-group {
+  div.column-aggregate-functions {
+    position: relative;
+    background: #414141;
+  }
+}
+
+button.aggregate-functions-btn {
+  &:after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    right: -1px;
+    margin: auto;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #343434;
+    opacity: 0;
+    transition: 0.15s ease-in-out;
+  }
+
+  &.active-function {
+    &:after {
+      opacity: 1;
+    }
+  }
 }

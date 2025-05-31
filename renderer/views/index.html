@@ -2206,6 +2206,7 @@
                 </div>
               </div>
             </div>
+
             <div action="insert-row">
               <div class="types-of-transactions">
                 <div class="sections">
@@ -2433,6 +2434,192 @@
               </div>
             </div>
 
+            <div action="select-row" style="margin-top: -20px;">
+              <div class="types-of-transactions">
+                <div class="sections">
+                  <div class="section">
+                    <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="standard">
+                      Standard
+                    </div>
+                  </div>
+                  <div class="section">
+                    <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="allow-filtering">
+                      Allow Filtering
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="allow-filtering-hint">
+                <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> Using 'Allow Filtering' can lead to inefficient queries and performance issues, especially on large datasets. It should
+                be used sparingly and only when necessary.
+              </div>
+
+              <div section="standard">
+                <div class="fields-badge-action" id="selectPrimaryKeyBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="primary key" capitalize></span>
+                  </span>
+                </div>
+                <div id="no-pk-columns-warning-select" class="non-pk-columns-warning" style="display: block; margin-top: 0px; width: calc(100% - 30px); margin-bottom: 10px;">
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span>This SELECT operation does not specify a partition key, which will trigger a full
+                    cluster scan. This may result in poor performance and timeout issues</span>.
+                </div>
+                <div class="in-operator-error" style="margin-top: 0px; margin-bottom: 10px;">
+                  <ion-icon name="error-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> The <code>IN</code> operator for partition key(s) is not supported in case a LWT option is selected.
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeyTreeSelectAction"></div>
+                <div class="fields-badge-action" id="selectNonPKColumns" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="select columns" capitalize></span>
+                  </span>
+                </div>
+                <div id="tableFieldsNonPKColumnsSelectAction">
+                  <div class="form-outline form-white margin-bottom" style="margin-bottom:10px;">
+                    <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                    <input spellcheck="false" type="text" class="form-control form-icon-trailing" id="toBeSelectedColumnsFilter">
+                    <label class="form-label">
+                      <span mulang="filter columns by name or type" capitalize-first></span>
+                    </label>
+                  </div>
+                  <div class="columns">
+                  </div>
+                  <div id="noColumnMatched">
+                    No column matches the filtering text.
+                  </div>
+                </div>
+
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="extra options" capitalize></span>
+                  </span>
+                </div>
+
+                <div class="row flex data-select-limit">
+                  <div class="col-md-12">
+                    <div class="form-outline form-white">
+                      <div class="clear-field hide">
+                        <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                          <ion-icon name="close"></ion-icon>
+                        </div>
+                      </div>
+                      <input type="number" class="form-control" min="1" id="select-limit">
+                      <label for="ttl" class="form-label">
+                        <span mulang="Limit" capitalize></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="row flex data-select-aggregate-functions" style="margin-top: 15px; margin-bottom: 10px;">
+                  <div class="col-md-12">
+                    <div class="form-outline form-white" style="z-index: 2;">
+                      <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                      <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="selectAggregateFunctions" value="" readonly noopacity>
+                      <label class="form-label">
+                        <span mulang="aggregate functions" capitalize></span>
+                      </label>
+                      <div class="valid-feedback"></div>
+                      <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="dropdown" multiple for-select="selectAggregateFunctions">
+                      <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                      <ul class="dropdown-menu top-margin multiple">
+                        <li><a class="dropdown-item" href="#" value="COUNT">
+                            <ion-icon name="circle"></ion-icon>
+                            <ion-icon name="circle-checked"></ion-icon>
+                            COUNT
+                          </a></li>
+                        <li><a class="dropdown-item disabled" href="#" value="MIN">
+                            <ion-icon name="circle"></ion-icon>
+                            <ion-icon name="circle-checked"></ion-icon>
+                            MIN
+                          </a></li>
+                        <li><a class="dropdown-item disabled" href="#" value="MAX">
+                            <ion-icon name="circle"></ion-icon>
+                            <ion-icon name="circle-checked"></ion-icon>
+                            MAX
+                          </a></li>
+                        <li><a class="dropdown-item disabled" href="#" value="SUM">
+                            <ion-icon name="circle"></ion-icon>
+                            <ion-icon name="circle-checked"></ion-icon>
+                            SUM
+                          </a></li>
+                        <li><a class="dropdown-item disabled" href="#" value="AVG">
+                            <ion-icon name="circle"></ion-icon>
+                            <ion-icon name="circle-checked"></ion-icon>
+                            AVG
+                          </a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div class="row flex data-select-aggregate-functions" style="margin-top: 15px; margin-bottom: 10px; display: none;">
+                  <div class="col-md-12">
+                    <div style="display: inline-block; margin-right: 3px;">
+                      Order by:
+                    </div>
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="selectOrderBy" id="selectOBNone" value="none" checked>
+                      <label class="form-check-label" for="selectOBNone">None</label>
+                    </div>
+
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="selectOrderBy" id="selectOBDefault" value="default">
+                      <label class="form-check-label" for="selectOBDefault">As defined</label>
+                    </div>
+
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="selectOrderBy" id="selectOBDefaultReversed" value="defaultReversed">
+                      <label class="form-check-label" for="selectOBDefaultReversed">As defined (reversed)</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div section="allow-filtering" style="display: none;">
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="Options" capitalize></span>
+                  </span>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
+                  <input class="form-check-input" type="radio" name="selectAllowFilteringOptions" value id="selectAllowFilteringNoSelectOption" checked>
+                  <label class="form-check-label" for="selectAllowFilteringNoSelectOption">
+                    No Selection.
+                  </label>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
+                  <input class="form-check-input" type="radio" name="selectAllowFilteringOptions" value id="selectAllowFilteringEnableOption">
+                  <label class="form-check-label" for="selectAllowFilteringEnableOption">
+                    Enable <code>ALLOW FILTERING</code> keyword.
+                  </label>
+                </div>
+
+                <div id="non-pk-columns-warning-select" class="non-pk-columns-warning" style="display: block;">
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span>Applying conditions to columns that are not a part of the primary key require enabling
+                    the <code>ALLOW FILTERING</code> feature</span>.
+                </div>
+
+                <div class="fields-badge-action" id="selectRegularColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="regular columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsRegularColumnsTreeSelectAction"></div>
+                <div class="fields-badge-action" id="selectCollectionColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="collection types columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsCollectionColumnsTreeSelectAction"></div>
+                <div class="fields-badge-action" id="selectUDTColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="UDT columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsUDTColumnsTreeSelectAction"></div>
+              </div>
+            </div>
+
             <div action="delete-row-column" style="margin-top: -20px;">
               <!-- <div class="fields-badge-action" style="padding: 10px; padding-left: 10px;">
                 <span class="badge badge-secondary">
@@ -2634,7 +2821,7 @@
 
                 <div id="non-pk-columns-warning" class="non-pk-columns-warning" style="display: block;">
                   <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span>All primary key columns must be in the standard WHERE clause to apply LWT conditions to
-                    columns that are not a prt of the primary key</span>.
+                    columns that are not a part of the primary key</span>.
                 </div>
 
                 <div class="fields-badge-action" id="deleteRegularColumnsBadge" style="padding: 10px;">

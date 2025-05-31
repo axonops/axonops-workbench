@@ -2416,6 +2416,37 @@
                                     }
                                   ])
 
+                                  commands.dql.push({
+                                    label: I18next.capitalize(I18next.t('select row as JSON')),
+                                    action: 'selectRow',
+                                    click: `() => views.main.webContents.send('select-row', {
+                                        tableName: '${clickedNode.attr('name')}',
+                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        keyspaceName: '${keyspaceName}',
+                                        isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}',
+                                        asJSON: 'true'
+                                      })`,
+                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                  }, {
+                                    label: I18next.capitalize(I18next.t('select row')),
+                                    action: 'selectRow',
+                                    click: `() => views.main.webContents.send('select-row', {
+                                        tableName: '${clickedNode.attr('name')}',
+                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                        tabID: '_${cqlshSessionContentID}',
+                                        keyspaceName: '${keyspaceName}',
+                                        isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                        textareaID: '_${cqlshSessionStatementInputID}',
+                                        btnID: '_${executeStatementBtnID}'
+                                      })`,
+                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                  })
+
                                   commands.ddl.push({
                                     label: I18next.capitalize(I18next.t('alter table')),
                                     action: 'alterTable',
@@ -10629,7 +10660,9 @@
   }
 
   let updateActionStatusForInsertRow,
-    updateActionStatusForDeleteRowColumn
+    updateActionStatusForDeleteRowColumn,
+    updateActionStatusForSelectRowColumn,
+    getAllPrimaryKeyColumns
 
   // Handle the request of getting a CQL description of the cluster, keyspace in it, or a table
   {
@@ -14548,8 +14581,6 @@
                                     // Update the input's value
                                     selectElement.val(selectedValue).trigger('input')
 
-                                    console.log($(node).find(`input[type="radio"][id="${selectedValueID}"]`));
-
                                     $(node).find(`input[type="radio"][id="${selectedValueID}"]`).prop('checked', true).trigger('change')
 
                                     try {
@@ -14837,6 +14868,1856 @@
 
               rowsCount -= 1
             }
+          })
+        }
+      }
+
+      {
+        let tableFieldsSelectTreeContainers = {
+          primaryKey: $('div#tableFieldsPrimaryKeyTreeSelectAction'),
+          columnsRegular: $('div#tableFieldsRegularColumnsTreeSelectAction'),
+          columnsCollection: $('div#tableFieldsCollectionColumnsTreeSelectAction'),
+          columnsUDT: $('div#tableFieldsUDTColumnsTreeSelectAction')
+        }
+
+        IPCRenderer.on('select-row', (_, data) => {
+          Modules.Config.getConfig((config) => {
+            // Get the MDB object of the related modal
+            let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal'),
+              isSelectionAsJSON = data.asJSON === 'true'
+
+            // Update the execution button's attributes
+            $('button#executeActionStatement').attr({
+              'data-tab-id': `${data.tabID}`,
+              'data-textarea-id': `${data.textareaID}`,
+              'data-btn-id': `${data.btnID}`
+            })
+
+            $('#rightClickActionsMetadata').find('div.modal-body').css('height', 'auto')
+
+            $('#rightClickActionsMetadata').attr({
+              'data-state': null,
+              'data-keyspace-name': `${data.keyspaceName}`,
+              'data-table-name': `${data.tableName}`,
+              'data-select-as-json': `${!isSelectionAsJSON ? null : 'true'}`
+            })
+
+            $('div.row.default-omitted-columns-value-row-select').toggle(isSelectionAsJSON)
+
+            // Update different modal's attributes
+            $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'select row').html(`${I18next.capitalize(I18next.t('select row'))} ${isSelectionAsJSON ? '(JSON)' : ''} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
+
+            $('#rightClickActionsMetadata').attr('data-keyspace-tables', `${data.tables}`)
+
+            $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
+
+            try {
+              for (let container of Object.keys(tableFieldsSelectTreeContainers)) {
+                try {
+                  tableFieldsSelectTreeContainers[container].jstree('destroy')
+                } catch (e) {}
+              }
+            } catch (e) {}
+
+            let keys = [],
+              columns = [],
+              udts = [],
+              keyspaceUDTs = []
+
+            try {
+              let tableObj = JSON.parse(JSONRepair(data.tables)).find((table) => table.name == data.tableName)
+
+              try {
+                keys = tableObj.primary_key.map((key) => {
+                  let isPartition = tableObj.partition_key.find((partitionKey) => partitionKey.name == key.name) != undefined
+
+                  return {
+                    name: key.name,
+                    type: key.cql_type,
+                    isReversed: key.is_reversed,
+                    isPartition
+                  }
+                })
+              } catch (e) {}
+
+              try {
+                columns = tableObj.columns.filter((column) => tableObj.primary_key.find((key) => key.name == column.name) == undefined)
+                  .map((column) => {
+                    return {
+                      name: column.name,
+                      type: column.cql_type,
+                      isStatic: column.is_static
+                    }
+                  })
+              } catch (e) {}
+
+              try {
+                try {
+                  keyspaceUDTs = JSON.parse(JSONRepair(data.udts))
+                } catch (e) {}
+
+                for (let column of columns) {
+                  let udtStructure = {},
+                    manipulatedColumnType = column.type
+
+                  manipulatedColumnType = removeFrozenKeyword(`${manipulatedColumnType}`)
+
+                  try {
+                    manipulatedColumnType = `${manipulatedColumnType}`.match(/<(.*?)>$/)[1];
+                  } catch (e) {}
+
+                  let udtObject = keyspaceUDTs.find((udt) => udt.name == manipulatedColumnType)
+
+                  if (udtObject == undefined || ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))
+                    continue
+
+                  udtStructure = {
+                    ...udtObject,
+                    ...column
+                  }
+
+                  udts.push(udtStructure)
+                }
+
+                columns = columns.filter((column) => udts.find((udt) => udt.name == column.name) == undefined)
+              } catch (e) {}
+            } catch (e) {}
+
+            let groupStructure = buildTableFieldsTreeview(keys, columns, udts, keyspaceUDTs, false, null, true),
+              handleHiddenNodes = (treeData) => {
+                let index = 0
+
+                while (index < treeData.length) {
+                  const node = treeData[index]
+
+                  try {
+                    if (Array.isArray(node)) {
+                      processArray(node)
+
+                      index++
+
+                      continue
+                    }
+
+                    if (node.a_attr['add-hidden-node'] !== undefined) {
+                      treeData.splice(index + 1, 0, {
+                        id: node.a_attr['add-hidden-node'],
+                        parent: node.parent,
+                        state: {
+                          opened: true,
+                          selected: false
+                        },
+                        text: ``
+                      })
+
+                      index++
+                    }
+                  } catch (e) {}
+
+                  index++
+
+                }
+                return treeData;
+              },
+              handleNodeCreationDeletion = () => {
+                let allSelectionRelatedInputs = $('#rightClickActionsMetadata').find('div[action="select-row"]').find('input').get()
+
+                for (let inputDOM of allSelectionRelatedInputs) {
+                  if ($(inputDOM).hasClass('operators-dropdown'))
+                    continue
+
+                  let input = $(inputDOM),
+                    [
+                      inputCassandraType,
+                      inputHTMLType,
+                      inputID
+                    ] = getAttributes(input, ['data-field-type', 'type', 'id']),
+                    inputSavedValue = effectedNodes[inputID] || ''
+
+                  if (inputSavedValue == undefined || inputSavedValue.length <= 0)
+                    continue
+
+                  try {
+                    if (inputHTMLType != 'checkbox')
+                      throw 0
+
+                    if (input.attr('data-set-indeterminate') == 'true') {
+                      input.attr('data-set-indeterminate', null)
+
+                      input.prop('indeterminate', true)
+
+                      input.trigger('change')
+
+                      throw 0
+                    }
+
+                    input.prop('checked', inputSavedValue == 'indeterminate' ? true : !(inputSavedValue != 'true'))
+
+                    input.prop('indeterminate', inputSavedValue == 'indeterminate')
+
+                    input.trigger('change')
+
+                    continue
+                  } catch (e) {}
+
+                  try {
+                    if (inputCassandraType != 'blob')
+                      throw 0
+
+                    input.val(inputSavedValue.inputValue).trigger('input')
+
+                    input.data('value', inputSavedValue.dataValue)
+
+                    continue
+                  } catch (e) {}
+
+                  // Not `blob` or `boolean`
+                  try {
+                    input.val(inputSavedValue).trigger('input')
+                  } catch (e) {}
+                }
+
+                setTimeout(() => {
+                  try {
+                    updateActionStatusForSelectRowColumn()
+                  } catch (e) {}
+                })
+              }
+
+            try {
+              for (let treeViewType of Object.keys(groupStructure))
+                groupStructure[treeViewType].core.data = handleHiddenNodes(groupStructure[treeViewType].core.data)
+            } catch (e) {}
+
+            {
+              let primaryKeyTreeElements = tableFieldsSelectTreeContainers.primaryKey.add('div#selectPrimaryKeyBadge')
+
+              try {
+                if (keys.length <= 0)
+                  throw 0
+
+                primaryKeyTreeElements.show()
+
+                try {
+                  groupStructure.primaryKey.core.data = groupStructure.primaryKey.core.data.filter((field) => field != undefined)
+                } catch (e) {}
+
+                tableFieldsSelectTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
+              } catch (e) {
+                primaryKeyTreeElements.hide()
+              }
+            }
+
+            let areNonPKColumnsExist = false
+
+            {
+              let columnsRegularTreeElements = tableFieldsSelectTreeContainers.columnsRegular.add('div#selectRegularColumnsBadge')
+
+              try {
+                if (!(columns.some((column) => ['map', 'set', 'list'].every((type) => !(`${column.type}`.includes(`${type}<`))))))
+                  throw 0
+
+                areNonPKColumnsExist = true
+
+                columnsRegularTreeElements.show()
+
+                try {
+                  groupStructure.regularColumns.core.data = groupStructure.regularColumns.core.data.filter((field) => field != undefined)
+                } catch (e) {}
+
+                tableFieldsSelectTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
+              } catch (e) {
+                columnsRegularTreeElements.hide()
+              }
+            }
+
+            {
+              let columnsCollectionTreeElements = tableFieldsSelectTreeContainers.columnsCollection.add('div#selectCollectionColumnsBadge')
+
+              try {
+                if (!(columns.some((column) => ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))))
+                  throw 0
+
+                areNonPKColumnsExist = true
+
+                columnsCollectionTreeElements.show()
+
+                try {
+                  groupStructure.collectionColumns.core.data = groupStructure.collectionColumns.core.data.filter((field) => field != undefined)
+                } catch (e) {}
+
+                tableFieldsSelectTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
+              } catch (e) {
+                columnsCollectionTreeElements.hide()
+              }
+            }
+
+            {
+              let columnsUDTTreeElements = tableFieldsSelectTreeContainers.columnsUDT.add('div#selectUDTColumnsBadge')
+              try {
+                if (udts.length <= 0)
+                  throw 0
+
+                areNonPKColumnsExist = true
+
+                columnsUDTTreeElements.show()
+
+                try {
+                  groupStructure.udtColumns.core.data = groupStructure.udtColumns.core.data.filter((field) => field != undefined)
+                } catch (e) {}
+
+                tableFieldsSelectTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
+              } catch (e) {
+                columnsUDTTreeElements.hide()
+              }
+            }
+
+            $('div#tableFieldsNonPKColumnsSelectAction').add('div#selectNonPKColumns').add('div#non-pk-columns-warning-select').toggle(areNonPKColumnsExist)
+
+            $('input#selectAllowFilteringNoSelectOption').prop('checked', true)
+            $('input#selectAllowFilteringNoSelectOption').trigger('change')
+
+            $('div[action="select-row"] div[section="standard"]').click()
+
+            $('input#select-limit').val('')
+
+            $('input#selectAggregateFunctions').val('')
+
+            $('input#toBeSelectedColumnsFilter').val('').trigger('input')
+
+            let selectColumnsContainer = $('div#tableFieldsNonPKColumnsSelectAction div.columns')
+
+            selectColumnsContainer.children('div.column').remove()
+
+            for (let column of [...keys, ...columns, ...udts]) {
+              try {
+                let columnType = EscapeHTML(`${column.type}`).slice(0, 20),
+                  element = `
+                    <div data-name="${column.name}" data-type="${column.type}" class="column btn btn-tertiary" data-mdb-ripple-color="light">
+                    <ion-icon name="circle" style="font-size: 125%; top: 3px;"></ion-icon>
+                      <div class="name">${column.name}</div>
+                      <div class="type">
+                        ${columnType}${column.type.length > 20 ? '...' : ''}
+                      </div>
+                      <div class="is-static" ${!column.isStatic ? 'hidden' : ''}>Static</div>
+                    </div>`
+
+                selectColumnsContainer.append($(element).show((function() {
+                  let columnBtn = $(this)
+
+                  setTimeout(() => $(this).click(() => {
+                    columnBtn.toggleClass('selected')
+
+                    let isColumnSelected = columnBtn.hasClass('selected')
+
+                    columnBtn.find('ion-icon').attr('name', isColumnSelected ? 'circle-checked' : 'circle')
+
+                    try {
+                      updateActionStatusForSelectRowColumn()
+                    } catch (e) {}
+
+                    $('input#toBeSelectdColumnsFilter').trigger('input')
+                  }))
+                })))
+              } catch (e) {}
+            }
+
+            setTimeout(() => {
+              for (let container of Object.keys(tableFieldsSelectTreeContainers)) {
+                let tableFieldsTreeContainer = tableFieldsSelectTreeContainers[container]
+
+                try {
+                  tableFieldsTreeContainer.unbind('loaded.jstree')
+                  tableFieldsTreeContainer.unbind('select_node.jstree')
+                  tableFieldsTreeContainer.unbind('create_node.jstree')
+                  tableFieldsTreeContainer.unbind('delete_node.jstree')
+                  tableFieldsTreeContainer.unbind('hide_node.jstree')
+                } catch (e) {}
+
+                tableFieldsTreeContainer.on('loaded.jstree', () => {
+                  setTimeout(() => {
+                    try {
+                      updateActionStatusForSelectRowColumn()
+                    } catch (e) {}
+                  })
+
+                  tableFieldsTreeContainer.find('a.jstree-anchor[add-hidden-node]').each(function() {
+                    let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${$(this).attr('add-hidden-node')}"]`)
+
+                    hiddenNode.css('margin-top', '-45px')
+
+                    hiddenNode.children('a').css('pointer-events', 'none')
+                  })
+
+                  setTimeout(() => {
+                    {
+                      let allAddItemActionBtns = tableFieldsTreeContainer.find('button[action="add-item"]').get()
+
+                      for (let addItemActionBtn of allAddItemActionBtns) {
+                        try {
+                          $(addItemActionBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(addItemActionBtn).click(function() {
+                          let relatedNode = $(this).parent().parent().parent(),
+                            [
+                              id,
+                              type,
+                              fieldType,
+                              mandatory,
+                              hiddenNodeID
+                            ] = getAttributes(relatedNode, ['id', 'type', 'field-type', 'mandatory', 'add-hidden-node']),
+                            isTypeMap = `${type}`.includes('map<'),
+                            relatedTreeObject = relatedNode.closest('div.table-fields-tree').jstree(),
+                            relatedHiddenNode = relatedTreeObject.element.find(`li[id="hiddenNodeID"]`)
+
+                          try {
+                            type = removeFrozenKeyword(`${type}`)
+                          } catch (e) {}
+
+                          try {
+                            type = `${type}`.match(/<(.*?)>$/)[1]
+                          } catch (e) {}
+
+                          try {
+                            if (!isTypeMap)
+                              throw 0
+
+                            type = `${type}`.replace(/\s+/, '').split(',')
+
+                            type = type.map((subType) => {
+                              try {
+                                subType = removeFrozenKeyword(`${subType}`)
+                              } catch (e) {}
+
+                              subType = subType.replace(/(.*?)</gi, '').replace(/>(.*?)/gi, '')
+
+                              return subType
+                            })
+
+                          } catch (e) {}
+
+                          try {
+                            if (typeof type != 'object')
+                              throw 0
+
+                            let itemMainNodeID = getRandomID(30),
+                              itemMainNodeStrucutre = {
+                                id: itemMainNodeID,
+                                parent: hiddenNodeID,
+                                state: {
+                                  opened: true,
+                                  selected: false
+                                },
+                                a_attr: {
+                                  'is-map-item': true
+                                },
+                                text: `
+                            <div class="input-group">
+                              <div class="input-group-text for-deletion for-name ignored-applied">
+                                <span class="name">
+                                  <span mulang="name" capitalize></span>
+                                  <ion-icon name="right-arrow-filled"></ion-icon>
+                                </span>
+                                <span class="name-value">Item #${getRandomID(3)}</span>
+                              </div>
+                              <div class="input-group-text for-deletion for-actions ignored-applied">
+                                <span class="actions">
+                                  <span mulang="actions" capitalize></span>
+                                  <ion-icon name="right-arrow-filled"></ion-icon>
+                                </span>
+                                <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
+                                  <ion-icon name="trash-outline"></ion-icon>
+                                  <span mulang="delete item"></span>
+                                </button>
+                              </div>
+                            </div>`
+                              }
+
+                            let mapKeyUDTObject = keyspaceUDTs.find((udt) => udt.name == type[0]),
+                              mapKeyObject = {
+                                isUDT: mapKeyUDTObject != undefined,
+                                name: ``,
+                                type: type[0],
+                                fieldType: 'collection-map-key',
+                                isMandatory: false,
+                                noEmptyValue: true
+                              },
+                              mapKeyStructure = buildTableFieldsTreeview([], [], [], keyspaceUDTs, false, mapKeyObject.isUDT ? {
+                                ...mapKeyUDTObject,
+                                ...mapKeyObject
+                              } : mapKeyObject)
+
+                            let mapValueUDTObject = keyspaceUDTs.find((udt) => udt.name == type[1]),
+                              mapValueObject = {
+                                isUDT: mapValueUDTObject != undefined,
+                                name: ``,
+                                type: type[1],
+                                fieldType: 'collection-map-value',
+                                isMandatory: false,
+                                noEmptyValue: true
+                              },
+                              mapValueStructure = buildTableFieldsTreeview([], [], [], keyspaceUDTs, false, mapValueObject.isUDT ? {
+                                ...mapValueUDTObject,
+                                ...mapValueObject
+                              } : mapValueObject)
+
+                            try {
+                              mapKeyStructure.parent = itemMainNodeID
+                            } catch (e) {}
+
+                            try {
+                              mapValueStructure.parent = itemMainNodeID
+                            } catch (e) {}
+
+                            let allNewNodes = []
+
+                            try {
+                              if (Array.isArray(itemMainNodeStrucutre)) {
+                                allNewNodes = allNewNodes.concat(itemMainNodeStrucutre)
+                              } else {
+                                allNewNodes.push(itemMainNodeStrucutre)
+                              }
+                            } catch (e) {}
+
+                            try {
+                              if (Array.isArray(mapKeyStructure)) {
+                                allNewNodes = allNewNodes.concat(mapKeyStructure)
+                              } else {
+                                allNewNodes.push(mapKeyStructure)
+                              }
+                            } catch (e) {}
+
+                            try {
+                              if (Array.isArray(mapValueStructure)) {
+                                allNewNodes = allNewNodes.concat(mapValueStructure)
+                              } else {
+                                allNewNodes.push(mapValueStructure)
+                              }
+                            } catch (e) {}
+
+                            try {
+                              allNewNodes = flattenArray(allNewNodes)
+                            } catch (e) {}
+
+                            try {
+                              allNewNodes = handleHiddenNodes(allNewNodes)
+                            } catch (e) {}
+
+                            for (let i = 0; i < allNewNodes.length; i++) {
+                              let node = allNewNodes[i]
+
+                              try {
+                                if (node.parent != '#')
+                                  throw 0
+
+                                allNewNodes[i].parent = itemMainNodeID
+                              } catch (e) {}
+
+                              try {
+                                let nodeText = Cheerio.load(allNewNodes[i].text)
+
+                                try {
+                                  nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')
+                                } catch (e) {}
+
+                                allNewNodes[i].text = nodeText('body').html()
+                              } catch (e) {}
+
+                              try {
+                                relatedTreeObject.create_node(allNewNodes[i].parent, allNewNodes[i])
+                              } catch (e) {}
+
+                              try {
+                                handleNodeCreationDeletion()
+                              } catch (e) {}
+                            }
+
+                            return
+                          } catch (e) {}
+
+                          let nodeUDTType = keyspaceUDTs.find((udt) => udt.name == type),
+                            nodeTypeObject = {
+                              isUDT: nodeUDTType != undefined,
+                              name: ``,
+                              type: type,
+                              fieldType: 'collection-type',
+                              isMandatory: false,
+                              noEmptyValue: true
+                            },
+                            nodeTypeStructure = buildTableFieldsTreeview([], [], [], keyspaceUDTs, false, nodeTypeObject.isUDT ? {
+                              ...nodeUDTType,
+                              ...nodeTypeObject
+                            } : nodeTypeObject)
+
+                          try {
+                            nodeTypeStructure = Array.isArray(nodeTypeStructure) ? flattenArray(nodeTypeStructure) : [nodeTypeStructure]
+                          } catch (e) {}
+
+                          try {
+                            nodeTypeStructure = handleHiddenNodes(nodeTypeStructure)
+                          } catch (e) {}
+
+                          for (let i = 0; i < nodeTypeStructure.length; i++) {
+                            try {
+                              if (nodeTypeStructure[i].parent != '#')
+                                throw 0
+
+                              let nodeText = Cheerio.load(nodeTypeStructure[i].text),
+                                deleteItemBtn = `
+                            <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
+                              <ion-icon name="trash-outline"></ion-icon>
+                              <span mulang="delete item"></span>
+                            </button>`
+
+                              try {
+                                nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')
+                              } catch (e) {}
+
+                              let actionsGroup = nodeText('div.input-group-text.for-actions')
+
+                              if (actionsGroup.length != 0) {
+                                actionsGroup.find('button').before(deleteItemBtn)
+                              } else {
+                                let actionsGroupContainer = `
+                                <div class="input-group-text for-deletion for-actions ignored-applied">
+                                  <span class="actions">
+                                    <span mulang="actions" capitalize></span>
+                                    <ion-icon name="right-arrow-filled"></ion-icon>
+                                  </span>
+                                  ${deleteItemBtn}
+                                </div>`
+
+                                nodeText('div.input-group').append(actionsGroupContainer)
+                              }
+
+                              nodeTypeStructure[i].text = nodeText('body').html()
+
+                              nodeTypeStructure[i].parent = hiddenNodeID
+                            } catch (e) {}
+
+                            try {
+                              relatedTreeObject.create_node(nodeTypeStructure[i].parent, {
+                                ...nodeTypeStructure[i]
+                              })
+                            } catch (e) {}
+
+                            try {
+                              handleNodeCreationDeletion()
+                            } catch (e) {}
+                          }
+
+                          try {
+                            updateActionStatusForSelectRowColumn()
+                          } catch (e) {}
+                        })
+                      }
+
+                      let allSelectItemActionBtns = tableFieldsTreeContainer.find('button[action="delete-item"]').get()
+
+                      for (let deleteItemActionBtn of allSelectItemActionBtns) {
+                        try {
+                          $(deleteItemActionBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(deleteItemActionBtn).click(function() {
+                          let relatedNode = $(this).parent().parent().parent(),
+                            relatedTreeObject = relatedNode.closest('div.table-fields-tree').jstree()
+
+                          try {
+                            let deletedNode = relatedTreeObject.get_node(relatedNode)
+
+                            relatedTreeObject.delete_node(deletedNode)
+
+                            try {
+                              handleNodeCreationDeletion()
+                            } catch (e) {}
+                          } catch (e) {}
+                        })
+                      }
+                    }
+
+                    {
+                      let allClearFieldBtns = tableFieldsTreeContainer.find('div.clear-field div.btn').get()
+
+                      for (let clearFieldBtn of allClearFieldBtns) {
+                        try {
+                          $(clearFieldBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(clearFieldBtn).click(function() {
+                          let relatedNode = $(this).closest('a.jstree-anchor'),
+                            rlatedInutField = relatedNode.find('div[data-is-main-input="true"]').find('input'),
+                            inputObject = getElementMDBObject(rlatedInutField)
+
+                          try {
+                            rlatedInutField.val('').trigger('input')
+                          } catch (e) {}
+
+                          try {
+                            inputObject.update()
+                            setTimeout(() => inputObject._deactivate())
+                          } catch (e) {}
+
+                          setTimeout(() => {
+                            try {
+                              updateActionStatusForSelectRowColumn()
+                            } catch (e) {}
+                          })
+                        })
+                      }
+                    }
+
+                    {
+                      let allNULLApplyBtns = tableFieldsTreeContainer.find('button[action="apply-null"]').get()
+
+                      for (let applyBtn of allNULLApplyBtns) {
+                        try {
+                          $(applyBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(applyBtn).click(function() {
+                          let isNULLApplied = $(this).hasClass('applied')
+
+                          $(this).closest('a.jstree-anchor').find('.null-related').toggleClass('null-applied', !isNULLApplied)
+                          $(this).toggleClass('applied', !isNULLApplied)
+
+                          setTimeout(() => {
+                            try {
+                              updateActionStatusForSelectRowColumn()
+                            } catch (e) {}
+                          })
+                        })
+                      }
+                    }
+
+                    {
+                      let allOperatorsContainers = tableFieldsTreeContainer.find('div.input-group-text.for-deletion.for-operators').get()
+
+                      for (let operatorsContainerElement of allOperatorsContainers) {
+                        let node = $(operatorsContainerElement).closest('a.jstree-anchor'),
+                          isCollectionType = $(node).attr('is-collection-type') == 'true'
+
+                        setTimeout(() => {
+                          try {
+                            $(operatorsContainerElement).find('label.btn').unbind('click')
+                          } catch (e) {}
+
+                          $(operatorsContainerElement).find('label.btn').click(function() {
+                            $(this).parent().find(`input[id="${$(this).attr('for')}"]`).trigger('click')
+                          })
+                        })
+
+                        setTimeout(() => {
+                          try {
+                            if (!isCollectionType)
+                              throw 0
+
+                            $(operatorsContainerElement).find('label[for="_operator_in"]').parent().remove()
+
+                            $(operatorsContainerElement).find('a.dropdown-item[data-operator-id="_operator_in"]').parent().remove()
+                          } catch (e) {}
+                        })
+
+                        setTimeout(() => {
+                          try {
+                            $(operatorsContainerElement).find(`button[data-id="hidden-operators-btn"]`).unbind('click')
+                          } catch (e) {}
+
+                          $(operatorsContainerElement).find(`button[data-id="hidden-operators-btn"]`).click(function(_, onlyHideUncheckedOps = false) {
+                            let areOperatorsShown = $(node).hasClass('show-hidden-operators')
+
+                            if (onlyHideUncheckedOps)
+                              areOperatorsShown = true
+
+                            $(node).toggleClass('show-hidden-operators', !areOperatorsShown)
+
+                            $(this).toggleClass('expanded', !areOperatorsShown)
+
+                            $(this).closest('div.for-operators').find('div.btn-group.operators').find('span.checked').show()
+
+                            $(this).closest('div.for-operators').find('div.btn-group.operators').find('span:not(.checked)').toggle(!areOperatorsShown)
+
+                            $(this).closest('div.for-operators').css('width', areOperatorsShown ? '' : '100%')
+                          })
+                        })
+
+                        let allOperators = tableFieldsTreeContainer.find('div.btn-group.operators').find('input[type="radio"]')
+
+                        for (let operator of allOperators.get()) {
+                          setTimeout(() => {
+                            try {
+                              $(operator).unbind('change')
+                            } catch (e) {}
+
+                            $(operator).on('change', function() {
+                              let opNode = $(this).closest('a.jstree-anchor'),
+                                allOperatorsInGroup = $(this).closest('div.btn-group.operators').find('input[type="radio"]'),
+                                selectedOperator = $(allOperatorsInGroup).filter(':checked'),
+                                isSelectedOperatorIN = selectedOperator.attr('id') == '_operator_in',
+                                mainInput = opNode.find('div.form-outline[data-is-main-input="true"]').find('input'),
+                                relatedTreeObject = opNode.closest('div.table-fields-tree').jstree()
+
+                              opNode.find('div.form-outline[data-is-main-input="true"]').toggle(!isSelectedOperatorIN)
+
+                              opNode.find('div.input-group-text.for-actions').toggle(isSelectedOperatorIN)
+
+                              if (isSelectedOperatorIN) {
+                                setTimeout(() => mainInput.val('').trigger('input'))
+                              } else {
+                                try {
+                                  relatedTreeObject.delete_node(relatedTreeObject.get_node(opNode.attr('add-hidden-node')).children_d)
+                                } catch (e) {}
+                              }
+
+                              let spanParent = $(this).parent(),
+                                operatorsGroup = spanParent.closest('div.btn-group.operators')
+
+                              operatorsGroup.children('span').removeClass('checked')
+
+                              spanParent.addClass('checked')
+                            })
+                          })
+
+                          setTimeout(() => {
+                            try {
+                              if (!isCollectionType)
+                                throw 0
+
+                              $(operatorsContainerElement).find('label[for="_operator_in"]').parent().remove()
+
+                              $(operatorsContainerElement).find('a.dropdown-item[data-operator-id="_operator_in"]').parent().remove()
+                            } catch (e) {}
+                          })
+
+                          setTimeout(() => Modules.Localization.applyLanguageSpecific($(node).find('span[mulang], [data-mulang]')))
+                        }
+
+                        setTimeout(() => Modules.Localization.applyLanguageSpecific($(node).find('span[mulang], [data-mulang]')))
+                      }
+                    }
+
+                    {
+                      setTimeout(() => {
+                        let allHiddenOperatorsBtns = tableFieldsTreeContainer.find('button[data-id="hidden-operators-btn"]').get()
+
+                        for (let hiddenOperatorsBtn of allHiddenOperatorsBtns)
+                          $(hiddenOperatorsBtn).trigger('click', true)
+                      })
+                    }
+                  })
+
+                  setTimeout(() => {
+                    try {
+                      tableFieldsTreeContainer.find('div[data-is-main-input="true"]').find('input').unbind('input')
+                      tableFieldsTreeContainer.find('div[data-is-main-input="true"]').find('input').unbind('change')
+                    } catch (e) {}
+
+                    tableFieldsTreeContainer.find('div[data-is-main-input="true"]').find('input').on('input change', function() {
+                      let [
+                        inputCassandraType,
+                        inputHTMLType,
+                        inputID
+                      ] = getAttributes($(this), ['data-field-type', 'type', 'id']),
+                        relatedNode = $(this).closest('a.jstree-anchor'),
+                        isMandatory = relatedNode.attr('mandatory') == 'true',
+                        isEmptyValueNotAllowed = relatedNode.attr('no-empty-value') == 'true',
+                        isInputEmpty = false,
+                        relatedTreeObject = relatedNode.closest('div.table-fields-tree').jstree()
+
+                      /**
+                       * Using `switch` here won't be suffiecnet as we need, in some cases, to check either one of the types, or both of them
+                       * `boolean` type - `checkbox` input type
+                       */
+                      try {
+                        if (inputHTMLType != 'checkbox')
+                          throw 0
+
+                        if ($(this).attr('data-set-indeterminate') == 'true') {
+                          $(this).attr('data-set-indeterminate', null)
+
+                          $(this).prop('indeterminate', true)
+                        }
+
+                        $(`label[for="${$(this).attr('id')}"]`).text($(this).prop('indeterminate') ? 'not set' : ($(this).prop('checked') ? 'true' : 'false'))
+
+                        effectedNodes[inputID] = $(this).prop('indeterminate') ? 'indeterminate' : `${$(this).prop('checked')}`
+
+                        $(this).removeClass('is-invalid')
+                      } catch (e) {}
+
+                      if ($(this).val().length <= 0)
+                        isInputEmpty = true
+
+                      let addIsEmptyClass = true
+
+                      try {
+                        let parentID = relatedTreeObject.get_node(relatedNode.attr('static-id')).parents.at(-2),
+                          parent = relatedTreeObject.get_node(parentID, true),
+                          finalNode = parentID == undefined ? relatedNode : $('#tableFieldsPrimaryKeyTreeSelectAction').find(`a.jstree-anchor[static-id="${parentID}"]`)
+
+                        if (finalNode.length <= 0)
+                          finalNode = $('#tableFieldsPrimaryKeyTreeSelectAction').find(`a.jstree-anchor[id="${parentID}_anchor"]`)
+
+                        if (finalNode.attr('is-hidden-node') == 'true')
+                          finalNode = $('#tableFieldsPrimaryKeyTreeSelectAction').find(`a.jstree-anchor[static-id="${finalNode.attr('related-node-id')}"]`)
+
+                        addIsEmptyClass = isInputEmpty
+                      } catch (e) {}
+
+                      $(this).add($(this).closest('div.form-outline')).toggleClass('is-empty', addIsEmptyClass)
+
+                      try {
+                        if (!($(this).val().length <= 0))
+                          throw 0
+
+                        relatedNode.find('div.clear-field').addClass('hide')
+
+                        if (inputHTMLType != 'checkbox')
+                          $(this).addClass('is-invalid')
+
+                        setTimeout(() => {
+                          try {
+                            updateActionStatusForSelectRowColumn()
+                          } catch (e) {}
+                        })
+
+                        return
+                      } catch (e) {}
+
+                      $(this).removeClass('is-invalid')
+
+                      if (inputHTMLType != 'checkbox')
+                        effectedNodes[inputID] = $(this).val()
+
+                      // `inet` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'inet')
+                          throw 0
+
+                        let ipValue = $(this).val(),
+                          isValidIP = isIP(`${ipValue}`) != 0
+
+                        if (minifyText(ipValue).length <= 0)
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidIP)
+                      } catch (e) {}
+
+                      // `uuid` and `timeuuid` Cassandra types - `text` input type
+                      try {
+                        if (!(['uuid', 'timeuuid'].some((type) => inputCassandraType == type)))
+                          throw 0
+
+                        let uuidValue = $(this).val(),
+                          isValidUUID = isUUID(`${uuidValue}`),
+                          uuidFunction = inputCassandraType == 'uuid' ? 'uuid' : 'now'
+
+                        if (minifyText(uuidValue).length <= 0 || uuidValue == `${uuidFunction}()`)
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidUUID)
+                      } catch (e) {}
+
+                      // `timestamp` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'timestamp')
+                          throw 0
+
+                        let timestampValue = $(this).val()
+
+                        try {
+                          timestampValue = !isNaN(timestampValue) ? parseInt(timestampValue) : timestampValue
+                        } catch (e) {}
+
+                        let isValidTimestamp = !isNaN((new Date(timestampValue).getTime()))
+
+                        if (minifyText($(this).val()).length <= 0 || $(this).val() == 'current_timestamp()')
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidTimestamp)
+                      } catch (e) {}
+
+                      // `date` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'date')
+                          throw 0
+
+                        let dateValue = $(this).val(),
+                          isValidDate = (`${dateValue}`.match(/^\d{4}-\d{2}-\d{2}$/) != null || !isNaN(dateValue)) && !(isNaN(new Date(parseInt(dateValue)).getTime()))
+
+                        if (minifyText($(this).val()).length <= 0 || $(this).val() == 'current_date()')
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidDate)
+                      } catch (e) {}
+
+                      // `time` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'time')
+                          throw 0
+
+                        let timeValue = $(this).val(),
+                          isValidTime = (`${timeValue}`.match(/^\d{2}:\d{2}:\d{2}(\.\d+)*$/) != null || !isNaN(timeValue)) && !(isNaN(new Date(parseInt(timeValue)).getTime()))
+
+                        if (minifyText($(this).val()).length <= 0 || $(this).val() == 'current_time()')
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidTime)
+                      } catch (e) {}
+
+                      // `duration` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'duration')
+                          throw 0
+
+                        let durationValue = $(this).val(),
+                          isValidDuration = `${durationValue}`.match(/^P(?!$)(\d+Y)?(\d+M)?(\d+D)?(T(?!$)(\d+H)?(\d+M)?(\d*\.?\d*S)?)?$/) != null
+
+                        if (minifyText($(this).val()).length <= 0)
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidDuration)
+                      } catch (e) {}
+
+                      // `blob` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'blob')
+                          throw 0
+
+                        let blobValue = $(this).val(),
+                          isValidBlob = `${blobValue}`.match(/^(?:0x)[0-9a-fA-F]+(\.\.\.)?$/) != null
+
+                        if (minifyText($(this).val()).length <= 0)
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidBlob)
+
+                        effectedNodes[inputID] = {
+                          inputValue: $(this).val(),
+                          dataValue: $(this).data('value')
+                        }
+                      } catch (e) {}
+
+                      try {
+                        relatedNode.find('div.clear-field').toggleClass('hide', $(this).val().length <= 0)
+                      } catch (e) {}
+
+                      setTimeout(() => {
+                        try {
+                          updateActionStatusForSelectRowColumn()
+                        } catch (e) {}
+                      })
+                    })
+
+                    let tippyInstances = []
+
+                    setTimeout(() => {
+                      tableFieldsTreeContainer.find('input:not([type="radio"])').trigger('input')
+                      tableFieldsTreeContainer.find('input:not([type="radio"])').trigger('change')
+
+                      tableFieldsTreeContainer.find('button.expand-range.expanded').trigger('click')
+                    })
+                  })
+
+                  // Handle Primary key of the table
+                  try {
+                    let nodes = tableFieldsTreeContainer.find('a.jstree-anchor:not(.hidden-node)').get()
+
+                    for (let node of nodes) {
+                      let isRelatedToHiddenNode = false
+
+                      try {
+                        let parentNode = $(node).closest('ul').parent().children('a.jstree-anchor').first()
+
+                        isRelatedToHiddenNode = $(parentNode).closest('li').attr('is-hidden-node') == 'true'
+                      } catch (e) {}
+
+                      if (isRelatedToHiddenNode) {
+                        $(node).attr({
+                          'data-deletion-changes-applied': 'true',
+                          'ignore-disable': container == 'primaryKey' ? 'true' : null
+                        })
+
+                        $(node).find('div.input-group-text.for-actions').find('button:not([action="delete-item"])').remove()
+                      }
+
+                      let isUDTType = {
+                          column: $(node).attr('field-type') == 'udt-column',
+                          field: $(node).attr('field-type') == 'udt-field'
+                        },
+                        isPartOfMap = `${$(node).attr('field-type')}`.startsWith('collection-map'),
+                        isCollectionFieldType = $(node).attr('field-type') == 'collection-type'
+
+                      setTimeout(() => {
+                        try {
+                          updateActionStatusForSelectRowColumn()
+                        } catch (e) {}
+                      })
+
+                      if (isRelatedToHiddenNode || $(node).attr('data-deletion-changes-applied') == 'true' || isUDTType.field || isPartOfMap || isCollectionFieldType)
+                        continue
+
+                      $(node).attr('data-deletion-changes-applied', 'true')
+
+                      let operatorsDropDownID = `_${getRandomID(10)}`
+
+                      let isPartition = $(node).attr('partition') == 'true',
+                        isCollectionType = $(node).attr('is-collection-type') == 'true',
+                        isBooleanType = $(node).attr('type') == 'boolean',
+                        hiddenOperatorsBtnID = `_${getRandomID(10)}`,
+                        operatorsContainerID = `_${getRandomID(10)}`,
+                        isTypeAllowed = !(['boolean', 'blob'].some((type) => $(node).attr('type') == type)),
+                        rangeOperators = `
+                        <span>
+                          <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_less_than" autocomplete="off" data-operator="<">
+                          <label class="btn btn-secondary btn-light btn-sm" for="_operator_less_than" data-mdb-ripple-init><</label>
+                        </span>
+                        <span>
+                          <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_greater_than" autocomplete="off" data-operator=">">
+                          <label class="btn btn-secondary btn-light btn-sm" for="_operator_greater_than" data-mdb-ripple-init>></label>
+                        </span>
+                        <span>
+                          <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_less_than_equal" autocomplete="off" data-operator="<=">
+                          <label class="btn btn-secondary btn-light btn-sm" for="_operator_less_than_equal" data-mdb-ripple-init><=</label>
+                        </span>
+                        <span>
+                          <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_greater_than_equal" autocomplete="off" data-operator=">=">
+                          <label class="btn btn-secondary btn-light btn-sm" for="_operator_greater_than_equal" data-mdb-ripple-init>>=</label>
+                        </span>
+                        <button id="${hiddenOperatorsBtnID}" data-id="hidden-operators-btn" type="button" class="btn btn-secondary btn-light btn-sm expand-range expanded" data-mdb-ripple-init>
+                          <ion-icon name="arrow-up"></ion-icon>
+                        </button>`,
+                        rangeOperatorsDropDown = `
+                        <li><a class="dropdown-item" href="#" value="<" data-operator-id="_operator_less_than"><</a></li>
+                        <li><a class="dropdown-item" href="#" value=">" data-operator-id="_operator_greater_than">></a></li>
+                        <li><a class="dropdown-item" href="#" value="<=" data-operator-id="_operator_less_than_equal"><=</a></li>
+                        <li><a class="dropdown-item" href="#" value=">=" data-operator-id="_operator_greater_than_equal">>=</a></li>
+                        `,
+                        operatorsContainer = `
+                        <div class="input-group-text for-deletion for-operators ignored-applied" style="z-index:0;">
+                          <span class="operator">
+                            <span mulang="operator" capitalize></span>
+                            <ion-icon name="right-arrow-filled"></ion-icon>
+                          </span>
+                          <div class="btn-group operators" style="display: none;">
+                            <span class="checked">
+                              <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_equal" autocomplete="off" data-operator="=" checked>
+                              <label class="btn btn-secondary btn-light btn-sm" for="_operator_equal" data-mdb-ripple-init>=</label>
+                            </span>
+                            <span>
+                              <input type="radio" class="btn-check" name="${operatorsContainerID}" id="_operator_in" autocomplete="off" data-operator="IN">
+                              <label class="btn btn-secondary btn-light btn-sm" for="_operator_in" data-mdb-ripple-init>IN</label>
+                            </span>
+                            ${!isPartition && !isCollectionType && isTypeAllowed ? rangeOperators : ''}
+                          </div>
+                          <div class="form-outline form-white operators-dropdown" style="z-index: 2; width: 70px;">
+                            <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                            <input type="text" class="form-control form-icon-trailing form-control-sm operators-dropdown" style="background-color: inherit; cursor: default; pointer-events:none; font-family: 'Terminal'; font-weight: bold;" id="${operatorsDropDownID}" value="=" readonly noopacity>
+                            <div class="operators-dropdown-focusarea"></div>
+                          </div>
+                          <div class="dropdown" style="position: absolute;" for-select="${operatorsDropDownID}">
+                            <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                            <ul class="dropdown-menu top-margin operators-dropdown">
+                              <li><a class="dropdown-item" href="#" value="=" data-operator-id="_operator_equal">=</a></li>
+                              <li><a class="dropdown-item" href="#" value="IN" data-operator-id="_operator_in">IN</a></li>
+                              ${!isPartition && !isCollectionType && isTypeAllowed ? rangeOperatorsDropDown : ''}
+                            </ul>
+                          </div>
+                        </div>`
+
+                      $(node).find('div.input-group').addClass('custom-width')
+
+                      let actionsContainer = $(node).find('div.input-group').find('div.input-group-text.for-actions')
+
+                      actionsContainer.find('span.actions').hide()
+
+                      actionsContainer.find('button').css('transform-origin', 'left')
+
+                      actionsContainer.addClass('block-display')
+
+                      actionsContainer.hide()
+
+                      actionsContainer.css('width', '100%')
+
+                      actionsContainer.before($(operatorsContainer).show(function() {
+                        let operatorsContainerElement = $(this)
+
+                        setTimeout(() => $(this).find('label.btn').click(function() {
+                          $(this).parent().find(`input[id="${$(this).attr('for')}"]`).trigger('click')
+                        }))
+
+                        setTimeout(() => {
+                          try {
+                            if (!isCollectionType && !isUDTType.field && !isPartOfMap && !isBooleanType)
+                              throw 0
+
+                            $(this).find('label[for="_operator_in"]').parent().remove()
+                          } catch (e) {}
+                        })
+
+                        setTimeout(() => {
+                          let nodeOperators = $(this).find(`input[name="${operatorsContainerID}"]`)
+
+                          nodeOperators.on('change', function() {
+                            let selectedOperator = nodeOperators.filter(':checked'),
+                              isSelectedOperatorIN = selectedOperator.attr('id') == '_operator_in',
+                              mainInput = $(node).find('div.form-outline[data-is-main-input="true"]').find('input'),
+                              relatedTreeObject = $(node).closest('div.table-fields-tree').jstree()
+
+                            $(node).find('div.form-outline[data-is-main-input="true"]').toggle(!isSelectedOperatorIN)
+
+                            $(node).find('div.input-group-text.for-actions').toggle(isSelectedOperatorIN)
+
+                            if (isSelectedOperatorIN) {
+                              setTimeout(() => mainInput.val('').trigger('input'))
+                            } else {
+                              try {
+                                relatedTreeObject.delete_node(relatedTreeObject.get_node(opNode.attr('add-hidden-node')).children_d)
+                              } catch (e) {}
+                            }
+
+                            let spanParent = $(this).parent(),
+                              operatorsGroup = spanParent.closest('div.btn-group.operators')
+
+                            operatorsGroup.children('span').removeClass('checked')
+
+                            spanParent.addClass('checked')
+                          })
+                        })
+
+                        setTimeout(() => {
+                          let inputToBeCloned = $(node).find('div.input-group').find('div[data-is-main-input="true"]'),
+                            clondedInput = $(inputToBeCloned.clone(true))
+
+                          setTimeout(() => {
+                            actionsContainer.before((clondedInput.length != 0 ? clondedInput : $('<u></u>')).show(function() {
+                              if (isCollectionType) {
+                                actionsContainer.show()
+
+                                try {
+                                  clondedInput.hide()
+                                } catch (e) {}
+                              }
+
+                              if (!isUDTType.field && !isPartOfMap)
+                                $(node).find('div[class^="form-"], div.input-group-text.for-null-value, div.for-actions').not($(this)).not(actionsContainer).not('.operators-dropdown').remove()
+
+                              setTimeout(() => {
+                                $(node).find('input:not([type="radio"]):not(.operators-dropdown)').each(function() {
+                                  $(this).val('').trigger('input')
+
+                                  let mdbObject = getElementMDBObject($(this))
+
+                                  setTimeout(() => mdbObject.update(), 500)
+                                })
+                              })
+
+                              setTimeout(() => {
+                                let dropDownElement = $(node).find(`div.dropdown[for-select="${operatorsDropDownID}"]`),
+                                  selectDropdown = getElementMDBObject(dropDownElement, 'Dropdown')
+
+                                setTimeout(() => {
+                                  try {
+                                    selectDropdown.update()
+                                  } catch (e) {}
+                                }, 500)
+
+                                {
+                                  // Point at the associated input field
+                                  let input = $(node).find(`input[id="${operatorsDropDownID}"]`)
+
+                                  $(node).find('div.operators-dropdown-focusarea').click(() => setTimeout(() => input.trigger('focus').trigger('input'), 10))
+
+                                  // Once the associated select element is being focused then show the dropdown element and vice versa
+                                  input.on('focus', () => {
+                                    try {
+                                      input.parent().find('div.invalid-feedback').addClass('transparent-color')
+                                    } catch (e) {}
+
+                                    selectDropdown.show()
+                                  }).on('focusout', () => setTimeout(() => {
+                                    try {
+                                      input.parent().find('div.invalid-feedback').removeClass('transparent-color')
+                                    } catch (e) {}
+
+                                    selectDropdown.hide()
+                                  }, 100))
+
+                                  // Once the parent `form-outline` is clicked trigger the `focus` event
+                                  // input.parent().click(() => input.trigger('focus'))
+
+                                  $(node).find(`ul.dropdown-menu`).mutate('transform', () => {
+                                    let isTransformNegative = `${$(node).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
+
+                                    $(node).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
+
+                                    try {
+                                      updateRowsZIndexSelectAction(isTransformNegative)
+                                    } catch (e) {}
+                                  })
+
+                                  $(node).find(`ul.dropdown-menu`).find('a').click(function() {
+                                    // Point at the input field related to the list
+                                    let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
+                                      selectedValue = $(this).attr('value'),
+                                      selectedValueID = $(this).attr('data-operator-id'),
+                                      isTypeCollection = $(this).attr('data-is-collection') != undefined,
+                                      isCollectionMap = $(this).attr('data-is-map') != undefined
+
+                                    // Update the input's value
+                                    selectElement.val(selectedValue).trigger('input')
+
+                                    $(node).find(`input[type="radio"][id="${selectedValueID}"]`).prop('checked', true).trigger('change')
+
+                                    try {
+                                      updateActionStatusForSelectRowColumn()
+                                    } catch (e) {}
+                                  })
+                                }
+                              })
+
+                              setTimeout(() => Modules.Localization.applyLanguageSpecific($(node).find('span[mulang], [data-mulang]')))
+
+                              setTimeout(() => {
+                                try {
+                                  let groupedOperators = $(node).find('div.btn-group.operators'),
+                                    scaleFactor = 0.87,
+                                    originalWidth = groupedOperators[0].getBoundingClientRect().width / scaleFactor,
+                                    newWidth = groupedOperators[0].getBoundingClientRect().width
+
+                                  let marginLeftAdjustment = (originalWidth - newWidth) - 4
+
+                                  groupedOperators.css("margin-left", -marginLeftAdjustment + 'px');
+                                } catch (e) {}
+                              }, 200)
+                            }))
+                          })
+                        })
+
+                        // Specify column/key type (partition or clustering)
+                        try {
+                          if (container != 'primaryKey')
+                            throw 0
+
+                          let iconName = isPartition ? 'partition' : 'clustering',
+                            iconPath = Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra', `${iconName}-key.png`)
+
+                          // isPartition
+                          // partition-key.png
+                          $(node).find('div.not-ignore-checkbox').parent().append(`<div class="pk-type-icon">
+                              <img src="${iconPath}"
+                            </div>`)
+                        } catch (e) {}
+                      }))
+
+                      // Add aggregate functions
+                      setTimeout(() => {
+                        try {
+                          if ($(node).attr('is-hidden-node') == 'true')
+                            throw 0
+
+                          let aggregateFunctionsBtnID = `_${getRandomID(10)}btn`
+
+                          $(node).find('div.input-group').append($(`
+                            <div class="input-group-text for-deletion for-aggregate-functions column-aggregate-functions">
+                            <span class="operator">
+                              <span mulang="extra" capitalize></span>
+                              <ion-icon name="right-arrow-filled"></ion-icon>
+                            </span>
+                            <button type="button" id="${aggregateFunctionsBtnID}" data-column-name="${$(node).attr('name')}" class="btn btn-light btn-rounded btn-sm ripple-surface-dark aggregate-functions-btn" style="width: 40px;"><ion-icon name="cogs" style="font-size: 150%; margin-right: 0; transform: translateX(-5px);"></ion-icon></button>
+                            <div class="dropdown" multiple for-select="${aggregateFunctionsBtnID}" style="position: absolute; left: 45px; top: 0;">
+                            <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                            <ul class="dropdown-menu for-aggregate-functions top-margin less multiple">
+                              <li><a class="dropdown-item" href="#" value="COUNT">
+                                  <ion-icon name="circle"></ion-icon>
+                                  <ion-icon name="circle-checked"></ion-icon>
+                                  COUNT
+                                </a></li>
+                              <li><a class="dropdown-item" href="#" value="MIN">
+                                  <ion-icon name="circle"></ion-icon>
+                                  <ion-icon name="circle-checked"></ion-icon>
+                                  MIN
+                                </a></li>
+                              <li><a class="dropdown-item" href="#" value="MAX">
+                                  <ion-icon name="circle"></ion-icon>
+                                  <ion-icon name="circle-checked"></ion-icon>
+                                  MAX
+                                </a></li>
+                              <li><a class="dropdown-item" href="#" value="SUM">
+                                  <ion-icon name="circle"></ion-icon>
+                                  <ion-icon name="circle-checked"></ion-icon>
+                                  SUM
+                                </a></li>
+                              <li><a class="dropdown-item" href="#" value="AVG">
+                                  <ion-icon name="circle"></ion-icon>
+                                  <ion-icon name="circle-checked"></ion-icon>
+                                  AVG
+                                </a></li>
+                            </ul>
+                          </div>
+                            </div>
+                            `).show(function() {
+                            // Get the MDB object of the current dropdown element
+                            let selectDropdown = getElementMDBObject($(this).find('div.dropdown[for-select]'), 'Dropdown'),
+                              // Point at the associated input field
+                              btn = $(this).find(`button#${$(this).find('div.dropdown[for-select]').attr('for-select')}`),
+                              isMultiple = $(this).find('div.dropdown[for-select]').attr('multiple') != undefined
+
+                            // Once the associated select element is being focused then show the dropdown element and vice versa
+                            btn.on('focus', () => {
+                              let isBtnDisabled = btn.hasClass('disabled') || btn.attr('disabled') != undefined
+
+                              if (isBtnDisabled)
+                                return selectDropdown.hide()
+
+                              selectDropdown.show()
+
+                              if (!isMultiple)
+                                return
+
+                              setTimeout(() => {
+                                $(this).find('div.dropdown[for-select]').find('ul.dropdown-menu.multiple').oneClickOutside({
+                                  callback: function() {
+                                    setTimeout(() => {
+                                      let isBtnDisabled = btn.hasClass('disabled') || btn.attr('disabled') != undefined
+
+                                      if (isBtnDisabled)
+                                        return selectDropdown.hide()
+
+                                      selectDropdown.hide()
+                                    }, 100)
+                                  },
+                                  exceptions: btn
+                                })
+                              }, 100)
+                            })
+
+                            // Once the parent `form-outline` is clicked trigger the `focus` event
+                            btn.click(() => btn.trigger('focus'))
+
+                            {
+                              let aggregateFunctionsDropDownItems = $(this).find('div.dropdown[for-select]').find('ul.dropdown-menu.multiple').find('li').find('a')
+
+                              aggregateFunctionsDropDownItems.on('click', function() {
+                                $(this).toggleClass('selected')
+
+                                setTimeout(() => {
+                                  let selectedFunctions = aggregateFunctionsDropDownItems.filter('.selected'),
+                                    finalFunctions = selectedFunctions.get().map((selectedFunction) => `${$(selectedFunction).attr('value')}`)
+
+                                  btn.data('aggregateFunctions', finalFunctions)
+
+                                  btn.toggleClass('active-function', finalFunctions.length > 0)
+
+                                  try {
+                                    updateActionStatusForSelectRowColumn()
+                                  } catch (e) {}
+                                })
+                              })
+                            }
+                          }))
+                        } catch (e) {}
+                      }, 50)
+
+                      setTimeout(() => $(node).find('div.not-ignore-checkbox').addClass('mandatory'))
+
+                      // Handle clustering key(s)
+                      $(node).attr('mandatory', 'false')
+
+                      if (isPartition)
+                        continue
+
+                      // Add badge that indicates the order (DESC, ASC)
+                      setTimeout(() => {
+                        try {
+                          if ($(node).attr('is-reversed') == undefined || $(node).attr('field-type') != 'primary-key')
+                            throw 0
+
+                          let orderType = $(node).attr('is-reversed') == 'true' ? 'desc' : 'asc'
+
+                          $(node).find('div.input-group').find('div.input-group-text.for-aggregate-functions').append($(`
+                            <button type="button" class="btn btn-light btn-rounded btn-sm ripple-surface-dark column-order-type disabled" style="margin-right: -5px;" data-column-name="${$(node).attr('name')}" data-original-order="${orderType}" data-current-order="${orderType}" disabled><ion-icon name="sort-${orderType}" style="margin-right: 0px;"></ion-icon> <span>${orderType}</span></button>
+                            `).click(function(_, internal = false) {
+                            let isActive = $(this).hasClass('active-order'),
+                              currentOrder = !isActive ? 'inactive' : $(this).attr('data-current-order'),
+                              states = ['inactive', $(this).attr('data-original-order'), $(this).attr('data-original-order') == 'asc' ? 'desc' : 'asc'],
+                              currentStateIndex = states.indexOf(currentOrder),
+                              nextState = (currentStateIndex + 1) % states.length,
+                              validOrder = null, // Can be changed to `desc`, `asc`, or `any`
+                              primaryKeyColumns = [],
+                              precedeningColumns = [],
+                              afterColumns = [],
+                              orderButton = $(this),
+                              orderButtonParent
+
+                            try {
+                              primaryKeyColumns = getAllPrimaryKeyColumns()
+
+                              primaryKeyColumns = primaryKeyColumns.map((column) => {
+
+                                column.isBtnParent = orderButton.closest('a.jstree-anchor').is(column.element)
+
+                                return column
+                              });
+
+                              [precedeningColumns, afterColumns] = splitArrayByAttrbiute(primaryKeyColumns, 'isBtnParent')
+
+                              orderButtonParent = precedeningColumns.at(-1)
+                            } catch (e) {}
+
+                            if (precedeningColumns.length <= 1) {
+                              validOrder = 'any'
+                            } else {
+                              let isCurrentColumnAvailable = !orderButtonParent.element.hasClass('unavailable')
+
+                              // Handle precedening columns
+                              let precedeningColumn = precedeningColumns.at(-2),
+                                // Check if the order button is active or not
+                                precedeningColOrderBtn = precedeningColumn.element.find('button.column-order-type')
+
+                              if (precedeningColOrderBtn.hasClass('active-order')) {
+                                if (precedeningColOrderBtn.attr('data-original-order') == precedeningColOrderBtn.attr('data-current-order')) {
+                                  validOrder = orderButton.attr('data-original-order')
+                                } else {
+                                  validOrder = orderButton.attr('data-original-order') == 'asc' ? 'desc' : 'asc'
+                                }
+                              } else {
+                                // Column doesn't have an active order, but it's valid and has value
+                                validOrder = 'any'
+                              }
+
+                              if (precedeningColumn.element.hasClass('invalid invalid-order'))
+                                validOrder = 'invalid'
+                            }
+
+                            if (validOrder == 'invalid' && states[nextState] != 'inactive') {
+                              $(node).removeClass('invalid invalid-order')
+
+                              orderButton.removeClass('active-order')
+                            } else {
+                              $(node).toggleClass('invalid invalid-order', (validOrder != 'any' && validOrder != states[nextState]) && states[nextState] != 'inactive')
+
+                              orderButton.toggleClass('active-order', states[nextState] != 'inactive')
+
+                              let finalState = states[nextState] != 'inactive' ? states[nextState] : $(this).attr('data-original-order')
+
+                              orderButton.attr('data-current-order', finalState)
+                              orderButton.children('ion-icon').attr('name', `sort-${finalState}`)
+                              orderButton.children('span').text(`${finalState}`)
+                            }
+
+                            if (!internal) {
+                              for (let afterColumn of afterColumns) {
+                                if ((afterColumn.element.is(orderButtonParent.element) || !afterColumn.element.hasClass('invalid invalid-order')) && !$(node).hasClass('invalid invalid-order'))
+                                  continue
+
+                                afterColumn.element.find('button.column-order-type').trigger('click', true)
+                              }
+                            }
+
+                            try {
+                              updateActionStatusForSelectRowColumn()
+                            } catch (e) {}
+                          }))
+                        } catch (e) {}
+                      }, 100)
+
+                      $(node).find('div.not-ignore-checkbox').removeClass('mandatory')
+                    }
+
+                    let isUDTColumn = false
+
+                    tableFieldsTreeContainer.find('a.jstree-anchor').get().forEach((nodeAnchor, index) => {
+                      if ($(nodeAnchor).attr('ignore-disable') == 'true')
+                        return
+
+                      if ($(nodeAnchor).attr('field-type') == 'udt-column' && index == 0) {
+                        isUDTColumn = true
+
+                        return
+                      }
+
+                      if ($(nodeAnchor).attr('field-type') == 'udt-field' && isUDTColumn)
+                        return
+
+                      isUDTColumn = false
+
+                      $(nodeAnchor).toggleClass('unavailable', index != 0)
+
+                      $(nodeAnchor).find('input:not([type="radio"])').toggleClass('disabled', index != 0)
+
+                      let buttonsAndInputAreas = $(nodeAnchor).find('.btn, div.focus-area')
+
+                      $(nodeAnchor).find('div[data-is-main-input="true"]').toggleClass('disabled', index != 0)
+
+                      buttonsAndInputAreas.toggleClass('disabled', index != 0)
+
+                      buttonsAndInputAreas.attr('disabled', index != 0 ? '' : null)
+                    })
+                  } catch (e) {}
+
+                  // Handle other columns - regular and UDTs -
+                  try {
+                    if (container == 'primaryKey')
+                      throw 0
+
+                    let nodes = tableFieldsTreeContainer.find('a.jstree-anchor:not(.hidden-node)').get()
+
+                    for (let node of nodes)
+                      $(node).find('div.not-ignore-checkbox').parent().hide()
+                  } catch (e) {}
+
+                  setTimeout(() => Modules.Localization.applyLanguageSpecific(tableFieldsTreeContainer.find('span[mulang], [data-mulang]')))
+
+                  setTimeout(() => {
+                    for (let inputField of tableFieldsTreeContainer.find('input').get()) {
+                      setTimeout(() => {
+                        try {
+                          let mdbObject = getElementMDBObject($(inputField))
+
+                          setTimeout(() => {
+                            try {
+                              mdbObject.update()
+                            } catch (e) {}
+                          })
+                        } catch (e) {}
+                      })
+                    }
+                  })
+                })
+
+                let triggerLoadEventTimeOut = null,
+                  triggerLoadEvent = () => {
+                    try {
+                      clearTimeout(triggerLoadEventTimeOut)
+                    } catch (e) {}
+
+                    setTimeout(() => {
+                      try {
+                        updateActionStatusForSelectRowColumn()
+                      } catch (e) {}
+                    })
+
+                    triggerLoadEventTimeOut = setTimeout(() => tableFieldsTreeContainer.trigger('loaded.jstree'))
+                  }
+
+                tableFieldsTreeContainer.on('create_node.jstree', function(e, data) {
+                  let parentNodeID = '_'
+
+                  try {
+                    parentNodeID = data.node.parents.at(-2)
+                  } catch (e) {}
+
+                  try {
+                    let relatedToHiddenNode = tableFieldsTreeContainer.find(`a.jstree-anchor[add-hidden-node="${parentNodeID}"]`)
+
+                    if (relatedToHiddenNode.length <= 0)
+                      throw 0
+
+                    let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${parentNodeID}"]`)
+
+                    hiddenNode.children('a.jstree-anchor').attr({
+                      'is-hidden-node': 'true',
+                      'related-node-id': relatedToHiddenNode.attr('static-id')
+                    })
+
+                    hiddenNode.css('margin-top', '-45px')
+
+                    hiddenNode.children('a').css('pointer-events', 'none')
+                  } catch (e) {}
+
+                  triggerLoadEvent()
+                })
+
+                tableFieldsTreeContainer.on('delete_node.jstree', function(e, data) {
+                  try {
+                    data.instance.hide_node(data.node.id)
+                  } catch (e) {}
+                })
+
+                tableFieldsTreeContainer.on('hide_node.jstree', function(e, data) {
+                  let parentNodeID = '_'
+
+                  try {
+                    parentNodeID = data.node.parents.at(-2)
+                  } catch (e) {}
+
+                  setTimeout(() => {
+                    try {
+                      let relatedToHiddenNode = tableFieldsTreeContainer.find(`a.jstree-anchor[add-hidden-node="${parentNodeID}"]`)
+
+                      if (relatedToHiddenNode.length <= 0)
+                        throw 0
+
+                      let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${parentNodeID}"]`)
+
+                      hiddenNode.children('a.jstree-anchor').attr({
+                        'is-hidden-node': 'true',
+                        'related-node-id': relatedToHiddenNode.attr('static-id')
+                      })
+
+                      hiddenNode.css('margin-top', '-45px')
+
+                      hiddenNode.children('a').css('pointer-events', 'none')
+                    } catch (e) {}
+
+                    setTimeout(() => {
+                      try {
+                        updateActionStatusForSelectRowColumn()
+                      } catch (e) {}
+
+                      triggerLoadEvent()
+                    })
+                  })
+                })
+
+                tableFieldsTreeContainer.on('select_node.jstree', function(e, data) {
+                  let clickedNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${data.node.id}"]`)
+
+                  try {
+                    let clickedTarget = $(data.event.target)
+
+                    if (!clickedTarget.hasClass('focus-area'))
+                      throw 0
+
+                    let relatedInput = clickedTarget.parent().children('input')
+
+                    setTimeout(() => {
+                      try {
+                        if (relatedInput.attr('type') != 'checkbox')
+                          throw 0
+
+                        if (relatedInput.prop('indeterminate')) {
+                          relatedInput.prop('indeterminate', false)
+                          relatedInput.prop('checked', true)
+                          relatedInput.trigger('change')
+                        } else {
+                          if (!(relatedInput.prop('checked'))) {
+                            relatedInput.prop('indeterminate', true)
+                            relatedInput.trigger('change')
+                          } else {
+                            relatedInput.trigger('click').trigger('input')
+                          }
+                        }
+
+                        return
+                      } catch (e) {}
+
+                      relatedInput.trigger('focus').trigger('input')
+                    })
+                  } catch (e) {}
+
+                  setTimeout(() => {
+                    try {
+                      data.instance.deselect_all()
+                    } catch (e) {}
+                  }, 100)
+                })
+              }
+            })
+
+            $('div.modal#rightClickActionsMetadata div[action]').hide()
+            $('div.modal#rightClickActionsMetadata div[action="select-row"]').show()
+
+            $('#rightClickActionsMetadata').addClass('selection-action').removeClass('show-editor')
+
+            rightClickActionsMetadataModal.show()
+          })
+        })
+
+        let updateRowsZIndexSelectAction = (isTransformNegative = false) => {
+          setTimeout(() => {
+            let rows = $('div#rightClickActionsMetadata').find('div[action="select-row"]').find('a.jstree-anchor:not(.ignored)').get(),
+              rowsCount = rows.length
+
+            if (isTransformNegative)
+              rows = rows.reverse()
+
+            for (let row of rows) {
+              $(row).css('z-index', `${rowsCount}`)
+
+              rowsCount -= 1
+            }
+          })
+        }
+
+        {
+          $('input[type="radio"][name="selectAllowFilteringOptions"]').on('change', function() {
+            setTimeout(() => {
+              try {
+                updateActionStatusForSelectRowColumn()
+              } catch (e) {}
+            })
+          })
+
+          let selectColumnAction = $('div[action="select-row"]'),
+            sectionsButtons = selectColumnAction.find('div.btn[section]')
+
+          sectionsButtons.click(function() {
+            if ($(this).hasClass('active'))
+              return
+
+            sectionsButtons.removeClass('active')
+
+            $(this).addClass('active')
+
+            selectColumnAction.children('div[section]').hide()
+
+            let section = $(this).attr('section')
+
+            selectColumnAction.children(`div[section="${section}"]`).show()
+
+            selectColumnAction.find('div.allow-filtering-hint').toggle(section == 'allow-filtering')
+          })
+
+          $('input#toBeSelectedColumnsFilter').on('input', function() {
+            let filteringText = `${$(this).val()}`,
+              selectNonPKColumns = $('div#tableFieldsNonPKColumnsSelectAction div.columns').children('div.column.btn')
+
+            if (filteringText.length <= 0) {
+              selectNonPKColumns.show()
+
+              $('#noColumnMatched').hide()
+              $('div#tableFieldsNonPKColumnsSelectAction div.columns').show()
+
+              return
+            }
+
+            selectNonPKColumns.hide()
+
+            let matchedColumns = selectNonPKColumns.filter(function() {
+              return minifyText($(this).text()).includes(filteringText) || $(this).hasClass('selected')
+            })
+
+            $('#noColumnMatched').toggle(matchedColumns.length <= 0)
+            $('div#tableFieldsNonPKColumnsSelectAction div.columns').toggle(matchedColumns.length > 0)
+
+            matchedColumns.show()
+          })
+        }
+
+        {
+          let aggregateFunctionsDropDownInput = $('input#selectAggregateFunctions'),
+            aggregateFunctionsDropDownItems = $('div.dropdown[for-select="selectAggregateFunctions"]').find('ul.dropdown-menu.multiple').find('li').find('a')
+
+          aggregateFunctionsDropDownItems.on('click', function() {
+            $(this).toggleClass('selected')
+
+            setTimeout(() => {
+              let selectedFunctions = aggregateFunctionsDropDownItems.filter('.selected'),
+                finalFunctions = selectedFunctions.get().map((selectedFunction) => `${$(selectedFunction).attr('value')}`)
+
+              aggregateFunctionsDropDownInput.val(`${finalFunctions.join(', ')}`)
+
+              try {
+                getElementMDBObject(aggregateFunctionsDropDownInput).update()
+              } catch (e) {}
+
+              try {
+                updateActionStatusForSelectRowColumn()
+              } catch (e) {}
+            })
           })
         }
       }
@@ -23061,7 +24942,9 @@
           if (arePrecedingColumnsWithEquOp) {
             field.find('div.btn-group.operators').find('label.btn').removeClass('disabled')
 
-            operatorsDropDown.find('a.dropdown-item').removeClass('disabled')
+            try {
+              operatorsDropDown.find('a.dropdown-item').removeClass('disabled')
+            } catch (e) {}
 
             field.removeClass('invalid')
 
@@ -23069,7 +24952,11 @@
           } else {
             setTimeout(() => field.find('div.btn-group.operators').find('label.btn').filter(':not([for="_operator_equal"])').addClass('disabled'))
 
-            setTimeout(() => operatorsDropDown.find('a.dropdown-item').filter(':not([data-operator-id="_operator_equal"])').addClass('disabled'))
+            setTimeout(() => {
+              try {
+                operatorsDropDown.find('a.dropdown-item').filter(':not([data-operator-id="_operator_equal"])').addClass('disabled')
+              } catch (e) {}
+            })
 
             field.toggleClass('invalid', fieldCheckedOperator != '_operator_equal')
           }
@@ -23080,7 +24967,7 @@
           let isLVL1InvalidKeywordFound = `${isPreviousKeyInvalid.clustering}` == 'LVL1'
 
           if (isLVL1InvalidKeywordFound) {
-            if (relatedTreesObjects.is_leaf(field.id)) {
+            if (relatedTreesObjects.primaryKey.is_leaf(field.id)) {
               isPreviousKeyInvalid.clustering = false
             } else {
               isPreviousKeyInvalid.clustering = true
@@ -23113,7 +25000,7 @@
           if ((fieldCheckedOperator == '_operator_in' || isLVL1InvalidKeywordFound) && !field.hasClass('invalid'))
             isPreviousKeyInvalid.clustering = 'LVL1'
 
-          if (fieldCheckedOperator != '_operator_equal')
+          if (fieldCheckedOperator != '_operator_equal' && isPreviousKeyInvalid.clustering != 'LVL1')
             isPreviousKeyInvalid.clustering = true
 
           allClusteringKeysValidationStatus.push(isPreviousKeyInvalid.clustering != false)
@@ -23353,6 +25240,9 @@
 
         try {
           if (!isNonEqualityOpFound || ([...columnsRegularFields, ...columnsCollectionFields, ...columnsUDTFields]).find((column) => column.fieldOperator != undefined) == undefined)
+            throw 0
+
+          if (lwtOption == 'deleteNoSelectOption')
             throw 0
 
           $(`div[action="delete-row-column"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
@@ -23800,5 +25690,966 @@
 
       insertRowAction.find('div.lwt-hint-insert').toggle(section == 'lwt')
     })
+  }
+
+  {
+    setTimeout(() => {
+      let dialogElement = $('#rightClickActionsMetadata'),
+        actionEditor = monaco.editor.getEditors().find((editor) => dialogElement.find('div.action-editor div.editor div.monaco-editor').is(editor.getDomNode()))
+
+      updateActionStatusForSelectRowColumn = (returnPrimaryKey = false) => {
+        let [
+          keyspaceName,
+          tableName
+        ] = getAttributes(dialogElement, ['data-keyspace-name', 'data-table-name']).map((name) => addDoubleQuotes(name)),
+          relatedTreesObjects = {
+            primaryKey: $('div#tableFieldsPrimaryKeyTreeSelectAction').jstree(),
+            columns: {
+              regular: $('div#tableFieldsRegularColumnsTreeSelectAction').jstree(),
+              collection: $('div#tableFieldsCollectionColumnsTreeSelectAction').jstree(),
+              udt: $('div#tableFieldsUDTColumnsTreeSelectAction').jstree()
+            }
+          },
+          allowFilteringOptions = getCheckedValue('selectAllowFilteringOptions')
+
+        let keyspaceUDTs = []
+
+        try {
+          keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts'))).map((udt) => udt.name)
+        } catch (e) {}
+
+        let allNodes = dialogElement.find('div[action="select-row"]').find(`a.jstree-anchor`)
+
+        allNodes.each(function() {
+          if ($(this)[0].scrollWidth == $(this).innerWidth() || $(this).find('ul.dropdown-menu.for-insertion-actions, ul.dropdown-menu.for-aggregate-functions').hasClass('show'))
+            return
+
+          let widthDifference = Math.abs($(this)[0].scrollWidth - $(this).innerWidth()),
+            typeValueSpan = $(this).find('span.type-value'),
+            spanWidth = typeValueSpan.outerWidth() - 4
+
+          typeValueSpan.css('width', `${spanWidth - widthDifference}px`).addClass('overflow')
+        })
+
+        $(`div[action="select-row"]`).find('div.in-operator-error').hide()
+        $(`div[action="select-row"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).removeClass('invalid')
+
+        /**
+         * By looping through each node, the node is enabled based on specific conditions
+         * Start with the primary key
+         */
+        let isPreviousKeyInvalid = {
+            partition: false,
+            clustering: false
+          },
+          isPreviousOrderButtonActive = false,
+          isFirstClusteringKeyOrderEnabled = false,
+          handleKeyField = (field, disabled = true) => {
+            $(field).toggleClass('unavailable', disabled)
+            $(field).find('input:not([type="radio"])').toggleClass('disabled', disabled)
+            let buttonsAndInputAreas = $(field).find('.btn, div.focus-area')
+            $(field).find('div[data-is-main-input="true"]').toggleClass('disabled', disabled)
+            buttonsAndInputAreas.filter(':not(.column-order-type):not(.aggregate-functions-btn)').toggleClass('disabled', disabled)
+            buttonsAndInputAreas.filter(':not(.column-order-type):not(.aggregate-functions-btn)').attr('disabled', disabled ? '' : null)
+
+            $(`a.jstree-anchor[id="${field.attr('add-hidden-node')}_anchor"]`).attr('is-hidden-node', 'true')
+
+            if ($(field).attr('is-collection-type') == 'true')
+              $(field).find('.is-invalid').removeClass('is-invalid')
+          },
+          getAllChildrenInOrder = (treeObjectName, childID = '#') => {
+            let children = [],
+              relatedTreeObject = typeof treeObjectName == 'string' ? relatedTreesObjects[treeObjectName] : relatedTreesObjects[treeObjectName[0]][treeObjectName[1]]
+
+            let node = relatedTreeObject.get_node(childID)
+
+            if (childID != '#')
+              children.push(childID)
+
+            for (let _childID of node.children)
+              children = children.concat(getAllChildrenInOrder(treeObjectName, _childID))
+
+            return children
+          },
+          allPrimaryKeyFields = getAllChildrenInOrder('primaryKey').map((childID) => {
+            return {
+              id: childID,
+              element: $(`a.jstree-anchor[static-id="${childID}"]`)
+            }
+          }),
+          checkFieldIsParititon = (fieldID, parentID, lastCheck = false, lastParentID = null) => {
+            let isFieldPartition = $(`a.jstree-anchor[static-id="${fieldID}"]`).attr('partition') == 'true',
+              fieldParentID = relatedTreesObjects.primaryKey.get_parent(fieldID)
+
+            lastCheck = isFieldPartition
+
+            try {
+              if (fieldParentID != '#' || isFieldPartition)
+                throw 0
+
+              let parentNode = allPrimaryKeyFields.find((field) => field.element.attr('add-hidden-node') == lastParentID)
+
+              if (parentNode == undefined)
+                parentNode = allPrimaryKeyFields.find((field) => field.id == lastParentID)
+
+              if (parentNode == undefined)
+                throw 0
+
+              return parentNode.element.attr('partition') == 'true'
+            } catch (e) {}
+
+            lastParentID = fieldParentID
+
+            if (isFieldPartition)
+              return lastCheck
+
+            return checkFieldIsParititon(fieldParentID, relatedTreesObjects.primaryKey.get_parent(fieldParentID), lastCheck, lastParentID)
+          },
+          allPartitionKeysValidationStatus = [],
+          allClusteringKeysValidationStatus = []
+
+        // For clustering key(s)
+        let arePrecedingColumnsWithEquOp = true
+
+        try {
+          if (!returnPrimaryKey)
+            throw 0
+
+          let allPrimaryKeyFieldsToBeReturned = allPrimaryKeyFields.filter((primaryKeyField) => {
+            let field = primaryKeyField.element,
+              isFieldPartition = checkFieldIsParititon(primaryKeyField.id, '#', false)
+
+            return !(field.length <= 0 || field.attr('is-hidden-node') == 'true' || isFieldPartition)
+          })
+
+          return allPrimaryKeyFieldsToBeReturned
+        } catch (e) {}
+
+        for (let primaryKeyField of allPrimaryKeyFields) {
+          let field = primaryKeyField.element,
+            isColumnInvalidDueToOrder = field.hasClass('invalid-order')
+
+          if (field.length <= 0 || field.attr('is-hidden-node') == 'true')
+            continue
+
+          let isFieldPartition = checkFieldIsParititon(primaryKeyField.id, '#', false)
+
+          // Partition key
+          try {
+            if (!isFieldPartition)
+              throw 0
+
+            handleKeyField(field, isPreviousKeyInvalid.partition && allowFilteringOptions != 'selectAllowFilteringEnableOption')
+
+            let doesFieldHasChildren = false,
+              isINOperatorChecked = field.find('div.btn-group.operators').find(`input[type="radio"]`).filter(':checked').attr('id') == '_operator_in' || field.attr('is-collection-type') == 'true'
+
+            doesFieldHasChildren = isINOperatorChecked
+
+            try {
+              if (!isINOperatorChecked)
+                throw 0
+
+              let relatedHiddenNodeChildrenLength = relatedTreesObjects.primaryKey.get_node(field.attr('add-hidden-node')).children_d.length
+
+              doesFieldHasChildren = relatedHiddenNodeChildrenLength > 0
+            } catch (e) {}
+
+            isPreviousKeyInvalid.partition = (field.find('.is-invalid:not(.ignore-invalid):not([type="radio"])').length > 0 && !field.hasClass('unavailable')) || field.hasClass('unavailable')
+
+            field.toggleClass('invalid', isINOperatorChecked && !doesFieldHasChildren && !field.hasClass('unavailable'))
+
+            if (isINOperatorChecked)
+              isPreviousKeyInvalid.partition = !doesFieldHasChildren || field.hasClass('unavailable')
+
+            allPartitionKeysValidationStatus.push(isPreviousKeyInvalid.partition)
+
+            continue
+          } catch (e) {}
+
+          let orderingBtn = field.find('button.column-order-type'),
+            disablingCondition = ((isPreviousKeyInvalid.clustering && isFirstClusteringKeyOrderEnabled) || isPreviousKeyInvalid.partition) && !isPreviousOrderButtonActive
+
+          // Here for clustering key(s)
+          orderingBtn.attr('disabled', disablingCondition ? '' : null).toggleClass('disabled', disablingCondition)
+
+          if (orderingBtn.hasClass('active-order') && orderingBtn.hasClass('disabled'))
+            orderingBtn.removeClass('active-order')
+
+          isFirstClusteringKeyOrderEnabled = true
+
+          isPreviousOrderButtonActive = orderingBtn.hasClass('active-order') && !orderingBtn.hasClass('disabled')
+
+          // For the first clustering key
+          if (allPartitionKeysValidationStatus.includes(true)) {
+            handleKeyField(field, true && allowFilteringOptions != 'selectAllowFilteringEnableOption')
+
+            continue
+          }
+
+          try {
+            let operatorsDropDown = field.find('input.operators-dropdown').attr('id')
+
+            if (operatorsDropDown != undefined)
+              operatorsDropDown = field.find(`div.dropdown[for-select="${operatorsDropDown}"]`)
+
+            let fieldCheckedOperator = getCheckedValue(field.find('div.btn-group.operators').find('input[type="radio"]').attr('name'))
+
+            if (arePrecedingColumnsWithEquOp) {
+              field.find('div.btn-group.operators').find('label.btn').removeClass('disabled')
+
+              try {
+                operatorsDropDown.find('a.dropdown-item').removeClass('disabled')
+              } catch (e) {}
+
+              if (!isColumnInvalidDueToOrder)
+                field.removeClass('invalid')
+
+              arePrecedingColumnsWithEquOp = fieldCheckedOperator == '_operator_equal'
+            } else {
+              setTimeout(() => field.find('div.btn-group.operators').find('label.btn').filter(':not([for="_operator_equal"])').addClass('disabled'))
+
+              setTimeout(() => {
+                try {
+                  operatorsDropDown.find('a.dropdown-item').filter(':not([data-operator-id="_operator_equal"])').addClass('disabled')
+                } catch (e) {}
+              })
+
+              if (!isColumnInvalidDueToOrder)
+                field.toggleClass('invalid', fieldCheckedOperator != '_operator_equal')
+            }
+          } catch (e) {}
+
+          try {
+            handleKeyField(field, isPreviousKeyInvalid.clustering && allowFilteringOptions != 'selectAllowFilteringEnableOption')
+
+            let doesFieldHasChildren = false,
+              isINOperatorChecked = field.find('div.btn-group.operators').find(`input[type="radio"]`).filter(':checked').attr('id') == '_operator_in' || field.attr('is-collection-type') == 'true',
+              isOrderByButtonActive = false
+
+            doesFieldHasChildren = isINOperatorChecked
+
+            try {
+              if (!isINOperatorChecked)
+                throw 0
+
+              let relatedHiddenNodeChildrenLength = relatedTreesObjects.primaryKey.get_node(field.attr('add-hidden-node')).children_d.length
+
+              doesFieldHasChildren = relatedHiddenNodeChildrenLength > 0
+            } catch (e) {}
+
+            isPreviousKeyInvalid.clustering = (field.find('.is-invalid:not(.ignore-invalid):not([type="radio"])').length > 0 && !field.hasClass('unavailable')) || field.hasClass('unavailable')
+
+            if (!isColumnInvalidDueToOrder)
+              field.toggleClass('invalid', isINOperatorChecked && !doesFieldHasChildren && !field.hasClass('unavailable'))
+
+            if (isINOperatorChecked)
+              isPreviousKeyInvalid.clustering = !doesFieldHasChildren || field.hasClass('unavailable')
+
+            allClusteringKeysValidationStatus.push(isPreviousKeyInvalid.clustering)
+
+            continue
+          } catch (e) {}
+        }
+
+        relatedTreesObjects = {
+          primaryKey: $('div#tableFieldsPrimaryKeyTreeSelectAction').jstree(),
+          columns: {
+            regular: $('div#tableFieldsRegularColumnsTreeSelectAction').jstree(),
+            collection: $('div#tableFieldsCollectionColumnsTreeSelectAction').jstree(),
+            udt: $('div#tableFieldsUDTColumnsTreeSelectAction').jstree()
+          }
+        }
+
+        let allColumns = [...getAllChildrenInOrder(['columns', 'regular']), ...getAllChildrenInOrder(['columns', 'collection']), ...getAllChildrenInOrder(['columns', 'udt'])].map((childID) => {
+          return {
+            id: childID,
+            element: $(`a.jstree-anchor[static-id="${childID}"]`)
+          }
+        })
+
+        $('div#no-pk-columns-warning-select').toggle(!allPartitionKeysValidationStatus.includes(false))
+
+        for (let column of allColumns) {
+          let field = column.element
+
+          if (field.length <= 0 || field.attr('is-hidden-node') == 'true')
+            continue
+
+          // if ([...allClusteringKeysValidationStatus, ...allPartitionKeysValidationStatus].includes(true)) {
+          //   handleKeyField(field, true)
+          //
+          //   continue
+          // }
+
+          handleKeyField(field, allowFilteringOptions != 'selectAllowFilteringEnableOption')
+        }
+
+        $(`div[action="select-row"] div.types-of-transactions div.sections div.section div.btn`).removeClass('invalid')
+
+        $('div#non-pk-columns-warning').toggle([...allPartitionKeysValidationStatus, ...allClusteringKeysValidationStatus].includes(true))
+
+        try {
+          let allInvalidNodes = allNodes.filter(`:not(.ignored):not(.unavailable)`)
+
+          allInvalidNodes = allInvalidNodes.filter(function() {
+            let mainInput = $(this).find('.is-invalid:not(.ignore-invalid):not([type="radio"]):not(.is-empty)'),
+              isINOperatorChecked = $(this).find('input[id="_operator_in"]:checked')
+
+            return $(this).hasClass('invalid') || (mainInput.length != 0 && isINOperatorChecked.length <= 0)
+          })
+
+          if (allInvalidNodes.length <= 0)
+            throw 0
+
+          dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+
+          for (let invalidNode of allInvalidNodes) {
+            try {
+              $(`div[action="select-row"] div.types-of-transactions div.sections div.section div.btn[section="${$(invalidNode).closest('div[section]').attr('section')}"]`).addClass('invalid')
+            } catch (e) {}
+          }
+
+          return
+        } catch (e) {}
+
+        let fieldsNames = [],
+          fieldsValues = [],
+          passedFields = [],
+          isSelectionAsJSON = $('#rightClickActionsMetadata').attr('data-select-as-json') === 'true'
+
+        let handleFieldsPre = (treeObject, mainNodeID = '#') => {
+          let relatedFieldsArray = []
+
+          try {
+            treeObject.get_node(mainNodeID)
+          } catch (e) {
+            return relatedFieldsArray
+          }
+
+          for (let currentNodeID of treeObject.get_node(mainNodeID).children) {
+            try {
+              let currentNode = $(`a.jstree-anchor[static-id="${currentNodeID}"]`)
+
+              try {
+                if (currentNode.length <= 0)
+                  currentNode = $(`a.jstree-anchor[id="${currentNodeID}_anchor"]`)
+              } catch (e) {}
+
+              let [
+                fieldName,
+                fieldType,
+                isMandatory,
+                isMapItem
+              ] = getAttributes(currentNode, ['name', 'type', 'mandatory', 'is-map-item']),
+                fieldValue = currentNode.find('input').last(),
+                isNULL = false,
+                fieldOperator = currentNode.find('input[type="radio"]:checked').attr('id'),
+                isColumnToBeSelectd = currentNode.hasClass('selected'),
+                isColumnIgnored = fieldValue.hasClass('is-empty') || currentNode.hasClass('unavailable'),
+                isPartition = currentNode.attr('partition') == 'true'
+
+              // Check if the field is boolean
+              if (fieldValue.attr('type') == 'checkbox' && fieldValue.prop('indeterminate'))
+                continue
+
+              if (passedFields.includes(currentNodeID))
+                continue
+
+              passedFields.push(currentNodeID)
+
+              try {
+                fieldValue = fieldValue.attr('type') == 'checkbox' ? fieldValue.prop('checked') : fieldValue.val()
+              } catch (e) {}
+
+              try {
+                isNULL = $(currentNode).find('button[action="apply-null"]').hasClass('applied')
+              } catch (e) {}
+
+              let isIgnored = currentNode.hasClass('ignored')
+
+              if ((isIgnored || (`${fieldValue}`.length <= 0 && !isNULL && fieldOperator != '_operator_in')) && !isColumnToBeSelectd)
+                continue
+
+              try {
+                isMapItem = isMapItem != undefined
+              } catch (e) {}
+
+              // Check if the type is collection
+              try {
+                if (!(['map', 'set', 'list'].some((type) => `${fieldType}`.includes(`${type}<`))) && !isMapItem && fieldOperator != '_operator_in')
+                  throw 0
+
+                let hiddenNodeID = currentNode.attr(isMapItem ? 'id' : 'add-hidden-node')
+
+                relatedFieldsArray.push({
+                  name: addDoubleQuotes(fieldName),
+                  type: fieldType,
+                  value: fieldValue,
+                  id: hiddenNodeID,
+                  parent: mainNodeID,
+                  fieldOperator,
+                  isPartition,
+                  isMapItem,
+                  isSelectd: isColumnToBeSelectd,
+                  isIgnored: isColumnIgnored,
+                  isNULL
+                })
+
+                relatedFieldsArray[hiddenNodeID] = handleFieldsPre(treeObject, hiddenNodeID)
+
+                continue
+              } catch (e) {}
+
+              // Check if the type is UDT
+              try {
+                let manipulatedType = `${fieldType}`
+
+                try {
+                  if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
+
+                  manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
+                } catch (e) {}
+
+                try {
+                  manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
+                } catch (e) {}
+
+                if (!(keyspaceUDTs.includes(manipulatedType)))
+                  throw 0
+
+                relatedFieldsArray.push({
+                  name: addDoubleQuotes(fieldName),
+                  type: fieldType,
+                  value: fieldValue,
+                  id: currentNodeID,
+                  parent: mainNodeID,
+                  fieldOperator,
+                  isPartition,
+                  isSelectd: isColumnToBeSelectd,
+                  isIgnored: isColumnIgnored,
+                  isMapItem,
+                  isUDT: true,
+                  isNULL
+                })
+
+                relatedFieldsArray[currentNodeID] = handleFieldsPre(treeObject, currentNodeID)
+
+                continue
+              } catch (e) {}
+
+              // Standard type
+              relatedFieldsArray.push({
+                name: addDoubleQuotes(fieldName),
+                type: fieldType,
+                value: fieldValue,
+                id: currentNodeID,
+                parent: mainNodeID,
+                fieldOperator,
+                isPartition,
+                isSelectd: isColumnToBeSelectd,
+                isIgnored: isColumnIgnored,
+                isMapItem,
+                isNULL
+              })
+
+            } catch (e) {}
+          }
+
+          return relatedFieldsArray
+        }
+
+        // Start with the primary key
+        let primaryKeyFields = handleFieldsPre(relatedTreesObjects.primaryKey),
+          columnsRegularFields = handleFieldsPre(relatedTreesObjects.columns.regular),
+          columnsCollectionFields = handleFieldsPre(relatedTreesObjects.columns.collection),
+          columnsUDTFields = handleFieldsPre(relatedTreesObjects.columns.udt)
+
+        let allColumnsWithPK = [...primaryKeyFields, ...columnsRegularFields, ...columnsCollectionFields, ...columnsUDTFields],
+          isExecutionWithoutColumnAllowed = !(allColumnsWithPK.some((column) => column.name != undefined && column.type != undefined))
+
+        let isNonEqualityOpFound = false
+
+        // Check if any column has an operator rather than equal
+        try {
+          isNonEqualityOpFound = primaryKeyFields.some((primaryKey) => {
+            let _isNonEqualityOpFound = false
+
+            if (!primaryKey.isPartition)
+              return _isNonEqualityOpFound
+
+            try {
+              _isNonEqualityOpFound = primaryKey.fieldOperator != undefined && primaryKey.fieldOperator != '_operator_equal'
+            } catch (e) {}
+
+            return _isNonEqualityOpFound
+          })
+        } catch (e) {}
+
+        try {
+          if (!isNonEqualityOpFound || ([...columnsRegularFields, ...columnsCollectionFields, ...columnsUDTFields]).find((column) => column.fieldOperator != undefined) == undefined || isExecutionWithoutColumnAllowed)
+            throw 0
+
+          if (allowFilteringOptions == 'selectAllowFilteringNoSelectOption')
+            throw 0
+
+          $(`div[action="select-row"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
+
+          $(`div[action="select-row"]`).find('div.in-operator-error').show()
+
+          dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+
+          return
+        } catch (e) {}
+
+        let getOperatorSymbol = (operator) => {
+          let symbol = '='
+
+          switch (operator) {
+            case '_operator_in':
+              symbol = 'IN'
+              break;
+
+            case '_operator_less_than':
+              symbol = '<'
+              break;
+
+            case '_operator_greater_than':
+              symbol = '>'
+              break;
+
+            case '_operator_less_than_equal':
+              symbol = '<='
+              break;
+
+            case '_operator_greater_than_equal':
+              symbol = '>='
+              break;
+          }
+
+          return symbol
+        }
+
+        let handleFieldsPost = (fields, isUDT = false, isCollection = false, parentType = null) => {
+          let names = [],
+            values = []
+
+          for (let field of fields) {
+            try {
+              if (field.parent == '#')
+                field.fieldOperator = field.fieldOperator || '_operator_equal'
+            } catch (e) {}
+
+            try {
+              if (field.fieldOperator == '_operator_in')
+                field.type = `set<${field.type}>`
+            } catch (e) {}
+
+            let finalFieldName = `${field.name}`
+
+            try {
+              if (field.fieldOperator != undefined)
+                finalFieldName = `${field.name} ${getOperatorSymbol(field.fieldOperator)}`
+            } catch (e) {}
+
+            try {
+              if ((['name', 'type', 'value'].every((attribute) => field[attribute] == undefined) && !field.isMapItem))
+                continue
+
+              let value = ''
+
+              // Handle collection type - and `IN` operator -
+              try {
+                if (!(['map', 'set', 'list'].some((type) => `${field.type}`.includes(`${type}<`))) && !field.isMapItem)
+                  throw 0
+
+                let items = []
+
+                // Check if there're no added items
+                try {
+                  items = fields[field.id]
+
+                  if (fields[field.id].length <= 0)
+                    continue
+                } catch (e) {}
+
+                let fieldValue = handleFieldsPost(items, false, true, parentType || field.type)
+
+                try {
+                  let isUDTType = false
+
+                  try {
+                    isUDTType = fieldValue.values[1].startsWith('{') && fieldValue.values[1].endsWith('}')
+                  } catch (e) {}
+
+                  fieldValue = fieldValue.values.join(field.isMapItem ? ': ' : ', ')
+
+                  if (parentType != null && (`${parentType}`.includes(`list<`) || `${parentType}`.includes(`set<`)) && (field.isMapItem || `${field.type}`.includes(`map<`))) {
+                    fieldValue = `{${fieldValue}}`
+                  } else if (field.parent == '#' || isUDT) {
+                    fieldValue = `${field.type}`.includes(`list<`) || (`${field.type}`.includes(`set<`) && true) ? (field.fieldOperator != '_operator_in' ? `[${fieldValue}]` : `(${fieldValue})`) : (`${field.type}`.includes(`set<`) || (`${field.type}`.includes(`map<`) && !isUDTType) ? `{${fieldValue}}` : `${fieldValue}`)
+                  }
+                } catch (e) {}
+
+                if (fieldValue == '{  }')
+                  continue
+
+                if (field.parent == '#')
+                  names.push(`${finalFieldName}` + (!true ? `, -- ${field.type}` : ''))
+
+                if (field.parent != '#' && isUDT)
+                  names.push(`${finalFieldName}`)
+
+                values.push(field.isMapItem ? `${fieldValue}` : (`${fieldValue}` + (field.parent == '#' && !true ? `, -- ${field.type}` : '')))
+
+                continue
+              } catch (e) {}
+
+              // Handle UDT type
+              try {
+                let manipulatedType = `${field.type}`
+
+                try {
+                  if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
+
+                  manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
+                } catch (e) {}
+
+                try {
+                  manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
+                } catch (e) {}
+
+                if (!(keyspaceUDTs.includes(manipulatedType)))
+                  throw 0
+
+                let subFields = []
+
+                // Check if there're no added items
+                try {
+                  subFields = fields[field.id]
+
+                  if (fields[field.id].length <= 0)
+                    continue
+                } catch (e) {}
+
+                let fieldValue = handleFieldsPost(subFields, true, false),
+                  joinedValue = []
+
+                try {
+                  for (let i = 0; i < fieldValue.names.length; i++) {
+
+                    let subFieldName = addDoubleQuotes(fieldValue.names[i])
+
+                    joinedValue.push(`${subFieldName}: ${fieldValue.values[i]}`)
+                  }
+
+                  joinedValue = joinedValue.join(', ')
+
+                  joinedValue = `{ ${joinedValue} }`
+                } catch (e) {}
+
+                if (joinedValue == '{  }')
+                  continue
+
+                if (field.parent == '#')
+                  names.push(`${finalFieldName}` + (!true ? `, -- ${field.type}` : ''))
+
+                if (field.parent != '#' && isUDT)
+                  names.push(`${finalFieldName}`)
+
+                values.push(`${joinedValue}` + (field.parent == '#' && !true ? `, -- ${field.type}` : ''))
+
+                continue
+              } catch (e) {}
+
+              // Standard type
+              try {
+                let isSingleQuotesNeeded = false
+
+                value = `${field.value}`
+
+                try {
+                  try {
+                    if (['text', 'varchar', 'ascii', 'inet'].some((type) => type == field.type))
+                      isSingleQuotesNeeded = true
+                  } catch (e) {}
+
+                  try {
+                    if (field.type != 'time')
+                      throw 0
+
+                    if (IsTimestamp(value)) {
+                      try {
+                        value = formatTimestamp(parseInt(value), false, true).split(/\s+/)[1]
+                      } catch (e) {}
+                    }
+
+                    if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
+                      isSingleQuotesNeeded = true
+                  } catch (e) {}
+
+                  try {
+                    if (field.type != 'date')
+                      throw 0
+
+                    if (IsTimestamp(value)) {
+                      try {
+                        value = `toDate(${value})`
+                      } catch (e) {}
+                    }
+
+                    if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
+                      isSingleQuotesNeeded = true
+                  } catch (e) {}
+
+                  try {
+                    if (field.type != 'timestamp')
+                      throw 0
+
+                    if (ValidateDate(value, 'boolean'))
+                      value = `toTimestamp('${value}')`
+                  } catch (e) {}
+                } catch (e) {}
+
+                try {
+                  if (!isSingleQuotesNeeded)
+                    throw 0
+
+                  value = `${value}`.replace(/(^|[^'])'(?!')/g, "$1''")
+
+                  value = `'${value}'`
+                } catch (e) {}
+
+                if (field.isNULL)
+                  value = 'NULL'
+
+                if (field.parent == '#' || isUDT)
+                  names.push(isUDT ? `${finalFieldName}` : (`${finalFieldName}` + (!true ? `, -- ${field.type}` : '')))
+
+                values.push(isUDT || isCollection ? `${value}` : (`${value}` + (field.parent == '#' && !true ? `, -- ${field.type}` : '')))
+              } catch (e) {}
+            } catch (e) {}
+          }
+
+          return {
+            names,
+            values
+          }
+        }
+
+        let selectedColumns = '',
+          primaryKey = '',
+          otherFields = ''
+
+        let manipulatedFields = {
+          primaryKey: handleFieldsPost(primaryKeyFields),
+          allNonPKColumns: {
+            regular: handleFieldsPost(columnsRegularFields),
+            collection: handleFieldsPost(columnsCollectionFields),
+            udt: handleFieldsPost(columnsUDTFields)
+          }
+        }
+
+        try {
+          let temp = []
+
+          for (let i = 0; i < manipulatedFields.primaryKey.names.length; i++)
+            temp.push(`${manipulatedFields.primaryKey.names[i]} ${manipulatedFields.primaryKey.values[i]}`)
+
+          primaryKey = temp.join(' AND ')
+        } catch (e) {}
+
+        try {
+          let temp = []
+
+          for (let nonPKColumns of Object.keys(manipulatedFields.allNonPKColumns)) {
+            for (let i = 0; i < manipulatedFields.allNonPKColumns[nonPKColumns].names.length; i++) {
+              let name = manipulatedFields.allNonPKColumns[nonPKColumns].names[i],
+                value = manipulatedFields.allNonPKColumns[nonPKColumns].values[i]
+
+              if ([name, value].some((attribute) => `${attribute}` == 'undefined'))
+                continue
+
+              temp.push(`${name} ${value}`)
+            }
+          }
+
+          otherFields = temp.join(' AND ')
+        } catch (e) {}
+
+        // Check if `IF EXISTS` is checked
+        let allowFiltering = ''
+
+        try {
+          if (!$('#selectAllowFilteringEnableOption').prop('checked'))
+            throw 0
+
+          allowFiltering = ` ALLOW FILTERING`
+        } catch (e) {}
+
+        // Get selected columns
+        try {
+          let selectedColumnsElements = $('div#tableFieldsNonPKColumnsSelectAction').children('div.columns').children('div.column.selected').get()
+
+          if (selectedColumnsElements.length <= 0)
+            throw 0
+
+          selectedColumns = ' ' + selectedColumnsElements.map((column) => `${addDoubleQuotes($(column).attr('data-name'))}`).join(', ')
+        } catch (e) {}
+
+        let countAggregateFunction = ''
+
+        try {
+          countAggregateFunction = $('input#selectAggregateFunctions').val()
+
+          if (countAggregateFunction.length <= 0)
+            throw 0
+
+          countAggregateFunction = `${countAggregateFunction}(*)`
+
+          if (selectedColumns.length != 0) {
+            countAggregateFunction = `, ${countAggregateFunction}`
+          } else {
+            countAggregateFunction = ` ${countAggregateFunction}`
+          }
+        } catch (e) {}
+
+        let columnsAggregateFunctions = ''
+
+        try {
+          let allAggregationFunctionsBtns = allNodes.find('button.aggregate-functions-btn').filter(function() {
+            return ($(this).data('aggregateFunctions') || []).length != 0
+          })
+
+          if (allAggregationFunctionsBtns.length <= 0)
+            throw 0
+
+          for (let aggregationFunctionsBtn of allAggregationFunctionsBtns.get()) {
+            let columnName = $(aggregationFunctionsBtn).attr('data-column-name'),
+              temp = $(aggregationFunctionsBtn).data('aggregateFunctions').map((func) => `${func}(${addDoubleQuotes(columnName)})`).join(', ')
+
+            columnsAggregateFunctions = `${columnsAggregateFunctions}${columnsAggregateFunctions.length > 0 ? ', ' : ''}${temp}`
+          }
+
+          if (`${selectedColumns}${countAggregateFunction}`.length > 0) {
+            columnsAggregateFunctions = `, ${columnsAggregateFunctions}`
+          } else {
+            columnsAggregateFunctions = ` ${columnsAggregateFunctions}`
+          }
+        } catch (e) {}
+
+        let orderByClusteringColumns = ''
+
+        try {
+          let allOrderByClusteringColumnsBtns = $('div#tableFieldsPrimaryKeyTreeSelectAction').find('button.column-order-type.active-order')
+
+          if (allOrderByClusteringColumnsBtns.length <= 0)
+            throw 0
+
+          orderByClusteringColumns = `ORDER BY `,
+            tempArray = [],
+            isErrorFound = false
+
+          for (let orderByClusteringColumnBtn of allOrderByClusteringColumnsBtns.get()) {
+            if ($(orderByClusteringColumnBtn).closest('a.jstree-anchor').hasClass('invalid-order')) {
+              isErrorFound = true
+
+              break
+            }
+
+            temp = `${addDoubleQuotes($(orderByClusteringColumnBtn).attr('data-column-name'))} ${$(orderByClusteringColumnBtn).attr('data-current-order').toUpperCase()}`
+
+            tempArray.push(temp)
+          }
+
+          orderByClusteringColumns = `${orderByClusteringColumns}${tempArray.join(', ')}`
+
+          if (isErrorFound) {
+            orderByClusteringColumns = ''
+
+            throw 0
+          }
+
+          if (`${primaryKey}${otherFields}`.length != 0)
+            orderByClusteringColumns = ` ${orderByClusteringColumns}`
+        } catch (e) {}
+
+        let limit = ''
+
+        try {
+          let setLimit = parseInt($('input#select-limit').val())
+
+          if (isNaN(setLimit) || setLimit <= 0)
+            throw 0
+
+          limit = ` LIMIT ${setLimit}`
+
+          if (allowFiltering.length != 0)
+            limit = `${limit} `
+        } catch (e) {}
+
+        dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+
+        let selectionPart = `${selectedColumns}${countAggregateFunction}${columnsAggregateFunctions}`
+
+        if (selectionPart.length <= 0)
+          selectionPart = ' *'
+
+        if (`${primaryKey}`.length > 0 && otherFields.length != 0)
+          otherFields = ` AND ${otherFields}`
+
+        let wherePart = `${primaryKey}${otherFields}`
+
+        let statement = `SELECT${isSelectionAsJSON ? ' JSON' : ''}${selectionPart} FROM ${keyspaceName}.${tableName}` + (wherePart.length > 0 ? OS.EOL + `WHERE ${wherePart}` : '') + `${orderByClusteringColumns}${limit}${allowFiltering};`
+
+        try {
+          actionEditor.setValue(statement)
+        } catch (e) {}
+      }
+
+      getAllPrimaryKeyColumns = () => updateActionStatusForSelectRowColumn(true)
+
+      $('input[name="selectOrderBy"]').each(function() {
+        $(this).on('change input', function() {
+          let selectedType = getCheckedValue('selectOrderBy'),
+            clusteringKeysNodes = $('div#tableFieldsPrimaryKeyTreeSelectAction').find('a.jstree-anchor[partition="false"][is-reversed]'),
+            orderBadges = clusteringKeysNodes.find('button.column-order-type')
+
+          orderBadges.css('display', selectedType == 'selectOBNone' ? 'none' : 'flex')
+
+          try {
+            if (selectedType == 'selectOBNone')
+              throw 0
+
+            for (let orderBadge of orderBadges.get()) {
+              let selectedOrder = $(orderBadge).attr('data-original-order')
+
+              if (selectedType == 'selectOBDefaultReversed')
+                selectedOrder = selectedOrder == 'asc' ? 'desc' : 'asc'
+
+              $(orderBadge).attr('data-current-order', selectedOrder)
+
+              $(orderBadge).find('ion-icon').attr('name', `sort-${selectedOrder}`)
+
+              $(orderBadge).find('span').text(`${selectedOrder}`)
+            }
+          } catch (e) {}
+
+          setTimeout(() => {
+            try {
+              updateActionStatusForSelectRow()
+            } catch (e) {}
+          })
+        })
+      })
+    }, 5000)
+  }
+
+  {
+    setTimeout(() => $('input#select-limit').on('input', () => {
+      try {
+        updateActionStatusForSelectRowColumn()
+      } catch (e) {}
+    }))
   }
 }

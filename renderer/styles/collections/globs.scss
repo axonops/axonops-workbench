@@ -933,6 +933,34 @@ ul.dropdown-menu {
       @extend .no-select;
     }
   }
+
+  &.multiple {
+    a.dropdown-item {
+      ion-icon {
+        font-size: 100%;
+        vertical-align: middle;
+        position: relative;
+        bottom: 2px;
+        margin-right: 2px;
+
+        &[name="circle-checked"] {
+          display: none;
+        }
+      }
+
+      &.selected {
+        ion-icon {
+          &[name="circle"] {
+            display: none;
+          }
+
+          &[name="circle-checked"] {
+            display: inline-block;
+          }
+        }
+      }
+    }
+  }
 }
 
 .sub-output.error * {

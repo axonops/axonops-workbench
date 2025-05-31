@@ -1613,6 +1613,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             return appendOptions(value, parentOptionsID)
           } catch (e) {}
 
+          try {
+            if (text == 'Class')
+              value = `${value}`.match(/(?<=\.)[^.]+$/)[0]
+          } catch (e) {}
+
           /**
            * Reaching here means the current option's value is not an object
            * Get a random ID for the option's node
@@ -2593,6 +2598,20 @@ let suggestionSearch = (needle, haystack, checkDoubleQuotes = false) => {
  */
 String.prototype.search = function(needle) {
   return this.indexOf(needle) != -1
+}
+
+let splitArrayByAttrbiute = (array, attribute) => {
+  array = array || []
+
+  let index = array.findIndex(item => item[attribute] === true)
+
+  if (index === -1)
+    return [array, []]
+
+  let firstArray = array.slice(0, index + 1),
+    secondArray = array.slice(index + 1)
+
+  return [firstArray, secondArray]
 }
 
 let flattenArray = (array) => {
@@ -4159,6 +4178,9 @@ let setUIColor = (workspaceColor) => {
           .form-check-input[type=radio]:not([no-color]):checked {background: ${backgroundColor.hover.replace('70%', '25%')} !important;}
           .changed-color {color: ${textColor} !important}
           .actions-bg {background: ${backgroundColor.default.replace('70%', '5%')} !important; box-shadow: inset 0px 0px 20px 0px ${backgroundColor.default.replace('70%', '10%')} !important;}
+          .column.selected:after {background: ${backgroundColor.default.replace('70%', '100%')} !important;}
+          .column.selected > ion-icon {color: ${backgroundColor.default.replace('70%', '100%')} !important;}
+          button.aggregate-functions-btn:after, button.column-order-type:after {background: ${backgroundColor.default.replace('70%', '85%')} !important;}
           .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active, form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus, .form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus {border-color: ${backgroundColor.default} !important}
           ion-icon[name="lock-closed"] {color: ${backgroundColor.default} !important}
           .jstree-default-dark .jstree-search {background: ${backgroundColor.hover.replace('70%', '15%')} !important;}
@@ -4604,6 +4626,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
               'type': `${nodeObject.type}`,
               'field-type': `${nodeObject.fieldType}`,
               'partition': `${nodeObject.isPartition == true}`,
+              'is-reversed': `${nodeObject.isReversed == true}`,
               'static-id': `${nodeID}`,
               'mandatory': nodeObject.isMandatory,
               'no-empty-value': nodeObject.noEmptyValue == true
@@ -4925,6 +4948,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
                 'field-type': 'udt-column',
                 'static-id': `${udtID}`,
                 'partition': `${udtObject.isPartition == true}`,
+                'is-reversed': `${udtObject.isReversed == true}`,
                 'mandatory': false,
                 'no-empty-value': true
               }

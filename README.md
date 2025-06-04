@@ -74,7 +74,7 @@
 
 ### 🎯 Recommended Installation
 
-For the best experience and automatic updates, we recommend downloading AxonOps Workbench directly from our website:
+Althoough you can download a specific release from project [releases](https://github.com/axonops/axonops-workbench/releases), for the best experience and automatic updates, we recommend downloading AxonOps Workbench directly from our website:
 
 <div align="center">
   

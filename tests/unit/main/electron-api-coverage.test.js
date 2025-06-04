@@ -119,7 +119,7 @@ describe('Electron API Coverage Tests', () => {
     });
 
     afterEach(() => {
-      if (window && !window.isDestroyed) {
+      if (window && !window.isDestroyed()) {
         window.destroy();
       }
     });

@@ -37,7 +37,7 @@ describe('App Lifecycle', () => {
   });
 
   afterEach(() => {
-    if (mainWindow && !mainWindow.isDestroyed) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.destroy();
     }
   });
@@ -177,7 +177,7 @@ describe('App Lifecycle', () => {
       app.emit('activate');
       
       // Simulate focusing existing window
-      if (!window.isDestroyed) {
+      if (!window.isDestroyed()) {
         window.focus();
       }
       

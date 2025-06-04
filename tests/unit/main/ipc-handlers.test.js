@@ -32,7 +32,7 @@ describe('IPC Handlers', () => {
   });
 
   afterEach(() => {
-    if (mainWindow && !mainWindow.isDestroyed) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.destroy();
     }
   });

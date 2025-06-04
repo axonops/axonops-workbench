@@ -24,7 +24,7 @@ describe('Window Management', () => {
   });
 
   afterEach(() => {
-    if (mainWindow && !mainWindow.isDestroyed) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.destroy();
     }
   });

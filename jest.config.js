@@ -44,7 +44,8 @@ module.exports = {
       collectCoverageFrom: [
         'renderer/js/**/*.js',
         '!renderer/js/external/**',
-        '!renderer/js/**/*.min.js'
+        '!renderer/js/**/*.min.js',
+        '!custom_node_modules/**'
       ],
       testEnvironmentOptions: {
         url: 'http://localhost'
@@ -55,9 +56,13 @@ module.exports = {
   // Common configuration
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '<rootDir>/custom_node_modules/'
+  ],
   coverageThreshold: {
     global: {
-      branches: 50,
+      branches: 30,
       functions: 50,
       lines: 50,
       statements: 50

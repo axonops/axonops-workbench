@@ -229,6 +229,27 @@ Want to contribute or run AxonOps Workbench in development mode? Follow these in
    npm start
    ```
 
+### 🧪 Testing
+
+AxonOps Workbench includes a comprehensive test suite. See our [Testing Guide](TESTING.md) for detailed information on:
+
+- Running unit tests
+- Writing new tests
+- Test architecture and best practices
+- Continuous integration setup
+
+Quick test commands:
+```sh
+# Run all tests
+npm test
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run tests in watch mode (for development)
+npm run test:watch
+```
+
 ### 🐛 Debugging
 
 - Set `AXONOPS_DEV_TOOLS=true` environment variable to open developer tools on startup

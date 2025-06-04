@@ -4,7 +4,7 @@
 package-lock.json
 renderer/styles/*.css.map
 dev/*
-test*/*
+# test*/*  # Commented out to allow tests directory
 docker/*
 
 # Test artifacts and coverage reports

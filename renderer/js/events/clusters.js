@@ -11067,6 +11067,16 @@
 
       if (!$('div.modal#addEditClusterDialo').hasClass('test-connection'))
         $('div.modal#addEditClusterDialog div.modal-body.select-type').find('div.connection-type[data-type="apache-cassandra"]').click()
+
+      // For Astra  DB
+      try {
+        $('input#astraDBConnectionName').add('input#astraDBClientID').add('input#astraDBClientSecret').add('input#astraDBSCBPath').val('')
+
+        let scbFilePathInputTooltip = getElementMDBObject($('input#astraDBSCBPath'), 'Tooltip')
+
+        scbFilePathInputTooltip.setContent('-')
+        scbFilePathInputTooltip.disable()
+      } catch (e) {}
     })
 
     // Clicks the refresh button

@@ -13,8 +13,6 @@
   [🚀 Download](https://axonops.com/workbench/download/) | [📚 Documentation](https://docs.axonops.com/) | [💬 Discussions](https://github.com/axonops/axonops-workbench/discussions/categories/ideas) | [🐛 Issues](https://github.com/axonops/axonops-workbench/issues/new/choose)
 </div>
 
----
-
 ## 🚀 Overview
 
 [AxonOps Workbench](https://axonops.com/workbench/) is a **powerful, free, and open-source** desktop application designed specifically for Cassandra developers and DBAs. Experience a revolutionary way to work with your distributed databases through an intuitive interface packed with advanced features.
@@ -43,8 +41,6 @@
 - 📊 **Advanced Analytics** - Deep query tracing and performance insights
 - 🌍 **Cross-Platform** - Available for macOS, Windows, and Linux
 
----
-
 ## ⚡ Quick Start
 
 1. **Download & Install** - Get AxonOps Workbench from [axonops.com/workbench/download](https://axonops.com/workbench/download/)
@@ -52,6 +48,8 @@
 3. **Create a Workspace** - Organize your clusters and connections
 4. **Connect to Cassandra** - Support for Apache Cassandra, DataStax Enterprise, and Astra DB
 5. **Start Exploring** - Use the CQL console, query tracing, and AI assistant
+
+---
 
 ## 🎯 Key Features at a Glance
 

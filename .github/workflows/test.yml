@@ -29,24 +29,25 @@ jobs:
     - name: Install dependencies
       run: |
         npm cache clean --force
-        npm ci
+        npm ci --include=dev
 
     - name: Run linter
       run: npm run lint
-      continue-on-error: true  # Don't fail on lint errors initially
+      continue-on-error: true
 
     - name: Run unit tests
       run: npm run test:ci
       env:
         NODE_ENV: test
 
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v4
-      if: matrix.os == 'ubuntu-latest'
-      with:
-        file: ./coverage/lcov.info
-        flags: unittests
-        name: codecov-umbrella
+    # Skip Codecov upload as it requires proper token setup
+    # - name: Upload coverage reports
+    #   uses: codecov/codecov-action@v4
+    #   if: matrix.os == 'ubuntu-latest'
+    #   with:
+    #     file: ./coverage/lcov.info
+    #     flags: unittests
+    #     name: codecov-umbrella
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
@@ -87,7 +88,7 @@ jobs:
     - name: Install dependencies
       run: |
         npm cache clean --force
-        npm ci
+        npm ci --include=dev
 
     - name: Rebuild native modules
       run: npm run rebuild

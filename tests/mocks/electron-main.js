@@ -23,39 +23,40 @@ class MockBrowserWindow extends EventEmitter {
     this.id = Math.random();
     this.webContents = new MockWebContents();
     this.options = options;
-    this.isDestroyed = false;
-    this.isVisible = false;
-    this.isFocused = false;
-    this.isMinimized = false;
-    this.isMaximized = false;
-    this.isFullScreen = false;
+    this._isDestroyed = false;
+    this._isVisible = false;
+    this._isFocused = false;
+    this._isMinimized = false;
+    this._isMaximized = false;
+    this._isFullScreen = false;
   }
 
   loadURL = jest.fn().mockResolvedValue(true);
   loadFile = jest.fn().mockResolvedValue(true);
-  show = jest.fn(() => { this.isVisible = true; });
-  hide = jest.fn(() => { this.isVisible = false; });
-  focus = jest.fn(() => { this.isFocused = true; });
-  blur = jest.fn(() => { this.isFocused = false; });
-  minimize = jest.fn(() => { this.isMinimized = true; });
-  maximize = jest.fn(() => { this.isMaximized = true; });
-  unmaximize = jest.fn(() => { this.isMaximized = false; });
+  show = jest.fn(() => { this._isVisible = true; });
+  hide = jest.fn(() => { this._isVisible = false; });
+  focus = jest.fn(() => { this._isFocused = true; });
+  blur = jest.fn(() => { this._isFocused = false; });
+  minimize = jest.fn(() => { this._isMinimized = true; });
+  maximize = jest.fn(() => { this._isMaximized = true; });
+  unmaximize = jest.fn(() => { this._isMaximized = false; });
   restore = jest.fn(() => { 
-    this.isMinimized = false;
-    this.isMaximized = false;
+    this._isMinimized = false;
+    this._isMaximized = false;
   });
-  setFullScreen = jest.fn((flag) => { this.isFullScreen = flag; });
+  setFullScreen = jest.fn((flag) => { this._isFullScreen = flag; });
   close = jest.fn(() => { 
-    this.isDestroyed = true;
+    this._isDestroyed = true;
+    // Emit closed event synchronously as Electron does
     this.emit('closed');
   });
-  destroy = jest.fn(() => { this.isDestroyed = true; });
-  isDestroyed = () => this.isDestroyed;
-  isVisible = () => this.isVisible;
-  isFocused = () => this.isFocused;
-  isMinimized = () => this.isMinimized;
-  isMaximized = () => this.isMaximized;
-  isFullScreen = () => this.isFullScreen;
+  destroy = jest.fn(() => { this._isDestroyed = true; });
+  isDestroyed = jest.fn(() => this._isDestroyed);
+  isVisible = jest.fn(() => this._isVisible);
+  isFocused = jest.fn(() => this._isFocused);
+  isMinimized = jest.fn(() => this._isMinimized);
+  isMaximized = jest.fn(() => this._isMaximized);
+  isFullScreen = jest.fn(() => this._isFullScreen);
   getBounds = jest.fn(() => ({ x: 0, y: 0, width: 800, height: 600 }));
   setBounds = jest.fn();
   getSize = jest.fn(() => [800, 600]);
@@ -71,10 +72,6 @@ class MockBrowserWindow extends EventEmitter {
   getTitle = jest.fn(() => 'Test Window');
   setProgressBar = jest.fn();
   flashFrame = jest.fn();
-  once = jest.fn();
-  on = jest.fn();
-  removeListener = jest.fn();
-  removeAllListeners = jest.fn();
 }
 
 class MockWebContents extends EventEmitter {

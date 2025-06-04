@@ -31,7 +31,20 @@ https://docs.github.com/en/authentication/managing-commit-signature-verification
 2. Ensure all files contain the copyright notice
 3. It's strongly advised you use `linting` for your code. This will be enforced in the near future.
    https://pre-commit.com/
-4. When creating a PR, the target branch should always be `main`
+4. **Run the test suite** before submitting your PR:
+   ```sh
+   # Run all tests
+   npm test
+   
+   # Run tests with coverage
+   npm run test:coverage
+   
+   # Fix any linting issues
+   npm run lint
+   ```
+   See our comprehensive [Testing Guide](TESTING.md) for more details on writing and running tests.
+5. When creating a PR, the target branch should always be `main`
+6. All tests must pass in CI before the PR can be merged
 
 ## Tagging and releasing
 

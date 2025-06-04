@@ -7,6 +7,29 @@ dev/*
 test*/*
 docker/*
 
+# Test artifacts and coverage reports
+coverage/
+.coverage/
+*.lcov
+.nyc_output/
+jest-results.json
+test-results/
+junit.xml
+test-report.xml
+.jest/
+.jest-cache/
+jest_html_reporters.html
+test-results.xml
+*.test.log
+*.test.tmp
+.test-artifacts/
+
+# IDE test runners
+.vscode-test/
+.idea/test/
+*.test.*.db
+*.test.*.sqlite
+
 data/docker/*
 !data/docker/temp.txt
 codesign*

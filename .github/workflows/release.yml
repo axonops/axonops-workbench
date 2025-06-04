@@ -115,6 +115,12 @@ jobs:
           npm cache clean --force
           npm i
 
+      - name: Run tests
+        run: npm run test:ci
+        env:
+          NODE_ENV: test
+        continue-on-error: true  # Don't block release for now, but log results
+
       # - name: Install Snapcraft
       #   uses: samuelmeuli/action-snapcraft@v2
       #   if: ${{ runner.os != 'Windows' }}

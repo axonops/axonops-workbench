@@ -30,8 +30,8 @@
 
 ### 🔗 Supported Databases
 - **[Apache Cassandra®](https://cassandra.apache.org/)** - The leading open-source distributed database
-- **[DataStax Enterprise](https://www.datastax.com/products/datastax-enterprise)** - Enterprise-ready Cassandra distribution
-- **[DataStax Astra DB](https://www.datastax.com/products/datastax-astra)** - Serverless Cassandra-as-a-Service
+- **[DataStax® Enterprise](https://www.datastax.com/products/datastax-enterprise)** - Enterprise-ready Cassandra distribution
+- **[DataStax® Astra DB](https://www.datastax.com/products/datastax-astra)** - Serverless Cassandra-as-a-Service
 
 ### ✨ Why AxonOps Workbench?
 

@@ -51,7 +51,7 @@ describe('Docker Compose Migration - Integration Tests', () => {
   });
 
   describe('Real File System Tests', () => {
-    test.skip('should migrate a real legacy docker-compose file', async () => {
+    test('should migrate a real legacy docker-compose file', async () => {
       // Create a legacy docker-compose file
       const legacyContent = `version: "3.8"
 
@@ -116,7 +116,7 @@ services:
       expect(migratedContent).toContain('axon-dash:');
     });
 
-    test.skip('should handle multiple sed commands in the same file', async () => {
+    test('should handle multiple sed commands in the same file', async () => {
       const multiSedContent = `version: "3.8"
 services:
   axon-dash:
@@ -192,9 +192,12 @@ services:
       expect(migratedContent).toContain('AXONSERVER_PRIVATE_ENDPOINTS=');
     });
 
-    test.skip('should handle read-only files', async () => {
+    test('should handle read-only files', async () => {
       const composePath = Path.join(testProjectPath, 'docker-compose.yml');
-      await FS.writeFile(composePath, 'command: > /bin/sh -c "sed -i \'s|private_endpoints.*|private_endpoints: http://axon-server:8080|\' /etc/axonops/axon-dash.yml"');
+      await FS.writeFile(composePath, `services:
+  axon-dash:
+    command: > 
+      /bin/sh -c "sed -i 's|private_endpoints.*|private_endpoints: http://axon-server:8080|' /etc/axonops/axon-dash.yml"`);
       
       // Make file read-only
       await FS.chmod(composePath, 0o444);
@@ -211,9 +214,12 @@ services:
   });
 
   describe('Backup Management', () => {
-    test.skip('should create unique backups for multiple migrations in the same hour', async () => {
+    test('should create unique backups for multiple migrations in the same hour', async () => {
       const composePath = Path.join(testProjectPath, 'docker-compose.yml');
-      const legacyContent = 'command: > /bin/sh -c "sed -i \'s|private_endpoints.*|private_endpoints: http://axon-server:8080|\' /etc/axonops/axon-dash.yml"';
+      const legacyContent = `services:
+  axon-dash:
+    command: > 
+      /bin/sh -c "sed -i 's|private_endpoints.*|private_endpoints: http://axon-server:8080|' /etc/axonops/axon-dash.yml"`;
       
       // First migration
       await FS.writeFile(composePath, legacyContent);
@@ -260,7 +266,7 @@ services:
   });
 
   describe('Complex Docker Compose Structures', () => {
-    test.skip('should handle docker-compose with extends and anchors', async () => {
+    test('should handle docker-compose with extends and anchors', async () => {
       const complexContent = `version: "3.8"
 
 x-common-variables: &common-variables

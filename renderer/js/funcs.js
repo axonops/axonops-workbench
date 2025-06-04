@@ -1411,12 +1411,12 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         })
       }
 
-      // Table's partition keys
+      // Table's partition key
       {
         let partitionKeysStructure = {
           id: partitionKeysID,
           parent: tableID,
-          text: `Partition Keys (<span>${table.partition_key.length}</span>)`,
+          text: `Partition Key (<span>${table.partition_key.length}</span>)`,
           type: 'default',
           icon: normalizePath(Path.join(extraIconsPath, 'partition-key.png'))
         }
@@ -1816,11 +1816,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           })
           // End of view's clustering keys
 
-          // View's partition keys
+          // View's partition key
           let partitionKeysStructure = {
             id: partitionKeysID,
             parent: viewID,
-            text: `Partition Keys (<span>${view.partition_key.length}</span>)`,
+            text: `Partition Key (<span>${view.partition_key.length}</span>)`,
             type: 'default',
             icon: normalizePath(Path.join(extraIconsPath, 'partition-key.png'))
           }
@@ -1847,7 +1847,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             if (isCounterTable)
               buildTreeViewForChild(`${partitionKeysID}_${partitionKeyID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, partitionKey, 'partition-key', 'partitionKeys')
           })
-          // End of view's partition keys
+          // End of view's partition key
 
           {
             // View's columns
@@ -2074,11 +2074,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         })
         // End of view's clustering keys
 
-        // View's partition keys
+        // View's partition key
         let partitionKeysStructure = {
           id: partitionKeysID,
           parent: viewID,
-          text: `Partition Keys (<span>${view.partition_key.length}</span>)`,
+          text: `Partition Key (<span>${view.partition_key.length}</span>)`,
           type: 'default',
           icon: normalizePath(Path.join(extraIconsPath, 'partition-key.png'))
         }
@@ -2095,7 +2095,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           // Build tree view for the key
           buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
         })
-        // End of view's partition keys
+        // End of view's partition key
 
         {
           // View's columns
@@ -4193,7 +4193,8 @@ let setUIColor = (workspaceColor) => {
           .tabulator .tabulator-footer .tabulator-page.active{background:${backgroundColor.hover} !important;color: ${textColor} !important}
           .colored-box-shadow{box-shadow: 0px 0px 20px 1px ${backgroundColor.hover.replace('70%', '40%')} !important;}
           :root {--workspace-background-color:${backgroundColor.default};}
-
+          div.connection-type.btn.active {box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.15), inset 0px 0px 0px 1px ${backgroundColor.default} !important;}
+          div.connection-type.btn.active div.icon {background: ${backgroundColor.default} !important; color: ${textColor} !important;}
           .hljs-title, .hljs-name { color: ${highlightColors[1]}; }
           .hljs-number, .hljs-symbol, .hljs-literal, .hljs-deletion, .hljs-link { color: ${highlightColors[2]}; }
           .hljs-string, .hljs-doctag, .hljs-addition, .hljs-regexp, .hljs-selector-attr, .hljs-selector-pseudo { color: ${highlightColors[3]}; }

@@ -383,7 +383,7 @@ App.on('ready', () => {
   views.intro = createWindow({
     ...properties,
     width: 700,
-    height: 400,
+    height: 425,
     transparent: true,
     backgroundColor: 'rgba(255, 255, 255, 0)',
     frame: false,
@@ -398,7 +398,8 @@ App.on('ready', () => {
   }, Path.join(AppProps.Paths.MainView, '..', 'intro.html'), {
     show: true,
     center: true,
-    parent: views.main
+    parent: views.main,
+    openDevTools: true
   })
 
   /**

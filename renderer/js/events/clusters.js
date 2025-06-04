@@ -180,58 +180,60 @@
           } catch (e) {}
         }
 
+        let isSCBConnection = cluster.info.secureConnectionBundlePath != undefined
+
         /**
          * Define the footer of the cluster's UI based on the workspace's type
          * It can be a cluster or a docker/sandbox project
          */
         let footerStructure = {
           nonSandbox: `
-          <div class="footer">
-            <div class="button">
-              <button type="button" class="btn btn-secondary btn-dark btn-sm test-connection" reference-id="${clusterID}" button-id="${testConnectionBtnID}">
-                <span mulang="test connection"></span>
-              </button>
-              <button type="button" class="btn btn-primary btn-dark btn-sm connect changed-bg changed-color" reference-id="${clusterID}" button-id="${connectBtnID}" disabled hidden>
-                <span mulang="connect"></span>
-              </button>
-              <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" reference-id="${clusterID}" button-id="${connectAltBtnID}">
-                <span mulang="connect"></span>
-              </button>
-            </div>
-            <div class="actions actions-bg">
-              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the connection folder"
-                data-mulang="open the connection folder" capitalize-first>
-                <ion-icon name="folder-open"></ion-icon>
-              </div>
-              <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${settingsBtnID}" data-mdb-ripple-color="dark" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="connection settings" capitalize-first
-                data-title="Connection settings">
-                <ion-icon name="cog"></ion-icon>
-              </div>
-              <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete connection" data-mulang="delete connection"
-                capitalize-first>
-                <ion-icon name="trash"></ion-icon>
-              </div>
-            </div>
-          </div>`,
+             <div class="footer">
+               <div class="button">
+                 <button type="button" class="btn btn-secondary btn-dark btn-sm test-connection" reference-id="${clusterID}" button-id="${testConnectionBtnID}">
+                   <span mulang="test connection"></span>
+                 </button>
+                 <button type="button" class="btn btn-primary btn-dark btn-sm connect changed-bg changed-color" reference-id="${clusterID}" button-id="${connectBtnID}" disabled hidden>
+                   <span mulang="connect"></span>
+                 </button>
+                 <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" reference-id="${clusterID}" button-id="${connectAltBtnID}">
+                   <span mulang="connect"></span>
+                 </button>
+               </div>
+               <div class="actions actions-bg">
+                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the connection folder"
+                   data-mulang="open the connection folder" capitalize-first>
+                   <ion-icon name="folder-open"></ion-icon>
+                 </div>
+                 <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${settingsBtnID}" data-mdb-ripple-color="dark" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="connection settings" capitalize-first
+                   data-title="Connection settings">
+                   <ion-icon name="cog"></ion-icon>
+                 </div>
+                 <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete connection" data-mulang="delete connection"
+                   capitalize-first>
+                   <ion-icon name="trash"></ion-icon>
+                 </div>
+               </div>
+             </div>`,
           sandbox: `
-          <div class="footer">
-            <div class="button">
-              <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" reference-id="${clusterID}" button-id="${startProjectBtnID}">
-                <span mulang="start"></span>
-              </button>
-              <button type="button" class="btn btn-primary btn-dark btn-sm connect changed-bg changed-color" reference-id="${clusterID}" button-id="${connectBtnID}" hidden></button>
-            </div>
-            <div class="actions">
-              <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the local cluster folder"
-                data-mulang="open the local cluster folder" capitalize-first>
-                <ion-icon name="folder-open"></ion-icon>
-              </div>
-              <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete local cluster"
-                data-mulang="delete local cluster" capitalize-first>
-                <ion-icon name="trash"></ion-icon>
-              </div>
-            </div>
-          </div>`
+             <div class="footer">
+               <div class="button">
+                 <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" reference-id="${clusterID}" button-id="${startProjectBtnID}">
+                   <span mulang="start"></span>
+                 </button>
+                 <button type="button" class="btn btn-primary btn-dark btn-sm connect changed-bg changed-color" reference-id="${clusterID}" button-id="${connectBtnID}" hidden></button>
+               </div>
+               <div class="actions">
+                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the local cluster folder"
+                   data-mulang="open the local cluster folder" capitalize-first>
+                   <ion-icon name="folder-open"></ion-icon>
+                 </div>
+                 <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete local cluster"
+                   data-mulang="delete local cluster" capitalize-first>
+                   <ion-icon name="trash"></ion-icon>
+                 </div>
+               </div>
+             </div>`
         }
 
         /**
@@ -249,85 +251,92 @@
 
           // The number of chosen nodes' info UI structure
           numOfNodesInfo = `
-          <div class="info" info="nodes">
-            <div class="title"><span mulang="nodes" capitalize></span>
-              <ion-icon name="right-arrow-filled"></ion-icon>
-            </div>
-            <div class="text">${cluster.nodes}</div>
-            <div class="_placeholder" hidden></div>
-          </div>`
+             <div class="info" info="nodes">
+               <div class="title"><span mulang="nodes" capitalize></span>
+                 <ion-icon name="right-arrow-filled"></ion-icon>
+               </div>
+               <div class="text">${cluster.nodes}</div>
+               <div class="_placeholder" hidden></div>
+             </div>`
 
           isAxonOpsInstalled = `
-          <div class="info" info="axonops">
-            <div class="title">AxonOps</span>
-              <ion-icon name="right-arrow-filled"></ion-icon>
-            </div>
-            <div class="text"><ion-icon class="axonops-status ${cluster.axonops}" name="${cluster.axonops == true ? 'check' : 'close'}"></ion-icon></div>
-            <div class="_placeholder" hidden></div>
-          </div>`
+             <div class="info" info="axonops">
+               <div class="title">AxonOps</span>
+                 <ion-icon name="right-arrow-filled"></ion-icon>
+               </div>
+               <div class="text"><ion-icon class="axonops-status ${cluster.axonops}" name="${cluster.axonops == true ? 'check' : 'close'}"></ion-icon></div>
+               <div class="_placeholder" hidden></div>
+             </div>`
 
           let containersManagementTool = passedData.containersManagementTool || 'none'
 
           containersManagementTool = ['docker', 'podman'].some((tool) => containersManagementTool == tool) ? `${containersManagementTool}-plain` : 'unknown'
 
           managementTool = `
-          <div class="info" info="management-tool">
-            <div class="title">Tool</span>
-              <ion-icon name="right-arrow-filled"></ion-icon>
-            </div>
-            <div class="text"><ion-icon class="management-tool" name="${containersManagementTool}"></ion-icon></div>
-            <div class="_placeholder" hidden></div>
-          </div>`
+             <div class="info" info="management-tool">
+               <div class="title">Tool</span>
+                 <ion-icon name="right-arrow-filled"></ion-icon>
+               </div>
+               <div class="text"><ion-icon class="management-tool" name="${containersManagementTool}"></ion-icon></div>
+               <div class="_placeholder" hidden></div>
+             </div>`
+        } catch (e) {}
+
+        let scbFilePath = ''
+
+        try {
+          if (isSCBConnection)
+            scbFilePath = `data-scb-path="${cluster.info.secureConnectionBundlePath}"`
         } catch (e) {}
 
         // Cluster UI element structure
         let element = `
-            <div class="cluster" data-name="${cluster.name}" data-folder="${cluster.folder}" data-id="${clusterID}" data-workspace-id="${workspaceID}" data-host="${cluster.host}" data-datacenter="${cluster.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-axonops-installed="${cluster.axonops || 'unknown'}" data-workarea="false" ${secrets} ${credentials}>
-              <div class="header">
-                <div class="title cluster-name">${cluster.name}</div>
-                <div class="cluster-info">
-                  <div class="info" info="host">
-                    <div class="title"><span mulang="host" capitalize></span>
-                      <ion-icon name="right-arrow-filled"></ion-icon>
-                    </div>
-                    <div class="text">${cluster.host}</div>
-                    <div class="_placeholder" hidden></div>
-                  </div>
-                  <div class="info" info="cassandra">
-                    <div class="title">cassandra
-                      <ion-icon name="right-arrow-filled"></ion-icon>
-                    </div>
-                    <div class="text">${isSandbox ? 'v' + cluster.cassandraVersion : ''}</div>
-                    <div class="_placeholder" ${isSandbox ? 'hidden' : '' }></div>
-                  </div>
-                  <div class="info" info="data-center" ${isSandbox ? 'hidden' : ''}>
-                    <div class="title"><span mulang="data center" capitalize></span>
-                      <ion-icon name="right-arrow-filled"></ion-icon>
-                    </div>
-                    <div class="text"></div>
-                    <div class="_placeholder"></div>
-                  </div>
-                  ${numOfNodesInfo}
-                  ${isAxonOpsInstalled}
-                  ${managementTool}
-                </div>
-              </div>
-              ${!isSandbox ? footerStructure.nonSandbox : footerStructure.sandbox}
-              <div class="status">
-                <lottie-player src="../assets/lottie/connection-status.json" background="transparent" autoplay loop speed="0.5"></lottie-player>
-              </div>
-              <div class="test-connection">
-                <div class="sub-content">
-                  <l-pinwheel class="ldr change-color" size="60" stroke="4" speed="0.6" color="${getAttributes(workspaceElement, 'data-color')}"></l-pinwheel>
-                </div>
-                <div class="terminate-process">
-                  <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" reference-id="${clusterID}" button-id="${terminateProcessBtnID}" data-tippy="tooltip" data-mdb-placement="right" data-title="Terminate the process" data-mulang="terminate the process"
-                    capitalize-first>
-                    <ion-icon name="close"></ion-icon>
-                  </div>
-                </div>
-              </div>
-            </div>`
+               <div class="cluster" data-name="${cluster.name}" data-folder="${cluster.folder}" data-id="${clusterID}" data-workspace-id="${workspaceID}" data-host="${cluster.host}" data-datacenter="${cluster.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-axonops-installed="${cluster.axonops || 'unknown'}" data-workarea="false" ${secrets} ${credentials} ${scbFilePath}>
+                 <div class="header">
+                   <div class="title cluster-name">${cluster.name}</div>
+                   <div class="cluster-info" ${isSCBConnection ? 'style="flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; align-items: flex-start;"' : ''}>
+                     <div class="info" info="host" ${isSCBConnection ? 'hidden' : ''}>
+                       <div class="title"><span mulang="host" capitalize></span>
+                         <ion-icon name="right-arrow-filled"></ion-icon>
+                       </div>
+                       <div class="text">${cluster.host}</div>
+                       <div class="_placeholder" hidden></div>
+                     </div>
+                     <div class="info" info="cassandra">
+                       <div class="title">cassandra
+                         <ion-icon name="right-arrow-filled"></ion-icon>
+                       </div>
+                       <div class="text">${isSandbox ? 'v' + cluster.cassandraVersion : ''}</div>
+                       <div class="_placeholder" ${isSandbox ? 'hidden' : '' }></div>
+                     </div>
+                     <div class="info" info="data-center" ${isSandbox ? 'hidden' : ''}>
+                       <div class="title"><span mulang="data center" capitalize></span>
+                         <ion-icon name="right-arrow-filled"></ion-icon>
+                       </div>
+                       <div class="text"></div>
+                       <div class="_placeholder"></div>
+                     </div>
+                     ${numOfNodesInfo}
+                     ${isAxonOpsInstalled}
+                     ${managementTool}
+                   </div>
+                 </div>
+                 ${!isSandbox ? footerStructure.nonSandbox : footerStructure.sandbox}
+                 <div class="status">
+                   <lottie-player src="../assets/lottie/connection-status.json" background="transparent" autoplay loop speed="0.5"></lottie-player>
+                 </div>
+                 <div class="test-connection">
+                   <div class="sub-content">
+                     <l-pinwheel class="ldr change-color" size="60" stroke="4" speed="0.6" color="${getAttributes(workspaceElement, 'data-color')}"></l-pinwheel>
+                   </div>
+                   <div class="terminate-process">
+                     <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" reference-id="${clusterID}" button-id="${terminateProcessBtnID}" data-tippy="tooltip" data-mdb-placement="right" data-title="Terminate the process" data-mulang="terminate the process"
+                       capitalize-first>
+                       <ion-icon name="close"></ion-icon>
+                     </div>
+                   </div>
+                 </div>
+               </div>`
 
         try {
           // If the current cluster won't be appended then skip this try-catch block
@@ -682,404 +691,404 @@
                     // Define the content of the AxonOps tab to be added
                     if (getAttributes(clusterElement, 'data-axonops-installed') === 'true') {
                       axonopsTab = `
-                       <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title="AxonOps">
-                         <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${axonopsContentID}" role="tab" aria-selected="true">
-                           <span class="icon"><ion-icon name="axonops"></ion-icon></span>
-                           <span class="title">AxonOps</span>
-                         </a>
-                       </li>`
+                           <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title="AxonOps">
+                             <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${axonopsContentID}" role="tab" aria-selected="true">
+                               <span class="icon"><ion-icon name="axonops"></ion-icon></span>
+                               <span class="title">AxonOps</span>
+                             </a>
+                           </li>`
                     }
 
                     // Define the content of the bash session tab to be added
                     bashSessionTab = `
-                     <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="bash session" capitalize data-title="Bash Session">
-                       <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${bashSessionContentID}" role="tab" aria-selected="true">
-                         <span class="icon">
-                           <ion-icon name="bash"></ion-icon>
-                         </span>
-                         <span class="title">
-                           <span mulang="bash session" capitalize></span>
-                         </span>
-                       </a>
-                     </li>`
+                         <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="bash session" capitalize data-title="Bash Session">
+                           <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${bashSessionContentID}" role="tab" aria-selected="true">
+                             <span class="icon">
+                               <ion-icon name="bash"></ion-icon>
+                             </span>
+                             <span class="title">
+                               <span mulang="bash session" capitalize></span>
+                             </span>
+                           </a>
+                         </li>`
                   } catch (e) {}
 
                   // Cluster work area's UI element structure
                   let element = `
-                       <div class="workarea" cluster-id="${clusterID}" workarea-id="${workareaID}">
-                         <div class="sub-sides left">
-                           <div class="cluster-info">
-                             <div class="name-ssl ${isSandbox ? 'is-sandbox' : ''}">
-                               <div class="name no-select-reverse">${getAttributes(clusterElement, 'data-name')}</div>
-                               <div class="status" data-tippy="tooltip" data-mdb-placement="left" data-mulang="analyzing status" capitalize-first data-title="Analyzing status">
-                                 <ion-icon name="unknown"></ion-icon>
-                               </div>
-                               <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps in browser" capitalize-first data-title="Open AxonOps in browser" ${getAttributes(clusterElement, 'data-axonops-installed') !== 'true' ? 'hidden' : ''}>
-                                 <ion-icon name="globe"></ion-icon>
-                               </div>
-                               <div class="connection-status">
-                                 <lottie-player src="../assets/lottie/connection-status.json" background="transparent" autoplay loop speed="0.25"></lottie-player>
-                               </div>
-                             </div>
-                             <div class="additional">
-                               <div class="info" info="host">
-                                 <div class="title">host
-                                   <ion-icon name="right-arrow-filled"></ion-icon>
-                                 </div>
-                                 <div class="text no-select-reverse">${getAttributes(clusterElement, 'data-host')}</div>
-                               </div>
-                               <div class="info" info="cassandra">
-                                 <div class="title">cassandra
-                                   <ion-icon name="right-arrow-filled"></ion-icon>
-                                 </div>
-                                 <div class="text no-select-reverse">v${getAttributes(clusterElement, 'data-cassandra-version')}</div>
-                               </div>
-                               <div class="info" info="data-center">
-                                 <div class="title">data center
-                                   <ion-icon name="right-arrow-filled"></ion-icon>
-                                 </div>
-                                 <div class="text no-select-reverse">${getAttributes(clusterElement, 'data-datacenter')}</div>
-                               </div>
-                             </div>
-                           </div>
-                           <div class="cluster-metadata loading">
-                             <div class="search-in-metadata">
-                               <div class="form-outline form-white margin-bottom">
-                                 <input type="text" class="form-control form-icon-trailing form-control-sm">
-                                 <label class="form-label">
-                                   <span mulang="search in metadata" capitalize-first></span>
-                                 </label>
-                                 <div class="right-elements">
-                                   <div class="result-count">
-                                     <span class="current"></span>/<span class="total"></span>
+                           <div class="workarea" cluster-id="${clusterID}" workarea-id="${workareaID}">
+                             <div class="sub-sides left">
+                               <div class="cluster-info">
+                                 <div class="name-ssl ${isSandbox ? 'is-sandbox' : ''}">
+                                   <div class="name no-select-reverse">${getAttributes(clusterElement, 'data-name')}</div>
+                                   <div class="status" data-tippy="tooltip" data-mdb-placement="left" data-mulang="analyzing status" capitalize-first data-title="Analyzing status" ${isSCBConnection ? 'hidden' : ''}>
+                                     <ion-icon name="unknown"></ion-icon>
                                    </div>
-                                   <div class="arrows">
-                                     <div class="next btn btn-tertiary" data-mdb-ripple-color="light">
-                                       <ion-icon name="arrow-down"></ion-icon>
+                                   <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps in browser" capitalize-first data-title="Open AxonOps in browser" ${getAttributes(clusterElement, 'data-axonops-installed') !== 'true' ? 'hidden' : ''}>
+                                     <ion-icon name="globe"></ion-icon>
+                                   </div>
+                                   <div class="connection-status">
+                                     <lottie-player src="../assets/lottie/connection-status.json" background="transparent" autoplay loop speed="0.25"></lottie-player>
+                                   </div>
+                                 </div>
+                                 <div class="additional">
+                                   <div class="info" info="host" ${isSCBConnection ? 'hidden' : ''}>
+                                     <div class="title">host
+                                       <ion-icon name="right-arrow-filled"></ion-icon>
                                      </div>
-                                     <div class="previous btn btn-tertiary" data-mdb-ripple-color="light">
-                                       <ion-icon name="arrow-up"></ion-icon>
+                                     <div class="text no-select-reverse">${getAttributes(clusterElement, 'data-host')}</div>
+                                   </div>
+                                   <div class="info" info="cassandra">
+                                     <div class="title">cassandra
+                                       <ion-icon name="right-arrow-filled"></ion-icon>
                                      </div>
+                                     <div class="text no-select-reverse">v${getAttributes(clusterElement, 'data-cassandra-version')}</div>
+                                   </div>
+                                   <div class="info" info="data-center">
+                                     <div class="title">data center
+                                       <ion-icon name="right-arrow-filled"></ion-icon>
+                                     </div>
+                                     <div class="text no-select-reverse">${getAttributes(clusterElement, 'data-datacenter')}</div>
                                    </div>
                                  </div>
                                </div>
-                             </div>
-                             <div class="metadata-content" data-id="${metadataContentID}">
-                             </div>
-                             <div class="loading">
-                               <div class="sub-content">
-                                 <lottie-player src="../assets/lottie/loading-metadata.json" background="transparent" autoplay loop speed="1.15"></lottie-player>
-                               </div>
-                             </div>
-                             <div class="metadata-actions">
-                               <div class="action" action="copy">
-                                 <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Copy metadata" data-mulang="copy metadata" capitalize-first data-id="${copyMetadataBtnID}">
-                                   <ion-icon name="copy"></ion-icon>
-                                 </div>
-                               </div>
-                               <div class="action" action="refresh">
-                                 <div class="btn btn-tertiary disableable" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first data-id="${refreshMetadataBtnID}">
-                                   <ion-icon name="refresh"></ion-icon>
-                                 </div>
-                               </div>
-                               <div class="action" action="search">
-                                 <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Search in metadata" data-mulang="search in metadata" capitalize-first data-id="${searchInMetadataBtnID}">
-                                   <ion-icon name="search" style="font-size: 135%;"></ion-icon>
-                                 </div>
-                               </div>
-                             </div>
-                           </div>
-                         </div>
-                         <div class="sub-sides right">
-                           <div class="header">
-                             <div class="cluster-tabs">
-                               <ul class="nav nav-tabs nav-justified mb-3" id="ex-with-icons" role="tablist">
-                                 <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL console" capitalize data-title="CQL console">
-                                   <a class="nav-link btn btn-tertiary active" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlshSessionContentID}" role="tab" aria-selected="true">
-                                     <span class="icon">
-                                       <ion-icon name="terminal"></ion-icon>
-                                     </span>
-                                     <span class="title">
-                                       <span mulang="CQL console" capitalize></span>
-                                     </span>
-                                   </a>
-                                 </li>
-                                 ${bashSessionTab}
-                                 <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL description" capitalize data-title="CQL Description">
-                                   <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlDescriptionContentID}" role="tab" aria-selected="true">
-                                     <span class="icon">
-                                       <ion-icon name="cql-description"></ion-icon>
-                                     </span>
-                                     <span class="title">
-                                       <span mulang="CQL description" capitalize></span>
-                                     </span>
-                                   </a>
-                                 </li>
-                                 <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="query tracing" capitalize data-title="Query Tracing">
-                                   <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${queryTracingContentID}" role="tab" aria-selected="true">
-                                     <span class="icon">
-                                       <ion-icon name="query-tracing"></ion-icon>
-                                     </span>
-                                     <span class="title">
-                                       <span mulang="query tracing" capitalize></span>
-                                     </span>
-                                   </a>
-                                 </li>
-                                 <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="schema diff" capitalize data-title="Schema Diff">
-                                   <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${metadataDifferentiationContentID}" role="tab" aria-selected="true">
-                                     <span class="icon">
-                                       <ion-icon name="differentiation"></ion-icon>
-                                     </span>
-                                     <span class="title">
-                                       <span mulang="schema diff" capitalize></span>
-                                     </span>
-                                   </a>
-                                 </li>
-                                 ${axonopsTab}
-                               </ul>
-                             </div>
-                             <div class="cluster-actions colored-box-shadow" style="width:40px">
-                               <div class="action" action="restart" hidden>
-                                 <div class="btn-container">
-                                   <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Restart the work area" data-mulang="restart the work area" capitalize-first data-id="${restartWorkareaBtnID}">
-                                     <ion-icon name="restart"></ion-icon>
-                                   </div>
-                                 </div>
-                               </div>
-                               <div class="action" action="close">
-                                 <div class="btn-container">
-                                   <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Close and disconnect" data-mulang="close and disconnect" capitalize-first data-id="${closeWorkareaBtnID}">
-                                     <ion-icon name="close"></ion-icon>
-                                   </div>
-                                 </div>
-                               </div>
-                             </div>
-                           </div>
-                           <div class="tab-content">
-                             <div class="tab-pane fade show active loading" tab="cqlsh-session" id="_${cqlshSessionContentID}" role="tabpanel">
-                               <div class="switch-terminal" ${!isBasicCQLSHEnabled ? 'hidden' : ''}>
-                                 <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" disabled>
-                                   <ion-icon name="switch"></ion-icon>
-                                   <span mulang="switch terminal"></span>
-                                 </button>
-                               </div>
-                               <div class="terminal-container" data-id="${terminalContainerID}" style="display:none;"></div>
-                               <div class="interactive-terminal-container" data-id="${terminalContainerID}_interactive">
-                                 <div class="container-header" style="${!isBasicCQLSHEnabled ? 'width: 100%;' : ''}">
-                                   <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
-                                     <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
-                                     <input spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionSearchInputID}">
+                               <div class="cluster-metadata loading" ${isSCBConnection ? 'style="height: calc(100% - 196px + 32px);"' : ''}>
+                                 <div class="search-in-metadata">
+                                   <div class="form-outline form-white margin-bottom">
+                                     <input type="text" class="form-control form-icon-trailing form-control-sm">
                                      <label class="form-label">
-                                       <span mulang="search in the session" capitalize-first></span>
+                                       <span mulang="search in metadata" capitalize-first></span>
                                      </label>
-                                   </div>
-                                 </div>
-                                 <div class="session-content" id="_${cqlshSessionContentID}_container"></div>
-                                 <div class="empty-statements show" id="_${containerEmptyStatementsID}">
-                                   <div class="container">
-                                     <div class="semi-colon">;</div>
-                                     <div class="message"><span mulang="start now by executing cql statement" capitalize-first></span></div>
-                                   </div>
-                                 </div>
-                                 <div class="container-footer" id="_${containerFooterID}">
-                                   <div class="session-actions">
-                                     <div class="session-action" action="history">
-                                       <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light" disabled>
-                                         <ion-icon name="history"></ion-icon>
-                                         <span mulang="statements history"></span>
-                                       </button>
-                                     </div>
-                                     <div class="session-action" action="execute-file">
-                                       <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
-                                         <ion-icon name="files"></ion-icon>
-                                         <span mulang="execute CQL file(s)"></span>
-                                       </button>
-                                     </div>
-                                     <div class="session-action consistency-level" action="consistency-level">
-                                     <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
-                                       <ion-icon name="consistency"></ion-icon>
-                                       <span mulang="consistency level">consistency level</span>:
-                                       <span class="badge rounded-pill badge-dark"><b standard></b></span>
-                                       <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
-                                         data-title="Consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.<br><br>However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:<br><code>R + W > RF</code><br>(Read replicas + Write replicas > Replication Factor)<br><br>Example: With <code>RF=3</code>, using <code>QUORUM (2)</code> for both reads and writes ensures strong consistency <code>(2+2>3)</code> while maintaining availability and tolerance to failure."
-                                         data-tippy-delay="[300, 0]">
-                                         <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
+                                     <div class="right-elements">
+                                       <div class="result-count">
+                                         <span class="current"></span>/<span class="total"></span>
                                        </div>
-                                       <span class="badge rounded-pill badge-dark"><b serial></b></span>
-                                       <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
-                                         data-title="<p style='margin-bottom: 10px;'>This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL</p><ul><li><strong>SERIAL</strong>: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.</li><li><strong>LOCAL_SERIAL</strong>: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments</li></ul><p style=' margin-bottom: 10px;'>Recommended Consistency Level Combinations for LWTs</p><table style='width: 100%;' class='lwtConsistencyLevelTooltipTable'><thead><tr><th>Deployment Scenario</th><th>Write Consistency Level</th><th>Serial Consistency Level</th></tr></thead><tbody><tr><td><strong>Multi-DC Strong Consistency</strong></td><td><code>EACH_QUORUM</code></td><td><code>SERIAL</code></td></tr><tr><td><strong>Multi-DC High Performance</strong></td><td><code>LOCAL_QUORUM</code></td><td><code>LOCAL_SERIAL</code></td></tr><tr><td><strong>Single-DC Clusters</strong></td><td><code>QUORUM</code></td><td><code>SERIAL</code></td></tr></tbody></table>"
-                                         data-tippy-delay="[300, 0]" data-tippy-maxWidth="590">
-                                         <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
-                                       </div>
-                                     </button>
-                                     </div>
-                                   </div>
-                                   <div class="top">
-                                     <div class="consistency-levels"></div>
-                                     <div class="change-consistency-levels">
-                                       <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
-                                         <ion-icon name="consistency"></ion-icon>
-                                         <span mulang="change levels"></span>
-                                       </button>
-                                     </div>
-                                     <div class="history-items"></div>
-                                     <div class="history-items-clear-all">
-                                       <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
-                                         <ion-icon name="trash"></ion-icon>
-                                         <span mulang="clear all statements"></span>
-                                       </button>
-                                     </div>
-                                     <div class="history" style="display: none;">
-                                       <button class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
-                                         <ion-icon name="history"></ion-icon>
-                                       </button>
-                                     </div>
-                                     <div class="textarea">
-                                       <div class="form-outline form-white margin-bottom">
-                                         <div class="suggestion"></div>
-                                         <textarea spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionStatementInputID}"></textarea>
-                                         <label class="form-label">
-                                           <span mulang="execute a cql statement" capitalize-first></span>
-                                         </label>
-                                       </div>
-                                     </div>
-                                     <div class="kill-process">
-                                       <button class="btn btn-primary btn-dark changed-bg changed-color" type="button" data-mdb-ripple-color="var(--mdb-danger)" data-tippy="tooltip" data-mdb-placement="left" data-title="Kill the process" data-mulang="kill the process" capitalize-first>
-                                         <ion-icon name="close"></ion-icon>
-                                       </button>
-                                     </div>
-                                     <div class="hints-container">
-                                       <div class="hint changed-bg changed-color">
-                                         <div class="text">
-                                           <span mulang="an incomplete statement would have interrupted the execution flow" capitalize-first></span>
+                                       <div class="arrows">
+                                         <div class="next btn btn-tertiary" data-mdb-ripple-color="light">
+                                           <ion-icon name="arrow-down"></ion-icon>
+                                         </div>
+                                         <div class="previous btn btn-tertiary" data-mdb-ripple-color="light">
+                                           <ion-icon name="arrow-up"></ion-icon>
                                          </div>
                                        </div>
                                      </div>
-                                     <div class="execute">
-                                       <button id="_${executeStatementBtnID}" class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
-                                         <ion-icon name="send"></ion-icon>
-                                         <l-reuleaux size="20" stroke="2" stroke-length="0.25" bg-opacity="0.25" speed="0.8" color="white"></l-reuleaux>
-                                       </button>
+                                   </div>
+                                 </div>
+                                 <div class="metadata-content" data-id="${metadataContentID}">
+                                 </div>
+                                 <div class="loading">
+                                   <div class="sub-content">
+                                     <lottie-player src="../assets/lottie/loading-metadata.json" background="transparent" autoplay loop speed="1.15"></lottie-player>
+                                   </div>
+                                 </div>
+                                 <div class="metadata-actions">
+                                   <div class="action" action="copy">
+                                     <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Copy metadata" data-mulang="copy metadata" capitalize-first data-id="${copyMetadataBtnID}">
+                                       <ion-icon name="copy"></ion-icon>
                                      </div>
                                    </div>
-                                   <div class="bottom">
-                                     <div class="suggestions-list"></div>
+                                   <div class="action" action="refresh">
+                                     <div class="btn btn-tertiary disableable" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first data-id="${refreshMetadataBtnID}">
+                                       <ion-icon name="refresh"></ion-icon>
+                                     </div>
                                    </div>
-                                   <div class="console-editor"></div>
-                                 </div>
-                               </div>
-                               <div class="loading">
-                                 <div class="sub-content">
-                                   <lottie-player src="../assets/lottie/loading-cqlsh.json" background="transparent" autoplay loop speed="2"></lottie-player>
+                                   <div class="action" action="search">
+                                     <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Search in metadata" data-mulang="search in metadata" capitalize-first data-id="${searchInMetadataBtnID}">
+                                       <ion-icon name="search" style="font-size: 135%;"></ion-icon>
+                                     </div>
+                                   </div>
                                  </div>
                                </div>
                              </div>
-                             <div class="tab-pane fade _empty" tab="cql-description" id="_${cqlDescriptionContentID}" role="tabpanel">
-                               <div class="descriptions-container">
-                                 <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;width: calc(100% - 45px);">
-                                   <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
-                                   <input type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlDescriptionSearchInputID}">
-                                   <label class="form-label">
-                                     <span mulang="search for CQL description" capitalize-first></span>
-                                   </label>
-                                   <div class="close-all-descriptions">
-                                     <button type="button" id="_${cqlDescriptionsCloseAllBtnID}" class="btn btn-sm btn-dark btn-secondary ripple-surface-light" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="close all descriptions" capitalize data-title="Close All Descriptions">
-                                       <ion-icon name="close"></ion-icon>
+                             <div class="sub-sides right">
+                               <div class="header">
+                                 <div class="cluster-tabs">
+                                   <ul class="nav nav-tabs nav-justified mb-3" id="ex-with-icons" role="tablist">
+                                     <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL console" capitalize data-title="CQL console">
+                                       <a class="nav-link btn btn-tertiary active" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlshSessionContentID}" role="tab" aria-selected="true">
+                                         <span class="icon">
+                                           <ion-icon name="terminal"></ion-icon>
+                                         </span>
+                                         <span class="title">
+                                           <span mulang="CQL console" capitalize></span>
+                                         </span>
+                                       </a>
+                                     </li>
+                                     ${bashSessionTab}
+                                     <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL description" capitalize data-title="CQL Description">
+                                       <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlDescriptionContentID}" role="tab" aria-selected="true">
+                                         <span class="icon">
+                                           <ion-icon name="cql-description"></ion-icon>
+                                         </span>
+                                         <span class="title">
+                                           <span mulang="CQL description" capitalize></span>
+                                         </span>
+                                       </a>
+                                     </li>
+                                     <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="query tracing" capitalize data-title="Query Tracing">
+                                       <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${queryTracingContentID}" role="tab" aria-selected="true">
+                                         <span class="icon">
+                                           <ion-icon name="query-tracing"></ion-icon>
+                                         </span>
+                                         <span class="title">
+                                           <span mulang="query tracing" capitalize></span>
+                                         </span>
+                                       </a>
+                                     </li>
+                                     <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="schema diff" capitalize data-title="Schema Diff">
+                                       <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${metadataDifferentiationContentID}" role="tab" aria-selected="true">
+                                         <span class="icon">
+                                           <ion-icon name="differentiation"></ion-icon>
+                                         </span>
+                                         <span class="title">
+                                           <span mulang="schema diff" capitalize></span>
+                                         </span>
+                                       </a>
+                                     </li>
+                                     ${axonopsTab}
+                                   </ul>
+                                 </div>
+                                 <div class="cluster-actions colored-box-shadow" style="width:40px">
+                                   <div class="action" action="restart" hidden>
+                                     <div class="btn-container">
+                                       <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Restart the work area" data-mulang="restart the work area" capitalize-first data-id="${restartWorkareaBtnID}">
+                                         <ion-icon name="restart"></ion-icon>
+                                       </div>
+                                     </div>
+                                   </div>
+                                   <div class="action" action="close">
+                                     <div class="btn-container">
+                                       <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Close and disconnect" data-mulang="close and disconnect" capitalize-first data-id="${closeWorkareaBtnID}">
+                                         <ion-icon name="close"></ion-icon>
+                                       </div>
+                                     </div>
+                                   </div>
+                                 </div>
+                               </div>
+                               <div class="tab-content">
+                                 <div class="tab-pane fade show active loading" tab="cqlsh-session" id="_${cqlshSessionContentID}" role="tabpanel">
+                                   <div class="switch-terminal" ${!isBasicCQLSHEnabled ? 'hidden' : ''}>
+                                     <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" disabled>
+                                       <ion-icon name="switch"></ion-icon>
+                                       <span mulang="switch terminal"></span>
                                      </button>
                                    </div>
-                                 </div>
-                                 <div class="descriptions">
-                                 </div>
-                               </div>
-                               <div class="empty">
-                                 <div class="lottie-container">
-                                   <lottie-player src="../assets/lottie/empty-cql-description.json" background="transparent" loop autoplay speed="0.75" direction="1"></lottie-player>
-                                   <div class="message"><span mulang="right click on the cluster, keyspace or table and get its CQL description" capitalize-first></span>.
+                                   <div class="terminal-container" data-id="${terminalContainerID}" style="display:none;"></div>
+                                   <div class="interactive-terminal-container" data-id="${terminalContainerID}_interactive">
+                                     <div class="container-header" style="${!isBasicCQLSHEnabled ? 'width: 100%;' : ''}">
+                                       <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
+                                         <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                                         <input spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionSearchInputID}">
+                                         <label class="form-label">
+                                           <span mulang="search in the session" capitalize-first></span>
+                                         </label>
+                                       </div>
+                                     </div>
+                                     <div class="session-content" id="_${cqlshSessionContentID}_container"></div>
+                                     <div class="empty-statements show" id="_${containerEmptyStatementsID}">
+                                       <div class="container">
+                                         <div class="semi-colon">;</div>
+                                         <div class="message"><span mulang="start now by executing cql statement" capitalize-first></span></div>
+                                       </div>
+                                     </div>
+                                     <div class="container-footer" id="_${containerFooterID}">
+                                       <div class="session-actions">
+                                         <div class="session-action" action="history">
+                                           <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light" disabled>
+                                             <ion-icon name="history"></ion-icon>
+                                             <span mulang="statements history"></span>
+                                           </button>
+                                         </div>
+                                         <div class="session-action" action="execute-file">
+                                           <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
+                                             <ion-icon name="files"></ion-icon>
+                                             <span mulang="execute CQL file(s)"></span>
+                                           </button>
+                                         </div>
+                                         <div class="session-action consistency-level" action="consistency-level">
+                                         <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
+                                           <ion-icon name="consistency"></ion-icon>
+                                           <span mulang="consistency level">consistency level</span>:
+                                           <span class="badge rounded-pill badge-dark"><b standard></b></span>
+                                           <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
+                                             data-title="Consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.<br><br>However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:<br><code>R + W > RF</code><br>(Read replicas + Write replicas > Replication Factor)<br><br>Example: With <code>RF=3</code>, using <code>QUORUM (2)</code> for both reads and writes ensures strong consistency <code>(2+2>3)</code> while maintaining availability and tolerance to failure."
+                                             data-tippy-delay="[300, 0]">
+                                             <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
+                                           </div>
+                                           <span class="badge rounded-pill badge-dark"><b serial></b></span>
+                                           <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
+                                             data-title="<p style='margin-bottom: 10px;'>This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL</p><ul><li><strong>SERIAL</strong>: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.</li><li><strong>LOCAL_SERIAL</strong>: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments</li></ul><p style=' margin-bottom: 10px;'>Recommended Consistency Level Combinations for LWTs</p><table style='width: 100%;' class='lwtConsistencyLevelTooltipTable'><thead><tr><th>Deployment Scenario</th><th>Write Consistency Level</th><th>Serial Consistency Level</th></tr></thead><tbody><tr><td><strong>Multi-DC Strong Consistency</strong></td><td><code>EACH_QUORUM</code></td><td><code>SERIAL</code></td></tr><tr><td><strong>Multi-DC High Performance</strong></td><td><code>LOCAL_QUORUM</code></td><td><code>LOCAL_SERIAL</code></td></tr><tr><td><strong>Single-DC Clusters</strong></td><td><code>QUORUM</code></td><td><code>SERIAL</code></td></tr></tbody></table>"
+                                             data-tippy-delay="[300, 0]" data-tippy-maxWidth="590">
+                                             <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
+                                           </div>
+                                         </button>
+                                         </div>
+                                       </div>
+                                       <div class="top">
+                                         <div class="consistency-levels"></div>
+                                         <div class="change-consistency-levels">
+                                           <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                                             <ion-icon name="consistency"></ion-icon>
+                                             <span mulang="change levels"></span>
+                                           </button>
+                                         </div>
+                                         <div class="history-items"></div>
+                                         <div class="history-items-clear-all">
+                                           <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                                             <ion-icon name="trash"></ion-icon>
+                                             <span mulang="clear all statements"></span>
+                                           </button>
+                                         </div>
+                                         <div class="history" style="display: none;">
+                                           <button class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
+                                             <ion-icon name="history"></ion-icon>
+                                           </button>
+                                         </div>
+                                         <div class="textarea">
+                                           <div class="form-outline form-white margin-bottom">
+                                             <div class="suggestion"></div>
+                                             <textarea spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionStatementInputID}"></textarea>
+                                             <label class="form-label">
+                                               <span mulang="execute a cql statement" capitalize-first></span>
+                                             </label>
+                                           </div>
+                                         </div>
+                                         <div class="kill-process">
+                                           <button class="btn btn-primary btn-dark changed-bg changed-color" type="button" data-mdb-ripple-color="var(--mdb-danger)" data-tippy="tooltip" data-mdb-placement="left" data-title="Kill the process" data-mulang="kill the process" capitalize-first>
+                                             <ion-icon name="close"></ion-icon>
+                                           </button>
+                                         </div>
+                                         <div class="hints-container">
+                                           <div class="hint changed-bg changed-color">
+                                             <div class="text">
+                                               <span mulang="an incomplete statement would have interrupted the execution flow" capitalize-first></span>
+                                             </div>
+                                           </div>
+                                         </div>
+                                         <div class="execute">
+                                           <button id="_${executeStatementBtnID}" class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
+                                             <ion-icon name="send"></ion-icon>
+                                             <l-reuleaux size="20" stroke="2" stroke-length="0.25" bg-opacity="0.25" speed="0.8" color="white"></l-reuleaux>
+                                           </button>
+                                         </div>
+                                       </div>
+                                       <div class="bottom">
+                                         <div class="suggestions-list"></div>
+                                       </div>
+                                       <div class="console-editor"></div>
+                                     </div>
                                    </div>
+                                   <div class="loading">
+                                     <div class="sub-content">
+                                       <lottie-player src="../assets/lottie/loading-cqlsh.json" background="transparent" autoplay loop speed="2"></lottie-player>
+                                     </div>
+                                   </div>
+                                 </div>
+                                 <div class="tab-pane fade _empty" tab="cql-description" id="_${cqlDescriptionContentID}" role="tabpanel">
+                                   <div class="descriptions-container">
+                                     <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;width: calc(100% - 45px);">
+                                       <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                                       <input type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlDescriptionSearchInputID}">
+                                       <label class="form-label">
+                                         <span mulang="search for CQL description" capitalize-first></span>
+                                       </label>
+                                       <div class="close-all-descriptions">
+                                         <button type="button" id="_${cqlDescriptionsCloseAllBtnID}" class="btn btn-sm btn-dark btn-secondary ripple-surface-light" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="close all descriptions" capitalize data-title="Close All Descriptions">
+                                           <ion-icon name="close"></ion-icon>
+                                         </button>
+                                       </div>
+                                     </div>
+                                     <div class="descriptions">
+                                     </div>
+                                   </div>
+                                   <div class="empty">
+                                     <div class="lottie-container">
+                                       <lottie-player src="../assets/lottie/empty-cql-description.json" background="transparent" loop autoplay speed="0.75" direction="1"></lottie-player>
+                                       <div class="message"><span mulang="right click on the cluster, keyspace or table and get its CQL description" capitalize-first></span>.
+                                       </div>
+                                     </div>
+                                   </div>
+                                 </div>
+                                 <div class="tab-pane fade _empty" tab="query-tracing" id="_${queryTracingContentID}" role="tabpanel">
+                                   <div class="queries-container">
+                                     <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
+                                       <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                                       <input type="text" class="form-control form-icon-trailing form-control-lg" id="_${queryTracingSearchInputID}">
+                                       <label class="form-label">
+                                         <span mulang="search by session ID or part of the query" capitalize-first></span>
+                                       </label>
+                                     </div>
+                                     <div class="queries">
+                                     </div>
+                                   </div>
+                                   <div class="empty">
+                                     <div class="lottie-container">
+                                       <lottie-player src="../assets/lottie/empty-query-tracing.json" background="transparent" loop autoplay speed="0.75" direction="1" mode"bounce"></lottie-player>
+                                       <div class="message"><span mulang="no query has been traced yet" capitalize-first></span>.<hint> <span mulang="it can be enabled by running" capitalize-first></span> <code>tracing on</code></hint>
+                                       </div>
+                                     </div>
+                                   </div>
+                                 </div>
+                                 <div class="tab-pane fade" tab="metadata-differentiation" id="_${metadataDifferentiationContentID}" role="tabpanel">
+                                   <div class="metadata-content-container">
+                                     <div class="metadata-content all">
+                                       <div class="editor-container-all"></div>
+                                     </div>
+                                     <span class="badge badge-secondary old"><span mulang="previous" capitalize></span><span class="old-snapshot" data-id="${oldSnapshotNameID}"></span></span>
+                                     <div class="centered-badges">
+                                       <span class="badge badge-primary btn btn-secondary btn-dark btn-sm changes" style="cursor:pointer;" data-mdb-ripple-color="dark" data-changes="0" data-id="${showDifferentiationBtnID}"><span mulang="changes" capitalize></span>: <span>0</span></span>
+                                       <div class="diff-navigation">
+                                         <span class="diff-nav-prev btn btn-secondary btn-dark btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Previous change" data-mulang="previous change" capitalize-first
+                                           data-id="${diffNavigationPrevBtnID}">
+                                           <ion-icon name="arrow-up"></ion-icon>
+                                         </span>
+                                         <span class="diff-nav-next btn btn-secondary btn-dark btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Next change" data-mulang="next change" capitalize-first
+                                           data-id="${diffNavigationNextBtnID}">
+                                           <ion-icon name="arrow-up"></ion-icon>
+                                         </span>
+                                       </div>
+                                       <div class="actions">
+                                         <span class="refresh btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
+                                           data-id="${refreshDifferentiationBtnID}">
+                                           <ion-icon name="refresh"></ion-icon>
+                                         </span>
+                                         <span class="save-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Save a schema snapshot" data-mulang="save a schema snapshot" capitalize-first
+                                           data-id="${saveSnapshotBtnID}">
+                                           <ion-icon name="save-floppy"></ion-icon>
+                                         </span>
+                                         <span class="load-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Load a schema snapshot" data-mulang="load a schema snapshot" capitalize-first
+                                           data-id="${loadSnapshotBtnID}">
+                                           <ion-icon name="upload"></ion-icon>
+                                         </span>
+                                         <span class="snapshots-folder btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Open the schema snapshot folder" data-mulang="open the schema snapshot folder" capitalize-first
+                                           data-id="${openSnapshotsFolderBtnID}">
+                                           <ion-icon name="folder-open-outline"></ion-icon>
+                                         </span>
+                                         <span class="change-view btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Change the editors view" data-mulang="change the editors view" capitalize-first
+                                           data-id="${changeViewBtnID}" hidden>
+                                           <ion-icon name="diff-vertical"></ion-icon>
+                                         </span>
+                                       </div>
+                                     </div>
+                                     <span class="badge badge-secondary new"><span mulang="new" capitalize></span><span class="new-metadata-time" data-id="${newMetadataTimeID}" data-time></span></span>
+                                     <div class="save-snapshot-suffix" data-id="${saveSnapshotSuffixContainerID}">
+                                       <div class="time"></div>
+                                       <div class="form-outline form-white margin-bottom">
+                                         <input type="text" class="form-control form-icon-trailing form-control-lg">
+                                         <label class="form-label"><span mulang="snapshot suffix" capitalize></span> (<span mulang="optional" capitalize></span>)</label>
+                                       </div>
+                                       <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color"><span mulang="save schema snapshot"></span></button>
+                                     </div>
+                                     <div class="changes-lines" data-id="${changesLinesContainerID}">
+                                     </div>
+                                   </div>
+                                 </div>
+                                 <div class="tab-pane fade" id="_${axonopsContentID}" role="tabpanel"></div>
+                                 <div class="tab-pane fade" tab="bash-session" id="_${bashSessionContentID}" role="tabpanel">
+                                   <div class="terminal-container" data-id="${terminalBashContainerID}"></div>
                                  </div>
                                </div>
                              </div>
-                             <div class="tab-pane fade _empty" tab="query-tracing" id="_${queryTracingContentID}" role="tabpanel">
-                               <div class="queries-container">
-                                 <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
-                                   <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
-                                   <input type="text" class="form-control form-icon-trailing form-control-lg" id="_${queryTracingSearchInputID}">
-                                   <label class="form-label">
-                                     <span mulang="search by session ID or part of the query" capitalize-first></span>
-                                   </label>
-                                 </div>
-                                 <div class="queries">
-                                 </div>
-                               </div>
-                               <div class="empty">
-                                 <div class="lottie-container">
-                                   <lottie-player src="../assets/lottie/empty-query-tracing.json" background="transparent" loop autoplay speed="0.75" direction="1" mode"bounce"></lottie-player>
-                                   <div class="message"><span mulang="no query has been traced yet" capitalize-first></span>.<hint> <span mulang="it can be enabled by running" capitalize-first></span> <code>tracing on</code></hint>
-                                   </div>
-                                 </div>
-                               </div>
-                             </div>
-                             <div class="tab-pane fade" tab="metadata-differentiation" id="_${metadataDifferentiationContentID}" role="tabpanel">
-                               <div class="metadata-content-container">
-                                 <div class="metadata-content all">
-                                   <div class="editor-container-all"></div>
-                                 </div>
-                                 <span class="badge badge-secondary old"><span mulang="previous" capitalize></span><span class="old-snapshot" data-id="${oldSnapshotNameID}"></span></span>
-                                 <div class="centered-badges">
-                                   <span class="badge badge-primary btn btn-secondary btn-dark btn-sm changes" style="cursor:pointer;" data-mdb-ripple-color="dark" data-changes="0" data-id="${showDifferentiationBtnID}"><span mulang="changes" capitalize></span>: <span>0</span></span>
-                                   <div class="diff-navigation">
-                                     <span class="diff-nav-prev btn btn-secondary btn-dark btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Previous change" data-mulang="previous change" capitalize-first
-                                       data-id="${diffNavigationPrevBtnID}">
-                                       <ion-icon name="arrow-up"></ion-icon>
-                                     </span>
-                                     <span class="diff-nav-next btn btn-secondary btn-dark btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Next change" data-mulang="next change" capitalize-first
-                                       data-id="${diffNavigationNextBtnID}">
-                                       <ion-icon name="arrow-up"></ion-icon>
-                                     </span>
-                                   </div>
-                                   <div class="actions">
-                                     <span class="refresh btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
-                                       data-id="${refreshDifferentiationBtnID}">
-                                       <ion-icon name="refresh"></ion-icon>
-                                     </span>
-                                     <span class="save-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Save a schema snapshot" data-mulang="save a schema snapshot" capitalize-first
-                                       data-id="${saveSnapshotBtnID}">
-                                       <ion-icon name="save-floppy"></ion-icon>
-                                     </span>
-                                     <span class="load-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Load a schema snapshot" data-mulang="load a schema snapshot" capitalize-first
-                                       data-id="${loadSnapshotBtnID}">
-                                       <ion-icon name="upload"></ion-icon>
-                                     </span>
-                                     <span class="snapshots-folder btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Open the schema snapshot folder" data-mulang="open the schema snapshot folder" capitalize-first
-                                       data-id="${openSnapshotsFolderBtnID}">
-                                       <ion-icon name="folder-open-outline"></ion-icon>
-                                     </span>
-                                     <span class="change-view btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Change the editors view" data-mulang="change the editors view" capitalize-first
-                                       data-id="${changeViewBtnID}" hidden>
-                                       <ion-icon name="diff-vertical"></ion-icon>
-                                     </span>
-                                   </div>
-                                 </div>
-                                 <span class="badge badge-secondary new"><span mulang="new" capitalize></span><span class="new-metadata-time" data-id="${newMetadataTimeID}" data-time></span></span>
-                                 <div class="save-snapshot-suffix" data-id="${saveSnapshotSuffixContainerID}">
-                                   <div class="time"></div>
-                                   <div class="form-outline form-white margin-bottom">
-                                     <input type="text" class="form-control form-icon-trailing form-control-lg">
-                                     <label class="form-label"><span mulang="snapshot suffix" capitalize></span> (<span mulang="optional" capitalize></span>)</label>
-                                   </div>
-                                   <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color"><span mulang="save schema snapshot"></span></button>
-                                 </div>
-                                 <div class="changes-lines" data-id="${changesLinesContainerID}">
-                                 </div>
-                               </div>
-                             </div>
-                             <div class="tab-pane fade" id="_${axonopsContentID}" role="tabpanel"></div>
-                             <div class="tab-pane fade" tab="bash-session" id="_${bashSessionContentID}" role="tabpanel">
-                               <div class="terminal-container" data-id="${terminalBashContainerID}"></div>
-                             </div>
-                           </div>
-                         </div>
-                       </div>`
+                           </div>`
 
                   // Append the cluster's work area
                   content.append($(element).show(function() {
@@ -1126,7 +1135,7 @@
                     // Handle when typing something inside the query tracing's search input field
                     {
                       setTimeout(() => {
-                        $(`input#_${queryTracingSearchInputID}`).on('input', function() {
+                        $(this).find(`input#_${queryTracingSearchInputID}`).on('input', function() {
                           // Get the search text, minify/manipulate it
                           let searchValue = minifyText($(this).val()),
                             // Point at the queries' container
@@ -1151,7 +1160,7 @@
                     // Handle when typing something inside the interactive terminal's search input
                     {
                       setTimeout(() => {
-                        $(`input#_${cqlshSessionSearchInputID}`).on('input', function() {
+                        $(this).find(`input#_${cqlshSessionSearchInputID}`).on('input', function() {
                           // Get the search text, minify/manipulate it
                           let searchValue = minifyText($(this).val()),
                             // Point at the sessions' container
@@ -1176,7 +1185,7 @@
                     // Handle when typing something inside the cql description's search input field
                     {
                       setTimeout(() => {
-                        $(`input#_${cqlDescriptionSearchInputID}`).on('input', function() {
+                        $(this).find(`input#_${cqlDescriptionSearchInputID}`).on('input', function() {
                           // Get the search text, minify/manipulate it
                           let searchValue = minifyText($(this).val()),
                             // Point at the descriptions' container
@@ -1262,9 +1271,9 @@
                         // Point at the results
                         let result = detectedChanges.result,
                           // Point at the differentiation show button000
-                          differentiationBtn = $(`span.btn[data-id="${showDifferentiationBtnID}"]`),
+                          differentiationBtn = workareaElement.find(`span.btn[data-id="${showDifferentiationBtnID}"]`),
                           // Point at the changes/differences container
-                          changesContainer = $(`div.changes-lines[data-id="${changesLinesContainerID}"]`)
+                          changesContainer = workareaElement.find(`div.changes-lines[data-id="${changesLinesContainerID}"]`)
 
                         // Update the number of detected changes
                         differentiationBtn.attr('data-changes', result.length)
@@ -1305,10 +1314,10 @@
 
                           // Line UI element structure
                           let element = `
-                               <div class="line" data-number="${change.number}">
-                                 <span class="number">${change.number}</span>
-                                 <span class="content">${change.content}</span>
-                               </div>`
+                                   <div class="line" data-number="${change.number}">
+                                     <span class="number">${change.number}</span>
+                                     <span class="content">${change.content}</span>
+                                   </div>`
 
                           // Append the line element to the container
                           changesContainer.append($(element).click(function() {
@@ -1394,50 +1403,50 @@
 
                       // The statement's block UI structure
                       let element = `
-                             <div class="block show" data-id="${blockID}">
-                               <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
-                                 <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
-                                   <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
-                                 </span>
-                                 <div class="text"><pre>${statementText}</pre></div>
-                                 <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
-                                   <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
-                                     data-mulang="copy the statement" capitalize-first>
-                                     <ion-icon name="copy-solid"></ion-icon>
+                                 <div class="block show" data-id="${blockID}">
+                                   <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
+                                     <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
+                                       <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
+                                     </span>
+                                     <div class="text"><pre>${statementText}</pre></div>
+                                     <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
+                                       <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
+                                         data-mulang="copy the statement" capitalize-first>
+                                         <ion-icon name="copy-solid"></ion-icon>
+                                       </div>
+                                     </div>
                                    </div>
-                                 </div>
-                               </div>
-                               <div class="info-badges">
-                                 <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
-                                 <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
-                               </div>
-                               <div class="output">
-                                 <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
-                                 ${isOnlyInfo ? statement : ''}
-                               </div>
-                               <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
-                                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
-                                   data-mulang="download the block" capitalize-first hidden>
-                                   <ion-icon name="download"></ion-icon>
-                                 </div>
-                                 <div class="download-options">
-                                   <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
-                                     <ion-icon name="csv"></ion-icon>
+                                   <div class="info-badges">
+                                     <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
+                                     <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
                                    </div>
-                                   <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
-                                     <ion-icon name="pdf"></ion-icon>
+                                   <div class="output">
+                                     <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
+                                     ${isOnlyInfo ? statement : ''}
                                    </div>
-                                 </div>
-                                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
-                                   data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
-                                   <ion-icon name="copy-solid"></ion-icon>
-                                 </div>
-                                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
-                                   data-mulang="delete the block" capitalize-first>
-                                   <ion-icon name="trash"></ion-icon>
-                                 </div>
-                               </div>
-                             </div>`
+                                   <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
+                                     <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
+                                       data-mulang="download the block" capitalize-first hidden>
+                                       <ion-icon name="download"></ion-icon>
+                                     </div>
+                                     <div class="download-options">
+                                       <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                         <ion-icon name="csv"></ion-icon>
+                                       </div>
+                                       <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                         <ion-icon name="pdf"></ion-icon>
+                                       </div>
+                                     </div>
+                                     <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
+                                       data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
+                                       <ion-icon name="copy-solid"></ion-icon>
+                                     </div>
+                                     <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
+                                       data-mulang="delete the block" capitalize-first>
+                                       <ion-icon name="trash"></ion-icon>
+                                     </div>
+                                   </div>
+                                 </div>`
 
                       // Append the block and hide it - till and output is received -
                       sessionContainer.append($(element).show(function() {
@@ -1473,7 +1482,7 @@
 
                             try {
                               // Point at the session's statements' container
-                              let sessionContainer = $(`#_${cqlshSessionContentID}_container`)
+                              let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
 
                               // If there's still one block then skip this try-catch block
                               if (sessionContainer.find('div.block').length > 0)
@@ -1504,16 +1513,16 @@
                        */
                       let sessionID = _ != true ? link.slice(10) : link,
                         // Point at the queries' container
-                        queriesContainer = $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`).find('div.queries'),
+                        queriesContainer = workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`).find('div.queries'),
                         // Point at the queries' tab
-                        queryTracingTab = $(`a.nav-link.btn[href="#_${queryTracingContentID}"]`),
+                        queryTracingTab = workareaElement.find(`a.nav-link.btn[href="#_${queryTracingContentID}"]`),
                         // Get the queries' tab MDB object
                         queryTracingTabObject = getElementMDBObject(queryTracingTab, 'Tab')
 
                       // If the clicked session exists in the query tracing's container
                       if (queriesContainer.children(`div.query[data-session-id="${sessionID}"]`).length != 0) {
                         // Just add the session ID in the search input and it'll handle the rest
-                        $(`input#_${queryTracingSearchInputID}`).val(sessionID)
+                        workareaElement.find(`input#_${queryTracingSearchInputID}`).val(sessionID)
 
                         // Go to the query tracing's tab
                         queryTracingTabObject.show()
@@ -1583,35 +1592,35 @@
                         sourcesColors = sourcesColors.map((color) => invertColor(color))
 
                         // Remove the `empty` class; in order to show the query tracing's content
-                        $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`).removeClass('_empty')
+                        workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`).removeClass('_empty')
 
                         // The query tracing's result UI structure
                         let element = `
-                             <div class="query" data-session-id="${sessionID}">
-                               <span class="badge rounded-pill badge-secondary id-time">#${sessionID} <ion-icon name="time"></ion-icon> ${formatTimeUUID(sessionID)}</span>
-                               <div class="sources" id="_${sourcesContainerID}">
-                                 <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="all">
-                                   <span source-ip>All</span>
-                                 </button>
-                               </div>
-                               <div class="info-left">
-                                 <div class="left-chart">
-                                   <canvas data-canvas-id="${canvasTimelineID}" width="100%"></canvas>
-                                   <button type="button" class="btn btn-tertiary zoom-reset" data-mdb-ripple-color="light" id="_${zoomResetBtnID}">
-                                     <ion-icon name="zoom-reset"></ion-icon>
-                                   </button>
-                                 </div>
-                                 <div class="right-chart"><canvas data-canvas-id="${canvasPieChartID}" width="100%"></canvas></div>
-                               </div>
-                               <div class="info-right">
-                                 <div class="copy-tracing" style="z-index: 1;">
-                                   <div class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-title="Copy the tracing result" data-mulang="copy the tracing result" capitalize-first>
-                                     <ion-icon name="copy-solid"></ion-icon>
+                                 <div class="query" data-session-id="${sessionID}">
+                                   <span class="badge rounded-pill badge-secondary id-time">#${sessionID} <ion-icon name="time"></ion-icon> ${formatTimeUUID(sessionID)}</span>
+                                   <div class="sources" id="_${sourcesContainerID}">
+                                     <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="all">
+                                       <span source-ip>All</span>
+                                     </button>
                                    </div>
-                                 </div>
-                                 <div class="activities-table" id="_${tableBodyID}"></div>
-                               </div>
-                             </div>`
+                                   <div class="info-left">
+                                     <div class="left-chart">
+                                       <canvas data-canvas-id="${canvasTimelineID}" width="100%"></canvas>
+                                       <button type="button" class="btn btn-tertiary zoom-reset" data-mdb-ripple-color="light" id="_${zoomResetBtnID}">
+                                         <ion-icon name="zoom-reset"></ion-icon>
+                                       </button>
+                                     </div>
+                                     <div class="right-chart"><canvas data-canvas-id="${canvasPieChartID}" width="100%"></canvas></div>
+                                   </div>
+                                   <div class="info-right">
+                                     <div class="copy-tracing" style="z-index: 1;">
+                                       <div class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-title="Copy the tracing result" data-mulang="copy the tracing result" capitalize-first>
+                                         <ion-icon name="copy-solid"></ion-icon>
+                                       </div>
+                                     </div>
+                                     <div class="activities-table" id="_${tableBodyID}"></div>
+                                   </div>
+                                 </div>`
 
                         // Prepend the tracing's result to the container
                         queriesContainer.prepend($(element).show(function() {
@@ -1936,11 +1945,11 @@
                             } catch (e) {}
 
                             let element = `
-                                <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="${sourceIP}">
-                                  <span class="color" style="bottom: 0px; background-color:${sourceColor}"></span>
-                                  <span source-ip>${sourceIP}</span>
-                                  <span class="badge badge-dark ms-2 rounded-pill" ${dataCenter == '' ? 'hidden' : ''}>${dataCenter}</span>
-                                </button>`
+                                    <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="${sourceIP}">
+                                      <span class="color" style="bottom: 0px; background-color:${sourceColor}"></span>
+                                      <span source-ip>${sourceIP}</span>
+                                      <span class="badge badge-dark ms-2 rounded-pill" ${dataCenter == '' ? 'hidden' : ''}>${dataCenter}</span>
+                                    </button>`
 
                             $(this).find(`div.sources[id="_${sourcesContainerID}"]`).append($(element).show(function() {
                               $(this).data('chart-data', data)
@@ -2033,7 +2042,7 @@
                         // Handle the initialization of the basic terminal and the activation of the switching button
                         setTimeout(function() {
                           // Point at the switching button
-                          let switchTerminalBtn = $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find(`div.switch-terminal button`)
+                          let switchTerminalBtn = workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find(`div.switch-terminal button`)
 
                           // Click it to initialize the terminal
                           switchTerminalBtn.trigger('click', true)
@@ -2065,13 +2074,13 @@
                         }, 1500)
 
                         // Remove the loading class
-                        $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).removeClass('loading')
+                        workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).removeClass('loading')
 
                         // Enable all tabs and their associated sections
                         workareaElement.find('div.cluster-tabs').find('li a').removeClass('disabled')
 
                         try {
-                          let metadataDiffContainer = $(`div.tab-pane[tab="metadata-differentiation"]#_${metadataDifferentiationContentID}`)
+                          let metadataDiffContainer = workareaElement.find(`div.tab-pane[tab="metadata-differentiation"]#_${metadataDifferentiationContentID}`)
 
                           diffEditor = monaco.editor.createDiffEditor(metadataDiffContainer.find(`div.editor-container-all`)[0], {
                             language: 'json', // Set the content's language
@@ -2116,9 +2125,9 @@
                           let createEditor = (type, metadata) => {
                             let editor = monaco.editor.createModel(applyJSONBeautify(metadata, true), 'json')
 
-                            $(`span[data-id="${oldSnapshotNameID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
-                            $(`span[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
-                            $(`span[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
+                            workareaElement.find(`span[data-id="${oldSnapshotNameID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+                            workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+                            workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
 
                             // Return the editor's object
                             return editor
@@ -2147,7 +2156,7 @@
                               // Build the tree view
                               let treeview = buildTreeview(JSON.parse(JSON.stringify(metadata)), true),
                                 // Point at the metadata content's container
-                                metadataContent = $(`div.metadata-content[data-id="${metadataContentID}"]`)
+                                metadataContent = workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`)
 
                               // Create the tree view of the metadata and hold the returned object
                               jsTreeObject = metadataContent.jstree(treeview)
@@ -2236,21 +2245,21 @@
                                   submenu: [{
                                       label: I18next.capitalize(I18next.t('display in the work area')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
-                                            clusterID: '${getAttributes(clusterElement, 'data-id')}',
-                                            scope: '${scope}',
-                                            tabID: '${cqlDescriptionContentID}',
-                                            nodeID: '${getAttributes(clickedNode, 'id')}'
-                                          })`
+                                                clusterID: '${getAttributes(clusterElement, 'data-id')}',
+                                                scope: '${scope}',
+                                                tabID: '${cqlDescriptionContentID}',
+                                                nodeID: '${getAttributes(clickedNode, 'id')}'
+                                              })`
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('save it as a text file')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
-                                            clusterID: '${getAttributes(clusterElement, 'data-id')}',
-                                            scope: '${scope}',
-                                            tabID: '${cqlDescriptionContentID}',
-                                            nodeID: '${getAttributes(clickedNode, 'id')}',
-                                            saveAsFile: true
-                                          })`
+                                                clusterID: '${getAttributes(clusterElement, 'data-id')}',
+                                                scope: '${scope}',
+                                                tabID: '${cqlDescriptionContentID}',
+                                                nodeID: '${getAttributes(clickedNode, 'id')}',
+                                                saveAsFile: true
+                                              })`
                                     },
                                   ]
                                 }]
@@ -2270,12 +2279,12 @@
                                     label: I18next.capitalize(I18next.t('create keyspace')),
                                     action: 'createKeyspace',
                                     click: `() => views.main.webContents.send('create-keyspace', {
-                                        datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
-                                        keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                        tabID: '_${cqlshSessionContentID}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`
+                                            datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                            keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                            tabID: '_${cqlshSessionContentID}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`
                                   })
                                 } catch (e) {}
 
@@ -2318,67 +2327,67 @@
                                       label: I18next.capitalize(I18next.t('create UDT')),
                                       action: 'createUDT',
                                       click: `() => views.main.webContents.send('create-udt', {
-                                        keyspaceName: '${targetName}',
-                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                        numOfUDTs: ${keyspaceUDTs.length},
-                                        tabID: '_${cqlshSessionContentID}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`,
+                                            keyspaceName: '${targetName}',
+                                            udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                            numOfUDTs: ${keyspaceUDTs.length},
+                                            tabID: '_${cqlshSessionContentID}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`,
                                       visible: !isSystemKeyspace && ['keyspace', 'udts-parent'].some((type) => nodeType == type),
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('create table')),
                                       action: 'createStandardTable',
                                       click: `() => views.main.webContents.send('create-table', {
-                                        keyspaceName: '${targetName}',
-                                        tables: '${JSON.stringify(keyspaceTables) || []}',
-                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                        numOfUDTs: ${keyspaceUDTs.length},
-                                        tabID: '_${cqlshSessionContentID}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                        })`,
+                                            keyspaceName: '${targetName}',
+                                            tables: '${JSON.stringify(keyspaceTables) || []}',
+                                            udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                            numOfUDTs: ${keyspaceUDTs.length},
+                                            tabID: '_${cqlshSessionContentID}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                            })`,
                                       visible: !isSystemKeyspace && ['keyspace', 'tables-parent'].some((type) => nodeType == type)
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('create counter table')),
                                       action: 'createCounterTable',
                                       click: `() => views.main.webContents.send('create-counter-table', {
-                                        keyspaceName: '${targetName}',
-                                        tables: '${JSON.stringify(keyspaceTables) || []}',
-                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                        numOfUDTs: ${keyspaceUDTs.length},
-                                        tabID: '_${cqlshSessionContentID}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`,
+                                            keyspaceName: '${targetName}',
+                                            tables: '${JSON.stringify(keyspaceTables) || []}',
+                                            udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                            numOfUDTs: ${keyspaceUDTs.length},
+                                            tabID: '_${cqlshSessionContentID}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`,
                                       visible: !isSystemKeyspace && ['keyspace', 'tables-parent', 'counter-tables-parent'].some((type) => nodeType == type)
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('alter UDT')),
                                       action: 'alterUDT',
                                       click: `() => views.main.webContents.send('alter-udt', {
-                                        keyspaceName: '${targetName}',
-                                        udtName: '${clickedNode.attr('name')}',
-                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                        numOfUDTs: ${keyspaceUDTs.length},
-                                        tabID: '_${cqlshSessionContentID}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`,
+                                            keyspaceName: '${targetName}',
+                                            udtName: '${clickedNode.attr('name')}',
+                                            udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                            numOfUDTs: ${keyspaceUDTs.length},
+                                            tabID: '_${cqlshSessionContentID}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`,
                                       visible: nodeType == 'udt'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('drop UDT')),
                                       action: 'dropUDT',
                                       click: `() => views.main.webContents.send('drop-udt', {
-                                        udtName: '${clickedNode.attr('name')}',
-                                        tabID: '_${cqlshSessionContentID}',
-                                        keyspaceName: '${targetName}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`,
+                                            udtName: '${clickedNode.attr('name')}',
+                                            tabID: '_${cqlshSessionContentID}',
+                                            keyspaceName: '${targetName}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`,
                                       visible: nodeType == 'udt'
                                     }
                                   ])
@@ -2387,31 +2396,31 @@
                                       label: I18next.capitalize(I18next.t('insert row as JSON')),
                                       action: 'insertRow',
                                       click: `() => views.main.webContents.send('insert-row', {
-                                        tableName: '${clickedNode.attr('name')}',
-                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                        tabID: '_${cqlshSessionContentID}',
-                                        keyspaceName: '${keyspaceName}',
-                                        isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}',
-                                        asJSON: 'true'
-                                      })`,
+                                            tableName: '${clickedNode.attr('name')}',
+                                            tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                            udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                            tabID: '_${cqlshSessionContentID}',
+                                            keyspaceName: '${keyspaceName}',
+                                            isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}',
+                                            asJSON: 'true'
+                                          })`,
                                       visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('insert row')),
                                       action: 'insertRow',
                                       click: `() => views.main.webContents.send('insert-row', {
-                                        tableName: '${clickedNode.attr('name')}',
-                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                        tabID: '_${cqlshSessionContentID}',
-                                        keyspaceName: '${keyspaceName}',
-                                        isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`,
+                                            tableName: '${clickedNode.attr('name')}',
+                                            tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                            udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                            tabID: '_${cqlshSessionContentID}',
+                                            keyspaceName: '${keyspaceName}',
+                                            isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`,
                                       visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                     }
                                   ])
@@ -2420,30 +2429,30 @@
                                     label: I18next.capitalize(I18next.t('select row as JSON')),
                                     action: 'selectRow',
                                     click: `() => views.main.webContents.send('select-row', {
-                                        tableName: '${clickedNode.attr('name')}',
-                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                        tabID: '_${cqlshSessionContentID}',
-                                        keyspaceName: '${keyspaceName}',
-                                        isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}',
-                                        asJSON: 'true'
-                                      })`,
+                                            tableName: '${clickedNode.attr('name')}',
+                                            tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                            udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                            tabID: '_${cqlshSessionContentID}',
+                                            keyspaceName: '${keyspaceName}',
+                                            isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}',
+                                            asJSON: 'true'
+                                          })`,
                                     visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                   }, {
                                     label: I18next.capitalize(I18next.t('select row')),
                                     action: 'selectRow',
                                     click: `() => views.main.webContents.send('select-row', {
-                                        tableName: '${clickedNode.attr('name')}',
-                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                        tabID: '_${cqlshSessionContentID}',
-                                        keyspaceName: '${keyspaceName}',
-                                        isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`,
+                                            tableName: '${clickedNode.attr('name')}',
+                                            tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                            udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                            tabID: '_${cqlshSessionContentID}',
+                                            keyspaceName: '${keyspaceName}',
+                                            isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`,
                                     visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                   })
 
@@ -2451,16 +2460,16 @@
                                     label: I18next.capitalize(I18next.t('alter table')),
                                     action: 'alterTable',
                                     click: `() => views.main.webContents.send('alter-table', {
-                                        tableName: '${clickedNode.attr('name')}',
-                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                        numOfUDTs: ${keyspaceUDTs.length},
-                                        tabID: '_${cqlshSessionContentID}',
-                                        keyspaceName: '${keyspaceName}',
-                                        isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`,
+                                            tableName: '${clickedNode.attr('name')}',
+                                            tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                            udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                            numOfUDTs: ${keyspaceUDTs.length},
+                                            tabID: '_${cqlshSessionContentID}',
+                                            keyspaceName: '${keyspaceName}',
+                                            isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`,
                                     visible: nodeType == 'table'
                                   })
 
@@ -2468,15 +2477,15 @@
                                     label: I18next.capitalize(I18next.t('delete row/colum')),
                                     action: 'insertRow',
                                     click: `() => views.main.webContents.send('delete-row-column', {
-                                        tableName: '${clickedNode.attr('name')}',
-                                        tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                        udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                        tabID: '_${cqlshSessionContentID}',
-                                        keyspaceName: '${keyspaceName}',
-                                        isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`,
+                                            tableName: '${clickedNode.attr('name')}',
+                                            tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                            udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                            tabID: '_${cqlshSessionContentID}',
+                                            keyspaceName: '${keyspaceName}',
+                                            isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`,
                                     visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                   })
 
@@ -2484,47 +2493,47 @@
                                       label: I18next.capitalize(I18next.t('drop table')),
                                       action: 'dropTable',
                                       click: `() => views.main.webContents.send('drop-table', {
-                                        tableName: '${clickedNode.attr('name')}',
-                                        tabID: '_${cqlshSessionContentID}',
-                                        keyspaceName: '${keyspaceName}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`,
+                                            tableName: '${clickedNode.attr('name')}',
+                                            tabID: '_${cqlshSessionContentID}',
+                                            keyspaceName: '${keyspaceName}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`,
                                       visible: nodeType == 'table'
                                     }, {
                                       label: I18next.capitalize(I18next.t('truncate table')),
                                       action: 'truncateTable',
                                       click: `() => views.main.webContents.send('truncate-table', {
-                                        tableName: '${clickedNode.attr('name')}',
-                                        tabID: '_${cqlshSessionContentID}',
-                                        keyspaceName: '${keyspaceName}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`,
+                                            tableName: '${clickedNode.attr('name')}',
+                                            tabID: '_${cqlshSessionContentID}',
+                                            keyspaceName: '${keyspaceName}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`,
                                       visible: nodeType == 'table'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('alter keyspace')),
                                       action: 'alterKeyspace',
                                       click: `() => views.main.webContents.send('alter-keyspace', {
-                                        datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
-                                        keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                        keyspaceName: '${targetName}',
-                                        tabID: '_${cqlshSessionContentID}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`,
+                                            datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                            keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                            keyspaceName: '${targetName}',
+                                            tabID: '_${cqlshSessionContentID}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`,
                                       visible: nodeType == 'keyspace'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('drop keyspace')),
                                       action: 'dropKeyspace',
                                       click: `() => views.main.webContents.send('drop-keyspace', {
-                                        tabID: '_${cqlshSessionContentID}',
-                                        keyspaceName: '${targetName}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`,
+                                            tabID: '_${cqlshSessionContentID}',
+                                            keyspaceName: '${targetName}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`,
                                       visible: nodeType == 'keyspace'
                                     }
                                   ])
@@ -2541,12 +2550,12 @@
                                     label: I18next.capitalize(I18next.t('create keyspace')),
                                     action: 'createKeyspace',
                                     click: `() => views.main.webContents.send('create-keyspace', {
-                                        datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
-                                        keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                        tabID: '_${cqlshSessionContentID}',
-                                        textareaID: '_${cqlshSessionStatementInputID}',
-                                        btnID: '_${executeStatementBtnID}'
-                                      })`
+                                            datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                            keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                            tabID: '_${cqlshSessionContentID}',
+                                            textareaID: '_${cqlshSessionStatementInputID}',
+                                            btnID: '_${executeStatementBtnID}'
+                                          })`
                                   })
                                 } catch (e) {}
 
@@ -2686,13 +2695,13 @@
 
                                       // The old side's badge will be updated with the snapshot name
                                       setTimeout(() => {
-                                        $(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: 11${snapshot.name}${snapshotTakenTime}`)
+                                        workareaElement.find(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: 11${snapshot.name}${snapshotTakenTime}`)
                                       }, 1000);
 
                                       // The new side's badge will be updated with fetched time of the latest metadata
-                                      $(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+                                      workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
 
-                                      $(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
+                                      workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
                                     } catch (e) {}
 
                                     // Create an editor for the old metadata content
@@ -2710,9 +2719,9 @@
                                       // Point at the results
                                       let result = diffEditor.getLineChanges(),
                                         // Point at the differentiation show button000
-                                        differentiationBtn = $(`span.btn[data-id="${showDifferentiationBtnID}"]`),
+                                        differentiationBtn = workareaElement.find(`span.btn[data-id="${showDifferentiationBtnID}"]`),
                                         // Point at the changes/differences container
-                                        changesContainer = $(`div.changes-lines[data-id="${changesLinesContainerID}"]`)
+                                        changesContainer = workareaElement.find(`div.changes-lines[data-id="${changesLinesContainerID}"]`)
 
                                       // Update the number of detected changes
                                       differentiationBtn.attr('data-changes', result.length)
@@ -2720,7 +2729,7 @@
                                       // Update the button's text by showing the number of detected changes
                                       differentiationBtn.children('span').filter(':last').text(result.length); // This semicolon is critical here
 
-                                      $(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).add($(`span.btn[data-id="${diffNavigationNextBtnID}"]`)).toggleClass('disabled', result.length <= 0)
+                                      workareaElement.find(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).add(workareaElement.find(`span.btn[data-id="${diffNavigationNextBtnID}"]`)).toggleClass('disabled', result.length <= 0)
 
                                       // If there's no detected change then end the process
                                       if (result.length <= 0)
@@ -2733,10 +2742,10 @@
                                       result.forEach((change) => {
                                         // Line UI element structure
                                         let element = `
-                                               <div class="line" data-number="${change.originalStartLineNumber}">
-                                                 <span class="number">${change.originalStartLineNumber}</span>
-                                                 <span class="content">${metadataDiffEditors.old.object.getLineContent(change.originalStartLineNumber)}</span>
-                                               </div>`
+                                                   <div class="line" data-number="${change.originalStartLineNumber}">
+                                                     <span class="number">${change.originalStartLineNumber}</span>
+                                                     <span class="content">${metadataDiffEditors.old.object.getLineContent(change.originalStartLineNumber)}</span>
+                                                   </div>`
 
                                         // Append the line element to the container
                                         changesContainer.append($(element).click(function() {
@@ -2836,7 +2845,7 @@
                           throw 0
 
                         // Point at the associated block element in the interactive terminal
-                        let blockElement = $(`div.interactive-terminal-container div.session-content div.block[data-id="${data.blockID}"]`),
+                        let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${data.blockID}"]`),
                           // Get the block's statement/command
                           blockStatement = blockElement.find('div.statement div.text').text(),
                           // Define the content of the `no-output` element
@@ -2878,7 +2887,7 @@
                         // Handle if the statement's execution process has stopped
                         try {
                           // Toggle the `busy` state of the execution button
-                          $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+                          workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
 
                           // Attempt to clear the killing process button showing state
                           try {
@@ -2903,15 +2912,15 @@
 
                           // The sub output structure UI
                           let element = `
-                                   <div class="sub-output info incomplete-statement">
-                                     <div class="sub-output-content"><span mulang="incomplete statement has been detected and stopped the execution flow" capitalize-first></span>.</div>
-                                   </div>`
+                                       <div class="sub-output info incomplete-statement">
+                                         <div class="sub-output-content"><span mulang="incomplete statement has been detected and stopped the execution flow" capitalize-first></span>.</div>
+                                       </div>`
 
                           blockElement.children('div.output').children('div.executing').hide()
 
                           // Append a `sub-output` element in the output's container
                           blockElement.children('div.output').append($(element).show(function() {
-                            $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').addClass('busy')
+                            workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').addClass('busy')
 
                             // Apply the chosen language on the UI element after being fully loaded
                             setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
@@ -2969,12 +2978,12 @@
 
                               // Clicks the deletion button
                               blockElement.find('div.btn[action="delete"]').click(() => {
-                                let queriesContainer = $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
+                                let queriesContainer = workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
 
                                 setTimeout(function() {
                                   // Remove related query tracing element if exists
                                   blockElement.find('div.btn[sub-action="tracing"]').each(function() {
-                                    $(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
+                                    workareaElement.find(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
                                   })
 
                                   // If there's still one query tracing result then skip this try-catch block
@@ -2995,7 +3004,7 @@
 
                                 try {
                                   // Point at the session's statements' container
-                                  let sessionContainer = $(`#_${cqlshSessionContentID}_container`)
+                                  let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
 
                                   // If there's still one block then skip this try-catch block
                                   if (sessionContainer.find('div.block').length > 0)
@@ -3079,7 +3088,7 @@
                                     } catch (e) {}
 
                                     // Set the timeout to be triggerd and refresh the metadata
-                                    refreshMetadataTimeout = setTimeout(() => $(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(), 1000)
+                                    refreshMetadataTimeout = setTimeout(() => workareaElement.find(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(), 1000)
                                   }
                                 } catch (e) {}
 
@@ -3152,25 +3161,25 @@
 
                                 // The sub output structure UI
                                 let element = `
-                                   <div class="sub-output ${isErrorFound ? 'error' : ''} ${isOutputInfo ? 'info': ''}">
-                                     <div class="sub-output-content"></div>
-                                     <div class="sub-actions" hidden>
-                                       <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block" data-mulang="download the block" capitalize-first>
-                                         <ion-icon name="download"></ion-icon>
-                                       </div>
-                                       <div class="download-options">
-                                         <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
-                                           <ion-icon name="csv"></ion-icon>
+                                       <div class="sub-output ${isErrorFound ? 'error' : ''} ${isOutputInfo ? 'info': ''}">
+                                         <div class="sub-output-content"></div>
+                                         <div class="sub-actions" hidden>
+                                           <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block" data-mulang="download the block" capitalize-first>
+                                             <ion-icon name="download"></ion-icon>
+                                           </div>
+                                           <div class="download-options">
+                                             <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                               <ion-icon name="csv"></ion-icon>
+                                             </div>
+                                             <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                               <ion-icon name="pdf"></ion-icon>
+                                             </div>
+                                           </div>
+                                           <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Trace the query" data-mulang="trace the query" capitalize-first>
+                                             <ion-icon name="query-tracing"></ion-icon>
+                                           </div>
                                          </div>
-                                         <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
-                                           <ion-icon name="pdf"></ion-icon>
-                                         </div>
-                                       </div>
-                                       <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Trace the query" data-mulang="trace the query" capitalize-first>
-                                         <ion-icon name="query-tracing"></ion-icon>
-                                       </div>
-                                     </div>
-                                   </div>`
+                                       </div>`
 
                                 outputContainer.children('div.executing').hide()
 
@@ -3261,7 +3270,7 @@
                                     })
 
                                     try {
-                                      $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+                                      workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
 
                                       try {
                                         clearTimeout(killProcessTimeout)
@@ -3401,12 +3410,12 @@
 
                                         // Clicks the deletion button
                                         blockElement.find('div.btn[action="delete"]').click(() => {
-                                          let queriesContainer = $(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
+                                          let queriesContainer = workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
 
                                           setTimeout(function() {
                                             // Remove related query tracing element if exists
                                             blockElement.find('div.btn[sub-action="tracing"]').each(function() {
-                                              $(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
+                                              workareaElement.find(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
                                             })
 
                                             // If there's still one query tracing result then skip this try-catch block
@@ -3427,7 +3436,7 @@
 
                                           try {
                                             // Point at the session's statements' container
-                                            let sessionContainer = $(`#_${cqlshSessionContentID}_container`)
+                                            let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
 
                                             // If there's still one block then skip this try-catch block
                                             if (sessionContainer.find('div.block').length > 0)
@@ -3486,7 +3495,7 @@
                         setTimeout(() => blockElement.find('div.prompt').text(minifyText(prefix).slice(0, -1)).hide().fadeIn('fast'), 1000)
 
                         try {
-                          $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+                          workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
 
                           try {
                             clearTimeout(killProcessTimeout)
@@ -3520,12 +3529,12 @@
                         // Check if the query tracing feature has been enabled/disabled
                         {
                           // Point at the hint UI element in the query tracing's tab
-                          let queryTracingHint = $(`div.tab-pane#_${queryTracingContentID}`).find('hint')
+                          let queryTracingHint = workareaElement.find(`div.tab-pane#_${queryTracingContentID}`).find('hint')
 
                           // If it has been enabled
                           if (data.output.toLowerCase().indexOf('tracing is enabled') != -1) {
                             queryTracingHint.hide()
-                            $(`div.tab-pane#_${queryTracingContentID}`).find('lottie-player')[0].play()
+                            workareaElement.find(`div.tab-pane#_${queryTracingContentID}`).find('lottie-player')[0].play()
                           }
 
                           // If it has been disabled
@@ -3596,7 +3605,7 @@
                           terminal.loadAddon(fitAddon)
 
                           // The terminal now will be shown in the UI
-                          terminal.open($(`div.terminal-container[data-id="${terminalContainerID}"]`)[0])
+                          terminal.open(workareaElement.find(`div.terminal-container[data-id="${terminalContainerID}"]`)[0])
 
                           // Load the `Canvas` addon
                           terminal.loadAddon(new CanvasAddon())
@@ -3635,7 +3644,7 @@
                            *
                            * Point at the terminal's viewport in the UI
                            */
-                          let terminalViewport = $(`div.terminal-container[data-id="${terminalContainerID}"]`).find('div.xterm-viewport')[0],
+                          let terminalViewport = workareaElement.find(`div.terminal-container[data-id="${terminalContainerID}"]`).find('div.xterm-viewport')[0],
                             // Get the terminal's active buffer; to get the entire written statement if needed
                             terminalBuffer = terminal.buffer.active
 
@@ -3849,7 +3858,7 @@
                      * Point at killing the current process
                      * Point at the CQLSH session's overall container
                      */
-                    let cqlshSessionTabContainer = $(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`),
+                    let cqlshSessionTabContainer = workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`),
                       killProcessBtn = cqlshSessionTabContainer.find('div.kill-process button'),
                       hintsContainer = cqlshSessionTabContainer.find('div.hints-container'),
                       killProcessTimeout
@@ -3861,13 +3870,13 @@
                        *
                        * Point at the CQLSH interactive terminal's session's main container
                        */
-                      let sessionContainer = $(`#_${cqlshSessionContentID}_container`),
+                      let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`),
                         // Point at the statement's input field
-                        statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`),
+                        statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
                         // Point at the interactive terminal's container
-                        interactiveTerminal = $(`div[data-id="${terminalContainerID}_interactive"]`),
+                        interactiveTerminal = workareaElement.find(`div[data-id="${terminalContainerID}_interactive"]`),
                         // Point at the basic terminal's container
-                        basicTerminal = $(`div[data-id="${terminalContainerID}"]`),
+                        basicTerminal = workareaElement.find(`div[data-id="${terminalContainerID}"]`),
                         // Point at the suggestions' list - at the very bottom of the statement's input field -
                         suggestionsList = cqlshSessionTabContainer.find('div.bottom div.suggestions-list'),
                         // Point at the realtime suggestion's element
@@ -3879,14 +3888,15 @@
                          */
                         switchTerminalBtn = cqlshSessionTabContainer.find(`div.switch-terminal button`),
                         // Point at the statement's execution button
-                        executeBtn = cqlshSessionTabContainer.find('div.execute button'),
-                        // Hold the last saved important data
-                        lastData = {
-                          cursorPosition: -1,
-                          closestWord: '',
-                          suggestion: '',
-                          history: -1
-                        }
+                        executeBtn = cqlshSessionTabContainer.find('div.execute button')
+
+                      // Hold the last saved important data
+                      workareaElement.data('lastData', {
+                        cursorPosition: -1,
+                        closestWord: '',
+                        suggestion: '',
+                        history: -1
+                      })
 
                       /**
                        * Inner function to get the closest word to the cursor
@@ -4057,7 +4067,7 @@
                             throw 0
 
                           // Show it in the interactive terminal
-                          addBlock($(`#_${cqlshSessionContentID}_container`), getRandomID(10), `Work area for the connection ${getAttributes(clusterElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral')
+                          addBlock(workareaElement.find(`#_${cqlshSessionContentID}_container`), getRandomID(10), `Work area for the connection ${getAttributes(clusterElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral')
 
                           // Pause the print of output from the Pty instance
                           isSessionPaused = true
@@ -4100,7 +4110,7 @@
                             workareaElement.find('div.session-action[action="history"]').find('button.btn').attr('disabled', null)
 
                             // Reset the history current index
-                            lastData.history = -1
+                            workareaElement.data('lastData').history = -1
                           }
 
                           {
@@ -4149,15 +4159,15 @@
                               setTimeout(() => wobbleSpinner.fadeIn('fast'), 150)
 
                               // The sub output structure UI
-                              let blockElement = $(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`)
+                              let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`)
 
                               let handleFileExecution = (fileIndex = 0) => {
                                 if (fileIndex >= statement.length) {
                                   if (statement.length > 1)
                                     blockElement.children('div.output').append($(`
-                                    <div class="sub-output info">
-                                      <div class="sub-output-content">All files have been executed.</div>
-                                    </div>`))
+                                        <div class="sub-output info">
+                                          <div class="sub-output-content">All files have been executed.</div>
+                                        </div>`))
 
                                   statementTextContainer.removeClass('executing')
 
@@ -4191,20 +4201,20 @@
                                   showErrorsBtnID = getRandomID(10),
                                   fileExecutionInfoID = getRandomID(10),
                                   element = `
-                                    <div class="sub-output info incomplete-statement">
-                                      <div class="sub-output-content">${fileIndex + 1}: Executing file '${filePath}'</div>
-                                    </div>
-                                    <div class="sub-output" data-id="${fileExecutionInfoID}_executed" data-count="0" hidden>
-                                      <div class="sub-output-content">-</div>
-                                    </div>
-                                    <div class="sub-output error" data-id="${fileExecutionInfoID}_error" data-count="0" hidden>
-                                      <span class="arrow"><ion-icon name="arrow-down"></ion-icon></span>
-                                      <div class="sub-output-content" onclick="$(this).parent().children('div.sub-output-content.all-errors').slideToggle('fast');$(this).parent().children('span.arrow').toggleClass('show');" style="display: inline;"><span>-</span></div>
-                                      <div class="sub-output-content all-errors" style="display: none;"></div>
-                                    </div>
-                                    <div class="sub-output info" data-id="${fileExecutionInfoID}_info" hidden>
-                                      <div class="sub-output-content">The file has been fully executed.</div>
-                                    </div>`
+                                        <div class="sub-output info incomplete-statement">
+                                          <div class="sub-output-content">${fileIndex + 1}: Executing file '${filePath}'</div>
+                                        </div>
+                                        <div class="sub-output" data-id="${fileExecutionInfoID}_executed" data-count="0" hidden>
+                                          <div class="sub-output-content">-</div>
+                                        </div>
+                                        <div class="sub-output error" data-id="${fileExecutionInfoID}_error" data-count="0" hidden>
+                                          <span class="arrow"><ion-icon name="arrow-down"></ion-icon></span>
+                                          <div class="sub-output-content" onclick="$(this).parent().children('div.sub-output-content.all-errors').slideToggle('fast');$(this).parent().children('span.arrow').toggleClass('show');" style="display: inline;"><span>-</span></div>
+                                          <div class="sub-output-content all-errors" style="display: none;"></div>
+                                        </div>
+                                        <div class="sub-output info" data-id="${fileExecutionInfoID}_info" hidden>
+                                          <div class="sub-output-content">The file has been fully executed.</div>
+                                        </div>`
 
                                 blockElement.children('div.output').children('div.executing').hide()
 
@@ -4269,21 +4279,21 @@
                                   } catch (e) {}
 
                                   {
-                                    let errorsContainer = $(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).find('div.sub-output-content.all-errors')
+                                    let errorsContainer = workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).find('div.sub-output-content.all-errors')
 
                                     for (let error of errors)
                                       errorsContainer.html(`${errorsContainer.html()}<pre>${error}</pre>`)
                                   }
 
                                   if (errors.length != 0)
-                                    $(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).attr('hidden', null).find('div.sub-output-content:not(.all-errors)').find('span').text(`${errorsCount} error(s) occured in this execution cycle.`)
+                                    workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).attr('hidden', null).find('div.sub-output-content:not(.all-errors)').find('span').text(`${errorsCount} error(s) occured in this execution cycle.`)
 
-                                  $(`div.sub-output[data-id="${fileExecutionInfoID}_executed"]`).attr('hidden', null).text(`${data.totalExecutions} statement(s) executed in this execution cycle.`)
+                                  workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_executed"]`).attr('hidden', null).text(`${data.totalExecutions} statement(s) executed in this execution cycle.`)
 
                                   if (!data.isFinished)
                                     return
 
-                                  $(`div.sub-output[data-id="${fileExecutionInfoID}_info"]`).attr('hidden', null)
+                                  workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_info"]`).attr('hidden', null)
 
                                   handleFileExecution(++fileIndex)
                                 })
@@ -4305,7 +4315,7 @@
 
                                 try {
                                   // Point at the session's statements' container
-                                  let sessionContainer = $(`#_${cqlshSessionContentID}_container`)
+                                  let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
 
                                   // If there's still one block then skip this try-catch block
                                   if (sessionContainer.find('div.block').length > 0)
@@ -4363,7 +4373,7 @@
                             workareaElement.find('div.session-action[action="history"]').find('button.btn').attr('disabled', null)
 
                             // Reset the history current index
-                            lastData.history = -1
+                            workareaElement.data('lastData').history = -1
                           }
 
                           // Handle when the statement is `SELECT` but there's no `JSON` after it
@@ -4389,7 +4399,7 @@
                       })
 
                       killProcessBtn.click(function() {
-                        let blockElement = $(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`),
+                        let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`),
                           isSourceCommand = blockElement.attr('data-is-source-command') != undefined
 
                         if (isSourceCommand)
@@ -4410,9 +4420,9 @@
                             throw 0
 
                           blockElement.children('div.output').append($(`
-                            <div class="sub-output info">
-                              <div class="sub-output-content">The execution process has been terminated.</div>
-                            </div>`))
+                                <div class="sub-output info">
+                                  <div class="sub-output-content">The execution process has been terminated.</div>
+                                </div>`))
 
                           blockElement.find('div.statement').children('div.text').removeClass('executing')
 
@@ -4478,7 +4488,7 @@
                          *
                          * Update the latest saved cursor's position
                          */
-                        lastData.cursorPosition = $(this)[0].selectionEnd
+                        workareaElement.data('lastData').cursorPosition = $(this)[0].selectionEnd
 
                         // The default array for suggestions is the CQL keywords with the commands
                         let suggestionsArray = Modules.Consts.CQLKeywords.concat(Modules.Consts.CQLSHCommands),
@@ -4497,10 +4507,10 @@
                            *
                            * Get the content before the cursor's position
                            */
-                          let contentBeforeCursor = statement.slice(0, lastData.cursorPosition)
+                          let contentBeforeCursor = statement.slice(0, workareaElement.data('lastData').cursorPosition)
 
                           // Check the content against defined regex patterns
-                          isSuggestKeyspaces = Object.keys(Modules.Consts.CQLRegexPatterns).some((type) => Modules.Consts.CQLRegexPatterns[type].Patterns.some((regex) => $(this).val().slice(0, lastData.cursorPosition).match(regex) != null))
+                          isSuggestKeyspaces = Object.keys(Modules.Consts.CQLRegexPatterns).some((type) => Modules.Consts.CQLRegexPatterns[type].Patterns.some((regex) => $(this).val().slice(0, workareaElement.data('lastData').cursorPosition).match(regex) != null))
 
                           // If the closest word to the cursor doesn't have `.` then skip this try-catch block
                           if (!isSuggestKeyspaces || !closestWord.includes('.'))
@@ -4530,7 +4540,7 @@
                         } catch (e) {}
 
                         // Update the latest saved closest word to the cursor
-                        lastData.closestWord = closestWord
+                        workareaElement.data('lastData').closestWord = closestWord
 
                         // Get the suggestions based on the closest word
                         let suggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray, isSuggestKeyspaces || isKeyspace)
@@ -4584,7 +4594,7 @@
 
                             // The suggestion UI structure
                             let element = `
-                               <span ${isSuggestKeyspaces || isKeyspace ? 'data-double-quote-check="true"' : ''} class="btn suggestion badge rounded-pill ripple-surface-light" data-index="${index}" data-suggestion="${suggestion}" data-selected="false" data-mdb-ripple-color="light" style="display:none">${suggestion}</span>`
+                                   <span ${isSuggestKeyspaces || isKeyspace ? 'data-double-quote-check="true"' : ''} class="btn suggestion badge rounded-pill ripple-surface-light" data-index="${index}" data-suggestion="${suggestion}" data-selected="false" data-mdb-ripple-color="light" style="display:none">${suggestion}</span>`
 
                             // Append the suggestion and handle the `click` event
                             suggestionsList.append($(element).delay(50 * index).fadeIn(100 * (index + 1)).click(function() {
@@ -4665,18 +4675,18 @@
                             throw 0
 
                           // Increment/decrement the current history's index based on the pressed key
-                          lastData.history += isUpArrow ? 1 : -1
+                          workareaElement.data('lastData').history += isUpArrow ? 1 : -1
 
                           // Get the selected statement
-                          let statement = history[lastData.history]
+                          let statement = history[workareaElement.data('lastData').history]
 
                           // If the statement is `undefined` then the index is out of range
                           if (statement == undefined) {
                             // Normalize the index
-                            lastData.history = isUpArrow ? 0 : history.length - 1
+                            workareaElement.data('lastData').history = isUpArrow ? 0 : history.length - 1
 
                             // Update the selected statement
-                            statement = history[lastData.history]
+                            statement = history[workareaElement.data('lastData').history]
                           }
 
                           // Remove any realtime suggestions
@@ -4744,21 +4754,21 @@
                             areDoubleQuotesAdded = selectedSuggestionContent.startsWith('"')
                           } else {
                             // Set the suggestion's text to be lower case if needed
-                            if (lastData.closestWord.at(-1) != `${lastData.closestWord.at(-1) || ''}`.toUpperCase())
+                            if (workareaElement.data('lastData').closestWord.at(-1) != `${workareaElement.data('lastData').closestWord.at(-1) || ''}`.toUpperCase())
                               selectedSuggestionContent = selectedSuggestionContent.toLowerCase()
 
                             // Update the selected suggestion's content by slicing what already has been typed by the user
-                            selectedSuggestionContent = selectedSuggestionContent.slice(lastData.closestWord.length)
+                            selectedSuggestionContent = selectedSuggestionContent.slice(workareaElement.data('lastData').closestWord.length)
                           }
 
                           // Define initially the suggestion's prefix content
-                          let suggestionPrefixContent = currentStatementContent.slice(lastData.cursorPosition)
+                          let suggestionPrefixContent = currentStatementContent.slice(workareaElement.data('lastData').cursorPosition)
 
                           if (isDoubleQuotesCheckNeeded) {
                             // Update the prefix content by remove the previous suggestion if it already has been added
-                            if (lastData.suggestion.indexOf(suggestionPrefixContent) != -1 && suggestionPrefixContent.length != 0) {
+                            if (workareaElement.data('lastData').suggestion.indexOf(suggestionPrefixContent) != -1 && suggestionPrefixContent.length != 0) {
                               try {
-                                if (suggestionPrefixContent == lastData.suggestion || `${lastData.closestWord}${suggestionPrefixContent}` == lastData.suggestion) {
+                                if (suggestionPrefixContent == workareaElement.data('lastData').suggestion || `${workareaElement.data('lastData').closestWord}${suggestionPrefixContent}` == workareaElement.data('lastData').suggestion) {
                                   suggestionPrefixContent = ''
 
                                   throw 0
@@ -4768,7 +4778,7 @@
                                 for (let i = 0; i < suggestionPrefixContent.length; ++i) {
                                   tempTxt += `${suggestionPrefixContent[i]}`
 
-                                  if (lastData.suggestion.endsWith(`${lastData.closestWord}${tempTxt}`)) {
+                                  if (workareaElement.data('lastData').suggestion.endsWith(`${workareaElement.data('lastData').closestWord}${tempTxt}`)) {
                                     let newPrefix = suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(tempTxt) + tempTxt.length)
 
                                     suggestionPrefixContent = newPrefix
@@ -4779,21 +4789,21 @@
                             }
                           } else {
                             // Update the prefix content by remove the previous suggestion if it already has been added
-                            if (suggestionPrefixContent.indexOf(lastData.suggestion) != -1)
-                              suggestionPrefixContent = `${suggestionPrefixContent.slice(0, suggestionPrefixContent.indexOf(lastData.suggestion))}${suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(lastData.suggestion) + lastData.suggestion.length)}`
+                            if (suggestionPrefixContent.indexOf(workareaElement.data('lastData').suggestion) != -1)
+                              suggestionPrefixContent = `${suggestionPrefixContent.slice(0, suggestionPrefixContent.indexOf(workareaElement.data('lastData').suggestion))}${suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(workareaElement.data('lastData').suggestion) + workareaElement.data('lastData').suggestion.length)}`
                           }
 
-                          if (isDoubleQuotesCheckNeeded && suggestionPrefixContent.startsWith(lastData.suggestion))
-                            suggestionPrefixContent = suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(lastData.suggestion) + lastData.suggestion.length)
+                          if (isDoubleQuotesCheckNeeded && suggestionPrefixContent.startsWith(workareaElement.data('lastData').suggestion))
+                            suggestionPrefixContent = suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(workareaElement.data('lastData').suggestion) + workareaElement.data('lastData').suggestion.length)
 
                           // Update the statement's text/content
-                          currentStatementContent = currentStatementContent.slice(0, lastData.cursorPosition - (isDoubleQuotesCheckNeeded ? lastData.closestWord.length : 0)) + `${selectedSuggestionContent}${suggestionPrefixContent}`
+                          currentStatementContent = currentStatementContent.slice(0, workareaElement.data('lastData').cursorPosition - (isDoubleQuotesCheckNeeded ? workareaElement.data('lastData').closestWord.length : 0)) + `${selectedSuggestionContent}${suggestionPrefixContent}`
 
                           // Update the last saved suggestion
-                          lastData.suggestion = `${selectedSuggestionContent}`
+                          workareaElement.data('lastData').suggestion = `${selectedSuggestionContent}`
 
                           if (isDoubleQuotesCheckNeeded)
-                            lastData.suggestion = lastData.suggestion.slice(lastData.suggestion.indexOf(lastData.closestWord) + lastData.closestWord.length)
+                            workareaElement.data('lastData').suggestion = workareaElement.data('lastData').suggestion.slice(workareaElement.data('lastData').suggestion.indexOf(workareaElement.data('lastData').closestWord) + workareaElement.data('lastData').closestWord.length)
 
                           // Set the final statement's text/content
                           $(this).val(currentStatementContent).focus()
@@ -4801,7 +4811,7 @@
                           // Update the cursor's position inside the textarea
                           {
                             // Define the updated cursor's position
-                            let cursorPosition = lastData.cursorPosition + selectedSuggestionContent.length + (isDoubleQuotesCheckNeeded && suggestionPrefixContent.length > 0 ? 1 : 0)
+                            let cursorPosition = workareaElement.data('lastData').cursorPosition + selectedSuggestionContent.length + (isDoubleQuotesCheckNeeded && suggestionPrefixContent.length > 0 ? 1 : 0)
 
                             // Set it inside the textarea
                             $(this)[0].setSelectionRange(cursorPosition, cursorPosition)
@@ -4879,82 +4889,105 @@
 
                           consoleEditor.getModel().onDidChangeContent(() => statementInputField.val(consoleEditor.getValue()).trigger('input'))
 
-                          consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => executeBtn.trigger('click'))
+                          consoleEditor.addAction({
+                            id: getRandomID(),
+                            label: getRandomID(),
+                            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+                            run: function(editor) {
+                              try {
+                                $(editor.getDomNode()).closest('div.interactive-terminal-container').find('div.execute button').trigger('click')
+                              } catch (e) {}
+                            }
+                          })
 
                           consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyL, () => $(document).trigger('clearEnhancedConsole'))
 
-                          consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow, () => {
-                            try {
-                              // Get the saved statements
-                              let history = Store.get(clusterID) || []
+                          consoleEditor.addAction({
+                            id: getRandomID(),
+                            label: getRandomID(),
+                            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow],
+                            run: function(editor) {
+                              try {
+                                let workareaElement = $(editor.getDomNode()).closest('div.workarea[workarea-id][cluster-id]'),
+                                  clusterID = workareaElement.attr('cluster-id'),
+                                  // Get the saved statements
+                                  history = Store.get(clusterID) || []
 
-                              // If there's no saved history then simply skip this try-catch block
-                              if (history.length <= 0)
-                                throw 0
+                                // If there's no saved history then simply skip this try-catch block
+                                if (history.length <= 0)
+                                  throw 0
 
-                              // Increment/decrement the current history's index based on the pressed key
-                              lastData.history += 1
+                                // Increment/decrement the current history's index based on the pressed key
+                                workareaElement.data('lastData').history += 1
 
-                              // Get the selected statement
-                              let statement = history[lastData.history]
+                                // Get the selected statement
+                                let statement = history[workareaElement.data('lastData').history]
 
-                              // If the statement is `undefined` then the index is out of range
-                              if (statement == undefined) {
-                                // Normalize the index
-                                lastData.history = 0
+                                // If the statement is `undefined` then the index is out of range
+                                if (statement == undefined) {
+                                  // Normalize the index
+                                  workareaElement.data('lastData').history = 0
 
-                                // Update the selected statement
-                                statement = history[lastData.history]
-                              }
+                                  // Update the selected statement
+                                  statement = history[workareaElement.data('lastData').history]
+                                }
 
-                              consoleEditor.setValue(statement)
-                              consoleEditor.focus()
+                                consoleEditor.setValue(statement)
+                                consoleEditor.focus()
 
-                              let lastLine = consoleEditor.getModel().getLineCount(),
-                                lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
+                                let lastLine = consoleEditor.getModel().getLineCount(),
+                                  lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
 
-                              consoleEditor.setPosition({
-                                lineNumber: lastLine,
-                                column: lastColumn
-                              })
-                            } catch (e) {}
+                                consoleEditor.setPosition({
+                                  lineNumber: lastLine,
+                                  column: lastColumn
+                                })
+                              } catch (e) {}
+                            }
                           })
 
-                          consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.DownArrow, () => {
-                            try {
-                              // Get the saved statements
-                              let history = Store.get(clusterID) || []
+                          consoleEditor.addAction({
+                            id: getRandomID(),
+                            label: getRandomID(),
+                            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.DownArrow],
+                            run: function(editor) {
+                              try {
+                                let workareaElement = $(editor.getDomNode()).closest('div.workarea[workarea-id][cluster-id]'),
+                                  clusterID = workareaElement.attr('cluster-id'),
+                                  // Get the saved statements
+                                  history = Store.get(clusterID) || []
 
-                              // If there's no saved history then simply skip this try-catch block
-                              if (history.length <= 0)
-                                throw 0
+                                // If there's no saved history then simply skip this try-catch block
+                                if (history.length <= 0)
+                                  throw 0
 
-                              // Increment/decrement the current history's index based on the pressed key
-                              lastData.history += -1
+                                // Increment/decrement the current history's index based on the pressed key
+                                workareaElement.data('lastData').history += -1
 
-                              // Get the selected statement
-                              let statement = history[lastData.history]
+                                // Get the selected statement
+                                let statement = history[workareaElement.data('lastData').history]
 
-                              // If the statement is `undefined` then the index is out of range
-                              if (statement == undefined) {
-                                // Normalize the index
-                                lastData.history = history.length - 1
+                                // If the statement is `undefined` then the index is out of range
+                                if (statement == undefined) {
+                                  // Normalize the index
+                                  workareaElement.data('lastData').history = history.length - 1
 
-                                // Update the selected statement
-                                statement = history[lastData.history]
-                              }
+                                  // Update the selected statement
+                                  statement = history[workareaElement.data('lastData').history]
+                                }
 
-                              consoleEditor.setValue(statement)
-                              consoleEditor.focus()
+                                consoleEditor.setValue(statement)
+                                consoleEditor.focus()
 
-                              let lastLine = consoleEditor.getModel().getLineCount(),
-                                lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
+                                let lastLine = consoleEditor.getModel().getLineCount(),
+                                  lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
 
-                              consoleEditor.setPosition({
-                                lineNumber: lastLine,
-                                column: lastColumn
-                              })
-                            } catch (e) {}
+                                consoleEditor.setPosition({
+                                  lineNumber: lastLine,
+                                  column: lastColumn
+                                })
+                              } catch (e) {}
+                            }
                           })
 
                           monaco.languages.registerCompletionItemProvider('sql', {
@@ -5123,7 +5156,7 @@
                           terminalBash.loadAddon(fitAddonBash)
 
                           // The terminal now will be shown in the UI
-                          terminalBash.open($(`div.terminal-container[data-id="${terminalBashContainerID}"]`)[0])
+                          terminalBash.open(workareaElement.find(`div.terminal-container[data-id="${terminalBashContainerID}"]`)[0])
 
                           // Load the `Canvas` addon
                           terminalBash.loadAddon(new CanvasAddon())
@@ -5210,7 +5243,7 @@
                           })
 
                           // Point at the terminal viewport - main container -
-                          let terminalViewport = $(`div.terminal-container[data-id="${terminalBashContainerID}"]`).find('div.xterm-viewport')[0]
+                          let terminalViewport = workareaElement.find(`div.terminal-container[data-id="${terminalBashContainerID}"]`).find('div.xterm-viewport')[0]
 
                           /**
                            * Listen to data - characters - from the user - input to the terminal -
@@ -5252,7 +5285,7 @@
                       // Metadata tree view side
                       setTimeout(() => {
                         // Clicks the copy button; to copy metadata in JSON string format
-                        $(`div.btn[data-id="${copyMetadataBtnID}"]`).click(function() {
+                        workareaElement.find(`div.btn[data-id="${copyMetadataBtnID}"]`).click(function() {
                           // Get the beautified version of the metadata
                           let metadataBeautified = applyJSONBeautify(latestMetadata, true),
                             // Get the metadata size
@@ -5272,7 +5305,7 @@
                         })
 
                         // Refresh the tree view
-                        $(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(function() {
+                        workareaElement.find(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(function() {
                           // If the `checkMetadata` function is not yet implemented then skip the upcoming code
                           if (checkMetadata == null)
                             return
@@ -5280,11 +5313,11 @@
                           // If there's a tree object already then attempt to destroy it
                           if (jsTreeObject != null)
                             try {
-                              $(`div.metadata-content[data-id="${metadataContentID}"]`).jstree('destroy')
+                              workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`).jstree('destroy')
                             } catch (e) {}
 
                           // Trigger the `click` event for the search in metadata tree view button; to make sure it's reset
-                          $(`div.btn[data-id="${searchInMetadataBtnID}"]`).trigger('click', true)
+                          workareaElement.find(`div.btn[data-id="${searchInMetadataBtnID}"]`).trigger('click', true)
 
                           // Add log about this refreshing process
                           try {
@@ -5306,14 +5339,14 @@
                           // Point at the search container
                           let searchContainer = workareaElement.find('div.search-in-metadata'),
                             // Point at the metadata tree view container
-                            metadataContent = $(`div.metadata-content[data-id="${metadataContentID}"]`),
+                            metadataContent = workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`),
                             // Flag to tell if the search container is shown already
                             isSearchShown = false,
                             // The timeout function to be defined for the starting the search process
                             searchTimeout
 
                           // Clicks the search button/icon
-                          $(`div.btn[data-id="${searchInMetadataBtnID}"]`).on('click', function(e, overrideFlag = null) {
+                          workareaElement.find(`div.btn[data-id="${searchInMetadataBtnID}"]`).on('click', function(e, overrideFlag = null) {
                             // If an override flag has been passed - true/false for showing the search container - then adopt this flag
                             if (overrideFlag != null)
                               isSearchShown = overrideFlag
@@ -5362,7 +5395,7 @@
                       // Metadata differentiation section
                       setTimeout(() => {
                         // Point at the snapshot's suffix name container
-                        let suffixContainer = $(`div.save-snapshot-suffix[data-id="${saveSnapshotSuffixContainerID}"]`),
+                        let suffixContainer = workareaElement.find(`div.save-snapshot-suffix[data-id="${saveSnapshotSuffixContainerID}"]`),
                           // Point at the time element; where the snapshot's time will be printed to the user
                           timeElement = suffixContainer.children('div.time'),
                           // Point at the save schema snapshot button
@@ -5375,7 +5408,7 @@
                           timeFormatted
 
                         // Show the differentiation list - line's number and content -
-                        $(`span.btn[data-id="${showDifferentiationBtnID}"]`).click(function() {
+                        workareaElement.find(`span.btn[data-id="${showDifferentiationBtnID}"]`).click(function() {
                           // Get how many detected changes
                           let changes = parseInt($(this).attr('data-changes'))
 
@@ -5384,15 +5417,15 @@
                             return showToast(I18next.capitalize(I18next.t('show differentiation')), I18next.capitalizeFirstLetter(I18next.t('there is no difference between the previous and new metadata')) + '.', 'warning')
 
                           // Show/hide the changes container
-                          $(`div.changes-lines[data-id="${changesLinesContainerID}"]`).toggleClass('show')
+                          workareaElement.find(`div.changes-lines[data-id="${changesLinesContainerID}"]`).toggleClass('show')
                         })
 
-                        $(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).click(() => diffEditorNavigator.previous())
+                        workareaElement.find(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).click(() => diffEditorNavigator.previous())
 
-                        $(`span.btn[data-id="${diffNavigationNextBtnID}"]`).click(() => diffEditorNavigator.next())
+                        workareaElement.find(`span.btn[data-id="${diffNavigationNextBtnID}"]`).click(() => diffEditorNavigator.next())
 
                         // Refresh the new metadata and do a differentiation check
-                        $(`span.btn[data-id="${refreshDifferentiationBtnID}"]`).click(function() {
+                        workareaElement.find(`span.btn[data-id="${refreshDifferentiationBtnID}"]`).click(function() {
                           // Disable the button
                           $(this).attr('disabled', '').addClass('disabled refreshing')
 
@@ -5409,8 +5442,8 @@
                               metadata = applyJSONBeautify(metadata, true)
 
                               // Update the fetch date and time of the new metadata
-                              $(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
-                              $(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
+                              workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+                              workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
 
                               // Update the new editor's value
                               metadataDiffEditors.new.object.setValue(metadata)
@@ -5426,14 +5459,14 @@
                         })
 
                         // Clicks the button to open the save schema snapshot pop-up container
-                        $(`span.btn[data-id="${saveSnapshotBtnID}"]`).click(function() {
+                        workareaElement.find(`span.btn[data-id="${saveSnapshotBtnID}"]`).click(function() {
                           // Reset the suffix value
                           suffixInput.val('')
                           suffixInputObject.update()
                           setTimeout(() => suffixInputObject._deactivate())
 
                           // Get the current date and time, format it, and show it to the user
-                          let time = parseInt($(`span[data-id="${newMetadataTimeID}"]`).attr('data-time')) || new Date().getTime()
+                          let time = parseInt(workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).attr('data-time')) || new Date().getTime()
                           timeFormatted = formatTimestamp(time, true).replace(/\:/gm, '_')
                           timeElement.text(`${timeFormatted}`)
 
@@ -5470,7 +5503,7 @@
                           try {
                             metadata = JSON.parse(metadata)
 
-                            metadata.time = parseInt($(`span[data-id="${newMetadataTimeID}"]`).attr('data-time')) || new Date().getTime()
+                            metadata.time = parseInt(workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).attr('data-time')) || new Date().getTime()
 
                             metadata = JSON.stringify(metadata)
                           } catch (e) {}
@@ -5514,7 +5547,7 @@
                         })
 
                         // Load a saved snapshot
-                        $(`span.btn[data-id="${loadSnapshotBtnID}"]`).click(function() {
+                        workareaElement.find(`span.btn[data-id="${loadSnapshotBtnID}"]`).click(function() {
                           let workspacePath = getWorkspaceFolderPath(workspaceID),
                             folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(clusterElement, 'data-folder'))
 
@@ -5546,26 +5579,26 @@
                             snapshots.forEach((snapshot) => {
                               // Snapshot UI element structure
                               let element = `
-                                   <div class="snapshot" data-path="${snapshot.path}" data-name="${snapshot.name}">
-                                     <div class="_left">
-                                       <div class="name">${snapshot.name}</div>
-                                       <div class="badges">
-                                         <span class="badge badge-primary">${formatTimestamp(snapshot.time)}</span>
-                                         <span class="badge badge-secondary">${Bytes(snapshot.size)}</span>
-                                       </div>
-                                     </div>
-                                     <div class="_right">
-                                       <a action="load" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
-                                         <ion-icon name="upload"></ion-icon>
-                                       </a>
-                                       <a action="delete" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false">
-                                         <ion-icon name="trash"></ion-icon>
-                                       </a>
-                                       <a action="multiple" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="#1d1d1e">
-                                         <input class="form-check-input" type="checkbox">
-                                       </a>
-                                     </div>
-                                   </div>`
+                                       <div class="snapshot" data-path="${snapshot.path}" data-name="${snapshot.name}">
+                                         <div class="_left">
+                                           <div class="name">${snapshot.name}</div>
+                                           <div class="badges">
+                                             <span class="badge badge-primary">${formatTimestamp(snapshot.time)}</span>
+                                             <span class="badge badge-secondary">${Bytes(snapshot.size)}</span>
+                                           </div>
+                                         </div>
+                                         <div class="_right">
+                                           <a action="load" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                             <ion-icon name="upload"></ion-icon>
+                                           </a>
+                                           <a action="delete" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false">
+                                             <ion-icon name="trash"></ion-icon>
+                                           </a>
+                                           <a action="multiple" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="#1d1d1e">
+                                             <input class="form-check-input" type="checkbox">
+                                           </a>
+                                         </div>
+                                       </div>`
 
                               // Append the snapshot to the container
                               snapshotsContainer.append($(element).show(function() {
@@ -5610,7 +5643,7 @@
                                     } catch (e) {}
 
                                     // Update the old side's badge
-                                    $(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: ${snapshot.attr('data-name')}${snapshotTakenTime}`)
+                                    workareaElement.find(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: ${snapshot.attr('data-name')}${snapshotTakenTime}`)
 
                                     // Detect differentiation between the metadata content's after loading the snapshot
                                     // detectDifferentiationShow(snapshotContent, JSON.parse(metadataDiffEditors.new.object.getValue()))
@@ -5712,7 +5745,7 @@
                         })
 
                         // Open the snapshots' folder
-                        $(`span.btn[data-id="${openSnapshotsFolderBtnID}"]`).click(() => {
+                        workareaElement.find(`span.btn[data-id="${openSnapshotsFolderBtnID}"]`).click(() => {
                           let workspacePath = getWorkspaceFolderPath(workspaceID),
                             folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(clusterElement, 'data-folder'), 'snapshots')
 
@@ -5720,9 +5753,9 @@
                         })
 
                         // Change the editors view - vertical and horizontal -
-                        $(`span.btn[data-id="${changeViewBtnID}"]`).click(function() {
+                        workareaElement.find(`span.btn[data-id="${changeViewBtnID}"]`).click(function() {
                           // Point at the cluster's metadata differentiation content's container
-                          let metadataContentContainer = $(`div#_${metadataDifferentiationContentID} div.metadata-content-container`),
+                          let metadataContentContainer = workareaElement.find(`div#_${metadataDifferentiationContentID} div.metadata-content-container`),
                             // Whether or not a horizontal view is already applied
                             isViewHorizontal = metadataContentContainer.hasClass('view-horizontal')
 
@@ -5751,7 +5784,7 @@
 
                       // Clicks either the restart or the close buttons for the cluster's work area
                       setTimeout(() => {
-                        $(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).on('click', (event, moveToWorkspace = true) => {
+                        workareaElement.find(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).on('click', (event, moveToWorkspace = true) => {
                           // Add log for this action
                           try {
                             addLog(`Request to close/refresh the work area of the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
@@ -5781,7 +5814,7 @@
 
                           try {
                             // If the current workspace is not the sandbox or it's not a `close` event then skip this try-catch block
-                            if (!isSandbox || !$(event.currentTarget).is($(`div.btn[data-id="${closeWorkareaBtnID}"]`)))
+                            if (!isSandbox || !$(event.currentTarget).is(workareaElement.find(`div.btn[data-id="${closeWorkareaBtnID}"]`)))
                               throw 0
 
                             // Show the test connection state - it's used here to indicate the closing process of a sandbox project -
@@ -5876,7 +5909,7 @@
 
                             try {
                               // If the clicked button is not for restarting the work area then skip this try-catch block
-                              if (!$(event.currentTarget).is($(`div.btn[data-id="${restartWorkareaBtnID}"]`)))
+                              if (!$(event.currentTarget).is(workareaElement.find(`div.btn[data-id="${restartWorkareaBtnID}"]`)))
                                 throw 0
 
                               // Remove the work area element
@@ -5897,7 +5930,7 @@
                                     throw 0
 
                                   // Append the `webview` ElectronJS custom element
-                                  $(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops_agent_webview.js')}"></webview>`).show(function() {
+                                  workareaElement.find(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops_agent_webview.js')}"></webview>`).show(function() {
                                     // Point at the webview element
                                     let webView = $(this)[0]
 
@@ -5918,7 +5951,7 @@
                                   }))
 
                                   // Clicks the globe icon in the cluster's info
-                                  $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
+                                  workareaElement.find(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
                                 } catch (e) {}
                               }, 1000)
 
@@ -5988,7 +6021,7 @@
                             setTimeout(() => {
                               try {
                                 // Handle the reset of the UI if the process is not restarting the work area
-                                if ($(event.currentTarget).is($(`div.btn[data-id="${restartWorkareaBtnID}"]`)))
+                                if ($(event.currentTarget).is(workareaElement.find(`div.btn[data-id="${restartWorkareaBtnID}"]`)))
                                   throw 0
 
                                 // Point at both buttons; the `CONNECT` and `TEST CONNECTION`
@@ -6087,10 +6120,10 @@
 
                           // Cluster's switcher UI element structure
                           let element = `
-                               <div class="cluster" _cluster-id="${clusterID}" style="box-shadow: inset 0px 0px 0 1px ${workspaceColor || '#7c7c7c'};" active ${hideSwitcher ? "hidden" : "" }>
-                                 <button type="button" style="color: ${workspaceColor};" class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="right" data-mdb-html="true"
-                                   data-title="<span class='tooltip-left'>${getAttributes(clusterElement, 'data-name')}<br>${clusterHost}</span>" data-mdb-html="true" data-mdb-customClass="tooltip-left">${extractChars(getAttributes(clusterElement, 'data-name'))}</button>
-                               </div>`
+                                   <div class="cluster" _cluster-id="${clusterID}" style="box-shadow: inset 0px 0px 0 1px ${workspaceColor || '#7c7c7c'};" active ${hideSwitcher ? "hidden" : "" }>
+                                     <button type="button" style="color: ${workspaceColor};" class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="right" data-mdb-html="true"
+                                       data-title="<span class='tooltip-left'>${getAttributes(clusterElement, 'data-name')}<br>${clusterHost}</span>" data-mdb-html="true" data-mdb-customClass="tooltip-left">${extractChars(getAttributes(clusterElement, 'data-name'))}</button>
+                                   </div>`
 
                           // Define the suitable adding function based on whether or not there's an overflow
                           let addingFunction = {
@@ -6192,8 +6225,8 @@
                                 IPCRenderer.send('show-context-menu', JSON.stringify([{
                                   label: I18next.capitalizeFirstLetter(`${I18next.t('close connection')} (${I18next.capitalizeFirstLetter(I18next.t('disconnect'))})`),
                                   click: `() => views.main.webContents.send('workarea:close', {
-                                      btnID: '${closeWorkareaBtnID}'
-                                    })`
+                                          btnID: '${closeWorkareaBtnID}'
+                                        })`
                                 }]))
                               })
                             })
@@ -6313,7 +6346,7 @@
                            */
                           try {
                             // If the basic terminal is not active then skip this try-catch block
-                            if ($(`div[data-id="${terminalContainerID}"]`).css('display') == 'none')
+                            if (workareaElement.find(`div[data-id="${terminalContainerID}"]`).css('display') == 'none')
                               throw 0
 
                             // Perform a new check process after 1 minute
@@ -6446,28 +6479,28 @@
 
                           // The history item structure UI
                           let element = `
-                               <div class="history-item" data-index="${index}" data-is-source-command="${isSourceCommand}">
-                                 <div class="index">${index < 10 ? '0' : ''}${index}</div>
-                                 <div class="inner-content">
-                                   <pre>${historyItem}</pre>
-                                 </div>
-                                 <div class="click-area"></div>
-                                 <div class="action-copy">
-                                   <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
-                                     <ion-icon name="copy-solid"></ion-icon>
-                                   </span>
-                                 </div>
-                                 <div class="action-delete">
-                                   <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
-                                     <ion-icon name="trash"></ion-icon>
-                                   </span>
-                                 </div>
-                               </div>`
+                                   <div class="history-item" data-index="${index}" data-is-source-command="${isSourceCommand}">
+                                     <div class="index">${index < 10 ? '0' : ''}${index}</div>
+                                     <div class="inner-content">
+                                       <pre>${historyItem}</pre>
+                                     </div>
+                                     <div class="click-area"></div>
+                                     <div class="action-copy">
+                                       <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                         <ion-icon name="copy-solid"></ion-icon>
+                                       </span>
+                                     </div>
+                                     <div class="action-delete">
+                                       <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                         <ion-icon name="trash"></ion-icon>
+                                       </span>
+                                     </div>
+                                   </div>`
 
                           // Append the history item
                           historyItemsContainer.append($(element).show(function() {
                             // Point at the statement input field
-                            let statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`)
+                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`)
 
                             try {
                               if ($(this).attr('data-is-source-command') != 'true')
@@ -6636,14 +6669,14 @@
                           let serialElement = levels[1] == undefined ? '' : `<div class="level ${activeSessionsConsistencyLevels[activeClusterID].serial == levels[1] ? 'selected' : ''}" data-type="serial" data-level-name="${levels[1]}">${levels[1]}</div>`
 
                           levelsTable.append(`
-                            <tr>
-                              <td type="standard">
-                                <div class="level ${activeSessionsConsistencyLevels[activeClusterID].standard == levels[0] ? 'selected' : ''}" data-type="standard" data-level-name="${levels[0]}">${levels[0]}</div>
-                              </td>
-                              <td type="serial">
-                                ${serialElement}
-                              </td>
-                            </tr>`)
+                                <tr>
+                                  <td type="standard">
+                                    <div class="level ${activeSessionsConsistencyLevels[activeClusterID].standard == levels[0] ? 'selected' : ''}" data-type="standard" data-level-name="${levels[0]}">${levels[0]}</div>
+                                  </td>
+                                  <td type="serial">
+                                    ${serialElement}
+                                  </td>
+                                </tr>`)
                         }
 
                         consistencyLevelsContainer.html('')
@@ -6700,23 +6733,23 @@
                             throw 0
 
                           try {
-                            let statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`)
+                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`)
                             statementInputField.val(statement)
                             statementInputField.trigger('input').focus()
                             AutoSize.update(statementInputField[0])
                           } catch (e) {}
 
                           try {
-                            setTimeout(() => $(`button#_${executeStatementBtnID}`).click(), 100)
+                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).click(), 100)
                           } catch (e) {}
                         } catch (e) {}
                       })
                     }
 
                     {
-                      let executeFilesModal = $('div.modal#executeCQLFiles'),
+                      let executeFilesModal = workareaElement.find('div.modal#executeCQLFiles'),
                         filesContainer = executeFilesModal.find('div.cql-files-container'),
-                        filesExecutionBtn = $(this).find('div.session-action[action="execute-file"]').find('button.btn')
+                        filesExecutionBtn = workareaElement.find(this).find('div.session-action[action="execute-file"]').find('button.btn')
 
                       try {
                         filesExecutionBtn.unbind('click')
@@ -6781,21 +6814,21 @@
                               } catch (e) {}
 
                               let element = `
-                                    <div class="cql-file ${fileStats.size <= 0 ? 'invalid' : ''}">
-                                      <div class="sort-handler" style="cursor:grab;">
-                                        <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
-                                      </div>
-                                      <div class="file-info">
-                                        <div class="path">${filePath.slice(1)}</div>
-                                        <div class="metadata">
-                                          <span class="badge rounded-pill badge-secondary" ${fileStats.size <= 0 ? 'hidden' : ''}><span mulang="size" capitalize></span>: ${Bytes(fileStats.size)}</span>
-                                          <span class="badge rounded-pill badge-secondary" ${fileStats.size > 0 ? 'hidden' : ''}>The file is either missing or inaccessible</span>
-                                        </div>
-                                      </div>
-                                      <a class="btn btn-link btn-rounded btn-sm remove-cql-file" data-mdb-ripple-color="light" href="#" role="button">
-                                        <ion-icon name="trash"></ion-icon>
-                                      </a>
-                                    </div>`
+                                        <div class="cql-file ${fileStats.size <= 0 ? 'invalid' : ''}">
+                                          <div class="sort-handler" style="cursor:grab;">
+                                            <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
+                                          </div>
+                                          <div class="file-info">
+                                            <div class="path">${filePath.slice(1)}</div>
+                                            <div class="metadata">
+                                              <span class="badge rounded-pill badge-secondary" ${fileStats.size <= 0 ? 'hidden' : ''}><span mulang="size" capitalize></span>: ${Bytes(fileStats.size)}</span>
+                                              <span class="badge rounded-pill badge-secondary" ${fileStats.size > 0 ? 'hidden' : ''}>The file is either missing or inaccessible</span>
+                                            </div>
+                                          </div>
+                                          <a class="btn btn-link btn-rounded btn-sm remove-cql-file" data-mdb-ripple-color="light" href="#" role="button">
+                                            <ion-icon name="trash"></ion-icon>
+                                          </a>
+                                        </div>`
 
                               filesContainer.append($(element).show(function() {
                                 let cqlFileElement = $(this)
@@ -7300,11 +7333,12 @@
                   // Point at the cluster element in the UI
                   clusterElement = $(`div.clusters div.cluster[data-id="${clusterID}"]`),
                   // Determine if the cluster has an active work area
-                  hasWorkarea = getAttributes(clusterElement, 'data-workarea')
+                  hasWorkarea = getAttributes(clusterElement, 'data-workarea'),
+                  isSCBConnection = clusterElement.attr('data-scb-path') != undefined
 
                 // Add log about edit cluster
                 try {
-                  addLog(`Attempt to edit local cluster '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                  addLog(`Attempt to edit connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
                 } catch (e) {}
 
                 // If the cluster has an active work area then stop the process and show feedback to the user
@@ -7326,7 +7360,14 @@
                 // Change the primary button's text
                 $(`button#addCluster`).text(I18next.t('update connection'))
 
-                $('div.modal#addEditClusterDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
+                $(`div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type[data-type="${!isSCBConnection ? 'apache-cassandra' : 'astra-db'}"]`).click()
+
+                if (!isSCBConnection) {
+                  $('div.modal#addEditClusterDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
+
+                  if ($('div.modal#addEditClusterDialog').hasClass('show-editor'))
+                    $('button#switchEditor').click()
+                }
 
                 /**
                  * Reset some elements in the dialog
@@ -7336,7 +7377,7 @@
                 $('button#addCluster').attr('disabled', null)
 
                 // Hide passwords
-                $(`[info-section="none"][info-key="password"]`).attr('type', 'password')
+                $(`[info-section="none"][info-key="password"]`).add('input#astraDBClientSecret').attr('type', 'password')
                 $('span.reveal-password div.btn ion-icon').attr('name', 'eye-opened')
 
                 // Get all clusters in the workspace
@@ -7351,240 +7392,118 @@
                 // Define this variable as a copy of the cluster's object before starting the edit
                 editedClusterObject = currentCluster
 
-                /**
-                 * Change the value of the editor to the cluster's `cqlsh.rc` file's content
-                 * There's a `change` listener that will perform all needed changes; as we've already handled that in the listener
-                 */
-                editor.setValue(currentCluster.cqlshrc)
+                try {
+                  if (!isSCBConnection)
+                    throw 0
 
-                setTimeout(() => {
-                  // Define inputs that are not in the `cqlsh.rc` file; to handle them separately
-                  let inputs = [{
-                    section: 'none',
-                    key: 'clusterName',
-                    val: currentCluster.name
-                  }, {
-                    section: 'none',
-                    key: 'datacenter',
-                    val: currentCluster.info.datacenter
-                  }]
+                  getKey('private', (key) => {
+                    // If the key is empty then something is not correct with the generator tool
+                    if (key.length <= 0)
+                      return showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
 
-                  // Handle all SSH related input fields/file selectors
-                  try {
-                    // If there's a saved destination address, and it is not `127.0.0.1` then show it to the user
-                    inputs.push({
-                      section: 'none',
-                      key: 'ssh-dest-addr',
-                      val: !([undefined, '127.0.0.1'].includes(currentCluster.ssh.dstAddr)) ? currentCluster.ssh.dstAddr : ''
-                    })
+                    let inputFields = {
+                        connectionName: $('input#astraDBConnectionName'),
+                        username: $('input#astraDBClientID'),
+                        password: $('input#astraDBClientSecret'),
+                        scbFilePath: $('input#astraDBSCBPath')
+                      },
+                      username = decrypt(key, currentCluster.info.secrets.username)
+                    password = decrypt(key, currentCluster.info.secrets.password)
 
-                    // If we have a private key then show it to the user
-                    inputs.push({
-                      section: 'none',
-                      key: 'ssh-privatekey',
-                      val: (currentCluster.ssh.privatekey != undefined) ? currentCluster.ssh.privatekey : ''
-                    })
+                    inputFields.connectionName.val(currentCluster.name)
+                    inputFields.username.val(username)
+                    inputFields.password.val(password)
 
-                    // If we have a passphrase then show it to the user
-                    inputs.push({
-                      section: 'none',
-                      key: 'ssh-passphrase',
-                      val: (currentCluster.ssh.passphrase != undefined) ? currentCluster.ssh.passphrase : ''
-                    })
-
-                    // If there's a saved destination port, and it is not the same as the connection port then show it as well
-                    inputs.push({
-                      section: 'none',
-                      key: 'ssh-dest-port',
-                      val: (currentCluster.ssh.dstPort != undefined && $('input[info-section="connection"][info-key="port"]').val() != currentCluster.ssh.dstPort) ? currentCluster.ssh.dstPort : ''
-                    })
-
-                    // Do the same process to the SSH host
-                    inputs.push({
-                      section: 'none',
-                      key: 'ssh-host',
-                      val: (currentCluster.ssh.host != undefined && $('input[info-section="connection"][info-key="hostname"]').val() != currentCluster.ssh.host) ? currentCluster.ssh.host : ''
-                    })
-
-                    // And the SSH port as well
-                    inputs.push({
-                      section: 'none',
-                      key: 'ssh-port',
-                      val: (!([undefined, '22'].includes(currentCluster.ssh.port))) ? currentCluster.ssh.port : ''
-                    })
-                  } catch (e) {
                     try {
-                      errorLog(e, 'connections')
-                    } catch (e) {}
-                  }
+                      let tooltipObject = getElementMDBObject(inputFields.scbFilePath, 'Tooltip')
 
-                  // Loop through all inputs in the `inputs` array and set their proper values
-                  inputs.forEach((input) => {
-                    // Get the MDB object for the current input
-                    let object = getElementMDBObject($(`[info-section="${input.section}"][info-key="${input.key}"]`))
-
-                    // Set its saved value
-                    $(object._element).find('input').val(input.val)
-
-                    // Update the object
-                    object.update()
-                    setTimeout(() => object._deactivate())
-
-                    // If the current input is not a file selector then skip this try-catch block
-                    if ($(object._element).attr('file-name') == undefined)
-                      return
-
-                    /**
-                     * Update the tooltip's content and state
-                     * Get the object
-                     */
-                    let tooltipObject = getElementMDBObject($(object._element).find('input'), 'Tooltip')
-
-                    // Set the selected file's path
-                    $(object._element).find('input').val(input.val).trigger('input')
-                    $(object._element).attr('file-name', input.val.length <= 0 ? '-' : Path.basename(input.val))
-
-                    // Handle the tooltip
-                    try {
-                      // If the value is acutally empty then attempt to disable the tooltip
-                      if (input.val.length <= 0)
-                        throw 0
-
-                      // Enable the tooltip and update its content
                       tooltipObject.enable()
-                      tooltipObject.setContent(input.val)
-                    } catch (e) {
-                      try {
-                        // Disable the tooltip
-                        tooltipObject.disable()
-                      } catch (e) {}
-                    }
+                      tooltipObject.setContent(currentCluster.info.secureConnectionBundlePath)
+                    } catch (e) {}
+
+                    inputFields.scbFilePath.val(currentCluster.info.secureConnectionBundlePath).trigger('input')
+                    inputFields.scbFilePath.parent().attr('file-name', Path.basename(currentCluster.info.secureConnectionBundlePath))
                   })
+                } catch (e) {}
 
-                  // Check username and password existence for Apache Cassandra and SSH tunnel
-                  let username = '',
-                    password = '',
-                    sshUsername = '',
-                    sshPassword = ''
+                try {
+                  if (isSCBConnection)
+                    throw 0
 
-                  // If there are saved secrets for the cluster
-                  if (currentCluster.info.secrets != undefined) {
+                  /**
+                   * Change the value of the editor to the cluster's `cqlsh.rc` file's content
+                   * There's a `change` listener that will perform all needed changes; as we've already handled that in the listener
+                   */
+                  editor.setValue(currentCluster.cqlshrc)
+
+                  setTimeout(() => {
+                    // Define inputs that are not in the `cqlsh.rc` file; to handle them separately
+                    let inputs = [{
+                      section: 'none',
+                      key: 'clusterName',
+                      val: currentCluster.name
+                    }, {
+                      section: 'none',
+                      key: 'datacenter',
+                      val: currentCluster.info.datacenter
+                    }]
+
+                    // Handle all SSH related input fields/file selectors
                     try {
-                      // Get the private key; to decrypt secrets and show them in the dialog
-                      getKey('private', (key) => {
-                        // If the key is empty then something is not correct with the generator tool
-                        if (key.length <= 0)
-                          return showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
+                      // If there's a saved destination address, and it is not `127.0.0.1` then show it to the user
+                      inputs.push({
+                        section: 'none',
+                        key: 'ssh-dest-addr',
+                        val: !([undefined, '127.0.0.1'].includes(currentCluster.ssh.dstAddr)) ? currentCluster.ssh.dstAddr : ''
+                      })
 
-                        // Try to decrypt both; username and password
-                        username = decrypt(key, currentCluster.info.secrets.username)
-                        password = decrypt(key, currentCluster.info.secrets.password)
+                      // If we have a private key then show it to the user
+                      inputs.push({
+                        section: 'none',
+                        key: 'ssh-privatekey',
+                        val: (currentCluster.ssh.privatekey != undefined) ? currentCluster.ssh.privatekey : ''
+                      })
 
-                        // Empty the `inputs` array
-                        inputs = []
+                      // If we have a passphrase then show it to the user
+                      inputs.push({
+                        section: 'none',
+                        key: 'ssh-passphrase',
+                        val: (currentCluster.ssh.passphrase != undefined) ? currentCluster.ssh.passphrase : ''
+                      })
 
-                        // Push new secrets in the `inputs` array
-                        inputs.push({
-                          section: 'none',
-                          key: 'username',
-                          val: username
-                        }, {
-                          section: 'none',
-                          key: 'password',
-                          val: password
-                        })
+                      // If there's a saved destination port, and it is not the same as the connection port then show it as well
+                      inputs.push({
+                        section: 'none',
+                        key: 'ssh-dest-port',
+                        val: (currentCluster.ssh.dstPort != undefined && $('input[info-section="connection"][info-key="port"]').val() != currentCluster.ssh.dstPort) ? currentCluster.ssh.dstPort : ''
+                      })
 
-                        // Check if SSH username is provided
-                        try {
-                          if (currentCluster.info.secrets.sshUsername == undefined)
-                            throw 0
+                      // Do the same process to the SSH host
+                      inputs.push({
+                        section: 'none',
+                        key: 'ssh-host',
+                        val: (currentCluster.ssh.host != undefined && $('input[info-section="connection"][info-key="hostname"]').val() != currentCluster.ssh.host) ? currentCluster.ssh.host : ''
+                      })
 
-                          // Decrypt the SSH username
-                          sshUsername = decrypt(key, currentCluster.info.secrets.sshUsername)
-
-                          // Push it to the `inputs` array; to be shown in the dialog
-                          inputs.push({
-                            section: 'none',
-                            key: 'ssh-username',
-                            val: sshUsername
-                          })
-                        } catch (e) {
-                          try {
-                            errorLog(e, 'connections')
-                          } catch (e) {}
-                        }
-
-                        // Check if SSH password is provided
-                        try {
-                          if (currentCluster.info.secrets.sshPassword == undefined)
-                            throw 0
-
-                          // Decrypt the SSHS password
-                          sshPassword = decrypt(key, currentCluster.info.secrets.sshPassword)
-
-                          // Push it to the `inputs` array
-                          inputs.push({
-                            section: 'none',
-                            key: 'ssh-password',
-                            val: sshPassword
-                          })
-                        } catch (e) {
-                          try {
-                            errorLog(e, 'connections')
-                          } catch (e) {}
-                        }
-
-                        // Loop through secrets' inputs and set their value
-                        inputs.forEach((input) => {
-                          // Get the MDB object for the current input
-                          let object = getElementMDBObject($(`[info-section="${input.section}"][info-key="${input.key}"]`))
-
-                          // Set its saved value
-                          $(object._element).find('input').val(input.val)
-
-                          // Update the object
-                          object.update()
-                          setTimeout(() => object._deactivate())
-                        })
+                      // And the SSH port as well
+                      inputs.push({
+                        section: 'none',
+                        key: 'ssh-port',
+                        val: (!([undefined, '22'].includes(currentCluster.ssh.port))) ? currentCluster.ssh.port : ''
                       })
                     } catch (e) {
                       try {
                         errorLog(e, 'connections')
                       } catch (e) {}
                     }
-                  } else {
-                    /**
-                     * There are no saved secrets for the cluster
-                     *
-                     * Empty the `inputs` array
-                     */
-                    inputs = []
 
-                    // Push the secrets' input fields
-                    inputs.push({
-                      section: 'none',
-                      key: 'username',
-                    }, {
-                      section: 'none',
-                      key: 'password',
-                    }, {
-                      section: 'none',
-                      key: 'ssh-username',
-                    }, {
-                      section: 'none',
-                      key: 'ssh-password',
-                    }, {
-                      section: 'none',
-                      key: 'ssh-privatekey',
-                    })
-
-                    // Loop through the input fields and empty them
+                    // Loop through all inputs in the `inputs` array and set their proper values
                     inputs.forEach((input) => {
                       // Get the MDB object for the current input
                       let object = getElementMDBObject($(`[info-section="${input.section}"][info-key="${input.key}"]`))
 
                       // Set its saved value
-                      $(object._element).find('input').val('')
+                      $(object._element).find('input').val(input.val)
 
                       // Update the object
                       object.update()
@@ -7600,16 +7519,180 @@
                        */
                       let tooltipObject = getElementMDBObject($(object._element).find('input'), 'Tooltip')
 
-                      try {
-                        // Disable the tooltip
-                        tooltipObject.disable()
-                      } catch (e) {}
-                    })
-                  }
+                      // Set the selected file's path
+                      $(object._element).find('input').val(input.val).trigger('input')
+                      $(object._element).attr('file-name', input.val.length <= 0 ? '-' : Path.basename(input.val))
 
+                      // Handle the tooltip
+                      try {
+                        // If the value is acutally empty then attempt to disable the tooltip
+                        if (input.val.length <= 0)
+                          throw 0
+
+                        // Enable the tooltip and update its content
+                        tooltipObject.enable()
+                        tooltipObject.setContent(input.val)
+                      } catch (e) {
+                        try {
+                          // Disable the tooltip
+                          tooltipObject.disable()
+                        } catch (e) {}
+                      }
+                    })
+
+                    // Check username and password existence for Apache Cassandra and SSH tunnel
+                    let username = '',
+                      password = '',
+                      sshUsername = '',
+                      sshPassword = ''
+
+                    // If there are saved secrets for the cluster
+                    if (currentCluster.info.secrets != undefined) {
+                      try {
+                        // Get the private key; to decrypt secrets and show them in the dialog
+                        getKey('private', (key) => {
+                          // If the key is empty then something is not correct with the generator tool
+                          if (key.length <= 0)
+                            return showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
+
+                          // Try to decrypt both; username and password
+                          username = decrypt(key, currentCluster.info.secrets.username)
+                          password = decrypt(key, currentCluster.info.secrets.password)
+
+                          // Empty the `inputs` array
+                          inputs = []
+
+                          // Push new secrets in the `inputs` array
+                          inputs.push({
+                            section: 'none',
+                            key: 'username',
+                            val: username
+                          }, {
+                            section: 'none',
+                            key: 'password',
+                            val: password
+                          })
+
+                          // Check if SSH username is provided
+                          try {
+                            if (currentCluster.info.secrets.sshUsername == undefined)
+                              throw 0
+
+                            // Decrypt the SSH username
+                            sshUsername = decrypt(key, currentCluster.info.secrets.sshUsername)
+
+                            // Push it to the `inputs` array; to be shown in the dialog
+                            inputs.push({
+                              section: 'none',
+                              key: 'ssh-username',
+                              val: sshUsername
+                            })
+                          } catch (e) {
+                            try {
+                              errorLog(e, 'connections')
+                            } catch (e) {}
+                          }
+
+                          // Check if SSH password is provided
+                          try {
+                            if (currentCluster.info.secrets.sshPassword == undefined)
+                              throw 0
+
+                            // Decrypt the SSHS password
+                            sshPassword = decrypt(key, currentCluster.info.secrets.sshPassword)
+
+                            // Push it to the `inputs` array
+                            inputs.push({
+                              section: 'none',
+                              key: 'ssh-password',
+                              val: sshPassword
+                            })
+                          } catch (e) {
+                            try {
+                              errorLog(e, 'connections')
+                            } catch (e) {}
+                          }
+
+                          // Loop through secrets' inputs and set their value
+                          inputs.forEach((input) => {
+                            // Get the MDB object for the current input
+                            let object = getElementMDBObject($(`[info-section="${input.section}"][info-key="${input.key}"]`))
+
+                            // Set its saved value
+                            $(object._element).find('input').val(input.val)
+
+                            // Update the object
+                            object.update()
+                            setTimeout(() => object._deactivate())
+                          })
+                        })
+                      } catch (e) {
+                        try {
+                          errorLog(e, 'connections')
+                        } catch (e) {}
+                      }
+                    } else {
+                      /**
+                       * There are no saved secrets for the cluster
+                       *
+                       * Empty the `inputs` array
+                       */
+                      inputs = []
+
+                      // Push the secrets' input fields
+                      inputs.push({
+                        section: 'none',
+                        key: 'username',
+                      }, {
+                        section: 'none',
+                        key: 'password',
+                      }, {
+                        section: 'none',
+                        key: 'ssh-username',
+                      }, {
+                        section: 'none',
+                        key: 'ssh-password',
+                      }, {
+                        section: 'none',
+                        key: 'ssh-privatekey',
+                      })
+
+                      // Loop through the input fields and empty them
+                      inputs.forEach((input) => {
+                        // Get the MDB object for the current input
+                        let object = getElementMDBObject($(`[info-section="${input.section}"][info-key="${input.key}"]`))
+
+                        // Set its saved value
+                        $(object._element).find('input').val('')
+
+                        // Update the object
+                        object.update()
+                        setTimeout(() => object._deactivate())
+
+                        // If the current input is not a file selector then skip this try-catch block
+                        if ($(object._element).attr('file-name') == undefined)
+                          return
+
+                        /**
+                         * Update the tooltip's content and state
+                         * Get the object
+                         */
+                        let tooltipObject = getElementMDBObject($(object._element).find('input'), 'Tooltip')
+
+                        try {
+                          // Disable the tooltip
+                          tooltipObject.disable()
+                        } catch (e) {}
+                      })
+                    }
+                  })
+                } catch (e) {}
+
+                setTimeout(() => {
                   // Open the `Add New Cluster` dialog
                   $(`button#addClusterProcess`).trigger('click', true)
                 })
+
                 // The rest actions and events related to the dialog are handled in the dialog buttons events listeners
               })
 
@@ -7842,10 +7925,13 @@
                 // Get the `cqlsh.rc` config file's path for the current cluster
                 let cqlshrcPath = Path.join(clusterFolder, 'config', 'cqlsh.rc'),
                   // Get Apache Cassandra's version
-                  version = getAttributes(clusterElement, 'data-latest-cassandra-version') || getAttributes(clusterElement, 'data-cassandra-version')
+                  version = getAttributes(clusterElement, 'data-latest-cassandra-version') || getAttributes(clusterElement, 'data-cassandra-version'),
+                  host = getAttributes(clusterElement, 'data-host')
 
                 // Show it in the interactive terminal
-                addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Connecting with host ${getAttributes(clusterElement, 'data-host')}.`, null, true, 'neutral')
+                if (minifyText(host).length != 0)
+                  addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Connecting with host ${host}.`, null, true, 'neutral')
+
                 addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Detected Apache Cassandra version is ${version}.`, null, true, 'neutral')
 
                 $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${clusterElement.attr('data-id')}"]`).find('div.info[info="cassandra"]').children('div.text').text(`v${version}`)
@@ -7917,6 +8003,9 @@
                   version,
                   logPath: Path.join(clusterFolder, 'logs', `${machineID} - ${formatTimestamp((new Date()).getTime())}.log`)
                 }
+
+                if (isSCBConnection)
+                  creationData.scbFilePath = clusterElement.attr('data-scb-path')
 
                 // Check if username and password are provided
                 try {
@@ -8080,7 +8169,8 @@
         username = '',
         password = '',
         // By default, there's no wait for encrypting username and password
-        waitForEncryption = false
+        waitForEncryption = false,
+        isSCBConnection = clusterElement.attr('data-scb-path') != undefined
 
       // Get all saved clusters
       let allClusters = await Modules.Clusters.getClusters(workspaceID),
@@ -8118,36 +8208,41 @@
         return
       } catch (e) {}
 
-      /**
-       * Check pre and post-connect scripts
-       * Get all scripts associated with the cluster
-       */
-      let check = await getPrePostConnectionScripts(workspaceID, clusterID)
-
-      // Set the received data
-      scripts.pre = check.pre
-      scripts.post = check.post
-      foundSensitiveData = check.foundSensitiveData
-
       try {
-        // If no sensitive data has been found then skip this try-catch block
-        if (!foundSensitiveData)
+        if (isSCBConnection)
           throw 0
 
-        // Show feedback to the user about having sensitive data in the `cqlsh.rc` file
-        showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t(`workbench stores sensitive data encrypted and securely using the appropriate secure storage mechanism for your OS. The [code]cqlsh.rc[/code] content added contains sensitive information (such as username, password or a path to a credentials file), which is not permitted. Please remove this sensitive data before attempting to connect again`)) + '.', 'failure')
+        /**
+         * Check pre and post-connect scripts
+         * Get all scripts associated with the cluster
+         */
+        let check = await getPrePostConnectionScripts(workspaceID, clusterID)
 
-        // Enable the `CONNECT` button
-        testConnectionBtn.removeAttr('disabled')
+        // Set the received data
+        scripts.pre = check.pre
+        scripts.post = check.post
+        foundSensitiveData = check.foundSensitiveData
 
-        // Remove multiple classes for the cluster and its status elements
-        clusterElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
+        try {
+          // If no sensitive data has been found then skip this try-catch block
+          if (!foundSensitiveData)
+            throw 0
 
-        // Hide the termination process' button after a set time out
-        setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+          // Show feedback to the user about having sensitive data in the `cqlsh.rc` file
+          showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t(`workbench stores sensitive data encrypted and securely using the appropriate secure storage mechanism for your OS. The [code]cqlsh.rc[/code] content added contains sensitive information (such as username, password or a path to a credentials file), which is not permitted. Please remove this sensitive data before attempting to connect again`)) + '.', 'failure')
 
-        // Skip the upcoming code
-        return
+          // Enable the `CONNECT` button
+          testConnectionBtn.removeAttr('disabled')
+
+          // Remove multiple classes for the cluster and its status elements
+          clusterElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
+
+          // Hide the termination process' button after a set time out
+          setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
+          // Skip the upcoming code
+          return
+        } catch (e) {}
       } catch (e) {}
 
       // Define the test data; the cluster's ID and its `cqlsh.rc` file's path
@@ -8155,6 +8250,9 @@
         id: clusterObject.info.id,
         cqlshrcPath: clusterObject.cqlshrcPath
       }
+
+      if (isSCBConnection)
+        testData.scbFilePath = clusterElement.attr('data-scb-path')
 
       // Check if there is a username and password for Apache Cassandra
       try {
@@ -8192,6 +8290,9 @@
 
         // Get variables manifest and values
         try {
+          if (isSCBConnection)
+            throw 0
+
           // Define JSON object which will hold the names of the temporary files
           let files = {}
 
@@ -9078,6 +9179,191 @@
                 addLog(`Request to test connection that could be added/updated`, 'action')
               } catch (e) {}
 
+              try {
+                // For AstraDB Connection type
+                let isAstraDBConnectionType = $('div#addEditClusterDialog').attr('data-selected-modal-body') == 'astra-db'
+
+                if (!isAstraDBConnectionType)
+                  throw 0
+
+                let astraDBConnectionData = {
+                    ClientID: $('#astraDBClientID').val(),
+                    ClientSecret: $('#astraDBClientSecret').val(),
+                    SCBPath: $('#astraDBSCBPath').val()
+                  },
+                  requestID = getRandomID(10)
+
+                // Check if there's any missing data
+                let isMissingDataFound = false
+
+                try {
+                  for (let key of Object.keys(astraDBConnectionData)) {
+                    let data = astraDBConnectionData[key],
+                      isMissing = minifyText(data).length <= 0
+
+                    $(`#astraDB${key}`).toggleClass('is-invalid', isMissing)
+
+                    if (isMissing)
+                      isMissingDataFound = true
+                  }
+                } catch (e) {}
+
+                if (isMissingDataFound)
+                  return showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t('to test connection with Astra DB, all fields are required, please make sure to provide them all before attempting to test connection again')) + '.', 'failure')
+
+                // The dialog is testing the connection with the cluster
+                dialogElement.addClass('test-connection')
+
+                // Show the termination process' button
+                setTimeout(() => dialogElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
+                // Disable all the buttons in the footer
+                button.add('#addCluster').add('#switchEditor').attr('disabled', 'disabled')
+
+                $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').addClass('disabled')
+
+                tempClusterID = null
+
+                try {
+                  // Get the SSH username and password - for Apache Cassandra's authentication -
+                  username = astraDBConnectionData.ClientID
+                  password = astraDBConnectionData.ClientSecret
+
+                  // If both username and password have been provided then they'll be encrypted
+                  waitForEncryption = [username, password].every((secret) => secret.trim().length != 0)
+                } catch (e) {}
+
+                getKey('public', async (key) => {
+                  try {
+                    // If the received key is valid then skip this try-catch block
+                    if (key.length > 0)
+                      throw 0
+
+                    // Remove the test connection class
+                    dialogElement.removeClass('test-connection enable-terminate-process')
+
+                    // Hide the termination process' button after a set time out
+                    setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
+                    // Enable some buttons in the footer
+                    button.add('#switchEditor').removeAttr('disabled', 'disabled')
+
+                    $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
+
+                    // Disable the `SAVE CLUSTER` button
+                    $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
+
+                    // Show feedback to the user
+                    showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
+
+                    // Skip the upcoming code - end the process -
+                    return
+                  } catch (e) {}
+
+                  /**
+                   * Reaching here means the received key is valid
+                   *
+                   * Encrypt both values; username and password
+                   */
+                  encryptedUsername = encrypt(key, username)
+                  encryptedPassword = encrypt(key, password)
+
+                  // Request to test connection based on the provided data
+                  IPCRenderer.send('pty:test-connection', {
+                    requestID,
+                    processID: testConnectionProcessID,
+                    secrets: {
+                      username: encryptedUsername,
+                      password: encryptedPassword
+                    },
+                    workspaceID: getActiveWorkspaceID(),
+                    scbFilePath: astraDBConnectionData.SCBPath
+                  })
+
+                  // In both cases listen to the response about the connection test
+                  IPCRenderer.on(`pty:test-connection:${requestID}`, async (_, result) => {
+                    setTimeout(async () => {
+                      /**
+                       * If there's a post-connection script(s) to be executed
+                       *
+                       * Set this variable to hold the overall script's execution feedback
+                       */
+                      let executionFeedback = ''
+
+                      // Hold the tested cluster's object
+                      testedClusterObject = result
+
+                      // Hold all detected/seen data centers' names in array
+                      let allDataCenters
+
+                      try {
+                        // Remove the test connection class
+                        dialogElement.removeClass('test-connection enable-terminate-process')
+
+                        // Hide the termination process' button after a set time out
+                        setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
+                        // Enable the `TEST CONNECTION` button
+                        button.add('#switchEditor').removeAttr('disabled', 'disabled')
+
+                        $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
+
+                        // Determine if the connection test has succeeded or not, or terminated
+                        let notConnected = !result.connected || [undefined, null].includes(result.version) || result.terminated != undefined
+
+                        // Enable or disable the save button based on the test's result
+                        $('#addCluster').attr('disabled', !notConnected || getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') != undefined ? null : 'disabled')
+
+                        // Failed to connect with the cluster - process hasn't been terminated -
+                        if (notConnected && result.terminated == undefined) {
+                          // Define the error message
+                          let error = result.error.trim().length != 0 ? ` ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
+
+                          // Show feedback to the user
+                          showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('failed to activate connection'))}${error}${executionFeedback}.`, 'failure')
+
+                          // Skip the upcoming code
+                          throw 0
+                        }
+
+                        // If the process has been terminated then skip this try-catch block
+                        if (result.terminated != undefined)
+                          throw 0
+
+                        /**
+                         * Successfully connected with the cluster
+                         *
+                         * Get the success feedback suffix
+                         */
+                        let suffix = I18next.t('you may now save it')
+
+                        // Change the suffix if the dialog's current mode is `edit`
+                        if (getAttributes(dialogElement, 'data-edit-cluster-id') != undefined)
+                          suffix = I18next.t('you can now complete the update')
+
+                        try {
+                          // If the version of Cassandra is not v3 then skip this try-catch block
+                          if (!result.version.startsWith('3.'))
+                            throw 0
+
+                          // Just warn the user about that unsupported version
+                          setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
+                        } catch (e) {}
+
+                        // Show feedback to the user
+                        showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('connection test has finished with success'))}, ${I18next.capitalizeFirstLetter(suffix)}${executionFeedback}.`, 'success')
+
+                        // Refresh workspaces - to ensure synchronization with the latest data -
+                        $(document).trigger('refreshWorkspaces')
+                      } catch (e) {}
+                    })
+                  })
+                })
+
+                return
+              } catch (e) {}
+
+              // For Apache Cassandra Connection type
               // Attempt to close the created SSH tunnel - if exists -
               try {
                 IPCRenderer.send('ssh-tunnel:close', tempClusterID)
@@ -9158,6 +9444,8 @@
                 // Enable the `TEST CONNECTION` button
                 button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
+                $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
+
                 // Remove the test connection class
                 dialogElement.removeClass('test-connection enable-terminate-process')
 
@@ -9198,6 +9486,8 @@
 
               // Disable all the buttons in the footer
               button.add('#addCluster').add('#switchEditor').attr('disabled', 'disabled')
+
+              $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').addClass('disabled')
 
               /**
                * Inner function to do processes which are after the SSH tunneling creation process - whether the process has been executed or not -
@@ -9288,6 +9578,8 @@
 
                         // Enable some buttons in the footer
                         button.add('#switchEditor').removeAttr('disabled', 'disabled')
+
+                        $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
 
                         // Disable the `SAVE CLUSTER` button
                         $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
@@ -9386,6 +9678,8 @@
 
                         // Enable the `TEST CONNECTION` button
                         button.add('#switchEditor').removeAttr('disabled', 'disabled')
+
+                        $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
 
                         // Determine if the connection test has succeeded or not, or terminated
                         let notConnected = !result.connected || [undefined, null].includes(result.version) || result.terminated != undefined
@@ -9588,6 +9882,8 @@
                     // Enable the `TEST CONNECTION` button
                     button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
+                    $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
+
                     // Show feedback to the user
                     if (!creationResult.terminated)
                       showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('failed to establish an SSH tunnel for the connection'))}. ${creationResult.error}.`, 'failure')
@@ -9648,6 +9944,8 @@
                   // Enable the `TEST CONNECTION` button
                   button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
+                  $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
+
                   // Disable the `SAVE CLUSTER` button
                   $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
                 })
@@ -9665,7 +9963,7 @@
             })
 
             // Clicks the process termination button
-            $('#terminateConnectionTestProcess').click(() => {
+            $('#terminateConnectionTestProcess').add('#terminateConnectionTestProcessAstraDB').click(() => {
               try {
                 if (!isSSHTunnelNeeded)
                   throw 0
@@ -9717,94 +10015,13 @@
                 // Save/update button
                 button = $(this),
                 // We're in editing mode or not
-                editingMode = getAttributes($(`div.modal#addEditClusterDialog`), 'data-edit-cluster-id') != undefined
+                editingMode = getAttributes($(`div.modal#addEditClusterDialog`), 'data-edit-cluster-id') != undefined,
+                finalCluster
 
               // Add log about this request
               try {
                 addLog(`Request to add/edit new connection after a successful test`, 'action')
               } catch (e) {}
-
-              try {
-                // If the provided cluster's name is valid then skip this try-catch block
-                if (clusterName.trim().length > 0)
-                  throw 0
-
-                // Add an `invalid` class to the cluster name's input field
-                $('[info-section="none"][info-key="clusterName"]').addClass('is-invalid')
-
-                // Point at the basic section navigation button in the dialog
-                let basicSectionBtn = $(`div.modal#addEditClusterDialog`).find('div.btn[section="basic"]')
-
-                // If the basic section is not the currently active one then show invalid inputs notification
-                if (!basicSectionBtn.hasClass('active'))
-                  basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
-
-                // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('to save a connection, a unique valid name is required to be provided')) + '.', 'failure')
-
-                // Skip the upcoming code - terminate the cluster's saving/updating process -
-                return
-              } catch (e) {}
-
-              // Disable the buttons in the footer
-              button.add('#testConnectionCluster').add('#switchEditor').attr('disabled', 'disabled')
-
-              // Get all saved clusters in the workspace
-              let _clusters = await Modules.Clusters.getClusters(workspaceID),
-                // Make sure the provided cluster's name does not exist - duplication is not allowed -
-                exists = _clusters.find((_cluster) => (manipulateText(_cluster.name) == manipulateText(clusterName)) && (manipulateText(Sanitize(_cluster.folder)) == manipulateText(Sanitize(clusterName)))),
-                /**
-                 * If the current state of the dialog is `edit` then make sure to exclude the cluster's name from duplication
-                 * `editedClusterObject` is a global object that is updated with every attempt to edit/update a cluster
-                 */
-                extraCondition = editingMode ? clusterName != editedClusterObject.name : true
-
-              try {
-                if (Sanitize(minifyText(clusterName)).length > 0)
-                  throw 0
-
-                // Enable the buttons in the footer
-                button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
-
-                // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('the given name seems invalid, please provide a unique valid name')) + '.', 'failure')
-
-                // Skip the upcoming code - terminate the saving/updating process -
-                return
-              } catch (e) {}
-
-              try {
-                // If there's no duplication then skip this try-catch block
-                if ([undefined, null].includes(exists) || !extraCondition)
-                  throw 0
-
-                // Enable the buttons in the footer
-                button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
-
-                // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.replaceData('a connection is already exists with the given name [b]$data[/b] in workspace [b]$data[/b], please provide a unique valid name', [clusterName, getWorkspaceName(workspaceID)])) + '.', 'failure')
-
-                // Skip the upcoming code - terminate the saving/updating process -
-                return
-              } catch (e) {}
-
-              /**
-               * Reaching here means there's no duplication in the name of the cluster
-               *
-               * Set the final cluster's object which will be used to save it and its info - secrets, SSH tunneling info, etc... -
-               */
-              let finalCluster = {
-                name: clusterName,
-                cqlshrc: editor.getValue(),
-                info: {
-                  id: editingMode ? editedClusterObject.info.id : `cluster-${getRandomID(10)}`,
-                  datacenter: dataCenter.trim()
-                }
-              }
-
-              // If the current mode is `edit` then add an `original` object of the cluster - which is the cluster before being edited -
-              if (editingMode)
-                finalCluster.original = editedClusterObject
 
               /**
                * Inner function to do processes after saving/updating cluster
@@ -10067,6 +10284,268 @@
               }
               // End of the inner function to do processes after saving/updating cluster
 
+              // For AstraDB Connection type
+              try {
+                let isAstraDBConnectionType = $('div#addEditClusterDialog').attr('data-selected-modal-body') == 'astra-db'
+
+                if (!isAstraDBConnectionType)
+                  throw 0
+
+                let astraDBConnectionData = {
+                  ClientID: $('#astraDBClientID').val(),
+                  ClientSecret: $('#astraDBClientSecret').val(),
+                  SCBPath: $('#astraDBSCBPath').val()
+                }
+
+                clusterName = $('#astraDBConnectionName').val()
+
+                // For Apache Cassandra Connection type
+                try {
+                  // If the provided cluster's name is valid then skip this try-catch block
+                  if (clusterName.trim().length > 0)
+                    throw 0
+
+                  // Add an `invalid` class to the cluster name's input field
+                  $('#astraDBConnectionName').addClass('is-invalid')
+
+                  // Show feedback to the user
+                  showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('to save a connection, a unique valid name is required to be provided')) + '.', 'failure')
+
+                  // Skip the upcoming code - terminate the cluster's saving/updating process -
+                  return
+                } catch (e) {}
+
+                username = astraDBConnectionData.ClientID
+
+                password = astraDBConnectionData.ClientSecret
+
+                // Disable the buttons in the footer
+                button.add('#testConnectionCluster').add('#switchEditor').attr('disabled', 'disabled')
+
+                $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').addClass('disabled')
+
+                // Get all saved clusters in the workspace
+                let _clusters = await Modules.Clusters.getClusters(workspaceID),
+                  // Make sure the provided cluster's name does not exist - duplication is not allowed -
+                  exists = _clusters.find((_cluster) => (manipulateText(_cluster.name) == manipulateText(clusterName)) && (manipulateText(Sanitize(_cluster.folder)) == manipulateText(Sanitize(clusterName)))),
+                  /**
+                   * If the current state of the dialog is `edit` then make sure to exclude the cluster's name from duplication
+                   * `editedClusterObject` is a global object that is updated with every attempt to edit/update a cluster
+                   */
+                  extraCondition = editingMode ? clusterName != editedClusterObject.name : true
+
+                try {
+                  if (Sanitize(minifyText(clusterName)).length > 0)
+                    throw 0
+
+                  // Enable the buttons in the footer
+                  button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
+
+                  // Show feedback to the user
+                  showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('the given name seems invalid, please provide a unique valid name')) + '.', 'failure')
+
+                  // Skip the upcoming code - terminate the saving/updating process -
+                  return
+                } catch (e) {}
+
+                try {
+                  // If there's no duplication then skip this try-catch block
+                  if ([undefined, null].includes(exists) || !extraCondition)
+                    throw 0
+
+                  // Enable the buttons in the footer
+                  button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
+
+                  // Show feedback to the user
+                  showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.replaceData('a connection is already exists with the given name [b]$data[/b] in workspace [b]$data[/b], please provide a unique valid name', [clusterName, getWorkspaceName(workspaceID)])) + '.', 'failure')
+
+                  // Skip the upcoming code - terminate the saving/updating process -
+                  return
+                } catch (e) {}
+
+                /**
+                 * Reaching here means there's no duplication in the name of the cluster
+                 *
+                 * Set the final cluster's object which will be used to save it and its info - secrets, SSH tunneling info, etc... -
+                 */
+                finalCluster = {
+                  name: clusterName,
+                  info: {
+                    id: editingMode ? editedClusterObject.info.id : `cluster-${getRandomID(10)}`,
+                    datacenter: '',
+                    secureConnectionBundlePath: astraDBConnectionData.SCBPath
+                  }
+                }
+
+                // If the current mode is `edit` then add an `original` object of the cluster - which is the cluster before being edited -
+                if (editingMode)
+                  finalCluster.original = editedClusterObject
+
+                // Determine the proper function to be called based on whether the current mode is `edit` or not
+                let clustersCallFunction = editingMode ? Modules.Clusters.updateCluster : Modules.Clusters.saveCluster
+
+                /**
+                 * Encrypt all provided secrets - for Apache Cassandra and SSH -
+                 *
+                 * Create an array of names and values of the secrets
+                 */
+                let secrets = [{
+                  name: 'username',
+                  value: username
+                }, {
+                  name: 'password',
+                  value: password
+                }]
+
+                try {
+                  // Get the apps' public RSA key
+                  getKey('public', (key) => {
+                    try {
+                      // If the received key is valid to be used then skip this try-catch block
+                      if (key.length != 0)
+                        throw 0
+
+                      // Show feedback to the user
+                      showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
+
+                      // Call the post-process function with `false` - failed to save/update the cluster
+                      postProcess(false)
+
+                      // Stop the process; as something is not correct with the generator tool
+                      return
+                    } catch (e) {}
+
+                    // Values will be saved in the `secrets` object
+                    finalCluster.info.secrets = [],
+                      // Array to be a copy from the original secrets before manipulation
+                      savedSecrets = []
+
+                    // Set the `credentials` attribute
+                    finalCluster.info.credentials = {}
+
+                    // Loop through each secret's value
+                    for (let secret of secrets) {
+                      // Make sure there's a value to encrypt
+                      if (secret.value.trim().length != 0 && !([undefined, null].includes(secret.value))) {
+                        // Whether or not the current secret will be saved or the user will be asked to provide this secret next time
+                        let toBeSaved = saveAuthCredentials
+
+                        // This secret/credential will be saved
+                        if (toBeSaved) {
+                          savedSecrets[secret.name] = encrypt(key, secret.value)
+                        } else {
+                          // This credential should be provided by the user next time
+                          finalCluster.info.credentials['auth'] = true
+                        }
+                      }
+                    }
+
+                    // If there are no saved secrets then delete the `secrets` attribute
+                    if (Object.keys(savedSecrets).length <= 0) {
+                      delete finalCluster.info.secrets
+                    } else {
+                      // Otherwise, save it
+                      finalCluster.info.secrets = savedSecrets
+                    }
+
+                    // If ther are no required credentials then delete the `credentials` attribute
+                    if (Object.keys(finalCluster.info.credentials).length <= 0)
+                      delete finalCluster.info.credentials
+
+                    // Call the proper function, then pass the status to the `postProcess` inner function
+                    clustersCallFunction(workspaceID, finalCluster).then((status) => postProcess(status, editingMode ? {
+                      ...savedSecrets,
+                      ...finalCluster.info.credentials
+                    } : [true, ...secrets]))
+                  })
+                } catch (e) {}
+
+                return
+              } catch (e) {}
+
+              // For Apache Cassandra Connection type
+              try {
+                // If the provided cluster's name is valid then skip this try-catch block
+                if (clusterName.trim().length > 0)
+                  throw 0
+
+                // Add an `invalid` class to the cluster name's input field
+                $('[info-section="none"][info-key="clusterName"]').addClass('is-invalid')
+
+                // Point at the basic section navigation button in the dialog
+                let basicSectionBtn = $(`div.modal#addEditClusterDialog`).find('div.btn[section="basic"]')
+
+                // If the basic section is not the currently active one then show invalid inputs notification
+                if (!basicSectionBtn.hasClass('active'))
+                  basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
+
+                // Show feedback to the user
+                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('to save a connection, a unique valid name is required to be provided')) + '.', 'failure')
+
+                // Skip the upcoming code - terminate the cluster's saving/updating process -
+                return
+              } catch (e) {}
+
+              // Disable the buttons in the footer
+              button.add('#testConnectionCluster').add('#switchEditor').attr('disabled', 'disabled')
+
+              // Get all saved clusters in the workspace
+              let _clusters = await Modules.Clusters.getClusters(workspaceID),
+                // Make sure the provided cluster's name does not exist - duplication is not allowed -
+                exists = _clusters.find((_cluster) => (manipulateText(_cluster.name) == manipulateText(clusterName)) && (manipulateText(Sanitize(_cluster.folder)) == manipulateText(Sanitize(clusterName)))),
+                /**
+                 * If the current state of the dialog is `edit` then make sure to exclude the cluster's name from duplication
+                 * `editedClusterObject` is a global object that is updated with every attempt to edit/update a cluster
+                 */
+                extraCondition = editingMode ? clusterName != editedClusterObject.name : true
+
+              try {
+                if (Sanitize(minifyText(clusterName)).length > 0)
+                  throw 0
+
+                // Enable the buttons in the footer
+                button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
+
+                // Show feedback to the user
+                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('the given name seems invalid, please provide a unique valid name')) + '.', 'failure')
+
+                // Skip the upcoming code - terminate the saving/updating process -
+                return
+              } catch (e) {}
+
+              try {
+                // If there's no duplication then skip this try-catch block
+                if ([undefined, null].includes(exists) || !extraCondition)
+                  throw 0
+
+                // Enable the buttons in the footer
+                button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
+
+                // Show feedback to the user
+                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.replaceData('a connection is already exists with the given name [b]$data[/b] in workspace [b]$data[/b], please provide a unique valid name', [clusterName, getWorkspaceName(workspaceID)])) + '.', 'failure')
+
+                // Skip the upcoming code - terminate the saving/updating process -
+                return
+              } catch (e) {}
+
+              /**
+               * Reaching here means there's no duplication in the name of the cluster
+               *
+               * Set the final cluster's object which will be used to save it and its info - secrets, SSH tunneling info, etc... -
+               */
+              finalCluster = {
+                name: clusterName,
+                cqlshrc: editor.getValue(),
+                info: {
+                  id: editingMode ? editedClusterObject.info.id : `cluster-${getRandomID(10)}`,
+                  datacenter: dataCenter.trim()
+                }
+              }
+
+              // If the current mode is `edit` then add an `original` object of the cluster - which is the cluster before being edited -
+              if (editingMode)
+                finalCluster.original = editedClusterObject
+
               try {
                 /**
                  * Check username and password for both; Apache Cassandra and SSH tunnel
@@ -10327,6 +10806,9 @@
               }
             }
 
+            if ($(this).attr('id') == 'astraDBSCBPath')
+              title = 'select the secure connection bundle zip file'
+
             // Set other attributes to be used to create the dialog
             let data = {
               id,
@@ -10582,6 +11064,19 @@
 
       // Hide the tooltip
       tooltips.addClusterActionButton.hide()
+
+      if (!$('div.modal#addEditClusterDialo').hasClass('test-connection'))
+        $('div.modal#addEditClusterDialog div.modal-body.select-type').find('div.connection-type[data-type="apache-cassandra"]').click()
+
+      // For Astra  DB
+      try {
+        $('input#astraDBConnectionName').add('input#astraDBClientID').add('input#astraDBClientSecret').add('input#astraDBSCBPath').val('')
+
+        let scbFilePathInputTooltip = getElementMDBObject($('input#astraDBSCBPath'), 'Tooltip')
+
+        scbFilePathInputTooltip.setContent('-')
+        scbFilePathInputTooltip.disable()
+      } catch (e) {}
     })
 
     // Clicks the refresh button
@@ -26652,4 +27147,40 @@
       } catch (e) {}
     }))
   }
+}
+
+// Handle choosing the connection type to added/updated
+{
+  setTimeout(() => {
+    {
+      let selectionButtons = $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type')
+
+      selectionButtons.click(function() {
+        if ($(this).hasClass('active'))
+          return
+
+        let type = $(this).attr('data-type')
+
+        $(`div.modal#addEditClusterDialog`).attr('data-selected-modal-body', type)
+
+        $(`div.modal#addEditClusterDialog`).find('div.connection-type').removeClass('active')
+
+        $(this).addClass('active')
+
+        $('div.modal#addEditClusterDialog div.modal-body[data-connection-type]').hide()
+
+        $(`div.modal#addEditClusterDialog`).find('div.modal-content').css('height', `calc(202px + ${type == 'apache-cassandra' ? 470 : 326}px)`)
+
+        setTimeout(() => $(`div.modal#addEditClusterDialog div.modal-body[data-connection-type="${type}"]`).fadeIn(150), 200)
+
+        $('#addCluster').attr('disabled', 'disabled')
+      })
+    }
+
+    {
+      $('input.astradb-data-field').on('input', function() {
+        $(this).removeClass('is-invalid')
+      })
+    }
+  })
 }

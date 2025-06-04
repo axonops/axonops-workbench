@@ -100,7 +100,7 @@ and for the daily internal builds (used for testing and development purposes) us
 brew install --cask axonopsworkbench-internal
 ```
 
-## 🐳 Docker or Podman Requirements
+## 🐳 Docker or Podman Requirements for running Local Clusters
 
 To run local Cassandra clusters using AxonOps Workbench, you'll need either Docker or Podman installed with the Compose plugin. Recent versions of both include Compose by default.
 

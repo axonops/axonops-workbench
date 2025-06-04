@@ -3,7 +3,7 @@
   
   # AxonOps Workbench
   
-  **Purpose-Built Database Management for Apache Cassandra®**
+  **Purpose-Built Database Management Desktop App for Apache Cassandra®**
   
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
   [![GitHub Issues](https://img.shields.io/github/issues/axonops/axonops-workbench)](https://github.com/axonops/axonops-workbench/issues)

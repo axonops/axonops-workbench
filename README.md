@@ -1,18 +1,85 @@
-# AxonOps Workbench
+<div align="center">
+  <img src="renderer/assets/images/axonops-icon-512x512.png" alt="AxonOps Workbench Icon" width="128">
+  
+  # AxonOps Workbench
+  
+  **Purpose-Built Database Management for Apache Cassandra®**
+  
+  [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+  [![GitHub Issues](https://img.shields.io/github/issues/axonops/axonops-workbench)](https://github.com/axonops/axonops-workbench/issues)
+  [![GitHub Discussions](https://img.shields.io/github/discussions/axonops/axonops-workbench)](https://github.com/axonops/axonops-workbench/discussions)
+  [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://axonops.com/workbench/download/)
+  
+  [🚀 Download](https://axonops.com/workbench/download/) | [📚 Documentation](https://docs.axonops.com/) | [💬 Discussions](https://github.com/axonops/axonops-workbench/discussions/categories/ideas) | [🐛 Issues](https://github.com/axonops/axonops-workbench/issues/new/choose)
+</div>
 
-[AxonOps Workbench](https://axonops.com/workbench/) is a desktop application built for Cassandra DB developers and DBAs. Kafka support is coming soon! 
+---
 
-Seamlessly connect and interact with Apache Cassandra clusters while enjoying a host of innovative enhancements and exciting features. 
+## 🚀 Overview
 
-We welcome your feedback, so feel free to discuss any ideas you have https://github.com/axonops/axonops-workbench/discussions/categories/ideas or raise issues any issues (https://github.com/axonops/axonops-workbench/issues/new/choose)
+[AxonOps Workbench](https://axonops.com/workbench/) is a **powerful, free, and open-source** desktop application designed specifically for Cassandra developers and DBAs. Experience a revolutionary way to work with your distributed databases through an intuitive interface packed with advanced features.
 
-## Download and install
+<div align="center">
+  
+  ### 🎁 100% Free & Open Source
+  **No hidden costs • No premium tiers • No license keys**
+  
+  Community-driven development with full transparency
+  
+</div>
 
-Go to https://axonops.com/workbench/download/ to download the latest release for your OS.
+### 🔗 Supported Databases
+- **[Apache Cassandra®](https://cassandra.apache.org/)** - The leading open-source distributed database
+- **[DataStax Enterprise](https://www.datastax.com/products/datastax-enterprise)** - Enterprise-ready Cassandra distribution
+- **[DataStax Astra DB](https://www.datastax.com/products/datastax-astra)** - Serverless Cassandra-as-a-Service
 
-### Homebrew
+### ✨ Why AxonOps Workbench?
 
-For MacOS builds, it is also possible to install the AxonOps Workbench using [brew](https://brew.sh/)
+- 🎯 **Cassandra-Native Design** - Engineered specifically for Cassandra's unique architecture and workflows
+- 🛠️ **Developer-Friendly** - Intuitive interface with powerful productivity features
+- 🔒 **Secure by Design** - Built-in SSH tunneling and credential management
+- 🤖 **AI-Powered** - Experimental AI assistant to help with queries and troubleshooting
+- 🏃 **Local Development** - Spin up local Cassandra clusters with one click
+- 📊 **Advanced Analytics** - Deep query tracing and performance insights
+- 🌍 **Cross-Platform** - Available for macOS, Windows, and Linux
+
+---
+
+## 🎯 Key Features at a Glance
+
+<div align="center">
+
+| Feature | Description |
+|---------|-------------|
+| 🖥️ **CQL Console** | Advanced editor with syntax highlighting, auto-completion, and multi-tab support |
+| 🤖 **AI Assistant (Experimental)** | Get intelligent help with query optimization and troubleshooting |
+| 🔍 **Query Tracing** | Deep performance analysis with execution plans and bottleneck detection |
+| 🏃 **Local Clusters** | Spin up Cassandra clusters instantly with Docker/Podman integration |
+| 🔒 **SSH Tunneling** | Secure remote connections without external tools |
+| 📁 **Workspaces** | Organize and share cluster configurations via source control |
+| 🌍 **Multi-Language** | Available in English, Spanish, French, Arabic, Chinese, and more |
+| 🎨 **Themes** | Dark and light modes for comfortable coding sessions |
+
+</div>
+
+---
+
+## 📥 Download and Install
+
+### 🎯 Recommended Installation
+
+For the best experience and automatic updates, we recommend downloading AxonOps Workbench directly from our website:
+
+<div align="center">
+  
+  **[⬇️ Download from AxonOps.com](https://axonops.com/workbench/download/)**
+  
+  Available for macOS, Windows, and Linux
+</div>
+
+### 🍺 Homebrew (macOS)
+
+For macOS users, you can also install AxonOps Workbench using [Homebrew](https://brew.sh/):
 
 ```sh
 # Optional: set applications directory to your $HOME
@@ -33,85 +100,143 @@ and for the daily internal builds (used for testing and development purposes) us
 brew install --cask axonopsworkbench-internal
 ```
 
-## Docker or Podman for running local Cassandra clusters
+## 🐳 Docker or Podman Requirements
 
-To run local clusters using AxonOps Workbench, you must have either Docker or Podman installed, along with the Compose plugin. Recent versions of both Docker and Podman include the Compose plugin by default.
+To run local Cassandra clusters using AxonOps Workbench, you'll need either Docker or Podman installed with the Compose plugin. Recent versions of both include Compose by default.
 
-Please ensure that Docker or Podman is installed on your system. AxonOps Workbench will use Docker or Podman from their standard installation paths. If you have installed Docker or Podman in a non-default location, you can specify the custom installation paths in the Workbench application settings.
+### Setup Instructions
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Podman](https://podman.io/)
+2. Ensure the Compose plugin is available
+3. AxonOps Workbench will automatically detect installations in standard paths
+4. For custom installations, configure paths in application settings
 
-<img width="864" alt="Screenshot 2025-04-15 at 11 09 58" src="https://github.com/user-attachments/assets/3696af51-2f13-44eb-956a-7b8751c8abd9" />
+<img width="864" alt="Docker Settings" src="https://github.com/user-attachments/assets/3696af51-2f13-44eb-956a-7b8751c8abd9" />
 
+## ⚡ Quick Start
 
-## Features
+1. **Download & Install** - Get AxonOps Workbench from [axonops.com/workbench/download](https://axonops.com/workbench/download/)
+2. **Set up Docker/Podman** - Required for local cluster management
+3. **Create a Workspace** - Organize your clusters and connections
+4. **Connect to Cassandra** - Support for Apache Cassandra, DataStax Enterprise, and Astra DB
+5. **Start Exploring** - Use the CQL console, query tracing, and AI assistant
 
-### New CQL Console
+## 🎨 Features Showcase
+
+### 📝 Enhanced CQL Console
+Experience the most advanced CQL editor with syntax highlighting, auto-completion, query history, and multi-tab support.
+
 ![Enhanced_CQL_Console](https://github.com/user-attachments/assets/225cc8f3-d1e7-493c-bd73-b8186baa404d)
 
-### Query Tracing
+### 🔍 Advanced Query Tracing
+Deep dive into query performance with detailed tracing, execution plans, and bottleneck identification.
+
 ![Advanced_query_tracing](https://github.com/user-attachments/assets/346cbdc4-60f2-4482-9a57-874919a4f711)
 
-### AI Assistant (Experimental)
+### 🤖 AI Assistant (Experimental)
+Get intelligent query suggestions, performance optimization tips, and troubleshooting help powered by AI.
+
 ![AI_Expert_Assistant](https://github.com/user-attachments/assets/41f737c4-7511-4732-8556-771a6dd8d8a3)
 
-### Organise clusters into workspaces and securely add to source control for sharing
+### 📁 Workspace Management
+Organize your clusters into workspaces and securely share configurations through source control.
+
 <img width="1678" alt="Screenshot 2024-08-23 at 10 07 50" src="https://github.com/user-attachments/assets/42be7bd5-6fa6-4881-8c30-42ab96c2ae45">
 
-### Run local Cassandra clusters
+### 🏃 Local Cluster Management
+Spin up local Cassandra clusters instantly for development and testing with just one click.
+
 <img width="1699" alt="Screenshot 2024-08-23 at 10 13 16" src="https://github.com/user-attachments/assets/0d3cdfe9-4266-4254-b9d1-54d90d7cbdfe">
 
-### Built in SSH tunneling
+### 🔒 Built-in SSH Tunneling
+Connect securely to remote clusters through SSH tunnels without external tools or complex configurations.
+
 <img width="981" alt="Screenshot 2024-08-23 at 07 50 46" src="https://github.com/user-attachments/assets/d26aee76-c34a-4495-a89b-85896e2590e5">
 
-## Software Bill of Materials (SBOM)
+### 🚀 Additional Features
+
+- **🔐 Secure Credential Management** - Store and manage connection credentials securely in your system keychain
+- **📊 Schema Visualization** *(Coming Soon)* - Visual representation of keyspaces, tables, and relationships
+- **🎯 Smart Auto-completion** - Context-aware CQL suggestions and table/column name completion
+- **📝 Query History** - Access and search through your previously executed queries
+- **🔄 Import/Export** - Export query results to CSV, JSON, or other formats
+- **🌐 Multi-cluster Support** - Connect to multiple clusters simultaneously with easy switching
+- **🎨 Dark/Light Themes** - Choose your preferred visual theme for comfortable coding
+- **🌍 Internationalization** - Available in multiple languages including English, Spanish, French, Arabic, Chinese, and more
+- **⚡ Performance Metrics** *(Coming Soon for AxonOps-managed clusters)* - Real-time cluster health and performance monitoring
+- **🔧 Table Operations** - Visual tools for creating, altering, and managing tables
+- **📁 Data Import/Export** - Bulk data operations with progress tracking
+- **🔍 Full-text Search** - Search across your entire cluster metadata
+
+## 📋 Software Bill of Materials (SBOM)
 
 This project provides Software Bill of Materials (SBOM) files with each release, offering transparency into our software components and dependencies. SBOMs help users and organizations understand exactly what components are included in our software, enabling better security and compliance management.
 
-**Available SBOM Formats**
-- CycloneDX (sbom.cyclonedx.json): A lightweight SBOM standard that provides detailed component information and security context
-- SPDX (sbom.spdx.json): A comprehensive format focusing on software licensing and component identification
+### Available SBOM Formats
+- **CycloneDX** (`sbom.cyclonedx.json`): A lightweight SBOM standard that provides detailed component information and security context
+- **SPDX** (`sbom.spdx.json`): A comprehensive format focusing on software licensing and component identification
 
-**Benefits of Our SBOM**
-- Security: Easily identify and track known vulnerabilities in dependencies
-- Compliance: Verify license obligations for all included components
-- Transparency: Clear visibility into the software supply chain
-- Risk Management: Better understand and assess potential risks in the software stack
+### Benefits of Our SBOM
+- 🛡️ **Security**: Easily identify and track known vulnerabilities in dependencies
+- 📜 **Compliance**: Verify license obligations for all included components
+- 🔍 **Transparency**: Clear visibility into the software supply chain
+- ⚡ **Risk Management**: Better understand and assess potential risks in the software stack
 
-You can find our SBOM files in each [release](releases) as part of the release artifacts. These files are automatically generated during our build process to ensure they remain current with each release.
+You can find our SBOM files in each [release](https://github.com/axonops/axonops-workbench/releases) as part of the release artifacts. These files are automatically generated during our build process to ensure they remain current with each release.
 
-**Using SBOM Files**
-- Download the SBOM file in your preferred format from the release assets
-- Use SBOM analysis tools like:
-  - `cyclonedx-cli` for CycloneDX files
-  - `spdx-tools` for SPDX files
-- Integrate with your security and compliance workflows
-- Monitor for vulnerabilities in included components
+### Using SBOM Files
+1. Download the SBOM file in your preferred format from the release assets
+2. Use SBOM analysis tools:
+   - `cyclonedx-cli` for CycloneDX files
+   - `spdx-tools` for SPDX files
+3. Integrate with your security and compliance workflows
+4. Monitor for vulnerabilities in included components
 
 We maintain these SBOM files as part of our commitment to software supply chain security and transparency. They are updated with each release to reflect the current state of our software dependencies.
 
-## Development
+## 🛠️ Development
 
-If you would like to run it in development, please follow the instructions below.
+Want to contribute or run AxonOps Workbench in development mode? Follow these instructions:
 
-### Requirements
+### 📋 Requirements
 
-- nodejs >= 20.15.0
+- Node.js >= 20.15.0
 - npm >= 10.7.0
-- python >= 3.12
+- Python >= 3.12
 
-### Installation & Running
+### 🚀 Installation & Running
 
-- Clone this repository
-- Install python dependencies `pip3 install -r requirements.txt`
-- Install required tools by running `./install_tools.sh`. It will download CQLSH binaries from [axonops-workbench-cqlsh](https://github.com/axonops/axonops-workbench-cqlsh/releases/latest).
-- Run `npm i` to install the nodejs dependencies
-- Execute `npm start` to run it in development mode
+1. Clone this repository
+   ```sh
+   git clone https://github.com/axonops/axonops-workbench.git
+   cd axonops-workbench
+   ```
 
-### Debugging
+2. Install Python dependencies
+   ```sh
+   pip3 install -r requirements.txt
+   ```
 
-- You can set the environment variable `AXONOPS_DEV_TOOLS=true` to open the developer tools on start up
-- Using VSCode, you can use `Main + Renderer` compound launch configuration to debug main process and rendereres simultaneously
+3. Install required tools (downloads CQLSH binaries from [axonops-workbench-cqlsh](https://github.com/axonops/axonops-workbench-cqlsh/releases/latest))
+   ```sh
+   ./tools/install_tools.sh
+   ```
 
-### Packaging
+4. Install Node.js dependencies
+   ```sh
+   npm i
+   ```
+
+5. Run in development mode
+   ```sh
+   npm start
+   ```
+
+### 🐛 Debugging
+
+- Set `AXONOPS_DEV_TOOLS=true` environment variable to open developer tools on startup
+- In VSCode, use the `Main + Renderer` compound launch configuration to debug both processes simultaneously
+
+### 📦 Packaging
 
 If you'd like to create your own distribution package, you will need to install `electron-builder` and then run the following:
 
@@ -126,22 +251,21 @@ npm run win
 
 See the `packages.json` for other build options.
 
-### Tidying up between development release installs
+### 🧹 Cleaning Up Between Development Builds
 
-The development builds and are not necessarily backwards compatible, so you may need to tidy up the keychain (see below).
+Development builds may not be backwards compatible. Clean up as follows:
 
-#### Linux and macOS:
+#### 🐧 Linux and macOS:
+1. Delete folders with prefix `.axonops-` in the home folder
+2. Remove all keys with prefix `AxonOps` from the OS Keychain
 
-- Delete the folder(s) with perfix .axonops- in the home folder.
-- In the OS Keychain, remove all keys with prefix AxonOps.
+#### 🪟 Windows:
+1. Delete the folder with prefix `axonops-` in `C:\Users\{username}`
+2. Delete the folder with prefix `AxonOps` in `C:\Users\{username}\AppData\Roaming` or `%appData%`
+3. Remove all credentials with prefix `AxonOps` from Windows Credential Manager
+4. In Registry Editor, navigate to `Computer\HKEY_LOCAL_MACHINE\SOFTWARE\AxonOpsWorkbenchClustersSecrets` (or `AxonOpsDeveloperWorkbenchClustersSecrets`) and delete the entire key/folder
 
-#### Windows:
-- Delete the folder with prefix axonops- in the user directory folder C:\Users{username}.
-- Delete the folder with prefix AxonOps in apps' data folder C:\Users{username}\AppData\Roaming or %appData%.
-- In the Windows Credential Manager, remove all credentials with prefix AxonOps.
-- In the registries - using the regedit tool -, navigate to Computer\HKEY_LOCAL_MACHINE\SOFTWARE\AxonOpsWorkbenchClustersSecrets - it can also be AxonOpsDeveloperWorkbenchClustersSecrets -, delete the entire key/folder.
-
-## Acknowledgements
+## 🙏 Acknowledgements
 
 AxonOps Workbench builds upon the foundation laid by several open-source projects, particularly Apache Cassandra. We extend our sincere gratitude to the Apache Cassandra community for their outstanding work and contributions to the field of distributed databases.
 
@@ -157,7 +281,27 @@ AxonOps Workbench incorporates and extends functionality from various Cassandra 
 
 We encourage users to explore and contribute to the main Apache Cassandra project, as well as to provide feedback and suggestions for AxonOps Workbench through our [GitHub discussions](https://github.com/axonops/axonops-workbench/discussions/categories/ideas) and [issues](https://github.com/axonops/axonops-workbench/issues/new/choose) pages.
 
+## 💬 Community & Support
+
+### Get Involved
+- 💡 **Share Ideas**: Visit our [GitHub Discussions](https://github.com/axonops/axonops-workbench/discussions/categories/ideas) to propose new features
+- 🐛 **Report Issues**: Found a bug? [Open an issue](https://github.com/axonops/axonops-workbench/issues/new/choose)
+- 🤝 **Contribute**: We welcome pull requests! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
+- ⭐ **Star Us**: If you find AxonOps Workbench useful, please star our repository!
+
+### Stay Connected
+- 🌐 **Website**: [axonops.com](https://axonops.com)
+- 📧 **Contact**: Visit our website for support options
+
 ***
 
-*This project may contain trademarks or logos for projects, products, or services. Any use of third-party trademarks or logos are subject to those third-party's policies. AxonOps is a registered trademark of AxonOps Limited. Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation or its subsidiaries in Canada, the United States and/or other countries. Elasticsearch is a trademark of Elasticsearch B.V., registered in the U.S. and in other countries. Docker is a trademark or registered trademark of Docker, Inc. in the United States and/or other countries.*
+## 📄 Legal Notices
+
+*This project may contain trademarks or logos for projects, products, or services. Any use of third-party trademarks or logos are subject to those third-party's policies.*
+
+- **AxonOps** is a registered trademark of AxonOps Limited.
+- **Apache**, **Apache Cassandra**, **Cassandra**, **Apache Spark**, **Spark**, **Apache TinkerPop**, **TinkerPop**, **Apache Kafka** and **Kafka** are either registered trademarks or trademarks of the Apache Software Foundation or its subsidiaries in Canada, the United States and/or other countries.
+- **DataStax** is a registered trademark of DataStax, Inc. and its subsidiaries in the United States and/or other countries.
+- **Elasticsearch** is a trademark of Elasticsearch B.V., registered in the U.S. and in other countries.
+- **Docker** is a trademark or registered trademark of Docker, Inc. in the United States and/or other countries.
 

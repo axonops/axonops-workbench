@@ -45,6 +45,14 @@
 
 ---
 
+## ⚡ Quick Start
+
+1. **Download & Install** - Get AxonOps Workbench from [axonops.com/workbench/download](https://axonops.com/workbench/download/)
+2. **Set up Docker/Podman** - Required for running local clusters only
+3. **Create a Workspace** - Organize your clusters and connections
+4. **Connect to Cassandra** - Support for Apache Cassandra, DataStax Enterprise, and Astra DB
+5. **Start Exploring** - Use the CQL console, query tracing, and AI assistant
+
 ## 🎯 Key Features at a Glance
 
 <div align="center">
@@ -111,14 +119,6 @@ To run local Cassandra clusters using AxonOps Workbench, you'll need either Dock
 4. For custom installations, configure paths in application settings
 
 <img width="864" alt="Docker Settings" src="https://github.com/user-attachments/assets/3696af51-2f13-44eb-956a-7b8751c8abd9" />
-
-## ⚡ Quick Start
-
-1. **Download & Install** - Get AxonOps Workbench from [axonops.com/workbench/download](https://axonops.com/workbench/download/)
-2. **Set up Docker/Podman** - Required for local cluster management
-3. **Create a Workspace** - Organize your clusters and connections
-4. **Connect to Cassandra** - Support for Apache Cassandra, DataStax Enterprise, and Astra DB
-5. **Start Exploring** - Use the CQL console, query tracing, and AI assistant
 
 ## 🎨 Features Showcase
 

@@ -72,7 +72,7 @@ For the best experience and automatic updates, we recommend downloading AxonOps 
 
 <div align="center">
   
-  **[⬇️ Download from AxonOps.com](https://axonops.com/workbench/download/)**
+  **[⬇️ Download](https://axonops.com/workbench/download/)**
   
   Available for macOS, Windows, and Linux
 </div>

@@ -1905,7 +1905,7 @@ div.body {
 
                   &.cluster-name,
                   &.workspace-name {
-                    width: 100%;
+                    width: calc(100% - 30px);
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
@@ -2122,6 +2122,7 @@ div.body {
                 }
                 justify-content: flex-start;
                 align-items: flex-start;
+                min-height: 64px;
 
                 div.info {
                   background: #2c2c2c;
@@ -5265,6 +5266,17 @@ button#countAffectedRows {
       opacity: 0.9;
       transition: width 0.2s ease-in-out, opacity 0.2s ease-in-out 0.15s;
     }
+  }
+}
+
+button#backToSelect {
+  margin-right: 10px;
+
+  ion-icon {
+    transform: rotate(-90deg);
+    font-size: 130%;
+    margin-right: 0;
+    margin-left: -11px;
   }
 }
 /**

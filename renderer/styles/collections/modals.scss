@@ -64,6 +64,10 @@ div.modal {
       padding: var(--mdb-modal-padding) !important;
       transition: height 0.2s ease-in-out;
 
+      &.disable-transition {
+        transition: none !important;
+      }
+
       div.side-left {
         background: #202023;
         border-radius: 10px;
@@ -413,6 +417,12 @@ div.modal {
       }
     }
 
+    &#appAbout {
+      div.modal-body {
+        height: 500px;
+      }
+    }
+
     &.show-editor {
       div.modal-body {
         overflow: hidden;
@@ -711,6 +721,86 @@ div.modal {
   &#addEditClusterDialog {
     div.modal-body {
       height: 470px;
+
+      &.select-type {
+        height: fit-content;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-content: flex-start;
+        justify-content: flex-start;
+        align-items: flex-start;
+        display: flex;
+        padding-bottom: 7px !important;
+
+        div.connection-type {
+          background: #2f2f2f;
+          color: inherit;
+          padding: 10px 15px;
+          text-transform: none;
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          align-content: center;
+          justify-content: flex-start;
+          align-items: center;
+          box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.15%);
+          border-radius: 7px;
+
+          div.icon {
+            background: #3d3d3d;
+            width: 30px;
+            height: 30px;
+            position: relative;
+            margin-right: 5px;
+            border-radius: 50%;
+            transform: scale(0.9);
+            transform-origin: left;
+            margin-left: -4px;
+            transition: all 0.15s ease-in-out;
+
+            ion-icon {
+              position: absolute;
+              inset: 0;
+              margin: auto;
+              font-size: 140%;
+              transform: rotate(90deg) translateY(-1px);
+              transition: all 0.2s ease-in-out;
+            }
+          }
+
+          &:not(:last-of-type) {
+            margin-right: 15px;
+          }
+
+          &:hover {
+            div.icon {
+              background: #444343;
+              transform: scale(0.9) translateX(2px);
+            }
+          }
+
+          &.active {
+            div.icon {
+              ion-icon {
+                transform: rotate(180deg) translateY(-1px);
+              }
+            }
+          }
+        }
+      }
+
+      &[data-connection-type="astra-db"] {
+        display: none;
+        height: fit-content;
+      }
+    }
+
+    &[data-selected-modal-body="astra-db"] {
+      div.modal-footer {
+        div.float-left {
+          display: none;
+        }
+      }
     }
 
     div.side-right {
@@ -2252,7 +2342,7 @@ ul.dropdown-menu.top-margin {
 
 .badge-mandatory {
   opacity: 0.85;
-  transform: translateY(-1px) translateX(-5px) scale(0.85);
+  transform: translateY(-2px);
 }
 
 div.extra-paths-input[for-form="toolExtraPaths"] {

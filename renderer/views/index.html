@@ -556,9 +556,9 @@
     </div>
 
     <!-- Cluster's dialog; used for adding and editing -->
-    <div class="modal top fade" id="addEditClusterDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+    <div class="modal top fade" id="addEditClusterDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true" data-selected-modal-body="apache-cassandra">
       <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content" style="transition: height 0.2s ease-in-out; height: calc(202px + 470px)">
           <div class="modal-header">
             <h5 class="modal-title">
               <span mulang="add connection" capitalize></span>
@@ -566,7 +566,87 @@
             <span class="badge badge-secondary"></span>
             <button type="button" class="btn-close" data-mdb-dismiss="modal"></button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body select-type">
+            <div class="connection-type btn btn-tertiary btn-lg active" data-mdb-ripple-color="light" data-type="apache-cassandra">
+              <div class="icon">
+                <ion-icon name="arrow-up"></ion-icon>
+              </div>
+              <div class="title">Apache Cassandra</div>
+            </div>
+            <div class="connection-type btn btn-tertiary btn-lg" data-mdb-ripple-color="light" data-type="astra-db">
+              <div class="icon">
+                <ion-icon name="arrow-up"></ion-icon>
+              </div>
+              <div class="title">DataStax AstraDB</div>
+            </div>
+          </div>
+          <div class="modal-body" data-connection-type="astra-db">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-outline form-white" style="margin-bottom: 30px;  margin-top: 5px;">
+                  <ion-icon name class="trailing"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" id="astraDBConnectionName">
+                  <label class="form-label">
+                    <span mulang="connection name" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-outline form-white" style="margin-bottom: 30px;">
+                  <ion-icon name class="trailing"></ion-icon>
+                  <input type="text" id="astraDBClientID" class="astradb-data-field form-control form-icon-trailing form-control-lg">
+                  <label class="form-label">
+                    <span mulang="username" capitalize></span> (Client ID)
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-outline form-white" style="margin-bottom: 30px;">
+                  <div class="reveal-password">
+                    <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                      <ion-icon name="eye-opened"></ion-icon>
+                    </div>
+                  </div>
+                  <input type="password" id="astraDBClientSecret" class="astradb-data-field form-control form-control-lg">
+                  <label class="form-label">
+                    <span mulang="password" capitalize></span> (Client Secret)
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-outline form-white file" style="margin-bottom: 20px;" role="file-selector" file-name="-" data-mulang="Secure Connection Bundle" capitalize file-info="Secure Connection Bundle">
+                  <input data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000" type="text" id="astraDBSCBPath" class="astradb-data-field form-control form-icon-trailing form-control-lg" readonly>
+                  <div class="form-helper" hidden>
+                    <span mulang="hint" capitalize></span>: you can drag and drop the bundle file.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="test-connection">
+              <div class="sub-content">
+                <l-pinwheel class="ldr change-color" size="70" stroke="4" speed="0.6" color="#dfdfdf"></l-pinwheel>
+              </div>
+            </div>
+            <div class="terminate-process">
+              <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" id="terminateConnectionTestProcessAstraDB" data-tippy="tooltip" data-mdb-placement="right" data-title="Terminate the process"
+                data-mulang="terminate the process" capitalize-first>
+                <ion-icon name="close"></ion-icon>
+              </div>
+            </div>
+          </div>
+          <div class="modal-body" data-connection-type="apache-cassandra">
             <div class="side-left">
               <div class="sections">
                 <div class="section">
@@ -1629,6 +1709,12 @@
                     <ion-icon name="external-link"></ion-icon>
                   </div>
                 </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" link="https://www.datastax.com/products/datastax-astra">
+                    <span mulang="about DataStax Astra DB" capitalize></span>
+                    <ion-icon name="external-link"></ion-icon>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="side-right">
@@ -1684,7 +1770,8 @@
                   Software Foundation (<span class="link"><span class="content">http://www.apache.org/</span>
                     <ion-icon name="external-link"></ion-icon>
                   </span>) or its subsidiaries in Canada, the United States and/or other countries. Elasticsearch is a trademark of
-                  Elasticsearch B.V., registered in the U.S. and in other countries. Docker is a trademark or registered trademark of Docker, Inc. in the United States and/or other countries.
+                  Elasticsearch B.V., registered in the U.S. and in other countries. DataStax is registered trademarks of DataStax, Inc. and its subsidiaries in the United States and/or other countries. Docker is a trademark or registered trademark
+                  of Docker, Inc. in the United States and/or other countries.
                 </div>
               </div>
               <div class="modal-section" section="cassandra-license" hidden>

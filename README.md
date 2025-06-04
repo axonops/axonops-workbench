@@ -1,22 +1,32 @@
-# AxonOps Workbench
-
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/3696af51-2f13-44eb-956a-7b8751c8abd9" alt="AxonOps Workbench" width="200">
+  <img src="renderer/assets/images/axonops-icon-512x512.png" alt="AxonOps Workbench Icon" width="128">
+  
+  # AxonOps Workbench
   
   **The Ultimate Desktop IDE for Apache Cassandra®**
   
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
   [![GitHub Issues](https://img.shields.io/github/issues/axonops/axonops-workbench)](https://github.com/axonops/axonops-workbench/issues)
   [![GitHub Discussions](https://img.shields.io/github/discussions/axonops/axonops-workbench)](https://github.com/axonops/axonops-workbench/discussions)
+  [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://axonops.com/workbench/download/)
   
-  [Download](https://axonops.com/workbench/download/) | [Documentation](https://axonops.com/workbench/) | [Discussions](https://github.com/axonops/axonops-workbench/discussions/categories/ideas) | [Issues](https://github.com/axonops/axonops-workbench/issues/new/choose)
+  [🚀 Download](https://axonops.com/workbench/download/) | [📚 Documentation](https://axonops.com/workbench/) | [💬 Discussions](https://github.com/axonops/axonops-workbench/discussions/categories/ideas) | [🐛 Issues](https://github.com/axonops/axonops-workbench/issues/new/choose)
 </div>
 
 ---
 
 ## 🚀 Overview
 
-[AxonOps Workbench](https://axonops.com/workbench/) is a powerful, free, and open-source desktop application designed specifically for Cassandra developers and DBAs. Experience a revolutionary way to work with your distributed databases through an intuitive interface packed with advanced features.
+[AxonOps Workbench](https://axonops.com/workbench/) is a **powerful, free, and open-source** desktop application designed specifically for Cassandra developers and DBAs. Experience a revolutionary way to work with your distributed databases through an intuitive interface packed with advanced features.
+
+<div align="center">
+  
+  ### 🎁 100% Free & Open Source
+  **No hidden costs • No premium tiers • No license keys**
+  
+  Community-driven development with full transparency
+  
+</div>
 
 ### 🔗 Supported Databases
 - **[Apache Cassandra®](https://cassandra.apache.org/)** - The leading open-source distributed database
@@ -32,6 +42,25 @@
 - 🏃 **Local Development** - Spin up local Cassandra clusters with one click
 - 📊 **Advanced Analytics** - Deep query tracing and performance insights
 - 🌍 **Cross-Platform** - Available for macOS, Windows, and Linux
+
+---
+
+## 🎯 Key Features at a Glance
+
+<div align="center">
+
+| Feature | Description |
+|---------|-------------|
+| 🖥️ **CQL Console** | Advanced editor with syntax highlighting, auto-completion, and multi-tab support |
+| 🤖 **AI Assistant** | Get intelligent help with query optimization and troubleshooting |
+| 🔍 **Query Tracing** | Deep performance analysis with execution plans and bottleneck detection |
+| 🏃 **Local Clusters** | Spin up Cassandra clusters instantly with Docker/Podman integration |
+| 🔒 **SSH Tunneling** | Secure remote connections without external tools |
+| 📁 **Workspaces** | Organize and share cluster configurations via source control |
+| 🌍 **Multi-Language** | Available in English, Spanish, French, Arabic, Chinese, and more |
+| 🎨 **Themes** | Dark and light modes for comfortable coding sessions |
+
+</div>
 
 ---
 
@@ -81,10 +110,17 @@ To run local Cassandra clusters using AxonOps Workbench, you'll need either Dock
 3. AxonOps Workbench will automatically detect installations in standard paths
 4. For custom installations, configure paths in application settings
 
-<img width="864" alt="Screenshot 2025-04-15 at 11 09 58" src="https://github.com/user-attachments/assets/3696af51-2f13-44eb-956a-7b8751c8abd9" />
+<img width="864" alt="Docker Settings" src="https://github.com/user-attachments/assets/3696af51-2f13-44eb-956a-7b8751c8abd9" />
 
+## ⚡ Quick Start
 
-## 🎨 Features
+1. **Download & Install** - Get AxonOps Workbench from [axonops.com/workbench/download](https://axonops.com/workbench/download/)
+2. **Set up Docker/Podman** - Required for local cluster management
+3. **Create a Workspace** - Organize your clusters and connections
+4. **Connect to Cassandra** - Support for Apache Cassandra, DataStax Enterprise, and Astra DB
+5. **Start Exploring** - Use the CQL console, query tracing, and AI assistant
+
+## 🎨 Features Showcase
 
 ### 📝 Enhanced CQL Console
 Experience the most advanced CQL editor with syntax highlighting, auto-completion, query history, and multi-tab support.

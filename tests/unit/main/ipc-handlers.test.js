@@ -267,7 +267,8 @@ describe('IPC Handlers', () => {
     });
 
     test('should handle window-maximize request', () => {
-      mainWindow.isMaximized = false;
+      // Set the window to not maximized initially
+      mainWindow._isMaximized = false;
       BrowserWindow.fromWebContents.mockReturnValue(mainWindow);
       
       const handler = jest.fn((event) => {
@@ -300,9 +301,10 @@ describe('IPC Handlers', () => {
     });
 
     test('should handle get-window-state request', () => {
-      mainWindow.isMaximized = false;
-      mainWindow.isMinimized = false;
-      mainWindow.isFullScreen = false;
+      // Set window states using internal properties
+      mainWindow._isMaximized = false;
+      mainWindow._isMinimized = false;
+      mainWindow._isFullScreen = false;
       BrowserWindow.fromWebContents.mockReturnValue(mainWindow);
       
       const handler = jest.fn((event) => {

@@ -29,6 +29,13 @@ class MockBrowserWindow extends EventEmitter {
     this._isMinimized = false;
     this._isMaximized = false;
     this._isFullScreen = false;
+    
+    // Spy on EventEmitter methods to track calls while preserving functionality
+    this.on = jest.fn(this.on.bind(this));
+    this.once = jest.fn(this.once.bind(this));
+    this.emit = jest.fn(this.emit.bind(this));
+    this.removeListener = jest.fn(this.removeListener.bind(this));
+    this.removeAllListeners = jest.fn(this.removeAllListeners.bind(this));
   }
 
   loadURL = jest.fn().mockResolvedValue(true);
@@ -57,12 +64,12 @@ class MockBrowserWindow extends EventEmitter {
   isMinimized = jest.fn(() => this._isMinimized);
   isMaximized = jest.fn(() => this._isMaximized);
   isFullScreen = jest.fn(() => this._isFullScreen);
-  getBounds = jest.fn(() => ({ x: 0, y: 0, width: 800, height: 600 }));
-  setBounds = jest.fn();
-  getSize = jest.fn(() => [800, 600]);
-  setSize = jest.fn();
-  getPosition = jest.fn(() => [0, 0]);
-  setPosition = jest.fn();
+  getBounds = jest.fn(() => this._bounds || { x: 0, y: 0, width: 800, height: 600 });
+  setBounds = jest.fn((bounds) => { this._bounds = bounds; });
+  getSize = jest.fn(() => this._size || [800, 600]);
+  setSize = jest.fn((width, height) => { this._size = [width, height]; });
+  getPosition = jest.fn(() => this._position || [0, 0]);
+  setPosition = jest.fn((x, y) => { this._position = [x, y]; });
   setMenu = jest.fn();
   setMenuBarVisibility = jest.fn();
   setAlwaysOnTop = jest.fn();
@@ -72,6 +79,11 @@ class MockBrowserWindow extends EventEmitter {
   getTitle = jest.fn(() => 'Test Window');
   setProgressBar = jest.fn();
   flashFrame = jest.fn();
+  center = jest.fn();
+  setMinimumSize = jest.fn();
+  setMaximumSize = jest.fn();
+  getMinimumSize = jest.fn(() => [400, 300]);
+  getMaximumSize = jest.fn(() => [9999, 9999]);
 }
 
 class MockWebContents extends EventEmitter {

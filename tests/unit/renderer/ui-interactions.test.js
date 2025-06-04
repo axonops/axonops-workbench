@@ -435,8 +435,9 @@ describe('UI Interactions', () => {
         preventDefault: jest.fn()
       });
       
-      $(document).trigger('keydown', ctrlS);
-      expect($(document).trigger).toHaveBeenCalledWith('keydown', ctrlS);
+      const $document = $(document);
+      $document.trigger('keydown', ctrlS);
+      expect($document.trigger).toHaveBeenCalledWith('keydown', ctrlS);
     });
 
     test('should prevent default for handled shortcuts', () => {

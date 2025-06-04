@@ -328,12 +328,55 @@ window.electron = {
 };
 
 // Mock other global functions that might be used
-global.getElementMDBObject = jest.fn();
+global.getElementMDBObject = jest.fn((element, type = 'Input') => {
+  // Return appropriate MDB instance based on type
+  const instances = {
+    Modal: {
+      show: jest.fn(),
+      hide: jest.fn(),
+      toggle: jest.fn(),
+      dispose: jest.fn()
+    },
+    Dropdown: {
+      show: jest.fn(),
+      hide: jest.fn(),
+      toggle: jest.fn(),
+      dispose: jest.fn(),
+      update: jest.fn()
+    },
+    Tooltip: {
+      show: jest.fn(),
+      hide: jest.fn(),
+      toggle: jest.fn(),
+      dispose: jest.fn(),
+      enable: jest.fn(),
+      disable: jest.fn(),
+      update: jest.fn()
+    },
+    Input: {
+      init: jest.fn(),
+      dispose: jest.fn(),
+      update: jest.fn()
+    }
+  };
+  return instances[type] || instances.Input;
+});
 global.showNotification = jest.fn();
 global.showError = jest.fn();
 global.showSuccess = jest.fn();
 global.showWarning = jest.fn();
 global.showInfo = jest.fn();
+
+// Import helper functions from global setup
+global.createMockEvent = (type, props = {}) => {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.assign(event, props);
+  return event;
+};
+
+global.createMockFile = (name, content, type = 'text/plain') => {
+  return new File([content], name, { type });
+};
 
 // Mock ResizeObserver
 global.ResizeObserver = jest.fn().mockImplementation(() => ({

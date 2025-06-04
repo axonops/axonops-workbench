@@ -249,8 +249,16 @@ services:
     });
 
     test('should handle backup creation failures', async () => {
+      // Skip this test on Windows as chmod doesn't work the same way
+      if (process.platform === 'win32') {
+        return;
+      }
+      
       const composePath = Path.join(testProjectPath, 'docker-compose.yml');
-      await FS.writeFile(composePath, 'command: > /bin/sh -c "sed -i \'s|private_endpoints.*|private_endpoints: http://axon-server:8080|\' /etc/axonops/axon-dash.yml"');
+      await FS.writeFile(composePath, `services:
+  axon-dash:
+    command: > 
+      /bin/sh -c "sed -i 's|private_endpoints.*|private_endpoints: http://axon-server:8080|' /etc/axonops/axon-dash.yml"`);
       
       // Make directory read-only to prevent backup creation
       await FS.chmod(testProjectPath, 0o555);

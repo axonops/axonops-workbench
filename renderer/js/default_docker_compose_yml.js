@@ -52,8 +52,8 @@ services:
         condition: service_healthy
     image: registry.axonops.com/axonops-public/axonops-docker/axon-dash:latest
     pull_policy: always
-    command: >
-      /bin/sh -c "sed -i 's|private_endpoints.*|private_endpoints: http://axon-server:8080|' /etc/axonops/axon-dash.yml && /usr/share/axonops/axon-dash --appimage-extract-and-run"
+    environment:
+      - AXONSERVER_PRIVATE_ENDPOINTS=http://axon-server:8080
     ports:
       - {axonopsPort}:3000
     healthcheck:

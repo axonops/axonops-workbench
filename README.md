@@ -3,14 +3,14 @@
   
   # AxonOps Workbench
   
-  **The Ultimate Desktop IDE for Apache Cassandra®**
+  **Purpose-Built Database Management for Apache Cassandra®**
   
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
   [![GitHub Issues](https://img.shields.io/github/issues/axonops/axonops-workbench)](https://github.com/axonops/axonops-workbench/issues)
   [![GitHub Discussions](https://img.shields.io/github/discussions/axonops/axonops-workbench)](https://github.com/axonops/axonops-workbench/discussions)
   [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://axonops.com/workbench/download/)
   
-  [🚀 Download](https://axonops.com/workbench/download/) | [📚 Documentation](https://axonops.com/workbench/) | [💬 Discussions](https://github.com/axonops/axonops-workbench/discussions/categories/ideas) | [🐛 Issues](https://github.com/axonops/axonops-workbench/issues/new/choose)
+  [🚀 Download](https://axonops.com/workbench/download/) | [📚 Documentation](https://docs.axonops.com/) | [💬 Discussions](https://github.com/axonops/axonops-workbench/discussions/categories/ideas) | [🐛 Issues](https://github.com/axonops/axonops-workbench/issues/new/choose)
 </div>
 
 ---
@@ -35,7 +35,7 @@
 
 ### ✨ Why AxonOps Workbench?
 
-- 🎯 **Purpose-Built for Cassandra** - Designed from the ground up for Cassandra workflows
+- 🎯 **Cassandra-Native Design** - Engineered specifically for Cassandra's unique architecture and workflows
 - 🛠️ **Developer-Friendly** - Intuitive interface with powerful productivity features
 - 🔒 **Secure by Design** - Built-in SSH tunneling and credential management
 - 🤖 **AI-Powered** - Experimental AI assistant to help with queries and troubleshooting
@@ -52,7 +52,7 @@
 | Feature | Description |
 |---------|-------------|
 | 🖥️ **CQL Console** | Advanced editor with syntax highlighting, auto-completion, and multi-tab support |
-| 🤖 **AI Assistant** | Get intelligent help with query optimization and troubleshooting |
+| 🤖 **AI Assistant (Experimental)** | Get intelligent help with query optimization and troubleshooting |
 | 🔍 **Query Tracing** | Deep performance analysis with execution plans and bottleneck detection |
 | 🏃 **Local Clusters** | Spin up Cassandra clusters instantly with Docker/Podman integration |
 | 🔒 **SSH Tunneling** | Secure remote connections without external tools |
@@ -155,14 +155,14 @@ Connect securely to remote clusters through SSH tunnels without external tools o
 ### 🚀 Additional Features
 
 - **🔐 Secure Credential Management** - Store and manage connection credentials securely in your system keychain
-- **📊 Schema Visualization** - Visual representation of keyspaces, tables, and relationships
+- **📊 Schema Visualization** *(Coming Soon)* - Visual representation of keyspaces, tables, and relationships
 - **🎯 Smart Auto-completion** - Context-aware CQL suggestions and table/column name completion
 - **📝 Query History** - Access and search through your previously executed queries
 - **🔄 Import/Export** - Export query results to CSV, JSON, or other formats
 - **🌐 Multi-cluster Support** - Connect to multiple clusters simultaneously with easy switching
 - **🎨 Dark/Light Themes** - Choose your preferred visual theme for comfortable coding
 - **🌍 Internationalization** - Available in multiple languages including English, Spanish, French, Arabic, Chinese, and more
-- **⚡ Performance Metrics** - Real-time cluster health and performance monitoring
+- **⚡ Performance Metrics** *(Coming Soon for AxonOps-managed clusters)* - Real-time cluster health and performance monitoring
 - **🔧 Table Operations** - Visual tools for creating, altering, and managing tables
 - **📁 Data Import/Export** - Bulk data operations with progress tracking
 - **🔍 Full-text Search** - Search across your entire cluster metadata

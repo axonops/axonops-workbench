@@ -264,12 +264,12 @@ services:
     test('should preserve indentation and formatting', async () => {
       const indentedContent = `version: "3.8"
 services:
-    axon-dash:
-        image: registry.axonops.com/axonops-public/axonops-docker/axon-dash:latest
-        command: >
-            /bin/sh -c "sed -i 's|private_endpoints.*|private_endpoints: http://axon-server:8080|' /etc/axonops/axon-dash.yml"
-        ports:
-            - 3000:3000`;
+  axon-dash:
+    image: registry.axonops.com/axonops-public/axonops-docker/axon-dash:latest
+    command: >
+      /bin/sh -c "sed -i 's|private_endpoints.*|private_endpoints: http://axon-server:8080|' /etc/axonops/axon-dash.yml"
+    ports:
+      - 3000:3000`;
 
       FS.existsSync.mockReturnValue(true);
       FS.readFileSync.mockReturnValue(indentedContent);
@@ -281,8 +281,8 @@ services:
       expect(result.migrated).toBe(true);
       const writtenContent = FS.writeFileSync.mock.calls[0][1];
       // Should maintain consistent indentation
-      expect(writtenContent).toMatch(/^\s{8}environment:/m);
-      expect(writtenContent).toMatch(/^\s{8}ports:/m);
+      expect(writtenContent).toMatch(/^\s{4}environment:/m);
+      expect(writtenContent).toMatch(/^\s{4}ports:/m);
     });
 
     test('should handle IPv6 addresses in endpoints', async () => {

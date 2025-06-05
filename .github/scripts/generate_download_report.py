@@ -295,15 +295,31 @@ def generate_markdown_report(internal_stats, user_stats, previous_data):
         report += f"**Published:** {latest_release['published_at'][:10]} ({days_ago} days ago)  \n"
         report += f"**Total Downloads:** {latest_release['total_downloads']:,}\n\n"
         
+        # Calculate OS-specific downloads for latest release
+        latest_os_downloads = defaultdict(int)
+        for asset in latest_release['assets']:
+            if not asset['name'].endswith('.sha256sum'):
+                os_type = get_os_from_asset_name(asset['name'])
+                latest_os_downloads[os_type] += asset['downloads']
+        
+        # Show OS breakdown if we have downloads
+        if latest_os_downloads:
+            report += "**Downloads by OS:**\n"
+            for os_type in ['Windows', 'macOS', 'Linux', 'Other']:
+                if os_type in latest_os_downloads:
+                    report += f"- {os_type}: {latest_os_downloads[os_type]:,}\n"
+            report += "\n"
+        
         if latest_release['assets']:
-            report += "| Asset | Downloads | Size |\n"
-            report += "|-------|-----------|------|\n"
+            report += "| Asset | OS | Downloads | Size |\n"
+            report += "|-------|----|-----------|------|\n"
             for asset in sorted(latest_release['assets'], key=lambda x: x['downloads'], reverse=True):
                 if not asset['name'].endswith('.sha256sum'):  # Skip checksum files
                     asset_name = asset['name']
-                    if len(asset_name) > 50:
-                        asset_name = asset_name[:47] + "..."
-                    report += f"| [{asset_name}]({asset['browser_download_url']}) | {asset['downloads']:,} | {format_size(asset['size'])} |\n"
+                    if len(asset_name) > 40:
+                        asset_name = asset_name[:37] + "..."
+                    os_type = get_os_from_asset_name(asset['name'])
+                    report += f"| [{asset_name}]({asset['browser_download_url']}) | {os_type} | {asset['downloads']:,} | {format_size(asset['size'])} |\n"
     
     report += "\n---\n\n"
     

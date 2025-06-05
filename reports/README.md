@@ -32,7 +32,8 @@ Each report includes:
 #### Latest User Release
 - Highlights the most recent user release
 - Shows publication date and days since release
-- Lists all assets with download counts and direct download links
+- Displays OS-specific download breakdown
+- Lists all assets with OS classification, download counts, and direct download links
 - Excludes checksum files for cleaner presentation
 
 ### User Releases

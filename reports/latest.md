@@ -1,6 +1,6 @@
 # 📊 AxonOps Workbench Weekly Download Report
 
-**Generated on:** 2025-06-05 10:05:11 UTC  
+**Generated on:** 2025-06-05 10:06:20 UTC  
 **Repository:** [axonops/axonops-workbench](https://github.com/axonops/axonops-workbench)
 
 ## 📈 Executive Summary
@@ -8,8 +8,8 @@
 | Metric | Current | Change from Last Week |
 |--------|---------|----------------------|
 | **Total Downloads** | **1,609** | *First report* |
-| User Release Downloads | 1,363 | *First report* |
-| Internal Release Downloads | 246 | *First report* |
+| User Release Downloads | 1,363 | → 0 (+0.0%) |
+| Internal Release Downloads | 246 | → 0 (+0.0%) |
 
 ### 💻 User Downloads by Operating System
 
@@ -17,10 +17,10 @@ _Note: This tracks downloads from user releases only, excluding internal release
 
 | OS | Downloads | Change | Trend |
 |----|-----------|--------|-------|
-| Windows | 217 | *First report* | - |
-| macOS | 214 | *First report* | - |
-| Linux | 454 | *First report* | - |
-| Other | 5 | *First report* | - |
+| Windows | 217 | → 0 (+0.0%) | ➡️ |
+| macOS | 214 | → 0 (+0.0%) | ➡️ |
+| Linux | 454 | → 0 (+0.0%) | ➡️ |
+| Other | 5 | → 0 (+0.0%) | ➡️ |
 
 ### 🆕 Latest User Release: Release for v0.9.27
 
@@ -59,43 +59,44 @@ _Note: This tracks downloads from user releases only, excluding internal release
 
 ### Overview
 - **Total Downloads:** 1,363
+- **Weekly Change:** → 0 (+0.0%)
 
 ### 📥 Top Downloaded Assets
 
 | Asset | Downloads | Change |
 |-------|-----------|--------|
-| AxonOps.Workbench-0.9.4-win-x64.msi | 98 | *New* |
-| AxonOps.Workbench-0.9.3-mac-arm64.dmg | 21 | *New* |
-| AxonOps.Workbench-0.9.5-mac-arm64.dmg | 18 | *New* |
-| AxonOps.Workbench-0.9.4-linux-x86_64.rpm | 18 | *New* |
-| AxonOps.Workbench-0.9.4-win-x64.msi.sha256sum | 18 | *New* |
-| AxonOps.Workbench-0.9.14-win-x64.msi | 16 | *New* |
-| AxonOps.Workbench-0.9.4-mac-arm64.dmg | 16 | *New* |
-| AxonOps.Workbench-0.9.3-linux-x86_64.rpm | 16 | *New* |
-| AxonOps.Workbench-0.9.26-win-x64.msi | 15 | *New* |
-| AxonOps.Workbench-0.9.14-linux-x86_64.rpm | 14 | *New* |
+| AxonOps.Workbench-0.9.4-win-x64.msi | 98 | → 0 |
+| AxonOps.Workbench-0.9.3-mac-arm64.dmg | 21 | → 0 |
+| AxonOps.Workbench-0.9.5-mac-arm64.dmg | 18 | → 0 |
+| AxonOps.Workbench-0.9.4-linux-x86_64.rpm | 18 | → 0 |
+| AxonOps.Workbench-0.9.4-win-x64.msi.sha256sum | 18 | → 0 |
+| AxonOps.Workbench-0.9.14-win-x64.msi | 16 | → 0 |
+| AxonOps.Workbench-0.9.4-mac-arm64.dmg | 16 | → 0 |
+| AxonOps.Workbench-0.9.3-linux-x86_64.rpm | 16 | → 0 |
+| AxonOps.Workbench-0.9.26-win-x64.msi | 15 | → 0 |
+| AxonOps.Workbench-0.9.14-linux-x86_64.rpm | 14 | → 0 |
 
 ### 🏆 Top Releases by Downloads
 
 | Release | Version | Downloads | Change |
 |---------|---------|-----------|--------|
-| Release for v0.9.4 | [v0.9.4](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.4) | 194 | *New* |
-| Release for v0.9.3 | [v0.9.3](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.3) | 126 | *New* |
-| Release for v0.9.14 | [v0.9.14](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.14) | 107 | *New* |
-| Release for v0.9.5 | [v0.9.5](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.5) | 99 | *New* |
-| Release for v0.9.13 | [v0.9.13](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.13) | 65 | *New* |
-| Release for v0.9.7 | [v0.9.7](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.7) | 65 | *New* |
-| Release for v0.9.6 | [v0.9.6](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.6) | 64 | *New* |
-| Release for v0.9.25 | [v0.9.25](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.25) | 62 | *New* |
-| Release for v0.9.21 | [v0.9.21](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.21) | 60 | *New* |
-| Release for v0.9.9 | [v0.9.9](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.9) | 59 | *New* |
+| Release for v0.9.4 | [v0.9.4](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.4) | 194 | → 0 |
+| Release for v0.9.3 | [v0.9.3](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.3) | 126 | → 0 |
+| Release for v0.9.14 | [v0.9.14](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.14) | 107 | → 0 |
+| Release for v0.9.5 | [v0.9.5](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.5) | 99 | → 0 |
+| Release for v0.9.13 | [v0.9.13](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.13) | 65 | → 0 |
+| Release for v0.9.7 | [v0.9.7](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.7) | 65 | → 0 |
+| Release for v0.9.6 | [v0.9.6](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.6) | 64 | → 0 |
+| Release for v0.9.25 | [v0.9.25](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.25) | 62 | → 0 |
+| Release for v0.9.21 | [v0.9.21](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.21) | 60 | → 0 |
+| Release for v0.9.9 | [v0.9.9](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.9) | 59 | → 0 |
 
 ### 📦 All User Releases (Newest First)
 
 _Sorted by version number, showing up to 15 user releases with downloads_
 
 <details>
-<summary><strong>Release for v0.9.27</strong> - 42 downloads</summary>
+<summary><strong>Release for v0.9.27</strong> - 42 downloads → 0</summary>
 
 - **Version:** [v0.9.27](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.27)
 - **Published:** 2025-06-04
@@ -112,7 +113,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.26</strong> - 58 downloads</summary>
+<summary><strong>Release for v0.9.26</strong> - 58 downloads → 0</summary>
 
 - **Version:** [v0.9.26](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.26)
 - **Published:** 2025-06-02
@@ -129,7 +130,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.25</strong> - 62 downloads</summary>
+<summary><strong>Release for v0.9.25</strong> - 62 downloads → 0</summary>
 
 - **Version:** [v0.9.25](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.25)
 - **Published:** 2025-05-21
@@ -146,7 +147,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.24</strong> - 23 downloads</summary>
+<summary><strong>Release for v0.9.24</strong> - 23 downloads → 0</summary>
 
 - **Version:** [v0.9.24](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.24)
 - **Published:** 2025-05-21
@@ -163,7 +164,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.23</strong> - 40 downloads</summary>
+<summary><strong>Release for v0.9.23</strong> - 40 downloads → 0</summary>
 
 - **Version:** [v0.9.23](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.23)
 - **Published:** 2025-05-19
@@ -180,7 +181,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.22</strong> - 49 downloads</summary>
+<summary><strong>Release for v0.9.22</strong> - 49 downloads → 0</summary>
 
 - **Version:** [v0.9.22](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.22)
 - **Published:** 2025-05-08
@@ -197,7 +198,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.21</strong> - 60 downloads</summary>
+<summary><strong>Release for v0.9.21</strong> - 60 downloads → 0</summary>
 
 - **Version:** [v0.9.21](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.21)
 - **Published:** 2025-05-05
@@ -214,7 +215,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.18</strong> - 26 downloads</summary>
+<summary><strong>Release for v0.9.18</strong> - 26 downloads → 0</summary>
 
 - **Version:** [v0.9.18](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.18)
 - **Published:** 2025-05-02
@@ -231,7 +232,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.17</strong> - 51 downloads</summary>
+<summary><strong>Release for v0.9.17</strong> - 51 downloads → 0</summary>
 
 - **Version:** [v0.9.17](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.17)
 - **Published:** 2025-04-28
@@ -248,7 +249,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.14</strong> - 107 downloads</summary>
+<summary><strong>Release for v0.9.14</strong> - 107 downloads → 0</summary>
 
 - **Version:** [v0.9.14](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.14)
 - **Published:** 2025-04-06
@@ -265,7 +266,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.13</strong> - 65 downloads</summary>
+<summary><strong>Release for v0.9.13</strong> - 65 downloads → 0</summary>
 
 - **Version:** [v0.9.13](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.13)
 - **Published:** 2025-04-02
@@ -282,7 +283,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.11</strong> - 55 downloads</summary>
+<summary><strong>Release for v0.9.11</strong> - 55 downloads → 0</summary>
 
 - **Version:** [v0.9.11](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.11)
 - **Published:** 2025-03-29
@@ -299,7 +300,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.10</strong> - 26 downloads</summary>
+<summary><strong>Release for v0.9.10</strong> - 26 downloads → 0</summary>
 
 - **Version:** [v0.9.10](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.10)
 - **Published:** 2025-03-28
@@ -316,7 +317,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.9</strong> - 59 downloads</summary>
+<summary><strong>Release for v0.9.9</strong> - 59 downloads → 0</summary>
 
 - **Version:** [v0.9.9](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.9)
 - **Published:** 2025-03-22
@@ -333,7 +334,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 </details>
 
 <details>
-<summary><strong>Release for v0.9.8</strong> - 3 downloads</summary>
+<summary><strong>Release for v0.9.8</strong> - 3 downloads → 0</summary>
 
 - **Version:** [v0.9.8](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.8)
 - **Published:** 2025-03-22
@@ -355,6 +356,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 
 ### Overview
 - **Total Downloads:** 246
+- **Weekly Change:** → 0 (+0.0%)
 
 ### 📥 Top Downloaded Assets
 

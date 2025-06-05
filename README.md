@@ -250,6 +250,25 @@ npm run test:coverage
 npm run test:watch
 ```
 
+### 🤝 Contributing
+
+We welcome contributions from the community! Please read our [Contributing Guide](CONTRIBUTING.md) before submitting pull requests. The guide covers:
+
+- Code of conduct and community guidelines
+- Development workflow and branching strategy
+- Coding standards and best practices
+- How to submit bug reports and feature requests
+- Pull request process and review guidelines
+- License agreements and legal requirements
+
+Key points for contributors:
+- Fork the repository and create feature branches from `main`
+- Follow the existing code style and conventions
+- Write tests for new features and bug fixes
+- Update documentation as needed
+- Sign our [Contributor License Agreement (CLA)](CLA.md) by following the bot instructions on your first PR
+- All contributors must sign the CLA before their PRs can be merged
+
 ### 🐛 Debugging
 
 - Set `AXONOPS_DEV_TOOLS=true` environment variable to open developer tools on startup
@@ -311,6 +330,26 @@ We encourage users to explore and contribute to the main Apache Cassandra projec
 ### Stay Connected
 - 🌐 **Website**: [axonops.com](https://axonops.com)
 - 📧 **Contact**: Visit our website for support options
+
+## 📊 Download Statistics
+
+We track download statistics from this Github project for all AxonOps Workbench releases to better understand usage patterns and platform adoption. These reports are automatically generated weekly via the Github public APIs and provide insights into:
+
+- **Total Downloads**: Overall download counts across all releases
+- **Platform Distribution**: Downloads broken down by Windows, macOS, and Linux
+- **Release Adoption**: How quickly new releases are being adopted
+- **Latest Release Performance**: Detailed statistics for the most recent release
+
+### 📈 View Reports
+
+- **[Latest Download Report](reports/latest.md)** - View the most recent weekly statistics
+- **[All Reports](reports/)** - Browse historical download reports
+
+These reports help us:
+- Understand which platforms need more focus
+- Track the success of new releases
+- Make data-driven decisions about feature development
+- Ensure we're meeting our community's needs
 
 ***
 

@@ -1,9 +1,9 @@
-name: Daily Download Report
+name: Weekly Download Report
 
 on:
   schedule:
-    # Run daily at 00:00 UTC
-    - cron: '0 0 * * *'
+    # Run weekly on Mondays at 00:00 UTC
+    - cron: '0 0 * * 1'
   workflow_dispatch:  # Allow manual trigger
 
 permissions:
@@ -40,5 +40,5 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add reports/
-        git diff --staged --quiet || git commit -m "Update download report - $(date +%Y-%m-%d)"
+        git diff --staged --quiet || git commit -m "Update weekly download report - $(date +%Y-%m-%d)"
         git push

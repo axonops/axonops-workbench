@@ -7,7 +7,7 @@ Includes comparison with previous report and maintains 12-month history.
 import os
 import json
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 from pathlib import Path
 import glob
@@ -290,7 +290,9 @@ def generate_markdown_report(internal_stats, user_stats, previous_data):
     if latest_release:
         report += f"\n### 🆕 Latest User Release: {latest_release['name']}\n\n"
         report += f"**Version:** [{latest_release['tag']}]({latest_release['html_url']})  \n"
-        report += f"**Published:** {latest_release['published_at'][:10]} ({(datetime.now() - datetime.fromisoformat(latest_release['published_at'].replace('Z', '+00:00'))).days} days ago)  \n"
+        published_date = datetime.fromisoformat(latest_release['published_at'].replace('Z', '+00:00'))
+        days_ago = (datetime.now(timezone.utc) - published_date).days
+        report += f"**Published:** {latest_release['published_at'][:10]} ({days_ago} days ago)  \n"
         report += f"**Total Downloads:** {latest_release['total_downloads']:,}\n\n"
         
         if latest_release['assets']:

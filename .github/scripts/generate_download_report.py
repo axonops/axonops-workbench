@@ -261,8 +261,9 @@ def generate_markdown_report(internal_stats, user_stats, previous_data):
     else:
         report += "*First report* |\n"
     
-    # Add OS-specific tracking
-    report += "\n### 💻 Downloads by Operating System\n\n"
+    # Add OS-specific tracking (User releases only)
+    report += "\n### 💻 User Downloads by Operating System\n\n"
+    report += "_Note: This tracks downloads from user releases only, excluding internal releases._\n\n"
     report += "| OS | Downloads | Change | Trend |\n"
     report += "|----|-----------|--------|-------|\n"
     

@@ -24,8 +24,9 @@ Each report includes:
 - Visual indicators for increases (▲), decreases (▼), or no change (→)
 - Percentage changes for download trends
 
-#### Downloads by Operating System
-- Tracks downloads for Windows, macOS, Linux, and Other platforms
+#### User Downloads by Operating System
+- Tracks downloads for Windows, macOS, Linux, and Other platforms from user releases only
+- Excludes internal release downloads for accurate user adoption metrics
 - Shows week-over-week changes and percentage growth
 - Visual trend indicators (📈 for >10% growth, 📉 for >10% decline, ➡️ for stable)
 

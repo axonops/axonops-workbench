@@ -56,4 +56,10 @@ Each report includes:
 - Tracks new assets appearing in the top downloads
 - OS-specific download trends
 
-Internal releases are identified by having the word "internal" in their release name or tag.
+Internal releases are identified by having any of the following in their release name or tag:
+- "internal" - Internal testing releases
+- "beta" - Beta testing releases
+- "alpha" - Alpha testing releases  
+- "rc" - Release candidate versions
+
+This ensures that only stable, production-ready releases are counted in user statistics.

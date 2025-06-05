@@ -52,7 +52,14 @@ def categorize_releases(releases):
     user_releases = []
     
     for release in releases:
-        if 'internal' in release['name'].lower() or 'internal' in release['tag_name'].lower():
+        name_lower = release['name'].lower() if release['name'] else ''
+        tag_lower = release['tag_name'].lower()
+        
+        # Check if it's an internal release (includes beta releases)
+        if ('internal' in name_lower or 'internal' in tag_lower or
+            'beta' in name_lower or 'beta' in tag_lower or
+            'alpha' in name_lower or 'alpha' in tag_lower or
+            'rc' in name_lower or 'rc' in tag_lower):
             internal_releases.append(release)
         else:
             user_releases.append(release)

@@ -7,9 +7,10 @@ on:
 
 permissions:
   actions: write
-  contents: write  # to create/update signature file
-  pull-requests: write  # to comment on PRs
-  statuses: write  # to update commit status
+  contents: write
+  issues: write
+  pull-requests: write
+  statuses: write
 
 jobs:
   CLAAssistant:
@@ -22,11 +23,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PERSONAL_ACCESS_TOKEN: ${{ secrets.CLA_ASSISTANT_TOKEN }}
         with:
-          # Where to store signatures (will be created automatically)
+          # Path to signatures file - will be created in the branch below
           path-to-signatures: 'signatures/version1/cla.json'
           
-          # Link to your CLA document
-          path-to-document: 'https://github.com/axonops/axonops-workbench/blob/main/CLA.md'
+          # Use relative path to CLA document
+          path-to-document: 'CLA.md'
           
           # Branch where signatures will be stored
           branch: 'cla-signatures'
@@ -34,7 +35,7 @@ jobs:
           # Allow these bots without CLA
           allowlist: 'dependabot[bot],renovate[bot],github-actions[bot],dependabot-preview[bot]'
           
-          # Custom messages
+          # Custom messages for better user experience
           custom-notsigned-prcomment: >
             👋 Hello @$contributorName, thank you for your contribution!
             

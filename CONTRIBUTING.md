@@ -5,6 +5,16 @@ email, or any other method with the owners of this repository before making a ch
 
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
+## Contributor License Agreement (CLA)
+
+Before we can accept your contributions, you must sign our [Contributor License Agreement (CLA)](CLA.md). This is a one-time requirement for all contributors that ensures:
+
+- You have the right to contribute your work
+- AxonOps can use your contributions in the project
+- Your contributions are properly licensed
+
+When you open your first pull request, our CLA Assistant bot will automatically check if you've signed the CLA. If you haven't, it will provide instructions on how to sign it. The process is quick and only needs to be done once.
+
 ## Branching
 
 Developers must use a branch that it is linked to an opened issue. This is easily achieved by creating

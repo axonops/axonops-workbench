@@ -314,6 +314,28 @@ We encourage users to explore and contribute to the main Apache Cassandra projec
 
 ***
 
+## 📊 Download Statistics
+
+We track download statistics for all AxonOps Workbench releases to better understand usage patterns and platform adoption. These reports are automatically generated weekly and provide insights into:
+
+- **Total Downloads**: Overall download counts across all releases
+- **Platform Distribution**: Downloads broken down by Windows, macOS, and Linux
+- **Release Adoption**: How quickly new releases are being adopted
+- **Latest Release Performance**: Detailed statistics for the most recent release
+
+### 📈 View Reports
+
+- **[Latest Download Report](reports/latest.md)** - View the most recent weekly statistics
+- **[All Reports](reports/)** - Browse historical download reports
+
+These reports help us:
+- Understand which platforms need more focus
+- Track the success of new releases
+- Make data-driven decisions about feature development
+- Ensure we're meeting our community's needs
+
+***
+
 ## 📄 Legal Notices
 
 *This project may contain trademarks or logos for projects, products, or services. Any use of third-party trademarks or logos are subject to those third-party's policies.*

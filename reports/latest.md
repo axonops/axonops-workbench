@@ -1,15 +1,57 @@
 # 📊 AxonOps Workbench Weekly Download Report
 
-**Generated on:** 2025-06-05 07:56:34 UTC  
+**Generated on:** 2025-06-05 08:36:17 UTC  
 **Repository:** [axonops/axonops-workbench](https://github.com/axonops/axonops-workbench)
 
 ## 📈 Executive Summary
 
 | Metric | Current | Change from Last Week |
 |--------|---------|----------------------|
-| **Total Downloads** | **1,608** | *First report* |
+| **Total Downloads** | **1,609** | *First report* |
 | User Release Downloads | 1,476 | *First report* |
-| Internal Release Downloads | 132 | *First report* |
+| Internal Release Downloads | 133 | *First report* |
+
+### 💻 User Downloads by Operating System
+
+_Note: This tracks downloads from user releases only, excluding internal releases._
+
+| OS | Downloads | Change | Trend |
+|----|-----------|--------|-------|
+| Windows | 261 | *First report* | - |
+| macOS | 236 | *First report* | - |
+| Linux | 472 | *First report* | - |
+| Other | 11 | *First report* | - |
+
+### 🆕 Latest User Release: Release for v0.9.27
+
+**Version:** [v0.9.27](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.27)  
+**Published:** 2025-06-04 (0 days ago)  
+**Total Downloads:** 42
+
+**Downloads by OS:**
+- Windows: 1
+- macOS: 5
+- Linux: 19
+- Other: 0
+
+| Asset | OS | Downloads | Size |
+|-------|----|-----------|------|
+| [AxonOps.Workbench-0.9.27-linux-x86_64...](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-linux-x86_64.rpm) | Linux | 10 | 129.5 MB |
+| [AxonOps.Workbench-0.9.27-linux-aarch6...](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-linux-aarch64.rpm) | Linux | 9 | 124.4 MB |
+| [AxonOps.Workbench-0.9.27-mac-arm64.dmg](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-mac-arm64.dmg) | macOS | 3 | 159.5 MB |
+| [AxonOps.Workbench-0.9.27-win-x64.exe](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-win-x64.exe) | Windows | 1 | 173.3 MB |
+| [AxonOps.Workbench-0.9.27-mac-arm64.zip](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-mac-arm64.zip) | macOS | 1 | 170.4 MB |
+| [AxonOps.Workbench-0.9.27-mac-x64.dmg](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-mac-x64.dmg) | macOS | 1 | 167.2 MB |
+| [AxonOps.Workbench-0.9.27-linux-arm64....](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-linux-arm64.tar.gz) | Linux | 0 | 186.6 MB |
+| [AxonOps.Workbench-0.9.27-linux-arm64.deb](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-linux-arm64.deb) | Linux | 0 | 153.3 MB |
+| [AxonOps.Workbench-0.9.27-linux-x64.ta...](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-linux-x64.tar.gz) | Linux | 0 | 187.9 MB |
+| [AxonOps.Workbench-0.9.27-linux-amd64.deb](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-linux-amd64.deb) | Linux | 0 | 128.6 MB |
+| [AxonOps.Workbench-0.9.27-win-x64.msi](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-win-x64.msi) | Windows | 0 | 174.6 MB |
+| [AxonOps.Workbench-0.9.27-mac-arm64.pkg](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-mac-arm64.pkg) | macOS | 0 | 178.3 MB |
+| [AxonOps.Workbench-0.9.27-mac-x64.pkg](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-mac-x64.pkg) | macOS | 0 | 187.4 MB |
+| [AxonOps.Workbench-0.9.27-mac-x64.zip](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/AxonOps.Workbench-0.9.27-mac-x64.zip) | macOS | 0 | 179.3 MB |
+| [sbom.spdx.json](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/sbom.spdx.json) | Other | 0 | 1.4 MB |
+| [sbom.cyclonedx.json](https://github.com/axonops/axonops-workbench/releases/download/v0.9.27/sbom.cyclonedx.json) | Other | 0 | 869.0 KB |
 
 ---
 
@@ -295,7 +337,7 @@
 ## 🔧 Internal Releases
 
 ### Overview
-- **Total Downloads:** 132
+- **Total Downloads:** 133
 
 ### 📥 Top Downloaded Assets
 

@@ -250,6 +250,24 @@ npm run test:coverage
 npm run test:watch
 ```
 
+### 🤝 Contributing
+
+We welcome contributions from the community! Please read our [Contributing Guide](CONTRIBUTING.md) before submitting pull requests. The guide covers:
+
+- Code of conduct and community guidelines
+- Development workflow and branching strategy
+- Coding standards and best practices
+- How to submit bug reports and feature requests
+- Pull request process and review guidelines
+- License agreements and legal requirements
+
+Key points for contributors:
+- Fork the repository and create feature branches from `main`
+- Follow the existing code style and conventions
+- Write tests for new features and bug fixes
+- Update documentation as needed
+- Sign your commits with `git commit -s`
+
 ### 🐛 Debugging
 
 - Set `AXONOPS_DEV_TOOLS=true` environment variable to open developer tools on startup

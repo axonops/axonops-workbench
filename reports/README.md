@@ -24,6 +24,17 @@ Each report includes:
 - Visual indicators for increases (▲), decreases (▼), or no change (→)
 - Percentage changes for download trends
 
+#### Downloads by Operating System
+- Tracks downloads for Windows, macOS, Linux, and Other platforms
+- Shows week-over-week changes and percentage growth
+- Visual trend indicators (📈 for >10% growth, 📉 for >10% decline, ➡️ for stable)
+
+#### Latest User Release
+- Highlights the most recent user release
+- Shows publication date and days since release
+- Lists all assets with download counts and direct download links
+- Excludes checksum files for cleaner presentation
+
 ### User Releases
 - Top 10 downloaded assets with change tracking
 - Detailed breakdown of top 15 releases
@@ -40,5 +51,6 @@ Each report includes:
 - Compares current week's data with previous week
 - Shows download growth for individual releases
 - Tracks new assets appearing in the top downloads
+- OS-specific download trends
 
 Internal releases are identified by having the word "internal" in their release name or tag.

@@ -58,10 +58,22 @@ def categorize_releases(releases):
     
     return internal_releases, user_releases
 
+def get_os_from_asset_name(asset_name):
+    """Determine OS from asset filename."""
+    asset_lower = asset_name.lower()
+    if 'win' in asset_lower or '.msi' in asset_lower or '.exe' in asset_lower:
+        return 'Windows'
+    elif 'mac' in asset_lower or '.dmg' in asset_lower or '.pkg' in asset_lower:
+        return 'macOS'
+    elif 'linux' in asset_lower or '.deb' in asset_lower or '.rpm' in asset_lower or '.tar.gz' in asset_lower:
+        return 'Linux'
+    return 'Other'
+
 def calculate_statistics(releases):
     """Calculate download statistics for a set of releases."""
     total_downloads = 0
     asset_downloads = defaultdict(int)
+    os_downloads = defaultdict(int)
     release_stats = []
     
     for release in releases:
@@ -71,6 +83,7 @@ def calculate_statistics(releases):
             'tag': release['tag_name'],
             'published_at': release['published_at'],
             'html_url': release['html_url'],
+            'created_at': release['created_at'],
             'assets': []
         }
         
@@ -79,6 +92,11 @@ def calculate_statistics(releases):
             release_total += download_count
             total_downloads += download_count
             asset_downloads[asset['name']] += download_count
+            
+            # Track OS-specific downloads (exclude checksum files)
+            if not asset['name'].endswith('.sha256sum'):
+                os_type = get_os_from_asset_name(asset['name'])
+                os_downloads[os_type] += download_count
             
             release_info['assets'].append({
                 'name': asset['name'],
@@ -93,8 +111,26 @@ def calculate_statistics(releases):
     return {
         'total_downloads': total_downloads,
         'asset_downloads': dict(asset_downloads),
+        'os_downloads': dict(os_downloads),
         'releases': sorted(release_stats, key=lambda x: x['total_downloads'], reverse=True)
     }
+
+def get_latest_user_release(user_releases):
+    """Find the most recent user release by creation date."""
+    if not user_releases:
+        return None
+    
+    # Sort by created_at date to get the most recent
+    sorted_releases = sorted(user_releases, 
+                           key=lambda x: datetime.fromisoformat(x['created_at'].replace('Z', '+00:00')), 
+                           reverse=True)
+    
+    # Find the first non-prerelease, or fallback to first release
+    for release in sorted_releases:
+        if not release.get('prerelease', False):
+            return release
+    
+    return sorted_releases[0] if sorted_releases else None
 
 def load_previous_report():
     """Load the most recent previous report data."""
@@ -112,7 +148,8 @@ def calculate_changes(current_stats, previous_stats):
     changes = {
         'total_change': current_stats['total_downloads'] - previous_stats['total_downloads'],
         'total_percent': 0,
-        'release_changes': {}
+        'release_changes': {},
+        'os_changes': {}
     }
     
     if previous_stats['total_downloads'] > 0:
@@ -132,6 +169,17 @@ def calculate_changes(current_stats, previous_stats):
                 'current': curr_downloads,
                 'change': curr_downloads - prev_downloads
             }
+    
+    # Calculate OS-specific changes
+    prev_os = previous_stats.get('os_downloads', {})
+    for os_type, current_count in current_stats.get('os_downloads', {}).items():
+        prev_count = prev_os.get(os_type, 0)
+        changes['os_changes'][os_type] = {
+            'current': current_count,
+            'previous': prev_count,
+            'change': current_count - prev_count,
+            'percent': ((current_count - prev_count) / prev_count * 100) if prev_count > 0 else 0
+        }
     
     return changes
 
@@ -167,6 +215,14 @@ def generate_markdown_report(internal_stats, user_stats, previous_data):
     
     internal_changes = calculate_changes(internal_stats, prev_internal)
     user_changes = calculate_changes(user_stats, prev_user)
+    
+    # Get latest user release
+    latest_release = None
+    if user_stats['releases']:
+        # Find the most recently created release
+        latest_release = sorted(user_stats['releases'], 
+                              key=lambda x: datetime.fromisoformat(x['created_at'].replace('Z', '+00:00')), 
+                              reverse=True)[0]
     
     # Header
     report = f"""# 📊 AxonOps Workbench Weekly Download Report
@@ -204,6 +260,48 @@ def generate_markdown_report(internal_stats, user_stats, previous_data):
         report += f"{format_change(internal_changes['total_change'], True, internal_changes['total_percent'])} |\n"
     else:
         report += "*First report* |\n"
+    
+    # Add OS-specific tracking
+    report += "\n### 💻 Downloads by Operating System\n\n"
+    report += "| OS | Downloads | Change | Trend |\n"
+    report += "|----|-----------|--------|-------|\n"
+    
+    os_order = ['Windows', 'macOS', 'Linux', 'Other']
+    for os_type in os_order:
+        if os_type in user_stats.get('os_downloads', {}):
+            downloads = user_stats['os_downloads'][os_type]
+            report += f"| {os_type} | {downloads:,} | "
+            
+            if user_changes and os_type in user_changes.get('os_changes', {}):
+                os_change = user_changes['os_changes'][os_type]
+                report += f"{format_change(os_change['change'], True, os_change['percent'])} | "
+                # Add sparkline-like trend
+                if os_change['percent'] > 10:
+                    report += "📈 |"
+                elif os_change['percent'] < -10:
+                    report += "📉 |"
+                else:
+                    report += "➡️ |"
+            else:
+                report += "*First report* | - |"
+            report += "\n"
+    
+    # Latest User Release section
+    if latest_release:
+        report += f"\n### 🆕 Latest User Release: {latest_release['name']}\n\n"
+        report += f"**Version:** [{latest_release['tag']}]({latest_release['html_url']})  \n"
+        report += f"**Published:** {latest_release['published_at'][:10]} ({(datetime.now() - datetime.fromisoformat(latest_release['published_at'].replace('Z', '+00:00'))).days} days ago)  \n"
+        report += f"**Total Downloads:** {latest_release['total_downloads']:,}\n\n"
+        
+        if latest_release['assets']:
+            report += "| Asset | Downloads | Size |\n"
+            report += "|-------|-----------|------|\n"
+            for asset in sorted(latest_release['assets'], key=lambda x: x['downloads'], reverse=True):
+                if not asset['name'].endswith('.sha256sum'):  # Skip checksum files
+                    asset_name = asset['name']
+                    if len(asset_name) > 50:
+                        asset_name = asset_name[:47] + "..."
+                    report += f"| [{asset_name}]({asset['browser_download_url']}) | {asset['downloads']:,} | {format_size(asset['size'])} |\n"
     
     report += "\n---\n\n"
     

@@ -312,11 +312,9 @@ We encourage users to explore and contribute to the main Apache Cassandra projec
 - 🌐 **Website**: [axonops.com](https://axonops.com)
 - 📧 **Contact**: Visit our website for support options
 
-***
-
 ## 📊 Download Statistics
 
-We track download statistics for all AxonOps Workbench releases to better understand usage patterns and platform adoption. These reports are automatically generated weekly and provide insights into:
+We track download statistics from this Github project for all AxonOps Workbench releases to better understand usage patterns and platform adoption. These reports are automatically generated weekly via the Github public APIs and provide insights into:
 
 - **Total Downloads**: Overall download counts across all releases
 - **Platform Distribution**: Downloads broken down by Windows, macOS, and Linux

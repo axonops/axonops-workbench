@@ -266,7 +266,8 @@ Key points for contributors:
 - Follow the existing code style and conventions
 - Write tests for new features and bug fixes
 - Update documentation as needed
-- Sign your commits with `git commit -s`
+- Sign our [Contributor License Agreement (CLA)](CLA.md) by following the bot instructions on your first PR
+- All contributors must sign the CLA before their PRs can be merged
 
 ### 🐛 Debugging
 

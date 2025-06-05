@@ -400,8 +400,8 @@ def generate_markdown_report(internal_stats, user_stats, previous_data):
             else:
                 report += "*New* |\n"
     
-    report += "\n### 📦 All Releases (Newest First)\n\n"
-    report += "_Sorted by version number, showing up to 15 releases with downloads_\n\n"
+    report += "\n### 📦 All User Releases (Newest First)\n\n"
+    report += "_Sorted by version number, showing up to 15 user releases with downloads_\n\n"
     
     # Sort releases by version number (newest first)
     sorted_releases = sorted(user_stats['releases'], 

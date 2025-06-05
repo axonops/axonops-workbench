@@ -39,7 +39,8 @@ Each report includes:
 
 ### User Releases
 - Top 10 downloaded assets with change tracking
-- Detailed breakdown of top 15 releases
+- Top releases by downloads table showing the most popular versions
+- All releases sorted by version number (newest first)
 - Direct links to GitHub release pages
 - Download links for individual assets
 - Collapsible sections for better readability

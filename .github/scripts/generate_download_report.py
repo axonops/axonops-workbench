@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 from pathlib import Path
 import glob
+import re
 
 GITHUB_API_URL = "https://api.github.com"
 REPO_OWNER = os.environ.get('GITHUB_REPOSITORY_OWNER', '')
@@ -205,6 +206,38 @@ def format_change(change, show_percent=False, percent_value=None):
     
     return result
 
+def parse_version(version_string):
+    """Parse version string to comparable tuple."""
+    # Remove 'v' prefix if present
+    version = version_string.lstrip('v')
+    
+    # Handle beta/alpha/rc versions
+    match = re.match(r'(\d+)\.(\d+)\.(\d+)(?:-(.+))?', version)
+    if match:
+        major, minor, patch, pre = match.groups()
+        major, minor, patch = int(major), int(minor), int(patch)
+        
+        # Handle pre-release versions
+        if pre:
+            # Parse pre-release (beta3, rc1, etc)
+            pre_match = re.match(r'(alpha|beta|rc)(\d+)?', pre)
+            if pre_match:
+                pre_type, pre_num = pre_match.groups()
+                pre_num = int(pre_num) if pre_num else 0
+                # alpha < beta < rc < release
+                pre_order = {'alpha': 0, 'beta': 1, 'rc': 2}
+                pre_value = pre_order.get(pre_type, 3)
+                return (major, minor, patch, pre_value, pre_num)
+            else:
+                # Unknown pre-release format
+                return (major, minor, patch, 0, 0)
+        else:
+            # Regular release (highest priority)
+            return (major, minor, patch, 99, 0)
+    
+    # Fallback for non-standard versions
+    return (0, 0, 0, 0, 0)
+
 def generate_markdown_report(internal_stats, user_stats, previous_data):
     """Generate enhanced markdown report with comparisons."""
     report_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
@@ -353,11 +386,33 @@ def generate_markdown_report(internal_stats, user_stats, previous_data):
         else:
             report += "*New* |\n"
     
-    report += "\n### 📦 Release Details\n\n"
+    report += "\n### 🏆 Top Releases by Downloads\n\n"
+    report += "| Release | Version | Downloads | Change |\n"
+    report += "|---------|---------|-----------|--------|\n"
+    
+    # Show top 10 releases by download count
+    for release in user_stats['releases'][:10]:
+        if release['total_downloads'] > 0:
+            report += f"| {release['name']} | [{release['tag']}]({release['html_url']}) | {release['total_downloads']:,} | "
+            if user_changes and release['tag'] in user_changes['release_changes']:
+                change_info = user_changes['release_changes'][release['tag']]
+                report += f"{format_change(change_info['change'])} |\n"
+            else:
+                report += "*New* |\n"
+    
+    report += "\n### 📦 All Releases (Newest First)\n\n"
+    report += "_Sorted by version number, showing up to 15 releases with downloads_\n\n"
+    
+    # Sort releases by version number (newest first)
+    sorted_releases = sorted(user_stats['releases'], 
+                           key=lambda r: parse_version(r['tag']), 
+                           reverse=True)
     
     # User release details with enhanced formatting
-    for i, release in enumerate(user_stats['releases'][:15]):  # Top 15 releases
-        if release['total_downloads'] > 0:
+    shown_count = 0
+    for release in sorted_releases:
+        if release['total_downloads'] > 0 and shown_count < 15:  # Show up to 15 releases with downloads
+            shown_count += 1
             report += f"<details>\n<summary><strong>{release['name']}</strong> - {release['total_downloads']:,} downloads"
             
             # Add change indicator if available

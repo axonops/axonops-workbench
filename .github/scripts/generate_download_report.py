@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 """
-Generate download report for GitHub releases.
-Separates internal releases from user releases.
+Generate weekly download report for GitHub releases.
+Includes comparison with previous report and maintains 12-month history.
 """
 
 import os
 import json
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
+from pathlib import Path
+import glob
 
 GITHUB_API_URL = "https://api.github.com"
 REPO_OWNER = os.environ.get('GITHUB_REPOSITORY_OWNER', '')
 REPO_NAME = os.environ.get('GITHUB_REPOSITORY', '').split('/')[-1]
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
+REPORT_DIR = Path("reports")
 
 def get_all_releases():
     """Fetch all releases from GitHub API."""
@@ -67,6 +70,7 @@ def calculate_statistics(releases):
             'name': release['name'] or release['tag_name'],
             'tag': release['tag_name'],
             'published_at': release['published_at'],
+            'html_url': release['html_url'],
             'assets': []
         }
         
@@ -79,7 +83,8 @@ def calculate_statistics(releases):
             release_info['assets'].append({
                 'name': asset['name'],
                 'downloads': download_count,
-                'size': asset['size']
+                'size': asset['size'],
+                'browser_download_url': asset['browser_download_url']
             })
         
         release_info['total_downloads'] = release_total
@@ -91,6 +96,45 @@ def calculate_statistics(releases):
         'releases': sorted(release_stats, key=lambda x: x['total_downloads'], reverse=True)
     }
 
+def load_previous_report():
+    """Load the most recent previous report data."""
+    json_files = sorted(glob.glob(str(REPORT_DIR / "weekly-download-data-*.json")))
+    if json_files:
+        with open(json_files[-1], 'r') as f:
+            return json.load(f)
+    return None
+
+def calculate_changes(current_stats, previous_stats):
+    """Calculate changes between current and previous reports."""
+    if not previous_stats:
+        return None
+    
+    changes = {
+        'total_change': current_stats['total_downloads'] - previous_stats['total_downloads'],
+        'total_percent': 0,
+        'release_changes': {}
+    }
+    
+    if previous_stats['total_downloads'] > 0:
+        changes['total_percent'] = ((current_stats['total_downloads'] - previous_stats['total_downloads']) 
+                                   / previous_stats['total_downloads'] * 100)
+    
+    # Map previous releases by tag for comparison
+    prev_releases = {r['tag']: r for r in previous_stats.get('releases', [])}
+    
+    for release in current_stats['releases']:
+        tag = release['tag']
+        if tag in prev_releases:
+            prev_downloads = prev_releases[tag]['total_downloads']
+            curr_downloads = release['total_downloads']
+            changes['release_changes'][tag] = {
+                'previous': prev_downloads,
+                'current': curr_downloads,
+                'change': curr_downloads - prev_downloads
+            }
+    
+    return changes
+
 def format_size(bytes):
     """Format bytes to human readable size."""
     for unit in ['B', 'KB', 'MB', 'GB']:
@@ -99,91 +143,191 @@ def format_size(bytes):
         bytes /= 1024.0
     return f"{bytes:.1f} TB"
 
-def generate_markdown_report(internal_stats, user_stats):
-    """Generate markdown report."""
+def format_change(change, show_percent=False, percent_value=None):
+    """Format change value with appropriate sign and color."""
+    if change > 0:
+        result = f"▲ +{change:,}"
+    elif change < 0:
+        result = f"▼ {change:,}"
+    else:
+        result = "→ 0"
+    
+    if show_percent and percent_value is not None:
+        result += f" ({percent_value:+.1f}%)"
+    
+    return result
+
+def generate_markdown_report(internal_stats, user_stats, previous_data):
+    """Generate enhanced markdown report with comparisons."""
     report_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
     
-    report = f"""# AxonOps Workbench Download Report
+    # Calculate changes
+    prev_internal = previous_data['internal_releases'] if previous_data else None
+    prev_user = previous_data['user_releases'] if previous_data else None
+    
+    internal_changes = calculate_changes(internal_stats, prev_internal)
+    user_changes = calculate_changes(user_stats, prev_user)
+    
+    # Header
+    report = f"""# 📊 AxonOps Workbench Weekly Download Report
 
-**Generated on:** {report_date}
+**Generated on:** {report_date}  
+**Repository:** [{REPO_OWNER}/{REPO_NAME}](https://github.com/{REPO_OWNER}/{REPO_NAME})
 
-## Summary
+## 📈 Executive Summary
 
-- **Total Downloads (All Releases):** {internal_stats['total_downloads'] + user_stats['total_downloads']:,}
-- **User Release Downloads:** {user_stats['total_downloads']:,}
-- **Internal Release Downloads:** {internal_stats['total_downloads']:,}
-
----
-
-## User Releases
-
-### Total Downloads: {user_stats['total_downloads']:,}
-
-### Top Downloaded Assets
-| Asset Name | Downloads |
-|------------|-----------|
 """
     
-    # Add top 10 user release assets
+    # Summary table with changes
+    total_downloads = internal_stats['total_downloads'] + user_stats['total_downloads']
+    total_change = 0
+    if internal_changes and user_changes:
+        total_change = internal_changes['total_change'] + user_changes['total_change']
+    
+    report += "| Metric | Current | Change from Last Week |\n"
+    report += "|--------|---------|----------------------|\n"
+    report += f"| **Total Downloads** | **{total_downloads:,}** | "
+    
+    if total_change != 0:
+        report += f"**{format_change(total_change)}** |\n"
+    else:
+        report += "*First report* |\n"
+    
+    report += f"| User Release Downloads | {user_stats['total_downloads']:,} | "
+    if user_changes:
+        report += f"{format_change(user_changes['total_change'], True, user_changes['total_percent'])} |\n"
+    else:
+        report += "*First report* |\n"
+    
+    report += f"| Internal Release Downloads | {internal_stats['total_downloads']:,} | "
+    if internal_changes:
+        report += f"{format_change(internal_changes['total_change'], True, internal_changes['total_percent'])} |\n"
+    else:
+        report += "*First report* |\n"
+    
+    report += "\n---\n\n"
+    
+    # User Releases Section
+    report += f"""## 🚀 User Releases
+
+### Overview
+- **Total Downloads:** {user_stats['total_downloads']:,}
+"""
+    
+    if user_changes:
+        report += f"- **Weekly Change:** {format_change(user_changes['total_change'], True, user_changes['total_percent'])}\n"
+    
+    report += "\n### 📥 Top Downloaded Assets\n\n"
+    report += "| Asset | Downloads | Change |\n"
+    report += "|-------|-----------|--------|\n"
+    
+    # Track previous asset downloads for comparison
+    prev_asset_downloads = {}
+    if prev_user:
+        prev_asset_downloads = prev_user.get('asset_downloads', {})
+    
     sorted_user_assets = sorted(user_stats['asset_downloads'].items(), key=lambda x: x[1], reverse=True)[:10]
     for asset_name, downloads in sorted_user_assets:
-        report += f"| {asset_name} | {downloads:,} |\n"
+        prev_downloads = prev_asset_downloads.get(asset_name, 0)
+        change = downloads - prev_downloads
+        report += f"| {asset_name} | {downloads:,} | "
+        if prev_downloads > 0:
+            report += f"{format_change(change)} |\n"
+        else:
+            report += "*New* |\n"
     
-    report += "\n### Release Details\n\n"
+    report += "\n### 📦 Release Details\n\n"
     
-    # Add user release details
-    for release in user_stats['releases'][:20]:  # Top 20 releases
+    # User release details with enhanced formatting
+    for i, release in enumerate(user_stats['releases'][:15]):  # Top 15 releases
         if release['total_downloads'] > 0:
-            report += f"#### {release['name']}\n"
-            report += f"- **Tag:** {release['tag']}\n"
+            report += f"<details>\n<summary><strong>{release['name']}</strong> - {release['total_downloads']:,} downloads"
+            
+            # Add change indicator if available
+            if user_changes and release['tag'] in user_changes['release_changes']:
+                change_info = user_changes['release_changes'][release['tag']]
+                report += f" {format_change(change_info['change'])}"
+            
+            report += "</summary>\n\n"
+            report += f"- **Version:** [{release['tag']}]({release['html_url']})\n"
             report += f"- **Published:** {release['published_at'][:10]}\n"
             report += f"- **Total Downloads:** {release['total_downloads']:,}\n\n"
             
             if release['assets']:
-                report += "| Asset | Downloads | Size |\n"
-                report += "|-------|-----------|------|\n"
-                for asset in sorted(release['assets'], key=lambda x: x['downloads'], reverse=True):
-                    report += f"| {asset['name']} | {asset['downloads']:,} | {format_size(asset['size'])} |\n"
-                report += "\n"
+                report += "| Asset | Downloads | Size | Link |\n"
+                report += "|-------|-----------|------|------|\n"
+                for asset in sorted(release['assets'], key=lambda x: x['downloads'], reverse=True)[:5]:
+                    asset_name = asset['name']
+                    if len(asset_name) > 40:
+                        asset_name = asset_name[:37] + "..."
+                    report += f"| {asset_name} | {asset['downloads']:,} | {format_size(asset['size'])} | [⬇]({asset['browser_download_url']}) |\n"
+            
+            report += "\n</details>\n\n"
     
+    # Internal Releases Section
     report += """---
 
-## Internal Releases
+## 🔧 Internal Releases
 
-### Total Downloads: """ + f"{internal_stats['total_downloads']:,}\n\n"
+### Overview
+"""
+    report += f"- **Total Downloads:** {internal_stats['total_downloads']:,}\n"
     
-    if internal_stats['releases']:
-        report += "### Top Downloaded Assets\n"
-        report += "| Asset Name | Downloads |\n"
-        report += "|------------|-----------|"
+    if internal_changes:
+        report += f"- **Weekly Change:** {format_change(internal_changes['total_change'], True, internal_changes['total_percent'])}\n"
+    
+    if internal_stats['releases'] and any(r['total_downloads'] > 0 for r in internal_stats['releases']):
+        report += "\n### 📥 Top Downloaded Assets\n\n"
+        report += "| Asset | Downloads |\n"
+        report += "|-------|-----------|"
         
-        # Add top 10 internal release assets
-        sorted_internal_assets = sorted(internal_stats['asset_downloads'].items(), key=lambda x: x[1], reverse=True)[:10]
+        sorted_internal_assets = sorted(internal_stats['asset_downloads'].items(), key=lambda x: x[1], reverse=True)[:5]
         for asset_name, downloads in sorted_internal_assets:
-            report += f"\n| {asset_name} | {downloads:,} |"
+            if downloads > 0:
+                report += f"\n| {asset_name} | {downloads:,} |"
         
-        report += "\n\n### Release Details\n\n"
+        report += "\n\n### 📦 Recent Releases\n\n"
         
-        # Add internal release details
-        for release in internal_stats['releases'][:10]:  # Top 10 internal releases
-            if release['total_downloads'] > 0:
-                report += f"#### {release['name']}\n"
-                report += f"- **Tag:** {release['tag']}\n"
-                report += f"- **Published:** {release['published_at'][:10]}\n"
-                report += f"- **Total Downloads:** {release['total_downloads']:,}\n\n"
-                
-                if release['assets']:
-                    report += "| Asset | Downloads | Size |\n"
-                    report += "|-------|-----------|------|\n"
-                    for asset in sorted(release['assets'], key=lambda x: x['downloads'], reverse=True):
-                        report += f"| {asset['name']} | {asset['downloads']:,} | {format_size(asset['size'])} |\n"
-                    report += "\n"
+        # Show only internal releases with downloads
+        shown_internal = 0
+        for release in internal_stats['releases']:
+            if release['total_downloads'] > 0 and shown_internal < 5:
+                report += f"- **{release['name']}** - {release['total_downloads']:,} downloads\n"
+                shown_internal += 1
     else:
-        report += "*No internal releases found.*\n"
+        report += "\n*No internal release downloads this week.*\n"
     
-    report += "\n---\n\n*This report is automatically generated daily by GitHub Actions.*\n"
+    report += "\n---\n\n"
+    report += f"*📅 This report is automatically generated weekly by GitHub Actions.*  \n"
+    report += f"*📊 [View all releases](https://github.com/{REPO_OWNER}/{REPO_NAME}/releases)*\n"
     
     return report
+
+def cleanup_old_reports():
+    """Remove reports older than 12 months."""
+    cutoff_date = datetime.now() - timedelta(days=365)
+    
+    # Clean up JSON files
+    for json_file in glob.glob(str(REPORT_DIR / "weekly-download-data-*.json")):
+        try:
+            date_str = Path(json_file).stem.split('-')[-3:]
+            file_date = datetime.strptime('-'.join(date_str), '%Y-%m-%d')
+            if file_date < cutoff_date:
+                os.remove(json_file)
+                print(f"Removed old report: {json_file}")
+        except Exception as e:
+            print(f"Error processing {json_file}: {e}")
+    
+    # Clean up markdown files
+    for md_file in glob.glob(str(REPORT_DIR / "weekly-download-report-*.md")):
+        try:
+            date_str = Path(md_file).stem.split('-')[-3:]
+            file_date = datetime.strptime('-'.join(date_str), '%Y-%m-%d')
+            if file_date < cutoff_date:
+                os.remove(md_file)
+                print(f"Removed old report: {md_file}")
+        except Exception as e:
+            print(f"Error processing {md_file}: {e}")
 
 def main():
     """Main function."""
@@ -204,40 +348,51 @@ def main():
     internal_stats = calculate_statistics(internal_releases)
     user_stats = calculate_statistics(user_releases)
     
+    # Load previous report for comparison
+    previous_data = load_previous_report()
+    if previous_data:
+        print("Loaded previous report for comparison.")
+    else:
+        print("No previous report found. This will be the baseline.")
+    
     # Generate report
-    report = generate_markdown_report(internal_stats, user_stats)
+    report = generate_markdown_report(internal_stats, user_stats, previous_data)
     
     # Save report
-    report_dir = "reports"
-    os.makedirs(report_dir, exist_ok=True)
+    REPORT_DIR.mkdir(exist_ok=True)
     
     # Save with date in filename
     date_str = datetime.now().strftime('%Y-%m-%d')
-    report_path = os.path.join(report_dir, f"download-report-{date_str}.md")
+    report_path = REPORT_DIR / f"weekly-download-report-{date_str}.md"
     
     with open(report_path, 'w') as f:
         f.write(report)
     
     # Also save as latest.md for easy access
-    latest_path = os.path.join(report_dir, "latest.md")
+    latest_path = REPORT_DIR / "latest.md"
     with open(latest_path, 'w') as f:
         f.write(report)
     
     print(f"Report generated: {report_path}")
     print(f"Latest report: {latest_path}")
     
-    # Save raw data as JSON for potential future use
+    # Save raw data as JSON for next comparison
     data = {
         'generated_at': datetime.now().isoformat(),
         'internal_releases': internal_stats,
         'user_releases': user_stats
     }
     
-    json_path = os.path.join(report_dir, f"download-data-{date_str}.json")
+    json_path = REPORT_DIR / f"weekly-download-data-{date_str}.json"
     with open(json_path, 'w') as f:
         json.dump(data, f, indent=2)
     
     print(f"Raw data saved: {json_path}")
+    
+    # Clean up old reports (older than 12 months)
+    print("\nCleaning up old reports...")
+    cleanup_old_reports()
+    print("Cleanup complete.")
 
 if __name__ == "__main__":
     main()

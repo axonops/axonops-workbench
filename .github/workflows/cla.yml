@@ -42,7 +42,7 @@ jobs:
           
           # Custom messages for better user experience
           custom-notsigned-prcomment: |
-            👋 Hello @<contributorName>, thank you for your contribution!
+            👋 Hello @${{ github.event.pull_request.user.login || github.actor }}, thank you for your contribution!
             
             Before we can merge this pull request, we need you to sign our Contributor License Agreement (CLA).
             This is a one-time requirement for all contributors.

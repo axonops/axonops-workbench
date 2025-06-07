@@ -77,6 +77,9 @@ jobs:
       - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
         run: |
           mkdir -p main/bin
+          if [ "$CQLSH_BUILD_VERSION" == "latest" ]; then
+            CQLSH_BUILD_VERSION=$(curl --silent "https://api.github.com/repos/axonops/axonops-workbench-cqlsh/releases/latest" | jq -r '.tag_name')
+          fi
           for binary in cqlsh keys_generator; do
             curl -fL ${CQLSH_GITHUB_URL}/${CQLSH_BUILD_VERSION}/${binary}-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
             mv main/bin/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}

@@ -1,11 +1,5 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
-  - name: 📋 Contributor License Agreement (CLA)
-    url: https://github.com/axonops/axonops-workbench/blob/main/CLA.md
-    about: Please read and sign our CLA before contributing to this project
-  - name: 💬 Discussions - Share Ideas & Suggestions
+  - name: ❓ Questions, discussions on features & non-issue related topics
     url: https://github.com/axonops/axonops-workbench/discussions
-    about: Have an idea or want to discuss potential features? Join our community discussions!
-  - name: 🐛 Report a Bug
-    url: https://github.com/axonops/axonops-workbench/issues/new
-    about: Create a report to help us improve. Please use this section for bugs only.
+    about: Please use the AxonOps Workbench Discussions forum for discussing new features, questions an non-issue related topics.

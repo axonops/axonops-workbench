@@ -57,14 +57,13 @@
 
 | Feature | Description |
 |---------|-------------|
-| 🖥️ **CQL Console** | Advanced editor with syntax highlighting, auto-completion, and multi-tab support |
+| 🖥️ **CQL Console** | Advanced editor with syntax highlighting, auto-completion |
 | 🤖 **AI Assistant (Experimental)** | Get intelligent help with query optimization and troubleshooting |
 | 🔍 **Query Tracing** | Deep performance analysis with execution plans and bottleneck detection |
 | 🏃 **Local Clusters** | Spin up Cassandra clusters instantly with Docker/Podman integration |
 | 🔒 **SSH Tunneling** | Secure remote connections without external tools |
 | 📁 **Workspaces** | Organize and share cluster configurations via source control |
 | 🌍 **Multi-Language** | Available in English, Spanish, French, Arabic, Chinese, and more |
-| 🎨 **Themes** | Dark and light modes for comfortable coding sessions |
 
 </div>
 

@@ -97,10 +97,10 @@ jobs:
       - name: Install python dependencies
         run: pip3 install -r requirements.txt
 
-      - name: Setup Node.js v20.19.0
+      - name: Setup Node.js v20.19.2
         uses: actions/setup-node@v4
         with:
-          node-version: 20.17.0
+          node-version: 20.19.2
 
       - name: Get credits and add them to the database
         run: |

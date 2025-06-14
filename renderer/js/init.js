@@ -1762,4 +1762,8 @@ $(document).on('checkForUpdates', function(e, manualCheck = false) {
 })
 
 // Once the UI is ready, get all workspaces
-$(document).ready(() => IPCRenderer.on('windows-shown', () => $(document).trigger('getWorkspaces')))
+$(document).ready(() => IPCRenderer.on('windows-shown', () => {
+  IPCRenderer.send('cli:ready')
+
+  $(document).trigger('getWorkspaces')
+}))

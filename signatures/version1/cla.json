@@ -23,6 +23,14 @@
       "created_at": "2025-06-05T15:14:51Z",
       "repoId": 766959309,
       "pullRequestNo": 922
+    },
+    {
+      "name": "hshimizu",
+      "id": 4386301,
+      "comment_id": 2972676558,
+      "created_at": "2025-06-14T12:03:08Z",
+      "repoId": 766959309,
+      "pullRequestNo": 954
     }
   ]
 }

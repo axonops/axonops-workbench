@@ -184,7 +184,7 @@ And it also can be in file, and the absolute path to this file is passed, for ex
 - The workbench handles all connection complexity (authentication, SSL, SSH tunnels) automatically before dropping you into the familiar CQLsh prompt.
 - Progress will be shown in the terminal, then you'll have full access to execute CQL commands interactively just like using standalone CQLsh.
 
-## 🐧 Run AxonOps Workbench in Linux Headless Host (no GUI)
+### 🐧 Run AxonOps Workbench in Linux Headless Host (no GUI)
 
 In order to use AxonOps Workbench in a headless Linux host, all you need to do is making sure the package `xvfb` is installed, running and exporting a display, it's available for most Linux distributions:
 

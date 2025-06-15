@@ -64,7 +64,7 @@
 | 🔒 **SSH Tunneling** | Secure remote connections without external tools |
 | 📁 **Workspaces** | Organize and share cluster configurations via source control |
 | 🌍 **Multi-Language** | Available in English, Spanish, French, Arabic, Chinese, and more |
-| ⌨️ **Command Line Interface** | Powerful CLI for automation and headless operation |
+| ⌨️ **Command Line Interface** | Powerful CLI for automation and launching CQLSH on the command line using workspace connections |
 
 </div>
 

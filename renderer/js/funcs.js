@@ -3875,6 +3875,17 @@ let getWorkspaceFolderPath = (workspaceID, replaceDefault = true) => {
       // Get its folder name and its path
       [folderName, folderPath] = getAttributes(workspaceElement, ['data-folder', 'data-folder-path'])
 
+    try {
+      if (![folderName, folderPath].some((attribute) => attribute == undefined))
+        throw 0
+
+      let workspaces = Modules.Workspaces.getWorkspacesNoAsync(),
+        workspace = workspaces.find((workspace) => manipulateText(workspace.id) == manipulateText(workspaceID))
+
+      folderName = `${workspace.folder}`
+      folderPath = `${workspace.defaultPath ? 'default' : workspace.path}`
+    } catch (e) {}
+
     // Decide whether or not the ${default} variable will be replaced
     folderPath = folderPath == 'default' ? (!replaceDefault ? '${default}' : defaultPath) : folderPath
 
@@ -3929,7 +3940,7 @@ let pathIsAccessible = (path) => {
 
   try {
     // Test the accessibility
-    FS.accessSync(path, FS.constants.R_OK | FS.constants.W_OK)
+    FS.accessSync(`${path}`, FS.constants.R_OK | FS.constants.W_OK)
 
     // Reaching here means the test has successfully passed
     accessible = true

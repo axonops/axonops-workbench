@@ -9364,13 +9364,13 @@
               } catch (e) {}
 
               // For Apache Cassandra Connection type
+              // Get a temporary random ID for the cluster which is being tested
+              tempClusterID = getRandomID(30)
+
               // Attempt to close the created SSH tunnel - if exists -
               try {
                 IPCRenderer.send('ssh-tunnel:close', tempClusterID)
               } catch (e) {}
-
-              // Get a temporary random ID for the cluster which is being tested
-              tempClusterID = getRandomID(30)
 
               try {
                 /**
@@ -24371,7 +24371,7 @@
           })
         }
       } catch (e) {}
-    }, 8000)
+    }, 10000)
   }
 
   {
@@ -26163,7 +26163,7 @@
         })
       })
     } catch (e) {}
-  }, 8000)
+  }, 10000)
 
   {
     let insertRowAction = $('div[action="insert-row"]'),
@@ -26189,14 +26189,266 @@
 
   {
     setTimeout(() => {
-      let dialogElement = $('#rightClickActionsMetadata'),
-        actionEditor = monaco.editor.getEditors().find((editor) => dialogElement.find('div.action-editor div.editor div.monaco-editor').is(editor.getDomNode()))
+      try {
 
-      updateActionStatusForSelectRowColumn = (returnPrimaryKey = false) => {
-        let [
-          keyspaceName,
-          tableName
-        ] = getAttributes(dialogElement, ['data-keyspace-name', 'data-table-name']).map((name) => addDoubleQuotes(name)),
+        let dialogElement = $('#rightClickActionsMetadata'),
+          actionEditor = monaco.editor.getEditors().find((editor) => dialogElement.find('div.action-editor div.editor div.monaco-editor').is(editor.getDomNode()))
+
+        updateActionStatusForSelectRowColumn = (returnPrimaryKey = false) => {
+          let [
+            keyspaceName,
+            tableName
+          ] = getAttributes(dialogElement, ['data-keyspace-name', 'data-table-name']).map((name) => addDoubleQuotes(name)),
+            relatedTreesObjects = {
+              primaryKey: $('div#tableFieldsPrimaryKeyTreeSelectAction').jstree(),
+              columns: {
+                regular: $('div#tableFieldsRegularColumnsTreeSelectAction').jstree(),
+                collection: $('div#tableFieldsCollectionColumnsTreeSelectAction').jstree(),
+                udt: $('div#tableFieldsUDTColumnsTreeSelectAction').jstree()
+              }
+            },
+            allowFilteringOptions = getCheckedValue('selectAllowFilteringOptions')
+
+          let keyspaceUDTs = []
+
+          try {
+            keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts'))).map((udt) => udt.name)
+          } catch (e) {}
+
+          let allNodes = dialogElement.find('div[action="select-row"]').find(`a.jstree-anchor`)
+
+          allNodes.each(function() {
+            if ($(this)[0].scrollWidth == $(this).innerWidth() || $(this).find('ul.dropdown-menu.for-insertion-actions, ul.dropdown-menu.for-aggregate-functions').hasClass('show'))
+              return
+
+            let widthDifference = Math.abs($(this)[0].scrollWidth - $(this).innerWidth()),
+              typeValueSpan = $(this).find('span.type-value'),
+              spanWidth = typeValueSpan.outerWidth() - 4
+
+            typeValueSpan.css('width', `${spanWidth - widthDifference}px`).addClass('overflow')
+          })
+
+          $(`div[action="select-row"]`).find('div.in-operator-error').hide()
+          $(`div[action="select-row"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).removeClass('invalid')
+
+          /**
+           * By looping through each node, the node is enabled based on specific conditions
+           * Start with the primary key
+           */
+          let isPreviousKeyInvalid = {
+              partition: false,
+              clustering: false
+            },
+            isPreviousOrderButtonActive = false,
+            isFirstClusteringKeyOrderEnabled = false,
+            handleKeyField = (field, disabled = true) => {
+              $(field).toggleClass('unavailable', disabled)
+              $(field).find('input:not([type="radio"])').toggleClass('disabled', disabled)
+              let buttonsAndInputAreas = $(field).find('.btn, div.focus-area')
+              $(field).find('div[data-is-main-input="true"]').toggleClass('disabled', disabled)
+              buttonsAndInputAreas.filter(':not(.column-order-type):not(.aggregate-functions-btn)').toggleClass('disabled', disabled)
+              buttonsAndInputAreas.filter(':not(.column-order-type):not(.aggregate-functions-btn)').attr('disabled', disabled ? '' : null)
+
+              $(`a.jstree-anchor[id="${field.attr('add-hidden-node')}_anchor"]`).attr('is-hidden-node', 'true')
+
+              if ($(field).attr('is-collection-type') == 'true')
+                $(field).find('.is-invalid').removeClass('is-invalid')
+            },
+            getAllChildrenInOrder = (treeObjectName, childID = '#') => {
+              let children = [],
+                relatedTreeObject = typeof treeObjectName == 'string' ? relatedTreesObjects[treeObjectName] : relatedTreesObjects[treeObjectName[0]][treeObjectName[1]]
+
+              let node = relatedTreeObject.get_node(childID)
+
+              if (childID != '#')
+                children.push(childID)
+
+              for (let _childID of node.children)
+                children = children.concat(getAllChildrenInOrder(treeObjectName, _childID))
+
+              return children
+            },
+            allPrimaryKeyFields = getAllChildrenInOrder('primaryKey').map((childID) => {
+              return {
+                id: childID,
+                element: $(`a.jstree-anchor[static-id="${childID}"]`)
+              }
+            }),
+            checkFieldIsParititon = (fieldID, parentID, lastCheck = false, lastParentID = null) => {
+              let isFieldPartition = $(`a.jstree-anchor[static-id="${fieldID}"]`).attr('partition') == 'true',
+                fieldParentID = relatedTreesObjects.primaryKey.get_parent(fieldID)
+
+              lastCheck = isFieldPartition
+
+              try {
+                if (fieldParentID != '#' || isFieldPartition)
+                  throw 0
+
+                let parentNode = allPrimaryKeyFields.find((field) => field.element.attr('add-hidden-node') == lastParentID)
+
+                if (parentNode == undefined)
+                  parentNode = allPrimaryKeyFields.find((field) => field.id == lastParentID)
+
+                if (parentNode == undefined)
+                  throw 0
+
+                return parentNode.element.attr('partition') == 'true'
+              } catch (e) {}
+
+              lastParentID = fieldParentID
+
+              if (isFieldPartition)
+                return lastCheck
+
+              return checkFieldIsParititon(fieldParentID, relatedTreesObjects.primaryKey.get_parent(fieldParentID), lastCheck, lastParentID)
+            },
+            allPartitionKeysValidationStatus = [],
+            allClusteringKeysValidationStatus = []
+
+          // For clustering key(s)
+          let arePrecedingColumnsWithEquOp = true
+
+          try {
+            if (!returnPrimaryKey)
+              throw 0
+
+            let allPrimaryKeyFieldsToBeReturned = allPrimaryKeyFields.filter((primaryKeyField) => {
+              let field = primaryKeyField.element,
+                isFieldPartition = checkFieldIsParititon(primaryKeyField.id, '#', false)
+
+              return !(field.length <= 0 || field.attr('is-hidden-node') == 'true' || isFieldPartition)
+            })
+
+            return allPrimaryKeyFieldsToBeReturned
+          } catch (e) {}
+
+          for (let primaryKeyField of allPrimaryKeyFields) {
+            let field = primaryKeyField.element,
+              isColumnInvalidDueToOrder = field.hasClass('invalid-order')
+
+            if (field.length <= 0 || field.attr('is-hidden-node') == 'true')
+              continue
+
+            let isFieldPartition = checkFieldIsParititon(primaryKeyField.id, '#', false)
+
+            // Partition key
+            try {
+              if (!isFieldPartition)
+                throw 0
+
+              handleKeyField(field, isPreviousKeyInvalid.partition && allowFilteringOptions != 'selectAllowFilteringEnableOption')
+
+              let doesFieldHasChildren = false,
+                isINOperatorChecked = field.find('div.btn-group.operators').find(`input[type="radio"]`).filter(':checked').attr('id') == '_operator_in' || field.attr('is-collection-type') == 'true'
+
+              doesFieldHasChildren = isINOperatorChecked
+
+              try {
+                if (!isINOperatorChecked)
+                  throw 0
+
+                let relatedHiddenNodeChildrenLength = relatedTreesObjects.primaryKey.get_node(field.attr('add-hidden-node')).children_d.length
+
+                doesFieldHasChildren = relatedHiddenNodeChildrenLength > 0
+              } catch (e) {}
+
+              isPreviousKeyInvalid.partition = (field.find('.is-invalid:not(.ignore-invalid):not([type="radio"])').length > 0 && !field.hasClass('unavailable')) || field.hasClass('unavailable')
+
+              field.toggleClass('invalid', isINOperatorChecked && !doesFieldHasChildren && !field.hasClass('unavailable'))
+
+              if (isINOperatorChecked)
+                isPreviousKeyInvalid.partition = !doesFieldHasChildren || field.hasClass('unavailable')
+
+              allPartitionKeysValidationStatus.push(isPreviousKeyInvalid.partition)
+
+              continue
+            } catch (e) {}
+
+            let orderingBtn = field.find('button.column-order-type'),
+              disablingCondition = ((isPreviousKeyInvalid.clustering && isFirstClusteringKeyOrderEnabled) || isPreviousKeyInvalid.partition) && !isPreviousOrderButtonActive
+
+            // Here for clustering key(s)
+            orderingBtn.attr('disabled', disablingCondition ? '' : null).toggleClass('disabled', disablingCondition)
+
+            if (orderingBtn.hasClass('active-order') && orderingBtn.hasClass('disabled'))
+              orderingBtn.removeClass('active-order')
+
+            isFirstClusteringKeyOrderEnabled = true
+
+            isPreviousOrderButtonActive = orderingBtn.hasClass('active-order') && !orderingBtn.hasClass('disabled')
+
+            // For the first clustering key
+            if (allPartitionKeysValidationStatus.includes(true)) {
+              handleKeyField(field, true && allowFilteringOptions != 'selectAllowFilteringEnableOption')
+
+              continue
+            }
+
+            try {
+              let operatorsDropDown = field.find('input.operators-dropdown').attr('id')
+
+              if (operatorsDropDown != undefined)
+                operatorsDropDown = field.find(`div.dropdown[for-select="${operatorsDropDown}"]`)
+
+              let fieldCheckedOperator = getCheckedValue(field.find('div.btn-group.operators').find('input[type="radio"]').attr('name'))
+
+              if (arePrecedingColumnsWithEquOp) {
+                field.find('div.btn-group.operators').find('label.btn').removeClass('disabled')
+
+                try {
+                  operatorsDropDown.find('a.dropdown-item').removeClass('disabled')
+                } catch (e) {}
+
+                if (!isColumnInvalidDueToOrder)
+                  field.removeClass('invalid')
+
+                arePrecedingColumnsWithEquOp = fieldCheckedOperator == '_operator_equal'
+              } else {
+                setTimeout(() => field.find('div.btn-group.operators').find('label.btn').filter(':not([for="_operator_equal"])').addClass('disabled'))
+
+                setTimeout(() => {
+                  try {
+                    operatorsDropDown.find('a.dropdown-item').filter(':not([data-operator-id="_operator_equal"])').addClass('disabled')
+                  } catch (e) {}
+                })
+
+                if (!isColumnInvalidDueToOrder)
+                  field.toggleClass('invalid', fieldCheckedOperator != '_operator_equal')
+              }
+            } catch (e) {}
+
+            try {
+              handleKeyField(field, isPreviousKeyInvalid.clustering && allowFilteringOptions != 'selectAllowFilteringEnableOption')
+
+              let doesFieldHasChildren = false,
+                isINOperatorChecked = field.find('div.btn-group.operators').find(`input[type="radio"]`).filter(':checked').attr('id') == '_operator_in' || field.attr('is-collection-type') == 'true',
+                isOrderByButtonActive = false
+
+              doesFieldHasChildren = isINOperatorChecked
+
+              try {
+                if (!isINOperatorChecked)
+                  throw 0
+
+                let relatedHiddenNodeChildrenLength = relatedTreesObjects.primaryKey.get_node(field.attr('add-hidden-node')).children_d.length
+
+                doesFieldHasChildren = relatedHiddenNodeChildrenLength > 0
+              } catch (e) {}
+
+              isPreviousKeyInvalid.clustering = (field.find('.is-invalid:not(.ignore-invalid):not([type="radio"])').length > 0 && !field.hasClass('unavailable')) || field.hasClass('unavailable')
+
+              if (!isColumnInvalidDueToOrder)
+                field.toggleClass('invalid', isINOperatorChecked && !doesFieldHasChildren && !field.hasClass('unavailable'))
+
+              if (isINOperatorChecked)
+                isPreviousKeyInvalid.clustering = !doesFieldHasChildren || field.hasClass('unavailable')
+
+              allClusteringKeysValidationStatus.push(isPreviousKeyInvalid.clustering)
+
+              continue
+            } catch (e) {}
+          }
+
           relatedTreesObjects = {
             primaryKey: $('div#tableFieldsPrimaryKeyTreeSelectAction').jstree(),
             columns: {
@@ -26204,415 +26456,186 @@
               collection: $('div#tableFieldsCollectionColumnsTreeSelectAction').jstree(),
               udt: $('div#tableFieldsUDTColumnsTreeSelectAction').jstree()
             }
-          },
-          allowFilteringOptions = getCheckedValue('selectAllowFilteringOptions')
+          }
 
-        let keyspaceUDTs = []
-
-        try {
-          keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts'))).map((udt) => udt.name)
-        } catch (e) {}
-
-        let allNodes = dialogElement.find('div[action="select-row"]').find(`a.jstree-anchor`)
-
-        allNodes.each(function() {
-          if ($(this)[0].scrollWidth == $(this).innerWidth() || $(this).find('ul.dropdown-menu.for-insertion-actions, ul.dropdown-menu.for-aggregate-functions').hasClass('show'))
-            return
-
-          let widthDifference = Math.abs($(this)[0].scrollWidth - $(this).innerWidth()),
-            typeValueSpan = $(this).find('span.type-value'),
-            spanWidth = typeValueSpan.outerWidth() - 4
-
-          typeValueSpan.css('width', `${spanWidth - widthDifference}px`).addClass('overflow')
-        })
-
-        $(`div[action="select-row"]`).find('div.in-operator-error').hide()
-        $(`div[action="select-row"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).removeClass('invalid')
-
-        /**
-         * By looping through each node, the node is enabled based on specific conditions
-         * Start with the primary key
-         */
-        let isPreviousKeyInvalid = {
-            partition: false,
-            clustering: false
-          },
-          isPreviousOrderButtonActive = false,
-          isFirstClusteringKeyOrderEnabled = false,
-          handleKeyField = (field, disabled = true) => {
-            $(field).toggleClass('unavailable', disabled)
-            $(field).find('input:not([type="radio"])').toggleClass('disabled', disabled)
-            let buttonsAndInputAreas = $(field).find('.btn, div.focus-area')
-            $(field).find('div[data-is-main-input="true"]').toggleClass('disabled', disabled)
-            buttonsAndInputAreas.filter(':not(.column-order-type):not(.aggregate-functions-btn)').toggleClass('disabled', disabled)
-            buttonsAndInputAreas.filter(':not(.column-order-type):not(.aggregate-functions-btn)').attr('disabled', disabled ? '' : null)
-
-            $(`a.jstree-anchor[id="${field.attr('add-hidden-node')}_anchor"]`).attr('is-hidden-node', 'true')
-
-            if ($(field).attr('is-collection-type') == 'true')
-              $(field).find('.is-invalid').removeClass('is-invalid')
-          },
-          getAllChildrenInOrder = (treeObjectName, childID = '#') => {
-            let children = [],
-              relatedTreeObject = typeof treeObjectName == 'string' ? relatedTreesObjects[treeObjectName] : relatedTreesObjects[treeObjectName[0]][treeObjectName[1]]
-
-            let node = relatedTreeObject.get_node(childID)
-
-            if (childID != '#')
-              children.push(childID)
-
-            for (let _childID of node.children)
-              children = children.concat(getAllChildrenInOrder(treeObjectName, _childID))
-
-            return children
-          },
-          allPrimaryKeyFields = getAllChildrenInOrder('primaryKey').map((childID) => {
+          let allColumns = [...getAllChildrenInOrder(['columns', 'regular']), ...getAllChildrenInOrder(['columns', 'collection']), ...getAllChildrenInOrder(['columns', 'udt'])].map((childID) => {
             return {
               id: childID,
               element: $(`a.jstree-anchor[static-id="${childID}"]`)
             }
-          }),
-          checkFieldIsParititon = (fieldID, parentID, lastCheck = false, lastParentID = null) => {
-            let isFieldPartition = $(`a.jstree-anchor[static-id="${fieldID}"]`).attr('partition') == 'true',
-              fieldParentID = relatedTreesObjects.primaryKey.get_parent(fieldID)
-
-            lastCheck = isFieldPartition
-
-            try {
-              if (fieldParentID != '#' || isFieldPartition)
-                throw 0
-
-              let parentNode = allPrimaryKeyFields.find((field) => field.element.attr('add-hidden-node') == lastParentID)
-
-              if (parentNode == undefined)
-                parentNode = allPrimaryKeyFields.find((field) => field.id == lastParentID)
-
-              if (parentNode == undefined)
-                throw 0
-
-              return parentNode.element.attr('partition') == 'true'
-            } catch (e) {}
-
-            lastParentID = fieldParentID
-
-            if (isFieldPartition)
-              return lastCheck
-
-            return checkFieldIsParititon(fieldParentID, relatedTreesObjects.primaryKey.get_parent(fieldParentID), lastCheck, lastParentID)
-          },
-          allPartitionKeysValidationStatus = [],
-          allClusteringKeysValidationStatus = []
-
-        // For clustering key(s)
-        let arePrecedingColumnsWithEquOp = true
-
-        try {
-          if (!returnPrimaryKey)
-            throw 0
-
-          let allPrimaryKeyFieldsToBeReturned = allPrimaryKeyFields.filter((primaryKeyField) => {
-            let field = primaryKeyField.element,
-              isFieldPartition = checkFieldIsParititon(primaryKeyField.id, '#', false)
-
-            return !(field.length <= 0 || field.attr('is-hidden-node') == 'true' || isFieldPartition)
           })
 
-          return allPrimaryKeyFieldsToBeReturned
-        } catch (e) {}
+          $('div#no-pk-columns-warning-select').toggle(!allPartitionKeysValidationStatus.includes(false))
 
-        for (let primaryKeyField of allPrimaryKeyFields) {
-          let field = primaryKeyField.element,
-            isColumnInvalidDueToOrder = field.hasClass('invalid-order')
+          for (let column of allColumns) {
+            let field = column.element
 
-          if (field.length <= 0 || field.attr('is-hidden-node') == 'true')
-            continue
+            if (field.length <= 0 || field.attr('is-hidden-node') == 'true')
+              continue
 
-          let isFieldPartition = checkFieldIsParititon(primaryKeyField.id, '#', false)
+            // if ([...allClusteringKeysValidationStatus, ...allPartitionKeysValidationStatus].includes(true)) {
+            //   handleKeyField(field, true)
+            //
+            //   continue
+            // }
 
-          // Partition key
+            handleKeyField(field, allowFilteringOptions != 'selectAllowFilteringEnableOption')
+          }
+
+          $(`div[action="select-row"] div.types-of-transactions div.sections div.section div.btn`).removeClass('invalid')
+
+          $('div#non-pk-columns-warning').toggle([...allPartitionKeysValidationStatus, ...allClusteringKeysValidationStatus].includes(true))
+
           try {
-            if (!isFieldPartition)
+            let allInvalidNodes = allNodes.filter(`:not(.ignored):not(.unavailable)`)
+
+            allInvalidNodes = allInvalidNodes.filter(function() {
+              let mainInput = $(this).find('.is-invalid:not(.ignore-invalid):not([type="radio"]):not(.is-empty)'),
+                isINOperatorChecked = $(this).find('input[id="_operator_in"]:checked')
+
+              return $(this).hasClass('invalid') || (mainInput.length != 0 && isINOperatorChecked.length <= 0)
+            })
+
+            if (allInvalidNodes.length <= 0)
               throw 0
 
-            handleKeyField(field, isPreviousKeyInvalid.partition && allowFilteringOptions != 'selectAllowFilteringEnableOption')
+            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
 
-            let doesFieldHasChildren = false,
-              isINOperatorChecked = field.find('div.btn-group.operators').find(`input[type="radio"]`).filter(':checked').attr('id') == '_operator_in' || field.attr('is-collection-type') == 'true'
-
-            doesFieldHasChildren = isINOperatorChecked
-
-            try {
-              if (!isINOperatorChecked)
-                throw 0
-
-              let relatedHiddenNodeChildrenLength = relatedTreesObjects.primaryKey.get_node(field.attr('add-hidden-node')).children_d.length
-
-              doesFieldHasChildren = relatedHiddenNodeChildrenLength > 0
-            } catch (e) {}
-
-            isPreviousKeyInvalid.partition = (field.find('.is-invalid:not(.ignore-invalid):not([type="radio"])').length > 0 && !field.hasClass('unavailable')) || field.hasClass('unavailable')
-
-            field.toggleClass('invalid', isINOperatorChecked && !doesFieldHasChildren && !field.hasClass('unavailable'))
-
-            if (isINOperatorChecked)
-              isPreviousKeyInvalid.partition = !doesFieldHasChildren || field.hasClass('unavailable')
-
-            allPartitionKeysValidationStatus.push(isPreviousKeyInvalid.partition)
-
-            continue
-          } catch (e) {}
-
-          let orderingBtn = field.find('button.column-order-type'),
-            disablingCondition = ((isPreviousKeyInvalid.clustering && isFirstClusteringKeyOrderEnabled) || isPreviousKeyInvalid.partition) && !isPreviousOrderButtonActive
-
-          // Here for clustering key(s)
-          orderingBtn.attr('disabled', disablingCondition ? '' : null).toggleClass('disabled', disablingCondition)
-
-          if (orderingBtn.hasClass('active-order') && orderingBtn.hasClass('disabled'))
-            orderingBtn.removeClass('active-order')
-
-          isFirstClusteringKeyOrderEnabled = true
-
-          isPreviousOrderButtonActive = orderingBtn.hasClass('active-order') && !orderingBtn.hasClass('disabled')
-
-          // For the first clustering key
-          if (allPartitionKeysValidationStatus.includes(true)) {
-            handleKeyField(field, true && allowFilteringOptions != 'selectAllowFilteringEnableOption')
-
-            continue
-          }
-
-          try {
-            let operatorsDropDown = field.find('input.operators-dropdown').attr('id')
-
-            if (operatorsDropDown != undefined)
-              operatorsDropDown = field.find(`div.dropdown[for-select="${operatorsDropDown}"]`)
-
-            let fieldCheckedOperator = getCheckedValue(field.find('div.btn-group.operators').find('input[type="radio"]').attr('name'))
-
-            if (arePrecedingColumnsWithEquOp) {
-              field.find('div.btn-group.operators').find('label.btn').removeClass('disabled')
-
+            for (let invalidNode of allInvalidNodes) {
               try {
-                operatorsDropDown.find('a.dropdown-item').removeClass('disabled')
+                $(`div[action="select-row"] div.types-of-transactions div.sections div.section div.btn[section="${$(invalidNode).closest('div[section]').attr('section')}"]`).addClass('invalid')
               } catch (e) {}
-
-              if (!isColumnInvalidDueToOrder)
-                field.removeClass('invalid')
-
-              arePrecedingColumnsWithEquOp = fieldCheckedOperator == '_operator_equal'
-            } else {
-              setTimeout(() => field.find('div.btn-group.operators').find('label.btn').filter(':not([for="_operator_equal"])').addClass('disabled'))
-
-              setTimeout(() => {
-                try {
-                  operatorsDropDown.find('a.dropdown-item').filter(':not([data-operator-id="_operator_equal"])').addClass('disabled')
-                } catch (e) {}
-              })
-
-              if (!isColumnInvalidDueToOrder)
-                field.toggleClass('invalid', fieldCheckedOperator != '_operator_equal')
             }
+
+            return
           } catch (e) {}
 
-          try {
-            handleKeyField(field, isPreviousKeyInvalid.clustering && allowFilteringOptions != 'selectAllowFilteringEnableOption')
+          let fieldsNames = [],
+            fieldsValues = [],
+            passedFields = [],
+            isSelectionAsJSON = $('#rightClickActionsMetadata').attr('data-select-as-json') === 'true'
 
-            let doesFieldHasChildren = false,
-              isINOperatorChecked = field.find('div.btn-group.operators').find(`input[type="radio"]`).filter(':checked').attr('id') == '_operator_in' || field.attr('is-collection-type') == 'true',
-              isOrderByButtonActive = false
-
-            doesFieldHasChildren = isINOperatorChecked
+          let handleFieldsPre = (treeObject, mainNodeID = '#') => {
+            let relatedFieldsArray = []
 
             try {
-              if (!isINOperatorChecked)
-                throw 0
+              treeObject.get_node(mainNodeID)
+            } catch (e) {
+              return relatedFieldsArray
+            }
 
-              let relatedHiddenNodeChildrenLength = relatedTreesObjects.primaryKey.get_node(field.attr('add-hidden-node')).children_d.length
-
-              doesFieldHasChildren = relatedHiddenNodeChildrenLength > 0
-            } catch (e) {}
-
-            isPreviousKeyInvalid.clustering = (field.find('.is-invalid:not(.ignore-invalid):not([type="radio"])').length > 0 && !field.hasClass('unavailable')) || field.hasClass('unavailable')
-
-            if (!isColumnInvalidDueToOrder)
-              field.toggleClass('invalid', isINOperatorChecked && !doesFieldHasChildren && !field.hasClass('unavailable'))
-
-            if (isINOperatorChecked)
-              isPreviousKeyInvalid.clustering = !doesFieldHasChildren || field.hasClass('unavailable')
-
-            allClusteringKeysValidationStatus.push(isPreviousKeyInvalid.clustering)
-
-            continue
-          } catch (e) {}
-        }
-
-        relatedTreesObjects = {
-          primaryKey: $('div#tableFieldsPrimaryKeyTreeSelectAction').jstree(),
-          columns: {
-            regular: $('div#tableFieldsRegularColumnsTreeSelectAction').jstree(),
-            collection: $('div#tableFieldsCollectionColumnsTreeSelectAction').jstree(),
-            udt: $('div#tableFieldsUDTColumnsTreeSelectAction').jstree()
-          }
-        }
-
-        let allColumns = [...getAllChildrenInOrder(['columns', 'regular']), ...getAllChildrenInOrder(['columns', 'collection']), ...getAllChildrenInOrder(['columns', 'udt'])].map((childID) => {
-          return {
-            id: childID,
-            element: $(`a.jstree-anchor[static-id="${childID}"]`)
-          }
-        })
-
-        $('div#no-pk-columns-warning-select').toggle(!allPartitionKeysValidationStatus.includes(false))
-
-        for (let column of allColumns) {
-          let field = column.element
-
-          if (field.length <= 0 || field.attr('is-hidden-node') == 'true')
-            continue
-
-          // if ([...allClusteringKeysValidationStatus, ...allPartitionKeysValidationStatus].includes(true)) {
-          //   handleKeyField(field, true)
-          //
-          //   continue
-          // }
-
-          handleKeyField(field, allowFilteringOptions != 'selectAllowFilteringEnableOption')
-        }
-
-        $(`div[action="select-row"] div.types-of-transactions div.sections div.section div.btn`).removeClass('invalid')
-
-        $('div#non-pk-columns-warning').toggle([...allPartitionKeysValidationStatus, ...allClusteringKeysValidationStatus].includes(true))
-
-        try {
-          let allInvalidNodes = allNodes.filter(`:not(.ignored):not(.unavailable)`)
-
-          allInvalidNodes = allInvalidNodes.filter(function() {
-            let mainInput = $(this).find('.is-invalid:not(.ignore-invalid):not([type="radio"]):not(.is-empty)'),
-              isINOperatorChecked = $(this).find('input[id="_operator_in"]:checked')
-
-            return $(this).hasClass('invalid') || (mainInput.length != 0 && isINOperatorChecked.length <= 0)
-          })
-
-          if (allInvalidNodes.length <= 0)
-            throw 0
-
-          dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
-
-          for (let invalidNode of allInvalidNodes) {
-            try {
-              $(`div[action="select-row"] div.types-of-transactions div.sections div.section div.btn[section="${$(invalidNode).closest('div[section]').attr('section')}"]`).addClass('invalid')
-            } catch (e) {}
-          }
-
-          return
-        } catch (e) {}
-
-        let fieldsNames = [],
-          fieldsValues = [],
-          passedFields = [],
-          isSelectionAsJSON = $('#rightClickActionsMetadata').attr('data-select-as-json') === 'true'
-
-        let handleFieldsPre = (treeObject, mainNodeID = '#') => {
-          let relatedFieldsArray = []
-
-          try {
-            treeObject.get_node(mainNodeID)
-          } catch (e) {
-            return relatedFieldsArray
-          }
-
-          for (let currentNodeID of treeObject.get_node(mainNodeID).children) {
-            try {
-              let currentNode = $(`a.jstree-anchor[static-id="${currentNodeID}"]`)
-
+            for (let currentNodeID of treeObject.get_node(mainNodeID).children) {
               try {
-                if (currentNode.length <= 0)
-                  currentNode = $(`a.jstree-anchor[id="${currentNodeID}_anchor"]`)
-              } catch (e) {}
-
-              let [
-                fieldName,
-                fieldType,
-                isMandatory,
-                isMapItem
-              ] = getAttributes(currentNode, ['name', 'type', 'mandatory', 'is-map-item']),
-                fieldValue = currentNode.find('input').last(),
-                isNULL = false,
-                fieldOperator = currentNode.find('input[type="radio"]:checked').attr('id'),
-                isColumnToBeSelectd = currentNode.hasClass('selected'),
-                isColumnIgnored = fieldValue.hasClass('is-empty') || currentNode.hasClass('unavailable'),
-                isPartition = currentNode.attr('partition') == 'true'
-
-              // Check if the field is boolean
-              if (fieldValue.attr('type') == 'checkbox' && fieldValue.prop('indeterminate'))
-                continue
-
-              if (passedFields.includes(currentNodeID))
-                continue
-
-              passedFields.push(currentNodeID)
-
-              try {
-                fieldValue = fieldValue.attr('type') == 'checkbox' ? fieldValue.prop('checked') : fieldValue.val()
-              } catch (e) {}
-
-              try {
-                isNULL = $(currentNode).find('button[action="apply-null"]').hasClass('applied')
-              } catch (e) {}
-
-              let isIgnored = currentNode.hasClass('ignored')
-
-              if ((isIgnored || (`${fieldValue}`.length <= 0 && !isNULL && fieldOperator != '_operator_in')) && !isColumnToBeSelectd)
-                continue
-
-              try {
-                isMapItem = isMapItem != undefined
-              } catch (e) {}
-
-              // Check if the type is collection
-              try {
-                if (!(['map', 'set', 'list'].some((type) => `${fieldType}`.includes(`${type}<`))) && !isMapItem && fieldOperator != '_operator_in')
-                  throw 0
-
-                let hiddenNodeID = currentNode.attr(isMapItem ? 'id' : 'add-hidden-node')
-
-                relatedFieldsArray.push({
-                  name: addDoubleQuotes(fieldName),
-                  type: fieldType,
-                  value: fieldValue,
-                  id: hiddenNodeID,
-                  parent: mainNodeID,
-                  fieldOperator,
-                  isPartition,
-                  isMapItem,
-                  isSelectd: isColumnToBeSelectd,
-                  isIgnored: isColumnIgnored,
-                  isNULL
-                })
-
-                relatedFieldsArray[hiddenNodeID] = handleFieldsPre(treeObject, hiddenNodeID)
-
-                continue
-              } catch (e) {}
-
-              // Check if the type is UDT
-              try {
-                let manipulatedType = `${fieldType}`
+                let currentNode = $(`a.jstree-anchor[static-id="${currentNodeID}"]`)
 
                 try {
-                  if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
+                  if (currentNode.length <= 0)
+                    currentNode = $(`a.jstree-anchor[id="${currentNodeID}_anchor"]`)
+                } catch (e) {}
 
-                  manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
+                let [
+                  fieldName,
+                  fieldType,
+                  isMandatory,
+                  isMapItem
+                ] = getAttributes(currentNode, ['name', 'type', 'mandatory', 'is-map-item']),
+                  fieldValue = currentNode.find('input').last(),
+                  isNULL = false,
+                  fieldOperator = currentNode.find('input[type="radio"]:checked').attr('id'),
+                  isColumnToBeSelectd = currentNode.hasClass('selected'),
+                  isColumnIgnored = fieldValue.hasClass('is-empty') || currentNode.hasClass('unavailable'),
+                  isPartition = currentNode.attr('partition') == 'true'
+
+                // Check if the field is boolean
+                if (fieldValue.attr('type') == 'checkbox' && fieldValue.prop('indeterminate'))
+                  continue
+
+                if (passedFields.includes(currentNodeID))
+                  continue
+
+                passedFields.push(currentNodeID)
+
+                try {
+                  fieldValue = fieldValue.attr('type') == 'checkbox' ? fieldValue.prop('checked') : fieldValue.val()
                 } catch (e) {}
 
                 try {
-                  manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
+                  isNULL = $(currentNode).find('button[action="apply-null"]').hasClass('applied')
                 } catch (e) {}
 
-                if (!(keyspaceUDTs.includes(manipulatedType)))
-                  throw 0
+                let isIgnored = currentNode.hasClass('ignored')
 
+                if ((isIgnored || (`${fieldValue}`.length <= 0 && !isNULL && fieldOperator != '_operator_in')) && !isColumnToBeSelectd)
+                  continue
+
+                try {
+                  isMapItem = isMapItem != undefined
+                } catch (e) {}
+
+                // Check if the type is collection
+                try {
+                  if (!(['map', 'set', 'list'].some((type) => `${fieldType}`.includes(`${type}<`))) && !isMapItem && fieldOperator != '_operator_in')
+                    throw 0
+
+                  let hiddenNodeID = currentNode.attr(isMapItem ? 'id' : 'add-hidden-node')
+
+                  relatedFieldsArray.push({
+                    name: addDoubleQuotes(fieldName),
+                    type: fieldType,
+                    value: fieldValue,
+                    id: hiddenNodeID,
+                    parent: mainNodeID,
+                    fieldOperator,
+                    isPartition,
+                    isMapItem,
+                    isSelectd: isColumnToBeSelectd,
+                    isIgnored: isColumnIgnored,
+                    isNULL
+                  })
+
+                  relatedFieldsArray[hiddenNodeID] = handleFieldsPre(treeObject, hiddenNodeID)
+
+                  continue
+                } catch (e) {}
+
+                // Check if the type is UDT
+                try {
+                  let manipulatedType = `${fieldType}`
+
+                  try {
+                    if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
+
+                    manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
+                  } catch (e) {}
+
+                  try {
+                    manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
+                  } catch (e) {}
+
+                  if (!(keyspaceUDTs.includes(manipulatedType)))
+                    throw 0
+
+                  relatedFieldsArray.push({
+                    name: addDoubleQuotes(fieldName),
+                    type: fieldType,
+                    value: fieldValue,
+                    id: currentNodeID,
+                    parent: mainNodeID,
+                    fieldOperator,
+                    isPartition,
+                    isSelectd: isColumnToBeSelectd,
+                    isIgnored: isColumnIgnored,
+                    isMapItem,
+                    isUDT: true,
+                    isNULL
+                  })
+
+                  relatedFieldsArray[currentNodeID] = handleFieldsPre(treeObject, currentNodeID)
+
+                  continue
+                } catch (e) {}
+
+                // Standard type
                 relatedFieldsArray.push({
                   name: addDoubleQuotes(fieldName),
                   type: fieldType,
@@ -26624,520 +26647,500 @@
                   isSelectd: isColumnToBeSelectd,
                   isIgnored: isColumnIgnored,
                   isMapItem,
-                  isUDT: true,
                   isNULL
                 })
 
-                relatedFieldsArray[currentNodeID] = handleFieldsPre(treeObject, currentNodeID)
-
-                continue
               } catch (e) {}
+            }
 
-              // Standard type
-              relatedFieldsArray.push({
-                name: addDoubleQuotes(fieldName),
-                type: fieldType,
-                value: fieldValue,
-                id: currentNodeID,
-                parent: mainNodeID,
-                fieldOperator,
-                isPartition,
-                isSelectd: isColumnToBeSelectd,
-                isIgnored: isColumnIgnored,
-                isMapItem,
-                isNULL
-              })
-
-            } catch (e) {}
+            return relatedFieldsArray
           }
 
-          return relatedFieldsArray
-        }
+          // Start with the primary key
+          let primaryKeyFields = handleFieldsPre(relatedTreesObjects.primaryKey),
+            columnsRegularFields = handleFieldsPre(relatedTreesObjects.columns.regular),
+            columnsCollectionFields = handleFieldsPre(relatedTreesObjects.columns.collection),
+            columnsUDTFields = handleFieldsPre(relatedTreesObjects.columns.udt)
 
-        // Start with the primary key
-        let primaryKeyFields = handleFieldsPre(relatedTreesObjects.primaryKey),
-          columnsRegularFields = handleFieldsPre(relatedTreesObjects.columns.regular),
-          columnsCollectionFields = handleFieldsPre(relatedTreesObjects.columns.collection),
-          columnsUDTFields = handleFieldsPre(relatedTreesObjects.columns.udt)
+          let allColumnsWithPK = [...primaryKeyFields, ...columnsRegularFields, ...columnsCollectionFields, ...columnsUDTFields],
+            isExecutionWithoutColumnAllowed = !(allColumnsWithPK.some((column) => column.name != undefined && column.type != undefined))
 
-        let allColumnsWithPK = [...primaryKeyFields, ...columnsRegularFields, ...columnsCollectionFields, ...columnsUDTFields],
-          isExecutionWithoutColumnAllowed = !(allColumnsWithPK.some((column) => column.name != undefined && column.type != undefined))
+          let isNonEqualityOpFound = false
 
-        let isNonEqualityOpFound = false
+          // Check if any column has an operator rather than equal
+          try {
+            isNonEqualityOpFound = primaryKeyFields.some((primaryKey) => {
+              let _isNonEqualityOpFound = false
 
-        // Check if any column has an operator rather than equal
-        try {
-          isNonEqualityOpFound = primaryKeyFields.some((primaryKey) => {
-            let _isNonEqualityOpFound = false
+              if (!primaryKey.isPartition)
+                return _isNonEqualityOpFound
 
-            if (!primaryKey.isPartition)
+              try {
+                _isNonEqualityOpFound = primaryKey.fieldOperator != undefined && primaryKey.fieldOperator != '_operator_equal'
+              } catch (e) {}
+
               return _isNonEqualityOpFound
-
-            try {
-              _isNonEqualityOpFound = primaryKey.fieldOperator != undefined && primaryKey.fieldOperator != '_operator_equal'
-            } catch (e) {}
-
-            return _isNonEqualityOpFound
-          })
-        } catch (e) {}
-
-        try {
-          if (!isNonEqualityOpFound || ([...columnsRegularFields, ...columnsCollectionFields, ...columnsUDTFields]).find((column) => column.fieldOperator != undefined) == undefined || isExecutionWithoutColumnAllowed)
-            throw 0
-
-          if (allowFilteringOptions == 'selectAllowFilteringNoSelectOption')
-            throw 0
-
-          $(`div[action="select-row"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
-
-          $(`div[action="select-row"]`).find('div.in-operator-error').show()
-
-          dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
-
-          return
-        } catch (e) {}
-
-        let getOperatorSymbol = (operator) => {
-          let symbol = '='
-
-          switch (operator) {
-            case '_operator_in':
-              symbol = 'IN'
-              break;
-
-            case '_operator_less_than':
-              symbol = '<'
-              break;
-
-            case '_operator_greater_than':
-              symbol = '>'
-              break;
-
-            case '_operator_less_than_equal':
-              symbol = '<='
-              break;
-
-            case '_operator_greater_than_equal':
-              symbol = '>='
-              break;
-          }
-
-          return symbol
-        }
-
-        let handleFieldsPost = (fields, isUDT = false, isCollection = false, parentType = null) => {
-          let names = [],
-            values = []
-
-          for (let field of fields) {
-            try {
-              if (field.parent == '#')
-                field.fieldOperator = field.fieldOperator || '_operator_equal'
-            } catch (e) {}
-
-            try {
-              if (field.fieldOperator == '_operator_in')
-                field.type = `set<${field.type}>`
-            } catch (e) {}
-
-            let finalFieldName = `${field.name}`
-
-            try {
-              if (field.fieldOperator != undefined)
-                finalFieldName = `${field.name} ${getOperatorSymbol(field.fieldOperator)}`
-            } catch (e) {}
-
-            try {
-              if ((['name', 'type', 'value'].every((attribute) => field[attribute] == undefined) && !field.isMapItem))
-                continue
-
-              let value = ''
-
-              // Handle collection type - and `IN` operator -
-              try {
-                if (!(['map', 'set', 'list'].some((type) => `${field.type}`.includes(`${type}<`))) && !field.isMapItem)
-                  throw 0
-
-                let items = []
-
-                // Check if there're no added items
-                try {
-                  items = fields[field.id]
-
-                  if (fields[field.id].length <= 0)
-                    continue
-                } catch (e) {}
-
-                let fieldValue = handleFieldsPost(items, false, true, parentType || field.type)
-
-                try {
-                  let isUDTType = false
-
-                  try {
-                    isUDTType = fieldValue.values[1].startsWith('{') && fieldValue.values[1].endsWith('}')
-                  } catch (e) {}
-
-                  fieldValue = fieldValue.values.join(field.isMapItem ? ': ' : ', ')
-
-                  if (parentType != null && (`${parentType}`.includes(`list<`) || `${parentType}`.includes(`set<`)) && (field.isMapItem || `${field.type}`.includes(`map<`))) {
-                    fieldValue = `{${fieldValue}}`
-                  } else if (field.parent == '#' || isUDT) {
-                    fieldValue = `${field.type}`.includes(`list<`) || (`${field.type}`.includes(`set<`) && true) ? (field.fieldOperator != '_operator_in' ? `[${fieldValue}]` : `(${fieldValue})`) : (`${field.type}`.includes(`set<`) || (`${field.type}`.includes(`map<`) && !isUDTType) ? `{${fieldValue}}` : `${fieldValue}`)
-                  }
-                } catch (e) {}
-
-                if (fieldValue == '{  }')
-                  continue
-
-                if (field.parent == '#')
-                  names.push(`${finalFieldName}` + (!true ? `, -- ${field.type}` : ''))
-
-                if (field.parent != '#' && isUDT)
-                  names.push(`${finalFieldName}`)
-
-                values.push(field.isMapItem ? `${fieldValue}` : (`${fieldValue}` + (field.parent == '#' && !true ? `, -- ${field.type}` : '')))
-
-                continue
-              } catch (e) {}
-
-              // Handle UDT type
-              try {
-                let manipulatedType = `${field.type}`
-
-                try {
-                  if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
-
-                  manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
-                } catch (e) {}
-
-                try {
-                  manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
-                } catch (e) {}
-
-                if (!(keyspaceUDTs.includes(manipulatedType)))
-                  throw 0
-
-                let subFields = []
-
-                // Check if there're no added items
-                try {
-                  subFields = fields[field.id]
-
-                  if (fields[field.id].length <= 0)
-                    continue
-                } catch (e) {}
-
-                let fieldValue = handleFieldsPost(subFields, true, false),
-                  joinedValue = []
-
-                try {
-                  for (let i = 0; i < fieldValue.names.length; i++) {
-
-                    let subFieldName = addDoubleQuotes(fieldValue.names[i])
-
-                    joinedValue.push(`${subFieldName}: ${fieldValue.values[i]}`)
-                  }
-
-                  joinedValue = joinedValue.join(', ')
-
-                  joinedValue = `{ ${joinedValue} }`
-                } catch (e) {}
-
-                if (joinedValue == '{  }')
-                  continue
-
-                if (field.parent == '#')
-                  names.push(`${finalFieldName}` + (!true ? `, -- ${field.type}` : ''))
-
-                if (field.parent != '#' && isUDT)
-                  names.push(`${finalFieldName}`)
-
-                values.push(`${joinedValue}` + (field.parent == '#' && !true ? `, -- ${field.type}` : ''))
-
-                continue
-              } catch (e) {}
-
-              // Standard type
-              try {
-                let isSingleQuotesNeeded = false
-
-                value = `${field.value}`
-
-                try {
-                  try {
-                    if (['text', 'varchar', 'ascii', 'inet'].some((type) => type == field.type))
-                      isSingleQuotesNeeded = true
-                  } catch (e) {}
-
-                  try {
-                    if (field.type != 'time')
-                      throw 0
-
-                    if (IsTimestamp(value)) {
-                      try {
-                        value = formatTimestamp(parseInt(value), false, true).split(/\s+/)[1]
-                      } catch (e) {}
-                    }
-
-                    if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
-                      isSingleQuotesNeeded = true
-                  } catch (e) {}
-
-                  try {
-                    if (field.type != 'date')
-                      throw 0
-
-                    if (IsTimestamp(value)) {
-                      try {
-                        value = `toDate(${value})`
-                      } catch (e) {}
-                    }
-
-                    if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
-                      isSingleQuotesNeeded = true
-                  } catch (e) {}
-
-                  try {
-                    if (field.type != 'timestamp')
-                      throw 0
-
-                    if (ValidateDate(value, 'boolean'))
-                      value = `toTimestamp('${value}')`
-                  } catch (e) {}
-                } catch (e) {}
-
-                try {
-                  if (!isSingleQuotesNeeded)
-                    throw 0
-
-                  value = `${value}`.replace(/(^|[^'])'(?!')/g, "$1''")
-
-                  value = `'${value}'`
-                } catch (e) {}
-
-                if (field.isNULL)
-                  value = 'NULL'
-
-                if (field.parent == '#' || isUDT)
-                  names.push(isUDT ? `${finalFieldName}` : (`${finalFieldName}` + (!true ? `, -- ${field.type}` : '')))
-
-                values.push(isUDT || isCollection ? `${value}` : (`${value}` + (field.parent == '#' && !true ? `, -- ${field.type}` : '')))
-              } catch (e) {}
-            } catch (e) {}
-          }
-
-          return {
-            names,
-            values
-          }
-        }
-
-        let selectedColumns = '',
-          primaryKey = '',
-          otherFields = ''
-
-        let manipulatedFields = {
-          primaryKey: handleFieldsPost(primaryKeyFields),
-          allNonPKColumns: {
-            regular: handleFieldsPost(columnsRegularFields),
-            collection: handleFieldsPost(columnsCollectionFields),
-            udt: handleFieldsPost(columnsUDTFields)
-          }
-        }
-
-        try {
-          let temp = []
-
-          for (let i = 0; i < manipulatedFields.primaryKey.names.length; i++)
-            temp.push(`${manipulatedFields.primaryKey.names[i]} ${manipulatedFields.primaryKey.values[i]}`)
-
-          primaryKey = temp.join(' AND ')
-        } catch (e) {}
-
-        try {
-          let temp = []
-
-          for (let nonPKColumns of Object.keys(manipulatedFields.allNonPKColumns)) {
-            for (let i = 0; i < manipulatedFields.allNonPKColumns[nonPKColumns].names.length; i++) {
-              let name = manipulatedFields.allNonPKColumns[nonPKColumns].names[i],
-                value = manipulatedFields.allNonPKColumns[nonPKColumns].values[i]
-
-              if ([name, value].some((attribute) => `${attribute}` == 'undefined'))
-                continue
-
-              temp.push(`${name} ${value}`)
-            }
-          }
-
-          otherFields = temp.join(' AND ')
-        } catch (e) {}
-
-        // Check if `IF EXISTS` is checked
-        let allowFiltering = ''
-
-        try {
-          if (!$('#selectAllowFilteringEnableOption').prop('checked'))
-            throw 0
-
-          allowFiltering = ` ALLOW FILTERING`
-        } catch (e) {}
-
-        // Get selected columns
-        try {
-          let selectedColumnsElements = $('div#tableFieldsNonPKColumnsSelectAction').children('div.columns').children('div.column.selected').get()
-
-          if (selectedColumnsElements.length <= 0)
-            throw 0
-
-          selectedColumns = ' ' + selectedColumnsElements.map((column) => `${addDoubleQuotes($(column).attr('data-name'))}`).join(', ')
-        } catch (e) {}
-
-        let countAggregateFunction = ''
-
-        try {
-          countAggregateFunction = $('input#selectAggregateFunctions').val()
-
-          if (countAggregateFunction.length <= 0)
-            throw 0
-
-          countAggregateFunction = `${countAggregateFunction}(*)`
-
-          if (selectedColumns.length != 0) {
-            countAggregateFunction = `, ${countAggregateFunction}`
-          } else {
-            countAggregateFunction = ` ${countAggregateFunction}`
-          }
-        } catch (e) {}
-
-        let columnsAggregateFunctions = ''
-
-        try {
-          let allAggregationFunctionsBtns = allNodes.find('button.aggregate-functions-btn').filter(function() {
-            return ($(this).data('aggregateFunctions') || []).length != 0
-          })
-
-          if (allAggregationFunctionsBtns.length <= 0)
-            throw 0
-
-          for (let aggregationFunctionsBtn of allAggregationFunctionsBtns.get()) {
-            let columnName = $(aggregationFunctionsBtn).attr('data-column-name'),
-              temp = $(aggregationFunctionsBtn).data('aggregateFunctions').map((func) => `${func}(${addDoubleQuotes(columnName)})`).join(', ')
-
-            columnsAggregateFunctions = `${columnsAggregateFunctions}${columnsAggregateFunctions.length > 0 ? ', ' : ''}${temp}`
-          }
-
-          if (`${selectedColumns}${countAggregateFunction}`.length > 0) {
-            columnsAggregateFunctions = `, ${columnsAggregateFunctions}`
-          } else {
-            columnsAggregateFunctions = ` ${columnsAggregateFunctions}`
-          }
-        } catch (e) {}
-
-        let orderByClusteringColumns = ''
-
-        try {
-          let allOrderByClusteringColumnsBtns = $('div#tableFieldsPrimaryKeyTreeSelectAction').find('button.column-order-type.active-order')
-
-          if (allOrderByClusteringColumnsBtns.length <= 0)
-            throw 0
-
-          orderByClusteringColumns = `ORDER BY `,
-            tempArray = [],
-            isErrorFound = false
-
-          for (let orderByClusteringColumnBtn of allOrderByClusteringColumnsBtns.get()) {
-            if ($(orderByClusteringColumnBtn).closest('a.jstree-anchor').hasClass('invalid-order')) {
-              isErrorFound = true
-
-              break
-            }
-
-            temp = `${addDoubleQuotes($(orderByClusteringColumnBtn).attr('data-column-name'))} ${$(orderByClusteringColumnBtn).attr('data-current-order').toUpperCase()}`
-
-            tempArray.push(temp)
-          }
-
-          orderByClusteringColumns = `${orderByClusteringColumns}${tempArray.join(', ')}`
-
-          if (isErrorFound) {
-            orderByClusteringColumns = ''
-
-            throw 0
-          }
-
-          if (`${primaryKey}${otherFields}`.length != 0)
-            orderByClusteringColumns = ` ${orderByClusteringColumns}`
-        } catch (e) {}
-
-        let limit = ''
-
-        try {
-          let setLimit = parseInt($('input#select-limit').val())
-
-          if (isNaN(setLimit) || setLimit <= 0)
-            throw 0
-
-          limit = ` LIMIT ${setLimit}`
-
-          if (allowFiltering.length != 0)
-            limit = `${limit} `
-        } catch (e) {}
-
-        dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
-
-        let selectionPart = `${selectedColumns}${countAggregateFunction}${columnsAggregateFunctions}`
-
-        if (selectionPart.length <= 0)
-          selectionPart = ' *'
-
-        if (`${primaryKey}`.length > 0 && otherFields.length != 0)
-          otherFields = ` AND ${otherFields}`
-
-        let wherePart = `${primaryKey}${otherFields}`
-
-        let statement = `SELECT${isSelectionAsJSON ? ' JSON' : ''}${selectionPart} FROM ${keyspaceName}.${tableName}` + (wherePart.length > 0 ? OS.EOL + `WHERE ${wherePart}` : '') + `${orderByClusteringColumns}${limit}${allowFiltering};`
-
-        try {
-          actionEditor.setValue(statement)
-        } catch (e) {}
-      }
-
-      getAllPrimaryKeyColumns = () => updateActionStatusForSelectRowColumn(true)
-
-      $('input[name="selectOrderBy"]').each(function() {
-        $(this).on('change input', function() {
-          let selectedType = getCheckedValue('selectOrderBy'),
-            clusteringKeysNodes = $('div#tableFieldsPrimaryKeyTreeSelectAction').find('a.jstree-anchor[partition="false"][is-reversed]'),
-            orderBadges = clusteringKeysNodes.find('button.column-order-type')
-
-          orderBadges.css('display', selectedType == 'selectOBNone' ? 'none' : 'flex')
+            })
+          } catch (e) {}
 
           try {
-            if (selectedType == 'selectOBNone')
+            if (!isNonEqualityOpFound || ([...columnsRegularFields, ...columnsCollectionFields, ...columnsUDTFields]).find((column) => column.fieldOperator != undefined) == undefined || isExecutionWithoutColumnAllowed)
               throw 0
 
-            for (let orderBadge of orderBadges.get()) {
-              let selectedOrder = $(orderBadge).attr('data-original-order')
+            if (allowFilteringOptions == 'selectAllowFilteringNoSelectOption')
+              throw 0
 
-              if (selectedType == 'selectOBDefaultReversed')
-                selectedOrder = selectedOrder == 'asc' ? 'desc' : 'asc'
+            $(`div[action="select-row"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
 
-              $(orderBadge).attr('data-current-order', selectedOrder)
+            $(`div[action="select-row"]`).find('div.in-operator-error').show()
 
-              $(orderBadge).find('ion-icon').attr('name', `sort-${selectedOrder}`)
+            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
 
-              $(orderBadge).find('span').text(`${selectedOrder}`)
+            return
+          } catch (e) {}
+
+          let getOperatorSymbol = (operator) => {
+            let symbol = '='
+
+            switch (operator) {
+              case '_operator_in':
+                symbol = 'IN'
+                break;
+
+              case '_operator_less_than':
+                symbol = '<'
+                break;
+
+              case '_operator_greater_than':
+                symbol = '>'
+                break;
+
+              case '_operator_less_than_equal':
+                symbol = '<='
+                break;
+
+              case '_operator_greater_than_equal':
+                symbol = '>='
+                break;
+            }
+
+            return symbol
+          }
+
+          let handleFieldsPost = (fields, isUDT = false, isCollection = false, parentType = null) => {
+            let names = [],
+              values = []
+
+            for (let field of fields) {
+              try {
+                if (field.parent == '#')
+                  field.fieldOperator = field.fieldOperator || '_operator_equal'
+              } catch (e) {}
+
+              try {
+                if (field.fieldOperator == '_operator_in')
+                  field.type = `set<${field.type}>`
+              } catch (e) {}
+
+              let finalFieldName = `${field.name}`
+
+              try {
+                if (field.fieldOperator != undefined)
+                  finalFieldName = `${field.name} ${getOperatorSymbol(field.fieldOperator)}`
+              } catch (e) {}
+
+              try {
+                if ((['name', 'type', 'value'].every((attribute) => field[attribute] == undefined) && !field.isMapItem))
+                  continue
+
+                let value = ''
+
+                // Handle collection type - and `IN` operator -
+                try {
+                  if (!(['map', 'set', 'list'].some((type) => `${field.type}`.includes(`${type}<`))) && !field.isMapItem)
+                    throw 0
+
+                  let items = []
+
+                  // Check if there're no added items
+                  try {
+                    items = fields[field.id]
+
+                    if (fields[field.id].length <= 0)
+                      continue
+                  } catch (e) {}
+
+                  let fieldValue = handleFieldsPost(items, false, true, parentType || field.type)
+
+                  try {
+                    let isUDTType = false
+
+                    try {
+                      isUDTType = fieldValue.values[1].startsWith('{') && fieldValue.values[1].endsWith('}')
+                    } catch (e) {}
+
+                    fieldValue = fieldValue.values.join(field.isMapItem ? ': ' : ', ')
+
+                    if (parentType != null && (`${parentType}`.includes(`list<`) || `${parentType}`.includes(`set<`)) && (field.isMapItem || `${field.type}`.includes(`map<`))) {
+                      fieldValue = `{${fieldValue}}`
+                    } else if (field.parent == '#' || isUDT) {
+                      fieldValue = `${field.type}`.includes(`list<`) || (`${field.type}`.includes(`set<`) && true) ? (field.fieldOperator != '_operator_in' ? `[${fieldValue}]` : `(${fieldValue})`) : (`${field.type}`.includes(`set<`) || (`${field.type}`.includes(`map<`) && !isUDTType) ? `{${fieldValue}}` : `${fieldValue}`)
+                    }
+                  } catch (e) {}
+
+                  if (fieldValue == '{  }')
+                    continue
+
+                  if (field.parent == '#')
+                    names.push(`${finalFieldName}` + (!true ? `, -- ${field.type}` : ''))
+
+                  if (field.parent != '#' && isUDT)
+                    names.push(`${finalFieldName}`)
+
+                  values.push(field.isMapItem ? `${fieldValue}` : (`${fieldValue}` + (field.parent == '#' && !true ? `, -- ${field.type}` : '')))
+
+                  continue
+                } catch (e) {}
+
+                // Handle UDT type
+                try {
+                  let manipulatedType = `${field.type}`
+
+                  try {
+                    if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
+
+                    manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
+                  } catch (e) {}
+
+                  try {
+                    manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
+                  } catch (e) {}
+
+                  if (!(keyspaceUDTs.includes(manipulatedType)))
+                    throw 0
+
+                  let subFields = []
+
+                  // Check if there're no added items
+                  try {
+                    subFields = fields[field.id]
+
+                    if (fields[field.id].length <= 0)
+                      continue
+                  } catch (e) {}
+
+                  let fieldValue = handleFieldsPost(subFields, true, false),
+                    joinedValue = []
+
+                  try {
+                    for (let i = 0; i < fieldValue.names.length; i++) {
+
+                      let subFieldName = addDoubleQuotes(fieldValue.names[i])
+
+                      joinedValue.push(`${subFieldName}: ${fieldValue.values[i]}`)
+                    }
+
+                    joinedValue = joinedValue.join(', ')
+
+                    joinedValue = `{ ${joinedValue} }`
+                  } catch (e) {}
+
+                  if (joinedValue == '{  }')
+                    continue
+
+                  if (field.parent == '#')
+                    names.push(`${finalFieldName}` + (!true ? `, -- ${field.type}` : ''))
+
+                  if (field.parent != '#' && isUDT)
+                    names.push(`${finalFieldName}`)
+
+                  values.push(`${joinedValue}` + (field.parent == '#' && !true ? `, -- ${field.type}` : ''))
+
+                  continue
+                } catch (e) {}
+
+                // Standard type
+                try {
+                  let isSingleQuotesNeeded = false
+
+                  value = `${field.value}`
+
+                  try {
+                    try {
+                      if (['text', 'varchar', 'ascii', 'inet'].some((type) => type == field.type))
+                        isSingleQuotesNeeded = true
+                    } catch (e) {}
+
+                    try {
+                      if (field.type != 'time')
+                        throw 0
+
+                      if (IsTimestamp(value)) {
+                        try {
+                          value = formatTimestamp(parseInt(value), false, true).split(/\s+/)[1]
+                        } catch (e) {}
+                      }
+
+                      if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
+                        isSingleQuotesNeeded = true
+                    } catch (e) {}
+
+                    try {
+                      if (field.type != 'date')
+                        throw 0
+
+                      if (IsTimestamp(value)) {
+                        try {
+                          value = `toDate(${value})`
+                        } catch (e) {}
+                      }
+
+                      if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
+                        isSingleQuotesNeeded = true
+                    } catch (e) {}
+
+                    try {
+                      if (field.type != 'timestamp')
+                        throw 0
+
+                      if (ValidateDate(value, 'boolean'))
+                        value = `toTimestamp('${value}')`
+                    } catch (e) {}
+                  } catch (e) {}
+
+                  try {
+                    if (!isSingleQuotesNeeded)
+                      throw 0
+
+                    value = `${value}`.replace(/(^|[^'])'(?!')/g, "$1''")
+
+                    value = `'${value}'`
+                  } catch (e) {}
+
+                  if (field.isNULL)
+                    value = 'NULL'
+
+                  if (field.parent == '#' || isUDT)
+                    names.push(isUDT ? `${finalFieldName}` : (`${finalFieldName}` + (!true ? `, -- ${field.type}` : '')))
+
+                  values.push(isUDT || isCollection ? `${value}` : (`${value}` + (field.parent == '#' && !true ? `, -- ${field.type}` : '')))
+                } catch (e) {}
+              } catch (e) {}
+            }
+
+            return {
+              names,
+              values
+            }
+          }
+
+          let selectedColumns = '',
+            primaryKey = '',
+            otherFields = ''
+
+          let manipulatedFields = {
+            primaryKey: handleFieldsPost(primaryKeyFields),
+            allNonPKColumns: {
+              regular: handleFieldsPost(columnsRegularFields),
+              collection: handleFieldsPost(columnsCollectionFields),
+              udt: handleFieldsPost(columnsUDTFields)
+            }
+          }
+
+          try {
+            let temp = []
+
+            for (let i = 0; i < manipulatedFields.primaryKey.names.length; i++)
+              temp.push(`${manipulatedFields.primaryKey.names[i]} ${manipulatedFields.primaryKey.values[i]}`)
+
+            primaryKey = temp.join(' AND ')
+          } catch (e) {}
+
+          try {
+            let temp = []
+
+            for (let nonPKColumns of Object.keys(manipulatedFields.allNonPKColumns)) {
+              for (let i = 0; i < manipulatedFields.allNonPKColumns[nonPKColumns].names.length; i++) {
+                let name = manipulatedFields.allNonPKColumns[nonPKColumns].names[i],
+                  value = manipulatedFields.allNonPKColumns[nonPKColumns].values[i]
+
+                if ([name, value].some((attribute) => `${attribute}` == 'undefined'))
+                  continue
+
+                temp.push(`${name} ${value}`)
+              }
+            }
+
+            otherFields = temp.join(' AND ')
+          } catch (e) {}
+
+          // Check if `IF EXISTS` is checked
+          let allowFiltering = ''
+
+          try {
+            if (!$('#selectAllowFilteringEnableOption').prop('checked'))
+              throw 0
+
+            allowFiltering = ` ALLOW FILTERING`
+          } catch (e) {}
+
+          // Get selected columns
+          try {
+            let selectedColumnsElements = $('div#tableFieldsNonPKColumnsSelectAction').children('div.columns').children('div.column.selected').get()
+
+            if (selectedColumnsElements.length <= 0)
+              throw 0
+
+            selectedColumns = ' ' + selectedColumnsElements.map((column) => `${addDoubleQuotes($(column).attr('data-name'))}`).join(', ')
+          } catch (e) {}
+
+          let countAggregateFunction = ''
+
+          try {
+            countAggregateFunction = $('input#selectAggregateFunctions').val()
+
+            if (countAggregateFunction.length <= 0)
+              throw 0
+
+            countAggregateFunction = `${countAggregateFunction}(*)`
+
+            if (selectedColumns.length != 0) {
+              countAggregateFunction = `, ${countAggregateFunction}`
+            } else {
+              countAggregateFunction = ` ${countAggregateFunction}`
             }
           } catch (e) {}
 
-          setTimeout(() => {
+          let columnsAggregateFunctions = ''
+
+          try {
+            let allAggregationFunctionsBtns = allNodes.find('button.aggregate-functions-btn').filter(function() {
+              return ($(this).data('aggregateFunctions') || []).length != 0
+            })
+
+            if (allAggregationFunctionsBtns.length <= 0)
+              throw 0
+
+            for (let aggregationFunctionsBtn of allAggregationFunctionsBtns.get()) {
+              let columnName = $(aggregationFunctionsBtn).attr('data-column-name'),
+                temp = $(aggregationFunctionsBtn).data('aggregateFunctions').map((func) => `${func}(${addDoubleQuotes(columnName)})`).join(', ')
+
+              columnsAggregateFunctions = `${columnsAggregateFunctions}${columnsAggregateFunctions.length > 0 ? ', ' : ''}${temp}`
+            }
+
+            if (`${selectedColumns}${countAggregateFunction}`.length > 0) {
+              columnsAggregateFunctions = `, ${columnsAggregateFunctions}`
+            } else {
+              columnsAggregateFunctions = ` ${columnsAggregateFunctions}`
+            }
+          } catch (e) {}
+
+          let orderByClusteringColumns = ''
+
+          try {
+            let allOrderByClusteringColumnsBtns = $('div#tableFieldsPrimaryKeyTreeSelectAction').find('button.column-order-type.active-order')
+
+            if (allOrderByClusteringColumnsBtns.length <= 0)
+              throw 0
+
+            orderByClusteringColumns = `ORDER BY `,
+              tempArray = [],
+              isErrorFound = false
+
+            for (let orderByClusteringColumnBtn of allOrderByClusteringColumnsBtns.get()) {
+              if ($(orderByClusteringColumnBtn).closest('a.jstree-anchor').hasClass('invalid-order')) {
+                isErrorFound = true
+
+                break
+              }
+
+              temp = `${addDoubleQuotes($(orderByClusteringColumnBtn).attr('data-column-name'))} ${$(orderByClusteringColumnBtn).attr('data-current-order').toUpperCase()}`
+
+              tempArray.push(temp)
+            }
+
+            orderByClusteringColumns = `${orderByClusteringColumns}${tempArray.join(', ')}`
+
+            if (isErrorFound) {
+              orderByClusteringColumns = ''
+
+              throw 0
+            }
+
+            if (`${primaryKey}${otherFields}`.length != 0)
+              orderByClusteringColumns = ` ${orderByClusteringColumns}`
+          } catch (e) {}
+
+          let limit = ''
+
+          try {
+            let setLimit = parseInt($('input#select-limit').val())
+
+            if (isNaN(setLimit) || setLimit <= 0)
+              throw 0
+
+            limit = ` LIMIT ${setLimit}`
+
+            if (allowFiltering.length != 0)
+              limit = `${limit} `
+          } catch (e) {}
+
+          dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+
+          let selectionPart = `${selectedColumns}${countAggregateFunction}${columnsAggregateFunctions}`
+
+          if (selectionPart.length <= 0)
+            selectionPart = ' *'
+
+          if (`${primaryKey}`.length > 0 && otherFields.length != 0)
+            otherFields = ` AND ${otherFields}`
+
+          let wherePart = `${primaryKey}${otherFields}`
+
+          let statement = `SELECT${isSelectionAsJSON ? ' JSON' : ''}${selectionPart} FROM ${keyspaceName}.${tableName}` + (wherePart.length > 0 ? OS.EOL + `WHERE ${wherePart}` : '') + `${orderByClusteringColumns}${limit}${allowFiltering};`
+
+          try {
+            actionEditor.setValue(statement)
+          } catch (e) {}
+        }
+
+        getAllPrimaryKeyColumns = () => updateActionStatusForSelectRowColumn(true)
+
+        $('input[name="selectOrderBy"]').each(function() {
+          $(this).on('change input', function() {
+            let selectedType = getCheckedValue('selectOrderBy'),
+              clusteringKeysNodes = $('div#tableFieldsPrimaryKeyTreeSelectAction').find('a.jstree-anchor[partition="false"][is-reversed]'),
+              orderBadges = clusteringKeysNodes.find('button.column-order-type')
+
+            orderBadges.css('display', selectedType == 'selectOBNone' ? 'none' : 'flex')
+
             try {
-              updateActionStatusForSelectRow()
+              if (selectedType == 'selectOBNone')
+                throw 0
+
+              for (let orderBadge of orderBadges.get()) {
+                let selectedOrder = $(orderBadge).attr('data-original-order')
+
+                if (selectedType == 'selectOBDefaultReversed')
+                  selectedOrder = selectedOrder == 'asc' ? 'desc' : 'asc'
+
+                $(orderBadge).attr('data-current-order', selectedOrder)
+
+                $(orderBadge).find('ion-icon').attr('name', `sort-${selectedOrder}`)
+
+                $(orderBadge).find('span').text(`${selectedOrder}`)
+              }
             } catch (e) {}
+
+            setTimeout(() => {
+              try {
+                updateActionStatusForSelectRow()
+              } catch (e) {}
+            })
           })
         })
-      })
-    }, 5000)
+      } catch (e) {}
+    }, 10000)
   }
 
   {

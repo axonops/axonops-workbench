@@ -40,13 +40,21 @@ div.modal {
   &#appSettings,
   &#clusterCredentials,
   &#importWorkspaces {
+    &#addEditClusterDialog {
+      div.modal-content {
+        height: calc(202px + 470px);
+      }
+    }
+
     div.modal-dialog {
       transition: transform 0.3s ease-out, max-width 0.2s ease-in-out;
 
       &.expanded {
         div.modal-content {
-          div.modal-body {
-            height: 500px;
+          height: calc(202px + 570px) !important;
+
+          div.modal-body:not(.select-type) {
+            height: 570px;
           }
         }
       }

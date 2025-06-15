@@ -96,6 +96,28 @@ global.Path = require('path')
  */
 global.OS = require('os')
 
+
+global.ElectronApp = App
+
+global.IsCLIMode = false
+
+
+/**
+ * Check if the app is in production environment
+ * https://www.electronjs.org/docs/latest/api/app#appispackaged-readonly
+ *
+ * Based on checking result the extra resources path would be changed
+ */
+global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), (process.platform != 'win32' ? '.' : '') + 'axonops-workbench') : null
+
+let CLI
+
+try {
+  CLI = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'argv'))
+
+  CLI.init()
+} catch (e) {}
+
 /**
  * Import extra modules needed in the main thread
  *
@@ -116,19 +138,11 @@ const URL = require('url'),
   DotEnv = require('dotenv')
 
 /**
- * Check if the app is in production environment
- * https://www.electronjs.org/docs/latest/api/app#appispackaged-readonly
- *
- * Based on checking result the extra resources path would be changed
- */
-global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), (process.platform != 'win32' ? '.' : '') + 'axonops-workbench') : null
-
-/**
  * Import the custom node modules for the main thread
  *
  * `Modules` constant will contain all the custom modules
  */
-const Modules = []
+global.Modules = []
 
 try {
   // Define the folder's path of the custom node modules
@@ -146,7 +160,7 @@ try {
       moduleFile = `${moduleFile}`.toLowerCase()
 
       // Ignore any file which is not `JS`
-      if (!moduleFile.endsWith('.js'))
+      if (!moduleFile.endsWith('.js') || moduleFile.startsWith('argv'))
         return
 
       // Define the module's name
@@ -188,7 +202,7 @@ try {
 } catch (e) {}
 
 // Object that will hold all views/windows of the app
-let views = {
+global.views = {
   // The main view/window object
   main: null,
   // A view/window as a loding screen
@@ -254,13 +268,13 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
       } catch (e) {}
 
     // Whether or not the window should be shown
-    if (extraProperties.show)
+    if (extraProperties.show && !global.IsCLIMode)
       try {
         windowObject.show()
       } catch (e) {}
 
     // Whether or not developer tools should be opened
-    if (extraProperties.openDevTools)
+    if (extraProperties.openDevTools && !global.IsCLIMode)
       try {
         windowObject.webContents.openDevTools()
       } catch (e) {}
@@ -304,7 +318,7 @@ const AppProps = {
  */
 let properties = {
     minWidth: 1266,
-    minHeight: 668,
+    minHeight: 768,
     center: true,
     icon: AppProps.Paths.Icon,
     title: AppProps.Info.title,
@@ -349,7 +363,7 @@ App.on('ready', () => {
   // Force to run only one instance of the app at once
   try {
     // https://www.electronjs.org/docs/latest/api/app#apprequestsingleinstancelockadditionaldata
-    if (App.requestSingleInstanceLock())
+    if (App.requestSingleInstanceLock() || global.IsCLIMode)
       throw 0
 
     // Quit/terminate that new instance
@@ -374,32 +388,40 @@ App.on('ready', () => {
     try {
       views.backgroundProcesses.webContents.send(`extra-resources-path`, extraResourcesPath)
     } catch (e) {}
-  })
 
-  /**
-   * Create the intro view/window with custom properties
-   * This window will be destroyed once the main view/window and its children loaded
-   */
-  views.intro = createWindow({
-    ...properties,
-    width: 700,
-    height: 425,
-    transparent: true,
-    backgroundColor: 'rgba(255, 255, 255, 0)',
-    frame: false,
-    resizable: false,
-    movable: false,
-    focusable: false,
-    skipTaskbar: true,
-    alwaysOnTop: true,
-    thickFrame: false,
-    center: true,
-    show: true
-  }, Path.join(AppProps.Paths.MainView, '..', 'intro.html'), {
-    show: true,
-    center: true,
-    parent: views.main,
-    openDevTools: true
+    try {
+      CLI.start()
+    } catch (e) {}
+
+    /**
+     * Create the intro view/window with custom properties
+     * This window will be destroyed once the main view/window and its children loaded
+     */
+    views.intro = createWindow({
+      ...properties,
+      width: 700,
+      height: 425,
+      transparent: true,
+      backgroundColor: 'rgba(255, 255, 255, 0)',
+      frame: false,
+      resizable: false,
+      movable: false,
+      focusable: false,
+      skipTaskbar: true,
+      alwaysOnTop: true,
+      thickFrame: false,
+      center: true,
+      show: !global.IsCLIMode
+    }, Path.join(AppProps.Paths.MainView, '..', 'intro.html'), {
+      show: true,
+      center: true,
+      parent: views.main
+    })
+
+    if (global.IsCLIMode) {
+      status.loaded = true
+      status.initialized = true
+    }
   })
 
   /**
@@ -450,6 +472,9 @@ App.on('ready', () => {
 
         // Show the main view/window and maximize it
         try {
+          if (global.IsCLIMode)
+            throw 0
+
           views.main.show()
           views.main.maximize()
         } catch (e) {}
@@ -543,8 +568,11 @@ App.on('window-all-closed', () => {
 })
 
 // On attempt to run a second instance
-App.on('second-instance', () => {
+App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
   try {
+    if (global.IsCLIMode || (argv || []).includes('--is-cli'))
+      throw 0
+
     // Restore the main's instance's window
     if (views.main.isMinimized())
       views.main.restore()

@@ -84,11 +84,13 @@ const OS = require('os'),
   // Convert an array of Objects into a table format
   ConvertJSONTable = require('json-to-table'),
   // Generate interactive HTML table
-  Tabulator = require('tabulator-tables'),
-  // Sanitize a string to be safe for use as a file name; by removing directory paths and invalid characters
-  Sanitize = require('sanitize-filename'),
-  // Promise based HTTP client for the browser and node.js
-  Axios = require('axios'),
+  Tabulator = require('tabulator-tables')
+
+// Sanitize a string to be safe for use as a file name; by removing directory paths and invalid characters
+let Sanitize = require('sanitize-filename')
+
+// Promise based HTTP client for the browser and node.js
+const Axios = require('axios'),
   /**
    * An implementation of PHP `strip_tags` in Node.js
    * Used for stripping HTML tags from a given string

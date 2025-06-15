@@ -178,10 +178,11 @@ And it also can be in file, and the absolute path to this file is passed, for ex
   - `false`: The importing process will be continued even if the test process has finished with failure.
 - Default value is `false`.
 
-## 🚀 Start a Connection
-- Using the argument `--connect` we can start a connection immediately with all its complex parts - like creating an SSH tunnel first - by just passing the unique ID of the saved connection.
-- Progress will be shown in the terminal.
-- In case the connection has started, a cqlsh session will be opened within the same terminal instance.
+## 🚀 Start a Connection and Launch CQLsh
+- The `--connect` argument launches a full interactive CQLsh command-line session directly from your terminal - no GUI required!
+- Simply pass the connection ID to immediately connect to your Cassandra database and enter the CQLsh interactive shell.
+- The workbench handles all connection complexity (authentication, SSL, SSH tunnels) automatically before dropping you into the familiar CQLsh prompt.
+- Progress will be shown in the terminal, then you'll have full access to execute CQL commands interactively just like using standalone CQLsh.
 
 ## 🐧 Run AxonOps Workbench in Linux Headless Host (no GUI)
 

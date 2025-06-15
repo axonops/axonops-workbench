@@ -233,9 +233,3 @@ And you're ready to go and run AxonOps Workbench in a headless Linux host!
 - For SSH connections, ensure private key has correct permissions (chmod 600)
 - In headless mode, ensure Xvfb is running before starting the workbench
 - Use `--test-connection` to validate connections before importing
-
-## 📖 Additional Resources
-
-- [AxonOps Workbench Documentation](https://docs.axonops.com/)
-- [GitHub Issues](https://github.com/axonops/axonops-workbench/issues)
-- [Community Discussions](https://github.com/axonops/axonops-workbench/discussions)

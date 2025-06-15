@@ -64,6 +64,7 @@
 | 🔒 **SSH Tunneling** | Secure remote connections without external tools |
 | 📁 **Workspaces** | Organize and share cluster configurations via source control |
 | 🌍 **Multi-Language** | Available in English, Spanish, French, Arabic, Chinese, and more |
+| ⌨️ **Command Line Interface** | Powerful CLI for automation and headless operation |
 
 </div>
 
@@ -148,6 +149,11 @@ Spin up local Cassandra clusters instantly for development and testing with just
 Connect securely to remote clusters through SSH tunnels without external tools or complex configurations.
 
 <img width="981" alt="Screenshot 2024-08-23 at 07 50 46" src="https://github.com/user-attachments/assets/d26aee76-c34a-4495-a89b-85896e2590e5">
+
+### ⌨️ Command Line Interface
+Automate your workflow with powerful CLI commands for workspace and connection management, perfect for CI/CD pipelines and server environments.
+
+[📚 View Complete CLI Documentation](docs/cli.md)
 
 ### 🚀 Additional Features
 

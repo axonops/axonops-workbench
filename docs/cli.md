@@ -1,15 +1,19 @@
-# AxonOps Workbench CLI Mode
-The workbench has a CLI mode that can be enabled by passing a supported argument while calling the workbench from CMD/Terminal!
+# AxonOps Workbench Command Line Interface (CLI)
 
-## How to start
-From terminal CMD, start the AxonOps Workbench and pass one or more of the following supported arguments, the workbench will automatically switch to the CLI mode, otherwise the regular GUI mode will be started as usual.
-```
+The AxonOps Workbench CLI provides a powerful command-line interface that can be enabled by passing supported arguments while calling the workbench from CMD/Terminal.
+
+## 🚀 Getting Started
+
+From terminal/CMD, start the AxonOps Workbench and pass one or more of the following supported arguments. The workbench will automatically switch to CLI mode, otherwise the regular GUI mode will be started as usual.
+
+```bash
 ./axonops-workbench -v # CLI Mode!
 
 ./axonops-workbench # Regular GUI Mode
 ```
 
-## Supported Arguments
+## 📋 Supported Arguments
+
 ```
   --help, -h                                     > Print all supported          
                                                  arguments.                     
@@ -62,9 +66,10 @@ From terminal CMD, start the AxonOps Workbench and pass one or more of the follo
                                                  session by passing its ID.     
 ```
 
-### JSON Strucutre
-#### Workspace
-```
+## 📁 JSON Structure
+
+### Workspace
+```json
 {
 	"name":"",
 	"color": "",
@@ -72,24 +77,25 @@ From terminal CMD, start the AxonOps Workbench and pass one or more of the follo
 	"path": ""
 }
 ```
-- `name` (Mandatory): The workspace's unique name, in case of duplication or invalidation a feedback will be show.
+- `name` (Mandatory): The workspace's unique name, in case of duplication or invalidation a feedback will be shown.
 - `color` (Optional): The workspace's dominant color, passed value can be any color format (HEX, RGB, HSL, etc..).
 - `defaultPath` (Optional): Whether or not workspace's main folder (data) should be in the default path or not, accepted value is either `true` or `false`, it's `true` by default.
-- `path` (Optional): An absolute path to create workspace's main folder (data) in it, to make the Workbench takes this attribue into account `defaultPath` attribute must be provided with `false` value.
+- `path` (Optional): An absolute path to create workspace's main folder (data) in it, to make the Workbench takes this attribute into account `defaultPath` attribute must be provided with `false` value.
 
 This JSON structure can be passed directly, for example:
-```
+```bash
 --import-workspace='{"name":"test"}'
 ```
-And it also can be in file, and the absolute path to this file is passed, for exampel:
-```
+And it also can be in file, and the absolute path to this file is passed, for example:
+```bash
 --import-workspace='/path/to/file'
 ```
 `--delete-file` argument can be passed alongside this argument, it'll delete the passed JSON file in case the importing process has been finished with success.
 
-#### Connection
-##### Apache Cassandra
-```
+### Connection
+
+#### Apache Cassandra
+```json
 {
 	"basic": {
 		"workspace_id": "",
@@ -127,16 +133,31 @@ And it also can be in file, and the absolute path to this file is passed, for ex
 - `basic`.
   - `workspace_id`: The ID of the workspace which the connection will be imported to.
   - `name`: The name of the connection, must be unique within the scope of the passed workspace.
-  - `datacenter`: Specify a data center to be set when activating the connectoin.
+  - `datacenter`: Specify a data center to be set when activating the connection.
   - `hostname`: Host/IP to Cassandra node.
   - `port`: Connection port, it's `9042` by default.
   - `cqlshrc`: Absolute path to a valid `cqlsh.rc` file.
 - `auth`.
   - `username`: Apache Cassandra authentication username.
   - `password`: Apache Cassandra authentication password.
-...
-##### Astra DB
-```
+- `ssl`.
+  - `ssl`: Enable SSL/TLS connection.
+  - `certfile`: Path to CA certificate file.
+  - `userkey`: Path to user key file.
+  - `usercert`: Path to user certificate file.
+  - `validate`: Enable certificate validation.
+- `ssh`.
+  - `host`: SSH tunnel host.
+  - `port`: SSH tunnel port.
+  - `username`: SSH username.
+  - `password`: SSH password.
+  - `privatekey`: Path to SSH private key.
+  - `passphrase`: SSH key passphrase.
+  - `destaddr`: Destination address for tunnel.
+  - `destport`: Destination port for tunnel.
+
+#### Astra DB
+```json
 {
 	"workspace_id": "",
 	"name": "",
@@ -150,20 +171,22 @@ And it also can be in file, and the absolute path to this file is passed, for ex
 - `password`: Represents `secret` in AstraDB.
 - `scb_path`: Absolute path to the secure connection bundle `.zip` file.
 
-### Test Connection
+## 🔧 Test Connection
 - Argument `--test-connection` can be passed alongside this `--import-connection` argument.
 - Possible value is either `true` or `false`.
   - `true`: The importing process will be terminated in case the test process has finished with failure.
   - `false`: The importing process will be continued even if the test process has finished with failure.
 - Default value is `false`.
 
-## Start a connection
+## 🚀 Start a Connection
 - Using the argument `--connect` we can start a connection immediately with all its complex parts - like creating an SSH tunnel first - by just passing the unique ID of the saved connection.
 - Progress will be shown in the terminal.
 - In case the connection has started, a cqlsh session will be opened within the same terminal instance.
 
-## Run AxonOps Workbench in Linux headless host (no GUI):
+## 🐧 Run AxonOps Workbench in Linux Headless Host (no GUI)
+
 In order to use AxonOps Workbench in a headless Linux host, all you need to do is making sure the package `xvfb` is installed, running and exporting a display, it's available for most Linux distributions:
+
 | Distribution  | Package Name           | Install Command                         |
 | ------------- | ---------------------- | --------------------------------------- |
 | Ubuntu/Debian | `xvfb`                 | `sudo apt install xvfb`                 |
@@ -176,3 +199,43 @@ Before running the workbench, run this command:
 Xvfb :99 -screen 0 1280x720x24 & export DISPLAY=:99
 ```
 And you're ready to go and run AxonOps Workbench in a headless Linux host!
+
+## 📚 Examples
+
+### Import Workspace and Connection
+```bash
+# Import a workspace
+./axonops-workbench --import-workspace '{"name":"Production", "color":"#FF5733"}'
+
+# List workspaces to get the ID
+./axonops-workbench --list-workspaces
+
+# Import a connection with test
+./axonops-workbench --import-connection /path/to/connection.json --test-connection
+
+# Connect to the database
+./axonops-workbench --connect "connection-id"
+```
+
+### Automated Setup
+```bash
+#!/bin/bash
+# Import workspace from file and delete after success
+./axonops-workbench --import-workspace workspace.json --delete-file
+
+# Import and test connection
+./axonops-workbench --import-connection connection.json --test-connection --delete-file
+```
+
+## 🆘 Troubleshooting
+
+- If connection import fails, verify all mandatory fields are present in the JSON
+- For SSH connections, ensure private key has correct permissions (chmod 600)
+- In headless mode, ensure Xvfb is running before starting the workbench
+- Use `--test-connection` to validate connections before importing
+
+## 📖 Additional Resources
+
+- [AxonOps Workbench Documentation](https://docs.axonops.com/)
+- [GitHub Issues](https://github.com/axonops/axonops-workbench/issues)
+- [Community Discussions](https://github.com/axonops/axonops-workbench/discussions)

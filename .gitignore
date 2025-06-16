@@ -53,24 +53,3 @@ main/bin/*
 
 .env
 
-# Claude AI artifacts and internal processing
-.claude/
-.claude-artifacts/
-.claude-cache/
-.claude-session/
-*.claude
-*.claude.md
-*.claude.json
-*.claude.yaml
-*.claude.yml
-claude-*
-CLAUDE.md
-.cline/
-.continue/
-.aider/
-.cursor/
-*_claude_backup*
-*_claude_temp*
-.claude-config/
-.ai-artifacts/
-.ai-cache/

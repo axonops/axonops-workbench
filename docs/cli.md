@@ -206,26 +206,31 @@ And you're ready to go and run AxonOps Workbench in a headless Linux host!
 ### Import Workspace and Connection
 ```bash
 # Import a workspace
-./axonops-workbench --import-workspace '{"name":"Production", "color":"#FF5733"}'
+./axonops-workbench --import-workspace='{"name":"Production", "color":"#FF5733"}'
 
 # List workspaces to get the ID
 ./axonops-workbench --list-workspaces
 
 # Import a connection with test
-./axonops-workbench --import-connection /path/to/connection.json --test-connection
+./axonops-workbench --import-connection=/path/to/connection.json --test-connection
 
 # Connect to the database
-./axonops-workbench --connect "connection-id"
+./axonops-workbench --connect="connection-id"
 ```
 
 ### Automated Setup
 ```bash
 #!/bin/bash
 # Import workspace from file and delete after success
-./axonops-workbench --import-workspace workspace.json --delete-file
+./axonops-workbench --import-workspace=workspace.json --delete-file
 
 # Import and test connection
-./axonops-workbench --import-connection connection.json --test-connection --delete-file
+./axonops-workbench --import-connection=connection.json --test-connection --delete-file
+```
+**NOTE:**  When passing a value to an argument, you must use the equals sign (`=`). For example:
+```bash
+./axonops-workbench --list-connections workspace-0b5d20cb08 # Bad ❌
+./axonops-workbench --list-connections=workspace-0b5d20cb08 # Good ✅
 ```
 
 ## 🆘 Troubleshooting

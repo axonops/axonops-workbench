@@ -47,7 +47,8 @@ let activeWorkspaceID = '',
 //   standard: '',
 //   serial: ''
 // }
-let activeSessionsConsistencyLevels = []
+let activeSessionsConsistencyLevels = [],
+  activeSessionsPaginationSize = null
 
 /**
  * Store the apps' RSA public key

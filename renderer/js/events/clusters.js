@@ -904,10 +904,18 @@
                                              <span mulang="execute CQL file(s)"></span>
                                            </button>
                                          </div>
+                                         <div class="actions-right-side">
+                                         <div class="session-action pagination-size" action="pagination-size">
+                                         <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
+                                           <ion-icon name="pagination"></ion-icon>
+                                           <span mulang="page size">page size</span>:
+                                           <span class="size" style="margin-left: 7px;">0</span>
+                                         </button>
+                                         </div>
                                          <div class="session-action consistency-level" action="consistency-level">
                                          <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
                                            <ion-icon name="consistency"></ion-icon>
-                                           <span mulang="consistency level">consistency level</span>:
+                                           <span mulang="consistency">consistency</span>:
                                            <span class="badge rounded-pill badge-dark"><b standard></b></span>
                                            <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
                                              data-title="Consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.<br><br>However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:<br><code>R + W > RF</code><br>(Read replicas + Write replicas > Replication Factor)<br><br>Example: With <code>RF=3</code>, using <code>QUORUM (2)</code> for both reads and writes ensures strong consistency <code>(2+2>3)</code> while maintaining availability and tolerance to failure."
@@ -922,6 +930,7 @@
                                            </div>
                                          </button>
                                          </div>
+                                         </div>
                                        </div>
                                        <div class="top">
                                          <div class="consistency-levels"></div>
@@ -929,6 +938,20 @@
                                            <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
                                              <ion-icon name="consistency"></ion-icon>
                                              <span mulang="change levels"></span>
+                                           </button>
+                                         </div>
+                                         <div class="current-pagination-size">
+                                           <div class="form-outline form-white">
+                                             <input type="number" class="form-control form-control-sm">
+                                             <label class="form-label">
+                                               <span mulang="paging size" capitalize></span>
+                                             </label>
+                                           </div>
+                                         </div>
+                                         <div class="change-pagination-size">
+                                           <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                                             <ion-icon name="pagination"></ion-icon>
+                                             <span mulang="change paging size"></span>
                                            </button>
                                          </div>
                                          <div class="history-items"></div>
@@ -1099,7 +1122,7 @@
                     {
                       // Initialize the input and textarea fields
                       setTimeout(() => {
-                        $(this).find('input[type="text"], textarea').each(function() {
+                        $(this).find('input[type="text"], input[type="number"], textarea').each(function() {
                           try {
                             let object = getElementMDBObject($(this), 'Input')
                             object.update()
@@ -1681,7 +1704,7 @@
                                 })
                               } catch (e) {}
 
-                              convertTableToTabulator(JSON.stringify(tableData), $(`div[id="_${tableBodyID}"]`), (tabulatorObject) => setTimeout(() => {
+                              convertTableToTabulator(JSON.stringify(tableData), $(`div[id="_${tableBodyID}"]`), 10, true, (tabulatorObject) => setTimeout(() => {
                                 activitesTabulatorObject = tabulatorObject
 
                                 tabulatorObject.redraw()
@@ -2061,17 +2084,26 @@
                         setTimeout(() => {
                           IPCRenderer.send('pty:command', {
                             id: clusterID,
-                            cmd: 'PAGING OFF;EXPAND OFF;'
+                            // cmd: 'PAGING OFF;EXPAND OFF;'
+                            cmd: 'EXPAND OFF;'
                           })
-                        }, 1000)
 
-                        setTimeout(() => {
-                          IPCRenderer.send('pty:command', {
-                            id: clusterID,
-                            cmd: 'CONSISTENCY;SERIAL CONSISTENCY;',
-                            blockID: getRandomID(10)
-                          })
-                        }, 1500)
+                          setTimeout(() => {
+                            IPCRenderer.send('pty:command', {
+                              id: clusterID,
+                              cmd: 'CONSISTENCY;SERIAL CONSISTENCY;',
+                              blockID: getRandomID(10)
+                            })
+
+                            setTimeout(() => {
+                              IPCRenderer.send('pty:command', {
+                                id: clusterID,
+                                cmd: 'PAGING;',
+                                blockID: getRandomID(10)
+                              })
+                            }, 1000)
+                          }, 1000)
+                        }, 1000)
 
                         // Remove the loading class
                         workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).removeClass('loading')
@@ -2829,9 +2861,11 @@
                       /**
                        * The upcoming block is about the interactive terminal
                        *
-                       * Whether or not the output has been completed
+                       * Whether or not the output is related to paging process
                        */
-                      let isOutputCompleted = data.output.indexOf('KEYWORD:OUTPUT:COMPLETED:ALL') != -1,
+                      let isOutputWithPaging = data.output.indexOf('KEYWORD:PAGING:CONTINUE') != -1,
+                        // Whether or not the output has been completed
+                        isOutputCompleted = data.output.indexOf('KEYWORD:OUTPUT:COMPLETED:ALL') != -1,
                         // Whether or not this output is incomplete
                         isOutputIncomplete = allOutput.endsWith('KEYWORD:STATEMENT:INCOMPLETE'),
                         // Whether or not this output is ignored
@@ -2852,8 +2886,13 @@
                           noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span>.</no-output>',
                           isSourceCommand = blockElement.attr('data-is-source-command') != undefined
 
+                        if (isOutputWithPaging && !isOutputCompleted)
+                          blockElement.attr('data-is-paging', 'true')
+
+                        isOutputWithPaging = isOutputWithPaging || blockElement.attr('data-is-paging') != undefined
+
                         try {
-                          isOutputIncomplete = isSourceCommand ? !(allOutput.includes('KEYWORD:OUTPUT:SOURCE:COMPLETED')) : isOutputIncomplete
+                          isOutputIncomplete = (isSourceCommand ? !(allOutput.includes('KEYWORD:OUTPUT:SOURCE:COMPLETED')) : isOutputIncomplete) || isOutputWithPaging
                         } catch (e) {}
 
                         // Update the block's output
@@ -2902,7 +2941,13 @@
                           if (isOutputIncomplete)
                             killProcessTimeout = setTimeout(() => {
                               killProcessBtn.parent().addClass('show')
-                              setTimeout(() => hintsContainer.addClass('show'), 1000)
+
+                              workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
+                              workareaElement.find('.disableable').addClass('disabled')
+                              workareaElement.addClass('busy-cqlsh')
+
+                              if (!isOutputWithPaging)
+                                setTimeout(() => hintsContainer.addClass('show'), 1000)
                             }, 1500)
                         } catch (e) {}
 
@@ -3029,11 +3074,40 @@
                         } catch (e) {}
 
                         // If no output has been detected then skip this try-catch block
-                        if (!finalContent.includes('KEYWORD:OUTPUT:COMPLETED:ALL'))
+                        if (['KEYWORD:OUTPUT:COMPLETED:ALL', 'KEYWORD:PAGING:CONTINUE'].every((keyword) => !finalContent.includes(keyword)))
                           throw 0
 
                         // Get the detected output of each statement
-                        let detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:OUTPUT:COMPLETED:ALL/gm)
+                        let detectedOutput
+
+                        if (finalContent.includes('KEYWORD:OUTPUT:COMPLETED:ALL')) {
+                          detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:OUTPUT:COMPLETED:ALL/gm)
+
+                          blockElement.attr('data-is-paging-completed', 'true')
+
+                          let nextPageBtn = blockElement.find('button[data-action="next-page"]')
+
+                          nextPageBtn.find('[spinner]').hide()
+                          nextPageBtn.attr('disabled', null)
+
+                          nextPageBtn.parent().find('button[data-page="last"]').removeClass('hidden')
+
+                          try {
+                            clearTimeout(killProcessTimeout)
+                          } catch (e) {}
+
+                          setTimeout(() => {
+                            workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute button').parent().removeClass('busy')
+
+                            workareaElement.find('div.session-actions').find('button').attr('disabled', null)
+                            workareaElement.find('.disableable').removeClass('disabled')
+                            workareaElement.removeClass('busy-cqlsh')
+
+                            killProcessBtn.parent().removeClass('show')
+                          }, 1700)
+                        } else {
+                          detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:PAGING:CONTINUE/gm)
+                        }
 
                         // Handle all statements and their output
                         try {
@@ -3045,11 +3119,38 @@
                             // Point at the output's container
                             let outputContainer = blockElement.children('div.output'),
                               // Define a regex to match each output of each statement
-                              statementOutputRegex = /KEYWORD:OUTPUT:STARTED([\s\S]*?)KEYWORD:OUTPUT:COMPLETED/gm,
+                              statementOutputRegex = /KEYWORD:OUTPUT:STARTED([\s\S]*?)(KEYWORD:OUTPUT:COMPLETED|KEYWORD:PAGING:CONTINUE)/gm,
                               // Define variable to initially hold the regex's match
                               matches,
                               // The index of loop's pointer
                               loopIndex = -1
+
+                            try {
+                              let tableObj = blockElement.data('tableObj')
+
+                              if (`${output}`.indexOf('KEYWORD:JSON:STARTED') <= -1 || tableObj == undefined)
+                                throw 0
+
+                              jsonString = `${output}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
+
+                              if (tableObj != undefined) {
+                                convertJSONToTable(jsonString, (newPage) => {
+                                  tableObj.blockRedraw()
+                                  tableObj.addData(newPage.json, false).then(() => {
+                                    tableObj.restoreRedraw()
+
+                                    tableObj.setPage(tableObj.getPageMax())
+
+                                    let nextPageBtn = blockElement.find('button[data-action="next-page"]')
+
+                                    nextPageBtn.find('[spinner]').hide()
+                                    nextPageBtn.attr('disabled', null)
+                                  })
+                                })
+
+                                return
+                              }
+                            } catch (e) {}
 
                             // Loop through the final content and match output
                             while ((matches = statementOutputRegex.exec(output)) !== null) {
@@ -3123,6 +3224,7 @@
 
                                 let isConsistencyCommand = false
 
+                                // For consistency
                                 try {
                                   if (!((['consistency', 'serial']).some((command) => minifyText(statementIdentifier) == command)))
                                     throw 0
@@ -3157,6 +3259,39 @@
 
                                     isConsistencyCommand = true
                                   } catch (e) {}
+                                } catch (e) {}
+
+                                // For paging
+                                try {
+                                  if (minifyText(statementIdentifier) != 'paging')
+                                    throw 0
+
+                                  let paginationAction = workareaElement.find('div.session-action.pagination-size[action="pagination-size"]')
+
+                                  if (`${match}`.includes('OFF')) {
+                                    paginationAction.fadeOut('fast')
+                                    throw 0
+                                  }
+
+                                  // Make sure paging is ON
+                                  if (!(`${match}`.includes('ON')) && isNaN(parseInt(statementsStNextIdentifier)))
+                                    throw 0
+
+                                  let detectedPagingSize = parseInt(`${match}`.match(/size\:\s*(\d+)/)[1])
+
+                                  if (isNaN(detectedPagingSize))
+                                    throw 0
+
+                                  activeSessionsPaginationSize = detectedPagingSize
+
+                                  if (paginationAction.css('display') == 'none')
+                                    paginationAction.fadeIn('fast')
+
+                                  try {
+                                    detectedPagingSize = detectedPagingSize.format()
+                                  } catch (e) {}
+
+                                  paginationAction.find(`span.size`).text(`${detectedPagingSize}`)
                                 } catch (e) {}
 
                                 // The sub output structure UI
@@ -3259,7 +3394,7 @@
                                     jsonString = `${match}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
 
                                     // Convert the JSON string to HTML table related to a Tabulator object
-                                    convertTableToTabulator(jsonString, outputElement.find('div.sub-output-content'), (_tabulatorObject) => {
+                                    convertTableToTabulator(jsonString, outputElement.find('div.sub-output-content'), activeSessionsPaginationSize || 50, false, (_tabulatorObject) => {
                                       // As a tabulator object has been created add the associated class
                                       outputElement.find('div.sub-actions').attr('hidden', null)
 
@@ -3267,6 +3402,34 @@
 
                                       // Hold the created object
                                       tabulatorObject = _tabulatorObject
+
+                                      let paginator = outputElement.find('div.sub-output-content').find('span.tabulator-paginator')
+
+                                      paginator.find('button[data-page="last"], button[data-page="next"]').addClass('hidden')
+
+                                      paginator.find('button[data-page="last"]').before($(`<button class="tabulator-page" data-action="next-page" type="button" role="button" aria-label="Next Page" title="Next Page"><span>Next</span><l-chaotic-orbit spinner style="vertical-align: middle; position: relative; bottom: 1px; margin-left: 5px; display:none;" size="17" speed="0.7" color="#000"></l-chaotic-orbit></button>`).show(function() {
+                                        blockElement.data('tableObj', tabulatorObject)
+
+                                        $(this).data('blockID', data.blockID)
+
+                                        $(this).click(function() {
+                                          let originalNextBtn = $(this).parent().find('button[data-page="next"]')
+
+                                          if (originalNextBtn.attr('disabled') == undefined || isOutputCompleted || blockElement.attr('data-is-paging-completed') == 'true') {
+                                            originalNextBtn.click()
+                                            return
+                                          }
+
+                                          $(this).find('[spinner]').show()
+                                          $(this).attr('disabled', '')
+
+                                          IPCRenderer.send('pty:command', {
+                                            id: clusterID,
+                                            cmd: '',
+                                            blockID: $(this).data('blockID')
+                                          })
+                                        })
+                                      }))
                                     })
 
                                     try {
@@ -3283,7 +3446,12 @@
                                         killProcessTimeout = setTimeout(() => {
                                           killProcessBtn.parent().addClass('show')
 
-                                          setTimeout(() => hintsContainer.addClass('show'), 1000)
+                                          workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
+                                          workareaElement.find('.disableable').addClass('disabled')
+                                          workareaElement.addClass('busy-cqlsh')
+
+                                          if (!isOutputWithPaging)
+                                            setTimeout(() => hintsContainer.addClass('show'), 1000)
                                         }, 1500)
                                     } catch (e) {}
 
@@ -3508,7 +3676,12 @@
                             killProcessTimeout = setTimeout(() => {
                               killProcessBtn.parent().addClass('show')
 
-                              setTimeout(() => hintsContainer.addClass('show'), 1000)
+                              workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
+                              workareaElement.find('.disableable').addClass('disabled')
+                              workareaElement.addClass('busy-cqlsh')
+
+                              if (!isOutputWithPaging)
+                                setTimeout(() => hintsContainer.addClass('show'), 1000)
                             }, 1500)
                         } catch (e) {}
 
@@ -4175,6 +4348,10 @@
 
                                   killProcessBtn.parent().removeClass('show')
 
+                                  workareaElement.find('div.session-actions').find('button').attr('disabled', null)
+                                  workareaElement.find('.disableable').removeClass('disabled')
+                                  workareaElement.removeClass('busy-cqlsh')
+
                                   wobbleSpinner.hide()
 
                                   {
@@ -4343,7 +4520,12 @@
                           killProcessTimeout = setTimeout(() => {
                             killProcessBtn.parent().addClass('show')
 
-                            setTimeout(() => hintsContainer.addClass('show'), 1000)
+                            workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
+                            workareaElement.find('.disableable').addClass('disabled')
+                            workareaElement.addClass('busy-cqlsh')
+
+                            if (!isOutputWithPaging)
+                              setTimeout(() => hintsContainer.addClass('show'), 1000)
                           }, 1500)
                         }
 
@@ -4389,6 +4571,11 @@
                             statement = statement.trim()
                           } catch (e) {}
 
+                          try {
+                            if (OS.platform() == 'win32')
+                              statement = `${statement.replace(new RegExp(OS.EOL, 'g'), ' ' + OS.EOL + OS.EOL)}`
+                          } catch (e) {}
+
                           // Send the command to the main thread to be executed
                           IPCRenderer.send('pty:command', {
                             id: clusterID,
@@ -4400,20 +4587,41 @@
 
                       killProcessBtn.click(function() {
                         let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`),
-                          isSourceCommand = blockElement.attr('data-is-source-command') != undefined
+                          isSourceCommand = blockElement.attr('data-is-source-command') != undefined,
+                          isPagingProcess = blockElement.attr('data-is-paging') != undefined
 
-                        if (isSourceCommand)
-                          IPCRenderer.send('pty:command', {
-                            id: clusterID,
-                            cmd: `\r\r`,
-                            blockID
+                        if (isPagingProcess) {
+                          blockElement.attr({
+                            'data-is-paging': null,
+                            'data-is-paging-completed': 'true'
                           })
 
-                        IPCRenderer.send('pty:command', {
-                          id: clusterID,
-                          cmd: `KEYWORD:STATEMENT:IGNORE-${Math.floor(Math.random() * 999) + 1}`,
-                          blockID
-                        })
+                          let nextPageBtn = blockElement.find('button[data-action="next-page"]')
+
+                          nextPageBtn.find('[spinner]').hide()
+                          nextPageBtn.attr('disabled', null)
+
+                          nextPageBtn.parent().find('button[data-page="last"]').removeClass('hidden')
+
+                          IPCRenderer.send('pty:command', {
+                            id: clusterID,
+                            cmd: '\x03',
+                            blockID
+                          })
+                        } else {
+                          if (isSourceCommand)
+                            IPCRenderer.send('pty:command', {
+                              id: clusterID,
+                              cmd: `\r\r`,
+                              blockID
+                            })
+
+                          IPCRenderer.send('pty:command', {
+                            id: clusterID,
+                            cmd: `KEYWORD:STATEMENT:IGNORE-${Math.floor(Math.random() * 999) + 1}`,
+                            blockID
+                          })
+                        }
 
                         try {
                           if (!isSourceCommand)
@@ -4429,6 +4637,10 @@
                           executeBtn.parent().removeClass('busy')
 
                           killProcessBtn.parent().removeClass('show')
+
+                          workareaElement.find('div.session-actions').find('button').attr('disabled', null)
+                          workareaElement.find('.disableable').removeClass('disabled')
+                          workareaElement.removeClass('busy-cqlsh')
 
                           blockElement.find('div.statement').find('span.spinner').hide()
 
@@ -6509,7 +6721,8 @@
                               $(this).children('div.action-copy').css({
                                 'opacity': '0.2',
                                 'pointer - events': 'none',
-                                'cursor': 'default'
+                                'cursor': 'default',
+                                'pointer-events': 'none'
                               })
                             } catch (e) {}
 
@@ -6747,9 +6960,78 @@
                     }
 
                     {
-                      let executeFilesModal = workareaElement.find('div.modal#executeCQLFiles'),
+                      let PaginationSizeContainer = $(this).find('div.current-pagination-size'),
+                        paginationSizeInput = PaginationSizeContainer.find('input[type="number"]'),
+                        changePaginationSize = $(this).find('div.change-pagination-size')
+
+                      $(this).find('div.session-action[action="pagination-size"]').find('button.btn').click(function() {
+                        try {
+                          paginationSizeInput.val(activeSessionsPaginationSize)
+
+                          getElementMDBObject(paginationSizeInput).update()
+                        } catch (e) {}
+
+                        changePaginationSize.find('button').removeClass('disabled')
+
+                        PaginationSizeContainer.add(changePaginationSize).addClass('show')
+
+                        // Add a backdrop element
+                        $('body').append($(`<div class="backdrop"></div>`).show(function() {
+                          // Show it with animation
+                          setTimeout(() => $(this).addClass('show'), 50)
+
+                          // Once it's clicked
+                          $(this).click(function() {
+                            // Remove it
+                            $(this).remove()
+
+                            PaginationSizeContainer.add(changePaginationSize).removeClass('show')
+                          })
+                        }))
+                      })
+
+                      changePaginationSize.find('button').click(function() {
+                        // Click the backdrop element to close the history items' container
+                        $(`div.backdrop:last`).click()
+
+                        try {
+                          let pagingSize = parseInt(paginationSizeInput.val()),
+                            statement = `PAGING ${pagingSize}`
+
+                          try {
+                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`)
+                            statementInputField.val(statement)
+                            statementInputField.trigger('input').focus()
+                            AutoSize.update(statementInputField[0])
+                          } catch (e) {}
+
+                          try {
+                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).click(), 100)
+                          } catch (e) {}
+                        } catch (e) {}
+                      })
+
+                      paginationSizeInput.on('input', function() {
+                        try {
+                          if ($(this).val().length <= 0)
+                            throw 0
+
+                          let size = parseInt($(this).val())
+
+                          if (size <= 0)
+                            throw 0
+
+                          changePaginationSize.find('button').removeClass('disabled')
+                        } catch (e) {
+                          changePaginationSize.find('button').addClass('disabled')
+                        }
+                      })
+                    }
+
+                    {
+                      let executeFilesModal = $('div.modal#executeCQLFiles'),
                         filesContainer = executeFilesModal.find('div.cql-files-container'),
-                        filesExecutionBtn = workareaElement.find(this).find('div.session-action[action="execute-file"]').find('button.btn')
+                        filesExecutionBtn = workareaElement.find('div.session-action[action="execute-file"]').find('button.btn')
 
                       try {
                         filesExecutionBtn.unbind('click')
@@ -10249,8 +10531,10 @@
                     } catch (e) {}
 
                     // Show Apache Cassandra version
-                    cassandraVersion.children('div._placeholder').hide()
-                    cassandraVersion.children('div.text').text(`v${testedClusterObject.version}`)
+                    if (testedClusterObject.version != undefined) {
+                      cassandraVersion.children('div._placeholder').hide()
+                      cassandraVersion.children('div.text').text(`v${testedClusterObject.version}`)
+                    }
 
                     // Show data center
                     if (testedClusterObject.datacenter != undefined) {
@@ -12183,7 +12467,7 @@
           })
         } catch (e) {}
 
-        let truncateStatement = `CONSISTENCY ALL;` + OS.EOL + `TRUNCATE TABLE ${keyspaceName}.${tableName};`
+        let truncateStatement = `CONSISTENCY ${activeSessionsConsistencyLevels[activeClusterID].standard};` + OS.EOL + `TRUNCATE TABLE ${keyspaceName}.${tableName};`
 
         try {
           truncateTableEditor.setValue(truncateStatement)

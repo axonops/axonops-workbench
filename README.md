@@ -163,7 +163,6 @@ Automate your workflow with powerful CLI commands for workspace and connection m
 - **📝 Query History** - Access and search through your previously executed queries
 - **🔄 Import/Export** - Export query results to CSV, JSON, or other formats
 - **🌐 Multi-cluster Support** - Connect to multiple clusters simultaneously with easy switching
-- **🎨 Dark/Light Themes** - Choose your preferred visual theme for comfortable coding
 - **🌍 Internationalization** - Available in multiple languages including English, Spanish, French, Arabic, Chinese, and more
 - **⚡ Performance Metrics** *(Coming Soon for AxonOps-managed clusters)* - Real-time cluster health and performance monitoring
 - **🔧 Table Operations** - Visual tools for creating, altering, and managing tables

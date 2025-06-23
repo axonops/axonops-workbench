@@ -3385,7 +3385,8 @@
                                   // Handle if the content has JSON string
                                   try {
                                     // If the statement is not `SELECT` or 'DELETE' then don't attempt to render a table
-                                    if (['select', 'delete', 'create', 'insert'].every((command) => statementIdentifier.toLowerCase().indexOf(command) <= -1) || isJSONKeywordFound || connectionLost)
+                                    // if (['select', 'delete', 'create', 'insert'].every((command) => statementIdentifier.toLowerCase().indexOf(command) <= -1) || isJSONKeywordFound || connectionLost)
+                                    if (isJSONKeywordFound || connectionLost)
                                       throw 0
 
                                     if (`${match}`.indexOf('KEYWORD:JSON:STARTED') <= -1)
@@ -3617,6 +3618,26 @@
                                       }
                                     })
                                   }
+
+                                  // Reaching here with JSON keyword means there's a content needs to be handled
+                                  try {
+                                    if (`${match}`.indexOf('KEYWORD:JSON:STARTED') <= -1)
+                                      throw 0
+
+                                    jsonString = `${match}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
+
+                                    if (!pathIsAccessible(`${jsonString.trim()}`))
+                                      throw 0
+
+                                    let tempFilePath = `${jsonString.trim()}`
+
+                                    FS.readFile(tempFilePath, 'utf8', (err, data) => {
+                                      if (err)
+                                        throw 0
+
+                                      match = `${data}`
+                                    })
+                                  } catch (e) {}
 
                                   try {
                                     if (OS.platform() != 'win32')

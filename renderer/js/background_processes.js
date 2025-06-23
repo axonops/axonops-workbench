@@ -249,7 +249,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                 addLog(`Final attributes of the SSH tunnel are '${JSON.stringify(sshTunnelAttributesCopy)}'`)
               } catch (e) {}
             }
-
+            
             // Create the tunnel
             OpenSSHTunnel(sshTunnelAttributes).then((tunnel) => {
               // Handle the need to close this tunnel and stop the process

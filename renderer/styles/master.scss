@@ -3281,6 +3281,7 @@ div.tab-content {
             justify-content: flex-start;
 
             div.change-consistency-levels,
+            div.change-pagination-size,
             div.history-items-clear-all {
               position: absolute;
               bottom: 165px;
@@ -3292,9 +3293,14 @@ div.tab-content {
               transform: translateX(-10px);
               transition: all 0.4s ease-in-out;
 
-              &.change-consistency-levels {
+              &.change-consistency-levels,
+              &.change-pagination-size {
                 left: auto;
                 right: calc(350px + 50px + 15px);
+              }
+
+              &.change-pagination-size {
+                right: calc(250px + 50px + 15px);
               }
 
               button {
@@ -3325,6 +3331,7 @@ div.tab-content {
             }
 
             div.consistency-levels,
+            div.current-pagination-size,
             div.history-items {
               background: #262626;
               position: absolute;
@@ -3343,7 +3350,8 @@ div.tab-content {
               transform: translateY(5px);
               transition: all 0.4s ease-in-out;
 
-              &.consistency-levels {
+              &.consistency-levels,
+              &.current-pagination-size {
                 width: 350px;
                 right: 50px;
                 overflow: hidden;
@@ -3410,6 +3418,12 @@ div.tab-content {
                     }
                   }
                 }
+              }
+
+              &.current-pagination-size {
+                width: 250px;
+                padding: 10px;
+                line-height: 15px;
               }
 
               &.show {
@@ -3825,6 +3839,19 @@ div.tab-content {
           transform-origin: left;
           width: 119%;
 
+          div.actions-right-side {
+            position: absolute;
+            bottom: 0;
+            top: 1px;
+            right: 0;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-content: center;
+            justify-content: flex-end;
+            align-items: center;
+          }
+
           div.session-action {
             &:not(:first-of-type) {
               margin-left: 8px;
@@ -3849,12 +3876,9 @@ div.tab-content {
               }
             }
 
-            &.consistency-level {
+            &.consistency-level,
+            &.pagination-size {
               display: none;
-              position: absolute;
-              bottom: 0;
-              top: 1px;
-              right: 0;
 
               button {
                 display: flex;
@@ -3864,6 +3888,11 @@ div.tab-content {
                 align-items: center;
                 justify-content: flex-start;
                 height: 36px;
+
+                ion-icon[name="pagination"] {
+                  font-size: 170%;
+                  transform: translateX(17px);
+                }
 
                 span.badge {
                   font-size: 105%;

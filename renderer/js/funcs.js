@@ -882,11 +882,12 @@ let convertJSONToTable = (json, callback) => {
  * @Parameters:
  * {string} `json` the JSON string to be manipulated
  * {object} `container` the HTML table's container in the UI
+ * {integer} `paginationSize` the default pagination size (100 by default)
  * {object} `callback` function that will be triggered with passing the created object
  *
  * @Return: {object} the Tabulator table object
  */
-let convertTableToTabulator = (json, container, callback) => {
+let convertTableToTabulator = (json, container, paginationSize = 100, paginationSizeSelectorEnabled = true, callback) => {
   convertJSONToTable(json, (convertedJSON) => {
     // Get a random ID for the table
     let tableID = getRandomID(20),
@@ -912,8 +913,9 @@ let convertTableToTabulator = (json, container, callback) => {
             resizableRowGuide: true,
             movableColumns: true,
             pagination: 'local',
-            paginationSize: 10,
-            paginationSizeSelector: [5, 10, 20, 40, 60, 80, 100],
+            paginationSize,
+            virtualDom: true,
+            paginationSizeSelector: paginationSizeSelectorEnabled ? [5, 10, 20, 40, 60, 80, 100] : false,
             paginationCounter: 'rows',
             rowFormatter: function(row) {
               /**
@@ -2598,6 +2600,35 @@ let suggestionSearch = (needle, haystack, checkDoubleQuotes = false) => {
  */
 String.prototype.search = function(needle) {
   return this.indexOf(needle) != -1
+}
+
+Number.prototype.format = function() {
+  let n = this.toString() // The given number
+  if (n.length >= 4) {
+    let p = 0 // Current loop pointer position
+    let nw = '' // The new formatted number
+    let d = '' // Everything after the decimal point
+    if (n.indexOf('.') != -1) {
+      d = n.slice(n.indexOf('.'))
+      n = n.slice(0, n.indexOf('.'))
+    }
+    for (let i = (n.length - 1); i >= 0; --i) {
+      ++p
+      if (p == 3) {
+        if (i == 0 && (n.length % 3 == 0)) {
+          nw = n[i] + nw
+        } else {
+          nw = ',' + n[i] + nw
+        }
+        p = 0
+      } else {
+        nw = n[i] + nw
+      }
+    }
+    return nw + d
+  } else {
+    return n
+  }
 }
 
 let splitArrayByAttrbiute = (array, attribute) => {
@@ -5125,6 +5156,8 @@ let addDoubleQuotes = (text) => {
 
   return text
 }
+
+let escapeSingleQuotes = (text) => text.replace(/(^|[^'])'([^']|$)/g, "$1''$2")
 
 let getBlobType = (blobHEXString, callback) => {
   let blobBytes = []

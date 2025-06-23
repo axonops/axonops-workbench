@@ -170,6 +170,10 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               // Parse the key file's content using the `parseKey` function
               let prasedKey = SSH2Utils.parseKey(authentication.privateKey, data.passphrase)
 
+              // Ignore the parsed private key in case the format is `ed25519`
+              if (prasedKey.type.includes('ed25519'))
+                throw 0
+
               // Update the key's content
               authentication.privateKey = prasedKey.getPrivatePEM()
             } catch (e) {

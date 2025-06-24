@@ -7916,6 +7916,26 @@
                             } catch (e) {}
                           }
 
+                          // Check if SSH private key passphrase is provided
+                          try {
+                            if (currentCluster.info.secrets.sshPassphrase == undefined)
+                              throw 0
+
+                            // Decrypt the SSHS password
+                            sshPassphrase = decrypt(key, currentCluster.info.secrets.sshPassphrase)
+
+                            // Push it to the `inputs` array
+                            inputs.push({
+                              section: 'none',
+                              key: 'ssh-passphrase',
+                              val: sshPassphrase
+                            })
+                          } catch (e) {
+                            try {
+                              errorLog(e, 'connections')
+                            } catch (e) {}
+                          }
+
                           // Loop through secrets' inputs and set their value
                           inputs.forEach((input) => {
                             // Get the MDB object for the current input
@@ -7958,6 +7978,9 @@
                       }, {
                         section: 'none',
                         key: 'ssh-privatekey',
+                      }, {
+                        section: 'none',
+                        key: 'ssh-passphrase',
                       })
 
                       // Loop through the input fields and empty them
@@ -10552,24 +10575,36 @@
                     } catch (e) {}
 
                     // Show Apache Cassandra version
-                    if (testedClusterObject.version != undefined) {
-                      cassandraVersion.children('div._placeholder').hide()
-                      cassandraVersion.children('div.text').text(`v${testedClusterObject.version}`)
-                    }
+                    try {
+                      if (testedClusterObject.version != undefined) {
+                        cassandraVersion.children('div._placeholder').hide()
+                        cassandraVersion.children('div.text').text(`v${testedClusterObject.version}`)
+                      }
+                    } catch (e) {}
 
                     // Show data center
-                    if (testedClusterObject.datacenter != undefined) {
-                      dataCenterElement.children('div._placeholder').hide()
-                      dataCenterElement.children('div.text').text(`${testedClusterObject.datacenter}`)
-                    }
+                    try {
+                      if (testedClusterObject.datacenter != undefined) {
+                        dataCenterElement.children('div._placeholder').hide()
+                        dataCenterElement.children('div.text').text(`${testedClusterObject.datacenter}`)
+                      }
+                    } catch (e) {}
 
                     // Update some attributes for the cluster UI element alongside some classes
-                    clusterElement.attr({
-                      'data-cassandra-version': testedClusterObject.version,
-                      'data-datacenter': testedClusterObject.datacenter,
-                      'data-datacenters': JSON.stringify(testedClusterObject.datacenters),
-                      'data-connected': 'true'
-                    })
+                    let isConnected = false
+                    try {
+                      clusterElement.attr({
+                        'data-cassandra-version': testedClusterObject.version,
+                        'data-datacenter': testedClusterObject.datacenter,
+                        'data-datacenters': JSON.stringify(testedClusterObject.datacenters),
+                        'data-connected': 'true'
+                      })
+
+                      isConnected = true
+                    } catch (e) {}
+
+                    if (!isConnected)
+                      return
 
                     // Add the success state to the cluster's UI element
                     statusElement.removeClass('failure').addClass('show success')
@@ -11305,36 +11340,47 @@
         $('div.modal#addEditClusterDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
 
         // Loop through all inputs in the dialog
-        $(`${dialog}`).find('[info-section][info-key]').each(function() {
-          let input = $(this),
-            inputObject = getElementMDBObject(input)
+        $(`${dialog}`).find('[info-section="none"][info-key]').each(function() {
+          // Get the input's Material Design object
+          let object_ = getElementMDBObject($(this))
 
-          // Remove the `is-invalid` class
-          input.removeClass('is-invalid')
-
-          // Attempt to remove its value
+          // Handle when the input is actually a file selector
           try {
-            input.val('')
-          } catch (e) {}
+            // If the input is not a file selector then skip this try-catch block
+            if ($(this).parent().attr('file-name') == undefined)
+              throw 0
 
-          // Reset the checkbox's value
-          try {
-            input.prop('checked', getAttributes(input, 'default-value') == 'true')
-          } catch (e) {}
+            /**
+             * Update the tooltip's content and state
+             * Get the object
+             */
+            let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
 
-          // Get its MDB object and update it
-          setTimeout(() => {
+            // Clear the file's name preview
+            $(this).parent().attr('file-name', '-')
+
+            // Disable the tooltip
             try {
-              inputObject.update()
-              setTimeout(() => inputObject._deactivate())
+              tooltipObject[0].object.disable()
             } catch (e) {}
+          } catch (e) {}
 
-            // Remove the initial indicator's attribute
-            input.removeAttr('data-initial')
-
-            // Remove the initial class
-            input.removeClass('initial')
-          })
+          /**
+           * If it is `undefined` then it hasn't been found in the `cqlsh.rc` file
+           * Set the input value to ''
+           */
+          try {
+            $(this).val('')
+          } catch (e) {
+            // If the previous set didn't work then try to call the `selected` attribute
+            try {
+              $(this).prop('checked', getAttributes($(this), 'default-value') == 'true' ? true : false)
+            } catch (e) {}
+          } finally {
+            // Update the object
+            object_.update()
+            setTimeout(() => object_._deactivate())
+          }
         })
 
         // Reset editor's content

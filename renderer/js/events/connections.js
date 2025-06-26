@@ -2272,8 +2272,6 @@
                                   scope += `index>${targetName}`
                                 } catch (e) {}
 
-                                console.log(scope);
-
                                 let contextMenu = [{
                                   label: I18next.capitalize(I18next.t('get CQL description')),
                                   submenu: [{

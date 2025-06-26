@@ -735,7 +735,7 @@ div.tabulator * {
   transition: all 0.2s ease-in-out;
 }
 
-span[no-clusters-message] {
+span[no-connections-message] {
   b {
     color: white;
     font-weight: 500;
@@ -756,7 +756,7 @@ div.form-outline.label-top {
   }
 }
 
-td.clusters-table {
+td.connections-table {
   background: #2b2b2b !important;
 
   div {
@@ -780,7 +780,7 @@ div.color-preview {
   border-radius: 3px;
 }
 
-button.clusters-list {
+button.connections-list {
   width: fit-content;
   height: 35px;
   color: inherit !important;

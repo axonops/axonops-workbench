@@ -16,81 +16,81 @@
 
 {
   /**
-   * Get and refresh all clusters events
+   * Get and refresh all connections events
    *
-   * `getClusters` will remove all clusters in the UI and fetch them all over again from the workspace folder
-   * `refreshClusters` will keep the current clusters in the UI, and just add clusters that are not in the UI already
+   * `getConnections` will remove all connections in the UI and fetch them all over again from the workspace folder
+   * `refreshConnections` will keep the current connections in the UI, and just add connections that are not in the UI already
    */
-  $(document).on('getClusters refreshClusters', function(e, passedData) {
+  $(document).on('getConnections refreshConnections', function(e, passedData) {
     // Save the given workspace ID
     const workspaceID = passedData.workspaceID,
-      // To determine if the event is `getClusters` or `refreshClusters`
+      // To determine if the event is `getConnections` or `refreshConnections`
       event = e.type,
       // Point at the element of the associated workspace element in the UI
       workspaceElement = $(`div.workspaces-container div.workspace[data-id="${workspaceID}"]`),
-      // Point at the parent of all clusters container
-      parentClusterContainer = $(`div.body div.right div.content div[content="clusters"]`),
-      // Point at the cluster's container
-      clustersContainer = parentClusterContainer.children(`div.clusters-container`).children(`div.clusters[workspace-id="${workspaceID}"]`)
+      // Point at the parent of all connections container
+      parentConnectionContainer = $(`div.body div.right div.content div[content="connections"]`),
+      // Point at the connection's container
+      connectionsContainer = parentConnectionContainer.children(`div.connections-container`).children(`div.connections[workspace-id="${workspaceID}"]`)
 
     // Determine if the associated workspace is the docker/sandbox projects
     let isSandbox = workspaceID == 'workspace-sandbox',
-      // Set the suitable function to get clusters/projects based on the type of the workspace
-      moduleGetFunction = !isSandbox ? Modules.Clusters.getClusters : Modules.Docker.getProjects
+      // Set the suitable function to get connections/projects based on the type of the workspace
+      moduleGetFunction = !isSandbox ? Modules.Connections.getConnections : Modules.Docker.getProjects
 
-    let clustersCounter = 0,
-      clustersIndex = 0
+    let connectionsCounter = 0,
+      connectionsIndex = 0
 
-    // Get all clusters/projects saved in the workspace
-    moduleGetFunction(workspaceID).then((clusters) => {
-      // Clean the container if the event is `get` clusters
-      if (event == 'getClusters')
-        clustersContainer.html('')
+    // Get all connections/projects saved in the workspace
+    moduleGetFunction(workspaceID).then((connections) => {
+      // Clean the container if the event is `get` connections
+      if (event == 'getConnections')
+        connectionsContainer.html('')
 
-      // Add or remove the `empty` class based on the number of saved clusters
-      let areNoClusters = clusters.length <= 0
+      // Add or remove the `empty` class based on the number of saved connections
+      let areNoConnections = connections.length <= 0
 
-      clustersCounter = clusters.length
+      connectionsCounter = connections.length
 
       // Toggle the `empty` class
-      setTimeout(() => parentClusterContainer.toggleClass('empty', areNoClusters), areNoClusters ? 200 : 10)
+      setTimeout(() => parentConnectionContainer.toggleClass('empty', areNoConnections), areNoConnections ? 200 : 10)
 
-      handleContentInfo('clusters', workspaceElement)
+      handleContentInfo('connections', workspaceElement)
 
       // Point at the cog actions button in the UI
-      let clusterActions = parentClusterContainer.find('div.section-actions')
+      let connectionActions = parentConnectionContainer.find('div.section-actions')
 
       // If sub-buttons of the cog actions are shown then hide them
-      if (clusterActions.hasClass('show'))
-        clusterActions.children('div.main').children('button').click()
+      if (connectionActions.hasClass('show'))
+        connectionActions.children('div.main').children('button').click()
 
-      // Loop through all fetched clusters
-      clusters.forEach((cluster, currentIndex) => {
+      // Loop through all fetched connections
+      connections.forEach((connection, currentIndex) => {
         try {
-          clustersIndex = currentIndex
+          connectionsIndex = currentIndex
 
           // If the current workspace is not the docker/sandbox then skip this try-catch block
           if (!isSandbox)
             throw 0
 
           /**
-           * Set different attributes for the current cluster's object
-           * By doing this, resusing and adopting the the same code of clusters for the sandbox projects is possible without the need to do heavy edits and changes
+           * Set different attributes for the current connection's object
+           * By doing this, resusing and adopting the the same code of connections for the sandbox projects is possible without the need to do heavy edits and changes
            */
-          cluster.info = {}
-          cluster.info.id = cluster.folder
-          cluster.info.secrets = undefined
-          cluster.name = cluster.name || cluster.folder
-          cluster.host = `127.0.0.1:${cluster.ports.cassandra}`
+          connection.info = {}
+          connection.info.id = connection.folder
+          connection.info.secrets = undefined
+          connection.name = connection.name || connection.folder
+          connection.host = `127.0.0.1:${connection.ports.cassandra}`
         } catch (e) {
           try {
             errorLog(e, 'connections')
           } catch (e) {}
         }
 
-        // Define the cluster's ID
-        let clusterID = cluster.info.id,
-          // Get random IDs for the different elements of the cluster's UI element
+        // Define the connection's ID
+        let connectionID = connection.info.id,
+          // Get random IDs for the different elements of the connection's UI element
           [
             testConnectionBtnID,
             connectBtnID,
@@ -102,7 +102,7 @@
             deleteBtnID
           ] = getRandomID(15, 8),
           /**
-           * Define the variable which holds the ID for the connection test process of the cluster
+           * Define the variable which holds the ID for the connection test process of the connection
            * The value will be updated with every test connection process
            */
           testConnectionProcessID,
@@ -118,28 +118,28 @@
            * It's defined here as it's being used in different parts of the event
            */
           axonopsContentID = getRandomID(15),
-          // Flag to tell if this cluster is going to be added/appended to the UI as a new element or if it already exists, by default it's `true`
+          // Flag to tell if this connection is going to be added/appended to the UI as a new element or if it already exists, by default it's `true`
           isAppendAllowed = true,
-          // Flag to tell if an SSH tunnel is needed before connecting with Cassandra cluster/node
+          // Flag to tell if an SSH tunnel is needed before connecting with Cassandra connection/node
           isSSHTunnelNeeded = false
 
         /**
-         * Look for the cluster in the UI
+         * Look for the connection in the UI
          * If it exists then no need to append it
          */
-        if (event == 'refreshClusters')
-          isAppendAllowed = $(`div.cluster[data-id="${clusterID}"][data-workspace-id="${workspaceID}"]`).length != 0 ? false : isAppendAllowed
+        if (event == 'refreshConnections')
+          isAppendAllowed = $(`div.connection[data-id="${connectionID}"][data-workspace-id="${workspaceID}"]`).length != 0 ? false : isAppendAllowed
 
         // This variable will hold the username and password of DB and SSH in UI attributes if needed
         let secrets = ''
 
         try {
-          // If the current cluster doesn't have secrets - `username` and `password` for Apache Cassandra, and SSH `username` and `password` - then skip this try-catch block
-          if (cluster.info.secrets == undefined)
+          // If the current connection doesn't have secrets - `username` and `password` for Apache Cassandra, and SSH `username` and `password` - then skip this try-catch block
+          if (connection.info.secrets == undefined)
             throw 0
 
           // Shorten the secrets reference
-          let secretsInfo = cluster.info.secrets
+          let secretsInfo = connection.info.secrets
 
           // Check the DB authentication's username
           secrets += secretsInfo.username != undefined ? `data-username="${secretsInfo.username}" ` : ''
@@ -165,51 +165,51 @@
         let credentials = ''
 
         try {
-          // If the current cluster doesn't have any credentials to be given then skip this try-catch block
-          if (cluster.info.credentials == undefined)
+          // If the current connection doesn't have any credentials to be given then skip this try-catch block
+          if (connection.info.credentials == undefined)
             throw 0
 
           // Check the DB authentication credentials
-          credentials += cluster.info.credentials.auth != undefined ? ` data-credentials-auth="true"` : ''
+          credentials += connection.info.credentials.auth != undefined ? ` data-credentials-auth="true"` : ''
 
           // Check the SSH credentials
-          credentials += cluster.info.credentials.ssh != undefined ? ` data-credentials-ssh="true"` : ''
+          credentials += connection.info.credentials.ssh != undefined ? ` data-credentials-ssh="true"` : ''
         } catch (e) {
           try {
             errorLog(e, 'connections')
           } catch (e) {}
         }
 
-        let isSCBConnection = cluster.info.secureConnectionBundlePath != undefined
+        let isSCBConnection = connection.info.secureConnectionBundlePath != undefined
 
         /**
-         * Define the footer of the cluster's UI based on the workspace's type
-         * It can be a cluster or a docker/sandbox project
+         * Define the footer of the connection's UI based on the workspace's type
+         * It can be a connection or a docker/sandbox project
          */
         let footerStructure = {
           nonSandbox: `
              <div class="footer">
                <div class="button">
-                 <button type="button" class="btn btn-secondary btn-dark btn-sm test-connection" reference-id="${clusterID}" button-id="${testConnectionBtnID}">
+                 <button type="button" class="btn btn-secondary btn-dark btn-sm test-connection" reference-id="${connectionID}" button-id="${testConnectionBtnID}">
                    <span mulang="test connection"></span>
                  </button>
-                 <button type="button" class="btn btn-primary btn-dark btn-sm connect changed-bg changed-color" reference-id="${clusterID}" button-id="${connectBtnID}" disabled hidden>
+                 <button type="button" class="btn btn-primary btn-dark btn-sm connect changed-bg changed-color" reference-id="${connectionID}" button-id="${connectBtnID}" disabled hidden>
                    <span mulang="connect"></span>
                  </button>
-                 <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" reference-id="${clusterID}" button-id="${connectAltBtnID}">
+                 <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" reference-id="${connectionID}" button-id="${connectAltBtnID}">
                    <span mulang="connect"></span>
                  </button>
                </div>
                <div class="actions actions-bg">
-                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the connection folder"
+                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${connectionID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the connection folder"
                    data-mulang="open the connection folder" capitalize-first>
                    <ion-icon name="folder-open"></ion-icon>
                  </div>
-                 <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${settingsBtnID}" data-mdb-ripple-color="dark" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="connection settings" capitalize-first
+                 <div class="action btn btn-tertiary" reference-id="${connectionID}" button-id="${settingsBtnID}" data-mdb-ripple-color="dark" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="connection settings" capitalize-first
                    data-title="Connection settings">
                    <ion-icon name="cog"></ion-icon>
                  </div>
-                 <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete connection" data-mulang="delete connection"
+                 <div class="action btn btn-tertiary" reference-id="${connectionID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete connection" data-mulang="delete connection"
                    capitalize-first>
                    <ion-icon name="trash"></ion-icon>
                  </div>
@@ -218,17 +218,17 @@
           sandbox: `
              <div class="footer">
                <div class="button">
-                 <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" reference-id="${clusterID}" button-id="${startProjectBtnID}">
+                 <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" reference-id="${connectionID}" button-id="${startProjectBtnID}">
                    <span mulang="start"></span>
                  </button>
-                 <button type="button" class="btn btn-primary btn-dark btn-sm connect changed-bg changed-color" reference-id="${clusterID}" button-id="${connectBtnID}" hidden></button>
+                 <button type="button" class="btn btn-primary btn-dark btn-sm connect changed-bg changed-color" reference-id="${connectionID}" button-id="${connectBtnID}" hidden></button>
                </div>
                <div class="actions">
-                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${clusterID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the local cluster folder"
+                 <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${connectionID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the local cluster folder"
                    data-mulang="open the local cluster folder" capitalize-first>
                    <ion-icon name="folder-open"></ion-icon>
                  </div>
-                 <div class="action btn btn-tertiary" reference-id="${clusterID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete local cluster"
+                 <div class="action btn btn-tertiary" reference-id="${connectionID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete local cluster"
                    data-mulang="delete local cluster" capitalize-first>
                    <ion-icon name="trash"></ion-icon>
                  </div>
@@ -245,7 +245,7 @@
           managementTool = ''
 
         try {
-          // If the current cluster is not a docker/sandbox project then skip this try-catch block
+          // If the current connection is not a docker/sandbox project then skip this try-catch block
           if (!isSandbox)
             throw 0
 
@@ -255,7 +255,7 @@
                <div class="title"><span mulang="nodes" capitalize></span>
                  <ion-icon name="right-arrow-filled"></ion-icon>
                </div>
-               <div class="text">${cluster.nodes}</div>
+               <div class="text">${connection.nodes}</div>
                <div class="_placeholder" hidden></div>
              </div>`
 
@@ -264,7 +264,7 @@
                <div class="title">AxonOps</span>
                  <ion-icon name="right-arrow-filled"></ion-icon>
                </div>
-               <div class="text"><ion-icon class="axonops-status ${cluster.axonops}" name="${cluster.axonops == true ? 'check' : 'close'}"></ion-icon></div>
+               <div class="text"><ion-icon class="axonops-status ${connection.axonops}" name="${connection.axonops == true ? 'check' : 'close'}"></ion-icon></div>
                <div class="_placeholder" hidden></div>
              </div>`
 
@@ -286,27 +286,27 @@
 
         try {
           if (isSCBConnection)
-            scbFilePath = `data-scb-path="${cluster.info.secureConnectionBundlePath}"`
+            scbFilePath = `data-scb-path="${connection.info.secureConnectionBundlePath}"`
         } catch (e) {}
 
-        // Cluster UI element structure
+        // Connection UI element structure
         let element = `
-               <div class="cluster" data-name="${cluster.name}" data-folder="${cluster.folder}" data-id="${clusterID}" data-workspace-id="${workspaceID}" data-host="${cluster.host}" data-datacenter="${cluster.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-axonops-installed="${cluster.axonops || 'unknown'}" data-workarea="false" ${secrets} ${credentials} ${scbFilePath}>
+               <div class="connection" data-name="${connection.name}" data-folder="${connection.folder}" data-id="${connectionID}" data-workspace-id="${workspaceID}" data-host="${connection.host}" data-datacenter="${connection.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-axonops-installed="${connection.axonops || 'unknown'}" data-workarea="false" ${secrets} ${credentials} ${scbFilePath}>
                  <div class="header">
-                   <div class="title cluster-name">${cluster.name}</div>
-                   <div class="cluster-info" ${isSCBConnection ? 'style="flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; align-items: flex-start;"' : ''}>
+                   <div class="title connection-name">${connection.name}</div>
+                   <div class="connection-info" ${isSCBConnection ? 'style="flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; align-items: flex-start;"' : ''}>
                      <div class="info" info="host" ${isSCBConnection ? 'hidden' : ''}>
                        <div class="title"><span mulang="host" capitalize></span>
                          <ion-icon name="right-arrow-filled"></ion-icon>
                        </div>
-                       <div class="text">${cluster.host}</div>
+                       <div class="text">${connection.host}</div>
                        <div class="_placeholder" hidden></div>
                      </div>
                      <div class="info" info="cassandra">
                        <div class="title">cassandra
                          <ion-icon name="right-arrow-filled"></ion-icon>
                        </div>
-                       <div class="text">${isSandbox ? 'v' + cluster.cassandraVersion : ''}</div>
+                       <div class="text">${isSandbox ? 'v' + connection.cassandraVersion : ''}</div>
                        <div class="_placeholder" ${isSandbox ? 'hidden' : '' }></div>
                      </div>
                      <div class="info" info="data-center" ${isSandbox ? 'hidden' : ''}>
@@ -330,7 +330,7 @@
                      <l-pinwheel class="ldr change-color" size="60" stroke="4" speed="0.6" color="${getAttributes(workspaceElement, 'data-color')}"></l-pinwheel>
                    </div>
                    <div class="terminate-process">
-                     <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" reference-id="${clusterID}" button-id="${terminateProcessBtnID}" data-tippy="tooltip" data-mdb-placement="right" data-title="Terminate the process" data-mulang="terminate the process"
+                     <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" reference-id="${connectionID}" button-id="${terminateProcessBtnID}" data-tippy="tooltip" data-mdb-placement="right" data-title="Terminate the process" data-mulang="terminate the process"
                        capitalize-first>
                        <ion-icon name="close"></ion-icon>
                      </div>
@@ -339,12 +339,12 @@
                </div>`
 
         try {
-          // If the current cluster won't be appended then skip this try-catch block
+          // If the current connection won't be appended then skip this try-catch block
           if (!isAppendAllowed)
             throw 0
 
-          // Append the cluster to the associated container
-          clustersContainer.append($(element).show(function() {
+          // Append the connection to the associated container
+          connectionsContainer.append($(element).show(function() {
             // Apply different actions once the UI element is created
             {
               // Fade in the element based on the index
@@ -357,16 +357,16 @@
               setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
             }
 
-            // Point at the cluster's UI element
-            let clusterElement = $(this)
+            // Point at the connection's UI element
+            let connectionElement = $(this)
 
             // Handle the `click` event for actions buttons
             setTimeout(() => {
               // Clicks the `TEST CONNECTION` button
               $(`button[button-id="${testConnectionBtnID}"]`).click(function(_, clickConnectBtn = false) {
-                // Determine if the app is already connected with that cluster, and if it has an active work area
-                let [connected, hasWorkarea] = getAttributes(clusterElement, ['data-connected', 'data-workarea']),
-                  // Whether or not the current process to be executed is disconnecting with the cluster
+                // Determine if the app is already connected with that connection, and if it has an active work area
+                let [connected, hasWorkarea] = getAttributes(connectionElement, ['data-connected', 'data-workarea']),
+                  // Whether or not the current process to be executed is disconnecting with the connection
                   isProcessDisconnect = $(this).find('span[mulang]').attr('mulang') == 'disconnect'
 
                 // Get a random ID for this connection test process
@@ -376,38 +376,38 @@
                 sshTunnelCreationRequestID = getRandomID(30)
 
                 // Set the flag's value
-                isSSHTunnelNeeded = clusterElement.getAllAttributes('data-ssh')
+                isSSHTunnelNeeded = connectionElement.getAllAttributes('data-ssh')
 
                 // Add log for this request
                 try {
-                  addLog(`Request to test the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                  addLog(`Request to test the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
                 } catch (e) {}
 
-                // If the cluster has an active work area and the process to be executed is not disconnecting with the cluster then stop the process and show feedback to the user
+                // If the connection has an active work area and the process to be executed is not disconnecting with the connection then stop the process and show feedback to the user
                 if (hasWorkarea == 'true' && !isProcessDisconnect)
-                  return showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to test it', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
+                  return showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to test it', [getAttributes(connectionElement, 'data-name')])) + '.', 'warning')
 
-                // Handle if the process is disconnecting with the cluster
+                // Handle if the process is disconnecting with the connection
                 if (isProcessDisconnect)
-                  return $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.cluster-actions div.action[action="close"]').find('div.btn').trigger('click', false)
+                  return $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${connectionID}"]`).find('div.connection-actions div.action[action="close"]').find('div.btn').trigger('click', false)
 
-                // Check if the cluster needs credentials to be provided before test the connection with it
+                // Check if the connection needs credentials to be provided before test the connection with it
                 try {
                   // Get attributes related to credentials requirements
-                  let [credentialsAuth, credentialsSSH] = getAttributes(clusterElement, ['data-credentials-auth', 'data-credentials-ssh']),
+                  let [credentialsAuth, credentialsSSH] = getAttributes(connectionElement, ['data-credentials-auth', 'data-credentials-ssh']),
                     // Point at the credentials dialog
-                    clusterCredentialsDialog = $('div.modal#clusterCredentials')
+                    connectionCredentialsDialog = $('div.modal#connectionCredentials')
 
                   // If both attributes are not defined or the user already has provided required credentials then skip this try-catch block
-                  if (([credentialsAuth, credentialsSSH]).every((credential) => credential == undefined) || getAttributes(clusterElement, 'data-got-credentials') == 'true') {
-                    clusterElement.removeAttr('data-got-credentials')
+                  if (([credentialsAuth, credentialsSSH]).every((credential) => credential == undefined) || getAttributes(connectionElement, 'data-got-credentials') == 'true') {
+                    connectionElement.removeAttr('data-got-credentials')
                     throw 0
                   }
 
                   // By default, the credentials requirements process hasn't been passed yet
                   let pass = false,
                     // Get all attributes that hold the values of different secrets/credentials
-                    allSecrets = getAttributes(clusterElement, ['data-username', 'data-password', 'data-ssh-username', 'data-ssh-password', 'data-ssh-passphrase'])
+                    allSecrets = getAttributes(connectionElement, ['data-username', 'data-password', 'data-ssh-username', 'data-ssh-password', 'data-ssh-passphrase'])
 
                   /**
                    * Multiple conditions to check
@@ -435,23 +435,23 @@
                       throw 0
 
                     // Add `one-only` class and either one of the two classes `ssh` and `auth`
-                    clusterCredentialsDialog.addClass(`one-only ${credentialsAuth == undefined ? 'ssh' : 'auth'}`)
+                    connectionCredentialsDialog.addClass(`one-only ${credentialsAuth == undefined ? 'ssh' : 'auth'}`)
                   } catch (e) {
                     // Both credentials are needed so remove all class related to the need of one of them only
-                    clusterCredentialsDialog.removeClass(`one-only ssh auth`)
+                    connectionCredentialsDialog.removeClass(`one-only ssh auth`)
                   }
 
-                  // Update the credentials title by adding the cluster's name
-                  clusterCredentialsDialog.find('h5.modal-title cluster-name').text(getAttributes(clusterElement, 'data-name'))
+                  // Update the credentials title by adding the connection's name
+                  connectionCredentialsDialog.find('h5.modal-title connection-name').text(getAttributes(connectionElement, 'data-name'))
 
                   // Update the credentials title by adding the type of credentials if only one of them needed
-                  clusterCredentialsDialog.find('h5.modal-title credentials-info').text(!bothcredentials ? (credentialsAuth != undefined ? 'DB ' + I18next.capitalize(I18next.t('authentication')) : 'SSH') : '')
+                  connectionCredentialsDialog.find('h5.modal-title credentials-info').text(!bothcredentials ? (credentialsAuth != undefined ? 'DB ' + I18next.capitalize(I18next.t('authentication')) : 'SSH') : '')
 
-                  // Update the credentials' dialog attributes by adding one which holds the cluster's ID
-                  clusterCredentialsDialog.attr('data-cluster-id', clusterID)
+                  // Update the credentials' dialog attributes by adding one which holds the connection's ID
+                  connectionCredentialsDialog.attr('data-connection-id', connectionID)
 
                   // Show the credentials' dialog
-                  $('button#showClusterCredentialsDialog').click()
+                  $('button#showConnectionCredentialsDialog').click()
 
                   // Skip the upcoming code
                   return
@@ -461,44 +461,44 @@
                 $(`button[button-id="${connectBtnID}"]`).attr('disabled', '')
 
                 try {
-                  // If the app is not already connected with the cluster then skip this try-catch block
+                  // If the app is not already connected with the connection then skip this try-catch block
                   if (connected != 'true')
                     throw 0
 
                   // Hide the Cassandra's version and the data center's name
-                  clusterElement.find('div[info="cassandra"], div[info="data-center"]').each(function() {
+                  connectionElement.find('div[info="cassandra"], div[info="data-center"]').each(function() {
                     $(this).children('div.text').text('')
                     $(this).children('div._placeholder').fadeIn('fast').removeAttr('hidden')
                   })
 
                   // Remove the connection status
-                  clusterElement.attr('data-connected', 'false')
+                  connectionElement.attr('data-connected', 'false')
 
                   // Attempt to close SSH tunnel if it exists
                   try {
-                    IPCRenderer.send('ssh-tunnel:close', clusterID)
+                    IPCRenderer.send('ssh-tunnel:close', connectionID)
                   } catch (e) {}
                 } catch (e) {}
 
-                // Reset the status of the connection with the cluster
-                clusterElement.children('div.status')
+                // Reset the status of the connection with the connection
+                connectionElement.children('div.status')
                   .removeClass('success failure')
                   .addClass('show')
 
-                // The app is now testing the connection with the cluster
-                clusterElement.addClass('test-connection')
+                // The app is now testing the connection with the connection
+                connectionElement.addClass('test-connection')
 
                 // Enable the process termination button
                 $(`div.btn[button-id="${terminateProcessBtnID}"]`).removeClass('disabled')
 
                 // Show the termination process' button
-                setTimeout(() => clusterElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+                setTimeout(() => connectionElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
                 // Disable the button
                 $(this).attr('disabled', 'disabled')
 
-                // Test the connection with the cluster; by calling the inner test connection function at the very end of this code block
-                testConnection(clusterElement, testConnectionProcessID, sshTunnelCreationRequestID, clickConnectBtn)
+                // Test the connection with the connection; by calling the inner test connection function at the very end of this code block
+                testConnection(connectionElement, testConnectionProcessID, sshTunnelCreationRequestID, clickConnectBtn)
               })
 
               /**
@@ -512,97 +512,97 @@
               $(`button[button-id="${connectBtnID}"]`).on('click', function(_, restart = false) {
                 // Get the app's config
                 Modules.Config.getConfig((config) => {
-                  // Get the maximum allowed number of running clusters at a time
-                  let maximumRunningClusters = parseInt(config.get('limit', 'cqlsh')),
-                    // Get the number of currently running clusters
-                    numRunningClusters = $(`div[content="workarea"] div.workarea[cluster-id*="cluster-"]`).length,
+                  // Get the maximum allowed number of running connections at a time
+                  let maximumRunningConnections = parseInt(config.get('limit', 'cqlsh')),
+                    // Get the number of currently running connections
+                    numRunningConnections = $(`div[content="workarea"] div.workarea[connection-id*="connection-"], div[content="workarea"] div.workarea[connection-id*="cluster-"]`).length,
                     // Get the number of currently attempt to activate connections
-                    numAttemptingClusters = $(`div[content="clusters"] div.clusters-container div.cluster[data-id*="cluster-"].test-connection`).length,
+                    numAttemptingConnections = $(`div[content="connections"] div.connections-container div.connection[data-id*="connection-"].test-connection`).length,
                     isBasicCQLSHEnabled = config.get('features', 'basicCQLSH') == 'true'
 
                   // Make sure the maximum number is valid, or adopt the default value `10`
-                  maximumRunningClusters = isNaN(maximumRunningClusters) || maximumRunningClusters < 1 ? 10 : maximumRunningClusters
+                  maximumRunningConnections = isNaN(maximumRunningConnections) || maximumRunningConnections < 1 ? 10 : maximumRunningConnections
 
                   // Add log for this request
                   try {
-                    addLog(`Request to connect '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                    addLog(`Request to connect '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
                   } catch (e) {}
 
-                  // If the currently running clusters are more than or equal to the maximum allowed number and this is not the sandbox workspace then end the process and show feedback to the user
-                  if (([numRunningClusters, numAttemptingClusters]).some((num) => num >= maximumRunningClusters) && !isSandbox)
-                    return showToast(I18next.capitalize(I18next.t('activate connection')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of connectinos which allowed to be active simultaneously is [b]$data[/b]', [maximumRunningClusters])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limit can be changed from the app\'s settings in the limits section')) + `.`, 'failure')
+                  // If the currently running connections are more than or equal to the maximum allowed number and this is not the sandbox workspace then end the process and show feedback to the user
+                  if (([numRunningConnections, numAttemptingConnections]).some((num) => num >= maximumRunningConnections) && !isSandbox)
+                    return showToast(I18next.capitalize(I18next.t('activate connection')), I18next.capitalizeFirstLetter(I18next.replaceData('the maximum number of connectinos which allowed to be active simultaneously is [b]$data[/b]', [maximumRunningConnections])) + `.<br><br>` + I18next.capitalizeFirstLetter(I18next.t('this limit can be changed from the app\'s settings in the limits section')) + `.`, 'failure')
 
                   // Point at the work areas content's container
                   let content = $('div.body div.right div.content div[content="workarea"]'),
-                    // If this variable is `true` then show the cluster's work area and skip the creation of a new one
+                    // If this variable is `true` then show the connection's work area and skip the creation of a new one
                     skipCreationWorkarea = false
 
                   // Hide all work areas
                   content.children('div.workarea').hide()
 
-                  // Point at the cluster's work area
-                  let contentCluster = content.children(`div.workarea[cluster-id="${clusterID}"]`)
+                  // Point at the connection's work area
+                  let contentConnection = content.children(`div.workarea[connection-id="${connectionID}"]`)
 
                   $('div.body div.right').addClass('hide-content-info')
 
-                  clusterElement.children('div.status').removeClass('failure').addClass('success')
+                  connectionElement.children('div.status').removeClass('failure').addClass('success')
 
                   try {
                     // If the work area does not exist then skip this try-catch block
-                    if (contentCluster.length <= 0)
+                    if (contentConnection.length <= 0)
                       throw 0
 
                     // Skip the creation part and show the work area
                     skipCreationWorkarea = true
 
                     // Show the work area
-                    contentCluster.show()
+                    contentConnection.show()
 
-                    // Deactivate all switchers and activate the current cluster's switcher
-                    setTimeout(() => $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active').filter(`[_cluster-id="${clusterID}"]`).attr('active', ''), 50)
+                    // Deactivate all switchers and activate the current connection's switcher
+                    setTimeout(() => $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active').filter(`[_connection-id="${connectionID}"]`).attr('active', ''), 50)
 
                     try {
-                      // Point at the target cluster's switcher
-                      let targetCluster = $(`div.switch-clusters div.cluster[_cluster-id="${clusterID}"]`)
+                      // Point at the target connection's switcher
+                      let targetConnection = $(`div.switch-connections div.connection[_connection-id="${connectionID}"]`)
 
-                      // If the switcher of the cluster is visible then skip this try-catch block
-                      if (targetCluster.is(':visible'))
+                      // If the switcher of the connection is visible then skip this try-catch block
+                      if (targetConnection.is(':visible'))
                         throw 0
 
-                      // Make sure to reposition the switchers by making the current cluster's switcher the first active one
-                      targetCluster.insertAfter($(`div.switch-clusters div.`))
-                      targetCluster.show()
-                      $(`div.switch-clusters div.cluster`).filter(':visible').last().hide()
+                      // Make sure to reposition the switchers by making the current connection's switcher the first active one
+                      targetConnection.insertAfter($(`div.switch-connections div.`))
+                      targetConnection.show()
+                      $(`div.switch-connections div.connection`).filter(':visible').last().hide()
 
-                      // Handle the margin of the first cluster
-                      setTimeout(() => handleClusterSwitcherMargin())
+                      // Handle the margin of the first connection
+                      setTimeout(() => handleConnectionSwitcherMargin())
                     } catch (e) {}
 
                     try {
-                      // If the current shown work area is the cluster's one then skip this try-catch block
+                      // If the current shown work area is the connection's one then skip this try-catch block
                       if (!content.is(':visible'))
                         throw 0
 
-                      // Update active cluster's ID
-                      activeClusterID = clusterID
+                      // Update active connection's ID
+                      activeConnectionID = connectionID
 
                       // Skip the upcoming code
                       return
                     } catch (e) {}
                   } catch (e) {}
 
-                  // Handle when connection is lost with the cluster
+                  // Handle when connection is lost with the connection
                   try {
                     // If the work area exists or this is the sandbox/project workspace then skip this try-catch block
-                    if (contentCluster.length > 0 || isSandbox)
+                    if (contentConnection.length > 0 || isSandbox)
                       throw 0
 
                     // If the `data-connected` attribute is anything rather than `false` then skip this try-catch block
-                    if (getAttributes(clusterElement, 'data-connected') != 'false')
+                    if (getAttributes(connectionElement, 'data-connected') != 'false')
                       throw 0
 
                     // Show feedback to the user
-                    showToast(I18next.capitalize(I18next.t('unable to create workarea')), I18next.capitalizeFirstLetter(I18next.replaceData('connection [b]$data[/b] seems not pre-established or has been lost. please attempt to test that connection', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                    showToast(I18next.capitalize(I18next.t('unable to create workarea')), I18next.capitalizeFirstLetter(I18next.replaceData('connection [b]$data[/b] seems not pre-established or has been lost. please attempt to test that connection', [getAttributes(connectionElement, 'data-name')])) + '.', 'failure')
 
                     // Skip the upcoming code
                     return
@@ -613,8 +613,8 @@
                     if (restart)
                       throw 0
 
-                    // Update active cluster's ID
-                    activeClusterID = clusterID
+                    // Update active connection's ID
+                    activeConnectionID = connectionID
 
                     // Fade out all content except the work area
                     $('div.body div.right div.content div[content]:not([content="workarea"])').fadeOut(200)
@@ -627,9 +627,9 @@
                   if (skipCreationWorkarea)
                     return
 
-                  // Get random IDs for different elements in the cluster's work area
+                  // Get random IDs for different elements in the connection's work area
                   let [
-                    // The cluster's metadata functions, and their related elements
+                    // The connection's metadata functions, and their related elements
                     copyMetadataBtnID,
                     refreshMetadataBtnID,
                     searchInMetadataBtnID,
@@ -689,7 +689,7 @@
                       throw 0
 
                     // Define the content of the AxonOps tab to be added
-                    if (getAttributes(clusterElement, 'data-axonops-installed') === 'true') {
+                    if (getAttributes(connectionElement, 'data-axonops-installed') === 'true') {
                       axonopsTab = `
                            <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title="AxonOps">
                              <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${axonopsContentID}" role="tab" aria-selected="true">
@@ -713,17 +713,17 @@
                          </li>`
                   } catch (e) {}
 
-                  // Cluster work area's UI element structure
+                  // Connection work area's UI element structure
                   let element = `
-                           <div class="workarea" cluster-id="${clusterID}" workarea-id="${workareaID}">
+                           <div class="workarea" connection-id="${connectionID}" workarea-id="${workareaID}">
                              <div class="sub-sides left">
-                               <div class="cluster-info">
+                               <div class="connection-info">
                                  <div class="name-ssl ${isSandbox ? 'is-sandbox' : ''}">
-                                   <div class="name no-select-reverse">${getAttributes(clusterElement, 'data-name')}</div>
+                                   <div class="name no-select-reverse">${getAttributes(connectionElement, 'data-name')}</div>
                                    <div class="status" data-tippy="tooltip" data-mdb-placement="left" data-mulang="analyzing status" capitalize-first data-title="Analyzing status" ${isSCBConnection ? 'hidden' : ''}>
                                      <ion-icon name="unknown"></ion-icon>
                                    </div>
-                                   <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps in browser" capitalize-first data-title="Open AxonOps in browser" ${getAttributes(clusterElement, 'data-axonops-installed') !== 'true' ? 'hidden' : ''}>
+                                   <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps in browser" capitalize-first data-title="Open AxonOps in browser" ${getAttributes(connectionElement, 'data-axonops-installed') !== 'true' ? 'hidden' : ''}>
                                      <ion-icon name="globe"></ion-icon>
                                    </div>
                                    <div class="connection-status">
@@ -735,23 +735,23 @@
                                      <div class="title">host
                                        <ion-icon name="right-arrow-filled"></ion-icon>
                                      </div>
-                                     <div class="text no-select-reverse">${getAttributes(clusterElement, 'data-host')}</div>
+                                     <div class="text no-select-reverse">${getAttributes(connectionElement, 'data-host')}</div>
                                    </div>
                                    <div class="info" info="cassandra">
                                      <div class="title">cassandra
                                        <ion-icon name="right-arrow-filled"></ion-icon>
                                      </div>
-                                     <div class="text no-select-reverse">v${getAttributes(clusterElement, 'data-cassandra-version')}</div>
+                                     <div class="text no-select-reverse">v${getAttributes(connectionElement, 'data-cassandra-version')}</div>
                                    </div>
                                    <div class="info" info="data-center">
                                      <div class="title">data center
                                        <ion-icon name="right-arrow-filled"></ion-icon>
                                      </div>
-                                     <div class="text no-select-reverse">${getAttributes(clusterElement, 'data-datacenter')}</div>
+                                     <div class="text no-select-reverse">${getAttributes(connectionElement, 'data-datacenter')}</div>
                                    </div>
                                  </div>
                                </div>
-                               <div class="cluster-metadata loading" ${isSCBConnection ? 'style="height: calc(100% - 196px + 32px);"' : ''}>
+                               <div class="connection-metadata loading" ${isSCBConnection ? 'style="height: calc(100% - 196px + 32px);"' : ''}>
                                  <div class="search-in-metadata">
                                    <div class="form-outline form-white margin-bottom">
                                      <input type="text" class="form-control form-icon-trailing form-control-sm">
@@ -801,7 +801,7 @@
                              </div>
                              <div class="sub-sides right">
                                <div class="header">
-                                 <div class="cluster-tabs">
+                                 <div class="connection-tabs">
                                    <ul class="nav nav-tabs nav-justified mb-3" id="ex-with-icons" role="tablist">
                                      <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL console" capitalize data-title="CQL console">
                                        <a class="nav-link btn btn-tertiary active" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlshSessionContentID}" role="tab" aria-selected="true">
@@ -847,7 +847,7 @@
                                      ${axonopsTab}
                                    </ul>
                                  </div>
-                                 <div class="cluster-actions colored-box-shadow" style="width:40px">
+                                 <div class="connection-actions colored-box-shadow" style="width:40px">
                                    <div class="action" action="restart" hidden>
                                      <div class="btn-container">
                                        <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Restart the work area" data-mulang="restart the work area" capitalize-first data-id="${restartWorkareaBtnID}">
@@ -1113,10 +1113,10 @@
                              </div>
                            </div>`
 
-                  // Append the cluster's work area
+                  // Append the connection's work area
                   content.append($(element).show(function() {
                     // Update the `work-area` attribute
-                    clusterElement.attr('data-workarea', 'true')
+                    connectionElement.attr('data-workarea', 'true')
 
                     // Apply different actions once the UI element is created
                     {
@@ -1146,13 +1146,13 @@
                       })
 
                       // Update the SSL lockpad status - if the status is available in this stage -
-                      setTimeout(() => updateSSLLockpadStatus(clusterElement))
+                      setTimeout(() => updateSSLLockpadStatus(connectionElement))
 
                       // Apply the chosen language on the UI element after being fully loaded
                       setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
 
-                      // Update the status of the cluster in the mini cluster's list
-                      updateMiniCluster(workspaceID, clusterID)
+                      // Update the status of the connection in the mini connection's list
+                      updateMiniConnection(workspaceID, connectionID)
                     }
 
                     // Handle when typing something inside the query tracing's search input field
@@ -1554,13 +1554,13 @@
                         return
                       }
 
-                      // Request to get query tracing result by passing the cluster's and the session's IDs
-                      Modules.Clusters.getQueryTracingResult(clusterID, sessionID, (result) => {
+                      // Request to get query tracing result by passing the connection's and the session's IDs
+                      Modules.Connections.getQueryTracingResult(connectionID, sessionID, (result) => {
                         // If the `result` value is `null` then the app wasn't able to get the query tracing result
                         if (result == null)
                           return
 
-                        let dataCenters = JSON.parse(clusterElement.attr('data-datacenters'))
+                        let dataCenters = JSON.parse(connectionElement.attr('data-datacenters'))
 
                         try {
                           result = result.map((activity) => {
@@ -1984,7 +1984,7 @@
                       })
                     }
 
-                    // Call the inner function - at the very end of this code block -; to create a pty instance for that cluster
+                    // Call the inner function - at the very end of this code block -; to create a pty instance for that connection
                     requestPtyInstanceCreation({
                       cqlshSessionContentID,
                       terminalID,
@@ -2004,11 +2004,11 @@
                       isConnectionLost = false
 
                     try {
-                      IPCRenderer.removeAllListeners(`pty:data:${clusterID}`)
+                      IPCRenderer.removeAllListeners(`pty:data:${connectionID}`)
                     } catch (e) {}
 
                     // Listen to data sent from the pty instance which are fetched from the cqlsh tool
-                    IPCRenderer.on(`pty:data:${clusterID}`, (_, data) => {
+                    IPCRenderer.on(`pty:data:${connectionID}`, (_, data) => {
                       // If the session is paused then nothing would be printed
                       if (isSessionPaused || ['print metadata', 'print cql_desc', 'check connection'].some((command) => `${data.output}`.includes(command)))
                         return
@@ -2028,7 +2028,7 @@
 
                         isConnectionLost = true
 
-                        workareaElement.find('div.sub-sides.left div.cluster-metadata.loading div.loading').find('lottie-player')[0].stop()
+                        workareaElement.find('div.sub-sides.left div.connection-metadata.loading div.loading').find('lottie-player')[0].stop()
 
                         workareaElement.css({
                           'transition': 'filter 0.5s ease-in-out',
@@ -2036,7 +2036,7 @@
                         })
 
 
-                        showToast(I18next.t('activate connection'), I18next.capitalizeFirstLetter(I18next.replaceData(`failed to finalize the creation of the work area as the connection [b]$data[/b] has been lost. Consider to close this workarea and test the connection before trying again`, [getAttributes(clusterElement, 'data-name')]) + '.'), 'failure')
+                        showToast(I18next.t('activate connection'), I18next.capitalizeFirstLetter(I18next.replaceData(`failed to finalize the creation of the work area as the connection [b]$data[/b] has been lost. Consider to close this workarea and test the connection before trying again`, [getAttributes(connectionElement, 'data-name')]) + '.'), 'failure')
 
                         return
                       } catch (e) {}
@@ -2076,28 +2076,28 @@
 
                         // Send an `EOL` character to the pty instance
                         IPCRenderer.send('pty:command', {
-                          id: clusterID,
+                          id: connectionID,
                           cmd: ''
                         })
 
                         // Disable paging for the interactive terminal
                         setTimeout(() => {
                           IPCRenderer.send('pty:command', {
-                            id: clusterID,
+                            id: connectionID,
                             // cmd: 'PAGING OFF;EXPAND OFF;'
                             cmd: 'EXPAND OFF;'
                           })
 
                           setTimeout(() => {
                             IPCRenderer.send('pty:command', {
-                              id: clusterID,
+                              id: connectionID,
                               cmd: 'CONSISTENCY;SERIAL CONSISTENCY;',
                               blockID: getRandomID(10)
                             })
 
                             setTimeout(() => {
                               IPCRenderer.send('pty:command', {
-                                id: clusterID,
+                                id: connectionID,
                                 cmd: 'PAGING;',
                                 blockID: getRandomID(10)
                               })
@@ -2109,7 +2109,7 @@
                         workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).removeClass('loading')
 
                         // Enable all tabs and their associated sections
-                        workareaElement.find('div.cluster-tabs').find('li a').removeClass('disabled')
+                        workareaElement.find('div.connection-tabs').find('li a').removeClass('disabled')
 
                         try {
                           let metadataDiffContainer = workareaElement.find(`div.tab-pane[tab="metadata-differentiation"]#_${metadataDifferentiationContentID}`)
@@ -2166,7 +2166,7 @@
                           }
 
                           // Get the cluster's metadata
-                          Modules.Clusters.getMetadata(clusterID, (metadata) => {
+                          Modules.Connections.getMetadata(connectionID, (metadata) => {
                             try {
                               // Convert the metadata from JSON string to an object
                               try {
@@ -2208,7 +2208,7 @@
                                 // Remove the default contextmenu created by the plugin
                                 $('.vakata-context').remove()
 
-                                // If connection is lost with the cluster then no context-menu would be shown
+                                // If connection is lost with the connection then no context-menu would be shown
                                 if (isConnectionLost)
                                   return
 
@@ -2254,7 +2254,7 @@
                                 scope = `keyspace>${nodeType == 'keyspace' ? targetName : keyspaceName}${nodeType != 'keyspace' ? 'table>' + targetName : ''}`
 
                                 // If the node type is cluster then only `cluster` is needed as a scope
-                                if (nodeType == 'cluster')
+                                if (nodeType == 'cluster' || nodeType == 'keyspaces')
                                   scope = 'cluster'
 
                                 // If the node type is an index
@@ -2272,12 +2272,14 @@
                                   scope += `index>${targetName}`
                                 } catch (e) {}
 
+                                console.log(scope);
+
                                 let contextMenu = [{
                                   label: I18next.capitalize(I18next.t('get CQL description')),
                                   submenu: [{
                                       label: I18next.capitalize(I18next.t('display in the work area')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
-                                                clusterID: '${getAttributes(clusterElement, 'data-id')}',
+                                                connectionID: '${getAttributes(connectionElement, 'data-id')}',
                                                 scope: '${scope}',
                                                 tabID: '${cqlDescriptionContentID}',
                                                 nodeID: '${getAttributes(clickedNode, 'id')}'
@@ -2286,7 +2288,7 @@
                                     {
                                       label: I18next.capitalize(I18next.t('save it as a text file')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
-                                                clusterID: '${getAttributes(clusterElement, 'data-id')}',
+                                                connectionID: '${getAttributes(connectionElement, 'data-id')}',
                                                 scope: '${scope}',
                                                 tabID: '${cqlDescriptionContentID}',
                                                 nodeID: '${getAttributes(clickedNode, 'id')}',
@@ -2311,7 +2313,7 @@
                                     label: I18next.capitalize(I18next.t('create keyspace')),
                                     action: 'createKeyspace',
                                     click: `() => views.main.webContents.send('create-keyspace', {
-                                            datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                            datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
                                             keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
                                             tabID: '_${cqlshSessionContentID}',
                                             textareaID: '_${cqlshSessionStatementInputID}',
@@ -2548,7 +2550,7 @@
                                       label: I18next.capitalize(I18next.t('alter keyspace')),
                                       action: 'alterKeyspace',
                                       click: `() => views.main.webContents.send('alter-keyspace', {
-                                            datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                            datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
                                             keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
                                             keyspaceName: '${targetName}',
                                             tabID: '_${cqlshSessionContentID}',
@@ -2582,7 +2584,7 @@
                                     label: I18next.capitalize(I18next.t('create keyspace')),
                                     action: 'createKeyspace',
                                     click: `() => views.main.webContents.send('create-keyspace', {
-                                            datacenters: '${getAttributes(clusterElement, 'data-datacenters')}',
+                                            datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
                                             keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
                                             tabID: '_${cqlshSessionContentID}',
                                             textareaID: '_${cqlshSessionStatementInputID}',
@@ -2697,8 +2699,8 @@
                                   throw 0
 
                                 setTimeout(() => {
-                                  // Get the newest/latest saved snapshot for the cluster
-                                  Modules.Clusters.getNewestSnapshot(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(clusterElement, 'data-folder')), (snapshot) => {
+                                  // Get the newest/latest saved snapshot for the connection
+                                  Modules.Connections.getNewestSnapshot(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(connectionElement, 'data-folder')), (snapshot) => {
                                     // The metadata to be loaded is by default the recently fetched one
                                     let toBeLoadedMetadata = metadata
 
@@ -3249,13 +3251,13 @@
 
                                     consistencyAction.children('button').find(`b[${consistencyType == 'consistency' ? 'standard' : 'serial'}]`).text(setConsistency)
 
-                                    if (activeSessionsConsistencyLevels[activeClusterID] == undefined)
-                                      activeSessionsConsistencyLevels[activeClusterID] = {
+                                    if (activeSessionsConsistencyLevels[activeConnectionID] == undefined)
+                                      activeSessionsConsistencyLevels[activeConnectionID] = {
                                         standard: '',
                                         serial: ''
                                       }
 
-                                    activeSessionsConsistencyLevels[activeClusterID][consistencyType == 'consistency' ? 'standard' : 'serial'] = setConsistency
+                                    activeSessionsConsistencyLevels[activeConnectionID][consistencyType == 'consistency' ? 'standard' : 'serial'] = setConsistency
 
                                     isConsistencyCommand = true
                                   } catch (e) {}
@@ -3425,7 +3427,7 @@
                                           $(this).attr('disabled', '')
 
                                           IPCRenderer.send('pty:command', {
-                                            id: clusterID,
+                                            id: connectionID,
                                             cmd: '',
                                             blockID: $(this).data('blockID')
                                           })
@@ -3536,9 +3538,9 @@
                                       // Handle the download options
                                       {
                                         // Download the table as CSV
-                                        outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), clusterElement.attr('data-folder'), 'statement_block.csv')))
+                                        outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), 'statement_block.csv')))
 
-                                        // Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), clusterElement.attr('data-folder'), descriptionFileName)
+                                        // Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), descriptionFileName)
 
                                         // Download the table as PDF
                                         outputElement.find('div.option[option="pdf"]').click(() => tabulatorObject.download('pdf', 'statement_block.pdf', {
@@ -3766,7 +3768,7 @@
 
                       // Add log
                       try {
-                        addLog(`CQL console created for the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`)
+                        addLog(`CQL console created for the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`)
                       } catch (e) {}
 
                       /**
@@ -3817,11 +3819,11 @@
                           setTimeout(() => fitAddon.fit(), 1200)
 
                           try {
-                            IPCRenderer.removeAllListeners(`pty:data-basic:${clusterID}`)
+                            IPCRenderer.removeAllListeners(`pty:data-basic:${connectionID}`)
                           } catch (e) {}
 
                           // Listen to data sent from the pty instance regards the basic terminal
-                          IPCRenderer.on(`pty:data-basic:${clusterID}`, (_, data) => {
+                          IPCRenderer.on(`pty:data-basic:${connectionID}`, (_, data) => {
                             try {
                               // If the session is paused then nothing would be printed
                               if (isSessionPaused)
@@ -3864,7 +3866,7 @@
                                 throw 0
 
                               // Show feedback to the user
-                              terminalPrintMessage(terminal, 'info', `Work area for the connection ${getAttributes(clusterElement, 'data-name')} will be closed in few seconds`)
+                              terminalPrintMessage(terminal, 'info', `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`)
 
                               // Pause the print of output from the Pty instance
                               isSessionPaused = true
@@ -3873,18 +3875,18 @@
                               prefix = ''
 
                               // Click the close connection button after a while
-                              setTimeout(() => workareaElement.find('div.cluster-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
+                              setTimeout(() => workareaElement.find('div.connection-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
                             } catch (e) {}
 
                             // Send the character in realtime to the pty instance
                             IPCRenderer.send('pty:data', {
-                              id: clusterID,
+                              id: connectionID,
                               char
                             })
 
                             // Make sure both the app's UI terminal and the associated pty instance are syned in their size
                             IPCRenderer.send('pty:resize', {
-                              id: clusterID,
+                              id: connectionID,
                               cols: terminal.cols,
                               rows: terminal.rows
                             })
@@ -4181,7 +4183,7 @@
 
                               // Send it at once to the basic terminal
                               IPCRenderer.send('pty:data', {
-                                id: clusterID,
+                                id: connectionID,
                                 char: charEOL
                               })
 
@@ -4261,7 +4263,7 @@
                             throw 0
 
                           // Show it in the interactive terminal
-                          addBlock(workareaElement.find(`#_${cqlshSessionContentID}_container`), getRandomID(10), `Work area for the connection ${getAttributes(clusterElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral')
+                          addBlock(workareaElement.find(`#_${cqlshSessionContentID}_container`), getRandomID(10), `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral')
 
                           // Pause the print of output from the Pty instance
                           isSessionPaused = true
@@ -4270,7 +4272,7 @@
                           prefix = ''
 
                           // Click the close connection button after a while
-                          setTimeout(() => workareaElement.find('div.cluster-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
+                          setTimeout(() => workareaElement.find('div.connection-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
 
                           // Skip the upcoming code in the execution button
                           return
@@ -4280,13 +4282,13 @@
                           if (!(minifyText(statement).startsWith('source_')))
                             throw 0
 
-                          // Add the statement to the cluster's history space
+                          // Add the statement to the connection's history space
                           {
                             // Get current saved statements
-                            let history = Store.get(clusterID) || []
+                            let history = Store.get(connectionID) || []
 
                             /**
-                             * Maximum allowed statements to be saved are 30 for each cluster
+                             * Maximum allowed statements to be saved are 30 for each connection
                              * When this value is exceeded the oldest statement should be removed
                              */
                             if (history.length > 50)
@@ -4298,7 +4300,7 @@
                             history.unshift(statement)
 
                             // Remove any duplication
-                            Store.set(clusterID, [...new Set(history)])
+                            Store.set(connectionID, [...new Set(history)])
 
                             // Enable the history button
                             workareaElement.find('div.session-action[action="history"]').find('button.btn').attr('disabled', null)
@@ -4418,7 +4420,7 @@
 
                                 setTimeout(() => {
                                   IPCRenderer.send('pty:command', {
-                                    id: clusterID,
+                                    id: connectionID,
                                     cmd: `SOURCE '${filePath}${isExecutionTerminatedOnError ? '{KEYWORD:STOPONERROR:TRUE}' : ''}'`,
                                     blockID,
                                     isSourceCommand: true
@@ -4436,13 +4438,13 @@
                                 }))
 
                                 try {
-                                  IPCRenderer.removeAllListeners(`cql:file:execute:data:${clusterID}`)
+                                  IPCRenderer.removeAllListeners(`cql:file:execute:data:${connectionID}`)
                                 } catch (e) {}
 
                                 let ansiToHTML = new ANSIToHTML(),
                                   errorsCount = 0
 
-                                IPCRenderer.on(`cql:file:execute:data:${clusterID}`, (_, data) => {
+                                IPCRenderer.on(`cql:file:execute:data:${connectionID}`, (_, data) => {
                                   let errors = []
 
                                   try {
@@ -4552,13 +4554,13 @@
 
                         // Add the block
                         addBlock(sessionContainer, blockID, statement, (element) => {
-                          // Add the statement to the cluster's history space
+                          // Add the statement to the connection's history space
                           {
                             // Get current saved statements
-                            let history = Store.get(clusterID) || []
+                            let history = Store.get(connectionID) || []
 
                             /**
-                             * Maximum allowed statements to be saved are 30 for each cluster
+                             * Maximum allowed statements to be saved are 30 for each connection
                              * When this value is exceeded the oldest statement should be removed
                              */
                             if (history.length > 50)
@@ -4570,7 +4572,7 @@
                             history.unshift(statement)
 
                             // Remove any duplication
-                            Store.set(clusterID, [...new Set(history)])
+                            Store.set(connectionID, [...new Set(history)])
 
                             // Enable the history button
                             workareaElement.find('div.session-action[action="history"]').find('button.btn').attr('disabled', null)
@@ -4599,7 +4601,7 @@
 
                           // Send the command to the main thread to be executed
                           IPCRenderer.send('pty:command', {
-                            id: clusterID,
+                            id: connectionID,
                             cmd: statement,
                             blockID
                           })
@@ -4625,20 +4627,20 @@
                           nextPageBtn.parent().find('button[data-page="last"]').removeClass('hidden')
 
                           IPCRenderer.send('pty:command', {
-                            id: clusterID,
+                            id: connectionID,
                             cmd: '\x03',
                             blockID
                           })
                         } else {
                           if (isSourceCommand)
                             IPCRenderer.send('pty:command', {
-                              id: clusterID,
+                              id: connectionID,
                               cmd: `\r\r`,
                               blockID
                             })
 
                           IPCRenderer.send('pty:command', {
-                            id: clusterID,
+                            id: connectionID,
                             cmd: `KEYWORD:STATEMENT:IGNORE-${Math.floor(Math.random() * 999) + 1}`,
                             blockID
                           })
@@ -4901,7 +4903,7 @@
                           event.preventDefault()
 
                           // Get the saved statements
-                          let history = Store.get(clusterID) || []
+                          let history = Store.get(connectionID) || []
 
                           // If there's no saved history then simply skip this try-catch block
                           if (history.length <= 0)
@@ -5141,10 +5143,10 @@
                             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow],
                             run: function(editor) {
                               try {
-                                let workareaElement = $(editor.getDomNode()).closest('div.workarea[workarea-id][cluster-id]'),
-                                  clusterID = workareaElement.attr('cluster-id'),
+                                let workareaElement = $(editor.getDomNode()).closest('div.workarea[workarea-id][connection-id]'),
+                                  connectionID = workareaElement.attr('connection-id'),
                                   // Get the saved statements
-                                  history = Store.get(clusterID) || []
+                                  history = Store.get(connectionID) || []
 
                                 // If there's no saved history then simply skip this try-catch block
                                 if (history.length <= 0)
@@ -5185,10 +5187,10 @@
                             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.DownArrow],
                             run: function(editor) {
                               try {
-                                let workareaElement = $(editor.getDomNode()).closest('div.workarea[workarea-id][cluster-id]'),
-                                  clusterID = workareaElement.attr('cluster-id'),
+                                let workareaElement = $(editor.getDomNode()).closest('div.workarea[workarea-id][connection-id]'),
+                                  connectionID = workareaElement.attr('connection-id'),
                                   // Get the saved statements
-                                  history = Store.get(clusterID) || []
+                                  history = Store.get(connectionID) || []
 
                                 // If there's no saved history then simply skip this try-catch block
                                 if (history.length <= 0)
@@ -5336,7 +5338,7 @@
                     }
                     // End of hanlding the interactive terminal
 
-                    // Handle the bash session only if the cluster is a sandbox project
+                    // Handle the bash session only if the connection is a sandbox project
                     try {
                       if (!isSandbox)
                         throw 0
@@ -5357,7 +5359,7 @@
 
                         // Add log
                         try {
-                          addLog(`Created a bash session for local cluster ${getAttributes(clusterElement, ['data-id'])}`)
+                          addLog(`Created a bash session for local cluster ${getAttributes(connectionElement, ['data-id'])}`)
                         } catch (e) {}
 
                         /**
@@ -5405,9 +5407,9 @@
 
                           // Send a request to create a pty instance
                           setTimeout(() => IPCRenderer.send('pty:create:bash-session', {
-                            id: `${clusterID}-bash-${sessionID}`,
-                            projectID: `cassandra_${clusterID}`,
-                            path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters', clusterID),
+                            id: `${connectionID}-bash-${sessionID}`,
+                            projectID: `cassandra_${connectionID}`,
+                            path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters', connectionID),
                             dockerComposeBinary: Modules.Docker.getDockerComposeBinary()
                           }), 500)
 
@@ -5419,7 +5421,7 @@
                           let regex = new RegExp('root.+\:\/\#', 'gm')
 
                           // Remove all previous listeners to the channel between the main and renderer threads
-                          IPCRenderer.removeAllListeners(`pty:${clusterID}-bash-${sessionID}:data:bash-session`)
+                          IPCRenderer.removeAllListeners(`pty:${connectionID}-bash-${sessionID}:data:bash-session`)
 
                           /**
                            * Get the terminal's active buffer
@@ -5428,7 +5430,7 @@
                           let activeBuffer = terminalBash.buffer.active
 
                           // Listen to data sent from the pty instance
-                          IPCRenderer.on(`pty:${clusterID}-bash-${sessionID}:data:bash-session`, (_, data) => {
+                          IPCRenderer.on(`pty:${connectionID}-bash-${sessionID}:data:bash-session`, (_, data) => {
                             // Update the printing status if the regex execution has returned a positive result
                             if (regex.exec(minifyText(data)) != null && !printData)
                               printData = true
@@ -5451,7 +5453,7 @@
 
                               // If there's an `exit` command then suffix the entire line with `!` symbol
                               if (isExitFound && !minifiedActiveLine.endsWith('!'))
-                                IPCRenderer.send(`pty:${clusterID}-bash-${sessionID}:command:bash-session`, '!')
+                                IPCRenderer.send(`pty:${connectionID}-bash-${sessionID}:command:bash-session`, '!')
                             })
                           })
 
@@ -5472,7 +5474,7 @@
                             }
 
                             // Send the data to the pty instance
-                            IPCRenderer.send(`pty:${clusterID}-bash-${sessionID}:command:bash-session`, data)
+                            IPCRenderer.send(`pty:${connectionID}-bash-${sessionID}:command:bash-session`, data)
                           })
 
                           // Point at the terminal viewport - main container -
@@ -5534,7 +5536,7 @@
                           }
 
                           // Give feedback to the user
-                          showToast(I18next.capitalize(I18next.t('copy metadata')), I18next.capitalizeFirstLetter(I18next.replaceData('metadata for the cluster connected to by [b]$data[/b] has been copied to the clipboard, the size is $data', [getAttributes(clusterElement, 'data-name'), metadataSize])) + '.', 'success')
+                          showToast(I18next.capitalize(I18next.t('copy metadata')), I18next.capitalizeFirstLetter(I18next.replaceData('metadata for the cluster connected to by [b]$data[/b] has been copied to the clipboard, the size is $data', [getAttributes(connectionElement, 'data-name'), metadataSize])) + '.', 'success')
                         })
 
                         // Refresh the tree view
@@ -5554,7 +5556,7 @@
 
                           // Add log about this refreshing process
                           try {
-                            addLog(`Request to refresh the metadata of the cluster connected to by '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                            addLog(`Request to refresh the metadata of the cluster connected to by '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
                           } catch (e) {}
 
                           // Reset the metadata trigger
@@ -5663,7 +5665,7 @@
                           $(this).attr('disabled', '').addClass('disabled refreshing')
 
                           // Get the latest metadata
-                          Modules.Clusters.getMetadata(clusterID, (metadata) => {
+                          Modules.Connections.getMetadata(connectionID, (metadata) => {
                             try {
                               // Convert the metadata from JSON string to an object
                               metadata = JSON.parse(metadata)
@@ -5743,7 +5745,7 @@
 
                           // Add log a about the request
                           try {
-                            addLog(`Request to save a schema snapshot of the metadata of the cluster connected to by '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                            addLog(`Request to save a schema snapshot of the metadata of the cluster connected to by '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
                           } catch (e) {}
 
                           // Minimize the size of the metadata by compression
@@ -5763,9 +5765,9 @@
                           snapshotName = `${snapshotName}.json`
 
                           let workspacePath = getWorkspaceFolderPath(workspaceID),
-                            filePath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(clusterElement, 'data-folder'), 'snapshots', snapshotName)
+                            filePath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(connectionElement, 'data-folder'), 'snapshots', snapshotName)
 
-                          // Write the snapshot file in the default snapshots folder of the cluster
+                          // Write the snapshot file in the default snapshots folder of the connection
                           FS.writeFile(filePath, metadata, (err) => {
                             // Click the backdrop element; to hide the snapshot's container
                             $('div.backdrop').click()
@@ -5782,13 +5784,13 @@
                         // Load a saved snapshot
                         workareaElement.find(`span.btn[data-id="${loadSnapshotBtnID}"]`).click(function() {
                           let workspacePath = getWorkspaceFolderPath(workspaceID),
-                            folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(clusterElement, 'data-folder'))
+                            folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(connectionElement, 'data-folder'))
 
-                          // Get all saved snapshots of the cluster
-                          Modules.Clusters.getSnapshots(folderPath, (snapshots) => {
+                          // Get all saved snapshots of the connection
+                          Modules.Connections.getSnapshots(folderPath, (snapshots) => {
                             // If there are no saved snapshots then show feedback to the user and skip the upcoming code
                             if (snapshots.length <= 0)
-                              return showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('there are no saved schema snapshots related to the connection [b]$data[/b], attempt first to save one', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
+                              return showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('there are no saved schema snapshots related to the connection [b]$data[/b], attempt first to save one', [getAttributes(connectionElement, 'data-name')])) + '.', 'warning')
 
                             // Reset some elements' state in the dialog
                             try {
@@ -5848,7 +5850,7 @@
                                   try {
                                     // Add log about this loading process
                                     try {
-                                      addLog(`Request to load a schema snapshot in path '${snapshotPath}' related to the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                      addLog(`Request to load a schema snapshot in path '${snapshotPath}' related to the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
                                     } catch (e) {}
 
                                     // Read the snapshot's content
@@ -5938,7 +5940,7 @@
 
                                   // Add log about this deletion process
                                   try {
-                                    addLog(`Request to delete a snapshot in path '${snapshotPath}' related to the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                    addLog(`Request to delete a snapshot in path '${snapshotPath}' related to the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
                                   } catch (e) {}
 
                                   // If no need for confirmation then call the deletion function and skip the upcoming code
@@ -5980,7 +5982,7 @@
                         // Open the snapshots' folder
                         workareaElement.find(`span.btn[data-id="${openSnapshotsFolderBtnID}"]`).click(() => {
                           let workspacePath = getWorkspaceFolderPath(workspaceID),
-                            folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(clusterElement, 'data-folder'), 'snapshots')
+                            folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(connectionElement, 'data-folder'), 'snapshots')
 
                           Open(folderPath)
                         })
@@ -6015,25 +6017,25 @@
                         })
                       })
 
-                      // Clicks either the restart or the close buttons for the cluster's work area
+                      // Clicks either the restart or the close buttons for the connection's work area
                       setTimeout(() => {
                         workareaElement.find(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).on('click', (event, moveToWorkspace = true) => {
                           // Add log for this action
                           try {
-                            addLog(`Request to close/refresh the work area of the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                            addLog(`Request to close/refresh the work area of the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
                           } catch (e) {}
 
                           // Ask the user for credentials again if they're required
                           try {
                             // Get the related attributes
-                            let [credentialsAuth, credentialsSSH] = getAttributes(clusterElement, ['data-credentials-auth', 'data-credentials-ssh'])
+                            let [credentialsAuth, credentialsSSH] = getAttributes(connectionElement, ['data-credentials-auth', 'data-credentials-ssh'])
 
                             try {
                               // If there's no need to ask for the DB authentication credentials then skip this try-catch block
                               if (credentialsAuth == undefined)
                                 throw 0
 
-                              clusterElement.removeAttr('data-username data-password data-got-credentials')
+                              connectionElement.removeAttr('data-username data-password data-got-credentials')
                             } catch (e) {}
 
                             try {
@@ -6041,7 +6043,7 @@
                               if (credentialsSSH == undefined)
                                 throw 0
 
-                              clusterElement.removeAttr('data-ssh-username data-ssh-password data-got-credentials')
+                              connectionElement.removeAttr('data-ssh-username data-ssh-password data-got-credentials')
                             } catch (e) {}
                           } catch (e) {}
 
@@ -6051,13 +6053,13 @@
                               throw 0
 
                             // Show the test connection state - it's used here to indicate the closing process of a sandbox project -
-                            clusterElement.addClass('test-connection')
+                            connectionElement.addClass('test-connection')
 
                             // Show the termination process' button
-                            setTimeout(() => clusterElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+                            setTimeout(() => connectionElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
-                            // Disable all buttons inside the sandbox project's element in the clusters/sandbox projects container
-                            clusterElement.find('button').attr('disabled', '')
+                            // Disable all buttons inside the sandbox project's element in the connections/sandbox projects container
+                            connectionElement.find('button').attr('disabled', '')
 
                             /**
                              * Create a pinned toast to show the output of the process
@@ -6067,34 +6069,34 @@
                             let pinnedToastID = getRandomID(10)
 
                             // Show/create that toast
-                            showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+                            showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
 
                             // Attempt to close/stop the docker project
-                            Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, (feedback) => {
+                            Modules.Docker.getDockerInstance(connectionElement).stopDockerCompose(pinnedToastID, (feedback) => {
                               /**
                                * Failed to close/stop the project
                                * Show feedback to the user and skip the upcoming code
                                */
                               if (!feedback.status)
-                                return showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] were not successfully stopped', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                                return showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] were not successfully stopped', [getAttributes(connectionElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
 
                               /**
                                * Successfully closed/stopped
                                * Show feedback to the user
                                */
-                              showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] have been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                              showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] have been successfully stopped', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
 
                               // Reset the sandbox project's element in the clusters/sandbox projects container
-                              clusterElement.removeClass('test-connection enable-terminate-process')
-                              clusterElement.find('button').removeAttr('disabled')
-                              clusterElement.children('div.status').removeClass('show success')
+                              connectionElement.removeClass('test-connection enable-terminate-process')
+                              connectionElement.find('button').removeAttr('disabled')
+                              connectionElement.children('div.status').removeClass('show success')
 
                               // Hide the termination process' button after a set time out
-                              setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+                              setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
                             })
 
                             // Show the initial feedback to the user which
-                            showToast(I18next.capitalize(I18next.t('close local cluster work area')), I18next.capitalizeFirstLetter(I18next.replaceData('the work area of the local cluster [b]$data[/b] has been successfully closed, attempting to stop the local cluster containers', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                            showToast(I18next.capitalize(I18next.t('close local cluster work area')), I18next.capitalizeFirstLetter(I18next.replaceData('the work area of the local cluster [b]$data[/b] has been successfully closed, attempting to stop the local cluster containers', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
 
                             // Reset the button's text
                             setTimeout(() => $(`button[button-id="${startProjectBtnID}"]`).children('span').attr('mulang', 'start').text(I18next.t('start')))
@@ -6105,23 +6107,23 @@
                           }
 
                           // Point at the current active work aree
-                          let workarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`)
+                          let workarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${connectionID}"]`)
 
                           // Send the `quit` command to the CQLSH instance
                           IPCRenderer.send('pty:command', {
-                            id: clusterID,
+                            id: connectionID,
                             cmd: 'quit'
                           })
 
                           // Send a `close` request for the pty instance
-                          IPCRenderer.send('pty:close', clusterID)
+                          IPCRenderer.send('pty:close', connectionID)
 
                           /**
                            * Remove all listeners to the data coming from the pty instance
                            * This will prevent having multiple listeners in the background
                            */
                           try {
-                            IPCRenderer.removeAllListeners(`pty:data:${clusterID}`)
+                            IPCRenderer.removeAllListeners(`pty:data:${connectionID}`)
                           } catch (e) {}
 
                           setTimeout(() => {
@@ -6148,14 +6150,14 @@
                               // Remove the work area element
                               workarea.remove()
 
-                              // Click the button to connect with the cluster again
+                              // Click the button to connect with the connection again
                               $(`button[button-id="${connectBtnID}"]`).trigger('click', true)
 
                               // Add an AxonOps webview if needed
                               setTimeout(() => {
                                 try {
                                   // Get the chosen port and the final URL
-                                  let axonopsPort = getAttributes(clusterElement, 'data-port-axonops'),
+                                  let axonopsPort = getAttributes(connectionElement, 'data-port-axonops'),
                                     axonopsURL = `http://localhost:${axonopsPort}`
 
                                   // If the provided port is not actually a number then skip this try-catch block
@@ -6183,8 +6185,8 @@
                                     })
                                   }))
 
-                                  // Clicks the globe icon in the cluster's info
-                                  workareaElement.find(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
+                                  // Clicks the globe icon in the connection's info
+                                  workareaElement.find(`div[content="workarea"] div.workarea[connection-id="${connectionID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
                                 } catch (e) {}
                               }, 1000)
 
@@ -6193,10 +6195,10 @@
                             } catch (e) {}
 
                             // Update the work-area attribute
-                            clusterElement.attr('data-workarea', 'false')
+                            connectionElement.attr('data-workarea', 'false')
 
-                            // Update the status of the cluster in the mini cluster's list
-                            updateMiniCluster(workspaceID, clusterID, true)
+                            // Update the status of the connection in the mini connection's list
+                            updateMiniConnection(workspaceID, connectionID, true)
 
                             // Flag to tell if the workarea is actually visible
                             let isWorkareaVisible = workarea.is(':visible')
@@ -6205,10 +6207,10 @@
                             workarea.remove()
 
                             /**
-                             * Get all scripts to be executed associated with the cluster
+                             * Get all scripts to be executed associated with the connection
                              * Here only the post-connection scripts will be considered
                              */
-                            getPrePostConnectionScripts(workspaceID, clusterID).then((scripts) => {
+                            getPrePostConnectionScripts(workspaceID, connectionID).then((scripts) => {
                               // Define a variable to save the scripts' execution feedback
                               let executionFeedback = ''
 
@@ -6218,7 +6220,7 @@
                                   throw 0
 
                                 // Show feedback to the user about starting the execution process
-                                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
+                                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
 
                                 // Execute the post-connection scripts in order
                                 executeScript(0, scripts.post, (executionResult) => {
@@ -6237,19 +6239,19 @@
                                     executionFeedback = `. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`
 
                                     // Show feedback to the user
-                                    setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('post'), getAttributes(clusterElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
+                                    setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('post'), getAttributes(connectionElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
                                   } catch (e) {
                                     // Show success feedback to the user if the error is `0` code
                                     if (e == 0)
-                                      setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
+                                      setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(connectionElement, 'data-name')])) + '.', 'success'), 50)
                                   }
                                 })
                               } catch (e) {}
                             })
 
-                            // Clicks the `ENTER` button for the cluster's workspace
+                            // Clicks the `ENTER` button for the connection's workspace
                             if (moveToWorkspace || isWorkareaVisible)
-                              $(`div.workspaces-container div.workspace[data-id="${getAttributes(clusterElement, 'data-workspace-id')}"]`).find('div.button button').click()
+                              $(`div.workspaces-container div.workspace[data-id="${getAttributes(connectionElement, 'data-workspace-id')}"]`).find('div.button button').click()
 
                             setTimeout(() => {
                               try {
@@ -6270,53 +6272,53 @@
                                 $(`button[button-id="${connectAltBtnID}"]`).attr('hidden', null)
                                 $(`button[button-id="${connectBtnID}"]`).attr('hidden', '')
 
-                                // Reset the cluster's connection status
-                                clusterElement.find('div.status').removeClass('show success failure')
+                                // Reset the connection's connection status
+                                connectionElement.find('div.status').removeClass('show success failure')
                               } catch (e) {}
                             })
 
                             setTimeout(() => {
                               /**
-                               * Remove the cluster from the switcher
+                               * Remove the connection from the switcher
                                *
-                               * Point at the clusters' switchers container
+                               * Point at the connections' switchers container
                                */
-                              let clusterSwitcher = $(`div.body div.left div.content div.switch-clusters`)
+                              let connectionSwitcher = $(`div.body div.left div.content div.switch-connections`)
 
-                              // Remove the cluster's switcher
-                              $(`div.body div.left div.content div.switch-clusters div.cluster[_cluster-id="${clusterID}"]`).remove()
+                              // Remove the connection's switcher
+                              $(`div.body div.left div.content div.switch-connections div.connection[_connection-id="${connectionID}"]`).remove()
 
                               // Update the switchers' container's view
-                              updateSwitcherView('clusters')
+                              updateSwitcherView('connections')
 
                               // Handle the first switcher's margin
-                              handleClusterSwitcherMargin()
+                              handleConnectionSwitcherMargin()
 
-                              // If there are no more active clusters then hide the switcher's container
-                              if (clusterSwitcher.children('div.cluster').length <= 0)
-                                clusterSwitcher.removeClass('show')
+                              // If there are no more active connections then hide the switcher's container
+                              if (connectionSwitcher.children('div.connection').length <= 0)
+                                connectionSwitcher.removeClass('show')
                             }, 10)
                           })
                         })
                       })
                     }
 
-                    // Add the cluster's switcher to the container
+                    // Add the connection's switcher to the container
                     try {
                       // If the switcher already exists or this is a restarting process then skip this try-catch block
-                      if ($(`div.body div.left div.content div.switch-clusters div.cluster[_cluster-id="${workspaceID}"]`).length != 0 || restart)
+                      if ($(`div.body div.left div.content div.switch-connections div.connection[_connection-id="${workspaceID}"]`).length != 0 || restart)
                         throw 0
 
-                      // Point at the clusters' switchers container
-                      let clusterSwitcher = $(`div.body div.left div.content div.switch-clusters`),
+                      // Point at the connections' switchers container
+                      let connectionSwitcher = $(`div.body div.left div.content div.switch-connections`),
                         // Get the container's height
-                        switcherCurrentHeight = clusterSwitcher.outerHeight()
+                        switcherCurrentHeight = connectionSwitcher.outerHeight()
 
                       // Set the container's height; to guarantee a smooth height update animation
-                      clusterSwitcher.css('height', `${switcherCurrentHeight}px`)
+                      connectionSwitcher.css('height', `${switcherCurrentHeight}px`)
 
-                      // If there's no active clusters yet then make set the container's height to `0`
-                      if (clusterSwitcher.children('div.cluster').length <= 0)
+                      // If there's no active connections yet then make set the container's height to `0`
+                      if (connectionSwitcher.children('div.connection').length <= 0)
                         switcherCurrentHeight = 0
 
                       // Check if the upcoming switcher will cause an overflow
@@ -6333,34 +6335,34 @@
                         let hideSwitcher = newHeight >= newHeightAllowed
 
                         // Toggle the shown/hide of the navigation arrows
-                        clusterSwitcher.toggleClass('show-more', hideSwitcher)
+                        connectionSwitcher.toggleClass('show-more', hideSwitcher)
 
                         // Update the container's height
                         if (!hideSwitcher)
-                          clusterSwitcher.css('height', `${switcherCurrentHeight + 35}px`)
+                          connectionSwitcher.css('height', `${switcherCurrentHeight + 35}px`)
 
                         setTimeout(() => {
                           // Show the container
-                          clusterSwitcher.addClass('show')
+                          connectionSwitcher.addClass('show')
 
-                          // Define the cluster's host
-                          let clusterHost = getAttributes(clusterElement, 'data-host'),
-                            // Define the cluster's color
+                          // Define the connection's host
+                          let connectionHost = getAttributes(connectionElement, 'data-host'),
+                            // Define the connection's color
                             workspaceColor = getAttributes(workspaceElement, 'data-color')
 
                           // Slice it if needed
-                          clusterHost = clusterHost.length > 20 ? `${clusterHost.slice(0, 20)}...` : clusterHost
+                          connectionHost = connectionHost.length > 20 ? `${connectionHost.slice(0, 20)}...` : connectionHost
 
-                          // Cluster's switcher UI element structure
+                          // Connection's switcher UI element structure
                           let element = `
-                                   <div class="cluster" _cluster-id="${clusterID}" style="box-shadow: inset 0px 0px 0 1px ${workspaceColor || '#7c7c7c'};" active ${hideSwitcher ? "hidden" : "" }>
+                                   <div class="connection" _connection-id="${connectionID}" style="box-shadow: inset 0px 0px 0 1px ${workspaceColor || '#7c7c7c'};" active ${hideSwitcher ? "hidden" : "" }>
                                      <button type="button" style="color: ${workspaceColor};" class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="right" data-mdb-html="true"
-                                       data-title="<span class='tooltip-left'>${getAttributes(clusterElement, 'data-name')}<br>${clusterHost}</span>" data-mdb-html="true" data-mdb-customClass="tooltip-left">${extractChars(getAttributes(clusterElement, 'data-name'))}</button>
+                                       data-title="<span class='tooltip-left'>${getAttributes(connectionElement, 'data-name')}<br>${connectionHost}</span>" data-mdb-html="true" data-mdb-customClass="tooltip-left">${extractChars(getAttributes(connectionElement, 'data-name'))}</button>
                                    </div>`
 
                           // Define the suitable adding function based on whether or not there's an overflow
                           let addingFunction = {
-                            element: clusterSwitcher,
+                            element: connectionSwitcher,
                             method: 'append'
                           }
 
@@ -6371,7 +6373,7 @@
 
                             // Update the adding function's attributes
                             addingFunction = {
-                              element: clusterSwitcher.children('div.more-clusters'),
+                              element: connectionSwitcher.children('div.more-connections'),
                               method: 'after'
                             }
                           } catch (e) {
@@ -6394,7 +6396,7 @@
                               $(this).removeAttr('hidden')
 
                               // And hide the last visible switcher
-                              clusterSwitcher.children('div.cluster').filter(':visible').last().hide()
+                              connectionSwitcher.children('div.connection').filter(':visible').last().hide()
                             } catch (e) {}
 
                             setTimeout(() => {
@@ -6407,21 +6409,21 @@
                               // Deactivate all switchers
                               $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
 
-                              // Activate the cluster's switcher
+                              // Activate the connection's switcher
                               $(this).attr('active', '')
                             }, 150)
 
                             // Handle the `click` event of the switcher
                             setTimeout(() => {
                               $(this).children('button').click(function() {
-                                // Point at the cluster's workspace's UI element
+                                // Point at the connection's workspace's UI element
                                 let workspaceElement = $(`div.workspaces-container div.workspace[data-id="${workspaceID}"]`),
-                                  // Point at the cluster's UI element
-                                  clusterElement = $(`div[content="clusters"] div.clusters-container div.clusters[workspace-id="${workspaceID}"] div.cluster[data-id="${clusterID}"]`)
+                                  // Point at the connection's UI element
+                                  connectionElement = $(`div[content="connections"] div.connections-container div.connections[workspace-id="${workspaceID}"] div.connection[data-id="${connectionID}"]`)
 
                                 // Add log about this action
                                 try {
-                                  addLog(`Switch to the work area of the connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                                  addLog(`Switch to the work area of the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
                                 } catch (e) {}
 
                                 // Set the workspace's color on the UI
@@ -6430,14 +6432,14 @@
                                 // Deactivate all switchers
                                 $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
 
-                                // Activate the cluster's switcher
+                                // Activate the connection's switcher
                                 $(this).parent().attr('active', '')
 
                                 // Hide the switcher's tooltip once it's clicked
                                 tooltip.hide()
 
-                                // Click the `CONNECT` button of the cluster
-                                clusterElement.find('div.button button.connect').click()
+                                // Click the `CONNECT` button of the connection
+                                connectionElement.find('div.button button.connect').click()
 
                                 /**
                                  * Trigger the `resize` function of the window
@@ -6465,7 +6467,7 @@
                             })
 
                             // Handle the first switcher's margin
-                            setTimeout(() => handleClusterSwitcherMargin())
+                            setTimeout(() => handleConnectionSwitcherMargin())
                           }))
                         }, 200)
                       })
@@ -6525,7 +6527,7 @@
 
                             // Inside the workareas, find all tabs' titles and toggle their display based on the window width
                             workareaElement
-                              .find('div.cluster-tabs ul a.nav-link span.title')
+                              .find('div.connection-tabs ul a.nav-link span.title')
                               .toggleClass('ignore-resize', !showTabsTitles)
                               .toggle(showTabsTitles)
 
@@ -6559,7 +6561,7 @@
                     setTimeout(() => $(`button[button-id="${testConnectionBtnID}"]`).children('span').attr('mulang', 'disconnect').text(I18next.t('disconnect')), 1000)
 
                     /*
-                     * Check the connectivity with the current cluster
+                     * Check the connectivity with the current connection
                      * Define a flag to be used in wider scope - especially for the right-click context-menu of the tree view items -
                      */
                     isConnectionLost = false
@@ -6590,15 +6592,15 @@
                           } catch (e) {}
 
                           // Point at the connection status element in the UI
-                          let connectionStatusElement = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-id')}"][workarea-id="${workareaID}"]`).find('div.connection-status')
+                          let connectionStatusElement = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${getAttributes(connectionElement, 'data-id')}"][workarea-id="${workareaID}"]`).find('div.connection-status')
 
                           // If the connection status UI element is not exists then the work area has been closed and the check process should be terminated
                           if (connectionStatusElement.length <= 0 || connectionStatusElement == null)
                             return
 
-                          // Call the connectivity check function from the clusters' module
-                          Modules.Clusters.checkConnectivity(getAttributes(clusterElement, 'data-id'), (connected) => {
-                            // Show a `not-connected` class if the app is not connected with the cluster
+                          // Call the connectivity check function from the connections' module
+                          Modules.Connections.checkConnectivity(getAttributes(connectionElement, 'data-id'), (connected) => {
+                            // Show a `not-connected` class if the app is not connected with the connection
                             connectionStatusElement.removeClass('show connected not-connected').toggleClass('show not-connected', !connected)
 
                             // Perform a check process every 1 minute
@@ -6609,9 +6611,9 @@
 
                             /**
                              * Apply different effects on the work area UI
-                             * Update the cluster's element in the clusters' list
+                             * Update the connection's element in the connections' list
                              */
-                            // clusterElement.attr('data-connected', connected ? 'true' : 'false')
+                            // connectionElement.attr('data-connected', connected ? 'true' : 'false')
                             //   .children('div.status').addClass(connected ? 'success' : 'failure').removeClass(connected ? 'failure' : 'success')
 
                             // Disable selected buttons
@@ -6619,7 +6621,7 @@
 
                             try {
                               /**
-                               * In case the app is not connected with the cluster
+                               * In case the app is not connected with the connection
                                * If the app is connected then skip this try-catch block
                                */
                               if (connected)
@@ -6630,7 +6632,7 @@
                                 return
 
                               // Show feedback to the user
-                              showToast(I18next.capitalize(I18next.replaceData(`connection $data lost`, [getAttributes(clusterElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'warning')
+                              showToast(I18next.capitalize(I18next.replaceData(`connection $data lost`, [getAttributes(connectionElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional`, [getAttributes(connectionElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'warning')
 
                               // Update the associated flag in order to not show that feedback in this checking cycle
                               isLostConnectionToastShown = true
@@ -6641,7 +6643,7 @@
 
                             try {
                               /**
-                               * Reaching here means the app is connected with the cluster
+                               * Reaching here means the app is connected with the connection
                                * If the toast/feedback regards lost connection hasn't been shown already then there's no need to show the restore connection feedback, skip this try-catch block
                                */
                               if (!isLostConnectionToastShown)
@@ -6651,7 +6653,7 @@
                               isLostConnectionToastShown = false
 
                               // Show feedback to the user
-                              showToast(I18next.capitalize(I18next.replaceData(`connection $data restored`, [getAttributes(clusterElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
+                              showToast(I18next.capitalize(I18next.replaceData(`connection $data restored`, [getAttributes(connectionElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional`, [getAttributes(connectionElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
                             } catch (e) {}
                           })
                         }
@@ -6669,7 +6671,7 @@
                         // Point at the history show button
                         historyBtn = $(this).find('div.session-action[action="history"]').find('button.btn'),
                         // Get the current saved items
-                        savedHistoryItems = Store.get(clusterID) || []
+                        savedHistoryItems = Store.get(connectionID) || []
 
                       // Determine to disable/enable the history button based on the number of saved items
                       historyBtn.attr('disabled', savedHistoryItems.length > 0 ? null : 'disabled')
@@ -6680,7 +6682,7 @@
                         historyItemsContainer.html('')
 
                         // Get the saved history items
-                        savedHistoryItems = Store.get(clusterID) || []
+                        savedHistoryItems = Store.get(connectionID) || []
 
                         // Reverse the array; to make the last saved item the first one in the list
                         // savedHistoryItems.reverse()
@@ -6822,7 +6824,7 @@
                               savedHistoryItems.reverse()
 
                               // Set the manipulated array
-                              Store.set(clusterID, [...new Set(savedHistoryItems)])
+                              Store.set(connectionID, [...new Set(savedHistoryItems)])
 
                               try {
                                 if (savedHistoryItems.length > 0)
@@ -6872,7 +6874,7 @@
 
                       historyItemsClearAllButton.find('button').click(function() {
                         try {
-                          Store.set(clusterID, [])
+                          Store.set(connectionID, [])
 
                           // Click the backdrop element to close the history items' container
                           $(`div.backdrop:last`).click()
@@ -6880,7 +6882,7 @@
                           // Disable the history button
                           historyBtn.attr('disabled', 'disabled')
 
-                          showToast(I18next.capitalize(I18next.t('clear all statements')), I18next.capitalizeFirstLetter(I18next.replaceData('all history statements for connection [b]$data[/b] have been successfully cleared', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                          showToast(I18next.capitalize(I18next.t('clear all statements')), I18next.capitalizeFirstLetter(I18next.replaceData('all history statements for connection [b]$data[/b] have been successfully cleared', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
                         } catch (e) {}
                       })
                     }
@@ -6900,12 +6902,12 @@
                           allLevels.push([Modules.Consts.ConsistencyLevels.Regular[i], Modules.Consts.ConsistencyLevels.Serial[i]])
 
                         for (let levels of allLevels) {
-                          let serialElement = levels[1] == undefined ? '' : `<div class="level ${activeSessionsConsistencyLevels[activeClusterID].serial == levels[1] ? 'selected' : ''}" data-type="serial" data-level-name="${levels[1]}">${levels[1]}</div>`
+                          let serialElement = levels[1] == undefined ? '' : `<div class="level ${activeSessionsConsistencyLevels[activeConnectionID].serial == levels[1] ? 'selected' : ''}" data-type="serial" data-level-name="${levels[1]}">${levels[1]}</div>`
 
                           levelsTable.append(`
                                 <tr>
                                   <td type="standard">
-                                    <div class="level ${activeSessionsConsistencyLevels[activeClusterID].standard == levels[0] ? 'selected' : ''}" data-type="standard" data-level-name="${levels[0]}">${levels[0]}</div>
+                                    <div class="level ${activeSessionsConsistencyLevels[activeConnectionID].standard == levels[0] ? 'selected' : ''}" data-type="standard" data-level-name="${levels[0]}">${levels[0]}</div>
                                   </td>
                                   <td type="serial">
                                     ${serialElement}
@@ -6954,7 +6956,7 @@
                               standard: levelsTableParent.find(`div.level[data-type="standard"].selected`).attr('data-level-name'),
                               serial: levelsTableParent.find(`div.level[data-type="serial"].selected`).attr('data-level-name')
                             },
-                            currentLevels = activeSessionsConsistencyLevels[activeClusterID],
+                            currentLevels = activeSessionsConsistencyLevels[activeConnectionID],
                             statement = ``
 
                           if (currentLevels.standard != setLevels.standard)
@@ -7211,7 +7213,7 @@
                   }))
                 })
               })
-              // End the process when we attempt to connect with a cluster by clicking the `CONNECT` button
+              // End the process when we attempt to connect with a connection by clicking the `CONNECT` button
 
               $(`button[button-id="${connectAltBtnID}"]`).click(() => {
                 try {
@@ -7243,7 +7245,7 @@
                  */
                 $(`button[button-id="${startProjectBtnID}"]`).on('click', function(_, restart = false, instant = false) {
                   // Point at the project's work area
-                  let projectWorkarea = $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`)
+                  let projectWorkarea = $(`div[content="workarea"] div.workarea[connection-id="${connectionID}"]`)
 
                   // Enable the process termination button
                   $(`div.btn[button-id="${terminateProcessBtnID}"]`).removeClass('disabled')
@@ -7257,13 +7259,13 @@
                     // Get the maximum allowed number of running projects at the same time
                     let maximumRunningSandbox = parseInt(config.get('limit', 'sandbox')),
                       // Get the number of currently running projects
-                      numRunningSandbox = $(`div[content="workarea"] div.workarea:not([cluster-id*="cluster-"])`).length,
+                      numRunningSandbox = $(`div[content="workarea"] div.workarea:not([connection-id*="connection-"])`).length,
                       // Get the number of currently attempting-to-start projects
-                      numAttemptingSandbox = $(`div[content="clusters"] div.clusters-container div.cluster[data-is-sandbox="true"].test-connection`).length
+                      numAttemptingSandbox = $(`div[content="connections"] div.connections-container div.connection[data-is-sandbox="true"].test-connection`).length
 
                     // Add log for this request
                     try {
-                      addLog(`Request to start a local cluster '${getAttributes(clusterElement, ['data-id'])}'`, 'action')
+                      addLog(`Request to start a local cluster '${getAttributes(connectionElement, ['data-id'])}'`, 'action')
                     } catch (e) {}
 
                     // Manipulate the maximum number, set it to the default value `1` if needed
@@ -7279,13 +7281,13 @@
                       $(this).removeAttr('disabled')
 
                       // Remove the starting - test connection - state
-                      clusterElement.removeClass('test-connection enable-terminate-process')
+                      connectionElement.removeClass('test-connection enable-terminate-process')
 
                       // Hide the termination process' button after a set time out
-                      setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+                      setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
                       // Remove any indicators about the state of start/connecting
-                      clusterElement.children('div.status').removeClass('show success failure')
+                      connectionElement.children('div.status').removeClass('show success failure')
 
                       // If the start process failed and the process hasn't been terminated then skip the upcoming code
                       if (!success && !isStartingProcessTerminated) {
@@ -7297,32 +7299,32 @@
                         let pinnedToastID = getRandomID(10)
 
                         // Show/create that toast
-                        showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+                        showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
 
                         // Stop the docker/sandbox project as an error has been occurred
-                        Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, () => {})
+                        Modules.Docker.getDockerInstance(connectionElement).stopDockerCompose(pinnedToastID, () => {})
 
                         // Skip the upcoming code
                         return
                       }
 
                       // Add success state
-                      clusterElement.children('div.status').addClass('show success')
+                      connectionElement.children('div.status').addClass('show success')
                     }
 
                     // Disable the button
                     $(this).attr('disabled', '')
 
                     // Add a starting class
-                    clusterElement.addClass('test-connection')
+                    connectionElement.addClass('test-connection')
 
                     // Show the termination process' button
-                    setTimeout(() => clusterElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+                    setTimeout(() => connectionElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
                     // Get the ports of the project
-                    Modules.Docker.getPortsFromYAMLFile(getAttributes(clusterElement, 'data-folder')).then(async (ports) => {
+                    Modules.Docker.getPortsFromYAMLFile(getAttributes(connectionElement, 'data-folder')).then(async (ports) => {
                       // Update attributes that hold the project's ports
-                      clusterElement.attr({
+                      connectionElement.attr({
                         'data-port-cassandra': ports.cassandra,
                         'data-port-axonops': ports.axonops
                       })
@@ -7332,10 +7334,10 @@
                         let projects = await Modules.Docker.getProjects()
 
                         // Get the current project's object
-                        let currentProject = projects.filter((project) => project.folder == getAttributes(clusterElement, 'data-folder'))
+                        let currentProject = projects.filter((project) => project.folder == getAttributes(connectionElement, 'data-folder'))
 
                         // Set Cassandra's version
-                        clusterElement.attr('data-cassandra-version', currentProject[0].cassandraVersion)
+                        connectionElement.attr('data-cassandra-version', currentProject[0].cassandraVersion)
                       } catch (e) {
                         try {
                           errorLog(e, 'connections')
@@ -7350,7 +7352,7 @@
                       let pinnedToastID = getRandomID(10)
 
                       // Show/create that toast
-                      showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+                      showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
 
                       // Check the existence of Docker in the machine
                       Modules.Docker.checkDockerCompose((dockerExists, userGroup, selectedManagementTool) => {
@@ -7411,11 +7413,11 @@
                         isStartingProcessTerminated = false
 
                         // Show feedback to the user about starting the project
-                        showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('local cluster [b]$data[/b] is about to start, a notification will show up once the process begins', [getAttributes(clusterElement, 'data-name')])) + '.')
+                        showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('local cluster [b]$data[/b] is about to start, a notification will show up once the process begins', [getAttributes(connectionElement, 'data-name')])) + '.')
 
-                        Modules.Docker.checkProjectIsRunning(getAttributes(clusterElement, 'data-folder'), (isProjectRunning) => {
+                        Modules.Docker.checkProjectIsRunning(getAttributes(connectionElement, 'data-folder'), (isProjectRunning) => {
                           if (isProjectRunning) {
-                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster [b]$data[/b] seems be running or stopping, the app will shortly attempt to terminate it', [getAttributes(clusterElement, 'data-name')])) + `. `, 'warning')
+                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster [b]$data[/b] seems be running or stopping, the app will shortly attempt to terminate it', [getAttributes(connectionElement, 'data-name')])) + `. `, 'warning')
 
                             // Call the termination button
                             $(`div.btn[button-id="${terminateProcessBtnID}"]`).addClass('disabled').click()
@@ -7425,12 +7427,12 @@
                           }
 
                           // Start the project
-                          Modules.Docker.getDockerInstance(clusterElement).startDockerCompose(pinnedToastID, (feedback) => {
+                          Modules.Docker.getDockerInstance(connectionElement).startDockerCompose(pinnedToastID, (feedback) => {
                             // The project didn't run as expected or the starting process has been terminated
                             if (!feedback.status || isStartingProcessTerminated) {
                               // Show failure feedback to the user if the process hasn't been terminated
                               if (!isStartingProcessTerminated)
-                                showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the local cluster [b]$data[/b] didn\'t run as expected', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` : ''), 'failure')
+                                showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the local cluster [b]$data[/b] didn\'t run as expected', [getAttributes(connectionElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` : ''), 'failure')
 
                               // Call the post function
                               startPostProcess()
@@ -7440,10 +7442,10 @@
                             }
 
                             // Show success feedback to the user
-                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('local cluster [b]$data[/b] has been successfully started, waiting for Apache Cassandra to be up, you\'ll be automatically navigated to the local cluster work area once it\'s up', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                            showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('local cluster [b]$data[/b] has been successfully started, waiting for Apache Cassandra to be up, you\'ll be automatically navigated to the local cluster work area once it\'s up', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
 
                             // Remove all previous states
-                            clusterElement.children('div.status').removeClass('success failure').addClass('show')
+                            connectionElement.children('div.status').removeClass('success failure').addClass('show')
 
                             // Update the process ID
                             checkCassandraProcessID = getRandomID(20)
@@ -7480,11 +7482,11 @@
                               // Start watching Cassandra's node inside the project
                               Modules.Docker.checkCassandraInContainer(pinnedToastID, ports.cassandra, (status) => {
                                 try {
-                                  clusterElement.attr('data-latest-cassandra-version', `${status.version}`)
+                                  connectionElement.attr('data-latest-cassandra-version', `${status.version}`)
                                 } catch (e) {}
 
                                 try {
-                                  clusterElement.attr('data-datacenters', `${JSON.stringify(status.datacenters)}`)
+                                  connectionElement.attr('data-datacenters', `${JSON.stringify(status.datacenters)}`)
                                 } catch (e) {}
 
                                 // If the process has been terminated then skip the upcoming code and stop the process
@@ -7499,7 +7501,7 @@
                                 // Failed to connect with the node
                                 if (!status.connected) {
                                   // Show a failure feedback to the user
-                                  showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the Apache Cassandra nodes of the local cluster [b]$data[/b] didn\'t start as expected, automatic stop of the local cluster will be started in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                                  showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, it seems the Apache Cassandra nodes of the local cluster [b]$data[/b] didn\'t start as expected, automatic stop of the local cluster will be started in seconds', [getAttributes(connectionElement, 'data-name')])) + '.', 'failure')
 
                                   /**
                                    * Create a pinned toast to show the output of the process
@@ -7509,11 +7511,11 @@
                                   let pinnedToastID = getRandomID(10)
 
                                   // Show/create that toast
-                                  showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+                                  showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
 
                                   setTimeout(() => {
                                     // Attempt to stop the project
-                                    Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, (feedback) => {
+                                    Modules.Docker.getDockerInstance(connectionElement).stopDockerCompose(pinnedToastID, (feedback) => {
                                       // Call the post function
                                       startPostProcess()
 
@@ -7522,10 +7524,10 @@
                                        * Show failure feedback to the user and tell how to stop it manually
                                        */
                                       if (!feedback.status)
-                                        return showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to stop the local cluster [b]$data[/b], please consider to do it manually by stopping the project [b]cassandra_$data[/b]', [getAttributes(clusterElement, 'data-name'), getAttributes(clusterElement, 'data-folder')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                                        return showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to stop the local cluster [b]$data[/b], please consider to do it manually by stopping the project [b]cassandra_$data[/b]', [getAttributes(connectionElement, 'data-name'), getAttributes(connectionElement, 'data-folder')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
 
                                       // The Docker project has successfully stopped
-                                      showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster [b]$data[/b] has been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                                      showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster [b]$data[/b] has been successfully stopped', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
                                     })
                                   }, 3000)
 
@@ -7540,17 +7542,17 @@
                                  * Successfully started the project and Cassandra's one node at least is up
                                  * Show feedback to the user
                                  */
-                                showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra nodes of the local cluster [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                                showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra nodes of the local cluster [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
 
                                 // Request to destroy the associated pinned toast
                                 updatePinnedToast(pinnedToastID, true, true)
 
                                 // Update the data center title
-                                clusterElement.find('div[info="data-center"]').children('div._placeholder').hide()
+                                connectionElement.find('div[info="data-center"]').children('div._placeholder').hide()
 
                                 try {
-                                  clusterElement.attr('data-datacenter', `${status.datacenter}` || 'datacenter1')
-                                  clusterElement.find('div[info="data-center"]').children('div.text').text(`${status.datacenter}`)
+                                  connectionElement.attr('data-datacenter', `${status.datacenter}` || 'datacenter1')
+                                  connectionElement.find('div[info="data-center"]').children('div.text').text(`${status.datacenter}`)
                                 } catch (e) {}
 
                                 setTimeout(() => {
@@ -7562,9 +7564,9 @@
 
                                   try {
                                     setTimeout(() => {
-                                      let clusterButtons = clusterElement.find('button')
+                                      let connectionButtons = connectionElement.find('button')
 
-                                      clusterButtons.each(function() {
+                                      connectionButtons.each(function() {
                                         $(this).toggle(minifyText($(this).text()).length > 0)
                                       })
                                     }, 2000)
@@ -7576,7 +7578,7 @@
 
                                     try {
                                       // Get the chosen port and the final URL
-                                      let axonopsPort = getAttributes(clusterElement, 'data-port-axonops'),
+                                      let axonopsPort = getAttributes(connectionElement, 'data-port-axonops'),
                                         axonopsURL = `http://localhost:${axonopsPort}`
 
                                       // If the provided port is not actually a number then skip this try-catch block
@@ -7604,8 +7606,8 @@
                                         })
                                       }))
 
-                                      // Clicks the globe icon in the cluster's info
-                                      $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
+                                      // Clicks the globe icon in the connection's info
+                                      $(`div[content="workarea"] div.workarea[connection-id="${connectionID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
                                     } catch (e) {}
                                   }, 1000)
                                 }, 3000)
@@ -7626,30 +7628,30 @@
               // Clicks the settings button
               $(`div.btn[button-id="${settingsBtnID}"]`).click(async function() {
                 /**
-                 * The `Add New Cluster` dialog will be used after making tweaks to it
+                 * The `Add New Connection` dialog will be used after making tweaks to it
                  *
                  * Define the dialog path's CSS selector
                  */
-                let dialog = 'div.modal#addEditClusterDialog',
-                  // Get the cluster's ID
-                  clusterID = $(this).attr('reference-id'),
-                  // Point at the cluster element in the UI
-                  clusterElement = $(`div.clusters div.cluster[data-id="${clusterID}"]`),
-                  // Determine if the cluster has an active work area
-                  hasWorkarea = getAttributes(clusterElement, 'data-workarea'),
-                  isSCBConnection = clusterElement.attr('data-scb-path') != undefined
+                let dialog = 'div.modal#addEditConnectionDialog',
+                  // Get the connection's ID
+                  connectionID = $(this).attr('reference-id'),
+                  // Point at the connection element in the UI
+                  connectionElement = $(`div.connections div.connection[data-id="${connectionID}"]`),
+                  // Determine if the connection has an active work area
+                  hasWorkarea = getAttributes(connectionElement, 'data-workarea'),
+                  isSCBConnection = connectionElement.attr('data-scb-path') != undefined
 
-                // Add log about edit cluster
+                // Add log about edit connection
                 try {
-                  addLog(`Attempt to edit connection '${getAttributes(clusterElement, ['data-name', 'data-id'])}'`, 'action')
+                  addLog(`Attempt to edit connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
                 } catch (e) {}
 
-                // If the cluster has an active work area then stop the process and show feedback to the user
+                // If the connection has an active work area then stop the process and show feedback to the user
                 if (hasWorkarea == 'true')
-                  return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
+                  return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(connectionElement, 'data-name')])) + '.', 'warning')
 
                 // Change the dialog's title
-                $(`${dialog}`).find('h5.modal-title').text(`${I18next.capitalize(I18next.t('connection settings'))} ${getAttributes(clusterElement, 'data-name')}`)
+                $(`${dialog}`).find('h5.modal-title').text(`${I18next.capitalize(I18next.t('connection settings'))} ${getAttributes(connectionElement, 'data-name')}`)
 
                 // Update the workspace's name badge
                 $(`${dialog}`).find('div.modal-header span.badge.badge-secondary').text(getWorkspaceName(workspaceID))
@@ -7657,18 +7659,18 @@
                 // Change and add some attributes to the dialog
                 $(`${dialog}`).attr({
                   'data-edit-workspace-id': workspaceID, // Change the workspace's ID
-                  'data-edit-cluster-id': clusterID // This attribute tells that the dialog is in the `Editing` mode
+                  'data-edit-connection-id': connectionID // This attribute tells that the dialog is in the `Editing` mode
                 })
 
                 // Change the primary button's text
-                $(`button#addCluster`).text(I18next.t('update connection'))
+                $(`button#addConnection`).text(I18next.t('update connection'))
 
-                $(`div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type[data-type="${!isSCBConnection ? 'apache-cassandra' : 'astra-db'}"]`).click()
+                $(`div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type[data-type="${!isSCBConnection ? 'apache-cassandra' : 'astra-db'}"]`).click()
 
                 if (!isSCBConnection) {
-                  $('div.modal#addEditClusterDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
+                  $('div.modal#addEditConnectionDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
 
-                  if ($('div.modal#addEditClusterDialog').hasClass('show-editor'))
+                  if ($('div.modal#addEditConnectionDialog').hasClass('show-editor'))
                     $('button#switchEditor').click()
                 }
 
@@ -7677,23 +7679,23 @@
                  *
                  * Enable the save/edit button
                  */
-                $('button#addCluster').attr('disabled', null)
+                $('button#addConnection').attr('disabled', null)
 
                 // Hide passwords
                 $(`[info-section="none"][info-key="password"]`).add('input#astraDBClientSecret').attr('type', 'password')
                 $('span.reveal-password div.btn ion-icon').attr('name', 'eye-opened')
 
-                // Get all clusters in the workspace
-                let allClusters = await Modules.Clusters.getClusters(workspaceID),
-                  // Get the target cluster that we want to edit/update
-                  currentCluster = allClusters.find((_cluster) => _cluster.info.id == clusterID)
+                // Get all connections in the workspace
+                let allConnections = await Modules.Connections.getConnections(workspaceID),
+                  // Get the target connection that we want to edit/update
+                  currentConnection = allConnections.find((_connection) => _connection.info.id == connectionID)
 
-                // If the app wasn't able to get the target cluster then give feedback to the user and stop the editing process
-                if (currentCluster == undefined)
-                  return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('unable to locate the workspace folder of connection [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                // If the app wasn't able to get the target connection then give feedback to the user and stop the editing process
+                if (currentConnection == undefined)
+                  return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('unable to locate the workspace folder of connection [b]$data[/b]', [getAttributes(connectionElement, 'data-name')])) + '.', 'failure')
 
-                // Define this variable as a copy of the cluster's object before starting the edit
-                editedClusterObject = currentCluster
+                // Define this variable as a copy of the connection's object before starting the edit
+                editedConnectionObject = currentConnection
 
                 try {
                   if (!isSCBConnection)
@@ -7710,10 +7712,10 @@
                         password: $('input#astraDBClientSecret'),
                         scbFilePath: $('input#astraDBSCBPath')
                       },
-                      username = decrypt(key, currentCluster.info.secrets.username)
-                    password = decrypt(key, currentCluster.info.secrets.password)
+                      username = decrypt(key, currentConnection.info.secrets.username)
+                    password = decrypt(key, currentConnection.info.secrets.password)
 
-                    inputFields.connectionName.val(currentCluster.name)
+                    inputFields.connectionName.val(currentConnection.name)
                     inputFields.username.val(username)
                     inputFields.password.val(password)
 
@@ -7721,11 +7723,11 @@
                       let tooltipObject = getElementMDBObject(inputFields.scbFilePath, 'Tooltip')
 
                       tooltipObject.enable()
-                      tooltipObject.setContent(currentCluster.info.secureConnectionBundlePath)
+                      tooltipObject.setContent(currentConnection.info.secureConnectionBundlePath)
                     } catch (e) {}
 
-                    inputFields.scbFilePath.val(currentCluster.info.secureConnectionBundlePath).trigger('input')
-                    inputFields.scbFilePath.parent().attr('file-name', Path.basename(currentCluster.info.secureConnectionBundlePath))
+                    inputFields.scbFilePath.val(currentConnection.info.secureConnectionBundlePath).trigger('input')
+                    inputFields.scbFilePath.parent().attr('file-name', Path.basename(currentConnection.info.secureConnectionBundlePath))
                   })
                 } catch (e) {}
 
@@ -7734,21 +7736,21 @@
                     throw 0
 
                   /**
-                   * Change the value of the editor to the cluster's `cqlsh.rc` file's content
+                   * Change the value of the editor to the connection's `cqlsh.rc` file's content
                    * There's a `change` listener that will perform all needed changes; as we've already handled that in the listener
                    */
-                  editor.setValue(currentCluster.cqlshrc)
+                  editor.setValue(currentConnection.cqlshrc)
 
                   setTimeout(() => {
                     // Define inputs that are not in the `cqlsh.rc` file; to handle them separately
                     let inputs = [{
                       section: 'none',
-                      key: 'clusterName',
-                      val: currentCluster.name
+                      key: 'connectionName',
+                      val: currentConnection.name
                     }, {
                       section: 'none',
                       key: 'datacenter',
-                      val: currentCluster.info.datacenter
+                      val: currentConnection.info.datacenter
                     }]
 
                     // Handle all SSH related input fields/file selectors
@@ -7757,42 +7759,42 @@
                       inputs.push({
                         section: 'none',
                         key: 'ssh-dest-addr',
-                        val: !([undefined, '127.0.0.1'].includes(currentCluster.ssh.dstAddr)) ? currentCluster.ssh.dstAddr : ''
+                        val: !([undefined, '127.0.0.1'].includes(currentConnection.ssh.dstAddr)) ? currentConnection.ssh.dstAddr : ''
                       })
 
                       // If we have a private key then show it to the user
                       inputs.push({
                         section: 'none',
                         key: 'ssh-privatekey',
-                        val: (currentCluster.ssh.privatekey != undefined) ? currentCluster.ssh.privatekey : ''
+                        val: (currentConnection.ssh.privatekey != undefined) ? currentConnection.ssh.privatekey : ''
                       })
 
                       // If we have a passphrase then show it to the user
                       inputs.push({
                         section: 'none',
                         key: 'ssh-passphrase',
-                        val: (currentCluster.ssh.passphrase != undefined) ? currentCluster.ssh.passphrase : ''
+                        val: (currentConnection.ssh.passphrase != undefined) ? currentConnection.ssh.passphrase : ''
                       })
 
                       // If there's a saved destination port, and it is not the same as the connection port then show it as well
                       inputs.push({
                         section: 'none',
                         key: 'ssh-dest-port',
-                        val: (currentCluster.ssh.dstPort != undefined && $('input[info-section="connection"][info-key="port"]').val() != currentCluster.ssh.dstPort) ? currentCluster.ssh.dstPort : ''
+                        val: (currentConnection.ssh.dstPort != undefined && $('input[info-section="connection"][info-key="port"]').val() != currentConnection.ssh.dstPort) ? currentConnection.ssh.dstPort : ''
                       })
 
                       // Do the same process to the SSH host
                       inputs.push({
                         section: 'none',
                         key: 'ssh-host',
-                        val: (currentCluster.ssh.host != undefined && $('input[info-section="connection"][info-key="hostname"]').val() != currentCluster.ssh.host) ? currentCluster.ssh.host : ''
+                        val: (currentConnection.ssh.host != undefined && $('input[info-section="connection"][info-key="hostname"]').val() != currentConnection.ssh.host) ? currentConnection.ssh.host : ''
                       })
 
                       // And the SSH port as well
                       inputs.push({
                         section: 'none',
                         key: 'ssh-port',
-                        val: (!([undefined, '22'].includes(currentCluster.ssh.port))) ? currentCluster.ssh.port : ''
+                        val: (!([undefined, '22'].includes(currentConnection.ssh.port))) ? currentConnection.ssh.port : ''
                       })
                     } catch (e) {
                       try {
@@ -7849,8 +7851,8 @@
                       sshUsername = '',
                       sshPassword = ''
 
-                    // If there are saved secrets for the cluster
-                    if (currentCluster.info.secrets != undefined) {
+                    // If there are saved secrets for the connection
+                    if (currentConnection.info.secrets != undefined) {
                       try {
                         // Get the private key; to decrypt secrets and show them in the dialog
                         getKey('private', (key) => {
@@ -7859,8 +7861,8 @@
                             return showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
 
                           // Try to decrypt both; username and password
-                          username = decrypt(key, currentCluster.info.secrets.username)
-                          password = decrypt(key, currentCluster.info.secrets.password)
+                          username = decrypt(key, currentConnection.info.secrets.username)
+                          password = decrypt(key, currentConnection.info.secrets.password)
 
                           // Empty the `inputs` array
                           inputs = []
@@ -7878,11 +7880,11 @@
 
                           // Check if SSH username is provided
                           try {
-                            if (currentCluster.info.secrets.sshUsername == undefined)
+                            if (currentConnection.info.secrets.sshUsername == undefined)
                               throw 0
 
                             // Decrypt the SSH username
-                            sshUsername = decrypt(key, currentCluster.info.secrets.sshUsername)
+                            sshUsername = decrypt(key, currentConnection.info.secrets.sshUsername)
 
                             // Push it to the `inputs` array; to be shown in the dialog
                             inputs.push({
@@ -7898,11 +7900,11 @@
 
                           // Check if SSH password is provided
                           try {
-                            if (currentCluster.info.secrets.sshPassword == undefined)
+                            if (currentConnection.info.secrets.sshPassword == undefined)
                               throw 0
 
                             // Decrypt the SSHS password
-                            sshPassword = decrypt(key, currentCluster.info.secrets.sshPassword)
+                            sshPassword = decrypt(key, currentConnection.info.secrets.sshPassword)
 
                             // Push it to the `inputs` array
                             inputs.push({
@@ -7918,11 +7920,11 @@
 
                           // Check if SSH private key passphrase is provided
                           try {
-                            if (currentCluster.info.secrets.sshPassphrase == undefined)
+                            if (currentConnection.info.secrets.sshPassphrase == undefined)
                               throw 0
 
                             // Decrypt the SSHS password
-                            sshPassphrase = decrypt(key, currentCluster.info.secrets.sshPassphrase)
+                            sshPassphrase = decrypt(key, currentConnection.info.secrets.sshPassphrase)
 
                             // Push it to the `inputs` array
                             inputs.push({
@@ -7956,7 +7958,7 @@
                       }
                     } else {
                       /**
-                       * There are no saved secrets for the cluster
+                       * There are no saved secrets for the connection
                        *
                        * Empty the `inputs` array
                        */
@@ -8015,8 +8017,8 @@
                 } catch (e) {}
 
                 setTimeout(() => {
-                  // Open the `Add New Cluster` dialog
-                  $(`button#addClusterProcess`).trigger('click', true)
+                  // Open the `Add New Connection` dialog
+                  $(`button#addConnectionProcess`).trigger('click', true)
                 })
 
                 // The rest actions and events related to the dialog are handled in the dialog buttons events listeners
@@ -8025,16 +8027,16 @@
               // Clicks the delete button
               $(`div.btn[button-id="${deleteBtnID}"]`).click(function() {
                 // Define the confirm's text
-                let confirmText = I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the connection [b]$data[/b] in the workspace [b]$data[/b]?', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]))
+                let confirmText = I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the connection [b]$data[/b] in the workspace [b]$data[/b]?', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)]))
 
                 // Add log
                 try {
-                  addLog(`Request to delete ${isSandbox ? 'local cluster' : 'connection'} ${getAttributes(clusterElement, ['data-name', 'data-id'])}`, 'action')
+                  addLog(`Request to delete ${isSandbox ? 'local cluster' : 'connection'} ${getAttributes(connectionElement, ['data-name', 'data-id'])}`, 'action')
                 } catch (e) {}
 
                 // If the current workspace is sandbox then change the text
                 if (isSandbox)
-                  confirmText = I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the local cluster [b]$data[/b]?', [getAttributes(clusterElement, 'data-name')]))
+                  confirmText = I18next.capitalizeFirstLetter(I18next.replaceData('do you want to entirely delete the local cluster [b]$data[/b]?', [getAttributes(connectionElement, 'data-name')]))
 
                 // Open the confirmation dialog and wait for the response
                 openDialog(confirmText, (response) => {
@@ -8042,12 +8044,12 @@
                   if (!response.confirmed)
                     return
 
-                  // Get the project/cluster work area
-                  let clusterWorkarea = $(`div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-id')}"]`)
+                  // Get the project/connection work area
+                  let connectionWorkarea = $(`div[content="workarea"] div.workarea[connection-id="${getAttributes(connectionElement, 'data-id')}"]`)
 
                   // If there's a work area already then stop the deletion process
-                  if (clusterWorkarea.length != 0)
-                    return showToast(I18next.capitalize(I18next.t(isSandbox ? 'delete local cluster' : 'delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData(isSandbox ? 'there\'s an active work area for the local cluster [b]$data[/b], please consider to close it before attempting to delete the local cluster again' : 'this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(clusterElement, 'data-name')])) + '.', 'warning')
+                  if (connectionWorkarea.length != 0)
+                    return showToast(I18next.capitalize(I18next.t(isSandbox ? 'delete local cluster' : 'delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData(isSandbox ? 'there\'s an active work area for the local cluster [b]$data[/b], please consider to close it before attempting to delete the local cluster again' : 'this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(connectionElement, 'data-name')])) + '.', 'warning')
 
                   try {
                     // If the current workspace is not the sandbox then skip this try-catch block
@@ -8055,22 +8057,22 @@
                       throw 0
 
                     // Attempt to delete the project
-                    Modules.Docker.deleteProject(getAttributes(clusterElement, 'data-folder'), response.checked).then((status) => {
+                    Modules.Docker.deleteProject(getAttributes(connectionElement, 'data-folder'), response.checked).then((status) => {
                       // Failed to delete the project
                       if (!status)
-                        return showToast(I18next.capitalize(I18next.t('delete local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to delete the local cluster [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+                        return showToast(I18next.capitalize(I18next.t('delete local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to delete the local cluster [b]$data[/b]', [getAttributes(connectionElement, 'data-name')])) + '.', 'failure')
 
                       // Successfully deleted the project
-                      showToast(I18next.capitalize(I18next.t('delete local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster [b]$data[/b] has been successfully deleted', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                      showToast(I18next.capitalize(I18next.t('delete local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster [b]$data[/b] has been successfully deleted', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
 
                       // Point at the projects' container
-                      let projectsContainer = $(`div.clusters-container div.clusters[workspace-id="${workspaceID}"]`)
+                      let projectsContainer = $(`div.connections-container div.connections[workspace-id="${workspaceID}"]`)
 
                       // Remove the deleted project's UI element
-                      projectsContainer.children(`div.cluster[data-workspace-id="${workspaceID}"][data-folder="${getAttributes(clusterElement, 'data-folder')}"]`).remove()
+                      projectsContainer.children(`div.connection[data-workspace-id="${workspaceID}"][data-folder="${getAttributes(connectionElement, 'data-folder')}"]`).remove()
 
                       // Refresh projects' list
-                      $(document).trigger('refreshClusters', {
+                      $(document).trigger('refreshConnections', {
                         workspaceID
                       })
                     })
@@ -8079,40 +8081,40 @@
                     return
                   } catch (e) {}
 
-                  // Call the cluster's deletion function from the clusters' module
-                  Modules.Clusters.deleteCluster(getWorkspaceFolderPath(workspaceID), getAttributes(clusterElement, 'data-folder'), clusterID, (result) => {
+                  // Call the connection's deletion function from the connections' module
+                  Modules.Connections.deleteConnection(getWorkspaceFolderPath(workspaceID), getAttributes(connectionElement, 'data-folder'), connectionID, (result) => {
                     // If the deletion process failed then show feedback to the user and skip the upcoming code
                     if (!result)
-                      return showToast(I18next.capitalize(I18next.t('delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete connection [b]$data[/b] in workspace [b]$data[/b], please check that it\'s exists, and the app has permission to access the workspace folder', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
+                      return showToast(I18next.capitalize(I18next.t('delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete connection [b]$data[/b] in workspace [b]$data[/b], please check that it\'s exists, and the app has permission to access the workspace folder', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
 
                     /**
-                     * The cluster has successfully been deleted
+                     * The connection has successfully been deleted
                      *
                      * Send the `quit` command
                      */
                     IPCRenderer.send('pty:command', {
-                      id: clusterID,
+                      id: connectionID,
                       cmd: 'quit'
                     })
 
                     // Request to entirely close the pty instance
-                    IPCRenderer.send('pty:close', clusterID)
+                    IPCRenderer.send('pty:close', connectionID)
 
                     // Close the SSH tunnel if it exists
                     try {
-                      IPCRenderer.send('ssh-tunnel:close', clusterID)
+                      IPCRenderer.send('ssh-tunnel:close', connectionID)
                     } catch (e) {}
 
-                    // Attempt to close the work area of the cluster if exists
+                    // Attempt to close the work area of the connection if exists
                     try {
-                      $(`div[content="workarea"] div.workarea[cluster-id="${clusterID}"]`).find('div.action[action="close"] div.btn-container div.btn').click()
+                      $(`div[content="workarea"] div.workarea[connection-id="${connectionID}"]`).find('div.action[action="close"] div.btn-container div.btn').click()
                     } catch (e) {}
 
                     // Remove the target workspace element
-                    $(`div.clusters div.cluster[data-id="${clusterID}"]`).remove()
+                    $(`div.connections div.connection[data-id="${connectionID}"]`).remove()
 
-                    // Refresh clusters' list
-                    $(document).trigger('refreshClusters', {
+                    // Refresh connections' list
+                    $(document).trigger('refreshConnections', {
                       workspaceID
                     })
 
@@ -8120,7 +8122,7 @@
                     $(document).trigger('getWorkspaces')
 
                     // Show feedback to the user
-                    showToast(I18next.capitalize(I18next.t('delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData('connection [b]$data[/b] in workspace [b]$data[/b] has been successfully deleted', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
+                    showToast(I18next.capitalize(I18next.t('delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData('connection [b]$data[/b] in workspace [b]$data[/b] has been successfully deleted', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
                   }, response.checked)
                 }, false, 'keep the associated files in the system')
               })
@@ -8135,11 +8137,11 @@
                   if (isSandbox)
                     throw 0
 
-                  // Get the cluster's path
-                  elementPath = Path.join(getWorkspaceFolderPath(getAttributes(clusterElement, 'data-workspace-id')), getAttributes(clusterElement, 'data-folder'))
+                  // Get the connection's path
+                  elementPath = Path.join(getWorkspaceFolderPath(getAttributes(connectionElement, 'data-workspace-id')), getAttributes(connectionElement, 'data-folder'))
                 } catch (e) {
                   // Get the sandbox project's path
-                  elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters', getAttributes(clusterElement, 'data-folder'))
+                  elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters', getAttributes(connectionElement, 'data-folder'))
                 }
 
                 // Open the final path
@@ -8152,7 +8154,7 @@
                 $(`div.btn[button-id="${terminateProcessBtnID}"]`).addClass('disabled')
 
                 try {
-                  // If the current cluster is not actually a docker/sandbox project then skip this try-catch block
+                  // If the current connection is not actually a docker/sandbox project then skip this try-catch block
                   if (!isSandbox)
                     throw 0
 
@@ -8167,7 +8169,7 @@
                   let pinnedToastID = getRandomID(10)
 
                   // Show/create that toast
-                  showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('terminate local cluster')) + ' ' + getAttributes(clusterElement, 'data-name'), '')
+                  showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('terminate local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
 
                   // Send request to the main thread to terminate the connection test process - if there's any -
                   try {
@@ -8178,27 +8180,27 @@
                   checkCassandraProcessID = 'terminated'
 
                   // Attempt to close/stop the docker project
-                  Modules.Docker.getDockerInstance(clusterElement).stopDockerCompose(pinnedToastID, (feedback) => {
+                  Modules.Docker.getDockerInstance(connectionElement).stopDockerCompose(pinnedToastID, (feedback) => {
                     /**
                      * Failed to close/stop the project
                      * Show feedback to the user and skip the upcoming code
                      */
                     if (!feedback.status)
-                      return showToast(I18next.capitalize(I18next.t('terminate local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] were not successfully stopped', [getAttributes(clusterElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+                      return showToast(I18next.capitalize(I18next.t('terminate local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] were not successfully stopped', [getAttributes(connectionElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
 
                     /**
                      * Successfully closed/stopped
                      * Show feedback to the user
                      */
-                    showToast(I18next.capitalize(I18next.t('terminate local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] have been successfully stopped', [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+                    showToast(I18next.capitalize(I18next.t('terminate local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] have been successfully stopped', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
 
-                    // Reset the sandbox project's element in the clusters/sandbox projects container
-                    clusterElement.removeClass('test-connection enable-terminate-process')
-                    clusterElement.find('button').removeAttr('disabled')
-                    clusterElement.children('div.status').removeClass('show success')
+                    // Reset the sandbox project's element in the connections/sandbox projects container
+                    connectionElement.removeClass('test-connection enable-terminate-process')
+                    connectionElement.find('button').removeAttr('disabled')
+                    connectionElement.children('div.status').removeClass('show success')
 
                     // Hide the termination process' button after a set time out
-                    setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+                    setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
                   })
 
                   // Skip the upcoming code
@@ -8211,14 +8213,14 @@
 
                   // Attempt to close the SSH tunnel if it has already been created
                   try {
-                    IPCRenderer.send('ssh-tunnel:close', clusterID)
+                    IPCRenderer.send('ssh-tunnel:close', connectionID)
                   } catch (e) {}
 
                   // Send a request to terminate the SSH tunnel creation process
                   IPCRenderer.send(`ssh-tunnel:terminate`, sshTunnelCreationRequestID)
 
                   // Show success feedback to the user
-                  showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData('the testing process for the connection [b]$data[/b] in workspace [b]$data[/b] has been terminated with success', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), 'success')
+                  showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData('the testing process for the connection [b]$data[/b] in workspace [b]$data[/b] has been terminated with success', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), 'success')
                 } catch (e) {}
 
                 // Send request to the main thread to terminate the current ongoing connection test process
@@ -8229,14 +8231,14 @@
 
                 // Once the termination status is received
                 if (!isSSHTunnelNeeded)
-                  IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the testing process for the connection [b]$data[/b] in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the testing process of connection [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), status ? 'success' : 'failure'))
+                  IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the testing process for the connection [b]$data[/b] in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the testing process of connection [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)]) + '.'), status ? 'success' : 'failure'))
               })
             })
             // End of handling the `click` events for actions buttons
 
             /**
              * Inner function to request a pty instance creation from the main thread
-             * It has been defined inside the clusters' loop as it needs a lot of real-time created elements
+             * It has been defined inside the connections' loop as it needs a lot of real-time created elements
              *
              * @Parameters:
              * {object} `readLine` is the read line object that has been created for the terminal, the terminal object itself can be passed too
@@ -8245,14 +8247,14 @@
               try {
                 // Get the workspace's folder path
                 let workspaceFolderPath = getWorkspaceFolderPath(workspaceID),
-                  // Get the current cluster's folder path
-                  clusterFolder = Path.join(workspaceFolderPath, getAttributes(clusterElement, 'data-folder'))
+                  // Get the current connection's folder path
+                  connectionFolder = Path.join(workspaceFolderPath, getAttributes(connectionElement, 'data-folder'))
 
-                // Get the `cqlsh.rc` config file's path for the current cluster
-                let cqlshrcPath = Path.join(clusterFolder, 'config', 'cqlsh.rc'),
+                // Get the `cqlsh.rc` config file's path for the current connection
+                let cqlshrcPath = Path.join(connectionFolder, 'config', 'cqlsh.rc'),
                   // Get Apache Cassandra's version
-                  version = getAttributes(clusterElement, 'data-latest-cassandra-version') || getAttributes(clusterElement, 'data-cassandra-version'),
-                  host = getAttributes(clusterElement, 'data-host')
+                  version = getAttributes(connectionElement, 'data-latest-cassandra-version') || getAttributes(connectionElement, 'data-cassandra-version'),
+                  host = getAttributes(connectionElement, 'data-host')
 
                 // Show it in the interactive terminal
                 if (minifyText(host).length != 0)
@@ -8260,7 +8262,7 @@
 
                 addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Detected Apache Cassandra version is ${version}.`, null, true, 'neutral')
 
-                $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${clusterElement.attr('data-id')}"]`).find('div.info[info="cassandra"]').children('div.text').text(`v${version}`)
+                $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${connectionElement.attr('data-id')}"]`).find('div.info[info="cassandra"]').children('div.text').text(`v${version}`)
 
                 /**
                  * Check some options in the `cqlsh.rc` file
@@ -8272,7 +8274,7 @@
                     // With an error occurs stop the checking process
                     if (err) {
                       try {
-                        errorLog(err, 'clusters')
+                        errorLog(err, 'connections')
                       } catch (e) {}
 
                       return
@@ -8282,13 +8284,13 @@
                     content = content.toString()
 
                     // Convert the `cqlsh.rc` file's content to an array of sections and options
-                    Modules.Clusters.getCQLSHRCContent(workspaceID, content, editor).then((result) => {
+                    Modules.Connections.getCQLSHRCContent(workspaceID, content, editor).then((result) => {
                       /**
                        * Check SSL
                        *
                        * Set its status to be enabled by default
                        */
-                      clusterElement.attr('ssl-enabled', 'true')
+                      connectionElement.attr('ssl-enabled', 'true')
 
                       // Check if SSL is disabled
                       try {
@@ -8300,11 +8302,11 @@
                         addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `SSL is not enabled, the connection is not encrypted and is being transmitted in the clear.`, null, true, 'warning')
 
                         // Update the SSL attribute
-                        clusterElement.attr('ssl-enabled', 'false')
+                        connectionElement.attr('ssl-enabled', 'false')
                       } catch (e) {}
 
                       // Update the lockpad status
-                      updateSSLLockpadStatus(clusterElement)
+                      updateSSLLockpadStatus(connectionElement)
                     })
                   })
                 } catch (e) {
@@ -8314,29 +8316,29 @@
                 }
 
                 // Show feedback to the user when the connection is established through the SSH tunnel
-                if (sshTunnelsObjects[clusterID] != null) {
+                if (sshTunnelsObjects[connectionID] != null) {
                   // Show it in the interactive terminal
                   addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `The connection is encrypted and transmitted through an SSH tunnel.`, null, true, 'neutral')
                 }
 
                 /**
                  * The connection creation object
-                 * The initial data: The cluster's ID, its `cqlsh.rc` config file path, Apache Cassandra's version, and the log file path for this connection session
+                 * The initial data: The connection's ID, its `cqlsh.rc` config file path, Apache Cassandra's version, and the log file path for this connection session
                  */
                 let creationData = {
-                  id: clusterID,
+                  id: connectionID,
                   cqlshrc: cqlshrcPath,
                   version,
-                  logPath: Path.join(clusterFolder, 'logs', `${machineID} - ${formatTimestamp((new Date()).getTime())}.log`)
+                  logPath: Path.join(connectionFolder, 'logs', `${machineID} - ${formatTimestamp((new Date()).getTime())}.log`)
                 }
 
                 if (isSCBConnection)
-                  creationData.scbFilePath = clusterElement.attr('data-scb-path')
+                  creationData.scbFilePath = connectionElement.attr('data-scb-path')
 
                 // Check if username and password are provided
                 try {
-                  // Get them from the cluster's attributes
-                  let [username, password] = getAttributes(clusterElement, ['data-username', 'data-password'])
+                  // Get them from the connection's attributes
+                  let [username, password] = getAttributes(connectionElement, ['data-username', 'data-password'])
 
                   // Make sure both are defined, and not empty
                   if ([username, password].some((secret) => secret == undefined || secret.trim().length <= 0))
@@ -8372,11 +8374,11 @@
                 // Check if there is SSH tunnel creation info
                 try {
                   // If there is no SSH tunnel info then stop this sub-process
-                  if (sshTunnelsObjects[clusterID] == null)
+                  if (sshTunnelsObjects[connectionID] == null)
                     throw 0
 
                   // Create an object to handle the creation info
-                  let tunnelInfo = sshTunnelsObjects[clusterID],
+                  let tunnelInfo = sshTunnelsObjects[connectionID],
                     sshTunnel = {
                       port: tunnelInfo.port,
                       host: tunnelInfo.host,
@@ -8390,7 +8392,7 @@
                   }
                 } catch (e) {}
 
-                // Check if the current cluster is a sandbox project
+                // Check if the current connection is a sandbox project
                 try {
                   if (!isSandbox)
                     throw 0
@@ -8399,9 +8401,9 @@
                   creationData = {
                     ...creationData,
                     cqlshrc: null,
-                    version: getAttributes(clusterElement, 'data-cassandra-version'),
+                    version: getAttributes(connectionElement, 'data-cassandra-version'),
                     ssh: {
-                      port: getAttributes(clusterElement, 'data-port-cassandra')
+                      port: getAttributes(connectionElement, 'data-port-cassandra')
                     }
                   }
                 } catch (e) {}
@@ -8432,7 +8434,7 @@
                   }
                 } catch (e) {}
 
-                // Send a request to create a pty instance and connect with the cluster
+                // Send a request to create a pty instance and connect with the connection
                 IPCRenderer.send('pty:create', {
                   ...creationData,
                   isBasicCQLSHEnabled: info.isBasicCQLSHEnabled,
@@ -8446,7 +8448,7 @@
               }
             }
           }))
-          // End of the process when appending a cluster in the container
+          // End of the process when appending a connection in the container
         } catch (e) {
           try {
             errorLog(e, 'connections')
@@ -8454,11 +8456,11 @@
         }
       })
     })
-    // End of getting all saved clusters/projects
+    // End of getting all saved connections/projects
 
     let innerUpdateContainersManagementTool = () => {
       setTimeout(() => {
-        if ((clustersIndex + 1) < clustersCounter)
+        if ((connectionsIndex + 1) < connectionsCounter)
           return innerUpdateContainersManagementTool()
 
         setTimeout(() => updateContainersManagementToolUI('unknown', true), 500)
@@ -8470,38 +8472,38 @@
     /**
      * Define different inner functions that are used only in this event file, and in the current events handler
      *
-     * Inner function to perform the test connection's process with an already added cluster
+     * Inner function to perform the test connection's process with an already added connection
      *
      * @Parameters:
-     * {object} `clusterElement` the cluster's UI element in the workspace clusters' list
-     * {string} `?testConnectionProcessID` the ID of the connection test process of the cluster
+     * {object} `connectionElement` the connection's UI element in the workspace connections' list
+     * {string} `?testConnectionProcessID` the ID of the connection test process of the connection
      * {string} `?sshTunnelCreationRequestID` the ID of the SSH tunnel creation process - if needed -
      * {boolean} `?clickConnectBtn` whether or not the `CONNECT` button should be clicked
      */
-    let testConnection = async (clusterElement, testConnectionProcessID = '', sshTunnelCreationRequestID = '', clickConnectBtn = false) => {
+    let testConnection = async (connectionElement, testConnectionProcessID = '', sshTunnelCreationRequestID = '', clickConnectBtn = false) => {
       // Point at the Apache Cassandra's version UI element
-      let cassandraVersion = clusterElement.find('div[info="cassandra"]'),
+      let cassandraVersion = connectionElement.find('div[info="cassandra"]'),
         // Point at the data center element
-        dataCenterElement = clusterElement.find('div[info="data-center"]'),
+        dataCenterElement = connectionElement.find('div[info="data-center"]'),
         // Point at the `CONNECT` button
-        connectBtn = clusterElement.children('div.footer').children('div.button').children('button.connect'),
+        connectBtn = connectionElement.children('div.footer').children('div.button').children('button.connect'),
         // Point at the `TEST CONNECTION` button
-        testConnectionBtn = clusterElement.children('div.footer').children('div.button').children('button.test-connection'),
+        testConnectionBtn = connectionElement.children('div.footer').children('div.button').children('button.test-connection'),
         // Point at the status element - the flashing circle at the top right -
-        statusElement = clusterElement.children('div.status'),
-        // Get the cluster's ID from its attribute
-        clusterID = getAttributes(clusterElement, 'data-id'),
+        statusElement = connectionElement.children('div.status'),
+        // Get the connection's ID from its attribute
+        connectionID = getAttributes(connectionElement, 'data-id'),
         // Username and password - for Apache Cassandra DB Auth - to be passed if needed
         username = '',
         password = '',
         // By default, there's no wait for encrypting username and password
         waitForEncryption = false,
-        isSCBConnection = clusterElement.attr('data-scb-path') != undefined
+        isSCBConnection = connectionElement.attr('data-scb-path') != undefined
 
-      // Get all saved clusters
-      let allClusters = await Modules.Clusters.getClusters(workspaceID),
-        // Filter clusters; by finding the target one based on its ID
-        clusterObject = allClusters.find((_cluster) => _cluster.info.id == clusterID),
+      // Get all saved connections
+      let allConnections = await Modules.Connections.getConnections(workspaceID),
+        // Filter connections; by finding the target one based on its ID
+        connectionObject = allConnections.find((_connection) => _connection.info.id == connectionID),
         // Check if any sensitive data was added to the `cqlsh.rc` file
         foundSensitiveData = false,
         // Check if there are scripts to run in pre or post-connection
@@ -8510,24 +8512,24 @@
           post: []
         }
 
-      // Make sure the cluster's object exists
+      // Make sure the connection's object exists
       try {
-        // If the target cluster has been found then skip this try-catch block
-        if (clusterObject != undefined)
+        // If the target connection has been found then skip this try-catch block
+        if (connectionObject != undefined)
           throw 0
 
-        // Show feedback to the user about not finding the target cluster
-        showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with [code]cqlsh.rc[/code] file', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
+        // Show feedback to the user about not finding the target connection
+        showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with [code]cqlsh.rc[/code] file', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
 
         setTimeout(() => {
           // Enable the `TEST CONNECTION` button
           testConnectionBtn.removeAttr('disabled')
 
-          // Remove multiple classes for the cluster and its status elements
-          clusterElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
+          // Remove multiple classes for the connection and its status elements
+          connectionElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
 
           // Hide the termination process' button after a set time out
-          setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+          setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
         })
 
         // Skip the upcoming code
@@ -8540,9 +8542,9 @@
 
         /**
          * Check pre and post-connect scripts
-         * Get all scripts associated with the cluster
+         * Get all scripts associated with the connection
          */
-        let check = await getPrePostConnectionScripts(workspaceID, clusterID)
+        let check = await getPrePostConnectionScripts(workspaceID, connectionID)
 
         // Set the received data
         scripts.pre = check.pre
@@ -8560,30 +8562,30 @@
           // Enable the `CONNECT` button
           testConnectionBtn.removeAttr('disabled')
 
-          // Remove multiple classes for the cluster and its status elements
-          clusterElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
+          // Remove multiple classes for the connection and its status elements
+          connectionElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
 
           // Hide the termination process' button after a set time out
-          setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+          setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
           // Skip the upcoming code
           return
         } catch (e) {}
       } catch (e) {}
 
-      // Define the test data; the cluster's ID and its `cqlsh.rc` file's path
+      // Define the test data; the connection's ID and its `cqlsh.rc` file's path
       let testData = {
-        id: clusterObject.info.id,
-        cqlshrcPath: clusterObject.cqlshrcPath
+        id: connectionObject.info.id,
+        cqlshrcPath: connectionObject.cqlshrcPath
       }
 
       if (isSCBConnection)
-        testData.scbFilePath = clusterElement.attr('data-scb-path')
+        testData.scbFilePath = connectionElement.attr('data-scb-path')
 
       // Check if there is a username and password for Apache Cassandra
       try {
-        // Username and password have been encrypted already and added to the cluster's UI attributes
-        [username, password] = getAttributes(clusterElement, ['data-username', 'data-password'])
+        // Username and password have been encrypted already and added to the connection's UI attributes
+        [username, password] = getAttributes(connectionElement, ['data-username', 'data-password'])
 
         // If both username and password values are not valid then stop then skip this try-catch block
         if ([username, password].some((secret) => secret == undefined || secret.trim().length <= 0))
@@ -8597,10 +8599,10 @@
       } catch (e) {}
 
       /**
-       * Inner function to start the connection test process with cluster
+       * Inner function to start the connection test process with connection
        *
        * @Parameters:
-       * {object} `?sshCreation` the SSH tunnel object associated with the cluster
+       * {object} `?sshCreation` the SSH tunnel object associated with the connection
        */
       let startTestConnection = async (sshCreation = null) => {
         // Define an SSH port object to be passed if needed
@@ -8659,7 +8661,7 @@
              * Implement a data center(s) check
              * By default, no data center is set unless the user provides one
              */
-            let dataCenter = getAttributes(clusterElement, 'data-datacenter'),
+            let dataCenter = getAttributes(connectionElement, 'data-datacenter'),
               // Define a flag to tell if the provided data center - if provided - exists and is seen by the app or not
               isDataCenterExists = true,
               // Hold all detected/seen data centers' names in array
@@ -8690,7 +8692,7 @@
               allDataCenters = [...new Set(result.datacenters.map((_dataCenter) => _dataCenter.datacenter))]
             } catch (e) {}
 
-            // Failed to connect with the cluster
+            // Failed to connect with the connection
             try {
               // If the `connected` attribute in the result is `true`, and the Apache Cassandra's version has been identified, or the testing process hasn't been terminated then skip this try-catch block
               if (result.connected && ![undefined, null].includes(result.version) && result.terminated == undefined)
@@ -8707,18 +8709,18 @@
                 showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
 
                 // Enable or disable the save button based on the test's result
-                $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
+                $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
 
                 // Skip the upcoming code
                 throw 0
               }
 
               /**
-               * Update cluster UI element
+               * Update connection UI element
                *
-               * Change the `connected` attribute's value to `false` - failed to connect with the cluster -
+               * Change the `connected` attribute's value to `false` - failed to connect with the connection -
                */
-              clusterElement.attr('data-connected', 'false')
+              connectionElement.attr('data-connected', 'false')
 
               try {
                 // If the testing process has been terminated then skip this try-catch block - as ther's no need to show an error feedback to the user -
@@ -8729,20 +8731,20 @@
                 let error = result.error.trim().length != 0 ? `, ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to activate connection [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)]))}${error}.`, 'failure')
+                showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to activate connection [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)]))}${error}.`, 'failure')
               } catch (e) {}
 
               // Close the SSH tunnel if it exists
               try {
-                IPCRenderer.send('ssh-tunnel:close', getAttributes(clusterElement, 'data-id'))
+                IPCRenderer.send('ssh-tunnel:close', getAttributes(connectionElement, 'data-id'))
               } catch (e) {}
 
               setTimeout(() => {
                 // Test process has finished
-                clusterElement.removeClass('test-connection enable-terminate-process')
+                connectionElement.removeClass('test-connection enable-terminate-process')
 
                 // Hide the termination process' button after a set time out
-                setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+                setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
                 // Show failure feedback if the testing process hasn't been terminated
                 statusElement.removeClass('success').toggleClass('show failure', result.terminated == undefined)
@@ -8752,22 +8754,22 @@
               })
 
               // Get the credentials attributes
-              let [credentialsAuth, credentialsSSH] = getAttributes(clusterElement, ['data-credentials-auth', 'data-credentials-ssh'])
+              let [credentialsAuth, credentialsSSH] = getAttributes(connectionElement, ['data-credentials-auth', 'data-credentials-ssh'])
 
-              // If there are no DB authentication credentials for the cluster then remove all associated attributes
+              // If there are no DB authentication credentials for the connection then remove all associated attributes
               try {
                 if (credentialsAuth == undefined)
                   throw 0
 
-                clusterElement.removeAttr('data-username data-password data-got-credentials')
+                connectionElement.removeAttr('data-username data-password data-got-credentials')
               } catch (e) {}
 
-              // If there's no SSH credentials for the cluster then remove all associated attributes
+              // If there's no SSH credentials for the connection then remove all associated attributes
               try {
                 if (credentialsSSH == undefined)
                   throw 0
 
-                clusterElement.removeAttr('data-ssh-username data-ssh-password data-ssh-passphrase data-got-credentials')
+                connectionElement.removeAttr('data-ssh-username data-ssh-password data-ssh-passphrase data-got-credentials')
               } catch (e) {}
 
               /**
@@ -8783,7 +8785,7 @@
                   throw 0
 
                 // Show feedback to the user about starting the execution process
-                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
+                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
 
                 // Execute the post-connection scripts in order
                 executeScript(0, scripts.post, (executionResult) => {
@@ -8802,11 +8804,11 @@
                     executionFeedback = `. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`
 
                     // Show feedback to the user
-                    setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('post'), getAttributes(clusterElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
+                    setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('post'), getAttributes(connectionElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
                   } catch (e) {
                     // Show success feedback to the user if the error is `0` code
                     if (e == 0)
-                      setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
+                      setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(connectionElement, 'data-name')])) + '.', 'success'), 50)
                   }
                 })
               } catch (e) {}
@@ -8816,11 +8818,11 @@
             } catch (e) {}
 
             /**
-             * Successfully connected with the cluster
+             * Successfully connected with the connection
              *
-             * Add the created SSH tunnel object to the `sshTunnelsObjects` array; to have the ability to identify if the cluster has an SSH tunnel associated with it
+             * Add the created SSH tunnel object to the `sshTunnelsObjects` array; to have the ability to identify if the connection has an SSH tunnel associated with it
              */
-            sshTunnelsObjects[clusterObject.info.id] = sshCreation
+            sshTunnelsObjects[connectionObject.info.id] = sshCreation
 
             // Show Apache Cassandra version
             cassandraVersion.children('div._placeholder').hide()
@@ -8842,15 +8844,15 @@
               dataCenterElement.children('div.text').text(`${result.datacenter}`)
             }
 
-            // Update some attributes for the cluster UI element alongside some classes
-            clusterElement.attr({
+            // Update some attributes for the connection UI element alongside some classes
+            connectionElement.attr({
               'data-cassandra-version': result.version,
               'data-datacenter': result.datacenter,
               'data-datacenters': result.datacenters ? JSON.stringify(result.datacenters) : null,
               'data-connected': 'true'
             })
 
-            // Add the success state to the cluster's UI element
+            // Add the success state to the connection's UI element
             statusElement.removeClass('failure')
 
             try {
@@ -8864,17 +8866,17 @@
 
             // Show success feedback to the user
             if (!clickConnectBtn)
-              showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('test connection [b]$data[/b] in workspace [b]$data[/b] has finished with success, you can now connect with it and start a session', [getAttributes(clusterElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
+              showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('test connection [b]$data[/b] in workspace [b]$data[/b] has finished with success, you can now connect with it and start a session', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
 
             setTimeout(() => {
               // Enable the `CONNECT` button
               connectBtn.add(testConnectionBtn).removeAttr('disabled')
 
               // Remove the test connection state
-              clusterElement.removeClass('test-connection enable-terminate-process')
+              connectionElement.removeClass('test-connection enable-terminate-process')
 
               // Hide the termination process' button after a set time out
-              setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+              setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
               try {
                 if (!clickConnectBtn)
@@ -8891,7 +8893,7 @@
        * Inner function to do processes that come after checking SSH tunneling info
        *
        * @Parameters:
-       * {object} `?sshCreation` the SSH tunnel object associated with the cluster
+       * {object} `?sshCreation` the SSH tunnel object associated with the connection
        */
       let afterSSHTunnelingCheck = async (sshCreation = null) => {
         try {
@@ -8899,21 +8901,21 @@
           if (scripts.pre.length <= 0)
             throw 0
 
-          // Add the loading/processing class to the cluster UI element
-          clusterElement.addClass('test-connection')
+          // Add the loading/processing class to the connection UI element
+          connectionElement.addClass('test-connection')
 
           // Show the termination process' button
-          setTimeout(() => clusterElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+          setTimeout(() => connectionElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
           // Show feedback to the user about starting the execution process
-          setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('pre-connection scripts are being executed before starting with connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(clusterElement, 'data-name')])) + '.'), 50)
+          setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('pre-connection scripts are being executed before starting with connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
 
           // Execute the pre-connection scripts with order
           executeScript(0, scripts.pre, (executionResult) => {
             // All scripts have been executed successfully; thus start the connection test process
             if (executionResult.status == 0) {
               // Show a success feedback to the user
-              setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('pre'), getAttributes(clusterElement, 'data-name')])) + '.', 'success'), 50)
+              setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('pre'), getAttributes(connectionElement, 'data-name')])) + '.', 'success'), 50)
 
               // Start the connection test process
               startTestConnection(sshCreation)
@@ -8934,7 +8936,7 @@
               info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
 
             // Show feedback to the user
-            setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('pre'), getAttributes(clusterElement, 'data-name')]))}. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`, 'failure'), 50)
+            setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('pre'), getAttributes(connectionElement, 'data-name')]))}. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`, 'failure'), 50)
 
             // Call the error feedback function
             errorVisualFeedback()
@@ -8948,13 +8950,13 @@
         startTestConnection(sshCreation)
       }
 
-      // Inner function that do the changes in cluster element when an error occurs
+      // Inner function that do the changes in connection element when an error occurs
       let errorVisualFeedback = (isProcessTerminated = false) => {
         // Remove the test connection class
-        clusterElement.removeClass('test-connection enable-terminate-process')
+        connectionElement.removeClass('test-connection enable-terminate-process')
 
         // Hide the termination process' button after a set time out
-        setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+        setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
         // Show failure feedback if the process hasn't been terminated
         statusElement.removeClass('success')[isProcessTerminated ? 'removeClass' : 'addClass']('show failure')
@@ -8963,7 +8965,7 @@
         testConnectionBtn.removeAttr('disabled')
 
         // Get the credentials from the associated attributes
-        let [credentialsAuth, credentialsSSH] = getAttributes(clusterElement, ['data-credentials-auth', 'data-credentials-ssh'])
+        let [credentialsAuth, credentialsSSH] = getAttributes(connectionElement, ['data-credentials-auth', 'data-credentials-ssh'])
 
         try {
           // If there are no DB authentication credentials then skip this try-catch block
@@ -8971,7 +8973,7 @@
             throw 0
 
           // Remove all related attributes
-          clusterElement.removeAttr('data-username data-password data-got-credentials')
+          connectionElement.removeAttr('data-username data-password data-got-credentials')
         } catch (e) {}
 
         try {
@@ -8980,7 +8982,7 @@
             throw 0
 
           // Remove all related attributes
-          clusterElement.removeAttr('data-ssh-username data-ssh-password data-got-credentials')
+          connectionElement.removeAttr('data-ssh-username data-ssh-password data-got-credentials')
         } catch (e) {}
       }
 
@@ -8988,9 +8990,9 @@
        * The workflow of the `testConnection` function is:
        * Pre-processes and checks -> Checking SSH tunneling info -> Create an SSH Tunnel || No need to create an SSH tunnel -> afterSSHTunnelingCheck() -> startTestConnection()
        *
-       * Get the SSH tunnel creation info for the cluster
+       * Get the SSH tunnel creation info for the connection
        */
-      let sshTunnelingInfo = await Modules.Clusters.getSSHTunnelingInfo(workspaceID, getAttributes(clusterElement, 'data-folder'))
+      let sshTunnelingInfo = await Modules.Connections.getSSHTunnelingInfo(workspaceID, getAttributes(connectionElement, 'data-folder'))
 
       try {
         // If there's no need to create an SSH tunnel then skip this try-catch block
@@ -9016,7 +9018,7 @@
            *
            * Everything needed is present, except username and password - if no SSH private key file is provided -, so we'll get them, decrypt them, and add them to the object final SSH object
            */
-          let [sshUsername, sshPassword, sshPassphrase] = getAttributes(clusterElement, ['data-ssh-username', 'data-ssh-password', 'data-ssh-passphrase'])
+          let [sshUsername, sshPassword, sshPassphrase] = getAttributes(connectionElement, ['data-ssh-username', 'data-ssh-password', 'data-ssh-passphrase'])
 
           // Check that the username is at least, and maybe password values are valid
           if (([sshUsername, sshPassword, sshPassphrase].every((secret) => secret == undefined || secret.trim().length <= 0))) {
@@ -9075,8 +9077,8 @@
             let host = sshTunnelingInfo.dstAddr != '127.0.0.1' ? sshTunnelingInfo.dstAddr : sshTunnelingInfo.host,
               port = sshTunnelingInfo.dstPort
 
-            // Define the cluster's ID in the SSH tunneling info object
-            sshTunnelingInfo.clusterID = getAttributes(clusterElement, 'data-id')
+            // Define the connection's ID in the SSH tunneling info object
+            sshTunnelingInfo.connectionID = getAttributes(connectionElement, 'data-id')
 
             // Add the passed requestID
             sshTunnelingInfo = {
@@ -9101,7 +9103,7 @@
                * Show feedback to the user
                */
               if (!creationResult.terminated)
-                showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to establish an SSH tunnel for connection [b]$data[/b]', [getAttributes(clusterElement, 'data-name')]))}</b>. ${creationResult.error}.`, 'failure')
+                showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to establish an SSH tunnel for connection [b]$data[/b]', [getAttributes(connectionElement, 'data-name')]))}</b>. ${creationResult.error}.`, 'failure')
 
               // Call the error's visual feedback function
               errorVisualFeedback(creationResult.terminated)
@@ -9123,18 +9125,18 @@
      * Inner function to update the SSL lock pad's status
      *
      * @Parameters:
-     * {object} `clusterElement` is the target cluster's UI element
+     * {object} `connectionElement` is the target connection's UI element
      */
-    let updateSSLLockpadStatus = (clusterElement) => {
+    let updateSSLLockpadStatus = (connectionElement) => {
       // Point at the SSL lock pad icon in the left side of the work area
-      let workareaInfoContainer = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-id')}"] div.sub-sides.left div.cluster-info`),
+      let workareaInfoContainer = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${getAttributes(connectionElement, 'data-id')}"] div.sub-sides.left div.connection-info`),
         lockpad = workareaInfoContainer.find('div.status ion-icon'),
         // Get the MDB tooltip's object of the lockpad
         tooltip = getElementMDBObject(lockpad.parent(), 'Tooltip')
 
       try {
-        // Whether or not SSL is enabled or disabled for the target cluster
-        let enabledSSL = getAttributes(clusterElement, 'ssl-enabled')
+        // Whether or not SSL is enabled or disabled for the target connection
+        let enabledSSL = getAttributes(connectionElement, 'ssl-enabled')
 
         // Reset the lock pad status
         lockpad.attr('name', 'unknown')
@@ -9149,7 +9151,7 @@
           } catch (e) {}
         })
 
-        // If the SSL status for the cluster is not defined yet then skip this try-catch block
+        // If the SSL status for the connection is not defined yet then skip this try-catch block
         if (enabledSSL == undefined) {
           try {
             tooltip.setContent(defaultTitle)
@@ -9181,45 +9183,45 @@
     }
 
     /**
-     * Inner function to update the mini cluster's background color - the elements in the workspace's element in the list -
+     * Inner function to update the mini connection's background color - the elements in the workspace's element in the list -
      *
      * @Parameters:
-     * {string} `workspaceID` the ID of the cluster's workspace
-     * {string} `clusterID` the ID of the cluster
-     * {boolean} `?noColor` Determine if the mini cluster's background color will be reseted
+     * {string} `workspaceID` the ID of the connection's workspace
+     * {string} `connectionID` the ID of the connection
+     * {boolean} `?noColor` Determine if the mini connection's background color will be reseted
      */
-    updateMiniCluster = (workspaceID, clusterID, noColor = false) => {
-      // Point at the cluster's workspace element
+    updateMiniConnection = (workspaceID, connectionID, noColor = false) => {
+      // Point at the connection's workspace element
       let workspaceElement = $(`div.workspaces-container div.workspace[data-id="${workspaceID}"]`),
         // Get the color of the workspace in RGB format `R G B`
         workspaceColorRGB = HEXToRGB(getAttributes(workspaceElement, 'data-color')).join(' '),
-        // Point at the mini cluster
-        miniCluster = workspaceElement.find(`div._cluster[_cluster-id="${clusterID}"]`)
+        // Point at the mini connection
+        miniConnection = workspaceElement.find(`div._connection[_connection-id="${connectionID}"]`)
 
-      // Determine if the mini cluster is clickable - can be used to navigate to the cluster's work area -
-      miniCluster.toggleClass('clickable', !noColor)
+      // Determine if the mini connection is clickable - can be used to navigate to the connection's work area -
+      miniConnection.toggleClass('clickable', !noColor)
 
-      // Update the mini cluster's background color
-      // miniCluster.css('background', !noColor ? (getAttributes(workspaceElement, 'data-color').trim().length != 0 ? `rgb(${workspaceColorRGB} / 70%)` : '#7c7c7c') : '')
+      // Update the mini connection's background color
+      // miniConnection.css('background', !noColor ? (getAttributes(workspaceElement, 'data-color').trim().length != 0 ? `rgb(${workspaceColorRGB} / 70%)` : '#7c7c7c') : '')
     }
   })
-  // End of `getClusters` and `refreshClusters` events
+  // End of `getConnections` and `refreshConnections` events
 
   /**
-   * Define an inner function - which will be used in `refresh` and `get` clusters events and in other events associated with clusters
-   * The full definition is applied at the very bottom of 'getClusters refreshClusters' events listener
+   * Define an inner function - which will be used in `refresh` and `get` connections events and in other events associated with connections
+   * The full definition is applied at the very bottom of 'getConnections refreshConnections' events listener
    */
-  let updateMiniCluster
+  let updateMiniConnection
 
   // Set the time which after it the termination of the connection test process is allowed
   const ConnectionTestProcessTerminationTimeout = 250
 
-  // Handle different events for elements related to clusters - especially the add/edit cluster dialog -
+  // Handle different events for elements related to connections - especially the add/edit connection dialog -
   {
     // Add/edit dialog
     {
       // Define a portion of the common CSS selector
-      let dialog = `div.modal#addEditClusterDialog div.modal-body div.side`
+      let dialog = `div.modal#addEditConnectionDialog div.modal-body div.side`
 
       // Clicks any of the section's buttons in the left side of the dialog
       {
@@ -9246,7 +9248,7 @@
         })
       }
 
-      // Events handlers for the `Add New Cluster` dialog and its elements
+      // Events handlers for the `Add New Connection` dialog and its elements
       {
         // Handle `input` and `click` events for all input fields
         {
@@ -9294,7 +9296,7 @@
               // Get final values - from the input fields - as JSON object
               let finalValues = await variablesManipulation(workspaceID, cqlshValues),
                 // Apply the final values to the editor's content
-                updatedCQLSH = Modules.Clusters.setCQLSHRCContent(finalValues, null, editor)
+                updatedCQLSH = Modules.Connections.setCQLSHRCContent(finalValues, null, editor)
 
               // Set the new content
               editor.setValue(updatedCQLSH)
@@ -9339,9 +9341,9 @@
           })
         }
 
-        // When change occurs in any of the input fields - except the cluster's name - the `SAVE THE CLUSTER` button will be disabled
+        // When change occurs in any of the input fields - except the connection's name - the `SAVE THE CLUSTER` button will be disabled
         {
-          $(`${dialog}-right div.modal-section [info-section][info-key]:not([info-key="clusterName"])`).on('input', () => $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null))
+          $(`${dialog}-right div.modal-section [info-section][info-key]:not([info-key="connectionName"])`).on('input', () => $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null))
         }
 
         /**
@@ -9353,7 +9355,7 @@
         {
           // Define the scroll value, by default, the current scroll value is `0` - at the top of the dialog -
           let scrollValue = 0,
-            dialogElement = $(`div.modal#addEditClusterDialog`)
+            dialogElement = $(`div.modal#addEditConnectionDialog`)
 
           // Clicks the `SWITCH TO EDITOR` button
           $('#switchEditor').click(function() {
@@ -9452,27 +9454,27 @@
         }
 
         {
-          // Define a temporary cluster ID to be used in the testing and adding prcoesses
-          let tempClusterID = null,
-            // Hold the test cluster's object
-            testedClusterObject = null,
-            // Hold the test cluster's created SSH tunnel - if one has been created -
+          // Define a temporary connection ID to be used in the testing and adding prcoesses
+          let tempConnectionID = null,
+            // Hold the test connection's object
+            testedConnectionObject = null,
+            // Hold the test connection's created SSH tunnel - if one has been created -
             testedSSHTunnelObject = null
 
-          // The testing connection process with the to be added/updated cluster
+          // The testing connection process with the to be added/updated connection
           {
             /**
-             * Define an initial ID for the connection test process of the to be added/updated cluster
+             * Define an initial ID for the connection test process of the to be added/updated connection
              * The value will be updated with every test connection process
              */
             let testConnectionProcessID,
               // Define an initial ID for the SSH tunnel creation process as well
               sshTunnelCreationRequestID,
-              // Flag to tell if an SSH tunnel is needed before connecting with Cassandra cluster/node
+              // Flag to tell if an SSH tunnel is needed before connecting with Cassandra connection/node
               isSSHTunnelNeeded = false
 
-            // Clicks the `TEST CONNECTION` button to do a connection test with the cluster before saving/updating it
-            $('#testConnectionCluster').click(async function() {
+            // Clicks the `TEST CONNECTION` button to do a connection test with the connection before saving/updating it
+            $('#testConnection').click(async function() {
               let hostname = '', // The given hostname
                 port = 9042, // Default port to connect with Apache Cassandra
                 dataCenter = $('[info-section="none"][info-key="datacenter"]').val(), // By default, no data center is set unless the user provides one
@@ -9491,8 +9493,8 @@
                 workspaceID = getActiveWorkspaceID(),
                 // Point at the `TEST CONNECTION` button
                 button = $(this),
-                // Point at the add/edit cluster's dialog
-                dialogElement = $('div.modal#addEditClusterDialog')
+                // Point at the add/edit connection's dialog
+                dialogElement = $('div.modal#addEditConnectionDialog')
 
               // Get a random ID for this connection test process
               testConnectionProcessID = getRandomID(30)
@@ -9507,7 +9509,7 @@
 
               try {
                 // For AstraDB Connection type
-                let isAstraDBConnectionType = $('div#addEditClusterDialog').attr('data-selected-modal-body') == 'astra-db'
+                let isAstraDBConnectionType = $('div#addEditConnectionDialog').attr('data-selected-modal-body') == 'astra-db'
 
                 if (!isAstraDBConnectionType)
                   throw 0
@@ -9537,18 +9539,18 @@
                 if (isMissingDataFound)
                   return showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t('to test connection with Astra DB, all fields are required, please make sure to provide them all before attempting to test connection again')) + '.', 'failure')
 
-                // The dialog is testing the connection with the cluster
+                // The dialog is testing the connection with the connection
                 dialogElement.addClass('test-connection')
 
                 // Show the termination process' button
                 setTimeout(() => dialogElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
                 // Disable all the buttons in the footer
-                button.add('#addCluster').add('#switchEditor').attr('disabled', 'disabled')
+                button.add('#addConnection').add('#switchEditor').attr('disabled', 'disabled')
 
-                $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').addClass('disabled')
+                $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').addClass('disabled')
 
-                tempClusterID = null
+                tempConnectionID = null
 
                 try {
                   // Get the SSH username and password - for Apache Cassandra's authentication -
@@ -9574,10 +9576,10 @@
                     // Enable some buttons in the footer
                     button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
-                    $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
+                    $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
 
                     // Disable the `SAVE CLUSTER` button
-                    $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
+                    $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
 
                     // Show feedback to the user
                     showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
@@ -9616,8 +9618,8 @@
                        */
                       let executionFeedback = ''
 
-                      // Hold the tested cluster's object
-                      testedClusterObject = result
+                      // Hold the tested connection's object
+                      testedConnectionObject = result
 
                       // Hold all detected/seen data centers' names in array
                       let allDataCenters
@@ -9632,15 +9634,15 @@
                         // Enable the `TEST CONNECTION` button
                         button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
-                        $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
+                        $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
 
                         // Determine if the connection test has succeeded or not, or terminated
                         let notConnected = !result.connected || [undefined, null].includes(result.version) || result.terminated != undefined
 
                         // Enable or disable the save button based on the test's result
-                        $('#addCluster').attr('disabled', !notConnected || getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') != undefined ? null : 'disabled')
+                        $('#addConnection').attr('disabled', !notConnected || getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') != undefined ? null : 'disabled')
 
-                        // Failed to connect with the cluster - process hasn't been terminated -
+                        // Failed to connect with the connection - process hasn't been terminated -
                         if (notConnected && result.terminated == undefined) {
                           // Define the error message
                           let error = result.error.trim().length != 0 ? ` ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
@@ -9657,14 +9659,14 @@
                           throw 0
 
                         /**
-                         * Successfully connected with the cluster
+                         * Successfully connected with the connection
                          *
                          * Get the success feedback suffix
                          */
                         let suffix = I18next.t('you may now save it')
 
                         // Change the suffix if the dialog's current mode is `edit`
-                        if (getAttributes(dialogElement, 'data-edit-cluster-id') != undefined)
+                        if (getAttributes(dialogElement, 'data-edit-connection-id') != undefined)
                           suffix = I18next.t('you can now complete the update')
 
                         try {
@@ -9690,12 +9692,12 @@
               } catch (e) {}
 
               // For Apache Cassandra Connection type
-              // Get a temporary random ID for the cluster which is being tested
-              tempClusterID = getRandomID(30)
+              // Get a temporary random ID for the connection which is being tested
+              tempConnectionID = getRandomID(30)
 
               // Attempt to close the created SSH tunnel - if exists -
               try {
-                IPCRenderer.send('ssh-tunnel:close', tempClusterID)
+                IPCRenderer.send('ssh-tunnel:close', tempConnectionID)
               } catch (e) {}
 
               try {
@@ -9749,7 +9751,7 @@
 
               /**
                * Check pre and post connect scripts
-               * Get all scripts associated with the cluster
+               * Get all scripts associated with the connection
                */
               let check = await getPrePostConnectionScripts(workspaceID)
 
@@ -9770,7 +9772,7 @@
                 // Enable the `TEST CONNECTION` button
                 button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
-                $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
+                $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
 
                 // Remove the test connection class
                 dialogElement.removeClass('test-connection enable-terminate-process')
@@ -9804,27 +9806,27 @@
                 isSSHTunnelNeeded = sshTunnel
               } catch (e) {}
 
-              // The dialog is testing the connection with the cluster
+              // The dialog is testing the connection with the connection
               dialogElement.addClass('test-connection')
 
               // Show the termination process' button
               setTimeout(() => dialogElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
 
               // Disable all the buttons in the footer
-              button.add('#addCluster').add('#switchEditor').attr('disabled', 'disabled')
+              button.add('#addConnection').add('#switchEditor').attr('disabled', 'disabled')
 
-              $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').addClass('disabled')
+              $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').addClass('disabled')
 
               /**
                * Inner function to do processes which are after the SSH tunneling creation process - whether the process has been executed or not -
                *
                * @Parameters:
-               * {object} `?sshCreation` the SSH tunnel object associated with the cluster
+               * {object} `?sshCreation` the SSH tunnel object associated with the connection
                */
               let afterSSHProcess = async (sshCreation = null) => {
-                // Make sure to set tempClusterID to `null` if there's no SSH tunnel to be created
+                // Make sure to set tempConnectionID to `null` if there's no SSH tunnel to be created
                 if (sshCreation == null)
-                  tempClusterID = null
+                  tempConnectionID = null
 
                 try {
                   // Get the SSH username and password - for Apache Cassandra's authentication -
@@ -9835,7 +9837,7 @@
                   waitForEncryption = [username, password].every((secret) => secret.trim().length != 0)
                 } catch (e) {}
 
-                // Inner function inside `afterSSHProcess` function; to start the connection test with cluster
+                // Inner function inside `afterSSHProcess` function; to start the connection test with connection
                 let startTestConnection = async () => {
                   /**
                    * A custom port might be passed to the `cqlsh` tool in case there's an SSH tunnel creation process
@@ -9905,10 +9907,10 @@
                         // Enable some buttons in the footer
                         button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
-                        $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
+                        $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
 
                         // Disable the `SAVE CLUSTER` button
-                        $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
+                        $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
 
                         // Show feedback to the user
                         showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
@@ -9972,8 +9974,8 @@
                        */
                       let executionFeedback = ''
 
-                      // Hold the tested cluster's object
-                      testedClusterObject = result
+                      // Hold the tested connection's object
+                      testedConnectionObject = result
 
                       /**
                        * Implement a data center(s) check
@@ -10005,13 +10007,13 @@
                         // Enable the `TEST CONNECTION` button
                         button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
-                        $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
+                        $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
 
                         // Determine if the connection test has succeeded or not, or terminated
                         let notConnected = !result.connected || [undefined, null].includes(result.version) || result.terminated != undefined
 
                         // Enable or disable the save button based on the test's result
-                        $('#addCluster').attr('disabled', !notConnected || getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') != undefined ? null : 'disabled')
+                        $('#addConnection').attr('disabled', !notConnected || getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') != undefined ? null : 'disabled')
 
                         // If the provided data center doesn't exist
                         if (!isDataCenterExists) {
@@ -10024,13 +10026,13 @@
                           showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
 
                           // Enable or disable the save button based on the test's result
-                          $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
+                          $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
 
                           // Skip the upcoming code
                           throw 0
                         }
 
-                        // Failed to connect with the cluster - process hasn't been terminated -
+                        // Failed to connect with the connection - process hasn't been terminated -
                         if (notConnected && result.terminated == undefined) {
                           // Define the error message
                           let error = result.error.trim().length != 0 ? ` ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
@@ -10057,14 +10059,14 @@
                         } catch (e) {}
 
                         /**
-                         * Successfully connected with the cluster
+                         * Successfully connected with the connection
                          *
                          * Get the success feedback suffix
                          */
                         let suffix = I18next.t('you may now save it')
 
                         // Change the suffix if the dialog's current mode is `edit`
-                        if (getAttributes(dialogElement, 'data-edit-cluster-id') != undefined)
+                        if (getAttributes(dialogElement, 'data-edit-connection-id') != undefined)
                           suffix = I18next.t('you can now complete the update')
 
                         try {
@@ -10144,7 +10146,7 @@
                   showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('failed to complete the test process, please check the privileges of the app to read/write'))}.`, 'failure')
 
                   // Disable the `SAVE CLUSTER` button
-                  $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
+                  $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
 
                   // Skip the upcoming code
                   return
@@ -10158,7 +10160,7 @@
               // Inner function to check and - based on the check result - create an SSH tunnel
               let checkAndCreateSSHTunnel = () => {
                 /**
-                 * There's a need to create an SSH tunnel before testing the connection with the cluster
+                 * There's a need to create an SSH tunnel before testing the connection with the connection
                  *
                  * Check if an SSH client is installed and accessible
                  */
@@ -10172,7 +10174,7 @@
                   ssh.port = $('[info-section="none"][info-key="ssh-port"]').val() || 22
                   ssh.dstAddr = $('[info-section="none"][info-key="ssh-dest-addr"]').val() || '127.0.0.1'
                   ssh.dstPort = $('[info-section="none"][info-key="ssh-dest-port"]').val() || cqlshContent.connection.port
-                  ssh.clusterID = tempClusterID
+                  ssh.connectionID = tempConnectionID
 
                   // Add the generated requestID
                   ssh = {
@@ -10208,7 +10210,7 @@
                     // Enable the `TEST CONNECTION` button
                     button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
-                    $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
+                    $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
 
                     // Show feedback to the user
                     if (!creationResult.terminated)
@@ -10270,10 +10272,10 @@
                   // Enable the `TEST CONNECTION` button
                   button.add('#switchEditor').removeAttr('disabled', 'disabled')
 
-                  $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
+                  $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
 
                   // Disable the `SAVE CLUSTER` button
-                  $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
+                  $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
                 })
 
                 // Skip the upcoming code
@@ -10296,7 +10298,7 @@
 
                 // Attempt to close the SSH tunnel if it has already been created
                 try {
-                  IPCRenderer.send('ssh-tunnel:close', tempClusterID)
+                  IPCRenderer.send('ssh-tunnel:close', tempConnectionID)
                 } catch (e) {}
 
                 // Send a request to terminate the SSH tunnel creation process
@@ -10322,8 +10324,8 @@
 
           // Clicks the `SAVE/UPDATE CLUSTER` button
           {
-            $('#addCluster').click(async function() {
-              let clusterName = $('[info-section="none"][info-key="clusterName"]').val(), // The cluster's unique name
+            $('#addConnection').click(async function() {
+              let connectionName = $('[info-section="none"][info-key="connectionName"]').val(), // The connection's unique name
                 dataCenter = $('[info-section="none"][info-key="datacenter"]').val(), // By default, no data center is set unless the user provides one
                 username = '', // Apache Cassandra's username
                 password = '', // Apache Cassandra's password
@@ -10341,8 +10343,8 @@
                 // Save/update button
                 button = $(this),
                 // We're in editing mode or not
-                editingMode = getAttributes($(`div.modal#addEditClusterDialog`), 'data-edit-cluster-id') != undefined,
-                finalCluster
+                editingMode = getAttributes($(`div.modal#addEditConnectionDialog`), 'data-edit-connection-id') != undefined,
+                finalConnection
 
               // Add log about this request
               try {
@@ -10350,15 +10352,15 @@
               } catch (e) {}
 
               /**
-               * Inner function to do processes after saving/updating cluster
+               * Inner function to do processes after saving/updating connection
                *
                * @Parameters:
                * {boolean} `status` saving/updating process status [true: success, false: failed]
-               * {object} `?secrets` secrets to be updated for the cluster after the saving/updating process
+               * {object} `?secrets` secrets to be updated for the connection after the saving/updating process
                */
               let postProcess = async (status, secrets = null) => {
                 // Enable the buttons in the footer
-                button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
+                button.add('#testConnection').add('#switchEditor').removeAttr('disabled')
 
                 try {
                   // If the saving/updating process has succeeded then skip this try-catch block
@@ -10373,7 +10375,7 @@
                 } catch (e) {}
 
                 /**
-                 * The cluster has been successfully saved/updated
+                 * The connection has been successfully saved/updated
                  *
                  * Show feedback to the user
                  */
@@ -10386,8 +10388,8 @@
                 try {
                   /**
                    * If this is an editing mode then there's no need for this try-catch block
-                   * When the user attempts to edit another cluster all fields are updated
-                   * Also when attempting to add a new cluster the app detects that the previous attempt was `edit` and do changes as needed
+                   * When the user attempts to edit another connection all fields are updated
+                   * Also when attempting to add a new connection the app detects that the previous attempt was `edit` and do changes as needed
                    */
                   if (editingMode)
                     throw 0
@@ -10396,7 +10398,7 @@
                     // Set the default `.cqlshrc` content
                     editor.setValue(Modules.Consts.CQLSHRC)
 
-                    $('div.modal#addEditClusterDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
+                    $('div.modal#addEditConnectionDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
 
                     // Loop through each input not related to section nor key in the `.cqlshrc` content
                     $('[info-section="none"][info-key]').each(function() {
@@ -10449,45 +10451,45 @@
                   if (!editingMode)
                     throw 0
 
-                  // Point at the cluster's UI element in the workspace clusters' list
-                  let clusterUI = $(`div.clusters-container div.clusters div.cluster[data-id="${editedClusterObject.info.id}"]`),
-                    // Get all saved clusters
-                    getAllClusters = await Modules.Clusters.getClusters(workspaceID),
-                    // Get the edited/updated cluster
-                    newEditedCluster = getAllClusters.find((_cluster) => _cluster.info.id == finalCluster.info.id)
+                  // Point at the connection's UI element in the workspace connections' list
+                  let connectionUI = $(`div.connections-container div.connections div.connection[data-id="${editedConnectionObject.info.id}"]`),
+                    // Get all saved connections
+                    getAllConnections = await Modules.Connections.getConnections(workspaceID),
+                    // Get the edited/updated connection
+                    newEditedConnection = getAllConnections.find((_connection) => _connection.info.id == finalConnection.info.id)
 
-                  // Update the cluster's name
+                  // Update the connection's name
                   try {
-                    clusterUI.find('div.header > div.title').text(newEditedCluster.name)
+                    connectionUI.find('div.header > div.title').text(newEditedConnection.name)
                   } catch (e) {}
 
-                  // Update the cluster's host
+                  // Update the connection's host
                   try {
-                    clusterUI.find('div.info[info="host"] div.text').text(newEditedCluster.host)
+                    connectionUI.find('div.info[info="host"] div.text').text(newEditedConnection.host)
                   } catch (e) {}
 
                   // Hide cassandra and datacenter info elements and show their placeholder
                   (['cassandra', 'data-center']).forEach((info) => {
-                    info = clusterUI.find(`div.info[info="${info}"]`)
+                    info = connectionUI.find(`div.info[info="${info}"]`)
                     info.children('div.text').text('')
                     info.children('div._placeholder').fadeIn('fast')
                   })
 
-                  // Update the cluster's UI element's attributes
-                  clusterUI.attr({
-                    'data-name': newEditedCluster.name,
-                    'data-folder': newEditedCluster.folder,
-                    'data-host': newEditedCluster.host,
+                  // Update the connection's UI element's attributes
+                  connectionUI.attr({
+                    'data-name': newEditedConnection.name,
+                    'data-folder': newEditedConnection.folder,
+                    'data-host': newEditedConnection.host,
                     'data-connected': 'false',
                     'data-workarea': 'false'
                   })
 
-                  // Update the status of the cluster in the mini cluster's list
-                  updateMiniCluster(workspaceID, getAttributes(clusterUI, 'data-id'), true)
+                  // Update the status of the connection in the mini connection's list
+                  updateMiniConnection(workspaceID, getAttributes(connectionUI, 'data-id'), true)
 
                   try {
-                    // Update secrets data for the cluster - Apache Cassandra's authentication and SSH credentials -
-                    clusterUI.attr({
+                    // Update secrets data for the connection - Apache Cassandra's authentication and SSH credentials -
+                    connectionUI.attr({
                       'data-username': saveAuthCredentials && secrets.auth == undefined ? (secrets != null ? secrets.username : null) : null,
                       'data-password': saveAuthCredentials && secrets.auth == undefined ? (secrets != null ? secrets.password : null) : null,
                       'data-ssh-username': saveSSHCredentials && secrets.ssh == undefined ? (secrets != null ? secrets.sshUsername : null) : null,
@@ -10503,32 +10505,32 @@
                   }
 
                   // Remove all test connection status classes
-                  clusterUI.find('div.status').removeClass('show success failure')
+                  connectionUI.find('div.status').removeClass('show success failure')
 
-                  // Update the global `editedClusterObject` value
-                  editedClusterObject = newEditedCluster
+                  // Update the global `editedConnectionObject` value
+                  editedConnectionObject = newEditedConnection
                 } catch (e) {}
 
-                // Refresh clusters for the currently active workspace
-                $(document).trigger('refreshClusters', {
+                // Refresh connections for the currently active workspace
+                $(document).trigger('refreshConnections', {
                   workspaceID
                 })
 
-                // Get workspaces; to sync with newly added/updated clusters
+                // Get workspaces; to sync with newly added/updated connections
                 $(document).trigger('getWorkspaces')
 
                 {
                   setTimeout(() => {
-                    let clusterElement = $(`div.clusters-container div.cluster[data-id="${finalCluster.info.id}"]`),
-                      cassandraVersion = clusterElement.find('div[info="cassandra"]'),
+                    let connectionElement = $(`div.connections-container div.connection[data-id="${finalConnection.info.id}"]`),
+                      cassandraVersion = connectionElement.find('div[info="cassandra"]'),
                       // Point at the data center element
-                      dataCenterElement = clusterElement.find('div[info="data-center"]'),
+                      dataCenterElement = connectionElement.find('div[info="data-center"]'),
                       // Point at the `CONNECT` button
-                      connectBtn = clusterElement.children('div.footer').children('div.button').children('button.connect'),
+                      connectBtn = connectionElement.children('div.footer').children('div.button').children('button.connect'),
                       // Point at the `TEST CONNECTION` button
-                      testConnectionBtn = clusterElement.children('div.footer').children('div.button').children('button.test-connection'),
+                      testConnectionBtn = connectionElement.children('div.footer').children('div.button').children('button.test-connection'),
                       // Point at the status element - the flashing circle at the top right -
-                      statusElement = clusterElement.children('div.status')
+                      statusElement = connectionElement.children('div.status')
 
                     try {
                       if (!secrets[0])
@@ -10550,7 +10552,7 @@
 
                               let value = encrypt(key, secret.value)
 
-                              clusterElement.attr(`data-${secret.name.toLowerCase().replace('ssh', 'ssh-')}`, value)
+                              connectionElement.attr(`data-${secret.name.toLowerCase().replace('ssh', 'ssh-')}`, value)
                             } catch (e) {}
                           }
                         } catch (e) {}
@@ -10558,45 +10560,45 @@
                     } catch (e) {}
 
                     try {
-                      if (tempClusterID == null)
+                      if (tempConnectionID == null)
                         throw 0
 
                       /**
-                       * Add the created SSH tunnel object to the `sshTunnelsObjects` array; to have the ability to identify if the cluster has an SSH tunnel associated with it
+                       * Add the created SSH tunnel object to the `sshTunnelsObjects` array; to have the ability to identify if the connection has an SSH tunnel associated with it
                        */
-                      sshTunnelsObjects[finalCluster.info.id] = testedSSHTunnelObject
+                      sshTunnelsObjects[finalConnection.info.id] = testedSSHTunnelObject
 
                       try {
                         IPCRenderer.send('ssh-tunnel:update', {
-                          oldID: tempClusterID,
-                          newID: finalCluster.info.id
+                          oldID: tempConnectionID,
+                          newID: finalConnection.info.id
                         })
                       } catch (e) {}
                     } catch (e) {}
 
                     // Show Apache Cassandra version
                     try {
-                      if (testedClusterObject.version != undefined) {
+                      if (testedConnectionObject.version != undefined) {
                         cassandraVersion.children('div._placeholder').hide()
-                        cassandraVersion.children('div.text').text(`v${testedClusterObject.version}`)
+                        cassandraVersion.children('div.text').text(`v${testedConnectionObject.version}`)
                       }
                     } catch (e) {}
 
                     // Show data center
                     try {
-                      if (testedClusterObject.datacenter != undefined) {
+                      if (testedConnectionObject.datacenter != undefined) {
                         dataCenterElement.children('div._placeholder').hide()
-                        dataCenterElement.children('div.text').text(`${testedClusterObject.datacenter}`)
+                        dataCenterElement.children('div.text').text(`${testedConnectionObject.datacenter}`)
                       }
                     } catch (e) {}
 
-                    // Update some attributes for the cluster UI element alongside some classes
+                    // Update some attributes for the connection UI element alongside some classes
                     let isConnected = false
                     try {
-                      clusterElement.attr({
-                        'data-cassandra-version': testedClusterObject.version,
-                        'data-datacenter': testedClusterObject.datacenter,
-                        'data-datacenters': JSON.stringify(testedClusterObject.datacenters),
+                      connectionElement.attr({
+                        'data-cassandra-version': testedConnectionObject.version,
+                        'data-datacenter': testedConnectionObject.datacenter,
+                        'data-datacenters': JSON.stringify(testedConnectionObject.datacenters),
                         'data-connected': 'true'
                       })
 
@@ -10606,7 +10608,7 @@
                     if (!isConnected)
                       return
 
-                    // Add the success state to the cluster's UI element
+                    // Add the success state to the connection's UI element
                     statusElement.removeClass('failure').addClass('show success')
 
                     setTimeout(() => {
@@ -10614,19 +10616,19 @@
                       connectBtn.add(testConnectionBtn).removeAttr('disabled')
 
                       // Remove the test connection state
-                      clusterElement.removeClass('test-connection enable-terminate-process')
+                      connectionElement.removeClass('test-connection enable-terminate-process')
 
                       // Hide the termination process' button after a set time out
-                      setTimeout(() => clusterElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+                      setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
                     })
                   }, 1000)
                 }
               }
-              // End of the inner function to do processes after saving/updating cluster
+              // End of the inner function to do processes after saving/updating connection
 
               // For AstraDB Connection type
               try {
-                let isAstraDBConnectionType = $('div#addEditClusterDialog').attr('data-selected-modal-body') == 'astra-db'
+                let isAstraDBConnectionType = $('div#addEditConnectionDialog').attr('data-selected-modal-body') == 'astra-db'
 
                 if (!isAstraDBConnectionType)
                   throw 0
@@ -10637,21 +10639,21 @@
                   SCBPath: $('#astraDBSCBPath').val()
                 }
 
-                clusterName = $('#astraDBConnectionName').val()
+                connectionName = $('#astraDBConnectionName').val()
 
                 // For Apache Cassandra Connection type
                 try {
-                  // If the provided cluster's name is valid then skip this try-catch block
-                  if (clusterName.trim().length > 0)
+                  // If the provided connection's name is valid then skip this try-catch block
+                  if (connectionName.trim().length > 0)
                     throw 0
 
-                  // Add an `invalid` class to the cluster name's input field
+                  // Add an `invalid` class to the connection name's input field
                   $('#astraDBConnectionName').addClass('is-invalid')
 
                   // Show feedback to the user
                   showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('to save a connection, a unique valid name is required to be provided')) + '.', 'failure')
 
-                  // Skip the upcoming code - terminate the cluster's saving/updating process -
+                  // Skip the upcoming code - terminate the connection's saving/updating process -
                   return
                 } catch (e) {}
 
@@ -10660,26 +10662,26 @@
                 password = astraDBConnectionData.ClientSecret
 
                 // Disable the buttons in the footer
-                button.add('#testConnectionCluster').add('#switchEditor').attr('disabled', 'disabled')
+                button.add('#testConnection').add('#switchEditor').attr('disabled', 'disabled')
 
-                $('div.modal#addEditClusterDialog div.modal-body.select-type div.connection-type').addClass('disabled')
+                $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').addClass('disabled')
 
-                // Get all saved clusters in the workspace
-                let _clusters = await Modules.Clusters.getClusters(workspaceID),
-                  // Make sure the provided cluster's name does not exist - duplication is not allowed -
-                  exists = _clusters.find((_cluster) => (manipulateText(_cluster.name) == manipulateText(clusterName)) && (manipulateText(Sanitize(_cluster.folder)) == manipulateText(Sanitize(clusterName)))),
+                // Get all saved connections in the workspace
+                let _connections = await Modules.Connections.getConnections(workspaceID),
+                  // Make sure the provided connection's name does not exist - duplication is not allowed -
+                  exists = _connections.find((_connection) => (manipulateText(_connection.name) == manipulateText(connectionName)) && (manipulateText(Sanitize(_connection.folder)) == manipulateText(Sanitize(connectionName)))),
                   /**
-                   * If the current state of the dialog is `edit` then make sure to exclude the cluster's name from duplication
-                   * `editedClusterObject` is a global object that is updated with every attempt to edit/update a cluster
+                   * If the current state of the dialog is `edit` then make sure to exclude the connection's name from duplication
+                   * `editedConnectionObject` is a global object that is updated with every attempt to edit/update a connection
                    */
-                  extraCondition = editingMode ? clusterName != editedClusterObject.name : true
+                  extraCondition = editingMode ? connectionName != editedConnectionObject.name : true
 
                 try {
-                  if (Sanitize(minifyText(clusterName)).length > 0)
+                  if (Sanitize(minifyText(connectionName)).length > 0)
                     throw 0
 
                   // Enable the buttons in the footer
-                  button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
+                  button.add('#testConnection').add('#switchEditor').removeAttr('disabled')
 
                   // Show feedback to the user
                   showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('the given name seems invalid, please provide a unique valid name')) + '.', 'failure')
@@ -10694,35 +10696,35 @@
                     throw 0
 
                   // Enable the buttons in the footer
-                  button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
+                  button.add('#testConnection').add('#switchEditor').removeAttr('disabled')
 
                   // Show feedback to the user
-                  showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.replaceData('a connection is already exists with the given name [b]$data[/b] in workspace [b]$data[/b], please provide a unique valid name', [clusterName, getWorkspaceName(workspaceID)])) + '.', 'failure')
+                  showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.replaceData('a connection is already exists with the given name [b]$data[/b] in workspace [b]$data[/b], please provide a unique valid name', [connectionName, getWorkspaceName(workspaceID)])) + '.', 'failure')
 
                   // Skip the upcoming code - terminate the saving/updating process -
                   return
                 } catch (e) {}
 
                 /**
-                 * Reaching here means there's no duplication in the name of the cluster
+                 * Reaching here means there's no duplication in the name of the connection
                  *
-                 * Set the final cluster's object which will be used to save it and its info - secrets, SSH tunneling info, etc... -
+                 * Set the final connection's object which will be used to save it and its info - secrets, SSH tunneling info, etc... -
                  */
-                finalCluster = {
-                  name: clusterName,
+                finalConnection = {
+                  name: connectionName,
                   info: {
-                    id: editingMode ? editedClusterObject.info.id : `cluster-${getRandomID(10)}`,
+                    id: editingMode ? editedConnectionObject.info.id : `connection-${getRandomID(10)}`,
                     datacenter: '',
                     secureConnectionBundlePath: astraDBConnectionData.SCBPath
                   }
                 }
 
-                // If the current mode is `edit` then add an `original` object of the cluster - which is the cluster before being edited -
+                // If the current mode is `edit` then add an `original` object of the connection - which is the connection before being edited -
                 if (editingMode)
-                  finalCluster.original = editedClusterObject
+                  finalConnection.original = editedConnectionObject
 
                 // Determine the proper function to be called based on whether the current mode is `edit` or not
-                let clustersCallFunction = editingMode ? Modules.Clusters.updateCluster : Modules.Clusters.saveCluster
+                let connectionsCallFunction = editingMode ? Modules.Connections.updateConnection : Modules.Connections.saveConnection
 
                 /**
                  * Encrypt all provided secrets - for Apache Cassandra and SSH -
@@ -10748,7 +10750,7 @@
                       // Show feedback to the user
                       showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
 
-                      // Call the post-process function with `false` - failed to save/update the cluster
+                      // Call the post-process function with `false` - failed to save/update the connection
                       postProcess(false)
 
                       // Stop the process; as something is not correct with the generator tool
@@ -10756,12 +10758,12 @@
                     } catch (e) {}
 
                     // Values will be saved in the `secrets` object
-                    finalCluster.info.secrets = [],
+                    finalConnection.info.secrets = [],
                       // Array to be a copy from the original secrets before manipulation
                       savedSecrets = []
 
                     // Set the `credentials` attribute
-                    finalCluster.info.credentials = {}
+                    finalConnection.info.credentials = {}
 
                     // Loop through each secret's value
                     for (let secret of secrets) {
@@ -10775,27 +10777,27 @@
                           savedSecrets[secret.name] = encrypt(key, secret.value)
                         } else {
                           // This credential should be provided by the user next time
-                          finalCluster.info.credentials['auth'] = true
+                          finalConnection.info.credentials['auth'] = true
                         }
                       }
                     }
 
                     // If there are no saved secrets then delete the `secrets` attribute
                     if (Object.keys(savedSecrets).length <= 0) {
-                      delete finalCluster.info.secrets
+                      delete finalConnection.info.secrets
                     } else {
                       // Otherwise, save it
-                      finalCluster.info.secrets = savedSecrets
+                      finalConnection.info.secrets = savedSecrets
                     }
 
                     // If ther are no required credentials then delete the `credentials` attribute
-                    if (Object.keys(finalCluster.info.credentials).length <= 0)
-                      delete finalCluster.info.credentials
+                    if (Object.keys(finalConnection.info.credentials).length <= 0)
+                      delete finalConnection.info.credentials
 
                     // Call the proper function, then pass the status to the `postProcess` inner function
-                    clustersCallFunction(workspaceID, finalCluster).then((status) => postProcess(status, editingMode ? {
+                    connectionsCallFunction(workspaceID, finalConnection).then((status) => postProcess(status, editingMode ? {
                       ...savedSecrets,
-                      ...finalCluster.info.credentials
+                      ...finalConnection.info.credentials
                     } : [true, ...secrets]))
                   })
                 } catch (e) {}
@@ -10805,15 +10807,15 @@
 
               // For Apache Cassandra Connection type
               try {
-                // If the provided cluster's name is valid then skip this try-catch block
-                if (clusterName.trim().length > 0)
+                // If the provided connection's name is valid then skip this try-catch block
+                if (connectionName.trim().length > 0)
                   throw 0
 
-                // Add an `invalid` class to the cluster name's input field
-                $('[info-section="none"][info-key="clusterName"]').addClass('is-invalid')
+                // Add an `invalid` class to the connection name's input field
+                $('[info-section="none"][info-key="connectionName"]').addClass('is-invalid')
 
                 // Point at the basic section navigation button in the dialog
-                let basicSectionBtn = $(`div.modal#addEditClusterDialog`).find('div.btn[section="basic"]')
+                let basicSectionBtn = $(`div.modal#addEditConnectionDialog`).find('div.btn[section="basic"]')
 
                 // If the basic section is not the currently active one then show invalid inputs notification
                 if (!basicSectionBtn.hasClass('active'))
@@ -10822,29 +10824,29 @@
                 // Show feedback to the user
                 showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('to save a connection, a unique valid name is required to be provided')) + '.', 'failure')
 
-                // Skip the upcoming code - terminate the cluster's saving/updating process -
+                // Skip the upcoming code - terminate the connection's saving/updating process -
                 return
               } catch (e) {}
 
               // Disable the buttons in the footer
-              button.add('#testConnectionCluster').add('#switchEditor').attr('disabled', 'disabled')
+              button.add('#testConnection').add('#switchEditor').attr('disabled', 'disabled')
 
-              // Get all saved clusters in the workspace
-              let _clusters = await Modules.Clusters.getClusters(workspaceID),
-                // Make sure the provided cluster's name does not exist - duplication is not allowed -
-                exists = _clusters.find((_cluster) => (manipulateText(_cluster.name) == manipulateText(clusterName)) && (manipulateText(Sanitize(_cluster.folder)) == manipulateText(Sanitize(clusterName)))),
+              // Get all saved connections in the workspace
+              let _connections = await Modules.Connections.getConnections(workspaceID),
+                // Make sure the provided connection's name does not exist - duplication is not allowed -
+                exists = _connections.find((_connection) => (manipulateText(_connection.name) == manipulateText(connectionName)) && (manipulateText(Sanitize(_connection.folder)) == manipulateText(Sanitize(connectionName)))),
                 /**
-                 * If the current state of the dialog is `edit` then make sure to exclude the cluster's name from duplication
-                 * `editedClusterObject` is a global object that is updated with every attempt to edit/update a cluster
+                 * If the current state of the dialog is `edit` then make sure to exclude the connection's name from duplication
+                 * `editedConnectionObject` is a global object that is updated with every attempt to edit/update a connection
                  */
-                extraCondition = editingMode ? clusterName != editedClusterObject.name : true
+                extraCondition = editingMode ? connectionName != editedConnectionObject.name : true
 
               try {
-                if (Sanitize(minifyText(clusterName)).length > 0)
+                if (Sanitize(minifyText(connectionName)).length > 0)
                   throw 0
 
                 // Enable the buttons in the footer
-                button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
+                button.add('#testConnection').add('#switchEditor').removeAttr('disabled')
 
                 // Show feedback to the user
                 showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('the given name seems invalid, please provide a unique valid name')) + '.', 'failure')
@@ -10859,32 +10861,32 @@
                   throw 0
 
                 // Enable the buttons in the footer
-                button.add('#testConnectionCluster').add('#switchEditor').removeAttr('disabled')
+                button.add('#testConnection').add('#switchEditor').removeAttr('disabled')
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.replaceData('a connection is already exists with the given name [b]$data[/b] in workspace [b]$data[/b], please provide a unique valid name', [clusterName, getWorkspaceName(workspaceID)])) + '.', 'failure')
+                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.replaceData('a connection is already exists with the given name [b]$data[/b] in workspace [b]$data[/b], please provide a unique valid name', [connectionName, getWorkspaceName(workspaceID)])) + '.', 'failure')
 
                 // Skip the upcoming code - terminate the saving/updating process -
                 return
               } catch (e) {}
 
               /**
-               * Reaching here means there's no duplication in the name of the cluster
+               * Reaching here means there's no duplication in the name of the connection
                *
-               * Set the final cluster's object which will be used to save it and its info - secrets, SSH tunneling info, etc... -
+               * Set the final connection's object which will be used to save it and its info - secrets, SSH tunneling info, etc... -
                */
-              finalCluster = {
-                name: clusterName,
+              finalConnection = {
+                name: connectionName,
                 cqlshrc: editor.getValue(),
                 info: {
-                  id: editingMode ? editedClusterObject.info.id : `cluster-${getRandomID(10)}`,
+                  id: editingMode ? editedConnectionObject.info.id : `connection-${getRandomID(10)}`,
                   datacenter: dataCenter.trim()
                 }
               }
 
-              // If the current mode is `edit` then add an `original` object of the cluster - which is the cluster before being edited -
+              // If the current mode is `edit` then add an `original` object of the connection - which is the connection before being edited -
               if (editingMode)
-                finalCluster.original = editedClusterObject
+                finalConnection.original = editedConnectionObject
 
               try {
                 /**
@@ -10907,7 +10909,7 @@
                 if ([username, password].every((secret) => secret.trim().length != 0))
                   waitForEncryption = true
 
-                // If SSH's username and password have been provided then the encryption process must be executed, and add the tunnel creation info to the cluster's object
+                // If SSH's username and password have been provided then the encryption process must be executed, and add the tunnel creation info to the connection's object
                 if (sshUsername.trim().length != 0 && [sshPassword, sshPrivatekey].some((secret) => secret.trim().length != 0)) {
                   waitForEncryption = true
                   sshTunnel = true
@@ -10923,22 +10925,22 @@
                 if (!sshTunnel)
                   throw 0
 
-                // Add `ssh` object to the final cluster's object
-                finalCluster.ssh = {}
+                // Add `ssh` object to the final connection's object
+                finalConnection.ssh = {}
 
                 // Add the `privatekey` attribute if it has been provided
                 if (sshPrivatekey.trim().length != 0)
-                  finalCluster.ssh.privatekey = sshPrivatekey
+                  finalConnection.ssh.privatekey = sshPrivatekey
 
                 // Add the `passphrase` attribute if it has been provided
                 if (sshPassphrase.trim().length != 0)
-                  finalCluster.ssh.passphrase = sshPassphrase
+                  finalConnection.ssh.passphrase = sshPassphrase
 
                 // Add other info; host, port, destination address, and destination port
-                finalCluster.ssh.host = $('[info-section="none"][info-key="ssh-host"]').val() || $('[info-section="connection"][info-key="hostname"]').val()
-                finalCluster.ssh.port = $('[info-section="none"][info-key="ssh-port"]').val() || 22
-                finalCluster.ssh.dstAddr = $('[info-section="none"][info-key="ssh-dest-addr"]').val() || '127.0.0.1'
-                finalCluster.ssh.dstPort = $('[info-section="none"][info-key="ssh-dest-port"]').val() || $('[info-section="connection"][info-key="port"]').val()
+                finalConnection.ssh.host = $('[info-section="none"][info-key="ssh-host"]').val() || $('[info-section="connection"][info-key="hostname"]').val()
+                finalConnection.ssh.port = $('[info-section="none"][info-key="ssh-port"]').val() || 22
+                finalConnection.ssh.dstAddr = $('[info-section="none"][info-key="ssh-dest-addr"]').val() || '127.0.0.1'
+                finalConnection.ssh.dstPort = $('[info-section="none"][info-key="ssh-dest-port"]').val() || $('[info-section="connection"][info-key="port"]').val()
               } catch (e) {
                 try {
                   errorLog(e, 'connections')
@@ -10946,7 +10948,7 @@
               }
 
               // Determine the proper function to be called based on whether the current mode is `edit` or not
-              let clustersCallFunction = editingMode ? Modules.Clusters.updateCluster : Modules.Clusters.saveCluster
+              let connectionsCallFunction = editingMode ? Modules.Connections.updateConnection : Modules.Connections.saveConnection
 
               /**
                * Encrypt all provided secrets - for Apache Cassandra and SSH -
@@ -10987,7 +10989,7 @@
                     // Show feedback to the user
                     showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
 
-                    // Call the post-process function with `false` - failed to save/update the cluster
+                    // Call the post-process function with `false` - failed to save/update the connection
                     postProcess(false)
 
                     // Stop the process; as something is not correct with the generator tool
@@ -10995,12 +10997,12 @@
                   } catch (e) {}
 
                   // Values will be saved in the `secrets` object
-                  finalCluster.info.secrets = [],
+                  finalConnection.info.secrets = [],
                     // Array to be a copy from the original secrets before manipulation
                     savedSecrets = []
 
                   // Set the `credentials` attribute
-                  finalCluster.info.credentials = {}
+                  finalConnection.info.credentials = {}
 
                   // Loop through each secret's value
                   for (let secret of secrets) {
@@ -11014,27 +11016,27 @@
                         savedSecrets[secret.name] = encrypt(key, secret.value)
                       } else {
                         // This credential should be provided by the user next time
-                        finalCluster.info.credentials[secret.name.indexOf('ssh') != -1 ? 'ssh' : 'auth'] = true
+                        finalConnection.info.credentials[secret.name.indexOf('ssh') != -1 ? 'ssh' : 'auth'] = true
                       }
                     }
                   }
 
                   // If there are no saved secrets then delete the `secrets` attribute
                   if (Object.keys(savedSecrets).length <= 0) {
-                    delete finalCluster.info.secrets
+                    delete finalConnection.info.secrets
                   } else {
                     // Otherwise, save it
-                    finalCluster.info.secrets = savedSecrets
+                    finalConnection.info.secrets = savedSecrets
                   }
 
                   // If ther are no required credentials then delete the `credentials` attribute
-                  if (Object.keys(finalCluster.info.credentials).length <= 0)
-                    delete finalCluster.info.credentials
+                  if (Object.keys(finalConnection.info.credentials).length <= 0)
+                    delete finalConnection.info.credentials
 
                   // Call the proper function, then pass the status to the `postProcess` inner function
-                  clustersCallFunction(workspaceID, finalCluster).then((status) => postProcess(status, editingMode ? {
+                  connectionsCallFunction(workspaceID, finalConnection).then((status) => postProcess(status, editingMode ? {
                     ...savedSecrets,
-                    ...finalCluster.info.credentials
+                    ...finalConnection.info.credentials
                   } : [true, ...secrets]))
                 })
 
@@ -11047,7 +11049,7 @@
                *
                * Call the proper function, then pass the status to the `postProcess` inner function
                */
-              clustersCallFunction(workspaceID, finalCluster).then((status) => postProcess(status))
+              connectionsCallFunction(workspaceID, finalConnection).then((status) => postProcess(status))
             })
           }
         }
@@ -11269,10 +11271,10 @@
       }
     }
 
-    // Observe addition/removal of clusters' switchers
+    // Observe addition/removal of connections' switchers
     {
-      // Point at the clusters' switchers' container
-      let switchersContainer = $(`div.body div.left div.content div.switch-clusters`),
+      // Point at the connections' switchers' container
+      let switchersContainer = $(`div.body div.left div.content div.switch-connections`),
         // Create observer object
         observer = new MutationObserver(function(mutations) {
           // Loop through each detected mutation
@@ -11281,10 +11283,10 @@
             if (mutation.type === 'childList')
               setTimeout(() => {
                 // Update the switchers' container's view
-                updateSwitcherView('clusters')
+                updateSwitcherView('connections')
 
                 // Handle the first switcher's margin
-                handleClusterSwitcherMargin()
+                handleConnectionSwitcherMargin()
               }, 100)
           })
         })
@@ -11319,25 +11321,25 @@
     })
   }
 
-  // Clicks the `ADD CLUSTER` button which shows up if there are no added clusters
+  // Clicks the `ADD CLUSTER` button which shows up if there are no added connections
   {
-    $(`button#addClusterProcess`).on('click', function(e, editingMode = false) {
+    $(`button#addConnectionProcess`).on('click', function(e, editingMode = false) {
       // Define the dialog path's CSS selector
-      let dialog = 'div.modal#addEditClusterDialog'
+      let dialog = 'div.modal#addEditConnectionDialog'
 
       try {
         // If the previous mode wasn't `editing` a workspace, or the mode is `edit` then skip this try-catch block
-        if (getAttributes($(`${dialog}`), 'data-edit-cluster-id') == undefined || editingMode)
+        if (getAttributes($(`${dialog}`), 'data-edit-connection-id') == undefined || editingMode)
           throw 0
 
         // Reset everything and make sure the `creation mode` is properly back
         $(`${dialog}`).find('h5.modal-title').text(I18next.capitalize(I18next.t('add connection')))
-        $(`${dialog}`).removeAttr('data-edit-workspace-id data-edit-cluster-id')
+        $(`${dialog}`).removeAttr('data-edit-workspace-id data-edit-connection-id')
 
-        $(`${dialog} button#addCluster`).attr('disabled', 'disabled')
-        $(`${dialog} button#addCluster`).text(I18next.capitalize(I18next.t('add connection')))
+        $(`${dialog} button#addConnection`).attr('disabled', 'disabled')
+        $(`${dialog} button#addConnection`).text(I18next.capitalize(I18next.t('add connection')))
 
-        $('div.modal#addEditClusterDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
+        $('div.modal#addEditConnectionDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
 
         // Loop through all inputs in the dialog
         $(`${dialog}`).find('[info-section="none"][info-key]').each(function() {
@@ -11389,10 +11391,10 @@
     })
   }
 
-  // Click event for `add` and `refresh` actions in the clusters' container
+  // Click event for `add` and `refresh` actions in the connections' container
   {
     // Define a portion of the common CSS selector
-    let selector = `div.body div.right div.content div[content="clusters"] div.section-actions div.action`,
+    let selector = `div.body div.right div.content div[content="connections"] div.section-actions div.action`,
       // Inner function to click the parent button - which shows/hides actions buttons
       clickParentButton = (button) => {
         $(button).parent().parent().find('button.btn.btn-lg').click()
@@ -11401,7 +11403,7 @@
     // Clicks the add button
     $(`${selector}[action="add"] button`).click(function() {
       // Point at the button to be clicked - which is the `ADD CLUSTER` button -
-      let buttonToBeClicked = $(`button#addClusterProcess`)
+      let buttonToBeClicked = $(`button#addConnectionProcess`)
 
       // If the current workspace is the sandbox then point at the `ADD PROJECT` button
       if (getActiveWorkspaceID() == 'workspace-sandbox')
@@ -11414,10 +11416,10 @@
       clickParentButton(this)
 
       // Hide the tooltip
-      tooltips.addClusterActionButton.hide()
+      tooltips.addConnectionActionButton.hide()
 
-      if (!$('div.modal#addEditClusterDialo').hasClass('test-connection'))
-        $('div.modal#addEditClusterDialog div.modal-body.select-type').find('div.connection-type[data-type="apache-cassandra"]').click()
+      if (!$('div.modal#addEditConnectionDialo').hasClass('test-connection'))
+        $('div.modal#addEditConnectionDialog div.modal-body.select-type').find('div.connection-type[data-type="apache-cassandra"]').click()
 
       // For Astra  DB
       try {
@@ -11432,8 +11434,8 @@
 
     // Clicks the refresh button
     $(`${selector}[action="refresh"] button`).click(function() {
-      // Refresh clusters' list
-      $(document).trigger('refreshClusters', {
+      // Refresh connections' list
+      $(document).trigger('refreshConnections', {
         workspaceID: getActiveWorkspaceID()
       })
 
@@ -11441,22 +11443,22 @@
       clickParentButton(this)
 
       // Hide the tooltip
-      tooltips.refreshClusterActionButton.hide()
+      tooltips.refreshConnectionActionButton.hide()
     })
   }
 
-  // Handle the clusters' witcher's navigation arrows - up and down -
+  // Handle the connections' witcher's navigation arrows - up and down -
   {
-    $(`div.body div.left div.content div.switch-clusters div.more-clusters div.buttons button`).click(function() {
+    $(`div.body div.left div.content div.switch-connections div.more-connections div.buttons button`).click(function() {
       // Get the clicked button's navigation
       let navigation = $(this).attr('navigation'),
         // Point at the switchers' container
-        switchersContainer = $(`div.body div.left div.content div.switch-clusters`),
+        switchersContainer = $(`div.body div.left div.content div.switch-connections`),
         // Get all currently visible switchers
-        visibleSwitchers = switchersContainer.children('div.cluster[_cluster-id]').filter(':visible')
+        visibleSwitchers = switchersContainer.children('div.connection[_connection-id]').filter(':visible')
 
       // Remove the `hidden` attribute from all switchers; as they'll be shown or hidden as needed
-      switchersContainer.children('div.cluster[_cluster-id]').removeAttr('hidden')
+      switchersContainer.children('div.connection[_connection-id]').removeAttr('hidden')
 
       // Handle the down arrow
       try {
@@ -11478,7 +11480,7 @@
         switcherToBeShown.show()
 
         // Call the margin handler function
-        handleClusterSwitcherMargin()
+        handleConnectionSwitcherMargin()
 
         // Skip the upcoming code
         return
@@ -11501,7 +11503,7 @@
       switcherToBeShown.show()
 
       // Call the margin handler function
-      handleClusterSwitcherMargin()
+      handleConnectionSwitcherMargin()
     })
   }
 
@@ -11510,15 +11512,15 @@
     updateActionStatusForSelectRowColumn,
     getAllPrimaryKeyColumns
 
-  // Handle the request of getting a CQL description of the cluster, keyspace in it, or a table
+  // Handle the request of getting a CQL description of the connection, keyspace in it, or a table
   {
     IPCRenderer.on('cql-desc:get', (_, data) => {
       // Define a portion of the common CSS selector
       let selector = `div.body div.right div.content div[content]`,
-        // Point at the associated cluster's UI element
-        clusterElement = $(`${selector}[content="clusters"] div.clusters-container div.cluster[data-id="${data.clusterID}"]`),
-        // Point at the associated cluster's work area UI element
-        workareaElement = $(`${selector}[content="workarea"] div.workarea[cluster-id="${data.clusterID}"]`),
+        // Point at the associated connection's UI element
+        connectionElement = $(`${selector}[content="connections"] div.connections-container div.connection[data-id="${data.connectionID}"]`),
+        // Point at the associated connection's work area UI element
+        workareaElement = $(`${selector}[content="workarea"] div.workarea[connection-id="${data.connectionID}"]`),
         // Point at the CQL description's tab's content - main container -
         cqlDescriptionsTabContent = workareaElement.find('div.sub-sides div.tab-content div.tab-pane[tab="cql-description"]'),
         // Point at the CQL descriptions' elements container
@@ -11536,7 +11538,7 @@
       clickedNode.addClass('perform-process')
 
       // Get the CQL description based on the passed scope
-      Modules.Clusters.getCQLDescription(data.clusterID, data.scope, (description) => {
+      Modules.Connections.getCQLDescription(data.connectionID, data.scope, (description) => {
         // As the description has been received remove the processing class
         clickedNode.removeClass('perform-process')
 
@@ -11556,7 +11558,7 @@
             descriptionFileName = Sanitize(`${descriptionScope}-${formatTimestamp(new Date().getTime(), true)}.cql`).replace(/\s+/gm, '_') || 'cql_desc.cql'
 
           try {
-            descriptionFileName = Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), clusterElement.attr('data-folder'), descriptionFileName)
+            descriptionFileName = Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), descriptionFileName)
           } catch (e) {}
 
           let dialogID = getRandomID(5),
@@ -11612,7 +11614,7 @@
         // Check if there's an associated CQL description
         let associatedDescription = cqlDescriptionsContainer.find(`div.description[data-scope="${data.scope}"]`),
           // Manipulate the scope to be set in the badge
-          scope = data.scope == 'cluster' ? `Cluster: ${getAttributes(clusterElement, 'data-name')}` : ''
+          scope = data.scope == 'cluster' ? `Cluster: ${getAttributes(connectionElement, 'data-name')}` : ''
 
         try {
           // If the scope's length after the manipulation is not `0` then it's a `cluster` scope and this try-catch block may be skipped
@@ -11961,7 +11963,7 @@
             getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
           } catch (e) {}
 
-          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${activeConnectionID}"]`)
 
           try {
             activeWorkarea.find('div.terminal-container').hide()
@@ -12106,7 +12108,7 @@
             getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
           } catch (e) {}
 
-          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${activeConnectionID}"]`)
 
           try {
             activeWorkarea.find('div.terminal-container').hide()
@@ -12190,7 +12192,7 @@
         $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
 
         try {
-          let cassandraVersion = $(`div[content="clusters"] div.clusters-container div.cluster[data-id="${activeClusterID}"]`).attr('data-cassandra-version')
+          let cassandraVersion = $(`div[content="connections"] div.connections-container div.connection[data-id="${activeConnectionID}"]`).attr('data-cassandra-version')
 
           cassandraVersion = cassandraVersion.startsWith('5.0') ? '5.0' : (cassandraVersion.startsWith('4.1') ? '4.1' : '4.0')
 
@@ -12245,7 +12247,7 @@
         $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
 
         try {
-          let cassandraVersion = $(`div[content="clusters"] div.clusters-container div.cluster[data-id="${activeClusterID}"]`).attr('data-cassandra-version')
+          let cassandraVersion = $(`div[content="connections"] div.connections-container div.connection[data-id="${activeConnectionID}"]`).attr('data-cassandra-version')
 
           cassandraVersion = cassandraVersion.startsWith('5.0') ? '5.0' : (cassandraVersion.startsWith('4.1') ? '4.1' : '4.0')
 
@@ -12497,7 +12499,7 @@
             getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
           } catch (e) {}
 
-          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${activeConnectionID}"]`)
 
           try {
             activeWorkarea.find('div.terminal-container').hide()
@@ -12534,7 +12536,7 @@
           })
         } catch (e) {}
 
-        let truncateStatement = `CONSISTENCY ${activeSessionsConsistencyLevels[activeClusterID].standard};` + OS.EOL + `TRUNCATE TABLE ${keyspaceName}.${tableName};`
+        let truncateStatement = `CONSISTENCY ${activeSessionsConsistencyLevels[activeConnectionID].standard};` + OS.EOL + `TRUNCATE TABLE ${keyspaceName}.${tableName};`
 
         try {
           truncateTableEditor.setValue(truncateStatement)
@@ -12550,7 +12552,7 @@
             getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
           } catch (e) {}
 
-          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${activeConnectionID}"]`)
 
           try {
             activeWorkarea.find('div.terminal-container').hide()
@@ -12619,11 +12621,11 @@
           $('div[action="insert-row"] div[section="standard"]').click()
 
           try {
-            $('div.dropdown[for-select="insertWriteConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].standard}"]`).click()
+            $('div.dropdown[for-select="insertWriteConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeConnectionID].standard}"]`).click()
           } catch (e) {}
 
           try {
-            $('div.dropdown[for-select="insertSerialConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].serial}"]`).click()
+            $('div.dropdown[for-select="insertSerialConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeConnectionID].serial}"]`).click()
           } catch (e) {}
 
           $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'insert row').html(`${I18next.capitalize(I18next.t('insert row'))} ${isInsertionAsJSON ? '(JSON)' : ''} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
@@ -14159,11 +14161,11 @@
             })
 
             try {
-              $('div.dropdown[for-select="deleteWriteConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].standard}"]`).click()
+              $('div.dropdown[for-select="deleteWriteConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeConnectionID].standard}"]`).click()
             } catch (e) {}
 
             try {
-              $('div.dropdown[for-select="deleteSerialConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeClusterID].serial}"]`).click()
+              $('div.dropdown[for-select="deleteSerialConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeConnectionID].serial}"]`).click()
             } catch (e) {}
 
             // Update different modal's attributes
@@ -17570,7 +17572,7 @@
     }
   }
 
-  // Handle the request of closing a cluster's work area
+  // Handle the request of closing a connection's work area
   {
     IPCRenderer.on('workarea:close', (_, data) => $(`div.btn[data-id="${data.btnID}"]`).trigger('click', false))
   }
@@ -18021,7 +18023,7 @@
             getElementMDBObject($(`a.nav-link.btn[href="#${$(this).attr('data-tab-id')}"]`), 'Tab').show()
           } catch (e) {}
 
-          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"]`)
+          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${activeConnectionID}"]`)
 
           try {
             activeWorkarea.find('div.terminal-container').hide()
@@ -25555,7 +25557,7 @@
 
           writeConsistencyLevel = `CONSISTENCY ${writeLevel};`
 
-          if (writeLevel == activeSessionsConsistencyLevels[activeClusterID].standard)
+          if (writeLevel == activeSessionsConsistencyLevels[activeConnectionID].standard)
             writeConsistencyLevel = `-- ${writeConsistencyLevel} Note: CQL session already using this CL`
 
           writeConsistencyLevel = `${writeConsistencyLevel}` + OS.EOL
@@ -25569,7 +25571,7 @@
 
           serialConsistencyLevel = `SERIAL CONSISTENCY ${serialLevel};`
 
-          if (serialLevel == activeSessionsConsistencyLevels[activeClusterID].serial)
+          if (serialLevel == activeSessionsConsistencyLevels[activeConnectionID].serial)
             serialConsistencyLevel = `-- ${serialConsistencyLevel} Note: CQL session already using this CL`
 
           serialConsistencyLevel = `${serialConsistencyLevel}` + OS.EOL
@@ -26429,7 +26431,7 @@
 
           writeConsistencyLevel = `CONSISTENCY ${writeLevel};`
 
-          if (writeLevel == activeSessionsConsistencyLevels[activeClusterID].standard)
+          if (writeLevel == activeSessionsConsistencyLevels[activeConnectionID].standard)
             writeConsistencyLevel = `-- ${writeConsistencyLevel} Note: CQL session already using this CL`
 
           writeConsistencyLevel = `${writeConsistencyLevel}` + OS.EOL
@@ -26443,7 +26445,7 @@
 
           serialConsistencyLevel = `SERIAL CONSISTENCY ${serialLevel};`
 
-          if (serialLevel == activeSessionsConsistencyLevels[activeClusterID].serial)
+          if (serialLevel == activeSessionsConsistencyLevels[activeConnectionID].serial)
             serialConsistencyLevel = `-- ${serialConsistencyLevel} Note: CQL session already using this CL`
 
           serialConsistencyLevel = `${serialConsistencyLevel}` + OS.EOL

@@ -987,7 +987,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
   let normalizePath = (path) => OS.platform == 'win32' ? `${path}`.replace(/\\/gm, '/') : `${path}`
 
   // Get a keyspaces container's random ID
-  let [clusterID, keyspacesID] = getRandomID(30, 2),
+  let [connectionID, keyspacesID] = getRandomID(30, 2),
     // Define the path of extra icons to be used with each leaf
     extraIconsPath = normalizePath(Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra')),
     // The initial tree structure
@@ -1010,7 +1010,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           'name': 'default-dark'
         },
         'data': [{
-            'id': clusterID,
+            'id': connectionID,
             'parent': '#',
             'text': `Cluster: <span>${metadata.cluster_name}</span>`,
             'type': 'default',
@@ -1027,7 +1027,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           },
           {
             'id': getRandomID(30),
-            'parent': clusterID,
+            'parent': connectionID,
             'text': `Partitioner: <span>${metadata.partitioner.replace(/.+\.(.+)/gi, '$1')}</span>`,
             'type': 'default',
           },
@@ -1057,7 +1057,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
   // Get a random ID for the system's keyspaces container
   let systemKeyspacesParentID = getRandomID(30),
     /**
-     * Count the number of found system keyspaces in the connected to cluster
+     * Count the number of found system keyspaces in the connected to connection
      *
      * This is a better approach in long term than hardcoding the number
      */
@@ -3172,7 +3172,7 @@ let executeScript = (scriptID, scripts, callback) => {
 
   // Add log about executing the current script
   try {
-    addLog(`Executing the script '${scripts[scriptID]}' within a connection process with cluster`, 'process')
+    addLog(`Executing the script '${scripts[scriptID]}' within a connection process`, 'process')
   } catch (e) {}
 
   // Send the execution request
@@ -3230,26 +3230,26 @@ let executeScript = (scriptID, scripts, callback) => {
 }
 
 /**
- * Get all pre and post-connection scripts of a given cluster
+ * Get all pre and post-connection scripts of a given connection
  *
  * @Parameters:
  * {string} `workspaceID` the ID of the target workspace
- * {string} `?clusterID` the target cluster's ID, or null to check the editor's content
+ * {string} `?connectionID` the target connection's ID, or null to check the editor's content
  *
  * @Return: {object} JSON object which has `pre` and `post` attributes, each attribute holds an array of scripts' paths
  */
-let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
+let getPrePostConnectionScripts = async (workspaceID, connectionID = null) => {
   // Final result to be returned - scripts to be executed -
   let scripts = {
       pre: [], // Pre-connection scripts' paths
       post: [] // Post-connection scripts' paths
     },
     /**
-     * Flag which tells if sensitive data has been found in the cluster's `cqlsh.rc` content
+     * Flag which tells if sensitive data has been found in the connection's `cqlsh.rc` content
      * This is an extra attribute
      */
     foundSensitiveData = false,
-    // An object which holds the content of the cluster's cqlsh.rc file
+    // An object which holds the content of the connection's cqlsh.rc file
     cqlshContent = null
 
   // Define the text to be added to the log regards the workspace
@@ -3257,32 +3257,32 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
 
   // Add log about this process
   try {
-    addLog(`Get all pre and post-connection scripts of ${clusterID != null ? 'connection #' + clusterID + ' in ' : ' a connection about to be added/updated in '}${workspace}`, 'process')
+    addLog(`Get all pre and post-connection scripts of ${connectionID != null ? 'connection #' + connectionID + ' in ' : ' a connection about to be added/updated in '}${workspace}`, 'process')
   } catch (e) {}
 
   // Check pre and post-connection scripts
   try {
-    // Set cluster to be null by default
-    let cluster = null
+    // Set connection to be null by default
+    let connection = null
 
     try {
-      // If there's no cluster ID has been passed then skip this try-catch block
-      if (clusterID == null)
+      // If there's no connection ID has been passed then skip this try-catch block
+      if (connectionID == null)
         throw 0
 
-      // Get all saved clusters
-      let clusters = await Modules.Clusters.getClusters(workspaceID)
+      // Get all saved connections
+      let connections = await Modules.Connections.getConnections(workspaceID)
 
-      // Get the target cluster's object
-      cluster = clusters.filter((cluster) => cluster.info.id == clusterID)[0]
+      // Get the target connection's object
+      connection = connections.filter((connection) => connection.info.id == connectionID)[0]
     } catch (e) {
       try {
         errorLog(e, 'functions')
       } catch (e) {}
     }
 
-    // Get the cluster's `cqlsh.rc` file's content
-    cqlshContent = cluster != null ? await Modules.Clusters.getCQLSHRCContent(workspaceID, cluster.cqlshrc) : await Modules.Clusters.getCQLSHRCContent(workspaceID, null, editor),
+    // Get the connection's `cqlsh.rc` file's content
+    cqlshContent = connection != null ? await Modules.Connections.getCQLSHRCContent(workspaceID, connection.cqlshrc) : await Modules.Connections.getCQLSHRCContent(workspaceID, null, editor),
       // Define the file's sections
       sections = Object.keys(cqlshContent)
 
@@ -3322,7 +3322,7 @@ let getPrePostConnectionScripts = async (workspaceID, clusterID = null) => {
   // Add log if scripts have been found
   if (scripts.length != 0)
     try {
-      addLog(`Pre and post-connection scripts of ${clusterID != null ? 'connection #' + clusterID + ' in ' : ' a connection about to be added/updated in '}${workspace} are (${JSON.stringify(scripts)})`, 'process')
+      addLog(`Pre and post-connection scripts of ${connectionID != null ? 'connection #' + connectionID + ' in ' : ' a connection about to be added/updated in '}${workspace} are (${JSON.stringify(scripts)})`, 'process')
     } catch (e) {}
 
   // Return the final result
@@ -3876,7 +3876,7 @@ let manipulateOutput = (output) => {
  *
  * @Return: {string} the currently active workspace ID
  */
-let getActiveWorkspaceID = () => activeWorkspaceID || getAttributes($(`#addEditClusterDialog`), 'data-workspace-id')
+let getActiveWorkspaceID = () => activeWorkspaceID || getAttributes($(`#addEditConnectionDialog`), 'data-workspace-id')
 
 /**
  * Get the name of a workspace
@@ -4095,21 +4095,21 @@ let createRegex = (text, flags) => {
 let quoteForRegex = (text) => `${text}`.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1')
 
 /**
- * Extract two characters from a given cluster name in a systematic way
+ * Extract two characters from a given connection name in a systematic way
  *
  * @Example: extractChars('>Local >Cluster') // LC
  * @Example: extractChars('>A>nothertest') // AN
  *
  * @Parameters:
- * {string} `clusterName` the cluster name
+ * {string} `connectionName` the connection name
  *
  * @Return: {string} the two characters to be used
  */
-let extractChars = (clusterName) => {
+let extractChars = (connectionName) => {
   // Remove all white spaces from the given name
-  clusterName = `${clusterName}`.replace(/\s+/gm, ''),
+  connectionName = `${connectionName}`.replace(/\s+/gm, ''),
     // Get all characters in array
-    allChars = clusterName.split(''),
+    allChars = connectionName.split(''),
     // Final result which be returned
     chars = ''
 
@@ -4264,7 +4264,7 @@ let setUIColor = (workspaceColor) => {
  * Update the height and navigation state of a given left-side switchers' container
  *
  * @Parameters:
- * {string} `?type` the switchers' container type, values are [`workspace` or `cluster`]
+ * {string} `?type` the switchers' container type, values are [`workspace` or `connection`]
  *
  * @Return: {boolean} whether or not the navigation arrows - overflow handling in general - is no longer needed
  */
@@ -4329,26 +4329,26 @@ let updateSwitcherView = (type = 'workspaces') => {
 }
 
 /**
- * Set the clusters' switchers' margin
+ * Set the connections' switchers' margin
  * In some cases, the top margin of the first switcher might not be applied as desired so it's handled by this function
  */
-let handleClusterSwitcherMargin = () => {
-  // Point at the clusters' switchers' container
-  let switchersContainer = $(`div.body div.left div.content div.switch-clusters`)
+let handleConnectionSwitcherMargin = () => {
+  // Point at the connections' switchers' container
+  let switchersContainer = $(`div.body div.left div.content div.switch-connections`)
 
   /**
    * Set the margin as needed
-   * Get all visible clusters in the switcher's container
+   * Get all visible connections in the switcher's container
    */
-  let visibleClusters = switchersContainer.children('div.cluster').filter(':visible')
+  let visibleConnections = switchersContainer.children('div.connection').filter(':visible')
 
-  // The first visible cluster's top margin should be set to `0`
-  visibleClusters.first().css('margin-top', '0px')
+  // The first visible connection's top margin should be set to `0`
+  visibleConnections.first().css('margin-top', '0px')
 
-  // Any other cluster rather than the first one its top margin should be set to `10`
-  visibleClusters.filter(':not(:first)').css('margin-top', '10px')
+  // Any other connection rather than the first one its top margin should be set to `10`
+  visibleConnections.filter(':not(:first)').css('margin-top', '10px')
 
-  // Get the number of active clusters' work areas
+  // Get the number of active connections' work areas
   let numOfActiveWorkareas = $('div.body div.right div.content div[content="workarea"] div.workarea').length
 
   // If there's one at least then activate the option to close them all in one click - in the more options list -
@@ -4409,7 +4409,7 @@ let addLog = (log, type = 'info') => {
  *
  * @Parameters:
  * {string} `error` the error's text
- * {string} `process` the process's type (example: clusters, workpsaces...)
+ * {string} `process` the process's type (example: connections, workpsaces...)
  */
 let errorLog = (error, process) => {
   /**
@@ -4429,12 +4429,12 @@ let errorLog = (error, process) => {
 }
 
 /**
- * Close all active work areas - clusters and sandbox projects -
+ * Close all active work areas - connections and sandbox projects -
  * This function is called once the user decides to close all work areas, and on app termination
  */
 let closeAllWorkareas = () => {
   // Point at all work areas
-  let workareas = $('div.body div.right div.content div[content="workarea"] div.workarea[cluster-id]')
+  let workareas = $('div.body div.right div.content div[content="workarea"] div.workarea[connection-id]')
 
   // Add log for this  process
   try {
@@ -4446,16 +4446,16 @@ let closeAllWorkareas = () => {
 
   // Loop through all work areas
   workareas.each(function() {
-    // Point at the cluster's element associated with the current work area
-    let clusterElement = $(`div.clusters-container div.clusters div.cluster[data-id="${getAttributes($(this), 'cluster-id')}"]`),
-      // Also point at the workspace's elemenet associated with the cluster
-      workspaceElement = $(`div.workspaces-container div.workspace[data-id="${getAttributes(clusterElement, 'data-workspace-id')}"]`),
+    // Point at the connection's element associated with the current work area
+    let connectionElement = $(`div.connections-container div.connections div.connection[data-id="${getAttributes($(this), 'connection-id')}"]`),
+      // Also point at the workspace's elemenet associated with the connection
+      workspaceElement = $(`div.workspaces-container div.workspace[data-id="${getAttributes(connectionElement, 'data-workspace-id')}"]`),
       // Whether or not the current work area is actually for a sandbox project
-      isSandboxProject = getAttributes(clusterElement, 'data-is-sandbox') == 'true'
+      isSandboxProject = getAttributes(connectionElement, 'data-is-sandbox') == 'true'
 
     try {
       // Attempt of click the `close workarea` button
-      $(this).find('div.sub-sides.right div.header div.cluster-actions div.action[action="close"] div.btn-container div.btn').click()
+      $(this).find('div.sub-sides.right div.header div.connection-actions div.action[action="close"] div.btn-container div.btn').click()
 
       /**
        * Show feedback to the user
@@ -4463,10 +4463,10 @@ let closeAllWorkareas = () => {
        * If the work area is actually for a sandbox project
        */
       if (isSandboxProject)
-        return showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of local cluster [b]$data[/b] is being terminated`, [getAttributes(clusterElement, 'data-name')])) + '.', 'success')
+        return showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of local connection [b]$data[/b] is being terminated`, [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
 
       // Otherwise, show this toast
-      showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of connection [b]$data[/b] in workspace [b]$data[/b] has been successfully closed`, [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
+      showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of connection [b]$data[/b] in workspace [b]$data[/b] has been successfully closed`, [getAttributes(connectionElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
     } catch (e) {}
   })
 }
@@ -4499,14 +4499,14 @@ let handleContentInfo = (type, element = null) => {
   let leftSide = $('div.body div.right div.content-info div._left'),
     rightSide = $('div.body div.right div.content-info div._right'),
     workspacesActions = rightSide.find('div._actions._for-workspaces'),
-    clustersActions = rightSide.find('div._actions._for-clusters'),
+    connectionsActions = rightSide.find('div._actions._for-connections'),
     arrow = leftSide.find('div._arrow'),
-    cluster = leftSide.find('div._cluster')
+    connection = leftSide.find('div._connection')
 
-  arrow.add(cluster).toggleClass('show', type == 'clusters')
+  arrow.add(connection).toggleClass('show', type == 'connections')
 
-  workspacesActions.toggleClass('show', type != 'clusters')
-  clustersActions.toggleClass('show', type == 'clusters')
+  workspacesActions.toggleClass('show', type != 'connections')
+  connectionsActions.toggleClass('show', type == 'connections')
 
   setTimeout(() => $('div.body div.right').removeClass('hide-content-info'), 200)
 
@@ -4514,8 +4514,8 @@ let handleContentInfo = (type, element = null) => {
     if (element == undefined)
       throw 0
 
-    cluster.find('div.text').text(element.attr('data-name'))
-    cluster.find('div._color').css('background', element.attr('data-color'))
+    connection.find('div.text').text(element.attr('data-name'))
+    connection.find('div._color').css('background', element.attr('data-color'))
   } catch (e) {
 
   } finally {

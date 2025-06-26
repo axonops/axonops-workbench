@@ -60,16 +60,16 @@
           </div>
         </div>
 
-        <!-- Clusters switcher -->
-        <div class="switch-clusters">
-          <!-- Arrows to go up and down and show more active clusters -->
-          <div class="more-clusters">
+        <!-- Connections switcher -->
+        <div class="switch-connections">
+          <!-- Arrows to go up and down and show more active connections -->
+          <div class="more-connections">
             <div class="buttons">
-              <!-- Goes down and show hidden active clusters -->
+              <!-- Goes down and show hidden active connections -->
               <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" navigation="down">
                 <ion-icon name="arrow-down"></ion-icon>
               </button>
-              <!-- Goes up and shows hidden active clusters -->
+              <!-- Goes up and shows hidden active connections -->
               <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" navigation="up">
                 <ion-icon name="arrow-up"></ion-icon>
               </button>
@@ -137,7 +137,7 @@
           </div>
 
           <!-- More options/sections
-          For example: close all connections with clusters, restart the app -->
+          For example: close all connections with connections, restart the app -->
           <div class="group">
             <div class="item" action="more">
               <div class="dropdown dropend more-actions">
@@ -291,7 +291,7 @@
           <div class="_arrow">
             <ion-icon name="arrow-up"></ion-icon>
           </div>
-          <div class="_cluster">
+          <div class="_connection">
             <div class="_color">
             </div>
             <div class="text"></div>
@@ -320,14 +320,14 @@
             </div>
           </div>
 
-          <div class="_actions _for-clusters">
-            <div class="action" action="add" onclick="$('button#addClusterAction').click()">
+          <div class="_actions _for-connections">
+            <div class="action" action="add" onclick="$('button#addConnectionAction').click()">
               <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
                 <ion-icon name="plus"></ion-icon>
                 <span mulang="add connection"></span>
               </button>
             </div>
-            <div class="action" action="refresh" onclick="$('button#refreshClustersAction').click()">
+            <div class="action" action="refresh" onclick="$('button#refreshConnectionsAction').click()">
               <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
                 <ion-icon name="refresh"></ion-icon>
                 <span mulang="refresh connections"></span>
@@ -338,8 +338,8 @@
       </div>
       <!-- The content is separated into:
       Workspaces section
-      Clusters section
-      And finally the work area of each active cluster -->
+      Connections section
+      And finally the work area of each active connection -->
       <div class="content">
         <!-- Workspaces section -->
         <div content="workspaces">
@@ -415,26 +415,26 @@
           </div>
         </div>
 
-        <!-- Clusters section (hidden by default) -->
-        <div content="clusters" hidden>
-          <!-- The clusters' container
-          Here all clusters - associated with workspaces - are listed as `cluster` element -->
-          <div class="clusters-container"></div>
+        <!-- Connections section (hidden by default) -->
+        <div content="connections" hidden>
+          <!-- The connections' container
+          Here all connections - associated with workspaces - are listed as `connection` element -->
+          <div class="connections-container"></div>
 
           <!-- Empty element
-          Indicates the emptiness of clusters' container -->
+          Indicates the emptiness of connections' container -->
           <div class="empty">
             <div class="sub-content">
-              <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addClusterProcess').click()"></lottie-player>
+              <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addConnectionProcess').click()"></lottie-player>
               <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addSandboxProjectProcess').click()" for-sandbox></lottie-player>
               <div class="message">
-                <span no-clusters-message mulang="no connections added to the workspace [b]$data[/b] yet, why not add one?" capitalize-first></span>
+                <span no-connections-message mulang="no connections added to the workspace [b]$data[/b] yet, why not add one?" capitalize-first></span>
               </div>
               <div class="message" for-sandbox>
                 <span mulang="no local clusters created yet, why not create one?" capitalize-first></span>
               </div>
               <div class="button">
-                <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#addEditClusterDialog" id="addClusterProcess">
+                <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#addEditConnectionDialog" id="addConnectionProcess">
                   <span mulang="add connection"></span>
                 </button>
                 <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#createSandboxProjectDialog" for-sandbox id="addSandboxProjectProcess">
@@ -444,7 +444,7 @@
             </div>
           </div>
 
-          <!-- The clusters section's actions -->
+          <!-- The connections section's actions -->
           <div class="section-actions" hidden>
             <!-- The main action's button; which shows up the two main actions -->
             <div class="main">
@@ -453,30 +453,30 @@
               </button>
             </div>
 
-            <!-- Add a new cluster action -->
+            <!-- Add a new connection action -->
             <div class="action" action="add">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add connection" capitalize data-title="Add Connection" id="addClusterAction">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add connection" capitalize data-title="Add Connection" id="addConnectionAction">
                 <ion-icon name="plus"></ion-icon>
               </button>
             </div>
 
-            <!-- Refresh clusters' list action -->
+            <!-- Refresh connections' list action -->
             <div class="action" action="refresh">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title="Refresh Connections" id="refreshClustersAction">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title="Refresh Connections" id="refreshConnectionsAction">
                 <ion-icon name="refresh"></ion-icon>
               </button>
             </div>
 
-            <!-- Refresh clusters' list action -->
+            <!-- Refresh connections' list action -->
             <!-- <div class="action" action="clean">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh clusters" capitalize data-title="Refresh Clusters">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title="Refresh Connections">
                 <ion-icon name="clean"></ion-icon>
               </button>
             </div> -->
           </div>
         </div>
 
-        <!-- Cluster's workarea section (hidden by default) -->
+        <!-- Connection's workarea section (hidden by default) -->
         <div content="workarea" hidden></div>
       </div>
     </div>
@@ -555,8 +555,8 @@
       </div>
     </div>
 
-    <!-- Cluster's dialog; used for adding and editing -->
-    <div class="modal top fade" id="addEditClusterDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true" data-selected-modal-body="apache-cassandra">
+    <!-- Connection's dialog; used for adding and editing -->
+    <div class="modal top fade" id="addEditConnectionDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true" data-selected-modal-body="apache-cassandra">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="transition: height 0.2s ease-in-out;">
           <div class="modal-header">
@@ -681,14 +681,14 @@
               <div class="modal-section" section="basic">
                 <div class="form-outline form-white margin-bottom">
                   <ion-icon name class="trailing"></ion-icon>
-                  <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="none" info-key="clusterName">
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="none" info-key="connectionName">
                   <label class="form-label">
                     <span mulang="connection name" capitalize></span>
                   </label>
                   <div class="valid-feedback"></div>
                   <div class="invalid-feedback"></div>
                   <div class="form-helper">
-                    <span mulang="example" capitalize></span>: Main Cluster
+                    <span mulang="example" capitalize></span>: Main Node
                   </div>
                 </div>
                 <div class="form-outline form-white margin-bottom">
@@ -960,10 +960,10 @@
               </button>
             </div>
             <div class="float-right">
-              <button type="button" class="btn btn-secondary btn-dark btn-sm" id="testConnectionCluster">
+              <button type="button" class="btn btn-secondary btn-dark btn-sm" id="testConnection">
                 <span mulang="test connection"></span>
               </button>
-              <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" disabled id="addCluster">
+              <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" disabled id="addConnection">
                 <span mulang="add connection"></span>
               </button>
             </div>
@@ -1541,13 +1541,13 @@
       </div>
     </div>
 
-    <!-- Ask for cluster's credentials -->
-    <div class="modal top fade" id="clusterCredentials" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+    <!-- Ask for connection's credentials -->
+    <div class="modal top fade" id="connectionCredentials" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" style="font-size: 1.15rem;"><span mulang="connection" capitalize></span>
-              <cluster-name></cluster-name>
+              <connection-name></connection-name>
               <credentials-info></credentials-info> <span mulang="credentials" capitalize></span>
             </h5>
             <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
@@ -1649,7 +1649,7 @@
         </div>
       </div>
     </div>
-    <button type="button" data-mdb-toggle="modal" data-mdb-target="#clusterCredentials" id="showClusterCredentialsDialog" hidden></button>
+    <button type="button" data-mdb-toggle="modal" data-mdb-target="#connectionCredentials" id="showConnectionCredentialsDialog" hidden></button>
 
     <!-- App's about dialog -->
     <div class="modal top fade" id="appAbout" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">

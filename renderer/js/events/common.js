@@ -50,7 +50,7 @@
        * Check if there's at least one visible opened sandbox project
        * This process is done because the sandbox project has extra tabs - AxonOps -; so the app's window's width should be wider
        */
-      let existsAxonopsTab = $('div.cluster-tabs ul.nav.nav-tabs li.axonops-tab').filter(':visible').length > 0
+      let existsAxonopsTab = $('div.connection-tabs ul.nav.nav-tabs li.axonops-tab').filter(':visible').length > 0
 
       try {
         // If there are no opened sandbox projects then skip this try-catch block
@@ -65,9 +65,9 @@
           showTabsTitles = windowWidth >= 1720 && rightSideWidth >= 1280 && !$('div.body').hasClass('show-hidden')
       } catch (e) {}
 
-      // Inside the cluster's workareas, find all tabs' titles and toggle their display based on the window width
+      // Inside the connection's workareas, find all tabs' titles and toggle their display based on the window width
       $('div.body div.right div.content div[content="workarea"]')
-        .find('div.cluster-tabs ul a.nav-link span.title:not(.ignore-resize)')
+        .find('div.connection-tabs ul a.nav-link span.title:not(.ignore-resize)')
         .toggle(showTabsTitles)
 
       // Enable/disable the work area's tabs' tooltips
@@ -76,7 +76,7 @@
 
     // Update the switchers' container's status
     try {
-      (['workspaces', 'clusters']).forEach((type) => updateSwitcherView(type))
+      (['workspaces', 'connections']).forEach((type) => updateSwitcherView(type))
     } catch (e) {}
   })
 
@@ -698,7 +698,7 @@
     })
 
     $(document).on('clearEnhancedConsole', () => {
-      let interactiveTerminal = $(`div[content="workarea"] div.workarea[cluster-id="${activeClusterID}"] div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-content`)
+      let interactiveTerminal = $(`div[content="workarea"] div.workarea[connection-id="${activeConnectionID}"] div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-content`)
 
       if (interactiveTerminal.length <= 0)
         return
@@ -884,7 +884,7 @@
   // Show/hide the languages' list once the associated input is focused on/out
   setTimeout(() => {
     // Define the app's settings model selector path
-    let dialog = 'div.modal#appSettings, div.modal#rightClickActionsMetadata, div.modal#addEditClusterDialog'
+    let dialog = 'div.modal#appSettings, div.modal#rightClickActionsMetadata, div.modal#addEditConnectionDialog'
 
     // Loop through the dropdown element of each select element
     $(`${dialog}`).find('div.dropdown[for-select]').each(function() {
@@ -956,7 +956,7 @@
 // Clicks any of the section's buttons in the left side of the dialog
 {
   // Define the common element CSS selector
-  let dialog = `div.modal#clusterCredentials div.modal-body div.side`
+  let dialog = `div.modal#connectionCredentials div.modal-body div.side`
 
   // Clicks one of the top side buttons
   $(`${dialog}-left div.sections div.section div.btn`).click(function() {
@@ -978,40 +978,40 @@
 
   // Clicks the `IGNORE CREDENTIALS` button
   $(`${dialog}-right`).parent().parent().find('button#ignoreCredentials').click(function() {
-    // Get the associated cluster's ID
-    let clusterID = $(`div.modal#clusterCredentials`).attr('data-cluster-id'),
-      // Get the UI element of the cluster
-      clusterElement = $(`div.clusters[workspace-id="${getActiveWorkspaceID()}"] div.cluster[data-id="${clusterID}"]`)
+    // Get the associated connection's ID
+    let connectionID = $(`div.modal#connectionCredentials`).attr('data-connection-id'),
+      // Get the UI element of the connection
+      connectionElement = $(`div.connections[workspace-id="${getActiveWorkspaceID()}"] div.connection[data-id="${connectionID}"]`)
 
-    // Get all saved clusters in the currently active workspace
-    Modules.Clusters.getClusters(getActiveWorkspaceID()).then((clusters) => {
+    // Get all saved connections in the currently active workspace
+    Modules.Connections.getConnections(getActiveWorkspaceID()).then((connections) => {
       try {
-        // Get the associated cluster's object
-        let cluster = clusters.filter((cluster) => cluster.info.id == clusterID)[0]
+        // Get the associated connection's object
+        let connection = connections.filter((connection) => connection.info.id == connectionID)[0]
 
-        // This attribute is required for updating clusters
-        cluster.original = cluster
+        // This attribute is required for updating connections
+        connection.original = connection
 
         /*
-         * Get rid of the cluster's credentials
+         * Get rid of the connection's credentials
          * By doing this the app won't ask the user to enter the credentials again
          */
-        delete cluster.info.credentials
+        delete connection.info.credentials
 
-        // Attempt to update the cluster
-        Modules.Clusters.updateCluster(getActiveWorkspaceID(), cluster).then((status) => {
+        // Attempt to update the connection
+        Modules.Connections.updateConnection(getActiveWorkspaceID(), connection).then((status) => {
           // If the updating process failed then throw an error and skip the upcoming code
           if (!status)
             throw 0
 
           // Remove associated attributes
-          clusterElement.removeAttr('data-credentials-auth data-credentials-ssh')
+          connectionElement.removeAttr('data-credentials-auth data-credentials-ssh')
 
           // Close the credentials dialog
-          $('div.modal#clusterCredentials').find('div.modal-header button.btn-close').click()
+          $('div.modal#connectionCredentials').find('div.modal-header button.btn-close').click()
 
-          // Clicks the `TEST CONNECTION` button of the cluster
-          setTimeout(() => clusterElement.find('div.button button.test-connection').click())
+          // Clicks the `TEST CONNECTION` button of the connection
+          setTimeout(() => connectionElement.find('div.button button.test-connection').click())
         })
       } catch (e) {
         try {
@@ -1019,17 +1019,17 @@
         } catch (e) {}
 
         // The updating process failed, show feedback to the user
-        return showToast(I18next.capitalize(I18next.t('ignore connection credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the connection [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+        return showToast(I18next.capitalize(I18next.t('ignore connection credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the connection [b]$data[/b]', [getAttributes(connectionElement, 'data-name')])) + '.', 'failure')
       }
     })
   })
 
   // Clicks the `PROCEED` button
   $(`${dialog}-right`).parent().parent().find('button#realtimeCredentialsProceed').click(function() {
-    // Get the associated cluster's ID
-    let clusterID = $(`div.modal#clusterCredentials`).attr('data-cluster-id'),
-      // Get the UI element of the cluster
-      clusterElement = $(`div[content="clusters"] div.clusters-container div.clusters[workspace-id="${getActiveWorkspaceID()}"] div.cluster[data-id="${clusterID}"]`),
+    // Get the associated connection's ID
+    let connectionID = $(`div.modal#connectionCredentials`).attr('data-connection-id'),
+      // Get the UI element of the connection
+      connectionElement = $(`div[content="connections"] div.connections-container div.connections[workspace-id="${getActiveWorkspaceID()}"] div.connection[data-id="${connectionID}"]`),
       // Determine if the provided credentials are required for both sections `DB auth` and `ssh` or for one of them
       onlyOneSection = ''
 
@@ -1056,8 +1056,8 @@
     })
 
     // Check if only one section is needed
-    if ($('div.modal#clusterCredentials').hasClass('one-only'))
-      onlyOneSection = $('div.modal#clusterCredentials').hasClass('auth') ? 'auth' : 'ssh'
+    if ($('div.modal#connectionCredentials').hasClass('one-only'))
+      onlyOneSection = $('div.modal#connectionCredentials').hasClass('auth') ? 'auth' : 'ssh'
 
     // Switch between the final result of `onlyOneSection`
     switch (onlyOneSection) {
@@ -1101,7 +1101,7 @@
           throw 0
 
         // Set the DB auth credentials
-        clusterElement.attr({
+        connectionElement.attr({
           'data-username': credentialsArray.authusername.trim().length <= 0 ? null : encrypt(key, credentialsArray.authusername),
           'data-password': credentialsArray.authpassword.trim().length <= 0 ? null : encrypt(key, credentialsArray.authpassword)
         })
@@ -1113,7 +1113,7 @@
           throw 0
 
         // Set the SSH credentials
-        clusterElement.attr({
+        connectionElement.attr({
           'data-ssh-username': credentialsArray.sshusername.trim().length <= 0 ? null : encrypt(key, credentialsArray.sshusername),
           'data-ssh-password': credentialsArray.sshpassword.trim().length <= 0 ? null : encrypt(key, credentialsArray.sshpassword),
           'data-ssh-passphrase': credentialsArray.sshpassphrase.trim().length <= 0 ? null : encrypt(key, credentialsArray.sshpassphrase)
@@ -1130,14 +1130,14 @@
         if (([saveAuthCredentialsConfirmed, saveSSHCredentialsConfirmed]).every((confirm) => !confirm))
           throw 0
 
-        // Get all saved clusters in the currently active workspace
-        Modules.Clusters.getClusters(getActiveWorkspaceID()).then((clusters) => {
+        // Get all saved connections in the currently active workspace
+        Modules.Connections.getConnections(getActiveWorkspaceID()).then((connections) => {
           try {
-            // Get the associated cluster's object
-            let cluster = clusters.filter((cluster) => cluster.info.id == clusterID)[0]
+            // Get the associated connection's object
+            let connection = connections.filter((connection) => connection.info.id == connectionID)[0]
 
-            // This attribute is required for updating clusters
-            cluster.original = cluster
+            // This attribute is required for updating connections
+            connection.original = connection
 
             /**
              * If both credentials saving are confirmed then remove the `credentials` attribute
@@ -1145,17 +1145,17 @@
              * If only SSH auth is confirmed then remove its credentials attribute
              */
             if (saveAuthCredentialsConfirmed && saveSSHCredentialsConfirmed)
-              delete cluster.info.credentials
+              delete connection.info.credentials
             else if (saveAuthCredentialsConfirmed && !saveSSHCredentialsConfirmed)
-              delete cluster.info.credentials.auth
+              delete connection.info.credentials.auth
             else if (!saveAuthCredentialsConfirmed && saveSSHCredentialsConfirmed)
-              delete cluster.info.credentials.ssh
+              delete connection.info.credentials.ssh
 
             /**
              * Make sure to keep the saved secrets as it
              * Without this line the app will remove the already saved secrets/credentials
              */
-            cluster.info.secrets = cluster.info.secrets == undefined ? [] : cluster.info.secrets
+            connection.info.secrets = connection.info.secrets == undefined ? [] : connection.info.secrets
 
             try {
               // If the user didn't confirm the saving of DB auth credentials then skip this try-catch block
@@ -1164,11 +1164,11 @@
 
               // Save `username`
               if (credentialsArray.authusername.trim().length != 0)
-                cluster.info.secrets.username = encrypt(key, credentialsArray.authusername)
+                connection.info.secrets.username = encrypt(key, credentialsArray.authusername)
 
               // Save `password`
               if (credentialsArray.authpassword.trim().length != 0)
-                cluster.info.secrets.password = encrypt(key, credentialsArray.authpassword)
+                connection.info.secrets.password = encrypt(key, credentialsArray.authpassword)
             } catch (e) {
               try {
                 errorLog(e, 'common')
@@ -1182,29 +1182,29 @@
 
               // Save the SSH `username`
               if (credentialsArray.sshusername.trim().length != 0)
-                cluster.info.secrets.sshUsername = encrypt(key, credentialsArray.sshusername)
+                connection.info.secrets.sshUsername = encrypt(key, credentialsArray.sshusername)
 
               // Save the SSH `password`
               if (credentialsArray.sshpassword.trim().length != 0)
-                cluster.info.secrets.sshPassword = encrypt(key, credentialsArray.sshpassword)
+                connection.info.secrets.sshPassword = encrypt(key, credentialsArray.sshpassword)
 
               // Save the SSH `passphrase`
               if (credentialsArray.sshpassphrase.trim().length != 0)
-                cluster.info.secrets.sshPassphrase = encrypt(key, credentialsArray.sshpassphrase)
+                connection.info.secrets.sshPassphrase = encrypt(key, credentialsArray.sshpassphrase)
             } catch (e) {
               try {
                 errorLog(e, 'common')
               } catch (e) {}
             }
 
-            // Attempt to update the cluster
-            Modules.Clusters.updateCluster(getActiveWorkspaceID(), cluster).then((status) => {
+            // Attempt to update the connection
+            Modules.Connections.updateConnection(getActiveWorkspaceID(), connection).then((status) => {
               // If the updating process failed then throw an error and skip the upcoming code
               if (!status)
                 throw 0
 
-              // Update the cluster's unused attributes - after the update -
-              clusterElement.removeAttr(`${saveAuthCredentialsConfirmed ? 'data-credentials-auth' : ''} ${saveSSHCredentialsConfirmed ? 'data-credentials-ssh' : ''}`)
+              // Update the connection's unused attributes - after the update -
+              connectionElement.removeAttr(`${saveAuthCredentialsConfirmed ? 'data-credentials-auth' : ''} ${saveSSHCredentialsConfirmed ? 'data-credentials-ssh' : ''}`)
             })
           } catch (e) {
             try {
@@ -1212,7 +1212,7 @@
             } catch (e) {}
 
             // The updating process failed, show feedback to the user
-            showToast(I18next.capitalize(I18next.t('save connection credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the connection [b]$data[/b]', [getAttributes(clusterElement, 'data-name')])) + '.', 'failure')
+            showToast(I18next.capitalize(I18next.t('save connection credentials')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong, failed to update the connection [b]$data[/b]', [getAttributes(connectionElement, 'data-name')])) + '.', 'failure')
 
             // Enable the proceed button again
             $(this).removeAttr('disabled')
@@ -1230,14 +1230,14 @@
       // Enable the proceed button again
       $(this).removeAttr('disabled')
 
-      // Update the cluster's unused attributes - after the update -
-      clusterElement.attr('data-got-credentials', 'true')
+      // Update the connection's unused attributes - after the update -
+      connectionElement.attr('data-got-credentials', 'true')
 
       // Close the credentials dialog
-      $('div.modal#clusterCredentials').find('div.modal-header button.btn-close').click()
+      $('div.modal#connectionCredentials').find('div.modal-header button.btn-close').click()
 
-      // Clicks the `TEST CONNECTION` button of the cluster
-      setTimeout(() => clusterElement.find('div.button button.test-connection').click())
+      // Clicks the `TEST CONNECTION` button of the connection
+      setTimeout(() => connectionElement.find('div.button button.test-connection').click())
     })
   })
 }

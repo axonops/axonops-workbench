@@ -73,14 +73,14 @@ body.rtl {
     left: 50px;
   }
 
-  div.body div.right div.content div[content][content="workspaces"] div.clusters-container div.cluster div.header div.title,
-  div.body div.right div.content div[content][content="workspaces"] div.clusters-container div.workspace div.header div.title,
-  div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.cluster div.header div.title,
+  div.body div.right div.content div[content][content="workspaces"] div.connections-container div.connection div.header div.title,
+  div.body div.right div.content div[content][content="workspaces"] div.connections-container div.workspace div.header div.title,
+  div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.connection div.header div.title,
   div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.workspace div.header div.title,
-  div.body div.right div.content div[content][content="clusters"] div.clusters-container div.cluster div.header div.title,
-  div.body div.right div.content div[content][content="clusters"] div.clusters-container div.workspace div.header div.title,
-  div.body div.right div.content div[content][content="clusters"] div.workspaces-container div.cluster div.header div.title,
-  div.body div.right div.content div[content][content="clusters"] div.workspaces-container div.workspace div.header div.title {
+  div.body div.right div.content div[content][content="connections"] div.connections-container div.connection div.header div.title,
+  div.body div.right div.content div[content][content="connections"] div.connections-container div.workspace div.header div.title,
+  div.body div.right div.content div[content][content="connections"] div.workspaces-container div.connection div.header div.title,
+  div.body div.right div.content div[content][content="connections"] div.workspaces-container div.workspace div.header div.title {
     text-align: right;
   }
 
@@ -96,9 +96,9 @@ body.rtl {
     margin: 0;
   }
 
-  div.modal#addEditClusterDialog div.modal-body div.side-left div.sections div.section div.btn,
+  div.modal#addEditConnectionDialog div.modal-body div.side-left div.sections div.section div.btn,
   div.modal#appSettings div.modal-body div.side-left div.sections div.section div.btn,
-  div.modal#clusterCredentials div.modal-body div.side-left div.sections div.section div.btn {
+  div.modal#connectionCredentials div.modal-body div.side-left div.sections div.section div.btn {
     text-align: right;
   }
 
@@ -122,9 +122,9 @@ body.rtl {
     right: 30px;
   }
 
-  div.modal#addEditClusterDialog div.modal-footer div.float-left,
+  div.modal#addEditConnectionDialog div.modal-footer div.float-left,
   div.modal#appSettings div.modal-footer div.float-left,
-  div.modal#clusterCredentials div.modal-footer div.float-left {
+  div.modal#connectionCredentials div.modal-footer div.float-left {
     display: flex;
     flex-direction: row-reverse;
   }
@@ -153,24 +153,24 @@ body.rtl {
     right: 45px;
   }
 
-  div.modal#addEditClusterDialog div.modal-body div.editor-container,
+  div.modal#addEditConnectionDialog div.modal-body div.editor-container,
   div.modal#appSettings div.modal-body div.editor-container,
-  div.modal#clusterCredentials div.modal-body div.editor-container {
+  div.modal#connectionCredentials div.modal-body div.editor-container {
     direction: ltr;
   }
 
-  div.body div.right div.content div[content][content="workspaces"] div.clusters-container div.cluster div.cluster-info,
-  div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.cluster div.cluster-info,
-  div.body div.right div.content div[content][content="clusters"] div.clusters-container div.cluster div.cluster-info,
-  div.body div.right div.content div[content][content="clusters"] div.workspaces-container div.cluster div.cluster-info {
+  div.body div.right div.content div[content][content="workspaces"] div.connections-container div.connection div.connection-info,
+  div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.connection div.connection-info,
+  div.body div.right div.content div[content][content="connections"] div.connections-container div.connection div.connection-info,
+  div.body div.right div.content div[content][content="connections"] div.workspaces-container div.connection div.connection-info {
     direction: ltr;
     flex-direction: row-reverse;
   }
 
-  div.body div.right div.content div[content][content="workspaces"] div.clusters-container div.cluster div.status,
-  div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.cluster div.status,
-  div.body div.right div.content div[content][content="clusters"] div.clusters-container div.cluster div.status,
-  div.body div.right div.content div[content][content="clusters"] div.workspaces-container div.cluster div.status {
+  div.body div.right div.content div[content][content="workspaces"] div.connections-container div.connection div.status,
+  div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.connection div.status,
+  div.body div.right div.content div[content][content="connections"] div.connections-container div.connection div.status,
+  div.body div.right div.content div[content][content="connections"] div.workspaces-container div.connection div.status {
     right: auto;
     left: 16px;
   }
@@ -200,7 +200,7 @@ body.rtl {
     }
   }
 
-  div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.left div.cluster-info div.additional {
+  div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.left div.connection-info div.additional {
     direction: ltr;
     flex-direction: column;
     align-items: flex-end;
@@ -212,7 +212,7 @@ body.rtl {
     direction: ltr;
   }
 
-  div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.right div.header div.cluster-tabs ul a.nav-link span.icon {
+  div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.right div.header div.connection-tabs ul a.nav-link span.icon {
     margin-right: 0;
     margin-left: 7px;
   }
@@ -245,8 +245,8 @@ body.rtl {
     padding-right: 8px;
   }
 
-  div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.left div.cluster-metadata,
-  div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.left div.cluster-metadata div.metadata-content {
+  div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.left div.connection-metadata,
+  div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.left div.connection-metadata div.metadata-content {
     direction: ltr;
   }
 
@@ -273,9 +273,9 @@ body.rtl {
     direction: ltr;
   }
 
-  div.modal#addEditClusterDialog div.modal-body div.side-right div.modal-section[section="variables"] div.sub-header,
+  div.modal#addEditConnectionDialog div.modal-body div.side-right div.modal-section[section="variables"] div.sub-header,
   div.modal#appSettings div.modal-body div.side-right div.modal-section[section="variables"] div.sub-header,
-  div.modal#clusterCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.sub-header {
+  div.modal#connectionCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.sub-header {
     direction: ltr;
   }
 
@@ -286,58 +286,58 @@ body.rtl {
     }
   }
 
-  div.modal#addEditClusterDialog div.modal-body div.side-left,
+  div.modal#addEditConnectionDialog div.modal-body div.side-left,
   div.modal#appSettings div.modal-body div.side-left,
-  div.modal#clusterCredentials div.modal-body div.side-left {
+  div.modal#connectionCredentials div.modal-body div.side-left {
     margin: {
       right: 0;
       left: 20px;
     }
   }
 
-  div.modal#addEditClusterDialog div.modal-body div.side-right div.modal-section[section="variables"] div.sub-header a,
+  div.modal#addEditConnectionDialog div.modal-body div.side-right div.modal-section[section="variables"] div.sub-header a,
   div.modal#appSettings div.modal-body div.side-right div.modal-section[section="variables"] div.sub-header a,
-  div.modal#clusterCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.sub-header a {
+  div.modal#connectionCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.sub-header a {
     flex-direction: row-reverse;
   }
 
-  div.modal#addEditClusterDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.right-margin,
+  div.modal#addEditConnectionDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.right-margin,
   div.modal#appSettings div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.right-margin,
-  div.modal#clusterCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.right-margin {
+  div.modal#connectionCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.right-margin {
     margin: {
       right: 0;
       left: 4px;
     }
   }
 
-  div.modal#addEditClusterDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.left-margin,
+  div.modal#addEditConnectionDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.left-margin,
   div.modal#appSettings div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.left-margin,
-  div.modal#clusterCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.left-margin {
+  div.modal#connectionCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable div.left-margin {
     margin: {
       right: 4px;
       left: 0;
     }
   }
 
-  div.modal#addEditClusterDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions,
+  div.modal#addEditConnectionDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions,
   div.modal#appSettings div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions,
-  div.modal#clusterCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions {
+  div.modal#connectionCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions {
     margin: {
       left: auto;
       right: 9px;
     }
   }
 
-  div.modal#addEditClusterDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions a[action] ion-icon[name="trash"],
+  div.modal#addEditConnectionDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions a[action] ion-icon[name="trash"],
   div.modal#appSettings div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions a[action] ion-icon[name="trash"],
-  div.modal#clusterCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions a[action] ion-icon[name="trash"] {
+  div.modal#connectionCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions a[action] ion-icon[name="trash"] {
     left: auto;
     right: 2px;
   }
 
-  div.modal#addEditClusterDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions a[action][action="multiple"] input,
+  div.modal#addEditConnectionDialog div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions a[action][action="multiple"] input,
   div.modal#appSettings div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions a[action][action="multiple"] input,
-  div.modal#clusterCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions a[action][action="multiple"] input {
+  div.modal#connectionCredentials div.modal-body div.side-right div.modal-section[section="variables"] div.variables-list div.content div.variable [class*="col-"].flex div.actions a[action][action="multiple"] input {
     left: auto;
     right: 3px;
   }
@@ -347,7 +347,7 @@ body.rtl {
     right: 3px;
   }
 
-  div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.left div.cluster-info div.name-ssl div.axonops-agent {
+  div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.left div.connection-info div.name-ssl div.axonops-agent {
     right: auto;
     left: 20px;
   }
@@ -356,7 +356,7 @@ body.rtl {
     direction: ltr;
   }
 
-  div.modal#addEditClusterDialog {
+  div.modal#addEditConnectionDialog {
     div.modal-dialog {
       div.modal-body {
         div.terminate-process {
@@ -378,9 +378,9 @@ body.rtl {
     }
   }
 
-  div[content="clusters"] {
-    div.clusters-container {
-      div.cluster {
+  div[content="connections"] {
+    div.connections-container {
+      div.connection {
         div.terminate-process {
           right: 80px;
           left: inherit !important;
@@ -396,7 +396,7 @@ body.rtl {
     }
   }
 
-  div[content="workarea"] div.workarea div.sub-sides.left div.cluster-info div.name-ssl div.connection-status {
+  div[content="workarea"] div.workarea div.sub-sides.left div.connection-info div.name-ssl div.connection-status {
     right: auto;
     left: 50px;
   }
@@ -414,7 +414,7 @@ body.rtl {
     transform: rotate(-90deg) !important;
   }
 
-  div.body div.right div.content-info div._left div._cluster div._color {
+  div.body div.right div.content-info div._left div._connection div._color {
     margin-right: 0 !important;
     margin-left: 5px!important;
   }

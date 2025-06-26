@@ -61,7 +61,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           defaultPath: true,
           folder: 'localclusters',
           name: 'Local Clusters',
-          color: '#3b71ca'
+          color: '#03A9F4'
         })
       } catch (e) {}
 
@@ -100,10 +100,10 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         // Determine if the current workspace is the docker/sandbox - one
         let isSandbox = workspace.id == 'workspace-sandbox',
           /**
-           * Determine if the workspace folder is accessible or not by checking the `clusters` object
+           * Determine if the workspace folder is accessible or not by checking the `connections` object
            * The value will be `undefined` if the app wasn't able to access the workspace folder and it's not the docker/sandbox workspace
            */
-          inAccessible = workspace.clusters == undefined && !isSandbox,
+          inAccessible = workspace.connections == undefined && !isSandbox,
           // Get the workspace's color in `R G B` format
           color = HEXToRGB(workspace.color).join(' '),
           // Set the background color for the `ENTER` button
@@ -121,7 +121,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 <ion-icon name="sandbox" ${!isSandbox ? 'hidden' : '' }></ion-icon>
                 <div class="header">
                   <div class="title workspace-name">${isSandbox ? '<span mulang="local clusters" capitalize></span>' : workspace.name}</div>
-                  <div class="_clusters" ${connectionsMiniIconsBackgroundColor}></div>
+                  <div class="_connections" ${connectionsMiniIconsBackgroundColor}></div>
                 </div>
                 <div class="footer">
                   <div class="button">
@@ -174,35 +174,35 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 })
               })
 
-              // Add the clusters inside the workspace's list
+              // Add the connections inside the workspace's list
               setTimeout(() => {
-                // Point at the clusters container inside the workspace UI element
-                let clustersList = $(this).find('div._clusters')
+                // Point at the connections container inside the workspace UI element
+                let connectionsList = $(this).find('div._connections')
 
-                // Get all clusters in the workspace
-                Modules.Clusters.getClusters(workspaceID).then((clusters) => {
-                  clustersList.toggleClass('show', clusters.length > 0)
+                // Get all connections in the workspace
+                Modules.Connections.getConnections(workspaceID).then((connections) => {
+                  connectionsList.toggleClass('show', connections.length > 0)
 
-                  // Loop through each cluster
-                  for (let cluster of (clusters || []).slice(0, 12)) {
-                    // Set the cluster's host
-                    let clusterHost = cluster.host.length > 20 ? `${cluster.host.slice(0, 20)}...` : cluster.host,
+                  // Loop through each connection
+                  for (let connection of (connections || []).slice(0, 12)) {
+                    // Set the connection's host
+                    let connectionHost = connection.host.length > 20 ? `${connection.host.slice(0, 20)}...` : connection.host,
                       backgroundColor = TinyColor(workspace.color).isValid() ? `style="background: rgb(${color} / 100%);"` : '',
-                      // The cluster UI element structure
+                      // The connection UI element structure
                       element = `
-                        <div class="_cluster" ${backgroundColor} _cluster-id="${cluster.info.id}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="${cluster.name}<br>${clusterHost}" data-mdb-html="true"></div>`
+                        <div class="_connection" ${backgroundColor} _connection-id="${connection.info.id}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="${connection.name}<br>${connectionHost}" data-mdb-html="true"></div>`
 
-                    // Append cluster to the list
-                    clustersList.append($(element).show(function() {
+                    // Append connection to the list
+                    connectionsList.append($(element).show(function() {
                       setTimeout(() => getElementMDBObject($(this), 'Tooltip'))
 
-                      // Once the user clicks this mini-cluster element
+                      // Once the user clicks this mini-connection element
                       $(this).click(function() {
                         // Make sure it's clickable - active and has workarea -
                         if (!$(this).hasClass('clickable'))
                           return
 
-                        $(`div.body div.left div.content div.switch-clusters div.cluster[_cluster-id="${getAttributes($(this), '_cluster-id')}"] button`).click()
+                        $(`div.body div.left div.content div.switch-connections div.connection[_connection-id="${getAttributes($(this), '_connection-id')}"] button`).click()
                       })
                     }))
                   }
@@ -232,36 +232,36 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   let tooltipAddContent = activeWorkspaceID == 'workspace-sandbox' ? 'add local cluster' : 'add connection'
 
                   // Update the tooltip's content
-                  tooltips.addClusterActionButton.setContent(I18next.capitalize(I18next.t(tooltipAddContent)))
+                  tooltips.addConnectionActionButton.setContent(I18next.capitalize(I18next.t(tooltipAddContent)))
 
                   // Update related attributes
-                  $(tooltips.addClusterActionButton.reference).attr({
+                  $(tooltips.addConnectionActionButton.reference).attr({
                     'data-mulang': tooltipAddContent,
                     'data-mdb-original-title': I18next.capitalize(I18next.t(tooltipAddContent))
                   })
                 }
 
                 {
-                  $('span[no-clusters-message]').html(I18next.capitalizeFirstLetter(I18next.replaceData($('span[no-clusters-message]').attr('mulang'), [getAttributes(workspaceElement, 'data-name')])))
+                  $('span[no-connections-message]').html(I18next.capitalizeFirstLetter(I18next.replaceData($('span[no-connections-message]').attr('mulang'), [getAttributes(workspaceElement, 'data-name')])))
                 }
 
                 // Apply the same process on the `refresh` button
                 {
                   // Define the suitable key based on the type of the workspace
-                  let tooltipRefreshContent = activeWorkspaceID == 'workspace-sandbox' ? 'refresh local clusters' : 'refresh clusters'
+                  let tooltipRefreshContent = activeWorkspaceID == 'workspace-sandbox' ? 'refresh local clusters' : 'refresh connections'
 
                   // Update the tooltip's content
-                  tooltips.refreshClusterActionButton.setContent(I18next.capitalize(I18next.t(tooltipRefreshContent)))
+                  tooltips.refreshConnectionActionButton.setContent(I18next.capitalize(I18next.t(tooltipRefreshContent)))
 
                   // Update related attributes
-                  $(tooltips.refreshClusterActionButton.reference).attr({
+                  $(tooltips.refreshConnectionActionButton.reference).attr({
                     'data-mulang': tooltipRefreshContent,
                     'data-mdb-original-title': I18next.capitalize(I18next.t(tooltipRefreshContent))
                   })
                 }
 
                 {
-                  let actionsButtonsContainer = $('div.body div.right div.content-info div._right div._actions._for-clusters'),
+                  let actionsButtonsContainer = $('div.body div.right div.content-info div._right div._actions._for-connections'),
                     isLocalClustersWorkspace = workspaceID == 'workspace-sandbox'
 
                   actionsButtonsContainer.find('div.action[action="add"]').find('span[mulang]').attr('mulang', isLocalClustersWorkspace ? 'add cluster' : 'add connection')
@@ -273,42 +273,42 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 // Apply the workspace's color on the UI
                 setUIColor(getAttributes(workspaceElement, 'data-color'))
 
-                setTimeout(() => handleContentInfo('clusters', workspaceElement), 250)
+                setTimeout(() => handleContentInfo('connections', workspaceElement), 250)
 
                 // Toggle the class which handles docker empty state
-                $('div.content div[content="clusters"] div.empty').toggleClass('for-sandbox', isSandbox)
+                $('div.content div[content="connections"] div.empty').toggleClass('for-sandbox', isSandbox)
 
-                // Point at the workspace clusters' container
-                let workspaceClusters = $(`div.clusters-container div.clusters[workspace-id="${workspaceID}"]`)
+                // Point at the workspace connections' container
+                let workspaceConnections = $(`div.connections-container div.connections[workspace-id="${workspaceID}"]`)
 
                 try {
-                  // If the workspace clusters' container exists already - as it has been created - then show it and finish this `click` event
-                  if (workspaceClusters.length <= 0)
+                  // If the workspace connections' container exists already - as it has been created - then show it and finish this `click` event
+                  if (workspaceConnections.length <= 0)
                     throw 0
 
-                  // Hide other containers rather than the current workspace clusters' container
-                  $('div.clusters-container div.clusters').hide()
+                  // Hide other containers rather than the current workspace connections' container
+                  $('div.connections-container div.connections').hide()
 
-                  // Show the current workspace clusters' container
-                  workspaceClusters.show()
+                  // Show the current workspace connections' container
+                  workspaceConnections.show()
 
-                  // Get the number of clusters added to the clicked workspace
-                  let numOfClusters = $(`div.clusters div.cluster[data-id][data-workspace-id="${workspaceID}"]`).length,
-                    // Point at the cluster's content container
-                    clustersContent = $('div.body div.right div.content div[content="clusters"]')
+                  // Get the number of connections added to the clicked workspace
+                  let numOfConnections = $(`div.connections div.connection[data-id][data-workspace-id="${workspaceID}"]`).length,
+                    // Point at the connection's content container
+                    connectionsContent = $('div.body div.right div.content div[content="connections"]')
 
-                  // Toggle the empty class based on the number of clusters
-                  clustersContent.toggleClass('empty', numOfClusters <= 0)
+                  // Toggle the empty class based on the number of connections
+                  connectionsContent.toggleClass('empty', numOfConnections <= 0)
 
                   // Make the transition instant
-                  clustersContent.addClass('instant')
+                  connectionsContent.addClass('instant')
 
                   // Remove the instant transition; to make sure it'll be applied when it's required to
-                  setTimeout(() => clustersContent.removeClass('instant'))
+                  setTimeout(() => connectionsContent.removeClass('instant'))
 
                   // Point at different UI elements
                   let allContentElements = $('div.body div.right div.content div[content]'),
-                    clustersContentElement = $(`div.body div.right div.content div[content="clusters"]`),
+                    connectionsContentElement = $(`div.body div.right div.content div[content="connections"]`),
                     switchWorkspacesChildren = $(`div.body div.left div.content div.switch-workspaces div.workspace`),
                     workspaceSwitcher = $(`div.body div.left div.content div.switch-workspaces div.workspace[_workspace-id="${workspaceID}"]`)
 
@@ -320,8 +320,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                     // Hide all content elements
                     allContentElements.hide()
 
-                    // Show the workspace's clusters' content
-                    clustersContentElement.show()
+                    // Show the workspace's connections' content
+                    connectionsContentElement.show()
 
                     // Skip the upcoming code
                     return
@@ -332,8 +332,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
                   // After 150ms of clicking the button
                   setTimeout(() => {
-                    // Show the workspace's clusters' content with fade in transition
-                    clustersContentElement.fadeIn(50).removeAttr('hidden')
+                    // Show the workspace's connections' content with fade in transition
+                    connectionsContentElement.fadeIn(50).removeAttr('hidden')
 
                     // Remove the active attribute from all switchers
                     $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
@@ -365,26 +365,26 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 workspaceElement.addClass('loading')
 
                 /**
-                 * If the workspace clusters' container does not exist - hasn't been created - then create one
+                 * If the workspace connections' container does not exist - hasn't been created - then create one
                  *
-                 * Workspace clusters container UI element structure
+                 * Workspace connections container UI element structure
                  */
-                let element = `<div class="clusters" workspace-id="${workspaceID}"></div>`
+                let element = `<div class="connections" workspace-id="${workspaceID}"></div>`
 
-                // Append the clusters' container for the workspace
-                $(`div.body div.right div.content div[content="clusters"] div.clusters-container`).append($(element).hide(function() {
-                  // Hide containers and show the cluster's one after a while
+                // Append the connections' container for the workspace
+                $(`div.body div.right div.content div[content="connections"] div.connections-container`).append($(element).hide(function() {
+                  // Hide containers and show the connection's one after a while
                   setTimeout(() => {
                     // Hide the the workspaces content UI element
                     $('div.body div.right div.content div[content="workspaces"]').hide()
 
-                    // Hide other containers rather than the current clusters' container
-                    $('div.clusters-container div.clusters').hide()
+                    // Hide other containers rather than the current connections' container
+                    $('div.connections-container div.connections').hide()
 
-                    // Show the workspaces' clusters' content
-                    $(`div.body div.right div.content div[content="clusters"]`).show().removeAttr('hidden')
+                    // Show the workspaces' connections' content
+                    $(`div.body div.right div.content div[content="connections"]`).show().removeAttr('hidden')
 
-                    // Show the clusters' container
+                    // Show the connections' container
                     $(this).show()
                   })
 
@@ -404,8 +404,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   // Get the workspace's color
                   let [r, g, b] = HEXToRGB(getAttributes(workspaceElement, 'data-color'))
 
-                  // Trigger the `getClusters` event for the current workspace
-                  $(document).trigger('getClusters', {
+                  // Trigger the `getConnections` event for the current workspace
+                  $(document).trigger('getConnections', {
                     workspaceID,
                     containersManagementTool: config.get('features', 'containersManagementTool') || 'none'
                   })
@@ -555,7 +555,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                                 addLog(`Switch to the work area of workspace '${getAttributes(workspaceElement, ['data-name', 'data-id'])}'`, 'action')
                               } catch (e) {}
 
-                              // Deactivate all workspaces and clusters inside the switchers
+                              // Deactivate all workspaces and connections inside the switchers
                               $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
 
                               // Activate the clicked switcher
@@ -567,7 +567,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                               // Click the `ENTER` button of the workspace UI element
                               setTimeout(() => workspaceElement.find('div.footer div.button button').trigger('click', true))
 
-                              handleContentInfo('clusters', workspaceElement)
+                              handleContentInfo('connections', workspaceElement)
                             })
                           })
                         }))
@@ -575,7 +575,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                     }, delay ? 500 : 10)
                   } catch (e) {}
 
-                  // Apply the chosen language to different span elements in the created workspace clusters container
+                  // Apply the chosen language to different span elements in the created workspace connections container
                   setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang]')))
                 }))
               })
@@ -588,7 +588,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 // Clicks the folder button
                 $(`div.btn[button-id="${folderBtnID}"]`).click(() => {
                   // Set the path to open based on whether or not the workspace is the docker/sandbox
-                  let path = !isSandbox ? getWorkspaceFolderPath(workspaceID) : Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters')
+                  let path = !isSandbox ? getWorkspaceFolderPath(workspaceID) : Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localconnections')
 
                   // Open the set path
                   Open(path)
@@ -596,7 +596,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
                 // Clicks the settings button
                 $(`div.btn[button-id="${settingsBtnID}"]`).click(async () => {
-                  // Define a portion of the cluster's adding/editing dialog CSS selector
+                  // Define a portion of the connection's adding/editing dialog CSS selector
                   let dialog = 'div.modal#addEditWorkspaceDialog',
                     // Define the workspace's name, color, and folder path
                     [
@@ -676,19 +676,19 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                     if (!response.confirmed)
                       return
 
-                    Modules.Clusters.getClusters(workspaceID).then(async function(clusters) {
-                      for (let cluster of clusters) {
-                        let clusterElement = $(`div.body div.right div.content div[content="clusters"] div.clusters-container div.clusters[workspace-id="${workspaceID}"] div.cluster[data-id="${cluster.info.id}"`)
+                    Modules.Connections.getConnections(workspaceID).then(async function(connections) {
+                      for (let connection of connections) {
+                        let connectionElement = $(`div.body div.right div.content div[content="connections"] div.connections-container div.connections[workspace-id="${workspaceID}"] div.connection[data-id="${connection.info.id}"`)
 
-                        if (clusterElement.length <= 0)
+                        if (connectionElement.length <= 0)
                           continue
 
-                        let clusterWorkarea = $(`div[content="workarea"] div.workarea[cluster-id="${getAttributes(clusterElement, 'data-id')}"]`)
+                        let connectionWorkarea = $(`div[content="workarea"] div.workarea[connection-id="${getAttributes(connectionElement, 'data-id')}"]`)
 
-                        if (clusterWorkarea.length <= 0)
+                        if (connectionWorkarea.length <= 0)
                           continue
 
-                        showToast(I18next.capitalize(I18next.t('delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to delete the workspace [b]$data[/b]', [getAttributes(clusterElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'warning')
+                        showToast(I18next.capitalize(I18next.t('delete connection')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to delete the workspace [b]$data[/b]', [getAttributes(connectionElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'warning')
 
                         return
                       }
@@ -741,7 +741,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               }
             })
 
-            // Apply the chosen language to different span elements in the created workspace clusters container
+            // Apply the chosen language to different span elements in the created workspace connections container
             setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
           }))
         } catch (e) {
@@ -934,18 +934,18 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             return
           }
 
-          // Check if there is any active cluster - connected with - in the workspace
-          let foundActiveCluster = false
+          // Check if there is any active connection - connected with - in the workspace
+          let foundActiveConnection = false
 
-          // Loop through all workspace's clusters
-          $(`div.cluster[data-workspace-id="${workspaceID}"]`).each(function() {
-            // Only one active cluster is needed to change the `foundActiveCluster` value
+          // Loop through all workspace's connections
+          $(`div.connection[data-workspace-id="${workspaceID}"]`).each(function() {
+            // Only one active connection is needed to change the `foundActiveConnection` value
             if (getAttributes($(this), 'data-workarea') != 'false')
-              foundActiveCluster = true
+              foundActiveConnection = true
           })
 
-          // If an active cluster has been found then end the process
-          if (foundActiveCluster)
+          // If an active connection has been found then end the process
+          if (foundActiveConnection)
             return showToast(I18next.capitalize(I18next.t('workspace settings')), I18next.capitalizeFirstLetter(I18next.replaceData('one connection or more in the workspace [b]$data[/b] is open, please make sure to close the connections before attempting to edit the workspace', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
 
           // Attempt to Update the workspace
@@ -989,9 +989,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             // Update the loading's background color
             workspaceElement.find('div.loading').css('background', `rgb(${colorRGB} / 10%)`)
 
-            workspaceElement.find('div._clusters').css('background', `rgb(${colorRGB} / 25%)`)
+            workspaceElement.find('div._connections').css('background', `rgb(${colorRGB} / 25%)`)
 
-            workspaceElement.find('div._clusters').children('div._cluster').css('background', `rgb(${colorRGB} / 100%)`)
+            workspaceElement.find('div._connections').children('div._connection').css('background', `rgb(${colorRGB} / 100%)`)
 
             // Update the workspace switcher's background color
             try {
@@ -1184,7 +1184,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     // Update the portion of a common CSS selector
     selector = `div.body div.left div.content`
 
-    // Deactivate all workspaces and clusters in both switchers
+    // Deactivate all workspaces and connections in both switchers
     $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
 
     handleContentInfo('workspaces')
@@ -1377,7 +1377,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
         // Read the directory's items
         let content = await FS.readdirSync(folderPath),
-          // The given directory is actually a workspace's directory if `clusters.json` file has been found
+          // The given directory is actually a workspace's directory if `connections.json` file has been found
           isValidWorkspace = content.some((item) => item == 'connections.json')
 
         // If the given directory is not a valid workspace then ignore it and skip this try-catch block
@@ -1397,7 +1397,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     if (workspaces.length <= 0)
       return showToast(I18next.capitalize(I18next.t('import workspaces')), I18next.capitalizeFirstLetter(I18next.t('no valid workspace folder has been found among the provided ones')) + '.', 'failure')
 
-    // Point at the table's of the detection workspaces and their clusters
+    // Point at the table's of the detection workspaces and their connections
     let table = $('#importWorkspacesValidate'),
       // Get all saved workspaces
       savedWorkspaces = await Modules.Workspaces.getWorkspaces()
@@ -1410,18 +1410,18 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
       // Define different IDs for different elements
       let [
         importWorkspacesCheckboxInputID,
-        importClustersCheckboxInputID,
+        importConnectionsCheckboxInputID,
         workspaceNameInputID,
         workspaceColorInputID,
         workspaceChecksID,
-        workspaceClustersBtnID,
-        workspaceClustersListID
+        workspaceConnectionsBtnID,
+        workspaceConnectionsListID
       ] = getRandomID(10, 7),
         // Get a random color for the workspace
         workspaceColor = getRandomColor(),
         // Workspace UI element structure
         element = `
-        <tr data-id="${workspaceIndex}" data-clusters-path="${workspace.path}">
+        <tr data-id="${workspaceIndex}" data-connections-path="${workspace.path}">
           <td>
             <input type="checkbox" id="_${importWorkspacesCheckboxInputID}" class="form-check-input for-import-workspaces" checked="true" />
           </td>
@@ -1443,8 +1443,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             <span class="badge rounded-pill badge-success" check="passed" style="display:none"><span mulang="passed" capitalize></span></span>
           </td>
           <td style="text-align: center;">
-            <button type="button" id="_${workspaceClustersBtnID}" class="btn btn-sm clusters-list btn-dark disabled" data-mdb-ripple-init>
-              <span class="badge badge-primary clusters-count">0</span>
+            <button type="button" id="_${workspaceConnectionsBtnID}" class="btn btn-sm connections-list btn-dark disabled" data-mdb-ripple-init>
+              <span class="badge badge-primary connections-count">0</span>
               <ion-icon name="dash"></ion-icon>
             </button>
           </td>
@@ -1468,25 +1468,25 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
           // When the checkbox status changes
           $(`input#_${importWorkspacesCheckboxInputID}`).change(function() {
-            let allRelatedCheckboxes = [...$('input.for-import-workspaces[type="checkbox"], input.for-import-clusters[type="checkbox"]')]
+            let allRelatedCheckboxes = [...$('input.for-import-workspaces[type="checkbox"], input.for-import-connections[type="checkbox"]')]
 
             try {
               $('#importWorkspacesCheckbox').prop('checked', (allRelatedCheckboxes.every((checkbox) => $(checkbox).prop('checked'))))
             } catch (e) {}
 
-            $(`input#_${importClustersCheckboxInputID}`).prop('checked', $(this).prop('checked')).trigger('change')
+            $(`input#_${importConnectionsCheckboxInputID}`).prop('checked', $(this).prop('checked')).trigger('change')
           })
 
-          // When clicks the button to show/hide clusters
-          $(`button#_${workspaceClustersBtnID}`).click(function() {
-            // Whether or not clusters are shown already
-            let areClustersShown = $(this).hasClass('shown')
+          // When clicks the button to show/hide connections
+          $(`button#_${workspaceConnectionsBtnID}`).click(function() {
+            // Whether or not connections are shown already
+            let areConnectionsShown = $(this).hasClass('shown')
 
             // Toggle the list based on the status
-            $(`div#_${workspaceClustersListID}`).slideToggle(areClustersShown)
+            $(`div#_${workspaceConnectionsListID}`).slideToggle(areConnectionsShown)
 
             // Toggle the arrow's direction based on the new status
-            $(this).toggleClass('shown', !areClustersShown)
+            $(this).toggleClass('shown', !areConnectionsShown)
           })
 
           $(`input#_${workspaceNameInputID}`).on('input', function() {
@@ -1494,44 +1494,44 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           })
         })
 
-        // Handle the workspace's clusters
+        // Handle the workspace's connections
         setTimeout(() => {
           try {
-            // Attempt to get the workspace's clusters' manifest
-            let clusters = FS.readFileSync(Path.join(workspace.path, 'connections.json'), 'utf8')
+            // Attempt to get the workspace's connections' manifest
+            let connections = FS.readFileSync(Path.join(workspace.path, 'connections.json'), 'utf8')
 
             // Convert the manifest to a JSON object
-            clusters = JSON.parse(clusters)
+            connections = JSON.parse(connections)
 
-            // If no clusters have been found then skip this try-catch block
-            if (clusters.length <= 0)
+            // If no connections have been found then skip this try-catch block
+            if (connections.length <= 0)
               throw 0
 
-            // Add clusters to the `workspace` object
-            workspace.clusters = clusters
+            // Add connections to the `workspace` object
+            workspace.connections = connections
 
-            // Update the cluster's list button
+            // Update the connection's list button
             setTimeout(() => {
               // Enable it
-              $(`button#_${workspaceClustersBtnID}`).removeClass('disabled')
+              $(`button#_${workspaceConnectionsBtnID}`).removeClass('disabled')
 
               // Change the icon to be arrow instead of dash
-              $(`button#_${workspaceClustersBtnID}`).find('ion-icon').attr('name', 'arrow-up')
+              $(`button#_${workspaceConnectionsBtnID}`).find('ion-icon').attr('name', 'arrow-up')
 
-              // Set the clusters' count
-              $(`button#_${workspaceClustersBtnID}`).children('span.clusters-count').text(clusters.length)
+              // Set the connections' count
+              $(`button#_${workspaceConnectionsBtnID}`).children('span.connections-count').text(connections.length)
             }, 100)
 
-            // Clusters UI element structure
+            // Connections UI element structure
             let element = `
                 <tr for-workspace-id="${workspaceIndex}">
-                  <td colspan="5" class="clusters-table" style="height: fit-content; padding: 0;">
-                    <div id="_${workspaceClustersListID}" style="display:none;">
+                  <td colspan="5" class="connections-table" style="height: fit-content; padding: 0;">
+                    <div id="_${workspaceConnectionsListID}" style="display:none;">
                       <table class="table align-middle mb-0" style="background: transparent;">
                         <thead>
                           <tr>
                             <th width="5%">
-                              <input id="_${importClustersCheckboxInputID}" class="form-check-input for-import-clusters" type="checkbox" checked="true"/>
+                              <input id="_${importConnectionsCheckboxInputID}" class="form-check-input for-import-connections" type="checkbox" checked="true"/>
                             </th>
                             <th width="35%"><span mulang="name" capitalize></span></th>
                             <th width="60%"><span mulang="host" capitalize></span>:<span mulang="port" capitalize></span></th>
@@ -1544,16 +1544,16 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   </td>
                 </tr>`
 
-            // Append the clusters' list's container
+            // Append the connections' list's container
             $(`tr[data-id="${workspaceIndex}"]`).after($(element).show(function() {
               setTimeout(() => {
-                // Handle the parent checkbox which controls all clusters' checkboxes
-                $(`#_${importClustersCheckboxInputID}`).change(function() {
+                // Handle the parent checkbox which controls all connections' checkboxes
+                $(`#_${importConnectionsCheckboxInputID}`).change(function() {
                   // Whether or not the checkbox is checked
                   let isChecked = $(this).prop('checked')
 
                   // Based on the status change all checkboxes
-                  $(`tr[for-workspace-id="${workspaceIndex}"]`).find('input.for-import-clusters-sub[type="checkbox"]').prop('checked', isChecked)
+                  $(`tr[for-workspace-id="${workspaceIndex}"]`).find('input.for-import-connections-sub[type="checkbox"]').prop('checked', isChecked)
 
                   let allRelatedCheckboxes = [...$('input.for-import-workspaces[type="checkbox"]')]
 
@@ -1563,16 +1563,16 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 })
               })
 
-              // Now loop through each cluster
+              // Now loop through each connection
               setTimeout(() => {
-                clusters.forEach((cluster, clusterIndex) => {
+                connections.forEach((connection, connectionIndex) => {
                   let element = `
-                      <tr for-cluster-id="${clusterIndex}" data-folder="${cluster.folder}">
+                      <tr for-connection-id="${connectionIndex}" data-folder="${connection.folder}">
                         <td>
-                          <input class="form-check-input for-import-clusters-sub" type="checkbox" checked="true" />
+                          <input class="form-check-input for-import-connections-sub" type="checkbox" checked="true" />
                         </td>
                         <td>
-                          ${cluster.name}
+                          ${connection.name}
                         </td>
                         <td data-host-port>
                         -
@@ -1583,13 +1583,13 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                     setTimeout(() => {
                       // When the checkbox status changes
                       $(this).find('input[type="checkbox"]').change(function() {
-                        let allRelatedCheckboxes = [...$(`tr[for-workspace-id="${workspaceIndex}"]`).find('input.for-import-clusters-sub[type="checkbox"]')]
+                        let allRelatedCheckboxes = [...$(`tr[for-workspace-id="${workspaceIndex}"]`).find('input.for-import-connections-sub[type="checkbox"]')]
 
                         try {
-                          $(`#_${importClustersCheckboxInputID}`).prop('checked', (allRelatedCheckboxes.every((checkbox) => $(checkbox).prop('checked'))))
+                          $(`#_${importConnectionsCheckboxInputID}`).prop('checked', (allRelatedCheckboxes.every((checkbox) => $(checkbox).prop('checked'))))
 
-                          if ($(`#_${importClustersCheckboxInputID}`).prop('checked'))
-                            $(`#_${importClustersCheckboxInputID}`).trigger('change')
+                          if ($(`#_${importConnectionsCheckboxInputID}`).prop('checked'))
+                            $(`#_${importConnectionsCheckboxInputID}`).trigger('change')
                         } catch (e) {}
                       })
                     })
@@ -1708,35 +1708,35 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     } catch (e) {}
     // Name duplication check ends here
 
-    // Check missing values for variables in clusters
+    // Check missing values for variables in connections
     try {
-      // Map the workspace's clusters' array and keep the `cqlsh.rc` files' paths
-      let clusters = [...workspace.clusters.map((cluster) => Path.join(workspace.path, cluster.folder, 'config', 'cqlsh.rc'))],
+      // Map the workspace's connections' array and keep the `cqlsh.rc` files' paths
+      let connections = [...workspace.connections.map((connection) => Path.join(workspace.path, connection.folder, 'config', 'cqlsh.rc'))],
         // Get all saved variables
         savedVariables = await retrieveAllVariables(),
         // Point at the check's badge if exists
         checkBadge = $(`td[data-id="_${workspaceChecksID}"]`).find('span[check="variables"]'),
-        clusterIndex = -1
+        connectionIndex = -1
 
-      // Loop through each cluster
-      for (let cluster of clusters) {
+      // Loop through each connection
+      for (let connection of connections) {
         // Increase the index
-        ++clusterIndex
+        ++connectionIndex
 
         try {
-          // Point at the current cluster's `tr` element
-          let clusterTRElement = $(`tr[for-workspace-id="${workspaceIndex}"]`).find($(`tr[for-cluster-id="${clusterIndex}"]`)),
+          // Point at the current connection's `tr` element
+          let connectionTRElement = $(`tr[for-workspace-id="${workspaceIndex}"]`).find($(`tr[for-connection-id="${connectionIndex}"]`)),
             // Get the content of the config file
-            cqlshrcContentString = FS.readFileSync(cluster, 'utf8'),
+            cqlshrcContentString = FS.readFileSync(connection, 'utf8'),
             // Convert the content to formatted Object
-            cqlshrcContentObject = await Modules.Clusters.getCQLSHRCContent(null, cqlshrcContentString, null, false),
+            cqlshrcContentObject = await Modules.Connections.getCQLSHRCContent(null, cqlshrcContentString, null, false),
             // Get all sections in the content
             sections = Object.keys(cqlshrcContentObject),
             // Define the variable's regex
             variableRegex = /\${([\s\S]*?)}/gi
 
           try {
-            clusterTRElement.find('td[data-host-port]').text(`${cqlshrcContentObject.connection.hostname}:${cqlshrcContentObject.connection.port}`)
+            connectionTRElement.find('td[data-host-port]').text(`${cqlshrcContentObject.connection.hostname}:${cqlshrcContentObject.connection.port}`)
           } catch (e) {}
 
           // Loop through each section
@@ -1762,7 +1762,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               // Keep the variable's name
               match = match.map((variable) => `${variable.slice(2, variable.length - 1)}`)
 
-              // Determine if there's a missing variable or more in the current cluster
+              // Determine if there's a missing variable or more in the current connection
               if (!(match.every((variable) => savedVariables.some((savedVariable) => savedVariable.name == variable && savedVariable.scope.includes('workspace-all')))))
                 isMissingVariableFound = true
 
@@ -1837,7 +1837,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     let isChecked = $(this).prop('checked')
 
     // Based on the status change all checkboxes
-    $('input.for-import-workspaces[type="checkbox"]:not([disabled]), input.for-import-clusters[type="checkbox"]:not([disabled])').prop('checked', isChecked).trigger('change')
+    $('input.for-import-workspaces[type="checkbox"]:not([disabled]), input.for-import-connections[type="checkbox"]:not([disabled])').prop('checked', isChecked).trigger('change')
   })
 
   // Handle the click of sections' navigation buttons
@@ -1872,14 +1872,14 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           name: $(workspace).find(`input.workspace-name`).val(),
           color: $(workspace).find(`input.workspace-color`).val(),
           id: `workspace-${getRandomID(10)}`,
-          clustersPath: $(workspace).attr('data-clusters-path')
+          connectionsPath: $(workspace).attr('data-connections-path')
         }
 
-        let clustersTRElements = $('table#importWorkspacesValidate').find(`tr[for-workspace-id="${$(workspace).attr('data-id')}"]`).find(`tr[for-cluster-id]`).filter(function() {
-          return $(this).find('input[type="checkbox"].for-import-clusters-sub').prop('checked')
+        let connectionsTRElements = $('table#importWorkspacesValidate').find(`tr[for-workspace-id="${$(workspace).attr('data-id')}"]`).find(`tr[for-connection-id]`).filter(function() {
+          return $(this).find('input[type="checkbox"].for-import-connections-sub').prop('checked')
         })
 
-        workspaceStructure.checkedClusters = [...clustersTRElements].map((cluster) => $(cluster).attr('data-folder'))
+        workspaceStructure.checkedConnections = [...connectionsTRElements].map((connection) => $(connection).attr('data-folder'))
 
         let saveWorkspace = await Modules.Workspaces.saveWorkspace(workspaceStructure)
 

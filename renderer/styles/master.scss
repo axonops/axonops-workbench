@@ -82,7 +82,7 @@ div.body {
         }
       }
 
-      div.switch-clusters,
+      div.switch-connections,
       div.switch-workspaces {
         background: #17181a;
         text-align: -webkit-center;
@@ -103,7 +103,7 @@ div.body {
         padding: 10px 0;
         transition: height 0.2s ease-in-out;
 
-        div.cluster,
+        div.connection,
         div.workspace {
           position: relative;
           width: 25px;
@@ -112,7 +112,7 @@ div.body {
           opacity: 0;
           transition: opacity 0.2s ease-in-out;
 
-          &.cluster {
+          &.connection {
             opacity: 0.45;
           }
 
@@ -167,7 +167,7 @@ div.body {
             background: #7c7c7c;
           }
 
-          &.cluster {
+          &.connection {
             box-shadow: #7c7c7c 0 0 0 1px inset;
 
             button {
@@ -177,7 +177,7 @@ div.body {
         }
       }
 
-      div.switch-clusters,
+      div.switch-connections,
       div.switch-workspaces {
         position: relative;
         transition: height 0.25s ease-in-out, opacity 0.25s ease-in-out, margin-bottom 0.25s ease-in-out;
@@ -194,7 +194,7 @@ div.body {
             margin-bottom: 50px;
           }
 
-          div.more-clusters,
+          div.more-connections,
           div.more-workspaces {
             bottom: -35px;
             opacity: 1;
@@ -208,7 +208,7 @@ div.body {
         }
       }
 
-      div.switch-clusters {
+      div.switch-connections {
         transition: height 0.2s ease-in-out, opacity 0.2s ease-in-out;
 
         button {
@@ -855,7 +855,7 @@ div.body {
         align-items: center;
         float: left;
 
-        div._cluster,
+        div._connection,
         div._main {
           display: flex;
           flex-direction: row;
@@ -904,7 +904,7 @@ div.body {
           }
         }
 
-        div._cluster {
+        div._connection {
           opacity: 0;
           transform: translateY(5px);
 
@@ -926,7 +926,7 @@ div.body {
 
           &.show {
             animation: {
-              name: show-cluster;
+              name: show-connection;
               duration: 0.8s;
               timing-function: cubic-bezier(0.65, 0.05, 0.36, 1);
               fill-mode: forwards;
@@ -975,7 +975,7 @@ div.body {
             }
           }
 
-          &._for-clusters {
+          &._for-connections {
             transform: translateY(30px);
 
             &.show {
@@ -1254,7 +1254,7 @@ div.body {
           }
         }
 
-        &[content="clusters"] {
+        &[content="connections"] {
           div.empty {
             div.sub-content {
               lottie-player {
@@ -1281,7 +1281,7 @@ div.body {
               &.left {
                 width: 300px;
 
-                div.cluster-info {
+                div.connection-info {
                   margin: 10px;
                   border-radius: 5px;
                   text-align: left;
@@ -1478,7 +1478,7 @@ div.body {
                   }
                 }
 
-                div.cluster-metadata {
+                div.connection-metadata {
                   position: relative;
                   height: calc(100% - 196px);
                   margin: 25px 10px 10px;
@@ -1604,7 +1604,7 @@ div.body {
                   align-items: center;
                   justify-content: flex-start;
 
-                  div.cluster-tabs {
+                  div.connection-tabs {
                     margin: 10px;
                     border-radius: 5px;
                     background: #17181a;
@@ -1685,7 +1685,7 @@ div.body {
                     }
                   }
 
-                  div.cluster-actions {
+                  div.connection-actions {
                     display: flex;
                     flex: {
                       direction: row;
@@ -1867,8 +1867,8 @@ div.body {
         }
 
         &[content="workspaces"],
-        &[content="clusters"] {
-          div.clusters-container,
+        &[content="connections"] {
+          div.connections-container,
           div.workspaces-container {
             @include position();
             overflow-y: scroll;
@@ -1884,7 +1884,7 @@ div.body {
             }
             justify-content: flex-start;
 
-            div.cluster,
+            div.connection,
             div.workspace {
               width: 300px;
               background: #161719;
@@ -1903,7 +1903,7 @@ div.body {
                   }
                   margin-bottom: 5px;
 
-                  &.cluster-name,
+                  &.connection-name,
                   &.workspace-name {
                     width: calc(100% - 30px);
                     white-space: nowrap;
@@ -1912,7 +1912,7 @@ div.body {
                   }
                 }
 
-                div._clusters {
+                div._connections {
                   width: fit-content;
                   height: 25px;
                   border-radius: 8px;
@@ -1933,7 +1933,7 @@ div.body {
                     pointer-events: all;
                   }
 
-                  div._cluster {
+                  div._connection {
                     width: 14px;
                     height: 14px;
                     border-radius: 5px;
@@ -2089,7 +2089,7 @@ div.body {
               }
             }
 
-            div.cluster {
+            div.connection {
               width: 370px;
 
               div.footer {
@@ -2107,7 +2107,7 @@ div.body {
                 }
               }
 
-              div.cluster-info {
+              div.connection-info {
                 width: fit-content;
                 margin-bottom: 8px;
                 opacity: 0.9;
@@ -2236,7 +2236,7 @@ div.body {
               }
             }
 
-            div.clusters[workspace-id] {
+            div.connections[workspace-id] {
               display: flex;
               flex: {
                 direction: row;
@@ -4406,7 +4406,7 @@ div.dropdown[for-select] {
   }
 }
 
-div.more-clusters,
+div.more-connections,
 div.more-workspaces {
   background: #17181a;
   @include position(absolute, auto);
@@ -4446,7 +4446,7 @@ div.more-workspaces {
   }
 }
 
-div.switch-clusters div.cluster:not([style*="none"]):nth-child(2) {
+div.switch-connections div.connection:not([style*="none"]):nth-child(2) {
   margin-top: 0;
 }
 
@@ -4660,7 +4660,7 @@ div.hidden-area {
   }
 }
 
-div.modal#addEditClusterDialog {
+div.modal#addEditConnectionDialog {
   div.modal-dialog {
     div.modal-body {
       div.terminate-process {

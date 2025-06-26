@@ -662,17 +662,17 @@ $(document).on('initialize', () => {
 
     loadScript(Path.join(materialPath, 'mdb.js'))
 
-    // Get the MDB object for add and refresh clusters floating buttons' tooltips
+    // Get the MDB object for add and refresh connections floating buttons' tooltips
     {
       setTimeout(() => {
         // Define the general selector
-        let selector = `div.body div.right div.content div[content="clusters"] div.section-actions div.action`
+        let selector = `div.body div.right div.content div[content="connections"] div.section-actions div.action`
 
         // Get the MDB object for the `add` button's tooltip
-        tooltips.addClusterActionButton = getElementMDBObject($(`${selector}[action="add"] button`), 'Tooltip')
+        tooltips.addConnectionActionButton = getElementMDBObject($(`${selector}[action="add"] button`), 'Tooltip')
 
         // Get the MDB object for the `refresh` button's tooltip
-        tooltips.refreshClusterActionButton = getElementMDBObject($(`${selector}[action="refresh"] button`), 'Tooltip')
+        tooltips.refreshConnectionActionButton = getElementMDBObject($(`${selector}[action="refresh"] button`), 'Tooltip')
       }, 1000)
     }
   }
@@ -849,7 +849,7 @@ $(document).on('initialize', () => {
   // Monaco editor
   {
     let monacoPath = Path.join(__dirname, '..', '..', 'node_modules', 'monaco-editor', 'min'),
-      editorUIElement = $('div.modal#addEditClusterDialog div.modal-body div.editor-container div.editor'),
+      editorUIElement = $('div.modal#addEditConnectionDialog div.modal-body div.editor-container div.editor'),
       rightClickActionsKeyspaceEditorUIElement = $('div.modal#rightClickActionsMetadata div.modal-body div.action-editor div.editor'),
       dropKeyspaceEditorUIElement = $('div.modal#extraDataActions .editor')
 
@@ -893,7 +893,7 @@ $(document).on('initialize', () => {
         })
 
         // Once the editor is established save the default values in the `CQLSHValues` variable
-        Modules.Clusters.getCQLSHRCContent(getActiveWorkspaceID(), Modules.Consts.CQLSHRC).then((_default) => {
+        Modules.Connections.getCQLSHRCContent(getActiveWorkspaceID(), Modules.Consts.CQLSHRC).then((_default) => {
           // Update the global cqlsh values array with the default values
           cqlshValues = _default
 
@@ -927,8 +927,8 @@ $(document).on('initialize', () => {
               return
             }
 
-            // Disable the save cluster button
-            $('#addCluster').attr('disabled', getAttributes($('div.modal#addEditClusterDialog'), 'data-edit-cluster-id') == undefined ? 'disabled' : null)
+            // Disable the save connection button
+            $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
 
             // Detected sensitive data - username, password -
             let detectedSensitiveData = false,
@@ -936,7 +936,7 @@ $(document).on('initialize', () => {
               workspaceID = getActiveWorkspaceID()
 
             // Get and parse the content of the current `cqlsh.rc `file and change inputs' values as needed
-            Modules.Clusters.getCQLSHRCContent(workspaceID, null, editor).then((_content) => {
+            Modules.Connections.getCQLSHRCContent(workspaceID, null, editor).then((_content) => {
               try {
                 // Update the global cqlsh values array with the current values from the editor
                 cqlshValues = _content

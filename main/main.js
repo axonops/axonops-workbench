@@ -529,7 +529,7 @@ App.on('ready', () => {
       isMainViewPreventClose = false
     } catch (e) {}
 
-    // Close all active work areas - clusters and sandbox projects -
+    // Close all active work areas - connections and sandbox projects -
     try {
       views.main.webContents.send(`app-terminating`)
     } catch (e) {} finally {
@@ -591,7 +591,7 @@ App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
   {
     // Create a pty instance - which will create a cqlsh instance as well -
     IPCMain.on('pty:create', (_, data) => {
-      // Close/end any instance related to the cluster
+      // Close/end any instance related to the connection
       try {
         CQLSHInstances[data.id].close()
       } catch (e) {}
@@ -641,21 +641,21 @@ App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
       } catch (e) {}
     })
 
-    // Get the metadata of a cluster
+    // Get the metadata of a connection
     IPCMain.on('pty:metadata', (_, data) => {
       try {
         CQLSHInstances[data.id].getMetadata(data.metadataSendID, data.currentBuffer)
       } catch (e) {}
     })
 
-    // Get the CQL description of a cluster, keyspace in it, or table
+    // Get the CQL description of a connection, keyspace in it, or table
     IPCMain.on('pty:cql-desc', (_, data) => {
       try {
         CQLSHInstances[data.id].getCQLDescription(data.cqlDescSendID, data.scope, data.currentBuffer)
       } catch (e) {}
     })
 
-    // Check the connectivity with a cluster
+    // Check the connectivity with a connection
     IPCMain.on('pty:check-connection', (_, data) => {
       try {
         CQLSHInstances[data.id].checkConnectivity(data.checkConnectivityRequestID, data.currentBuffer)
@@ -665,7 +665,7 @@ App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
     // Get the result of the query tracing process
     IPCMain.on('pty:query-tracing', (_, data) => {
       try {
-        CQLSHInstances[data.clusterID].getQueryTracing(data.id, data.sessionID, data.currentBuffer)
+        CQLSHInstances[data.connectionID].getQueryTracing(data.id, data.sessionID, data.currentBuffer)
       } catch (e) {}
     })
 
@@ -690,10 +690,10 @@ App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
       } catch (e) {}
     })
 
-    // Test connection with a cluster
+    // Test connection with a connection
     IPCMain.on('pty:test-connection', (_, data) => {
       // Call this function from `pty.js` file
-      Modules.Pty.testConnectionWithCluster(views.main, data)
+      Modules.Pty.testConnection(views.main, data)
     })
 
     // Terminate a connection test process - especially docker/sandbox project -
@@ -789,15 +789,15 @@ App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
         })
       })
 
-      // Close an SSH tunnel based on the given cluster's ID - or the port -
-      IPCMain.on(`ssh-tunnel:close`, (_, clusterID) => {
+      // Close an SSH tunnel based on the given connection's ID - or the port -
+      IPCMain.on(`ssh-tunnel:close`, (_, connectionID) => {
         // Send the request to the background processes' renderer thread
-        views.backgroundProcesses.webContents.send('ssh-tunnel:close', clusterID)
+        views.backgroundProcesses.webContents.send('ssh-tunnel:close', connectionID)
       })
 
       /**
        * Update an SSH tunnel's key/ID in the `sshTunnelsObjects` array with another new one
-       * The process is mainly for changing the old temporary tunnel ID with the associated cluster's ID
+       * The process is mainly for changing the old temporary tunnel ID with the associated connection's ID
        */
       IPCMain.on(`ssh-tunnel:update`, (_, data) => {
         // Send the request to the background processes' renderer thread

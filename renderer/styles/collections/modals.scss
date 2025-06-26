@@ -35,12 +35,12 @@ div.modal {
 }
 
 div.modal {
-  &#addEditClusterDialog,
+  &#addEditConnectionDialog,
   &#appAbout,
   &#appSettings,
-  &#clusterCredentials,
+  &#connectionCredentials,
   &#importWorkspaces {
-    &#addEditClusterDialog {
+    &#addEditConnectionDialog {
       div.modal-content {
         height: calc(202px + 470px);
       }
@@ -623,7 +623,7 @@ div.modal {
     }
   }
 
-  &#addEditClusterDialog div.modal-header span.badge.badge-secondary {
+  &#addEditConnectionDialog div.modal-header span.badge.badge-secondary {
     position: relative;
     top: 1px;
     margin-left: 8px;
@@ -637,7 +637,7 @@ div.modal {
     }
   }
 
-  &#clusterCredentials {
+  &#connectionCredentials {
     div.modal-body {
       display: flex;
       flex: {
@@ -726,7 +726,7 @@ div.modal {
     }
   }
 
-  &#addEditClusterDialog {
+  &#addEditConnectionDialog {
     div.modal-body {
       height: 470px;
 

@@ -668,6 +668,7 @@
                 <div class="section">
                   <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="ssh-tunnel">
                     <span mulang="SSH tunnel" capitalize></span>
+                    <div class="invalid-inputs"></div>
                   </div>
                 </div>
                 <div class="section">
@@ -797,12 +798,12 @@
                     <div class="form-outline form-white margin-bottom">
                       <input type="text" class="form-control form-control-lg" info-section="none" info-key="ssh-host">
                       <label class="form-label">
-                        <span mulang="host" capitalize></span>
+                        SSH <span mulang="host" capitalize></span>
                       </label>
                       <div class="valid-feedback"></div>
                       <div class="invalid-feedback"></div>
                       <div class="form-helper">
-                        <span mulang="default" capitalize></span>: <span mulang="connection host name" capitalize></span>
+                        <span mulang="hint" capitalize></span>: The server to SSH onto to create the tunnel
                       </div>
                     </div>
                   </div>
@@ -810,7 +811,7 @@
                     <div class="form-outline form-white margin-bottom">
                       <input type="text" class="form-control form-control-lg" info-section="none" info-key="ssh-port">
                       <label class="form-label">
-                        <span mulang="port" capitalize></span>
+                        SSH <span mulang="port" capitalize></span>
                       </label>
                       <div class="valid-feedback"></div>
                       <div class="invalid-feedback"></div>
@@ -874,12 +875,12 @@
                     <div class="form-outline form-white margin-bottom">
                       <input type="text" class="form-control form-control-lg" info-section="none" info-key="ssh-dest-addr">
                       <label class="form-label">
-                        <span mulang="destination address" capitalize></span>
+                        <span mulang="cassandra hostname" capitalize></span>
                       </label>
                       <div class="valid-feedback"></div>
                       <div class="invalid-feedback"></div>
                       <div class="form-helper">
-                        <span mulang="default" capitalize></span>: 127.0.0.1
+                        <span mulang="default" capitalize></span>: <span mulang="connection host name" capitalize></span>
                       </div>
                     </div>
                   </div>
@@ -887,7 +888,7 @@
                     <div class="form-outline form-white margin-bottom">
                       <input type="text" class="form-control form-control-lg" info-section="none" info-key="ssh-dest-port">
                       <label class="form-label">
-                        <span mulang="destination port" capitalize></span>
+                        <span mulang="cassandra port" capitalize></span>
                       </label>
                       <div class="valid-feedback"></div>
                       <div class="invalid-feedback"></div>

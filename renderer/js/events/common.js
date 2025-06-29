@@ -358,7 +358,7 @@
       }
 
       // Stop the notification's icon's animation
-      (btn.find('lottie-player'))[0].stop()
+      (btn.find('img.gif')).attr('src', '../assets/lottie/notification-f1.gif')
 
       // Remove its `active` class, the user has been notified and the center has been opened
       btn.removeClass('active')
@@ -1260,40 +1260,6 @@
       selectElement.attr('hidden-value', $(this).attr('hidden-value'))
     })
   })
-}
-
-{
-  setInterval(() => {
-    $('lottie-player').each(function() {
-      let lottieElement = $(this)
-
-      try {
-        // The lottie element is not visible
-        if (lottieElement.isVisible())
-          throw 0
-
-        if (lottieElement.data('is-stopped') != 'true')
-          lottieElement.data({
-            'last-state': `${lottieElement[0].currentState}`,
-            'is-stopped': 'true'
-          })
-
-        lottieElement[0].stop()
-      } catch (e) {
-        // The lottie element is visible
-        try {
-          let lastState = lottieElement.data('last-state') || 'stopped'
-
-          if (lastState == 'stopped')
-            return
-
-          lottieElement.data('is-stopped', 'false')
-
-          lottieElement[0].play()
-        } catch (e) {}
-      }
-    })
-  }, 500)
 }
 
 {

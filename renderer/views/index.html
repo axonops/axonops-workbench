@@ -89,7 +89,7 @@
               </div>
               <!-- The AI assistant is answering a question -->
               <div class="answering">
-                <lottie-player src="../assets/lottie/answering.json" background="transparent" autoplay loop speed="1.75"></lottie-player>
+                <img src="../assets/lottie/answering.gif" background="transparent" autoplay loop speed="1.75">
               </div>
             </div>
 
@@ -107,7 +107,7 @@
             <div class="item" action="notifications-center" data-tippy="tooltip" data-mdb-placement="right" data-mulang="notifications center" capitalize data-title="Notifications Center">
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <div class="notify">
-                  <lottie-player src="../assets/lottie/notification.json" background="transparent" loop></lottie-player>
+                  <img class="gif" src="../assets/lottie/notification-f1.gif">
                 </div>
               </div>
             </div>
@@ -243,7 +243,7 @@
         <div class="loading">
           <div class="animate-hide">
             <div class="sub-content">
-              <lottie-player src="../assets/lottie/brain.json" background="transparent" autoplay loop></lottie-player>
+              <img class="gif" src="../assets/lottie/brain.gif" style="height: -webkit-fill-available;">
               <div class="loading-text">
                 <span mulang="AI assistant is being initialized"></span>
               </div>
@@ -253,7 +253,7 @@
 
         <!-- Saved questions are being loaded -->
         <div class="loading-questions">
-          <lottie-player src="../assets/lottie/loading-questions.json" background="transparent" autoplay loop speed="0.8"></lottie-player>
+          <img src="../assets/lottie/loading-questions.gif">
         </div>
       </div>
 
@@ -266,7 +266,7 @@
         <div class="empty">
           <div class="animate-hide">
             <div class="sub-content">
-              <lottie-player src="../assets/lottie/empty-notifications.json" background="transparent" autoplay loop></lottie-player>
+              <img src="../assets/lottie/empty-notifications.gif" class="gif" style="height: -webkit-fill-available;">
               <div class="message">
                 <span mulang="there are no notifications to check" capitalize-first></span>
               </div>
@@ -351,7 +351,12 @@
           Indicates the emptiness of workspaces' container -->
           <div class="empty">
             <div class="sub-content">
-              <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addWorkspaceProcess').click()"></lottie-player>
+              <div class="create-item" onclick="$('#addWorkspaceProcess').click()">
+                <l-ripples size="300" speed="4" color="#555"></l-ripples>
+                <div class="background">
+                  <ion-icon name="plus"></ion-icon>
+                </div>
+              </div>
               <div class="message">
                 <span mulang="it’s so empty here, why not add a workspace?" capitalize-first></span>
               </div>
@@ -425,8 +430,18 @@
           Indicates the emptiness of connections' container -->
           <div class="empty">
             <div class="sub-content">
-              <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addConnectionProcess').click()"></lottie-player>
-              <lottie-player src="../assets/lottie/create-item.json" background="transparent" autoplay loop speed="0.5" onclick="$('#addSandboxProjectProcess').click()" for-sandbox></lottie-player>
+              <div class="create-item" onclick="$('#addConnectionProcess').click()">
+                <l-ripples size="300" speed="4" color="#555"></l-ripples>
+                <div class="background">
+                  <ion-icon name="plus"></ion-icon>
+                </div>
+              </div>
+              <div class="create-item" onclick="$('#addSandboxProjectProcess').click()" for-sandbox>
+                <l-ripples size="300" speed="4" color="#555"></l-ripples>
+                <div class="background">
+                  <ion-icon name="plus"></ion-icon>
+                </div>
+              </div>
               <div class="message">
                 <span no-connections-message mulang="no connections added to the workspace [b]$data[/b] yet, why not add one?" capitalize-first></span>
               </div>
@@ -1136,8 +1151,8 @@
                 <div class="variables-list empty">
                   <div class="content"></div>
                   <div class="empty">
-                    <div class="sub-content">
-                      <lottie-player src="../assets/lottie/empty-variables.json" background="transparent" autoplay loop speed="0.5"></lottie-player>
+                    <div class="sub-content" style="text-align: -webkit-center;">
+                      <img src="../assets/lottie/empty-variables.gif" style="transform: translateY(-10px); height: -webkit-fill-available;" class="gif">
                       <div class="message no-select">
                         <span mulang="no added variables, yet" capitalize-first></span>
                       </div>
@@ -1816,7 +1831,7 @@
               <div class="modal-section" section="phase-1">
                 <div class="drag-drop-workspaces">
                   <div class="lottie-container">
-                    <lottie-player src="../assets/lottie/empty-workspaces.json" background="transparent" autoplay loop speed="1"></lottie-player>
+                    <img src="../assets/lottie/empty-workspaces.gif" class="gif">
                   </div>
                   <div class="hint">
                     <span mulang="drag and drop" capitalize-first></span>
@@ -1872,7 +1887,7 @@
           <div class="modal-header">
             <h5 class="modal-title">
               <div class="icon">
-                <lottie-player src="../assets/lottie/update.json" background="transparent" autoplay loop speed="1.1"></lottie-player>
+                <ion-icon name="arrow-up-circle"></ion-icon>
               </div>
               <span mulang="a new update is available" capitalize></span>
             </h5>

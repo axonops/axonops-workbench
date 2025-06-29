@@ -306,7 +306,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                </div>
                ${!isSandbox ? footerStructure.nonSandbox : footerStructure.sandbox}
                <div class="status">
-                 <lottie-player src="../assets/lottie/connection-status.json" background="transparent" autoplay loop speed="0.5"></lottie-player>
+                 <l-ripples size="20" speed="7" color="#ff8000"></l-ripples>
                </div>
                <div class="test-connection">
                  <div class="sub-content">
@@ -710,7 +710,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                    <ion-icon name="globe"></ion-icon>
                                  </div>
                                  <div class="connection-status">
-                                   <lottie-player src="../assets/lottie/connection-status.json" background="transparent" autoplay loop speed="0.25"></lottie-player>
+                                   <l-ripples size="20" speed="7" color="#ff8000"></l-ripples>
                                  </div>
                                </div>
                                <div class="additional">
@@ -760,7 +760,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                </div>
                                <div class="loading">
                                  <div class="sub-content">
-                                   <lottie-player src="../assets/lottie/loading-metadata.json" background="transparent" autoplay loop speed="1.15"></lottie-player>
+                                 <img src="../assets/lottie/loading-metadata.gif" background="transparent" style="position: absolute; inset: 0; margin: auto; width: -webkit-fill-available;">
                                  </div>
                                </div>
                                <div class="metadata-actions">
@@ -984,8 +984,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                    </div>
                                  </div>
                                  <div class="loading">
-                                   <div class="sub-content">
-                                     <lottie-player src="../assets/lottie/loading-cqlsh.json" background="transparent" autoplay loop speed="2"></lottie-player>
+                                   <div class="sub-content" style="text-align: center;">
+                                     <img src="../assets/lottie/loading-cqlsh.gif" class="gif" style="height: -webkit-fill-available;">
                                    </div>
                                  </div>
                                </div>
@@ -1007,8 +1007,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                    </div>
                                  </div>
                                  <div class="empty">
-                                   <div class="lottie-container">
-                                     <lottie-player src="../assets/lottie/empty-cql-description.json" background="transparent" loop autoplay speed="0.75" direction="1"></lottie-player>
+                                   <div class="lottie-container" style="text-align: center;">
+                                     <img src="../assets/lottie/empty-cql-description.gif" class="gif" style="height: -webkit-fill-available;">
                                      <div class="message"><span mulang="right click on the cluster, keyspace or table and get its CQL description" capitalize-first></span>.
                                      </div>
                                    </div>
@@ -1027,8 +1027,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                    </div>
                                  </div>
                                  <div class="empty">
-                                   <div class="lottie-container">
-                                     <lottie-player src="../assets/lottie/empty-query-tracing.json" background="transparent" loop autoplay speed="0.75" direction="1" mode"bounce"></lottie-player>
+                                   <div class="lottie-container" style="text-align: center;">
+                                     <img src="../assets/lottie/empty-query-tracing.gif" class="gif" style="height: -webkit-fill-available;">
                                      <div class="message"><span mulang="no query has been traced yet" capitalize-first></span>.<hint> <span mulang="it can be enabled by running" capitalize-first></span> <code>tracing on</code></hint>
                                      </div>
                                    </div>
@@ -1412,7 +1412,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                <div class="block show" data-id="${blockID}">
                                  <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
                                    <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
-                                     <lottie-player src="../assets/lottie/${type || 'neutral'}.json" background="transparent" autoplay></lottie-player>
+                                     <img src="../assets/lottie/${type || 'neutral'}.gif" background="transparent" style="height: -webkit-fill-available;">
                                    </span>
                                    <div class="text"><pre>${statementText}</pre></div>
                                    <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
@@ -2010,8 +2010,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         throw 0
 
                       isConnectionLost = true
-
-                      workareaElement.find('div.sub-sides.left div.connection-metadata.loading div.loading').find('lottie-player')[0].stop()
 
                       workareaElement.css({
                         'transition': 'filter 0.5s ease-in-out',
@@ -3021,9 +3019,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                   // Show the emptiness class
                                   queriesContainer.addClass('_empty')
-
-                                  // Play the emptiness animation
-                                  queriesContainer.find('lottie-player')[0].play()
                                 } catch (e) {}
                               }, 500)
 
@@ -3577,9 +3572,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                             // Show the emptiness class
                                             queriesContainer.addClass('_empty')
-
-                                            // Play the emptiness animation
-                                            queriesContainer.find('lottie-player')[0].play()
                                           } catch (e) {}
                                         }, 500)
 
@@ -3709,10 +3701,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         let queryTracingHint = workareaElement.find(`div.tab-pane#_${queryTracingContentID}`).find('hint')
 
                         // If it has been enabled
-                        if (data.output.toLowerCase().indexOf('tracing is enabled') != -1) {
+                        if (data.output.toLowerCase().indexOf('tracing is enabled') != -1)
                           queryTracingHint.hide()
-                          workareaElement.find(`div.tab-pane#_${queryTracingContentID}`).find('lottie-player')[0].play()
-                        }
 
                         // If it has been disabled
                         if (data.output.toLowerCase().indexOf('disabled tracing') != -1)

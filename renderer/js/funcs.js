@@ -294,7 +294,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
       <div style="text-align: initial;" class="toast ${toastID.length <= 0 ? 'show' : ''}" ${addToastID}>
         <div class="toast-header no-select">
           <span class="toast-type ${type}">
-            <lottie-player src="../assets/lottie/${type}.json" background="transparent" autoplay ${toastID.length != 0 ? 'loop speed="0.9"' : ''}></lottie-player>
+            <img src="../assets/lottie/${type}.gif" background="transparent">
           </span>
           <strong class="me-auto">${title}</strong>
           <button type="button" class="navigation" ${clickCallback == null ? 'hidden' : ''}>
@@ -414,7 +414,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
       actionBtn.find('div.sub-content.btn').addClass('active'); // This semicolon is critical here
 
       // Play the icon's animation
-      (actionBtn.find('lottie-player'))[0].play()
+      (actionBtn.find('img.gif')).attr('src', '../assets/lottie/notification.gif')
 
       // Prepend the notification to the container
       container.prepend($(element).hide(function() {

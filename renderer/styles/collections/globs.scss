@@ -1140,3 +1140,11 @@ div.tooltip-info {
 .hidden {
   display: none !important;
 }
+
+img[src*=".gif"] {
+  pointer-events: none !important;
+}
+
+img {
+  user-select: none !important;
+}

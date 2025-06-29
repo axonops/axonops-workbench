@@ -816,7 +816,7 @@ $(document).on('initialize', () => {
   // ldrs.js
   {
     let ldrsPath = Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js'),
-      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'momentum', 'ring2', 'wobble', 'hatch', 'chaoticOrbit']
+      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'momentum', 'ring2', 'wobble', 'hatch', 'chaoticOrbit', 'ripples']
 
     try {
       import(ldrsPath).then((loaders) => usedLoaders.forEach((loader) => loaders[loader].register()))
@@ -830,11 +830,6 @@ $(document).on('initialize', () => {
         Modules.Consts.SupportedTextFilesExtenstions = [...Modules.Consts.SupportedTextFilesExtenstions.concat(extensions.default)]
       })
     } catch (e) {}
-  }
-
-  // Lottie Files Player
-  {
-    loadScript(Path.join(__dirname, '..', 'js', 'external', 'lottie-player.js'))
   }
 
   // keypress library

@@ -171,7 +171,7 @@
               $(document).trigger(getAttributes($(this), 'data-refresh') == 'false' ? 'getWorkspaces' : 'refreshWorkspaces')
 
               // Refresh clusters
-              $(document).trigger('refreshClusters', {
+              $(document).trigger('refreshConnections', {
                 workspaceID: 'workspace-sandbox'
               })
 
@@ -203,7 +203,7 @@
 
                   try {
                     // Point at the created docker project's element in the UI
-                    let dockerProjectElement = $(`div.clusters[workspace-id="workspace-sandbox"] div.cluster[data-folder="${project.folder}"]`)
+                    let dockerProjectElement = $(`div.connections[workspace-id="workspace-sandbox"] div.connection[data-folder="${project.folder}"]`)
 
                     // If the element is yet not visible in the UI then skip this try-catch block
                     if (!dockerProjectElement.is(':visible'))

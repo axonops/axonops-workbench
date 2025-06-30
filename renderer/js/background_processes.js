@@ -249,7 +249,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                 addLog(`Final attributes of the SSH tunnel are '${JSON.stringify(sshTunnelAttributesCopy)}'`)
               } catch (e) {}
             }
-            
+
             // Create the tunnel
             OpenSSHTunnel(sshTunnelAttributes).then((tunnel) => {
               // Handle the need to close this tunnel and stop the process
@@ -280,9 +280,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
               /**
                * Set the SSH tunnel's object key in the array
-               * The key is either the cluster's ID or the port
+               * The key is either the connection's ID or the port
                */
-              let key = data.clusterID == 'port' ? `_${localPort}` : data.clusterID
+              let key = data.connectionID == 'port' ? `_${localPort}` : data.connectionID
 
               // Add the SSH tunnel to the array
               sshTunnelsObjects[key] = {
@@ -329,17 +329,17 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
         })
       })
 
-      // Request to close an SSH tunnel based on the cluster's ID
-      IPCRenderer.on('ssh-tunnel:close', (_, clusterID) => {
+      // Request to close an SSH tunnel based on the connection's ID
+      IPCRenderer.on('ssh-tunnel:close', (_, connectionID) => {
         /**
-         * Check if the given `clusterID` is the port
-         * This occurs when a request comes from a connection test to a cluster that is about to be added or updated.
+         * Check if the given `connectionID` is the port
+         * This occurs when a request comes from a connection test to a connection that is about to be added or updated.
          */
-        let isPort = !isNaN(parseInt(clusterID))
+        let isPort = !isNaN(parseInt(connectionID))
 
         // Add log for this process
         try {
-          addLog(`Close an SSH tunnel that associated with the connection of ID/defined-port '${clusterID}'`, 'network')
+          addLog(`Close an SSH tunnel that associated with the connection of ID/defined-port '${connectionID}'`, 'network')
         } catch (e) {}
 
         try {
@@ -353,7 +353,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
             let sshTunnel = sshTunnelsObjects[tunnel]
 
             // If the current SSH tunnel's port is not the given one then skip it and move to the next tunnel
-            if (sshTunnel.port != clusterID)
+            if (sshTunnel.port != connectionID)
               return
 
             // Close that SSH tunnel
@@ -362,7 +362,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
               // Add log for this process
               try {
-                addLog(`The SSH tunnel which associated with connection of ID/defined-port '${clusterID}' has been closed`)
+                addLog(`The SSH tunnel which associated with connection of ID/defined-port '${connectionID}' has been closed`)
               } catch (e) {}
             } catch (e) {
               try {
@@ -381,10 +381,10 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
         // Close that SSH tunnel
         try {
-          sshTunnelsObjects[clusterID].object.close()
+          sshTunnelsObjects[connectionID].object.close()
 
           // Add log for this process
-          addLog(`The SSH tunnel which associated with connection of ID/defined-port '${clusterID}' has been closed.`)
+          addLog(`The SSH tunnel which associated with connection of ID/defined-port '${connectionID}' has been closed.`)
         } catch (e) {
           try {
             errorLog(e, 'SSH tunnel')

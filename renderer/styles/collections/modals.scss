@@ -35,12 +35,12 @@ div.modal {
 }
 
 div.modal {
-  &#addEditClusterDialog,
+  &#addEditConnectionDialog,
   &#appAbout,
   &#appSettings,
-  &#clusterCredentials,
+  &#connectionCredentials,
   &#importWorkspaces {
-    &#addEditClusterDialog {
+    &#addEditConnectionDialog {
       div.modal-content {
         height: calc(202px + 470px);
       }
@@ -362,7 +362,7 @@ div.modal {
                   @include position();
                   height: 80%;
 
-                  lottie-player {
+                  img.gif {
                     opacity: 0.15;
                   }
 
@@ -623,7 +623,7 @@ div.modal {
     }
   }
 
-  &#addEditClusterDialog div.modal-header span.badge.badge-secondary {
+  &#addEditConnectionDialog div.modal-header span.badge.badge-secondary {
     position: relative;
     top: 1px;
     margin-left: 8px;
@@ -637,7 +637,7 @@ div.modal {
     }
   }
 
-  &#clusterCredentials {
+  &#connectionCredentials {
     div.modal-body {
       display: flex;
       flex: {
@@ -726,7 +726,7 @@ div.modal {
     }
   }
 
-  &#addEditClusterDialog {
+  &#addEditConnectionDialog {
     div.modal-body {
       height: 470px;
 
@@ -1087,11 +1087,12 @@ div.modal-section {
     div.lottie-container {
       height: 250px;
 
-      lottie-player {
+      img.gif {
         filter: grayscale(1) invert(1);
         opacity: 0.7;
         transition: opacity 0.2s ease-in-out;
         transition-delay: 0.15s;
+        height: 250px;
       }
     }
 
@@ -1099,7 +1100,7 @@ div.modal-section {
       border: 5px rgba(236, 236, 236, 0.85) dashed;
 
       div.lottie-container {
-        lottie-player {
+        img.gif {
           filter: grayscale(1) invert(1);
           opacity: 0.9;
         }
@@ -1110,7 +1111,7 @@ div.modal-section {
       border: 3px rgba(236, 236, 236, 0.85) dashed;
 
       div.lottie-container {
-        lottie-player {
+        img.gif {
           filter: grayscale(1) invert(1);
           opacity: 0.9;
         }
@@ -1128,12 +1129,12 @@ div.modal#appUpdate {
       vertical-align: middle;
       position: relative;
 
-      lottie-player {
+      ion-icon {
         position: absolute;
         inset: 0;
         margin: auto;
-        transform: scale(1.9);
-        margin-top: 1px;
+        font-size: 130%;
+        transform: translateY(-4px);
       }
     }
   }

@@ -73,7 +73,7 @@
    * Click the `UPDATE VARIABLES` button
    * This button is hidden and the `click` event is triggered by the main settings saving button
    * The update process will apply changes on different files related to variables:
-   * The variables files - manifest and values -, `cqlsh.rc` files for all clusters, workspaces, and SSH tunnels files
+   * The variables files - manifest and values -, `cqlsh.rc` files for all connections, workspaces, and SSH tunnels files
    */
   $('#updateVariables').on('click', async function(_, callback) {
     /**
@@ -701,20 +701,20 @@
 
     // Loop through all saved workspaces
     for (let workspace of savedWorkspaces) {
-      // Get the clusters of the current workspace
-      let clusters = await Modules.Clusters.getClusters(workspace.id)
+      // Get the connections of the current workspace
+      let connections = await Modules.Connections.getConnections(workspace.id)
 
-      // Map the clusters; keep only their `cqlsh.rc` file's path and content
-      clusters = clusters.map((cluster) => {
+      // Map the connections; keep only their `cqlsh.rc` file's path and content
+      connections = connections.map((connection) => {
         return {
-          content: cluster.cqlshrc,
-          path: cluster.cqlshrcPath
+          content: connection.cqlshrc,
+          path: connection.cqlshrcPath
         }
       })
 
-      // Loop through clusters objects, and update their `cqlsh.rc` file's content
-      for (let cluster of clusters)
-        await Modules.Clusters.updateFilesVariables(workspace.id, cluster.content, cluster.path, removedVariables, changedVariables, {
+      // Loop through connections objects, and update their `cqlsh.rc` file's content
+      for (let connection of connections)
+        await Modules.Connections.updateFilesVariables(workspace.id, connection.content, connection.path, removedVariables, changedVariables, {
           before: variablesBeforeUpdate,
           after: updatedVariables
         })
@@ -726,7 +726,7 @@
       // Get the editor's content
       let editorContent = editor.getValue(),
         // New content will be manipulated after updating values to variables
-        newContent = await Modules.Clusters.updateFilesVariables(workspace.id, editorContent, null, removedVariables, changedVariables, {
+        newContent = await Modules.Connections.updateFilesVariables(workspace.id, editorContent, null, removedVariables, changedVariables, {
           before: variablesBeforeUpdate,
           after: updatedVariables
         })
@@ -746,7 +746,7 @@
     $(`${selector}[action="settings"]`).click(() => retrieveVariables())
   }
 
-  // Inner function to get the missing variables in all clusters
+  // Inner function to get the missing variables in all connections
   let getMissingVariables = async (savedVariables) => {
     // Get all saved workspaces
     let workspaces = await Modules.Workspaces.getWorkspaces(),
@@ -755,13 +755,13 @@
 
     // Loop through each saved workspace
     for (let workspace of workspaces) {
-      // Get the workspace's clusters
-      let clusters = await Modules.Clusters.getClusters(workspace.id)
+      // Get the workspace's connections
+      let connections = await Modules.Connections.getConnections(workspace.id)
 
-      // Loop through each saved cluster
-      for (let cluster of clusters) {
-        // Get the cluster's cqlsh.rc file's content and convert it to Object
-        let cqlshrcContentObject = await Modules.Clusters.getCQLSHRCContent(null, cluster.cqlshrc, null, false),
+      // Loop through each saved connection
+      for (let connection of connections) {
+        // Get the connection's cqlsh.rc file's content and convert it to Object
+        let cqlshrcContentObject = await Modules.Connections.getCQLSHRCContent(null, connection.cqlshrc, null, false),
           // Get all sections in the content
           sections = Object.keys(cqlshrcContentObject),
           // Define the variable's regex
@@ -792,7 +792,7 @@
 
             // Loop through each detected variable
             for (let variable of match) {
-              // Determine if there's a missing variable or more in the current cluster
+              // Determine if there's a missing variable or more in the current connection
               if (!(
                   match.every((variable) =>
                     savedVariables.some((savedVariable) =>

@@ -26,7 +26,7 @@ const OS = require('os'),
   /**
    * Electron clipboard module
    * Perform copy and paste operations on the system clipboard
-   * Mainly used for copying the cluster's metadata
+   * Mainly used for copying the connection's metadata
    */
   Clipboard = require('electron').clipboard,
   /**
@@ -48,7 +48,7 @@ const OS = require('os'),
   I18next = require('i18next'),
   /**
    * Generate a random string
-   * Mainly used for generating IDs for clusters, workspaces, UI elements, and so on
+   * Mainly used for generating IDs for connections, workspaces, UI elements, and so on
    * It has been implemented within the function `getRandomID(length, ?amount)`
    */
   RandomID = require('id-16'),
@@ -180,7 +180,7 @@ try {
   let modulesFiles = FS.readdirSync(modulesFilesPath)
 
   /**
-   * Reverse the order of the array; to make sure the `clusters` module will be loaded after the `workspaces` module; due to calls of functions from the `workspaces` in the `clusters` modules
+   * Reverse the order of the array; to make sure the `connections` module will be loaded after the `workspaces` module; due to calls of functions from the `workspaces` in the `connections` modules
    * Filter the array by getting rid of `consts.js` file; as it'll unshifted at the beginning of the array
    */
   modulesFiles = modulesFiles.reverse().filter((moduleFile) => !moduleFile.startsWith('consts'))
@@ -190,7 +190,7 @@ try {
 
   /**
    * Loop through modules files
-   * Main modules are `clusters`, `workspaces`, and `localization`
+   * Main modules are `connections`, `workspaces`, and `localization`
    */
   modulesFiles.forEach((moduleFile) => {
     try {

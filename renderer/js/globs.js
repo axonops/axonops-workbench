@@ -17,7 +17,7 @@
 /**
  * Define all essential global variables and constants that are being called throughout the entire app's renderer thread
  *
- * The main editor which is being used for browsing and editing the `cqlsh.rc` file's content in the add/edit cluster's dialog
+ * The main editor which is being used for browsing and editing the `cqlsh.rc` file's content in the add/edit connection's dialog
  */
 let editor,
   diffEditors = [],
@@ -28,19 +28,19 @@ let editor,
 
 /**
  * All `cqlsh.rc` config file's values
- * Updated with every new/edited cluster
+ * Updated with every new/edited connection
  */
 let cqlshValues = []
 
 // Currently active workspace's ID
 let activeWorkspaceID = '',
-  // Currently active cluster's ID
-  activeClusterID = '',
+  // Currently active connection's ID
+  activeConnectionID = '',
   /**
-   * Cluster object that has been or is being edited/updated
+   * Connection object that has been or is being edited/updated
    * Scaling up the scope of this variable is needed; as it's called in multiple isolated parts
    */
-  editedClusterObject = null
+  editedConnectionObject = null
 
 // For active connections, consistency levels are being stored here:
 // [connectionID]: {
@@ -93,10 +93,10 @@ let terminalObjects = [],
  */
 let mdbObjects = [],
   /**
-   * The MDB object of the `add` and `refresh` clusters floating buttons' tooltips
+   * The MDB object of the `add` and `refresh` connections floating buttons' tooltips
    * Those two tooltips are defined in this way as they need to be referenced and updated many times during the active session
    */
   tooltips = {
-    addClusterActionButton: null,
-    refreshClusterActionButton: null
+    addConnectionActionButton: null,
+    refreshConnectionActionButton: null
   }

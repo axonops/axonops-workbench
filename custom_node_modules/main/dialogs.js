@@ -32,11 +32,21 @@ let createDialog = async (window, data) => {
   // Show the dialog and send the response to the renderer thread
   Dialog[data.type == undefined ? 'showOpenDialog' : data.type](window, data).then((result) => window.webContents.send(`dialog:${data.id}`, result.filePaths || result.filePath)).catch((e) => {
     try {
-      addLog(`Error in process dialog. Details: ${e}`, 'error')
+      errorLog(e, 'dialog')
+    } catch (e) {}
+  })
+}
+
+let createBox = async (window, data) => {
+  // Show the dialog and send the response to the renderer thread
+  Dialog[data.boxType == undefined ? 'showMessageBox' : data.type](window, data).then((result) => window.webContents.send(`box:${data.id}`, result)).catch((e) => {
+    try {
+      errorLog(e, 'dialog')
     } catch (e) {}
   })
 }
 
 module.exports = {
-  createDialog
+  createDialog,
+  createBox
 }

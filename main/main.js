@@ -96,11 +96,9 @@ global.Path = require('path')
  */
 global.OS = require('os')
 
-
 global.ElectronApp = App
 
 global.IsCLIMode = false
-
 
 /**
  * Check if the app is in production environment
@@ -138,6 +136,53 @@ const URL = require('url'),
   DotEnv = require('dotenv')
 
 /**
+ * Define global variables that will be used in different scopes in the main thread
+ *
+ * Create an event emitter object from the `events` class
+ *
+ */
+global.eventEmitter = new EventEmitter()
+
+// Import the set customized logging addition function and make it global across the entire thread
+global.addLog = null
+
+// Define customized function to create an error log
+global.errorLog = null
+
+// Whether or not logging feature is enabled
+global.isLoggingEnabled = false
+
+// Set the proper add log function
+try {
+  global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
+} catch (e) {}
+
+try {
+  global.errorLog = (error, process) => {
+    /**
+     * Whether the error is a number or not
+     * If so, then this error has been thrown for a purpose and there's no need to log it
+     */
+    let isErrorNotNumber = isNaN(parseInt(error.toString()))
+
+    // If this flag is false then don't log the error
+    if (!isErrorNotNumber)
+      return
+
+    let errorStack = ''
+
+    try {
+      errorStack = error.stack ? `. Stack ${error.stack}` : ''
+    } catch (e) {}
+
+    // Log the error
+    try {
+      addLog(`Error in process ${process}. Details: ${error}${errorStack}`, 'error')
+    } catch (e) {}
+  }
+} catch (e) {}
+
+/**
  * Import the custom node modules for the main thread
  *
  * `Modules` constant will contain all the custom modules
@@ -171,6 +216,10 @@ try {
 
       // Import the module
       Modules[moduleName] = require(Path.join(modulesFilesPath, moduleFile))
+
+      try {
+        addLog(`The initialization process in the main thread loaded '${moduleName}'`)
+      } catch (e) {}
     } catch (e) {}
   })
 } catch (e) {}
@@ -184,22 +233,6 @@ try {
 
 // Flag to tell whether or not dev tools are enabled
 const isDevToolsEnabled = process.env.AXONOPS_DEV_TOOLS == 'true'
-
-/**
- * Define global variables that will be used in different scopes in the main thread
- *
- * Create an event emitter object from the `events` class
- *
- */
-global.eventEmitter = new EventEmitter()
-
-// Import the set customized logging addition function and make it global across the entire thread
-global.addLog = null
-
-// Set the proper add log function
-try {
-  global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
-} catch (e) {}
 
 // Object that will hold all views/windows of the app
 global.views = {
@@ -728,6 +761,33 @@ App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
       try {
         logging = new Modules.Logging.Logging(data)
       } catch (e) {}
+
+      isLoggingEnabled = true
+
+      /**
+       * Add a new log text
+       *
+       * Adding a new log can be processed via two methods:
+       * First is using the `ipcMain` module, this method is used by the renderer threads
+       * Second is by triggering a custom event using the `eventEmitter` module, this method is used inside the main thread
+       */
+      {
+        // Define the event's name and its function/method
+        let event = {
+          name: 'logging:add',
+          func: (_, data) => {
+            try {
+              logging.addLog(data)
+            } catch (e) {}
+          }
+        }
+
+        // Add a custom event to be triggered inside the main thread
+        eventEmitter.addListener(event.name, event.func)
+
+        // Listen to `add` log request from the renderer thread
+        IPCMain.on(event.name, event.func)
+      }
     })
 
     // Get logs folder's path and current session's log file name if possible
@@ -743,31 +803,6 @@ App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
         file: loggingSessionFileName
       }
     })
-
-    /**
-     * Add a new log text
-     *
-     * Adding a new log can be processed via two methods:
-     * First is using the `ipcMain` module, this method is used by the renderer threads
-     * Second is by triggering a custom event using the `eventEmitter` module, this method is used inside the main thread
-     */
-    {
-      // Define the event's name and its function/method
-      let event = {
-        name: 'logging:add',
-        func: (_, data) => {
-          try {
-            logging.addLog(data)
-          } catch (e) {}
-        }
-      }
-
-      // Add a custom event to be triggered inside the main thread
-      eventEmitter.addListener(event.name, event.func)
-
-      // Listen to `add` log request from the renderer thread
-      IPCMain.on(event.name, event.func)
-    }
   }
 
   /**
@@ -885,6 +920,17 @@ App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
       // Close the main window
       views.main.close()
     })
+
+    // Called in the init process, it'll terminate the entire app
+    IPCMain.on('options:actions:quit:init', () => {
+      // Make sure the quit action will be performed well on macOS
+      isMacOSForcedClose = true
+
+      // Quite the entire app
+      try {
+        App.quit()
+      } catch (e) {}
+    })
   }
 
   /**
@@ -892,6 +938,16 @@ App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
    * Request to create a dialog
    */
   IPCMain.on('dialog:create', (_, data) => Modules.Dialogs.createDialog(views.main, data))
+
+  // Request to create an info/error/warning box
+  IPCMain.on('box:create', (_, data) => {
+    try {
+      if (data.isInitError)
+        views.intro.hide()
+    } catch (e) {}
+
+    Modules.Dialogs.createBox(data.isInitError ? views.intro : views.main, data)
+  })
 
   // Request to know whether the main window is currently being focused on or not
   IPCMain.on('window:focused', (_, data) => views.main.webContents.send('window:focused', views.main.isFocused()))

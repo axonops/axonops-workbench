@@ -10286,7 +10286,6 @@ const ConnectionTestProcessTerminationTimeout = 250
 
           // Clicks the process termination button
           $('#terminateConnectionTestProcess').add('#terminateConnectionTestProcessAstraDB').click(() => {
-            console.log("HERE");
             try {
               if (!isSSHTunnelNeeded)
                 throw 0
@@ -11514,12 +11513,5 @@ const ConnectionTestProcessTerminationTimeout = 250
 
     // Call the margin handler function
     handleConnectionSwitcherMargin()
-  })
-}
-
-// Sync between SSH connection hostname and port, and Cassandra hostname and port in the basic section
-{
-  $(`input[info-section="connection"][info-key="hostname"], input[info-section="connection"][info-key="port"]`).on('change', function() {
-    console.log("HERE....");
   })
 }

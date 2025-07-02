@@ -196,7 +196,7 @@ let getElementMDBObject = (element, type = 'Input') => {
 let loadScript = (path) => {
   // Add log about this loading process
   try {
-    addLog(`The initialization process loaded '${Path.basename(path).replace(Path.extname(path), '')}'`)
+    addLog(`The initialization process in the renderer thread loaded '${Path.basename(path).replace(Path.extname(path), '')}'`)
   } catch (e) {}
 
   /**
@@ -225,7 +225,7 @@ let loadScript = (path) => {
 let loadStyleSheet = (path) => {
   // Add log about this loading process
   try {
-    addLog(`The initialization process loaded  '${Path.basename(path).replace(Path.extname(path), '')}'`)
+    addLog(`The initialization process in the renderer thread loaded '${Path.basename(path).replace(Path.extname(path), '')}'`)
   } catch (e) {}
 
   // Prepend the stylesheet file
@@ -4422,9 +4422,15 @@ let errorLog = (error, process) => {
   if (!isErrorNotNumber)
     return
 
+  let errorStack = ''
+
+  try {
+    errorStack = error.stack ? `. Stack ${error.stack}` : ''
+  } catch (e) {}
+
   // Log the error
   try {
-    addLog(`Error in process ${process}. Details: ${error}`, 'error')
+    addLog(`Error in process ${process}. Details: ${error}${errorStack}`, 'error')
   } catch (e) {}
 }
 

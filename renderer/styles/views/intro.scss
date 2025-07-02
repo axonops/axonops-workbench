@@ -28,8 +28,7 @@ center {
   inset: 0;
   margin: auto;
   width: 600px;
-  background: #071534;
-  border-radius: 15px;
+  border-radius: 20px;
   height: 45px;
   background: #17181a;
   color: #e3e3e3;
@@ -46,7 +45,7 @@ center {
     height: fit-content;
     position: relative;
 
-    div.info {
+    div.app-info {
       display: flex;
       font-family: 'Brand', 'Main', 'Minor', 'SimplifiedChinese', sans-serif;
       font-size: 135%;
@@ -92,7 +91,7 @@ center {
     }
   }
 
-  div.loading {
+  div.loading-spinner {
     width: 100%;
     height: 50px;
     margin-top: 15px;
@@ -140,8 +139,8 @@ center {
       font-size: 90%;
       width: fit-content;
       padding: 0 5px;
-      margin-top: 5px;
-      margin-left: 25px;
+      margin-top: 3px;
+      margin-left: 7px;
       border-radius: 5px;
       opacity: 0;
     }

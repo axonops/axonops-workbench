@@ -16008,8 +16008,6 @@
         if ($(this).hasClass('active'))
           return
 
-        console.log("HERE");
-
         let type = $(this).attr('data-type')
 
         $(`div.modal#addEditConnectionDialog`).attr('data-selected-modal-body', type)

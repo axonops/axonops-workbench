@@ -25,7 +25,9 @@ const Path = require('path'),
    * Electron renderer communication with the main thread
    * Used for sending requests from the renderer threads to the main thread and listening to the responses
    */
-  IPCRenderer = require('electron').ipcRenderer
+  IPCRenderer = require('electron').ipcRenderer,
+  // Import the constants module
+  Consts = require(Path.join(__dirname, '..', '..', 'custom_node_modules', 'main', 'consts'))
 
 // When the window/view is fully loaded
 window.onload = () => {
@@ -33,6 +35,11 @@ window.onload = () => {
     // Import and register the spinner
     try {
       import(Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js')).then((loaders) => loaders.squircle.register())
+    } catch (e) {}
+
+    // Add the legal notice
+    try {
+      document.querySelector('div.notice').innerHTML = `${Consts.LegalNotice}.`
     } catch (e) {}
 
     try {
@@ -43,20 +50,67 @@ window.onload = () => {
       (['title', 'version']).forEach((info) => document.getElementById(info).innerHTML = (info == 'version' && !AppInfo[info].startsWith('v') ? 'v' : '') + AppInfo[info])
     } catch (e) {}
 
-    // Handle the Cassandra's copyright acknowledgement
+    // Handle the Cassandra's - and other trade marks - copyright acknowledgement
     {
-      // Point at the intro's overall elements container
+      // Point at the intro's elements container
       let container = document.querySelector('center'),
         // Point at the acknowledgement checkbox
         acknowledgedCheckbox = document.getElementById('cassandraCopyrightAcknowledged')
 
-      // When the checkbox value is changed
-      acknowledgedCheckbox.addEventListener('change', () => {
-        // Whether or not it's checked
-        let isChecked = acknowledgedCheckbox.checked
+      // Send a request to the main thread to get the status of the copyright acknowledgement
+      IPCRenderer.send(`cassandra-copyright-acknowledged`)
 
-        // If it's not then skip the upcoming code
-        if (!isChecked)
+      // Show the spinner
+      setTimeout(() => container.classList.add('show-spinner'), 565)
+
+      // In case the view didn't receive the acknowledged result from the main thread, show an error to the user suggesting to restart or get a new installation
+      let initErrorMessage = setTimeout(function() {
+        try {
+          let boxID = `initErrorBoxID`
+
+          IPCRenderer.send(`box:create`, {
+            message: `An initialization error requires a retry. If this message persists, perform a fresh install from the official repository.`,
+            id: boxID,
+            type: 'error',
+            buttons: ['Exit'],
+            title: 'Initialization Failed',
+            isInitError: true
+          })
+
+          IPCRenderer.on(`box:${boxID}`, () => IPCRenderer.send('options:actions:quit:init'))
+        } catch (e) {}
+      }, 60000) // 1 minute without getting an acknowledged means a failure
+
+      // Once the result is received
+      IPCRenderer.on(`cassandra-copyright-acknowledged`, (_, isAcknowledged) => {
+        // Clear the init error timeout object
+        try {
+          clearTimeout(initErrorMessage)
+        } catch (e) {}
+
+        try {
+          // Show the legal notice
+          setTimeout(() => container.classList.add('show-notice'), 1125)
+
+          // If the copyright notice is already acknowledgement then skip this try-catch block
+          if (isAcknowledged)
+            throw IPCRenderer.send('loaded')
+
+          // Now show the notice
+          setTimeout(() => container.classList.add('show-checkbox'), 1500)
+        } catch (e) {}
+      })
+
+      /**
+       * The checkbox is shown only in case the user didn't confirm his acknowledgement
+       * When the checkbox value is changed
+       */
+      acknowledgedCheckbox.addEventListener('change', () => {
+        /**
+         * Whether or not it's checked
+         * If it's not then skip the upcoming code as there's no need to continue
+         */
+        if (!acknowledgedCheckbox.checked)
           return
 
         // Hide the checkbox's form
@@ -66,31 +120,7 @@ window.onload = () => {
         IPCRenderer.send(`cassandra-copyright-acknowledged:true`)
 
         // The app should be loaded now
-        setTimeout(() => IPCRenderer.send('loaded'), 1000)
-      })
-
-      // Send request to the main thread; to get the status of the copyright acknowledgement
-      IPCRenderer.send(`cassandra-copyright-acknowledged`)
-
-      // Once the result is received
-      IPCRenderer.on(`cassandra-copyright-acknowledged`, (_, isAcknowledged) => {
-        // Show spinner then the notice
-        try {
-          // Show the spinner
-          setTimeout(() => container.classList.add('show-spinner'), 750)
-
-          // Now show the notice
-          setTimeout(() => container.classList.add('show-notice'), 1500)
-
-          // If the copyright notice is already acknowledgement then skip this try-catch block
-          if (isAcknowledged) {
-            setTimeout(() => IPCRenderer.send('loaded'), 1000)
-            throw 0
-          }
-
-          // Now show the notice
-          setTimeout(() => container.classList.add('show-checkbox'), 2000)
-        } catch (e) {}
+        IPCRenderer.send('loaded')
       })
     }
   } catch (e) {}

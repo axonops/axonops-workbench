@@ -310,7 +310,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                </div>
                <div class="test-connection">
                  <div class="sub-content">
-                   <l-pinwheel class="ldr change-color" size="60" stroke="4" speed="0.6" color="${getAttributes(workspaceElement, 'data-color')}"></l-pinwheel>
+                   <l-pinwheel class="ldr change-color" size="36" stroke="4" speed="0.45" color="${getAttributes(workspaceElement, 'data-color')}"></l-pinwheel>
                  </div>
                  <div class="terminate-process">
                    <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" reference-id="${connectionID}" button-id="${terminateProcessBtnID}" data-tippy="tooltip" data-mdb-placement="right" data-title="Terminate the process" data-mulang="terminate the process"
@@ -5090,7 +5090,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           scrollBeyondLastLine: true,
                           mouseWheelZoom: true,
                           fontSize: 14,
-                          fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace"
+                          fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
+                          fontLigatures: true
                         })
 
                         consoleEditor.getModel().onDidChangeContent(() => statementInputField.val(consoleEditor.getValue()).trigger('input'))

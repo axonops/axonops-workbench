@@ -145,7 +145,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   </div>
                 </div>
                 <div class="loading" style="background: rgb(${color} / 10%)">
-                  <l-line-wobble class="ldr" size="100" stroke="5" bg-opacity="0.25" speed="1.3"  color="${workspace.color}"></l-line-wobble>
+                  <l-line-wobble class="ldr" size="50" stroke="5" bg-opacity="0.25" speed="1.3"  color="${workspace.color}"></l-line-wobble>
                 </div>
               </div>`
 

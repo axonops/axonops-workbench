@@ -2043,6 +2043,10 @@ div.body {
                   position: absolute;
                   inset: 0;
                   margin: auto;
+                  top: 20px;
+                  right: 20px;
+                  left: auto;
+                  bottom: auto;
                 }
               }
 
@@ -2059,20 +2063,27 @@ div.body {
                 border-radius: 10px;
                 pointer-events: none;
                 transition: opacity 0.15s ease-in-out;
-                background: rgba(0, 0, 0, 0.4);
+                background: rgba(0, 0, 0, 0.5);
 
                 .ldr {
                   position: absolute;
                   inset: 0;
                   margin: auto;
+                  top: 5px;
+                  right: 8px;
+                  left: auto;
+                  bottom: auto;
                 }
               }
 
               div.terminate-process {
-                left: 80px;
+                right: 12px;
+                left: auto;
+                top: 45px;
+                bottom: auto;
                 opacity: 0;
                 pointer-events: none;
-                transition: left 0.4s ease-in-out, opacity 0.2s ease-in-out 0s;
+                transition: top 0.4s ease-in-out, opacity 0.2s ease-in-out 0s;
               }
 
               &.test-connection {
@@ -2080,14 +2091,18 @@ div.body {
                   opacity: 0.65;
                   pointer-events: all;
                 }
+
+                div.status {
+                  opacity: 0 !important;
+                }
               }
 
               &.enable-terminate-process {
                 div.terminate-process {
-                  left: 120px;
+                  top: 55px;
                   opacity: 1;
                   pointer-events: all;
-                  transition: left 0.4s ease-in-out, opacity 0.6s ease-in-out 0.1s;
+                  transition: top 0.4s ease-in-out, opacity 0.6s ease-in-out 0.1s;
                 }
               }
             }

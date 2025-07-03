@@ -884,7 +884,9 @@ $(document).on('initialize', () => {
           theme: 'vs-dark',
           scrollBeyondLastLine: true,
           mouseWheelZoom: true,
-          fontSize: 11
+          fontSize: 12,
+          fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
+          fontLigatures: true
         })
 
         // Once the editor is established save the default values in the `CQLSHValues` variable
@@ -1166,7 +1168,9 @@ $(document).on('initialize', () => {
           theme: 'vs-dark',
           scrollBeyondLastLine: false,
           mouseWheelZoom: true,
-          fontSize: 13
+          fontSize: 12,
+          fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
+          fontLigatures: true
         })
       } catch (e) {}
     })
@@ -1191,7 +1195,9 @@ $(document).on('initialize', () => {
           theme: 'vs-dark',
           scrollBeyondLastLine: false,
           mouseWheelZoom: true,
-          fontSize: 13
+          fontSize: 12,
+          fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
+          fontLigatures: true
         })
       } catch (e) {}
     })

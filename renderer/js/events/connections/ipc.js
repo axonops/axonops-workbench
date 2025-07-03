@@ -265,7 +265,9 @@
               theme: 'vs-dark',
               scrollBeyondLastLine: false,
               mouseWheelZoom: true,
-              fontSize: 11
+              fontSize: 12,
+              fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
+              fontLigatures: true
             })
 
             /**

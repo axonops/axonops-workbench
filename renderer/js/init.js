@@ -206,10 +206,10 @@ $(document).on('initialize', () => {
   // Get the app's config
   Modules.Config.getConfig((config) => {
     // Check the status of whether or not the logging feature is enabled
-    isLoggingEnabled = config.get('security', 'loggingEnabled') || isLoggingEnabled
+    isLoggingFeatureEnabled = config.get('security', 'loggingEnabled') || isLoggingFeatureEnabled
 
     // Convert the flag to a boolean instead of a string
-    isLoggingEnabled = isLoggingEnabled == 'false' ? false : true
+    isLoggingFeatureEnabled = isLoggingFeatureEnabled == 'false' ? false : true
 
     // Get logs info
     setTimeout(() => {
@@ -254,7 +254,7 @@ $(document).on('initialize', () => {
     }, 5000)
 
     // If the logging feature is not enabled then skip the upcoming code
-    if (!isLoggingEnabled)
+    if (!isLoggingFeatureEnabled)
       return
 
     // Send the initialization request to the main thread

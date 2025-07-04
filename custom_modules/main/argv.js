@@ -3,7 +3,7 @@ const Argv = ElectronApp.commandLine,
   CommandLineUsage = require('command-line-usage'),
   AppInfo = require(Path.join(__dirname, '..', '..', 'package.json')),
   PTY = require('node-pty'),
-  Consts = require(Path.join(__dirname, '..', '..', 'custom_node_modules', 'main', 'consts')),
+  Consts = require(Path.join(__dirname, '..', '..', 'custom_modules', 'main', 'consts')),
   /**
    * An implementation of PHP `strip_tags` in Node.js
    * Used for stripping HTML tags from a given string

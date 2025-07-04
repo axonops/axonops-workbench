@@ -15,6 +15,12 @@
  */
 
 /**
+ * Import the compilation cache optimizer
+ * It attaches a require hook to use V8's code cache to speed up instantiation time
+ */
+require('v8-compile-cache')
+
+/**
  * Libraries, packages and custom modules importing file
  *
  * Import all essential libraries and modules
@@ -64,6 +70,7 @@ const OS = require('os'),
   TinyColor = require('tinycolor2'),
   // Convert a color's value from HEX to RGB
   HEXToRGB = require('hex-to-rgb'),
+  // JavaScript syntax highlighter
   Highlight = require('highlight.js/lib/core'),
   // Convert ANSI escaped text streams to html
   ANSIToHTML = require('ansi-to-html'),
@@ -84,13 +91,9 @@ const OS = require('os'),
   // Convert an array of Objects into a table format
   ConvertJSONTable = require('json-to-table'),
   // Generate interactive HTML table
-  Tabulator = require('tabulator-tables')
-
-// Sanitize a string to be safe for use as a file name; by removing directory paths and invalid characters
-let Sanitize = require('sanitize-filename')
-
-// Promise based HTTP client for the browser and node.js
-const Axios = require('axios'),
+  Tabulator = require('tabulator-tables'),
+  // Promise based HTTP client for the browser and node.js
+  Axios = require('axios'),
   /**
    * An implementation of PHP `strip_tags` in Node.js
    * Used for stripping HTML tags from a given string
@@ -160,6 +163,9 @@ const Axios = require('axios'),
   // Addon for ensuring that webfonts load correctly before attempting to draw characters in an xterm instance
   XtermWebFonts = require('xterm-webfont')
 
+// Sanitize a string to be safe for use as a file name; by removing directory paths and invalid characters
+let Sanitize = require('sanitize-filename')
+
 /**
  * Import the custom node modules for the renderer thread
  *
@@ -174,7 +180,7 @@ try {
    *
    * `Path` module has been imported in the initialization file `init.js`
    */
-  const modulesFilesPath = Path.join(__dirname, '..', '..', 'custom_node_modules', 'renderer')
+  const modulesFilesPath = Path.join(__dirname, '..', '..', 'custom_modules', 'renderer')
 
   // Read files inside the folder
   let modulesFiles = FS.readdirSync(modulesFilesPath)

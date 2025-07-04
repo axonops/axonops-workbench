@@ -59,8 +59,7 @@ const Electron = require('electron'),
    * https://www.electronjs.org/docs/latest/api/menu-item
    *
    */
-  MenuItem = Electron.MenuItem,
-  NativeImage = Electron.nativeImage
+  MenuItem = Electron.MenuItem
 
 /**
  * Import modules globally
@@ -96,8 +95,10 @@ global.Path = require('path')
  */
 global.OS = require('os')
 
+// Set the `App` module as global to be used in other modules in the main thread
 global.ElectronApp = App
 
+// GLobal boolea value to tell if the workbench has been started in CLI mode or not
 global.IsCLIMode = false
 
 /**
@@ -108,11 +109,17 @@ global.IsCLIMode = false
  */
 global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), (process.platform != 'win32' ? '.' : '') + 'axonops-workbench') : null
 
+// Define a CLI object
 let CLI
 
 try {
-  CLI = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'argv'))
+  // Attempt to get the CLI module
+  CLI = require(Path.join(__dirname, '..', 'custom_modules', 'main', 'argv'))
 
+  /**
+   * Initialize the CLI object
+   * The initialization process here checks if the workbench needs to start in CLI mode or not by chaning the value of `IsCLIMode`
+   */
   CLI.init()
 } catch (e) {}
 
@@ -150,13 +157,14 @@ global.addLog = null
 global.errorLog = null
 
 // Whether or not logging feature is enabled
-global.isLoggingEnabled = false
+global.isLoggingFeatureEnabled = false
 
 // Set the proper add log function
 try {
-  global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
+  global.addLog = require(Path.join(__dirname, '..', 'custom_modules', 'main', 'setlogging')).addLog
 } catch (e) {}
 
+// Set an error log function
 try {
   global.errorLog = (error, process) => {
     /**
@@ -169,6 +177,7 @@ try {
     if (!isErrorNotNumber)
       return
 
+    // Add the error stack if possible
     let errorStack = ''
 
     try {
@@ -191,7 +200,7 @@ global.Modules = []
 
 try {
   // Define the folder's path of the custom node modules
-  let modulesFilesPath = Path.join(__dirname, '..', 'custom_node_modules', 'main'),
+  let modulesFilesPath = Path.join(__dirname, '..', 'custom_modules', 'main'),
     // Read all files inside the folder
     modulesFiles = FS.readdirSync(modulesFilesPath)
 
@@ -204,7 +213,7 @@ try {
       // Make sure the module file name is lowered case
       moduleFile = `${moduleFile}`.toLowerCase()
 
-      // Ignore any file which is not `JS`
+      // Ignore any file which is not `JS` or it's the arguments module
       if (!moduleFile.endsWith('.js') || moduleFile.startsWith('argv'))
         return
 
@@ -218,7 +227,7 @@ try {
       Modules[moduleName] = require(Path.join(modulesFilesPath, moduleFile))
 
       try {
-        addLog(`The initialization process in the main thread loaded '${moduleName}'`)
+        addLog(`'${moduleName}' has been loaded in the main thread`)
       } catch (e) {}
     } catch (e) {}
   })
@@ -762,7 +771,7 @@ App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
         logging = new Modules.Logging.Logging(data)
       } catch (e) {}
 
-      isLoggingEnabled = true
+      isLoggingFeatureEnabled = true
 
       /**
        * Add a new log text
@@ -1054,17 +1063,9 @@ App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
           if (item.submenu != undefined)
             handleItems(item.submenu)
 
+          // Use `eval` to convert the click's content from string format to actual function
           try {
-            // Use `eval` to convert the click's content from string format to actual function
-            try {
-              item.click = eval(item.click)
-            } catch (e) {}
-
-            try {
-              item.icon = NativeImage.createFromPath(item.icon)
-            } catch (e) {
-              item.icon = ''
-            }
+            item.click = eval(item.click)
           } catch (e) {}
         }
       }

@@ -36,7 +36,7 @@ module.exports = {
   ignorePatterns: [
     'node_modules/',
     'dist/',
-    'custom_node_modules/',
+    'custom_modules/',
     'renderer/js/external/',
     'main/bin/',
     'coverage/',

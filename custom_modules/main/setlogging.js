@@ -44,7 +44,7 @@ try {
    */
   finalAddLog = (log, type = 'info') => {
     try {
-      if (!isLoggingEnabled || delayedLogs.length <= 0)
+      if (!isLoggingFeatureEnabled || delayedLogs.length <= 0)
         throw 0
 
       for (let log of delayedLogs)
@@ -53,7 +53,7 @@ try {
       delayedLogs = []
     } catch (e) {}
 
-    if (!isLoggingEnabled)
+    if (!isLoggingFeatureEnabled)
       return delayedLogs.push({
         date: new Date().getTime(),
         log,
@@ -76,7 +76,7 @@ try {
       return clearInterval(watchForDelayedLogs.interval)
 
     try {
-      if (!isLoggingEnabled || delayedLogs.length <= 0)
+      if (!isLoggingFeatureEnabled || delayedLogs.length <= 0)
         throw 0
 
       for (let log of delayedLogs)

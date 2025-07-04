@@ -15,7 +15,7 @@
  */
 
 /**
- * This module is calling the `config` module in `custom_node_modules/main`
+ * This module is calling the `config` module in `custom_modules/main`
  * By calling the module in this way we keep the consistency of calling modules of each thread
  */
 module.exports = {

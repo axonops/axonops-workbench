@@ -72,7 +72,7 @@ let extraResourcesPath = null,
   // An array to hold all created SSH tunnels
   sshTunnelsObjects = [],
   // Boolean value used to tell if the logging system should be enabled in the current session or not
-  isLoggingEnabled = true,
+  isLoggingFeatureEnabled = true,
   // An array that tells which SSH tunnel should be closed - after terminating the process -
   toBeClosedSSHTunnels = []
 
@@ -82,7 +82,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
   extraResourcesPath = path
 
   // The config module; to get the app's config and sync with any change
-  const Config = require(Path.join(__dirname, '..', '..', 'custom_node_modules', 'renderer', 'config'))
+  const Config = require(Path.join(__dirname, '..', '..', 'custom_modules', 'renderer', 'config'))
 
   $(document).ready(() => {
     /**
@@ -102,10 +102,10 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
    */
   Config.getConfig(async (config) => {
     // Check the status of either enabling or disabling the logging feature
-    isLoggingEnabled = config.get('security', 'loggingEnabled') || isLoggingEnabled
+    isLoggingFeatureEnabled = config.get('security', 'loggingEnabled') || isLoggingFeatureEnabled
 
     // Convert the flag to a boolean instead of a string
-    isLoggingEnabled = isLoggingEnabled == 'false' ? false : true
+    isLoggingFeatureEnabled = isLoggingFeatureEnabled == 'false' ? false : true
   })
 
   // Handle all communication channels with the main thread

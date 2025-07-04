@@ -64,7 +64,7 @@ let publicKey = '',
  */
 let isSandboxDockerInfoShown = false
 // This flag determines whether or not the logging system should be enabled during the current session
-isLoggingEnabled = true
+isLoggingFeatureEnabled = true
 
 /**
  * Retrieve the view/window content's ID from the main thread

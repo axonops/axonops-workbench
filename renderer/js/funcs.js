@@ -4393,7 +4393,7 @@ let setApacheCassandraRightSymbol = (text) => `${text}`.replace(/Cassandra/gm, '
  */
 let addLog = (log, type = 'info') => {
   // If the logging feature is not enabled then skip the upcoming code
-  if (!isLoggingEnabled)
+  if (!isLoggingFeatureEnabled)
     return
 
   // Send the log text to the main thread

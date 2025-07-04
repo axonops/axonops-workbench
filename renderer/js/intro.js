@@ -27,7 +27,7 @@ const Path = require('path'),
    */
   IPCRenderer = require('electron').ipcRenderer,
   // Import the constants module
-  Consts = require(Path.join(__dirname, '..', '..', 'custom_node_modules', 'main', 'consts'))
+  Consts = require(Path.join(__dirname, '..', '..', 'custom_modules', 'main', 'consts'))
 
 // When the window/view is fully loaded
 window.onload = () => {
@@ -79,7 +79,7 @@ window.onload = () => {
 
           IPCRenderer.on(`box:${boxID}`, () => IPCRenderer.send('options:actions:quit:init'))
         } catch (e) {}
-      }, 60000) // 1 minute without getting an acknowledged means a failure
+      }, 30000) // 30 seconds without getting an acknowledged means a failure
 
       // Once the result is received
       IPCRenderer.on(`cassandra-copyright-acknowledged`, (_, isAcknowledged) => {
@@ -96,7 +96,7 @@ window.onload = () => {
           if (isAcknowledged)
             throw IPCRenderer.send('loaded')
 
-          // Now show the notice
+          // Now show the acknowledged checkbox
           setTimeout(() => container.classList.add('show-checkbox'), 1500)
         } catch (e) {}
       })

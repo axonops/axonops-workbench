@@ -1527,7 +1527,7 @@ $(document).on('initialize', () => {
         // Send the event
         IPCRenderer.send('initialized')
       })
-    }, 1500)
+    })
   }
 
   try {

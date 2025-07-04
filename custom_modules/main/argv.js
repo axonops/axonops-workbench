@@ -1,5 +1,5 @@
 // Import the base of the command line interface feature
-const Argv = ElectronApp.commandLine,
+const Argv = App.commandLine,
   CommandLineUsage = require('command-line-usage'),
   AppInfo = require(Path.join(__dirname, '..', '..', 'package.json')),
   PTY = require('node-pty'),
@@ -171,7 +171,7 @@ let init = () => {
     spinnerObj.stop()
   }
 
-  ElectronApp.whenReady().then(() => ElectronApp.on('before-quit', () => exitApp()))
+  App.whenReady().then(() => App.on('before-quit', () => exitApp()))
 
   sections = [{
       header: `${AppInfo.title}`,

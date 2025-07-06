@@ -6041,7 +6041,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           let pinnedToastID = getRandomID(10)
 
                           // Show/create that toast
-                          showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
+                          pinnedToast.show(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
 
                           // Attempt to close/stop the docker project
                           Modules.Docker.getDockerInstance(connectionElement).stopDockerCompose(pinnedToastID, (feedback) => {
@@ -7271,7 +7271,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       let pinnedToastID = getRandomID(10)
 
                       // Show/create that toast
-                      showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
+                      pinnedToast.show(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
 
                       // Stop the docker/sandbox project as an error has been occurred
                       Modules.Docker.getDockerInstance(connectionElement).stopDockerCompose(pinnedToastID, () => {})
@@ -7324,7 +7324,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                     let pinnedToastID = getRandomID(10)
 
                     // Show/create that toast
-                    showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
+                    pinnedToast.show(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
 
                     // Check the existence of Docker in the machine
                     Modules.Docker.checkDockerCompose((dockerExists, userGroup, selectedManagementTool) => {
@@ -7432,7 +7432,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 throw 0
 
                               // Request to destroy the associated pinned toast
-                              updatePinnedToast(pinnedToastID, true, true)
+                              pinnedToast.update(pinnedToastID, true, true)
 
                               // Clear the checking trigger timeout
                               clearTimeout(checkingCassandraTimeout)
@@ -7483,7 +7483,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 let pinnedToastID = getRandomID(10)
 
                                 // Show/create that toast
-                                showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
+                                pinnedToast.show(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
 
                                 setTimeout(() => {
                                   // Attempt to stop the project
@@ -7517,7 +7517,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               showToast(I18next.capitalize(I18next.t('start local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('apache Cassandra nodes of the local cluster [b]$data[/b] has been successfully started and ready to be connected with, work area will be created and navigated to in seconds', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
 
                               // Request to destroy the associated pinned toast
-                              updatePinnedToast(pinnedToastID, true, true)
+                              pinnedToast.update(pinnedToastID, true, true)
 
                               // Update the data center title
                               connectionElement.find('div[info="data-center"]').children('div._placeholder').hide()
@@ -7711,7 +7711,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                  * Change the value of the editor to the connection's `cqlsh.rc` file's content
                  * There's a `change` listener that will perform all needed changes; as we've already handled that in the listener
                  */
-                editor.setValue(currentConnection.cqlshrc)
+                addEditConnectionEditor.setValue(currentConnection.cqlshrc)
 
                 setTimeout(() => {
                   // Define inputs that are not in the `cqlsh.rc` file; to handle them separately
@@ -8141,7 +8141,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 let pinnedToastID = getRandomID(10)
 
                 // Show/create that toast
-                showPinnedToast(pinnedToastID, I18next.capitalize(I18next.t('terminate local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
+                pinnedToast.show(pinnedToastID, I18next.capitalize(I18next.t('terminate local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
 
                 // Send request to the main thread to terminate the connection test process - if there's any -
                 try {
@@ -8256,7 +8256,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                   content = content.toString()
 
                   // Convert the `cqlsh.rc` file's content to an array of sections and options
-                  Modules.Connections.getCQLSHRCContent(workspaceID, content, editor).then((result) => {
+                  Modules.Connections.getCQLSHRCContent(workspaceID, content, addEditConnectionEditor).then((result) => {
                     /**
                      * Check SSL
                      *
@@ -9268,13 +9268,13 @@ const ConnectionTestProcessTerminationTimeout = 250
             // Get final values - from the input fields - as JSON object
             let finalValues = await variablesManipulation(workspaceID, cqlshValues),
               // Apply the final values to the editor's content
-              updatedCQLSH = Modules.Connections.setCQLSHRCContent(finalValues, null, editor)
+              updatedCQLSH = Modules.Connections.setCQLSHRCContent(finalValues, null, addEditConnectionEditor)
 
             // Set the new content
-            editor.setValue(updatedCQLSH)
+            addEditConnectionEditor.setValue(updatedCQLSH)
 
             // Refresh the editor's layout
-            editor.layout()
+            addEditConnectionEditor.layout()
           }
 
           try {
@@ -9349,7 +9349,7 @@ const ConnectionTestProcessTerminationTimeout = 250
           dialogBody[0].scrollTo(0, editorShown ? scrollValue : 0)
 
           // Update the editor's layout
-          editor.layout()
+          addEditConnectionEditor.layout()
 
           // Return the dialog to its normal dimensions once back to the UI mode instead of the editor mode
           if (dialogElement.find('div.modal-dialog').hasClass('expanded'))
@@ -9363,7 +9363,7 @@ const ConnectionTestProcessTerminationTimeout = 250
         setTimeout(() => {
           (new ResizeObserver(() => {
             try {
-              editor.layout()
+              addEditConnectionEditor.layout()
             } catch (e) {}
           })).observe(dialogElement.find('div.modal-body')[0])
         })
@@ -9391,7 +9391,7 @@ const ConnectionTestProcessTerminationTimeout = 250
             dialogElement.children('div.modal-dialog').addClass('modal-xl expanded').removeClass('modal-lg')
 
             // Resize the editor initially - the resize observer will keep updating the size -
-            editor.layout()
+            addEditConnectionEditor.layout()
 
             // Skip the upcoming code
             return
@@ -9404,7 +9404,7 @@ const ConnectionTestProcessTerminationTimeout = 250
           dialogElement.children('div.modal-dialog').addClass('modal-lg').removeClass('modal-xl expanded')
 
           // Resize the editor initially - the resize observer will keep updating the size -
-          editor.layout()
+          addEditConnectionEditor.layout()
         })
       }
 
@@ -10098,7 +10098,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                * For testing the connection, a temporary file with the editor's content will be created in the OS temp folder
                */
               let cqlshrc = {
-                  value: editor.getValue(),
+                  value: addEditConnectionEditor.getValue(),
                   name: `${getRandomID(10)}.cwb` // [C]assandra [W]ork[B]ench
                 },
                 /**
@@ -10391,7 +10391,7 @@ const ConnectionTestProcessTerminationTimeout = 250
 
                 setTimeout(() => {
                   // Set the default `.cqlshrc` content
-                  editor.setValue(Modules.Consts.CQLSHRC)
+                  addEditConnectionEditor.setValue(Modules.Consts.CQLSHRC)
 
                   $('div.modal#addEditConnectionDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
 
@@ -10872,7 +10872,7 @@ const ConnectionTestProcessTerminationTimeout = 250
              */
             finalConnection = {
               name: connectionName,
-              cqlshrc: editor.getValue(),
+              cqlshrc: addEditConnectionEditor.getValue(),
               info: {
                 id: editingMode ? editedConnectionObject.info.id : `connection-${getRandomID(10)}`,
                 datacenter: dataCenter.trim()
@@ -11396,7 +11396,7 @@ const ConnectionTestProcessTerminationTimeout = 250
       })
 
       // Reset editor's content
-      editor.setValue(Modules.Consts.CQLSHRC)
+      addEditConnectionEditor.setValue(Modules.Consts.CQLSHRC)
     } catch (e) {}
   })
 }

@@ -724,7 +724,7 @@
         continue
 
       // Get the editor's content
-      let editorContent = editor.getValue(),
+      let editorContent = addEditConnectionEditor.getValue(),
         // New content will be manipulated after updating values to variables
         newContent = await Modules.Connections.updateFilesVariables(workspace.id, editorContent, null, removedVariables, changedVariables, {
           before: variablesBeforeUpdate,
@@ -732,7 +732,7 @@
         })
 
       // Set the new content
-      editor.setValue(newContent)
+      addEditConnectionEditor.setValue(newContent)
     }
 
     // Reset arrays

@@ -331,7 +331,7 @@ IPCMain.on('box:create', (_, data) => {
 })
 
 // Request to know whether the main window is currently being focused on or not
-IPCMain.on('window:focused', (_, data) => views.main.webContents.send('window:focused', views.main.isFocused()))
+IPCMain.handle('window:focused', () => views.main.isFocused())
 
 // Request to get the public key from the keys generator tool
 IPCMain.on('public-key:get', (_, id) => {

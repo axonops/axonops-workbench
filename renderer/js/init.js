@@ -870,7 +870,7 @@ $(document).on('initialize', () => {
     // Establish the editor with set properties
     amdRequire(['vs/editor/editor.main'], () => {
       try {
-        editor = monaco.editor.create(editorUIElement[0], {
+        addEditConnectionEditor = monaco.editor.create(editorUIElement[0], {
           value: Modules.Consts.CQLSHRC, // This is the default content of the `cqlsh.rc` file
           language: 'ini', // This language is the perfect one that supports the `cqlsh.rc` file content's syntax highlighting
           minimap: {
@@ -895,19 +895,19 @@ $(document).on('initialize', () => {
           cqlshValues = _default
 
           // Trigger the `ChangeContent` event for the editor
-          editor.setValue(editor.getValue())
+          addEditConnectionEditor.setValue(addEditConnectionEditor.getValue())
         })
 
         /**
          * Call the `layout` function
          * It's used to optimize the editor's dimensions with the parent container
          */
-        editor.layout()
+        addEditConnectionEditor.layout()
 
         let updateTimeout
 
         // Once there is a change in the editor (by pasting, typing, etc...)
-        editor.getModel().onDidChangeContent(() => {
+        addEditConnectionEditor.getModel().onDidChangeContent(() => {
           try {
             clearTimeout(updateTimeout)
           } catch (e) {}
@@ -918,7 +918,7 @@ $(document).on('initialize', () => {
               isUpdatingEditor = false
 
               // By doing this, the `ChangeContent` event is triggered again after updating the content
-              editor.setValue(editor.getValue())
+              addEditConnectionEditor.setValue(addEditConnectionEditor.getValue())
 
               // Skip the upcoming code
               return
@@ -933,7 +933,7 @@ $(document).on('initialize', () => {
               workspaceID = getActiveWorkspaceID()
 
             // Get and parse the content of the current `cqlsh.rc `file and change inputs' values as needed
-            Modules.Connections.getCQLSHRCContent(workspaceID, null, editor).then((_content) => {
+            Modules.Connections.getCQLSHRCContent(workspaceID, null, addEditConnectionEditor).then((_content) => {
               try {
                 // Update the global cqlsh values array with the current values from the editor
                 cqlshValues = _content
@@ -1090,7 +1090,7 @@ $(document).on('initialize', () => {
 
               // Remove all decorations
               if (editorDecorations != null)
-                editor.removeDecorations(editorDecorations)
+                addEditConnectionEditor.removeDecorations(editorDecorations)
 
               // Sensitive data has been detected, if not, just stop here
               if (!detectedSensitiveData)
@@ -1103,7 +1103,7 @@ $(document).on('initialize', () => {
                */
               let alerts = [],
                 // Get the editor's model object
-                editorModel = editor.getModel(),
+                editorModel = addEditConnectionEditor.getModel(),
                 // Get the number of lines in the editor
                 lines = editorModel.getLineCount()
 
@@ -1137,7 +1137,7 @@ $(document).on('initialize', () => {
               }
 
               // Apply highlighters/decorations
-              editorDecorations = editor.deltaDecorations([], alerts)
+              editorDecorations = addEditConnectionEditor.deltaDecorations([], alerts)
             })
           }, 250)
         })

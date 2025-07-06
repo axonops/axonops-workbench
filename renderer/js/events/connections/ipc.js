@@ -100,7 +100,7 @@
 
         /**
          * Trigger the `resize` event for the entire window
-         * This will resize all editors
+         * This will resize all ..s
          */
         setTimeout(() => $(window.visualViewport).trigger('resize'), 260)
 

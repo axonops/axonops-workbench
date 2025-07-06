@@ -598,7 +598,7 @@ let checkCassandraInContainer = (pinnedToastID, port, callback, timestamp = null
         throw 0
 
       // Close the associated pinned toast
-      updatePinnedToast(pinnedToastID, true, true)
+      pinnedToast.update(pinnedToastID, true, true)
 
       // Call the callback function
       callback(result)
@@ -612,7 +612,7 @@ let checkCassandraInContainer = (pinnedToastID, port, callback, timestamp = null
 
     // If the result has already been sent then skip the upcoming code
     if (!send)
-      return updatePinnedToast(pinnedToastID, true, true)
+      return pinnedToast.update(pinnedToastID, true, true)
 
     // If the received result tells that Cassandra is ready then call the callback function and finish the process
     if (result.connected && result.version != undefined) {
@@ -634,7 +634,7 @@ let checkCassandraInContainer = (pinnedToastID, port, callback, timestamp = null
     // Call the update function telling that Cassandra isn't ready yet
     let message = `Cassandra is not ready yet, recheck again in ${TimeOut.retry/1000} seconds`
 
-    updatePinnedToast(pinnedToastID, `++${message}.`)
+    pinnedToast.update(pinnedToastID, `++${message}.`)
 
     try {
       addLog(`${message}. Listen to port '${port}'`)
@@ -943,7 +943,7 @@ Terminal.spawn = (command, pinnedToastID, process, callback) => {
 
             // Update the associated pinned toast's body content
             if (pinnedToastID != undefined)
-              updatePinnedToast(pinnedToastID, commandOutput)
+              pinnedToast.update(pinnedToastID, commandOutput)
           })
         } catch (e) {}
       })
@@ -987,14 +987,14 @@ Terminal.spawn = (command, pinnedToastID, process, callback) => {
       try {
         // The process is `start` a docker project, thus the app needs to tell the user about the next sub-process
         if (process == 'start' && !error && !stderr) {
-          updatePinnedToast(pinnedToastID, '++Waiting for Cassandra to be up and ready.')
+          pinnedToast.update(pinnedToastID, '++Waiting for Cassandra to be up and ready.')
 
           // Skip the upcoming code in the try-catch block
           throw 0
         }
 
         // The process is `stop` a docker project thus there's no need to keep the pinned toast
-        updatePinnedToast(pinnedToastID, true, true)
+        pinnedToast.update(pinnedToastID, true, true)
       } catch (e) {}
 
       // Delete the temporary file

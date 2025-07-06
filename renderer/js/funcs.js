@@ -36,10 +36,12 @@ let getElementMDBObject = (element, type = 'Input') => {
     let foundObject = mdbObjects.find((object) => {
       let objectUIElement = object.element
 
+      // #1 Attempt to get the UI element
       try {
         objectUIElement = object.element.length > 1 ? object.element[0] : objectUIElement
       } catch (e) {}
 
+      // #2 Attempt to get the UI element
       try {
         objectUIElement = object.object.reference || objectUIElement
       } catch (e) {}
@@ -196,7 +198,7 @@ let getElementMDBObject = (element, type = 'Input') => {
 let loadScript = (path) => {
   // Add log about this loading process
   try {
-    addLog(`The initialization process in the renderer thread loaded '${Path.basename(path).replace(Path.extname(path), '')}'`)
+    addLog(`Renderer thread initialized '${Path.basename(path).replace(Path.extname(path), '')}'`)
   } catch (e) {}
 
   /**
@@ -225,7 +227,7 @@ let loadScript = (path) => {
 let loadStyleSheet = (path) => {
   // Add log about this loading process
   try {
-    addLog(`The initialization process in the renderer thread loaded '${Path.basename(path).replace(Path.extname(path), '')}'`)
+    addLog(`Renderer thread initialized '${Path.basename(path).replace(Path.extname(path), '')}'`)
   } catch (e) {}
 
   // Prepend the stylesheet file
@@ -350,7 +352,9 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
         animation.startTimestamp = new Date().getTime()
 
         // Start the animation process
-        progressBar.animate(animation.properties, animation.duration, animation.complete)
+        try {
+          progressBar.animate(animation.properties, animation.duration, animation.complete)
+        } catch (e) {}
       }, 150)
 
       // When hovering on the toast's body the closing timer will be paused then resumed on hover out
@@ -372,12 +376,12 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
     })
 
     try {
-      // If there's no passed callback function then skip this try-catch block
-      if (clickCallback == null)
-        throw 0
-
-      // Clicking the navigation button will lead to calling the callback function
-      navigationBtn.click(() => clickCallback())
+      /**
+       * If there's no passed callback function then skip this try-catch block
+       * Clicking the navigation button will lead to calling the callback function
+       */
+      if (clickCallback != null)
+        navigationBtn.click(() => clickCallback())
     } catch (e) {}
   }))
 
@@ -391,13 +395,7 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
    */
   {
     // Send request to the main thread; to return if the main window is being focused or not
-    IPCRenderer.send('window:focused')
-
-    // Remove all previous listeners
-    IPCRenderer.removeAllListeners('window:focused')
-
-    // Got a response from the main thread
-    IPCRenderer.on('window:focused', (_, isFocused) => {
+    IPCRenderer.invoke('window:focused').then((isFocused) => {
       // If the main window is being focused then skip this entire process - no need to push the toast -
       if (isFocused)
         return
@@ -438,107 +436,109 @@ let showToast = (title, text, type = 'neutral', toastID = '', clickCallback = nu
   }
 }
 
-/**
- * Shorthand the function `showToast(title, text, ?type, ?toastID, ?clickCallback)` in case the toast will be pinned and its content will be updated
- *
- * @Parameters:
- * {string} `pinnedToastID` The ID of the toast that will be created
- * {string} `title` the title of the toast
- * {string} `text` the text to be shown in the toast
- */
-let showPinnedToast = (pinnedToastID, title, text) => showToast(title, text, 'bg-progress', pinnedToastID)
-
-/**
- * Update a pinned toast's text/content
- *
- * @Parameters:
- * {string} `pinnedToastID` The ID of the toast which its content will be updated
- * {string} `text` the text to be shown in the toast
- * The `text` argument can be set to `true`; so the function will keep the body's content
- * Also the double plus character `++` can be prefixed so the function will append the given text
- * {boolean} `?destroy` whether or not the pinned toast should be destroyed
- */
-let updatePinnedToast = (pinnedToastID, text, destroy = false) => {
-  try {
-    // Point at the toast
-    let toast = $(`div.pinned-toast-container div.toast[toast-id="${pinnedToastID}"]`),
-      // Find the toast's body
-      toastBody = toast.find('div.toast-body'),
-      // Point at the progress bar
-      progressBar = toast.find('div.bar'),
-      // Point at the hidden progress bar
-      hideProgressBar = toast.find('div.hide-progress'),
-      // Find the toast's close button
-      closeBtn = toast.find('button.btn-close')
-
-    // Show the toast if needed
-    if (text != true && `${text}`.length != 0)
-      toast.addClass('show')
-
+// Functions for the pinned toasts - toasts for ongoing process feedback -
+let pinnedToast = {
+  /**
+   * Shorthand the function `showToast(title, text, ?type, ?toastID, ?clickCallback)` in case the toast will be pinned and its content will be updated
+   *
+   * @Parameters:
+   * {string} `pinnedToastID` The ID of the toast that will be created
+   * {string} `title` the title of the toast
+   * {string} `text` the text to be shown in the toast
+   */
+  show: (pinnedToastID, title, text) => showToast(title, text, 'bg-progress', pinnedToastID),
+  /**
+   * Update a pinned toast's text/content
+   *
+   * @Parameters:
+   * {string} `pinnedToastID` The ID of the toast which its content will be updated
+   * {string} `text` the text to be shown in the toast
+   * The `text` argument can be set to `true`; so the function will keep the body's content
+   * Also the double plus character `++` can be prefixed so the function will append the given text
+   * {boolean} `?destroy` whether or not the pinned toast should be destroyed
+   */
+  update: (pinnedToastID, text, destroy = false) => {
     try {
-      // If the passed `text` is set to `true` then skip this try-catch block and keep the body's content
-      if (text == true)
-        throw 0
+      // Point at the toast
+      let toast = $(`div.pinned-toast-container div.toast[toast-id="${pinnedToastID}"]`),
+        // Find the toast's body
+        toastBody = toast.find('div.toast-body'),
+        // Point at the progress bar
+        progressBar = toast.find('div.bar'),
+        // Point at the hidden progress bar
+        hideProgressBar = toast.find('div.hide-progress'),
+        // Find the toast's close button
+        closeBtn = toast.find('button.btn-close')
 
-      // If the passed `text` has `++` prefixed then append the given text instead of replacing the body's content with it
-      if (text.indexOf('++') == 0) {
-        // Get the current content
-        let content = toastBody.html()
+      // Show the toast if needed
+      if (text != true && `${text}`.length != 0)
+        toast.addClass('show')
 
-        // Append the given text
-        toastBody.html(`${content}<code>${text.slice(2)}</code><br>`)
+      try {
+        // If the passed `text` is set to `true` then skip this try-catch block and keep the body's content
+        if (text == true)
+          throw 0
 
-        // Skip the upcoming code in this try-catch block
-        throw 0
-      }
+        // If the passed `text` has `++` prefixed then append the given text instead of replacing the body's content with it
+        if (text.indexOf('++') == 0) {
+          // Get the current content
+          let content = toastBody.html()
+
+          // Append the given text
+          toastBody.html(`${content}<code>${text.slice(2)}</code><br>`)
+
+          // Skip the upcoming code in this try-catch block
+          throw 0
+        }
+
+        /**
+         * Reaching here means the entire content needs to be updated
+         *
+         * Update the toast's body content
+         */
+        toastBody.html(text)
+      } catch (e) {}
+
+      // Always scroll to the very bottom of the toast's body
+      toastBody.animate({
+        scrollTop: toastBody.get(0).scrollHeight
+      }, 1)
+
+      // If the toast doesn't need to be destroyed then end this process
+      if (!destroy)
+        return
+
+      // Show the close button
+      closeBtn.add(hideProgressBar).removeAttr('hidden')
 
       /**
-       * Reaching here means the entire content needs to be updated
+       * Start to animate the decreasing of the progress bar after a set period of time of creation
+       * Once the animation is done click the close button
        *
-       * Update the toast's body content
+       * Define the animation's attributes
        */
-      toastBody.html(text)
+      let animation = {
+        startTimestamp: null,
+        properties: {
+          width: '0%'
+        },
+        duration: 10000,
+        complete: () => closeBtn.click()
+      }
+
+      // After a set period of time start the animation process
+      setTimeout(() => {
+        // Update the `startTimestamp` attributes
+        animation.startTimestamp = new Date().getTime()
+
+        // Start the animation process
+        progressBar.animate(animation.properties, animation.duration, animation.complete)
+      }, 150)
+
+      // When hovering on the toast's body the closing timer will be paused then resumed on hover out
+      toastBody.hover(() => progressBar.pause(animation), () => progressBar.resume(animation))
     } catch (e) {}
-
-    // Always scroll to the very bottom of the toast's body
-    toastBody.animate({
-      scrollTop: toastBody.get(0).scrollHeight
-    }, 1)
-
-    // If the toast doesn't need to be destroyed then end this process
-    if (!destroy)
-      return
-
-    // Show the close button
-    closeBtn.add(hideProgressBar).removeAttr('hidden')
-
-    /**
-     * Start to animate the decreasing of the progress bar after a set period of time of creation
-     * Once the animation is done click the close button
-     *
-     * Define the animation's attributes
-     */
-    let animation = {
-      startTimestamp: null,
-      properties: {
-        width: '0%'
-      },
-      duration: 10000,
-      complete: () => closeBtn.click()
-    }
-
-    // After a set period of time start the animation process
-    setTimeout(() => {
-      // Update the `startTimestamp` attributes
-      animation.startTimestamp = new Date().getTime()
-
-      // Start the animation process
-      progressBar.animate(animation.properties, animation.duration, animation.complete)
-    }, 150)
-
-    // When hovering on the toast's body the closing timer will be paused then resumed on hover out
-    toastBody.hover(() => progressBar.pause(animation), () => progressBar.resume(animation))
-  } catch (e) {}
+  }
 }
 
 /**
@@ -588,11 +588,6 @@ let formatTimestamp = (timestamp, isSecondFormat = false, withMilliSeconds = fal
     // If it's required to add milliSeconds
     if (withMilliSeconds)
       format = `${format}.${milliSeconds}`
-  } catch (e) {}
-
-  // Add log for this process
-  try {
-    addLog(`Format the timestamp '${timestamp}' to a human-readable format '${format}'`, 'process')
   } catch (e) {}
 
   // Return the human-readable result
@@ -651,6 +646,7 @@ let formatTimeUUID = (uuid, withMilliSeconds = false) => {
 let repairJSON = (json) => {
   let result = json // Final result which be returned
 
+  // Only for Windows platform
   try {
     if (OS.platform() != 'win32')
       throw 0
@@ -665,7 +661,7 @@ let repairJSON = (json) => {
 
   // Add a log about this process -  without logging the result afterward -
   try {
-    addLog(`Repair a string-format JSON '${json.slice(0, 20)}...'`, 'process')
+    addLog(`Repairing JSON '${json.slice(0, 20)}...'`, 'process')
   } catch (e) {}
 
   try {
@@ -708,21 +704,21 @@ let repairJSON = (json) => {
  * Convert JSON string to HTML table string
  *
  * @Parameters:
- * {string} `json` the JSON string to be manipulated
+ * {string} `json` the JSON string to be manipulated, and it can be an absolute file path
  *
  * @Return: {object} the JSON in table array format, and the manipulated JSON
  */
 let convertJSONToTable = (json, callback) => {
+  // Get the JSON string's file path if it has been passed in the `json` parameter
   let tempFilePath = '',
+    // Inner function to convert the JSON string into object
     conversionProcess = () => {
+      // Delete the temp file - in case its path has been passed -
       try {
         FS.unlink(`${tempFilePath}`, () => {})
       } catch (e) {}
 
-      /**
-       * Split the JSON string by new line
-       * CQLSH return each record/row in seperated line
-       */
+      // Start the repairing process
       try {
         json = JSON.parse(json)
 
@@ -742,17 +738,15 @@ let convertJSONToTable = (json, callback) => {
           throw 0
 
         json.forEach((record) => {
-          stringJSON += `${record}`;
+          stringJSON += `${record}`
 
           try {
-            let match = `${stringJSON}`.match(
-              /\{[\s\S]+\}/gm
-            )
+            let match = `${stringJSON}`.match(/\{[\s\S]+\}/gm)
 
             if (match == null)
               return
 
-            foundJSON.push(match[0]);
+            foundJSON.push(match[0])
 
             stringJSON = stringJSON.replace(/\{[\s\S]+\}/gm, '')
           } catch (e) {}
@@ -938,10 +932,8 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
               // Search for any field in the row that contain specific keyword for object
               $(element).find('div:contains("-OBJECT-")').each(function() {
                 try {
-                  // Add CSS properties
-                  $(this).css({
-                    'padding-left': '25px'
-                  })
+                  // Add CSS property
+                  $(this).css('padding-left', '25px')
 
                   // Manipulate the field's content
                   let content = `${$(this).text()}`.replace(/\-OBJECT\-/g, '')
@@ -3282,7 +3274,7 @@ let getPrePostConnectionScripts = async (workspaceID, connectionID = null) => {
     }
 
     // Get the connection's `cqlsh.rc` file's content
-    cqlshContent = connection != null ? await Modules.Connections.getCQLSHRCContent(workspaceID, connection.cqlshrc) : await Modules.Connections.getCQLSHRCContent(workspaceID, null, editor),
+    cqlshContent = connection != null ? await Modules.Connections.getCQLSHRCContent(workspaceID, connection.cqlshrc) : await Modules.Connections.getCQLSHRCContent(workspaceID, null, addEditConnectionEditor),
       // Define the file's sections
       sections = Object.keys(cqlshContent)
 

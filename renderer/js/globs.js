@@ -19,7 +19,8 @@
  *
  * The main editor which is being used for browsing and editing the `cqlsh.rc` file's content in the add/edit connection's dialog
  */
-let editor,
+let addEditConnectionEditor,
+  // Array to hold all editors created for schema differentiations in connection's workareas
   diffEditors = [],
   // Boolean value used to prevent collisions while updating `cqlsh.rc` content in the editor
   isUpdatingEditor = false,
@@ -42,12 +43,16 @@ let activeWorkspaceID = '',
    */
   editedConnectionObject = null
 
-// For active connections, consistency levels are being stored here:
-// [connectionID]: {
-//   standard: '',
-//   serial: ''
-// }
+/**
+ * For the current active connection - updated when the active connection changes -
+ * Consistency levels are being stored here:
+ * [connectionID]: {
+ *   standard: '',
+ *   serial: ''
+ * }
+ */
 let activeSessionsConsistencyLevels = [],
+  // The active pagination size
   activeSessionsPaginationSize = null
 
 /**

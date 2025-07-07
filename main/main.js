@@ -120,7 +120,7 @@ try {
  * Node.js URL module
  * For URL resolution and parsing
  */
-global.URL = require('url')
+const URL = require('url')
 /**
  * Node.js events module
  * Used for creating and handling custom events
@@ -245,11 +245,11 @@ global.views = {
 }
 
 // An array which saves all cqlsh instances with their ID - connection ID - given by the renderer thread
-let CQLSHInstances = [],
-  // Whether or not the user wants to completely quit the application. This occurs when all renderer threads are terminated or closed
-  isMacOSForcedClose = false,
-  // A `logging` object which will be created once the app is ready
-  logging = null
+global.CQLSHInstances = []
+// Whether or not the user wants to completely quit the application. This occurs when all renderer threads are terminated or closed
+global.isMacOSForcedClose = false
+// A `logging` object which will be created once the app is ready
+global.logging = null
 
 /**
  * Create a window with different passed properties

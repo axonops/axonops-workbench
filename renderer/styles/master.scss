@@ -2024,8 +2024,8 @@ div.body {
                 &.show-#{$i} {
                   animation: {
                     name: show;
-                    duration: 1.5s;
-                    delay: #{$i/6}s;
+                    duration: 1s;
+                    delay: #{$i/8}s;
                     timing-function: cubic-bezier(0.4, 0, 0.2, 1);
                     fill-mode: forwards;
                   }

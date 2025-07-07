@@ -290,7 +290,7 @@ div.modal {
                     }
                     align-items: flex-start;
                     justify-content: flex-start;
-                    margin-top: 9px;
+                    margin-top: 7px;
                     text-align: start;
 
                     div.btn.workspace {
@@ -312,10 +312,10 @@ div.modal {
                       border-radius: 0.27rem;
                       overflow: hidden;
                       box-shadow: 0 0;
-                      background: #1b1b1e;
+                      background: #2f2f33;
                       opacity: 0.4;
                       transition: opacity 0.2s ease-in-out;
-                      margin: 0 1px;
+                      margin: 2px;
                       cursor: pointer;
 
                       &:first-child,
@@ -2746,6 +2746,8 @@ div.non-pk-columns-warning {
     display: block;
     padding: 0;
     margin: 2px 0 5px;
+    width: fit-content;
+    padding-right: 2px;
 
     ion-icon {
       bottom: 1px;

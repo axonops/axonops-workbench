@@ -260,7 +260,7 @@ $(document).on('initialize', () => {
     // Send the initialization request to the main thread
     IPCRenderer.send('logging:init', {
       date: new Date().getTime(),
-      id: getRandomID(5)
+      id: getRandom.id(5)
     })
   })
 })
@@ -1534,8 +1534,8 @@ $(document).on('initialize', () => {
     if (OS.platform() != 'darwin')
       return getConfigToLoad()
 
-    getKey('public', (key) => {
-      getKey('private', (key) => {
+    getRSAKey('public', (key) => {
+      getRSAKey('private', (key) => {
         IPCRenderer.send('pty:cqlsh:initialize')
 
         IPCRenderer.on('pty:cqlsh:initialize:finished', () => getConfigToLoad())

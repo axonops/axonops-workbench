@@ -29,7 +29,7 @@
       let fileContent = FS.readFileSync(`${argumentInput}`, 'utf8')
 
       // Attempt to repair it in case it's broken or invalid
-      fileContent = repairJSON(fileContent)
+      fileContent = repairJSONString(fileContent)
 
       // Now attempt to parse it to JSON object
       contentJSON = JSON.parse(fileContent)
@@ -44,7 +44,7 @@
        * It's not a valid path, so it's considered to be a JSON string
        * Attempt to repair it in case it's broken or invalid
        */
-      let inputContent = repairJSON(`${argumentInput}`)
+      let inputContent = repairJSONString(`${argumentInput}`)
 
       // Now attempt to parse it to JSON object
       contentJSON = JSON.parse(inputContent)
@@ -78,10 +78,10 @@
       // if (id != undefined && `${id}`.length != 0) {
       //   contentJSON.id = minifyText(id)
       // } else {
-      //   contentJSON.id = `workspace-${getRandomID(10)}`
+      //   contentJSON.id = `workspace-${getRandom.id(10)}`
       // }
 
-      contentJSON.id = `workspace-${getRandomID(10)}`
+      contentJSON.id = `workspace-${getRandom.id(10)}`
     } catch (e) {}
 
     // Check if color has been provided
@@ -92,7 +92,7 @@
       if (colorObject.isValid()) {
         contentJSON.color = `#${colorObject.toHex()}`
       } else {
-        contentJSON.color = getRandomColor()
+        contentJSON.color = getRandom.color()
       }
     } catch (e) {}
 
@@ -132,7 +132,7 @@
 
 {
   IPCRenderer.on('cli:import-connection', async (_, jsonObject) => {
-    getKey('public', async (key) => {
+    getRSAKey('public', async (key) => {
       let isInputAPath = pathIsAccessible(`${jsonObject.jsonStringPath}`),
         contentJSON = null,
         sendResult = (result) => IPCRenderer.send('cli:import-connection:result', result),
@@ -147,7 +147,7 @@
         let fileContent = FS.readFileSync(`${jsonObject.jsonStringPath}`, 'utf8')
 
         // Attempt to repair it in case it's broken or invalid
-        fileContent = repairJSON(fileContent)
+        fileContent = repairJSONString(fileContent)
 
         // Now attempt to parse it to JSON object
         contentJSON = JSON.parse(fileContent)
@@ -229,7 +229,7 @@
           name: contentJSON.name,
           info: {
             secureConnectionBundlePath: scbFilePath,
-            id: `connection-${getRandomID(10)}`,
+            id: `connection-${getRandom.id(10)}`,
             secrets: {}
           }
         }
@@ -241,7 +241,7 @@
               text: `The attribute username must be provided for AstraDB connections`
             })
 
-          finalJSON.info.secrets.username = encrypt(key, contentJSON.username)
+          finalJSON.info.secrets.username = encryptText(key, contentJSON.username)
         } catch (e) {}
 
         try {
@@ -251,7 +251,7 @@
               text: `The attribute password must be provided for AstraDB connections`
             })
 
-          finalJSON.info.secrets.password = encrypt(key, contentJSON.password)
+          finalJSON.info.secrets.password = encryptText(key, contentJSON.password)
         } catch (e) {}
 
         // Test connection if needed..
@@ -260,8 +260,8 @@
             throw 0
 
           let stopOnFailure = jsonObject.testConnection.value,
-            requestID = getRandomID(10),
-            testConnectionProcessID = getRandomID(10)
+            requestID = getRandom.id(10),
+            testConnectionProcessID = getRandom.id(10)
 
           IPCRenderer.send('pty:test-connection', {
             requestID,
@@ -402,7 +402,7 @@
 
       // Connection ID
       try {
-        contentJSON.basic.id = `connection-${getRandomID(10)}`
+        contentJSON.basic.id = `connection-${getRandom.id(10)}`
       } catch (e) {}
 
       finalJSON.info.id = contentJSON.basic.id
@@ -443,7 +443,7 @@
           finalJSON.ssh[sshValue] = contentJSON.ssh[sshValue]
 
           if (['username', 'password'].includes(sshValue))
-            finalJSON.ssh[sshValue] = encrypt(key, finalJSON.ssh[sshValue])
+            finalJSON.ssh[sshValue] = encryptText(key, finalJSON.ssh[sshValue])
         }
 
         // Clean the SSH JSON object
@@ -551,14 +551,14 @@
           if (contentJSON.auth.username == undefined)
             throw 0
 
-          finalJSON.info.secrets.username = encrypt(key, contentJSON.auth.username)
+          finalJSON.info.secrets.username = encryptText(key, contentJSON.auth.username)
         } catch (e) {}
 
         try {
           if (contentJSON.auth.password == undefined)
             throw 0
 
-          finalJSON.info.secrets.password = encrypt(key, contentJSON.auth.password)
+          finalJSON.info.secrets.password = encryptText(key, contentJSON.auth.password)
         } catch (e) {}
       } catch (e) {}
 
@@ -580,10 +580,10 @@
         let sshTunnel = false,
           isSSHTunnelNeeded = false,
           // Get a random ID for this connection test process
-          testConnectionProcessID = getRandomID(30),
+          testConnectionProcessID = getRandom.id(30),
           // Get a random ID for the SSH tunnel creation process
-          sshTunnelCreationRequestID = getRandomID(30),
-          requestID = getRandomID(10)
+          sshTunnelCreationRequestID = getRandom.id(30),
+          requestID = getRandom.id(10)
 
         // Check if there's a need to create an SSH tunnel
         try {
@@ -633,7 +633,7 @@
                 let content = name == 'manifest' ? await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`) : JSON.stringify(await retrieveAllVariables(true))
 
                 // Create a name for the temporary file
-                files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandomID(20)}.aocwtmp`))
+                files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandom.id(20)}.aocwtmp`))
 
                 // Create the temporary file with related content
                 await FS.writeFileSync(files[name], content || '')
@@ -724,7 +724,7 @@
 
           let cqlshrc = {
               value: finalJSON.cqlshrc,
-              name: `${getRandomID(10)}.cwb` // [C]assandra [W]ork[B]ench
+              name: `${getRandom.id(10)}.cwb` // [C]assandra [W]ork[B]ench
             },
             /**
              * Get the OS temp folder path
@@ -756,7 +756,7 @@
            *
            * Check if an SSH client is installed and accessible
            */
-          checkSSH((exists) => {
+          tunnelSSH.checkClient((exists) => {
             // If the SSH client doesn't exist then end the process and show feedback to the user
             if (!exists)
               return sendResult({
@@ -765,7 +765,7 @@
               })
 
             // Create an SSH tunnel
-            createSSHTunnel({
+            tunnelSSH.createTunnel({
               ...finalJSON.ssh,
               requestID: sshTunnelCreationRequestID
             }, (creationResult) => {
@@ -864,7 +864,7 @@
      *
      * Check if an SSH client is installed and accessible
      */
-    checkSSH((exists) => {
+    tunnelSSH.checkClient((exists) => {
       // If the SSH client doesn't exist then end the process and show feedback to the user
       if (!exists) {
         IPCRenderer.send('cli:connect:ssh:handle', {
@@ -881,18 +881,18 @@
         ...connectionObject.ssh
       }
 
-      getKey('private', (key) => {
+      getRSAKey('private', (key) => {
         try {
-          ssh.username = decrypt(key, connectionObject.info.secrets.sshUsername)
+          ssh.username = decryptText(key, connectionObject.info.secrets.sshUsername)
         } catch (e) {}
 
         try {
-          ssh.password = decrypt(key, connectionObject.info.secrets.sshPassword)
+          ssh.password = decryptText(key, connectionObject.info.secrets.sshPassword)
         } catch (e) {}
 
-        let requestID = getRandomID(10)
+        let requestID = getRandom.id(10)
 
-        createSSHTunnel({
+        tunnelSSH.createTunnel({
           ...ssh,
           requestID,
         }, (creationResult) => IPCRenderer.send('cli:connect:ssh:handle', creationResult))
@@ -908,7 +908,7 @@
       let content = name == 'manifest' ? await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`) : JSON.stringify(await retrieveAllVariables(true))
 
       // Create a name for the temporary file
-      files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandomID(20)}.aocwtmp`))
+      files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandom.id(20)}.aocwtmp`))
 
       // Create the temporary file with related content
       await FS.writeFileSync(files[name], content || '')

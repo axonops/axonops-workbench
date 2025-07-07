@@ -86,7 +86,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             folderBtnID,
             settingsBtnID,
             deleteBtnID
-          ] = getRandomID(15, 4),
+          ] = getRandom.id(15, 4),
           // Determine whether or not the workspace will be appended in the container UI, by default it's `true`
           append = true
 
@@ -808,7 +808,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
       // Set a random color of the workspace each time the `ADD` dialog is opened
       try {
-        colorInput.val(getRandomColor()).trigger('input')
+        colorInput.val(getRandom.color()).trigger('input')
       } catch (e) {}
     })
   }
@@ -1040,7 +1040,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
         // The given name is valid, attempt to save the workspace
         Modules.Workspaces.saveWorkspace({
-          id: `workspace-${getRandomID(10)}`,
+          id: `workspace-${getRandom.id(10)}`,
           name: name.val(),
           color: color.val(),
           ...workspaceFolderPath
@@ -1297,7 +1297,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
    */
   dragDropWorkspaces.click(function() {
     // Get a random ID for the dialog request
-    let requestID = getRandomID(10),
+    let requestID = getRandom.id(10),
       // Set other attributes to be used to create the dialog
       data = {
         id: requestID,
@@ -1416,9 +1416,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         workspaceChecksID,
         workspaceConnectionsBtnID,
         workspaceConnectionsListID
-      ] = getRandomID(10, 7),
+      ] = getRandom.id(10, 7),
         // Get a random color for the workspace
-        workspaceColor = getRandomColor(),
+        workspaceColor = getRandom.color(),
         // Workspace UI element structure
         element = `
         <tr data-id="${workspaceIndex}" data-connections-path="${workspace.path}">
@@ -1871,7 +1871,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           defaultPath: true,
           name: $(workspace).find(`input.workspace-name`).val(),
           color: $(workspace).find(`input.workspace-color`).val(),
-          id: `workspace-${getRandomID(10)}`,
+          id: `workspace-${getRandom.id(10)}`,
           connectionsPath: $(workspace).attr('data-connections-path')
         }
 

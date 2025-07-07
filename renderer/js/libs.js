@@ -55,12 +55,12 @@ const OS = require('os'),
   /**
    * Generate a random string
    * Mainly used for generating IDs for connections, workspaces, UI elements, and so on
-   * It has been implemented within the function `getRandomID(length, ?amount)`
+   * It has been implemented within the function `getRandom.id(length, ?amount)`
    */
   RandomID = require('id-16'),
   /**
    * Get a random flat color
-   * It has been implemented within the function `getRandomColor(?amount)`
+   * It has been implemented within the function `getRandom.color(?amount)`
    */
   RandomFlatColors = require('random-flat-colors'),
   /**
@@ -80,12 +80,12 @@ const OS = require('os'),
   AppData = require('appdata-path'),
   /**
    * `JSON.stringify` with fixed maximum character width
-   * It has been implemented within the function `applyJSONBeautify(object, ?sort)`
+   * It has been implemented within the function `beautifyJSON(object, ?sort)`
    */
   BeautifyJSON = require('json-beautify'),
   /**
    * This module takes JSON content and returns a copy of the same content but with the sorted keys
-   * It has been implemented within the function `applyJSONBeautify(object, ?sort)`
+   * It has been implemented within the function `beautifyJSON(object, ?sort)`
    */
   SortJSON = require('sort-json'),
   // Convert an array of Objects into a table format
@@ -107,12 +107,12 @@ const OS = require('os'),
   Marked = require('marked'),
   /**
    * Pure Node.js RSA library implemented
-   * It has been implemented within the functions `encrypt(publicKey, text)` and `decrypt(privateKey, text)`
+   * It has been implemented within the functions `encryptText(publicKey, text)` and `decryptText(privateKey, text)`
    */
   NodeRSA = require('node-rsa'),
   /**
    * Node.js module to manage system keychain
-   * It has been implemented within the function `getKey(type, callback)`
+   * It has been implemented within the function `getRSAKey(type, callback)`
    */
   Keytar = require('keytar'),
   /**
@@ -135,12 +135,12 @@ const OS = require('os'),
   IsTimestamp = require('is-timestamp'),
   /**
    * Get a random free-to-use port
-   * It has been implemented within the function `getRandomPort(?amount)`
+   * It has been implemented within the function `getRandom.port(?amount)`
    */
   PortGet = require('port-get'),
   /**
    * Fix a given JSON in string format
-   * It has been implemented within the function `repairJSON(json)`
+   * It has been implemented within the function `repairJSONString(json)`
    */
   JSONRepair = require('jsonrepair').jsonrepair,
   // Cross-browser storage for all use cases

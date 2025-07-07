@@ -643,7 +643,7 @@ let formatTimeUUID = (uuid, withMilliSeconds = false) => {
  *
  * @Return: {string} final repaired JSON string, or the original string if an error has occurred
  */
-let repairJSON = (json) => {
+let repairJSONString = (json) => {
   let result = json // Final result which be returned
 
   // Only for Windows platform
@@ -762,7 +762,7 @@ let convertJSONToTable = (json, callback) => {
             if (typeof finalItem === 'object')
               throw 0
 
-            finalItem = JSON.parse(repairJSON(item))
+            finalItem = JSON.parse(repairJSONString(item))
           } catch (e) {}
 
           return finalItem
@@ -864,7 +864,7 @@ let convertJSONToTable = (json, callback) => {
     return
   } catch (e) {
     // Attempt to repair the passed JSON string
-    json = repairJSON(json)
+    json = repairJSONString(json)
   }
 
   callback(conversionProcess())
@@ -884,7 +884,7 @@ let convertJSONToTable = (json, callback) => {
 let convertTableToTabulator = (json, container, paginationSize = 100, paginationSizeSelectorEnabled = true, callback) => {
   convertJSONToTable(json, (convertedJSON) => {
     // Get a random ID for the table
-    let tableID = getRandomID(20),
+    let tableID = getRandom.id(20),
       // The variable which is going to hold the Tabulator object
       tabulatorTable
 
@@ -979,7 +979,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
   let normalizePath = (path) => OS.platform == 'win32' ? `${path}`.replace(/\\/gm, '/') : `${path}`
 
   // Get a keyspaces container's random ID
-  let [connectionID, keyspacesID] = getRandomID(30, 2),
+  let [connectionID, keyspacesID] = getRandom.id(30, 2),
     // Define the path of extra icons to be used with each leaf
     extraIconsPath = normalizePath(Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra')),
     // The initial tree structure
@@ -1018,7 +1018,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             }
           },
           {
-            'id': getRandomID(30),
+            'id': getRandom.id(30),
             'parent': connectionID,
             'text': `Partitioner: <span>${metadata.partitioner.replace(/.+\.(.+)/gi, '$1')}</span>`,
             'type': 'default',
@@ -1047,7 +1047,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
     }
 
   // Get a random ID for the system's keyspaces container
-  let systemKeyspacesParentID = getRandomID(30),
+  let systemKeyspacesParentID = getRandom.id(30),
     /**
      * Count the number of found system keyspaces in the connected to connection
      *
@@ -1179,7 +1179,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           // Otherwise, define that attribute's structure
           let structure = {
-            id: getRandomID(30),
+            id: getRandom.id(30),
             parent: childID,
             text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: <span class="material-icons for-treeview">${materialIcon}</span>`,
             type: 'default'
@@ -1262,7 +1262,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
     let [
       keyspaceID,
       tablesID
-    ] = getRandomID(30, 2),
+    ] = getRandom.id(30, 2),
       indexesInfo = []
 
     // Build tree view for the keyspace
@@ -1272,8 +1272,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       if (keyspace.replication_strategy == undefined)
         throw 0
 
-      let replicationStrategy = JSON.parse(repairJSON(keyspace.replication_strategy)),
-        replicationStrategyID = getRandomID(30)
+      let replicationStrategy = JSON.parse(repairJSONString(keyspace.replication_strategy)),
+        replicationStrategyID = getRandom.id(30)
 
       // Tables' container that will be under the keyspace container
       let replicationStrategyStructure = {
@@ -1289,7 +1289,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       Object.keys(replicationStrategy).forEach((key) => {
         treeStructure.core.data.push({
-          id: getRandomID(30),
+          id: getRandom.id(30),
           parent: replicationStrategyID,
           text: `${key}: ${replicationStrategy[key]}`,
           type: 'default',
@@ -1317,7 +1317,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
     sortItemsAlphabetically(keyspace.tables, 'name')
 
-    let counterTablesID = getRandomID(30),
+    let counterTablesID = getRandom.id(30),
       counterTablesStructure = {
         id: counterTablesID,
         parent: tablesID,
@@ -1348,7 +1348,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         triggersID,
         viewsID,
         indexesID
-      ] = getRandomID(30, 8)
+      ] = getRandom.id(30, 8)
 
       let isCounterTable = table.columns.find((column) => column.cql_type == 'counter') != undefined
 
@@ -1394,7 +1394,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Loop through primary keys
         table.primary_key.forEach((primaryKey) => {
           // Get a random ID for the key
-          let primaryKeyID = getRandomID(30),
+          let primaryKeyID = getRandom.id(30),
             isPartitionKey = table.partition_key.find((partitionKey) => primaryKey.name == partitionKey.name) != undefined
 
           // Build tree view for the key
@@ -1429,7 +1429,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Loop through keys
         table.partition_key.forEach((partitionKey) => {
           // Get a random ID for the key
-          let partitionKeyID = getRandomID(30)
+          let partitionKeyID = getRandom.id(30)
 
           // Build tree view for the key
           buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
@@ -1463,7 +1463,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Loop through clustering keys
         table.clustering_key.forEach((clusteringKey) => {
           // Get a random ID for the key
-          let clusteringKeyID = getRandomID(30)
+          let clusteringKeyID = getRandom.id(30)
 
           // Build tree view for the key
           buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
@@ -1497,7 +1497,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Loop through columns
         staticColumns.forEach((column) => {
           // Get a random ID for the column
-          let columnID = getRandomID(30),
+          let columnID = getRandom.id(30),
             isPartitionKey = table.partition_key.find((partitionKey) => column.name == partitionKey.name) != undefined,
             isClusteringKey = table.clustering_key.find((clusteringKey) => column.name == clusteringKey.name) != undefined
 
@@ -1541,7 +1541,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Loop through columns
         allColumns.forEach((column) => {
           // Get a random ID for the column
-          let columnID = getRandomID(30),
+          let columnID = getRandom.id(30),
             isPartitionKey = table.partition_key.find((partitionKey) => column.name == partitionKey.name) != undefined,
             isClusteringKey = table.clustering_key.find((clusteringKey) => column.name == clusteringKey.name) != undefined,
             isStatic = column['is_static']
@@ -1583,7 +1583,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               throw 0
 
             // Get a random ID for the current parent's options node
-            let parentOptionsID = getRandomID(30),
+            let parentOptionsID = getRandom.id(30),
               // Define the node/leaf structure
               parentOptionsStructure = {
                 id: parentOptionsID,
@@ -1616,7 +1616,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
            * Reaching here means the current option's value is not an object
            * Get a random ID for the option's node
            */
-          let optionID = getRandomID(30),
+          let optionID = getRandom.id(30),
             // Define the node/leaf structure
             optionStructure = {
               id: optionID,
@@ -1656,7 +1656,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * Options' container that will be under the table overall container
          * Get a random ID for the options' parent/container node
          */
-        let optionsID = getRandomID(30),
+        let optionsID = getRandom.id(30),
           // Define the node/leaf structure
           optionsStructure = {
             id: optionsID,
@@ -1710,7 +1710,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           // Loop through triggers
           table.triggers.forEach((trigger) => {
             // Get a random ID for the trigger
-            let triggerID = getRandomID(30)
+            let triggerID = getRandom.id(30)
 
             // Build a tree view for the trigger
             buildTreeViewForChild(triggersID, triggerID, `Trigger`, trigger, 'trigger')
@@ -1730,7 +1730,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * Views' container that will be under the table container
          * Get a random ID for the views' parent node
          */
-        let viewsID = getRandomID(30),
+        let viewsID = getRandom.id(30),
           // Define the node/leaf structure
           viewsStructure = {
             id: viewsID,
@@ -1762,7 +1762,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             clusteringKeysID,
             partitionKeysID,
             columnsID
-          ] = getRandomID(30, 4)
+          ] = getRandom.id(30, 4)
 
           /**
            * Build a tree view for the current view
@@ -1800,7 +1800,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           // Loop through clustering keys
           view.clustering_key.forEach((clusteringKey) => {
             // Get a random ID for the key
-            let clusteringKeyID = getRandomID(30)
+            let clusteringKeyID = getRandom.id(30)
 
             // Build tree view for the key
             buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
@@ -1833,7 +1833,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           // Loop through keys
           view.partition_key.forEach((partitionKey) => {
             // Get a random ID for the key
-            let partitionKeyID = getRandomID(30)
+            let partitionKeyID = getRandom.id(30)
 
             // Build tree view for the key
             buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
@@ -1864,7 +1864,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               delete column.is_reversed
 
               // Get a random ID for the column
-              let columnID = getRandomID(30)
+              let columnID = getRandom.id(30)
 
               // Build a tree view for the column
               buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, 'static-column')
@@ -1901,7 +1901,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             delete column.is_reversed
 
             // Get a random ID for the column
-            let columnID = getRandomID(30)
+            let columnID = getRandom.id(30)
 
             // Build a tree view for the column
             buildTreeViewForChild(columnsID, columnID, `Column`, column, column['is_static'] ? 'static-column' : 'column')
@@ -1921,7 +1921,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * Indexes' container that will be under the table container
          * Get a random ID for the indexes' parent node
          */
-        let indexesID = getRandomID(30),
+        let indexesID = getRandom.id(30),
           // Define the node/leaf structure
           indexesStructure = {
             id: indexesID,
@@ -1951,7 +1951,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let [
             indexID,
             kindID
-          ] = getRandomID(30, 2)
+          ] = getRandom.id(30, 2)
 
           indexesInfo.push({
             name: index.name,
@@ -2004,7 +2004,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
        * Views' container that will be under the keyspace container
        * Get a random ID for the views' parent node
        */
-      let viewsID = getRandomID(30),
+      let viewsID = getRandom.id(30),
         // Define the node/leaf structure
         viewsStructure = {
           id: viewsID,
@@ -2029,7 +2029,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           clusteringKeysID,
           partitionKeysID,
           columnsID
-        ] = getRandomID(30, 4)
+        ] = getRandom.id(30, 4)
 
         /**
          * Build a tree view for the current view
@@ -2039,7 +2039,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
         // Add a node/leaf about the view's base table's name
         treeStructure.core.data.push({
-          id: getRandomID(30),
+          id: getRandom.id(30),
           parent: viewID,
           text: `Base Table: <span>${EscapeHTML(view.base_table_name)}</span>`,
           type: 'default'
@@ -2061,7 +2061,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Loop through clustering keys
         view.clustering_key.forEach((clusteringKey) => {
           // Get a random ID for the key
-          let clusteringKeyID = getRandomID(30)
+          let clusteringKeyID = getRandom.id(30)
 
           // Build tree view for the key
           buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
@@ -2084,7 +2084,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         // Loop through keys
         view.partition_key.forEach((partitionKey) => {
           // Get a random ID for the key
-          let partitionKeyID = getRandomID(30)
+          let partitionKeyID = getRandom.id(30)
 
           // Build tree view for the key
           buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
@@ -2112,7 +2112,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             delete column.is_reversed
 
             // Get a random ID for the column
-            let columnID = getRandomID(30)
+            let columnID = getRandom.id(30)
 
             // Build a tree view for the column
             buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, 'static-column')
@@ -2142,7 +2142,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           delete column.is_reversed
 
           // Get a random ID for the column
-          let columnID = getRandomID(30)
+          let columnID = getRandom.id(30)
 
           // Build a tree view for the column
           buildTreeViewForChild(columnsID, columnID, `Column`, column, column['is_static'] ? 'static-column' : 'column')
@@ -2156,7 +2156,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
        * Indexes' container that will be under the keyspace container
        * Get a random ID for the indexes' parent node
        */
-      let indexesID = getRandomID(30),
+      let indexesID = getRandom.id(30),
         // Define the node/leaf structure
         indexesStructure = {
           id: indexesID,
@@ -2180,7 +2180,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           indexID,
           kindID,
           relatedTableID
-        ] = getRandomID(30, 3)
+        ] = getRandom.id(30, 3)
 
         let indexInfo = {}
 
@@ -2221,7 +2221,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           aggregates: keyspace.aggregates.length
         },
         // Get random ID for the main node/leaf
-        userDefinedElementsID = getRandomID(30)
+        userDefinedElementsID = getRandom.id(30)
 
       // // Define the main node's structure
       // let userDefinedElementsStructure = {
@@ -2241,7 +2241,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * UDTs' parent node that will be under the main node
          * Get a random ID for the UDTs' parent node
          */
-        let userTypesID = getRandomID(30),
+        let userTypesID = getRandom.id(30),
           // Define the node/leaf structure
           userTypesStructure = {
             id: userTypesID,
@@ -2269,7 +2269,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let [
             userTypeID,
             fieldsID
-          ] = getRandomID(30, 2)
+          ] = getRandom.id(30, 2)
 
           // Build a tree view for the current UDT
           buildTreeViewForChild(userTypesID, userTypeID, `User Type`, {
@@ -2282,7 +2282,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             // Get random IDs for the current field and its type
             let [
               fieldID, fieldTypeID
-            ] = getRandomID(30, 2),
+            ] = getRandom.id(30, 2),
               // Get the field's type
               type = userType.field_types[index]
 
@@ -2303,7 +2303,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * UDFs' parent node that will be under the main node
          * Get a random ID for the UDFs' parent node
          */
-        let userFuncsID = getRandomID(30),
+        let userFuncsID = getRandom.id(30),
           // Define the node/leaf structure
           userFuncsStructure = {
             id: userFuncsID,
@@ -2326,7 +2326,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let [
             funcID,
             argumentsID
-          ] = getRandomID(30, 2)
+          ] = getRandom.id(30, 2)
 
           // Build a tree view for the current UDF
           buildTreeViewForChild(userFuncsID, funcID, `User Function`, func, 'udf')
@@ -2346,7 +2346,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             attributes.forEach((attribute) => {
               // Push the attribute within a tree view's node structure
               treeStructure.core.data.push({
-                id: getRandomID(30),
+                id: getRandom.id(30),
                 parent: funcID,
                 text: attribute,
                 type: 'default'
@@ -2368,7 +2368,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             // Get random IDs for the current argument and its type
             let [
               argumentID, argumentTypeID
-            ] = getRandomID(30, 2),
+            ] = getRandom.id(30, 2),
               // Get the argument's type
               type = func.argument_types[index]
 
@@ -2389,7 +2389,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * UDA's parent node that will be under the main node
          * Get a random ID for the UDTs' parent node
          */
-        let userAggregatesID = getRandomID(30),
+        let userAggregatesID = getRandom.id(30),
           // Define the node/leaf structure
           userAggregatesStructure = {
             id: userAggregatesID,
@@ -2412,7 +2412,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           let [
             aggregateID,
             argumentsID
-          ] = getRandomID(30, 2)
+          ] = getRandom.id(30, 2)
 
           // Build a tree view for the current UDA
           buildTreeViewForChild(userAggregatesID, aggregateID, `User Function`, aggregate, 'aggregate')
@@ -2433,7 +2433,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             attributes.forEach((attribute) => {
               // Push the attribute within a tree view's node structure
               treeStructure.core.data.push({
-                id: getRandomID(30),
+                id: getRandom.id(30),
                 parent: aggregateID,
                 text: attribute,
                 type: 'default'
@@ -2453,7 +2453,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           // Loop through each argument type of the current UDA
           aggregate.argument_types.forEach((argumentType, index) => {
             // Get random IDs for the current argument type
-            let argumentTypeID = getRandomID(30)
+            let argumentTypeID = getRandom.id(30)
 
             // Push the argument type's tree view's node structure
             treeStructure.core.data.push({
@@ -2508,7 +2508,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       throw 0
 
     // Get a random ID for the `Virtual Keyspaces` node
-    let virtualKeyspacesParentID = getRandomID(30)
+    let virtualKeyspacesParentID = getRandom.id(30)
 
     // Define the node structure
     let structure = {
@@ -2580,7 +2580,7 @@ let suggestionSearch = (needle, haystack, checkDoubleQuotes = false) => {
 }
 
 /**
- * Search for a given string in another string using the extremely fast `FSS` node module
+ * Search for a given string in another string
  *
  * This function is defined as a part of the `String` type
  * @Example: ('a test').search('test') // true
@@ -2594,6 +2594,7 @@ String.prototype.search = function(needle) {
   return this.indexOf(needle) != -1
 }
 
+// Format a number by adding commas
 Number.prototype.format = function() {
   let n = this.toString() // The given number
   if (n.length >= 4) {
@@ -2621,35 +2622,6 @@ Number.prototype.format = function() {
   } else {
     return n
   }
-}
-
-let splitArrayByAttrbiute = (array, attribute) => {
-  array = array || []
-
-  let index = array.findIndex(item => item[attribute] === true)
-
-  if (index === -1)
-    return [array, []]
-
-  let firstArray = array.slice(0, index + 1),
-    secondArray = array.slice(index + 1)
-
-  return [firstArray, secondArray]
-}
-
-let flattenArray = (array) => {
-  let i = 0
-
-  while (i < array.length) {
-    if (Array.isArray(array[i])) {
-      const nested = flattenArray(array[i])
-
-      array.splice(i, 1, ...nested)
-    } else {
-      i++
-    }
-  }
-  return array
 }
 
 // Extend the jQuery library capabilities by adding new functions to objects
@@ -2822,8 +2794,56 @@ jQuery.fn.extend({
 })
 
 /**
+ * Split a given array into two arrays based on an attribute in the items
+ *
+ * @Parameters:
+ * {object} `array` the array to be splitted
+ * {string} `attribute` the attribute to be looking for among items
+ *
+ * @Return: {object} an array consists of two items:
+ ** The first item is an array of items before finding the attribute
+ ** Second item is an array of all items after finding the attribute
+ */
+let splitArrayByAttrbiute = (array, attribute) => {
+  array = array || []
+
+  let index = array.findIndex(item => item[attribute] === true)
+
+  if (index === -1)
+    return [array, []]
+
+  let firstArray = array.slice(0, index + 1),
+    secondArray = array.slice(index + 1)
+
+  return [firstArray, secondArray]
+}
+
+/**
+ * Flatten a given array and make all its items in level 1
+ *
+ * @Parameters:
+ * {object} `array` the array to be flattened
+ *
+ * @Return: {object} the array after the manipulation process
+ */
+let flattenArray = (array) => {
+  let i = 0
+
+  while (i < array.length) {
+    if (Array.isArray(array[i])) {
+      const nested = flattenArray(array[i])
+
+      array.splice(i, 1, ...nested)
+    } else {
+      i++
+    }
+  }
+  return array
+}
+
+/**
  * Open a confirmation dialog
- * The dialog has `confirm` and `cancel` buttons to choose from
+ * The dialog has a `confirm` and `cancel` buttons to choose from
  *
  * @Parameters:
  * {string} `text` the dialog's text
@@ -2915,10 +2935,19 @@ let openDialog = (text, callback, noBackdrop = false, checkBox = '', dialogEleme
     $('div.modal-backdrop:last-of-type').remove()
 }
 
+/**
+ * Shorthand the function `openDialog(text, callback, ?noBackdrop, ?checkBox, ?dialogElement)` in case a quick and small action dialog is needed
+ *
+ * @Parameters:
+ * {string} `text` the dialog's text
+ * {object} `callback` function that will be triggered with passing the final result
+ *
+ * @Return: {boolean} action confirmed or canceled
+ */
 let openExtraDataActionsDialog = (text, callback) => openDialog(text, callback, false, '', $('div#extraDataActions'))
 
 /**
- * Print a custom message in the app's terminals
+ * Print a custom message in a basic terminal - like cqlsh basic and bash sessions -
  *
  * @Parameters:
  * {object} `terminal` the terminal object in which the message will be printed - the `readLine` object can be passed too -
@@ -2927,7 +2956,7 @@ let openExtraDataActionsDialog = (text, callback) => openDialog(text, callback, 
  * {string} `message` the message's content that will be printed
  * {boolean} `?hideIcon` print the message without a prefix icon that indicates its type
  */
-let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
+let printMessageInBasicTerminal = (terminal, type, message, hideIcon = false) => {
   // Get the message's length
   let length = message.length + 4,
     // Set the default format (info)
@@ -2967,7 +2996,9 @@ let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
     terminal.println('')
   } catch (e) {
     // As `println` didn't work use `writeln` which is used with the Xterm object
-    terminal.writeln('')
+    try {
+      terminal.writeln('')
+    } catch (e) {}
   }
 
   /**
@@ -2978,7 +3009,9 @@ let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
     terminal.println(message)
   } catch (e) {
     // As `println` didn't work use `writeln` which is used with the Xterm object
-    terminal.writeln(message)
+    try {
+      terminal.writeln(message)
+    } catch (e) {}
   }
 }
 
@@ -2987,13 +3020,13 @@ let terminalPrintMessage = (terminal, type, message, hideIcon = false) => {
  *
  * @Parameters:
  * {string} `type` the key's type, the value could be:
- * [`public` or `private`]
- * {object} `callback` function that will be triggered with passing the final result
+ ** [`public` or `private`]
+ * {object} `callback` function that will be triggered with passing the final result - key or an empty string -
  * {boolean} `?called` whether or not the function has already been called and this is the second attempt to get the key
  *
  * @Return: {string} the public/private key, or an empty string
  */
-let getKey = async (type, callback, called = false) => {
+let getRSAKey = async (type, callback, called = false) => {
   // Add log for this process
   try {
     addLog(`Obtain the ${type} key for encryption or decryption`, 'process')
@@ -3027,7 +3060,7 @@ let getKey = async (type, callback, called = false) => {
 
       /**
        * If the key is not valid then add a custom key and then delete it,
-       * then call the `getKey` again, and it should return the key this time
+       * then call the `getRSAKey` again, and it should return the key this time
        */
       await Keytar.setPassword(Service, 'key', ' ')
       await Keytar.deletePassword(Service, 'key')
@@ -3036,7 +3069,7 @@ let getKey = async (type, callback, called = false) => {
        * Ask for the actual key again
        * This method has worked every time the first attempt failed
        */
-      getKey('private', callback, true)
+      getRSAKey('private', callback, true)
     })
 
     // Skip the upcoming code - since it's about obtaining a public key -
@@ -3060,7 +3093,7 @@ let getKey = async (type, callback, called = false) => {
    *
    * Get a random ID for the request
    */
-  let requestID = getRandomID(20)
+  let requestID = getRandom.id(20)
 
   // Request to get the public key
   IPCRenderer.send('public-key:get', requestID)
@@ -3085,7 +3118,7 @@ let getKey = async (type, callback, called = false) => {
  *
  * @Return: {string} either the encrypted text or an empty text if something went wrong
  */
-let encrypt = (publicKey, text) => {
+let encryptText = (publicKey, text) => {
   let encryptedText = text || '' // The final encrypted text which be returned
 
   // Add log for this process
@@ -3120,7 +3153,7 @@ let encrypt = (publicKey, text) => {
  *
  * @Return: {string} either the decrypted text or an empty text if something went wrong
  */
-let decrypt = (privateKey, text) => {
+let decryptText = (privateKey, text) => {
   let decryptedText = text || '' // The final decrypted text
 
   // Add log for this process
@@ -3146,264 +3179,86 @@ let decrypt = (privateKey, text) => {
   }
 }
 
-/**
- * Execute a given array of scripts
- *
- * @Parameters:
- * {integer} `scriptID` the index of the script to execute in the `scripts` array
- * {object} `scripts` an array of paths of scripts
- * {object} `callback` function that will be triggered with passing the final result
- *
- * @Return: {object}: {integer} `scriptID`, {object} `scripts`, {integer} `status`
- *
- * If `status` is not `0`, then the last executed script didn't return the success code `0`, otherwise, all scripts have been successfully executed
- */
-let executeScript = (scriptID, scripts, callback) => {
-  // Get a random ID for the execution request
-  let requestID = getRandomID(20)
-
-  // Add log about executing the current script
-  try {
-    addLog(`Executing the script '${scripts[scriptID]}' within a connection process`, 'process')
-  } catch (e) {}
-
-  // Send the execution request
-  IPCRenderer.send('script:run', {
-    id: requestID,
-    scriptPath: scripts[scriptID]
-  })
-
-  // Handle the response
-  IPCRenderer.on(`script:result:${requestID}`, (_, status) => {
-    // Preserve the original status' value before parsing
-    let originalStatus = status
+// Get random items using those functions
+let getRandom = {
+  /**
+   * Get random free-to-use port(s)
+   *
+   * @Parameters:
+   * {integer} `?amount` the number of port(s) to get/generate, default is 1
+   *
+   * @Return: {integer || object} one port, or group - array - of ports
+   */
+  port: async (amount = 1) => {
+    // Define the ports array which be returned
+    let ports = []
 
     /**
-     * Get the execution's status
-     * If it's not the success code `0`, then the last script hasn't executed properly
+     * Loop based on the number of needed ports
+     * Push every `port` to the `ports` array
      */
-    status = parseInt(status)
-
-    // Add log for the execution's status
-    try {
-      addLog(`Execution status of the script '${scripts[scriptID]}' is '${isNaN(status) ? originalStatus : status}'`)
-    } catch (e) {}
-
-    try {
-      // If the status/returned value is not `0` then it is considered an error
-      if (status != 0)
-        throw 0; // This semicolon is critical here
-
-      // Otherwise, the status value is `0` and the current script has been successfully executed
-      ++scriptID
-
-      // If condition `true`, then all scripts have been executed without errors
-      if (scriptID + 1 > scripts.length)
-        throw 0
-
-      // Call the execution function again in a recursive way
-      executeScript(scriptID, scripts, callback)
-    } catch (e) {
+    for (let i = 0; i < amount; i++)
       try {
-        errorLog(e, 'functions')
-      } catch (e) {}
-
-      /**
-       * Call the callback function
-       * Pass the last executed script ID, all scripts array, and the last execution status
-       */
-      return callback({
-        scriptID: scriptID,
-        scripts: scripts,
-        status: isNaN(status) ? originalStatus : status
-      })
-    }
-  })
-}
-
-/**
- * Get all pre and post-connection scripts of a given connection
- *
- * @Parameters:
- * {string} `workspaceID` the ID of the target workspace
- * {string} `?connectionID` the target connection's ID, or null to check the editor's content
- *
- * @Return: {object} JSON object which has `pre` and `post` attributes, each attribute holds an array of scripts' paths
- */
-let getPrePostConnectionScripts = async (workspaceID, connectionID = null) => {
-  // Final result to be returned - scripts to be executed -
-  let scripts = {
-      pre: [], // Pre-connection scripts' paths
-      post: [] // Post-connection scripts' paths
-    },
-    /**
-     * Flag which tells if sensitive data has been found in the connection's `cqlsh.rc` content
-     * This is an extra attribute
-     */
-    foundSensitiveData = false,
-    // An object which holds the content of the connection's cqlsh.rc file
-    cqlshContent = null
-
-  // Define the text to be added to the log regards the workspace
-  let workspace = `workspace #${workspaceID}`
-
-  // Add log about this process
-  try {
-    addLog(`Get all pre and post-connection scripts of ${connectionID != null ? 'connection #' + connectionID + ' in ' : ' a connection about to be added/updated in '}${workspace}`, 'process')
-  } catch (e) {}
-
-  // Check pre and post-connection scripts
-  try {
-    // Set connection to be null by default
-    let connection = null
-
-    try {
-      // If there's no connection ID has been passed then skip this try-catch block
-      if (connectionID == null)
-        throw 0
-
-      // Get all saved connections
-      let connections = await Modules.Connections.getConnections(workspaceID)
-
-      // Get the target connection's object
-      connection = connections.filter((connection) => connection.info.id == connectionID)[0]
-    } catch (e) {
-      try {
-        errorLog(e, 'functions')
-      } catch (e) {}
-    }
-
-    // Get the connection's `cqlsh.rc` file's content
-    cqlshContent = connection != null ? await Modules.Connections.getCQLSHRCContent(workspaceID, connection.cqlshrc) : await Modules.Connections.getCQLSHRCContent(workspaceID, null, addEditConnectionEditor),
-      // Define the file's sections
-      sections = Object.keys(cqlshContent)
-
-    // If there are no sections in the `cqlsh.rc` file then skip this try-catch block
-    if (sections.length <= 0)
-      throw 0
-
-    // Loop through each section
-    for (let section of sections) {
-      // Define the current section's keys/options
-      let keys = Object.keys(cqlshContent[section])
-
-      // If no keys have been found in this section then skip it and move to the next one
-      if (keys.length <= 0)
-        continue
-
-      // Loop through keys/options
-      for (let key of keys) {
-        // If the current key/option is considered sensitive - for instance; it is `username` -
-        if (Modules.Consts.SensitiveData.includes(key))
-          foundSensitiveData = true
-
-        // Check if there are scripts
-        let script = cqlshContent[section][key]
-
-        // Check if there're pre or post connect scripts
-        if (['preconnect', 'postconnect'].includes(section))
-          scripts[section == 'preconnect' ? 'pre' : 'post'].push(script)
+        ports.push(await PortGet())
+      } catch (e) {
+        try {
+          errorLog(e, 'functions')
+        } catch (e) {}
       }
-    }
-  } catch (e) {
-    try {
-      errorLog(e, 'functions')
-    } catch (e) {}
-  }
 
-  // Add log if scripts have been found
-  if (scripts.length != 0)
+    // Add log about the free-to-use ports
     try {
-      addLog(`Pre and post-connection scripts of ${connectionID != null ? 'connection #' + connectionID + ' in ' : ' a connection about to be added/updated in '}${workspace} are (${JSON.stringify(scripts)})`, 'process')
+      addLog(`Get ${amount} free-to-use port(s), returned '${amount == 1 ? ports[0] : JSON.stringify(ports)}'`, 'network')
     } catch (e) {}
 
-  // Return the final result
-  return {
-    ...scripts,
-    foundSensitiveData,
-    cqlshContent
+    // Return one `port` if only one is needed, or the entire array otherwise
+    return amount == 1 ? ports[0] : ports
+  },
+  /**
+   * Get random ID(s)
+   *
+   * @Parameters:
+   * {integer} `length` the length of all IDs
+   * {integer} `?amount` the number of ID(s) to get/generate, default is 1
+   *
+   * @Return: {integer || object} one ID, or group of IDs
+   */
+  id: (length, amount = 1) => {
+    // Define IDs array which be returned
+    let ids = []
+
+    /**
+     * Loop based on the number of needed IDs
+     * Push every ID to the `ids` array
+     */
+    for (let i = 0; i < amount; ++i)
+      ids.push(RandomID(length))
+
+    // Return one ID if only one is needed, or the entire array otherwise
+    return ids.length == 1 ? ids[0] : ids
+  },
+  /**
+   * Get random HEX color(s)
+   *
+   * @Parameters:
+   * {integer} `?amount` the number of colors to get/generate, default is 1
+   *
+   * @Return: {integer || object} one color, or group of colors
+   */
+  color: (amount = 1) => {
+    // Define the colors array which be returned
+    let colors = []
+
+    /**
+     * Loop based on the number of needed `colors`
+     * Push every `color` to the `colors` array
+     */
+    for (let i = 0; i < amount; ++i)
+      colors.push(RandomFlatColors())
+
+    // Return one `color` if only one is needed, or the entire array otherwise
+    return colors.length == 1 ? colors[0] : colors
   }
-}
-
-/**
- * Get random free-to-use port(s)
- *
- * @Parameters:
- * {integer} `?amount` the number of port(s) to get/generate
- *
- * @Return: {integer || object} one port, or group - array - of ports
- */
-let getRandomPort = async (amount = 1) => {
-  // Define the ports array which be returned
-  let ports = []
-
-  /**
-   * Loop based on the number of needed ports
-   * Push every `port` to the `ports` array
-   */
-  for (let i = 0; i < amount; i++)
-    try {
-      ports.push(await PortGet())
-    } catch (e) {
-      try {
-        errorLog(e, 'functions')
-      } catch (e) {}
-    }
-
-  // Add log about the free-to-use ports
-  try {
-    addLog(`Get ${amount} free-to-use port(s), returned '${amount == 1 ? ports[0] : JSON.stringify(ports)}'`, 'network')
-  } catch (e) {}
-
-  // Return one `port` if only one is needed, or the entire array otherwise
-  return amount == 1 ? ports[0] : ports
-}
-
-/**
- * Get random ID(s)
- *
- * @Parameters:
- * {integer} `length` the length of all IDs
- * {integer} `?amount` the number of ID(s) to get/generate
- *
- * @Return: {integer || object} one ID, or group of IDs
- */
-let getRandomID = (length, amount = 1) => {
-  // Define IDs array which be returned
-  let ids = []
-
-  /**
-   * Loop based on the number of needed IDs
-   * Push every ID to the `ids` array
-   */
-  for (let i = 0; i < amount; ++i)
-    ids.push(RandomID(length))
-
-  // Return one ID if only one is needed, or the entire array otherwise
-  return ids.length == 1 ? ids[0] : ids
-}
-
-/**
- * Get random HEX color(s)
- *
- * @Parameters:
- * {integer} `?amount` the number of colors to get/generate
- *
- * @Return: {integer || object} one color, or group of colors
- */
-let getRandomColor = (amount = 1) => {
-  // Define the colors array which be returned
-  let colors = []
-
-  /**
-   * Loop based on the number of needed `colors`
-   * Push every `color` to the `colors` array
-   */
-  for (let i = 0; i < amount; ++i)
-    colors.push(RandomFlatColors())
-
-  // Return one `color` if only one is needed, or the entire array otherwise
-  return colors.length == 1 ? colors[0] : colors
 }
 
 /**
@@ -3460,294 +3315,58 @@ let invertColor = (hex) => {
   return `#${r}${g}${b}`
 }
 
-/**
- * Check if the host machine has an SSH client installed
- * Works on all major operating systems (Linux, macOS, and Windows)
- *
- * @Parameters:
- * {object} `callback` function that will be triggered with passing the final result
- *
- * @Return: {boolean} the host machine has an SSH client or not
- */
-let checkSSH = (callback) => {
-  try {
-    // Run the command to check SSH
-    Terminal.run('ssh -V', (err, stderr, data) => {
-      // Add log for the process' result
-      try {
-        addLog(`Check SSH client existence and accessibility, status: '${!(err || stderr) ? 'exists and accessible' : 'not exists or inaccessible. Details: ' + err || stderr}'`, 'process')
-      } catch (e) {}
-
-      // Call the callback function with the result
-      callback(!(err || stderr))
-    })
-  } catch (e) {
+// Functions for the SSH Tunnel
+let tunnelSSH = {
+  /**
+   * Check if the host machine has an SSH client installed
+   * Works on all major operating systems (Linux, macOS, and Windows)
+   *
+   * @Parameters:
+   * {object} `callback` function that will be triggered with passing the final result
+   *
+   * @Return: {boolean} the host machine has an SSH client or not
+   */
+  checkClient: (callback) => {
     try {
-      errorLog(e, 'functions')
-    } catch (e) {}
-  }
-}
-
-/**
- * Create an SSH tunnel
- *
- * @Parameters:
- * {object} `data` contains the SSH tunneling info, parameters are:
- * {string} `host`, {string} `username`, {string} `?password`, {string} `?privateKey`, {string} `?passphrase`, {integer} `?port`, {string} `?dstAddr`, {string} `dstPort`
- * {object} `callback` function that will be triggered with passing the final result
- *
- * @Return: {object} SSH tunnel object; to control the tunnel and get the active port
- */
-let createSSHTunnel = (data, callback) => {
-  // Send the request to the main thread
-  IPCRenderer.send('ssh-tunnel:create', data)
-
-  // Once a response is received
-  IPCRenderer.on(`ssh-tunnel:create:result:${data.requestID}`, (_, receivedData) => {
-    // Remove all listeners as a result has been received
-    IPCRenderer.removeAllListeners(`ssh-tunnel:create:result:${data.requestID}`)
-
-    // Call the callback function with passing the result
-    callback(receivedData)
-  })
-}
-
-/**
- * Convert full or a part of a JSON object's values to variables
- * The function may also return the saved variables only as raw data, taking into account the scope of variables against the given workspace ID
- * For returning raw data only, the function `getProperVariables(workspaceID)` can be used as a shorthand
- *
- * @Parameters:
- * {string} `workspaceID` the ID of the active or target workspace
- * {object} `object` the JSON object whose values will be manipulated
- * {boolean} `?rawData` only return the proper variables based on the given workspace ID
- *
- * @Return: {object} the passed object after manipulation
- */
-let variablesManipulation = async (workspaceID, object, rawData = false) => {
-  let result = object // Final result which be returned
-
-  try {
-    // Get the object's values
-    let objectValues = Object.keys(object),
-      // Retrieve all saved variables
-      savedVariables = await retrieveAllVariables(true)
-
-    // Define the final variables object
-    let variables = []
-
-    // Filter the variables based on their scope
-    variables = savedVariables.filter(
-      // The filter is whether or not the variable's scope includes the current workspace, or it includes all workspaces
-      (variable) => variable.scope.some(
-        (workspace) => [
-          workspaceID,
-          'workspace-all'
-        ].includes(workspace))
-    )
-
-    // If the call is about getting the available variables for the workspace then return `variables` and skip the upcoming code
-    if (rawData)
-      return variables
-
-    // Loop through the object's values, and change what needed to variables
-    objectValues.forEach((objectValue) => {
-      // Get the current object's value
-      let value = result[objectValue],
-        // Check if there's a variable's value - or more - in the current value
-        exists = variables.filter((variable) => value.search(variable.value))
-
-      try {
-        /**
-         * If the `value` type is an `object`, this means that the `value` is an array of other sub-values, and another loop through that array is needed
-         * It's guaranteed that the given object won't exceed two levels of depth
-         */
-        if (typeof value != 'object')
-          throw 0
-
-        // Get the sub-values' keys
-        let subValues = Object.keys(value)
-
-        // Loop through the sub-values, and make changes to them as needed
-        subValues.forEach((_subValue) => {
-          // Get the current object's value
-          let subValue = value[_subValue],
-            // Check if there's a variable's value - or more - in the current value
-            exists = variables.filter((variable) => subValue.search(variable.value))
-
-          // If there's no variable's value found in the current `value` then skip it and move to the next one
-          if (exists.length <= 0)
-            return
-
-          // Loop through the existing variables
-          exists.forEach((variable) => {
-            // Match its value anywhere in the object's value
-            let regex = createRegex(`${variable.value}`, `gm`)
-
-            // Replace the variable's value with its name
-            subValue = `${subValue}`.replace(regex, '${' + variable.name + '}')
-          })
-
-          // Update the object's value with the manipulated one
-          result[objectValue][_subValue] = subValue
-        })
-
-        // Skip the upcoming code
-        return
-      } catch (e) {
+      // Run the command to check SSH
+      Terminal.run('ssh -V', (err, stderr, data) => {
+        // Add log for the process' result
         try {
-          errorLog(e, 'functions')
+          addLog(`Check SSH client existence and accessibility, status: '${!(err || stderr) ? 'exists and accessible' : 'not exists or inaccessible. Details: ' + err || stderr}'`, 'process')
         } catch (e) {}
-      }
 
-      /**
-       * Reaching here means the current `value` is not an `object` but a `string`
-       *
-       * If there's no variable's value found in the current `value` then skip it and move to the next one
-       */
-      if (exists.length <= 0)
-        return
-
-      // Loop through the existing variables
-      exists.forEach((variable) => {
-        // Match its value anywhere in the object's value
-        let regex = createRegex(`${variable.value}`, `gm`)
-
-        // Replace the variable's value with its name
-        value = `${value}`.replace(regex, '${' + variable.name + '}')
+        // Call the callback function with the result
+        callback(!(err || stderr))
       })
+    } catch (e) {
+      try {
+        errorLog(e, 'functions')
+      } catch (e) {}
+    }
+  },
+  /**
+   * Create an SSH tunnel
+   *
+   * @Parameters:
+   * {object} `data` contains the SSH tunneling info, parameters are:
+   * {string} `host`, {string} `username`, {string} `?password`, {string} `?privateKey`, {string} `?passphrase`, {integer} `?port`, {string} `?dstAddr`, {string} `dstPort`
+   * {object} `callback` function that will be triggered with passing the final result
+   *
+   * @Return: {object} SSH tunnel object; to control the tunnel and get the active port
+   */
+  createTunnel: (data, callback) => {
+    // Send the request to the main thread
+    IPCRenderer.send('ssh-tunnel:create', data)
 
-      // Update the object's value with the manipulated one
-      result[objectValue] = value
+    // Once a response is received
+    IPCRenderer.on(`ssh-tunnel:create:result:${data.requestID}`, (_, receivedData) => {
+      // Remove all listeners as a result has been received
+      IPCRenderer.removeAllListeners(`ssh-tunnel:create:result:${data.requestID}`)
+
+      // Call the callback function with passing the result
+      callback(receivedData)
     })
-  } catch (e) {
-    try {
-      errorLog(e, 'functions')
-    } catch (e) {}
-  } finally {
-    // Return the final result in case more than raw data is wanted
-    if (!rawData)
-      return result
   }
-}
-
-/**
- * Shorthand the function `variablesManipulation(workspaceID, object, ?rawData)` in case only raw data is needed - saved variables with their values -
- *
- * @Parameters:
- * {string} `workspaceID` the ID of the active or target workspace
- *
- * @Return: {object} raw data - saved variables with their values -
- */
-let getProperVariables = async (workspaceID) => await variablesManipulation(workspaceID, [], true)
-
-/**
- * Convert JSON object's values - which have been, fully or partly - converted to variables - to their proper values
- *
- * @Parameters:
- * {object} `object` the JSON object whose values will be manipulated
- * {object} `variables` the variables that will be checked in the object's values
- *
- * @Return: {object} the passed object after manipulation
- */
-let variablesToValues = (object, variables) => {
-  try {
-    // Get keys of the given object
-    let keys = Object.keys(object)
-
-    // Loop through all keys
-    keys.forEach((key) => {
-      // Get the value of the current key
-      let value = object[key],
-        // Check if there is a variable or more in the value
-        exists = variables.filter((variable) => value.search('${' + variable.name + '}'))
-
-      // If no variable has been found in the key's value then skip it and move to the next key
-      if (exists.length <= 0)
-        return
-
-      // Loop through existing variables
-      exists.forEach((variable) => {
-        // Create a regular expression to match the variable anywhere in the object's value
-        let regex = createRegex('${' + variable.name + '}', 'gm')
-
-        // Replace the object's value with the variable's value
-        value = `${value}`.replace(regex, variable.value)
-      })
-
-      // Update the object's value with the manipulated one
-      object[key] = value
-    })
-  } catch (e) {
-    try {
-      errorLog(e, 'functions')
-    } catch (e) {}
-  }
-
-  // Return the object after manipulation
-  return object
-}
-
-/**
- * Resolve variables inside variables' values
- *
- * @Parameters:
- * {object} `variables` the variables to be manipulated
- *
- * @Return: {object} final result after the manipulation process
- */
-let resolveNestedVariables = (variables) => {
-  // Inner function to resolve a passed variable's value
-  let resolveValue = (savedVariable) => {
-    // The final variable to be returned
-    let finalValue = `${savedVariable.value}`,
-      // Define and match all available variables in the current variable's value
-      foundVariables = finalValue.match(new RegExp(/\${(.*?)}/, 'gm'))
-
-    try {
-      // If no variable has been found in the current variable's value then skip this try-catch block
-      if (foundVariables == null)
-        throw 0
-
-      // Loop through the found variables in the value
-      for (let foundVariable of foundVariables) {
-        // Get the variable's name
-        let variableName = `${foundVariable}`.slice(2, foundVariable.length - 1),
-          // Get that nested variable
-          variable = variables.find(
-            (variable) => variable.name == variableName && savedVariable.scope.some(
-              (workspace) => variable.scope.find(
-                (_workspace) => ['workspace-all', workspace].includes(_workspace) || _workspace == 'workspace-all')
-            )
-          )
-
-        // If the nested variable hasn't been defined or it's actually the current variable then skip it
-        if (variable == undefined || variable === savedVariable)
-          continue
-
-        // Resolve the variable's value recursively
-        let resolvedValue = resolveValue(variable)
-
-        // Set the new updated value
-        finalValue = `${finalValue}`.replace(foundVariable, resolvedValue)
-      }
-    } catch (e) {}
-
-    // Return the final value
-    return finalValue
-  }
-
-  // Iterate through each variable and resolve its value
-  for (let variable of variables) {
-    // Hold the original value
-    variable.originalValue = `${variable.value}`
-
-    // Manipulate the variable's value
-    variable.value = resolveValue(variable)
-  }
-
-  // Return the variables
-  return variables
 }
 
 /**
@@ -3759,7 +3378,7 @@ let resolveNestedVariables = (variables) => {
  *
  * @Return: {string} the passed object in string format after manipulation
  */
-let applyJSONBeautify = (object, sort = false) => {
+let beautifyJSON = (object, sort = false) => {
   // Final result to be returned
   let beautifiedJSON = ''
 
@@ -3783,16 +3402,6 @@ let applyJSONBeautify = (object, sort = false) => {
   // Return the beautified version of the JSON
   return beautifiedJSON
 }
-
-/**
- * Manipulate a given text; by getting rid of all spaces, and lowering the case of all chars
- *
- * @Parameters:
- * {string} `text` the text that will be manipulated
- *
- * @Return: {string} the passed text after manipulation
- */
-let manipulateText = (text) => `${text}`.replace(/\s+/gm, '').toLowerCase()
 
 /**
  * Minify a given text by manipulating it, plus getting rid of new lines
@@ -3821,6 +3430,16 @@ let minifyText = (text) => {
   // Return final result
   return text
 }
+
+/**
+ * Manipulate a given text; by getting rid of all spaces, and lowering the case of all chars
+ *
+ * @Parameters:
+ * {string} `text` the text that will be manipulated
+ *
+ * @Return: {string} the passed text after manipulation
+ */
+let manipulateText = (text) => `${text}`.replace(/\s+/gm, '').toLowerCase()
 
 /**
  * Manipulate a passed output by removing all possible ANSI escape sequences
@@ -4067,6 +3686,16 @@ let clearTemp = () => {
 }
 
 /**
+ * Excape special characters `. ? * + ^ $ [ ] \ ( ) { } | -` in Regex concept
+ *
+ * @Parameters:
+ * {string} `text` the text that will be manipulated
+ *
+ * @Return: {string} the passed text after the manipulation process
+ */
+let quoteForRegex = (text) => `${text}`.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1')
+
+/**
  * Create a regular expression for a given plain text
  * The function will escape the special characters (; . , | etc...) in the text; so it's guaranteed that the regex will be safe from unwanted behaviors
  *
@@ -4084,20 +3713,18 @@ let createRegex = (text, flags) => {
   return new RegExp(text, flags)
 }
 
-let quoteForRegex = (text) => `${text}`.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1')
-
 /**
  * Extract two characters from a given connection name in a systematic way
  *
- * @Example: extractChars('>Local >Cluster') // LC
- * @Example: extractChars('>A>nothertest') // AN
+ * @Example: extractTwoCharsConnectionName('>Local >Cluster') // LC
+ * @Example: extractTwoCharsConnectionName('>A>nothertest') // AN
  *
  * @Parameters:
  * {string} `connectionName` the connection name
  *
  * @Return: {string} the two characters to be used
  */
-let extractChars = (connectionName) => {
+let extractTwoCharsConnectionName = (connectionName) => {
   // Remove all white spaces from the given name
   connectionName = `${connectionName}`.replace(/\s+/gm, ''),
     // Get all characters in array
@@ -4139,7 +3766,7 @@ let extractChars = (connectionName) => {
  */
 let detectDifferentiation = (oldText, newText, callback) => {
   // Get a random ID for the detection request
-  let requestID = getRandomID(10)
+  let requestID = getRandom.id(10)
 
   // Send the request to the main thread
   IPCRenderer.send('detect-differentiation', {
@@ -4492,18 +4119,35 @@ let promptSudo = (callback) => {
   }
 }
 
-
+/**
+ * Handle the top header that shows the current workspace and related actions buttons, and it's hidden when a workarea is active
+ *
+ * @Parameters:
+ * {string} `type` the current type of the active item, values are:
+ ** ['workspaces', 'connections']
+ * {object} `?element` pass a workspace element to get its name and color if needed
+ */
 let handleContentInfo = (type, element = null) => {
-  let leftSide = $('div.body div.right div.content-info div._left'),
-    rightSide = $('div.body div.right div.content-info div._right'),
+  // Point at the content's info overall container
+  let contentInfoContainer = $('div.body div.right div.content-info'),
+    /**
+     * Point at the left and right sides of the container
+     * The left side contains the active workspace color and name
+     */
+    leftSide = contentInfoContainer.children('div._left'),
+    // The right side contains the related actions based on the passed type
+    rightSide = contentInfoContainer.children('div._right'),
+    // Point at the actions buttons of workspaces
     workspacesActions = rightSide.find('div._actions._for-workspaces'),
+    // Point at the actions buttons of connections
     connectionsActions = rightSide.find('div._actions._for-connections'),
-    arrow = leftSide.find('div._arrow'),
+    // Show current active workspace - connections -
     connection = leftSide.find('div._connection')
 
-  arrow.add(connection).toggleClass('show', type == 'connections')
+  leftSide.find('div._arrow').add(connection).toggleClass('show', type == 'connections')
 
   workspacesActions.toggleClass('show', type != 'connections')
+
   connectionsActions.toggleClass('show', type == 'connections')
 
   setTimeout(() => $('div.body div.right').removeClass('hide-content-info'), 200)
@@ -4514,13 +4158,15 @@ let handleContentInfo = (type, element = null) => {
 
     connection.find('div.text').text(element.attr('data-name'))
     connection.find('div._color').css('background', element.attr('data-color'))
-  } catch (e) {
-
-  } finally {
-
-  }
+  } catch (e) {}
 }
 
+/**
+ * Copy a cql statement in the enhanced console
+ *
+ * @Parameters:
+ * {object} `button` the copy button, it's passed in order to catch the statement's content
+ */
 let copyStatement = (button) => {
   // Get the block's statement
   let content = `${$(button).parent().parent().children('div.text').text()}`,
@@ -4654,7 +4300,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
     isInsertionAsJSON = $('#rightClickActionsMetadata').attr('data-as-json') === 'true',
     handlers = {
       node: (nodeObject, parentID = '#', ignoreAddItemBtnToAll = false) => {
-        let nodeID = getRandomID(30),
+        let nodeID = getRandom.id(30),
           nodeStructure = {
             'id': nodeID,
             'parent': parentID,
@@ -4692,7 +4338,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
                   <ion-icon name="close"></ion-icon>
                 </div>
               </div>
-              <input type="${manipulatedType.type}" data-field-type="${nodeObject.type}" class="form-control ${manipulatedType.type != 'checkbox' ? 'has-clear-button' : ''}" id="_${getRandomID(10)}" ${defaultValue} ${inputStep}>
+              <input type="${manipulatedType.type}" data-field-type="${nodeObject.type}" class="form-control ${manipulatedType.type != 'checkbox' ? 'has-clear-button' : ''}" id="_${getRandom.id(10)}" ${defaultValue} ${inputStep}>
               <label class="form-label">
                 <span mulang="value" capitalize></span>
               </label>
@@ -4704,7 +4350,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
           if (manipulatedType.type != 'switch')
             throw 0
 
-          let switchBtnID = getRandomID(10)
+          let switchBtnID = getRandom.id(10)
 
           inputFieldUIElement = `
             <div data-is-main-input="true" class="form-check form-switch form-white ignored-applied null-related">
@@ -4718,7 +4364,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
           if (`${nodeObject.type}` != 'uuid')
             throw 0
 
-          let dropDownBtnID = getRandomID(30)
+          let dropDownBtnID = getRandom.id(30)
 
           fieldActions = `
             <div class="input-group-text dropend for-insertion for-actions ignored-applied">
@@ -4745,7 +4391,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
           if (`${nodeObject.type}` != 'blob')
             throw 0
 
-          let dropDownBtnID = getRandomID(30)
+          let dropDownBtnID = getRandom.id(30)
 
           fieldActions = `
             <div class="input-group-text dropend for-insertion for-actions ignored-applied">
@@ -4775,7 +4421,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
           if (`${nodeObject.type}` != 'timeuuid')
             throw 0
 
-          let dropDownBtnID = getRandomID(30)
+          let dropDownBtnID = getRandom.id(30)
 
           fieldActions = `
             <div class="input-group-text dropend for-insertion for-actions ignored-applied">
@@ -4844,7 +4490,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
           if (isInsertionAsJSON)
             functionBtn = ''
 
-          let dropDownBtnID = getRandomID(30),
+          let dropDownBtnID = getRandom.id(30),
             pickerTitle = 'date time picker'
 
           switch (viewMode) {
@@ -4889,7 +4535,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
 
           nodeStructure.a_attr['add-items'] = true
 
-          nodeStructure.a_attr['add-hidden-node'] = getRandomID(30)
+          nodeStructure.a_attr['add-hidden-node'] = getRandom.id(30)
 
           if (forceToAddItemBtnToAll && isCollectionType)
             nodeStructure.a_attr['is-collection-type'] = true
@@ -4975,7 +4621,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
         } catch (e) {}
 
         try {
-          let udtID = getRandomID(30),
+          let udtID = getRandom.id(30),
             udtNodeStructure = {
               'id': udtID,
               'parent': parentID,

@@ -44,12 +44,12 @@ const FS = require('fs-extra'),
   IPCRenderer = require('electron').ipcRenderer,
   /**
    * Get a random free-to-use port
-   * It has been implemented within the function `getRandomPort(?amount)`
+   * It has been implemented within the function `getRandom.port(?amount)`
    */
   PortGet = require('port-get'),
   /**
    * Create an SSH tunnel with the ability to close it, and listen to its traffic
-   * It has been implemented within the function `createSSHTunnel(data)`
+   * It has been implemented within the function `tunnelSSH.createTunnel(data)`
    */
   OpenSSHTunnel = require(Path.join(__dirname, '..', 'js', 'external', 'open_ssh_tunnel.js')),
   /**
@@ -137,7 +137,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
             let [
               srcPort,
               localPort
-            ] = await getRandomPort(2)
+            ] = await getRandom.port(2)
 
             // If no specific port passed for the SSH server then use 22
             data.port = data.port || 22

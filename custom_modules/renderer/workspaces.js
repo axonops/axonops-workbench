@@ -182,10 +182,10 @@ let saveWorkspace = async (workspace) => {
       }
 
       // Apply the new content of the manifest
-      await FS.writeFileSync(Path.join(workspacePath, 'connections.json'), applyJSONBeautify(connectionsManifest))
+      await FS.writeFileSync(Path.join(workspacePath, 'connections.json'), beautifyJSON(connectionsManifest))
 
       // Update the `workspaces.json` file; by adding the imported workspace
-      await FS.writeFileSync(Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces', 'workspaces.json'), applyJSONBeautify(workspaces))
+      await FS.writeFileSync(Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces', 'workspaces.json'), beautifyJSON(workspaces))
 
       // Return success
       return 1
@@ -202,7 +202,7 @@ let saveWorkspace = async (workspace) => {
     await FS.writeFileSync(Path.join(workspacePath, 'connections.json'), '')
 
     // Update the `workspaces.json` file; by adding the new workspace
-    await FS.writeFileSync(Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces', 'workspaces.json'), applyJSONBeautify(workspaces))
+    await FS.writeFileSync(Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces', 'workspaces.json'), beautifyJSON(workspaces))
 
     // Successfully saved
     status = 1
@@ -298,7 +298,7 @@ let updateWorkspace = async (workspace) => {
     workspaces = workspaces.map((workspace) => workspace.id != targetWorkspace.id ? workspace : targetWorkspace)
 
     // Write the new workspaces JSON object
-    await FS.writeFileSync(Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces', 'workspaces.json'), applyJSONBeautify(workspaces))
+    await FS.writeFileSync(Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces', 'workspaces.json'), beautifyJSON(workspaces))
 
     // Successfully updated
     status = true
@@ -346,7 +346,7 @@ let deleteWorkspace = async (workspace, workspaces, keepFiles = false) => {
 
       // Keep the workspace's folder, however, add a prefix `_DEL_` with random digits
       if (keepFiles)
-        await FS.moveSync(workspaceFolderPath, `${workspaceFolderPath}_DEL_${getRandomID(5)}`, {
+        await FS.moveSync(workspaceFolderPath, `${workspaceFolderPath}_DEL_${getRandom.id(5)}`, {
           overwrite: true
         })
     } catch (e) {
@@ -367,7 +367,7 @@ let deleteWorkspace = async (workspace, workspaces, keepFiles = false) => {
       })
 
     // Write the new workspaces object
-    await FS.writeFileSync(Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces', 'workspaces.json'), applyJSONBeautify(workspaces))
+    await FS.writeFileSync(Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces', 'workspaces.json'), beautifyJSON(workspaces))
 
     // Successfully deleted
     status = true

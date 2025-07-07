@@ -83,7 +83,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
           folderBtnID,
           settingsBtnID,
           deleteBtnID
-        ] = getRandomID(15, 8),
+        ] = getRandom.id(15, 8),
         /**
          * Define the variable which holds the ID for the connection test process of the connection
          * The value will be updated with every test connection process
@@ -100,7 +100,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
          * The AxonOps section ID
          * It's defined here as it's being used in different parts of the event
          */
-        axonopsContentID = getRandomID(15),
+        axonopsContentID = getRandom.id(15),
         // Flag to tell if this connection is going to be added/appended to the UI as a new element or if it already exists, by default it's `true`
         isAppendAllowed = true,
         // Flag to tell if an SSH tunnel is needed before connecting with Cassandra connection/node
@@ -353,10 +353,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 isProcessDisconnect = $(this).find('span[mulang]').attr('mulang') == 'disconnect'
 
               // Get a random ID for this connection test process
-              testConnectionProcessID = getRandomID(30)
+              testConnectionProcessID = getRandom.id(30)
 
               // Get a random ID for the SSH tunnel creation process
-              sshTunnelCreationRequestID = getRandomID(30)
+              sshTunnelCreationRequestID = getRandom.id(30)
 
               // Set the flag's value
               isSSHTunnelNeeded = connectionElement.getAllAttributes('data-ssh')
@@ -653,7 +653,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                   // Restart and close the work area
                   restartWorkareaBtnID,
                   closeWorkareaBtnID
-                ] = getRandomID(20, 34)
+                ] = getRandom.id(20, 34)
 
                 /**
                  * Define tabs that shown only to sandbox projects
@@ -1230,7 +1230,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                    */
                   let workareaElement = $(this),
                     terminal, // The XTermJS object
-                    terminalID = getRandomID(10), // The cqlsh session's unique ID
+                    terminalID = getRandom.id(10), // The cqlsh session's unique ID
                     prefix = '', // Dynamic prefix/prompt; `cqlsh>`, `cqlsh:system>`, etc...
                     isSessionPaused = false, // To determine if there's a need to pause the print of received data temporarily or permanently
                     isCQLSHLoaded = false, // To determine if the cqlsh tool has been loaded and ready to be used
@@ -1269,8 +1269,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                    */
                   let detectDifferentiationShow = (oldMetadata, newMetadata) => {
                     // Apply JSON beautify process on both contents
-                    oldMetadata = applyJSONBeautify(oldMetadata, true)
-                    newMetadata = applyJSONBeautify(newMetadata, true)
+                    oldMetadata = beautifyJSON(oldMetadata, true)
+                    newMetadata = beautifyJSON(newMetadata, true)
 
                     // Call the function which will return changes between two strings
                     detectDifferentiation(oldMetadata, newMetadata, (detectedChanges) => {
@@ -1552,9 +1552,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             activity.data_center = dataCenters.find((dataCenter) => dataCenter.address == activity.source).datacenter
                           } catch (e) {}
 
-                          activity.color = invertColor(getRandomColor())
+                          activity.color = invertColor(getRandom.color())
 
-                          activity.id = getRandomID(6)
+                          activity.id = getRandom.id(6)
 
                           return activity
                         })
@@ -1586,9 +1586,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         canvasPieChartID,
                         sourcesContainerID,
                         zoomResetBtnID
-                      ] = getRandomID(20, 5),
+                      ] = getRandom.id(20, 5),
                         // Generate random color for each activity in the query tracing's result
-                        sourcesColors = getRandomColor(Object.keys(groupedResult).length)
+                        sourcesColors = getRandom.color(Object.keys(groupedResult).length)
 
                       try {
                         if (!Array.isArray(sourcesColors))
@@ -1699,7 +1699,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         setTimeout(() => {
                           $(this).find('div.copy-tracing div.btn').click(function() {
                             // Get the beautified version of the result
-                            let resultBeautified = applyJSONBeautify(result),
+                            let resultBeautified = beautifyJSON(result),
                               // Get the result size
                               resultSize = Bytes(ValueSize(resultBeautified))
 
@@ -2073,14 +2073,14 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           IPCRenderer.send('pty:command', {
                             id: connectionID,
                             cmd: 'CONSISTENCY;SERIAL CONSISTENCY;',
-                            blockID: getRandomID(10)
+                            blockID: getRandom.id(10)
                           })
 
                           setTimeout(() => {
                             IPCRenderer.send('pty:command', {
                               id: connectionID,
                               cmd: 'PAGING;',
-                              blockID: getRandomID(10)
+                              blockID: getRandom.id(10)
                             })
                           }, 1000)
                         }, 1000)
@@ -2136,7 +2136,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                         // Inner function to create either the old or new editor
                         let createEditor = (type, metadata) => {
-                          let editor = monaco.editor.createModel(applyJSONBeautify(metadata, true), 'json')
+                          let editor = monaco.editor.createModel(beautifyJSON(metadata, true), 'json')
 
                           workareaElement.find(`span[data-id="${oldSnapshotNameID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
                           workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
@@ -2322,7 +2322,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   $('#rightClickActionsMetadata').attr('data-keyspace-info', `${JSON.stringify(keyspaceInfo)}`)
                                 } catch (e) {}
 
-                                let replicationStrategy = JSON.parse(repairJSON(`${keyspaceInfo.replication_strategy}`) || `{}`)
+                                let replicationStrategy = JSON.parse(repairJSONString(`${keyspaceInfo.replication_strategy}`) || `{}`)
 
                                 if (replicationStrategy.class == 'LocalStrategy' && isSystemKeyspace)
                                   throw 0
@@ -2982,7 +2982,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               })
 
                               // Get the beautified version of the block's content
-                              let contentBeautified = applyJSONBeautify({
+                              let contentBeautified = beautifyJSON({
                                   statement: blockElement.find('div.statement div.text').text() || 'No statement',
                                   output: outputGroup
                                 }),
@@ -3480,7 +3480,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       })
 
                                       // Get the beautified version of the block's content
-                                      let contentBeautified = applyJSONBeautify({
+                                      let contentBeautified = beautifyJSON({
                                           statement: blockElement.find('div.statement div.text').text() || 'No statement',
                                           output: outputGroup
                                         }),
@@ -3837,7 +3837,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               throw 0
 
                             // Show feedback to the user
-                            terminalPrintMessage(terminal, 'info', `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`)
+                            printMessageInBasicTerminal(terminal, 'info', `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`)
 
                             // Pause the print of output from the Pty instance
                             isSessionPaused = true
@@ -4207,7 +4207,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       let statement = statementInputField.val()
 
                       // Get a random ID for the block which will be created
-                      blockID = getRandomID(10)
+                      blockID = getRandom.id(10)
 
                       // Clear the statement's input field and make sure it's focused on it
                       setTimeout(() => statementInputField.val('').trigger('input').attr('style', null))
@@ -4234,7 +4234,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           throw 0
 
                         // Show it in the interactive terminal
-                        addBlock(workareaElement.find(`#_${cqlshSessionContentID}_container`), getRandomID(10), `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral')
+                        addBlock(workareaElement.find(`#_${cqlshSessionContentID}_container`), getRandom.id(10), `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral')
 
                         // Pause the print of output from the Pty instance
                         isSessionPaused = true
@@ -4369,8 +4369,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               }
 
                               let filePath = statement[fileIndex],
-                                showErrorsBtnID = getRandomID(10),
-                                fileExecutionInfoID = getRandomID(10),
+                                showErrorsBtnID = getRandom.id(10),
+                                fileExecutionInfoID = getRandom.id(10),
                                 element = `
                                       <div class="sub-output info incomplete-statement">
                                         <div class="sub-output-content">${fileIndex + 1}: Executing file '${filePath}'</div>
@@ -5097,8 +5097,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         consoleEditor.getModel().onDidChangeContent(() => statementInputField.val(consoleEditor.getValue()).trigger('input'))
 
                         consoleEditor.addAction({
-                          id: getRandomID(),
-                          label: getRandomID(),
+                          id: getRandom.id(),
+                          label: getRandom.id(),
                           keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
                           run: function(editor) {
                             try {
@@ -5110,8 +5110,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyL, () => $(document).trigger('clearEnhancedConsole'))
 
                         consoleEditor.addAction({
-                          id: getRandomID(),
-                          label: getRandomID(),
+                          id: getRandom.id(),
+                          label: getRandom.id(),
                           keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow],
                           run: function(editor) {
                             try {
@@ -5154,8 +5154,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         })
 
                         consoleEditor.addAction({
-                          id: getRandomID(),
-                          label: getRandomID(),
+                          id: getRandom.id(),
+                          label: getRandom.id(),
                           keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.DownArrow],
                           run: function(editor) {
                             try {
@@ -5322,7 +5322,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         fitAddonBash, // Used for resizing the terminal and making it responsive
                         printData = false, // Whether or not the data coming from the pty instances should be printed or not
                         latestCommand = '', // Store the user's input to create a command
-                        sessionID = getRandomID(5) // Get a random ID as a suffix to the sandbox project's ID
+                        sessionID = getRandom.id(5) // Get a random ID as a suffix to the sandbox project's ID
 
                       // Create the terminal instance from the XtermJS constructor
                       terminalBash = new XTerm({
@@ -5381,7 +5381,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         setTimeout(() => IPCRenderer.send('pty:create:bash-session', {
                           id: `${connectionID}-bash-${sessionID}`,
                           projectID: `cassandra_${connectionID}`,
-                          path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters', connectionID),
+                          path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..', '..')), 'data', 'localclusters', connectionID),
                           dockerComposeBinary: Modules.Docker.getDockerComposeBinary()
                         }), 500)
 
@@ -5494,7 +5494,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       // Clicks the copy button; to copy metadata in JSON string format
                       workareaElement.find(`div.btn[data-id="${copyMetadataBtnID}"]`).click(function() {
                         // Get the beautified version of the metadata
-                        let metadataBeautified = applyJSONBeautify(latestMetadata, true),
+                        let metadataBeautified = beautifyJSON(latestMetadata, true),
                           // Get the metadata size
                           metadataSize = Bytes(ValueSize(metadataBeautified))
 
@@ -5646,7 +5646,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             // detectDifferentiationShow(JSON.parse(metadataDiffEditors.old.object.getValue()), metadata)
 
                             // Beautify the received metadata
-                            metadata = applyJSONBeautify(metadata, true)
+                            metadata = beautifyJSON(metadata, true)
 
                             // Update the fetch date and time of the new metadata
                             workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
@@ -5840,7 +5840,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   } catch (e) {}
 
                                   // Update the old editor's value
-                                  metadataDiffEditors.old.object.setValue(applyJSONBeautify(snapshotContent, true))
+                                  metadataDiffEditors.old.object.setValue(beautifyJSON(snapshotContent, true))
 
                                   try {
                                     if (snapshotTakenTime.length <= 0)
@@ -5906,7 +5906,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                   // Keep the snapshot file, however, adding a prefix to the extension will cause to be ignored by the app
                                   if (keepFiles) {
-                                    FS.move(snapshotPath, `${snapshotPath}_DEL_${getRandomID(5)}`, callbackFunction)
+                                    FS.move(snapshotPath, `${snapshotPath}_DEL_${getRandom.id(5)}`, callbackFunction)
                                   }
                                 }
 
@@ -6038,7 +6038,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                            *
                            * Get a random ID for the toast
                            */
-                          let pinnedToastID = getRandomID(10)
+                          let pinnedToastID = getRandom.id(10)
 
                           // Show/create that toast
                           pinnedToast.show(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
@@ -6137,7 +6137,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   throw 0
 
                                 // Append the `webview` ElectronJS custom element
-                                workareaElement.find(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops_agent_webview.js')}"></webview>`).show(function() {
+                                workareaElement.find(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', '..', '..', 'js', 'axonops_agent_webview.js')}"></webview>`).show(function() {
                                   // Point at the webview element
                                   let webView = $(this)[0]
 
@@ -6182,7 +6182,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                            * Get all scripts to be executed associated with the connection
                            * Here only the post-connection scripts will be considered
                            */
-                          getPrePostConnectionScripts(workspaceID, connectionID).then((scripts) => {
+                          Modules.Connections.getPrePostScripts(workspaceID, connectionID).then((scripts) => {
                             // Define a variable to save the scripts' execution feedback
                             let executionFeedback = ''
 
@@ -6195,7 +6195,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
 
                               // Execute the post-connection scripts in order
-                              executeScript(0, scripts.post, (executionResult) => {
+                              Modules.Connections.executeScript(0, scripts.post, (executionResult) => {
                                 try {
                                   // If we've got `0` - as a final result - then it means all scripts have been executed with success and returned `0`; so skip this try-catch block and show a success feedback to the user
                                   if (executionResult.status == 0)
@@ -6329,7 +6329,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         let element = `
                                  <div class="connection" _connection-id="${connectionID}" style="box-shadow: inset 0px 0px 0 1px ${workspaceColor || '#7c7c7c'};" active ${hideSwitcher ? "hidden" : "" }>
                                    <button type="button" style="color: ${workspaceColor};" class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="right" data-mdb-html="true"
-                                     data-title="<span class='tooltip-left'>${getAttributes(connectionElement, 'data-name')}<br>${connectionHost}</span>" data-mdb-html="true" data-mdb-customClass="tooltip-left">${extractChars(getAttributes(connectionElement, 'data-name'))}</button>
+                                     data-title="<span class='tooltip-left'>${getAttributes(connectionElement, 'data-name')}<br>${connectionHost}</span>" data-mdb-html="true" data-mdb-customClass="tooltip-left">${extractTwoCharsConnectionName(getAttributes(connectionElement, 'data-name'))}</button>
                                  </div>`
 
                         // Define the suitable adding function based on whether or not there's an overflow
@@ -7034,7 +7034,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                     filesExecutionBtn.click(function() {
                       // Get a random ID for the dialog request
-                      let requestID = getRandomID(10),
+                      let requestID = getRandom.id(10),
                         // Set other attributes to be used to create the dialog
                         data = {
                           id: requestID,
@@ -7268,7 +7268,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                        *
                        * Get a random ID for the toast
                        */
-                      let pinnedToastID = getRandomID(10)
+                      let pinnedToastID = getRandom.id(10)
 
                       // Show/create that toast
                       pinnedToast.show(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
@@ -7321,7 +7321,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                      *
                      * Get a random ID for the toast
                      */
-                    let pinnedToastID = getRandomID(10)
+                    let pinnedToastID = getRandom.id(10)
 
                     // Show/create that toast
                     pinnedToast.show(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
@@ -7420,7 +7420,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           connectionElement.children('div.status').removeClass('success failure').addClass('show')
 
                           // Update the process ID
-                          checkCassandraProcessID = getRandomID(20)
+                          checkCassandraProcessID = getRandom.id(20)
 
                           // Define variables which will hold important timeout and interval functions
                           let checkingCassandraTimeout, checkingTerminationInterval
@@ -7480,7 +7480,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                  *
                                  * Get a random ID for the toast
                                  */
-                                let pinnedToastID = getRandomID(10)
+                                let pinnedToastID = getRandom.id(10)
 
                                 // Show/create that toast
                                 pinnedToast.show(pinnedToastID, I18next.capitalize(I18next.t('start local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
@@ -7558,7 +7558,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       throw 0
 
                                     // Append the `webview`
-                                    $(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops_agent_webview.js')}"></webview>`).show(function() {
+                                    $(`div.tab-pane#_${axonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', '..', '..', 'js', 'axonops_agent_webview.js')}"></webview>`).show(function() {
                                       // Point at the webview element
                                       let webView = $(this)[0]
 
@@ -7673,7 +7673,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 if (!isSCBConnection)
                   throw 0
 
-                getKey('private', (key) => {
+                getRSAKey('private', (key) => {
                   // If the key is empty then something is not correct with the generator tool
                   if (key.length <= 0)
                     return showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
@@ -7684,8 +7684,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       password: $('input#astraDBClientSecret'),
                       scbFilePath: $('input#astraDBSCBPath')
                     },
-                    username = decrypt(key, currentConnection.info.secrets.username)
-                  password = decrypt(key, currentConnection.info.secrets.password)
+                    username = decryptText(key, currentConnection.info.secrets.username)
+                  password = decryptText(key, currentConnection.info.secrets.password)
 
                   inputFields.connectionName.val(currentConnection.name)
                   inputFields.username.val(username)
@@ -7827,14 +7827,14 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                   if (currentConnection.info.secrets != undefined) {
                     try {
                       // Get the private key; to decrypt secrets and show them in the dialog
-                      getKey('private', (key) => {
+                      getRSAKey('private', (key) => {
                         // If the key is empty then something is not correct with the generator tool
                         if (key.length <= 0)
                           return showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
 
                         // Try to decrypt both; username and password
-                        username = decrypt(key, currentConnection.info.secrets.username)
-                        password = decrypt(key, currentConnection.info.secrets.password)
+                        username = decryptText(key, currentConnection.info.secrets.username)
+                        password = decryptText(key, currentConnection.info.secrets.password)
 
                         // Empty the `inputs` array
                         inputs = []
@@ -7856,7 +7856,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             throw 0
 
                           // Decrypt the SSH username
-                          sshUsername = decrypt(key, currentConnection.info.secrets.sshUsername)
+                          sshUsername = decryptText(key, currentConnection.info.secrets.sshUsername)
 
                           // Push it to the `inputs` array; to be shown in the dialog
                           inputs.push({
@@ -7876,7 +7876,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             throw 0
 
                           // Decrypt the SSHS password
-                          sshPassword = decrypt(key, currentConnection.info.secrets.sshPassword)
+                          sshPassword = decryptText(key, currentConnection.info.secrets.sshPassword)
 
                           // Push it to the `inputs` array
                           inputs.push({
@@ -7896,7 +7896,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             throw 0
 
                           // Decrypt the SSHS password
-                          sshPassphrase = decrypt(key, currentConnection.info.secrets.sshPassphrase)
+                          sshPassphrase = decryptText(key, currentConnection.info.secrets.sshPassphrase)
 
                           // Push it to the `inputs` array
                           inputs.push({
@@ -8113,7 +8113,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 elementPath = Path.join(getWorkspaceFolderPath(getAttributes(connectionElement, 'data-workspace-id')), getAttributes(connectionElement, 'data-folder'))
               } catch (e) {
                 // Get the sandbox project's path
-                elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters', getAttributes(connectionElement, 'data-folder'))
+                elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..',  '..')), 'data', 'localclusters', getAttributes(connectionElement, 'data-folder'))
               }
 
               // Open the final path
@@ -8138,7 +8138,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                  *
                  * Get a random ID for the toast
                  */
-                let pinnedToastID = getRandomID(10)
+                let pinnedToastID = getRandom.id(10)
 
                 // Show/create that toast
                 pinnedToast.show(pinnedToastID, I18next.capitalize(I18next.t('terminate local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
@@ -8230,9 +8230,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
               // Show it in the interactive terminal
               if (minifyText(host).length != 0)
-                addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Connecting with host ${host}.`, null, true, 'neutral')
+                addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `Connecting with host ${host}.`, null, true, 'neutral')
 
-              addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `Detected Apache Cassandra version is ${version}.`, null, true, 'neutral')
+              addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `Detected Apache Cassandra version is ${version}.`, null, true, 'neutral')
 
               $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${connectionElement.attr('data-id')}"]`).find('div.info[info="cassandra"]').children('div.text').text(`v${version}`)
 
@@ -8271,7 +8271,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         throw 0
 
                       // Show it in the interactive terminal
-                      addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `SSL is not enabled, the connection is not encrypted and is being transmitted in the clear.`, null, true, 'warning')
+                      addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `SSL is not enabled, the connection is not encrypted and is being transmitted in the clear.`, null, true, 'warning')
 
                       // Update the SSL attribute
                       connectionElement.attr('ssl-enabled', 'false')
@@ -8290,7 +8290,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
               // Show feedback to the user when the connection is established through the SSH tunnel
               if (sshTunnelsObjects[connectionID] != null) {
                 // Show it in the interactive terminal
-                addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), `The connection is encrypted and transmitted through an SSH tunnel.`, null, true, 'neutral')
+                addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `The connection is encrypted and transmitted through an SSH tunnel.`, null, true, 'neutral')
               }
 
               /**
@@ -8323,18 +8323,18 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 }
 
                 // As username exists; decrypt it and check if it is `cassandra`; to give a warning to the user if it is `true`
-                getKey('private', (key) => {
+                getRSAKey('private', (key) => {
                   // If we didn't get the key, just stop this subprocess
                   if (key.length <= 0)
                     return
 
                   // Decrypt the username
-                  let usernameDecrypted = decrypt(key, username)
+                  let usernameDecrypted = decryptText(key, username)
 
                   // If the username is `cassandra` then warn the user about that
                   if (usernameDecrypted == 'cassandra') {
                     // Show it in the interactive terminal
-                    addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandomID(10), 'This connection is using the default `cassandra` user.', null, true, 'warning')
+                    addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), 'This connection is using the default `cassandra` user.', null, true, 'warning')
                   }
                 })
               } catch (e) {
@@ -8391,7 +8391,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                   let content = name == 'manifest' ? await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`) : JSON.stringify(await retrieveAllVariables(true))
 
                   // Create a name for the temporary file
-                  files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandomID(20)}.aocwtmp`))
+                  files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandom.id(20)}.aocwtmp`))
 
                   // Create the temporary file with related content
                   await FS.writeFileSync(files[name], content || '')
@@ -8516,7 +8516,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
        * Check pre and post-connect scripts
        * Get all scripts associated with the connection
        */
-      let check = await getPrePostConnectionScripts(workspaceID, connectionID)
+      let check = await Modules.Connections.getPrePostScripts(workspaceID, connectionID)
 
       // Set the received data
       scripts.pre = check.pre
@@ -8580,7 +8580,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
       // Define an SSH port object to be passed if needed
       let sshInfo = {},
         // Get a random ID for the connection test's request
-        requestID = getRandomID(10)
+        requestID = getRandom.id(10)
 
       // If the `sshCreation` object has been passed then use the random used port in the creation process instead of the one the user has passed
       if (sshCreation != null) {
@@ -8602,7 +8602,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
           let content = name == 'manifest' ? await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`) : JSON.stringify(await retrieveAllVariables(true))
 
           // Create a name for the temporary file
-          files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandomID(20)}.aocwtmp`))
+          files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandom.id(20)}.aocwtmp`))
 
           // Create the temporary file with related content
           await FS.writeFileSync(files[name], content || '')
@@ -8760,7 +8760,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
               setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
 
               // Execute the post-connection scripts in order
-              executeScript(0, scripts.post, (executionResult) => {
+              Modules.Connections.executeScript(0, scripts.post, (executionResult) => {
                 try {
                   // If we've got `0` - as a final result - then it means all scripts have been executed with success and returned `0`; so skip this try-catch block and call the post-process function
                   if (executionResult.status == 0)
@@ -8883,7 +8883,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
         setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('pre-connection scripts are being executed before starting with connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
 
         // Execute the pre-connection scripts with order
-        executeScript(0, scripts.pre, (executionResult) => {
+        Modules.Connections.executeScript(0, scripts.pre, (executionResult) => {
           // All scripts have been executed successfully; thus start the connection test process
           if (executionResult.status == 0) {
             // Show a success feedback to the user
@@ -8972,7 +8972,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
         throw 0
 
       // Check if an SSH client is installed and accessible
-      checkSSH((exists) => {
+      tunnelSSH.checkClient((exists) => {
         // If the SSH client doesn't exist
         if (!exists) {
           // Show feedback to the user
@@ -9005,7 +9005,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
         }
 
         // Get the RSA private key - of our project -; to decrypt username and/or password
-        getKey('private', (key) => {
+        getRSAKey('private', (key) => {
           try {
             // If the received key is valid then skip this try-catch block
             if (key.length > 0)
@@ -9026,13 +9026,13 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
            *
            * Decrypt the SSH username
            */
-          sshUsername = decrypt(key, sshUsername)
+          sshUsername = decryptText(key, sshUsername)
 
           // Decrypt the SSH password
-          sshPassword = decrypt(key, sshPassword)
+          sshPassword = decryptText(key, sshPassword)
 
           // Decrypt the SSH private key's passphrase
-          sshPassphrase = decrypt(key, sshPassphrase)
+          sshPassphrase = decryptText(key, sshPassphrase)
 
           // Adopt the decrypted SSH password if it's valid
           if (sshPassword.trim().length > 0)
@@ -9059,7 +9059,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
           }
 
           // Create an SSH tunnel based on the final `sshTunnelingInfo` object
-          createSSHTunnel(sshTunnelingInfo, (creationResult) => {
+          tunnelSSH.createTunnel(sshTunnelingInfo, (creationResult) => {
             // If there's no error then call the `afterSSHTunnelingCheck` function
             if (creationResult.error == undefined)
               return afterSSHTunnelingCheck({
@@ -9469,10 +9469,10 @@ const ConnectionTestProcessTerminationTimeout = 250
               dialogElement = $('div.modal#addEditConnectionDialog')
 
             // Get a random ID for this connection test process
-            testConnectionProcessID = getRandomID(30)
+            testConnectionProcessID = getRandom.id(30)
 
             // Get a random ID for the SSH tunnel creation process
-            sshTunnelCreationRequestID = getRandomID(30)
+            sshTunnelCreationRequestID = getRandom.id(30)
 
             // Add log about this request
             try {
@@ -9491,7 +9491,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                   ClientSecret: $('#astraDBClientSecret').val(),
                   SCBPath: $('#astraDBSCBPath').val()
                 },
-                requestID = getRandomID(10)
+                requestID = getRandom.id(10)
 
               // Check if there's any missing data
               let isMissingDataFound = false
@@ -9533,7 +9533,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                 waitForEncryption = [username, password].every((secret) => secret.trim().length != 0)
               } catch (e) {}
 
-              getKey('public', async (key) => {
+              getRSAKey('public', async (key) => {
                 try {
                   // If the received key is valid then skip this try-catch block
                   if (key.length > 0)
@@ -9565,8 +9565,8 @@ const ConnectionTestProcessTerminationTimeout = 250
                  *
                  * Encrypt both values; username and password
                  */
-                encryptedUsername = encrypt(key, username)
-                encryptedPassword = encrypt(key, password)
+                encryptedUsername = encryptText(key, username)
+                encryptedPassword = encryptText(key, password)
 
                 // Request to test connection based on the provided data
                 IPCRenderer.send('pty:test-connection', {
@@ -9665,7 +9665,7 @@ const ConnectionTestProcessTerminationTimeout = 250
 
             // For Apache Cassandra Connection type
             // Get a temporary random ID for the connection which is being tested
-            tempConnectionID = getRandomID(30)
+            tempConnectionID = getRandom.id(30)
 
             // Attempt to close the created SSH tunnel - if exists -
             try {
@@ -9725,7 +9725,7 @@ const ConnectionTestProcessTerminationTimeout = 250
              * Check pre and post connect scripts
              * Get all scripts associated with the connection
              */
-            let check = await getPrePostConnectionScripts(workspaceID)
+            let check = await Modules.Connections.getPrePostScripts(workspaceID)
 
             // Set the received data
             scripts.pre = check.pre
@@ -9837,7 +9837,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                     let content = name == 'manifest' ? await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`) : JSON.stringify(await retrieveAllVariables(true))
 
                     // Create a name for the temporary file
-                    files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandomID(20)}.aocwtmp`))
+                    files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandom.id(20)}.aocwtmp`))
 
                     // Create the temporary file with related content
                     await FS.writeFileSync(files[name], content || '')
@@ -9855,7 +9855,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                 // If there's a need to wait for the encryption of the username and password before starting the connection test
                 if (waitForEncryption) {
                   // Get the app's RSA public key - for encryption we use the public key -
-                  getKey('public', async (key) => {
+                  getRSAKey('public', async (key) => {
                     try {
                       // If the received key is valid then skip this try-catch block
                       if (key.length > 0)
@@ -9896,8 +9896,8 @@ const ConnectionTestProcessTerminationTimeout = 250
                      *
                      * Encrypt both values; username and password
                      */
-                    encryptedUsername = encrypt(key, username)
-                    encryptedPassword = encrypt(key, password)
+                    encryptedUsername = encryptText(key, username)
+                    encryptedPassword = encryptText(key, password)
 
                     // Request to test connection based on the provided data
                     IPCRenderer.send('pty:test-connection', {
@@ -10063,7 +10063,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                       setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.t('post-connection scripts are being executed after closing the connection, you\'ll be notified once the process is finished')) + '.'), 50)
 
                       // Request to execute the post-connection scripts
-                      executeScript(0, scripts.post, (executionResult) => {
+                      Modules.Connections.executeScript(0, scripts.post, (executionResult) => {
                         /**
                          * All scripts have been successfully executed and all of them have returned `0`
                          * Show the success feedback to the user and skip the upcoming code
@@ -10099,7 +10099,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                */
               let cqlshrc = {
                   value: addEditConnectionEditor.getValue(),
-                  name: `${getRandomID(10)}.cwb` // [C]assandra [W]ork[B]ench
+                  name: `${getRandom.id(10)}.cwb` // [C]assandra [W]ork[B]ench
                 },
                 /**
                  * Get the OS temp folder path
@@ -10150,7 +10150,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                *
                * Check if an SSH client is installed and accessible
                */
-              checkSSH((exists) => {
+              tunnelSSH.checkClient((exists) => {
                 // If the SSH client doesn't exist then end the process and show feedback to the user
                 if (!exists) {
                   showToast(I18next.capitalize(I18next.t('test connection')), I18next.t('SSH client has to be installed and accessible in order to establish SSH tunnel, please make sure to install it on your machine') + '.', 'failure')
@@ -10187,7 +10187,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                 }
 
                 // Create an SSH tunnel
-                createSSHTunnel(ssh, (creationResult) => {
+                tunnelSSH.createTunnel(ssh, (creationResult) => {
                   // If no error has occurred then perform the after SSH tunnel creation processes, and skip the upcoming code
                   if (creationResult.error == undefined) {
                     let host = ssh.dstAddr != '127.0.0.1' ? ssh.dstAddr : ssh.host,
@@ -10224,7 +10224,7 @@ const ConnectionTestProcessTerminationTimeout = 250
               setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.t('pre-connection scripts are being executed before starting the connection, you\'ll be notified once the process is finished')) + '.'), 50)
 
               // Request to execute the pre-connection script(s)
-              executeScript(0, scripts.pre, (executionResult) => {
+              Modules.Connections.executeScript(0, scripts.pre, (executionResult) => {
                 /**
                  * All scripts have been executed successfully
                  * Call the function which will start the connection test
@@ -10531,7 +10531,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                     if (!secrets[0])
                       throw 0
 
-                    getKey('public', (key) => {
+                    getRSAKey('public', (key) => {
                       try {
                         // If the received key is valid to be used then skip this try-catch block
                         if (key.length <= 0)
@@ -10545,7 +10545,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                             if (`${secret.value}`.length <= 0)
                               throw 0
 
-                            let value = encrypt(key, secret.value)
+                            let value = encryptText(key, secret.value)
 
                             connectionElement.attr(`data-${secret.name.toLowerCase().replace('ssh', 'ssh-')}`, value)
                           } catch (e) {}
@@ -10708,7 +10708,7 @@ const ConnectionTestProcessTerminationTimeout = 250
               finalConnection = {
                 name: connectionName,
                 info: {
-                  id: editingMode ? editedConnectionObject.info.id : `connection-${getRandomID(10)}`,
+                  id: editingMode ? editedConnectionObject.info.id : `connection-${getRandom.id(10)}`,
                   datacenter: '',
                   secureConnectionBundlePath: astraDBConnectionData.SCBPath
                 }
@@ -10736,7 +10736,7 @@ const ConnectionTestProcessTerminationTimeout = 250
 
               try {
                 // Get the apps' public RSA key
-                getKey('public', (key) => {
+                getRSAKey('public', (key) => {
                   try {
                     // If the received key is valid to be used then skip this try-catch block
                     if (key.length != 0)
@@ -10769,7 +10769,7 @@ const ConnectionTestProcessTerminationTimeout = 250
 
                       // This secret/credential will be saved
                       if (toBeSaved) {
-                        savedSecrets[secret.name] = encrypt(key, secret.value)
+                        savedSecrets[secret.name] = encryptText(key, secret.value)
                       } else {
                         // This credential should be provided by the user next time
                         finalConnection.info.credentials['auth'] = true
@@ -10874,7 +10874,7 @@ const ConnectionTestProcessTerminationTimeout = 250
               name: connectionName,
               cqlshrc: addEditConnectionEditor.getValue(),
               info: {
-                id: editingMode ? editedConnectionObject.info.id : `connection-${getRandomID(10)}`,
+                id: editingMode ? editedConnectionObject.info.id : `connection-${getRandom.id(10)}`,
                 datacenter: dataCenter.trim()
               }
             }
@@ -10990,7 +10990,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                 throw 0
 
               // Get the apps' public RSA key
-              getKey('public', (key) => {
+              getRSAKey('public', (key) => {
                 try {
                   // If the received key is valid to be used then skip this try-catch block
                   if (key.length != 0)
@@ -11023,7 +11023,7 @@ const ConnectionTestProcessTerminationTimeout = 250
 
                     // This secret/credential will be saved
                     if (toBeSaved) {
-                      savedSecrets[secret.name] = encrypt(key, secret.value)
+                      savedSecrets[secret.name] = encryptText(key, secret.value)
                     } else {
                       // This credential should be provided by the user next time
                       finalConnection.info.credentials[secret.name.indexOf('ssh') != -1 ? 'ssh' : 'auth'] = true
@@ -11072,7 +11072,7 @@ const ConnectionTestProcessTerminationTimeout = 250
           let key = getAttributes($(this), 'for-info-key') || getAttributes($(this), 'for-input'),
             // Whether or not empty value is allowed
             allowEmptyValue = getAttributes($(this), 'data-empty-not-allowed') == undefined,
-            id = getRandomID(5), // Get random ID for the selection file dialog
+            id = getRandom.id(5), // Get random ID for the selection file dialog
             title = '' // Define the file selection dialog's title
 
           // Switch between key values
@@ -11131,7 +11131,7 @@ const ConnectionTestProcessTerminationTimeout = 250
 
           // Get the input key's name
           let key = getAttributes($(this), 'info-key'),
-            id = getRandomID(5), // Get random ID for the selection file dialog
+            id = getRandom.id(5), // Get random ID for the selection file dialog
             title = '' // Define the file selection dialog's title
 
           // Switch between key values

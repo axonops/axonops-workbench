@@ -16,13 +16,13 @@
 
 // Mock modules before requiring them
 jest.mock('fs-extra');
-jest.mock('../../../custom_node_modules/renderer/docker-migration', () => ({
+jest.mock('../../../custom_modules/renderer/docker-migration', () => ({
   migrateDockerComposeFile: jest.fn()
 }));
 
 const FS = require('fs-extra');
 const Path = require('path');
-const { migrateDockerComposeFile } = require('../../../custom_node_modules/renderer/docker-migration');
+const { migrateDockerComposeFile } = require('../../../custom_modules/renderer/docker-migration');
 
 // Setup FS mocks
 FS.watch = jest.fn(() => ({ close: jest.fn() }));
@@ -99,14 +99,14 @@ global.Modules = {
 };
 
 // Import after mocks are set up
-const { DockerCompose } = require('../../../custom_node_modules/renderer/docker');
+const { DockerCompose } = require('../../../custom_modules/renderer/docker');
 
 describe.skip('Docker Compose Integration with Migration', () => {
   let dockerCompose;
-  const testFolderName = 'test-cluster';
+  const testFolderName = 'test-connection';
   const testContainerName = 'test-container';
   // This should match what docker.js calculates
-  const DockerContainersPath = '/mock/resources/data/localclusters';
+  const DockerContainersPath = '/mock/resources/data/localconnections';
   
   beforeEach(() => {
     jest.clearAllMocks();
@@ -137,7 +137,7 @@ describe.skip('Docker Compose Integration with Migration', () => {
       migrateDockerComposeFile.mockResolvedValue({
         migrated: true,
         needed: true,
-        backupPath: '/data/localclusters/test-cluster/docker-compose.yml.bak.2024060415',
+        backupPath: '/data/localconnections/test-connection/docker-compose.yml.bak.2024060415',
         message: 'Successfully migrated to new format'
       });
 
@@ -263,7 +263,7 @@ describe.skip('Docker Compose Integration with Migration', () => {
       migrateDockerComposeFile.mockResolvedValue({
         migrated: true,
         needed: true,
-        backupPath: '/data/localclusters/test-cluster/docker-compose.yml.bak.2024060415'
+        backupPath: '/data/localconnections/test-connection/docker-compose.yml.bak.2024060415'
       });
 
       // Mock docker compose failure

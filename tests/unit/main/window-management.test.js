@@ -169,7 +169,7 @@ describe('Window Management', () => {
     });
 
     test('should set window title', () => {
-      const title = 'AxonOps Workbench - Cluster Manager';
+      const title = 'AxonOps Workbench - Connection Manager';
       mainWindow.setTitle(title);
       
       expect(mainWindow.setTitle).toHaveBeenCalledWith(title);

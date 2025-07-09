@@ -40,7 +40,7 @@ const PTY = require('node-pty'),
   /**
    * Generate a random string
    * Mainly used for generating IDs for connections, workspaces, UI elements, and so on
-   * It has been implemented within the function `getRandomID(length, ?amount)`
+   * It has been implemented within the function `getRandom.id(length, ?amount)`
    */
   RandomID = require('id-16')
 

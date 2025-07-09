@@ -29,39 +29,37 @@ require('v8-compile-cache')
  *
  * Import the main module
  */
-const Electron = require('electron'),
-  /**
-   * Import different sub-modules from the Electron module
-   *
-   * `app`
-   * For controlling the app's event life cycle
-   * https://www.electronjs.org/docs/latest/api/app
-   *
-   */
-  App = Electron.app,
-  /**
-   * `BrowserWindow`
-   * Used to create and manage windows within the app
-   * https://www.electronjs.org/docs/latest/api/browser-window
-   *
-   */
-  Window = Electron.BrowserWindow,
-  /**
-   * `Menu`
-   * Creating native application menus and context menus
-   * https://www.electronjs.org/docs/latest/api/menu
-   *
-   */
-  Menu = Electron.Menu,
-  /**
-   * `MenuItem`
-   * For adding items to native application menus and context menus
-   * https://www.electronjs.org/docs/latest/api/menu-item
-   *
-   */
-  MenuItem = Electron.MenuItem,
-  NativeImage = Electron.nativeImage
-
+global.Electron = require('electron')
+/**
+ * Import different sub-modules from the Electron module
+ *
+ * `app`
+ * For controlling the app's event life cycle
+ * https://www.electronjs.org/docs/latest/api/app
+ *
+ */
+global.App = Electron.app
+/**
+ * `BrowserWindow`
+ * Used to create and manage windows within the app
+ * https://www.electronjs.org/docs/latest/api/browser-window
+ *
+ */
+global.Window = Electron.BrowserWindow
+/**
+ * `Menu`
+ * Creating native application menus and context menus
+ * https://www.electronjs.org/docs/latest/api/menu
+ *
+ */
+global.Menu = Electron.Menu
+/**
+ * `MenuItem`
+ * For adding items to native application menus and context menus
+ * https://www.electronjs.org/docs/latest/api/menu-item
+ *
+ */
+global.MenuItem = Electron.MenuItem
 /**
  * Import modules globally
  * Those modules can be reached from all sub-modules of the main thread, such as `pty` and `config` sub-modules
@@ -72,10 +70,8 @@ const Electron = require('electron'),
  *
  */
 global.IPCMain = Electron.ipcMain
-
 // Execute commands across all platforms
 global.Terminal = require('node-cmd')
-
 /**
  * Import Node.js modules
  *
@@ -83,24 +79,18 @@ global.Terminal = require('node-cmd')
  * Used for working with files system, it provides related utilities
  */
 global.FS = require('fs-extra')
-
 /**
  * Node.js path module
  * Working with file and directory paths, and providing useful utilities
  */
 global.Path = require('path')
-
 /**
  * Node.js OS module
  * Used for operating system-related utilities and properties
  */
 global.OS = require('os')
-
-
-global.ElectronApp = App
-
+// GLobal boolea value to tell if the workbench has been started in CLI mode or not
 global.IsCLIMode = false
-
 
 /**
  * Check if the app is in production environment
@@ -110,11 +100,17 @@ global.IsCLIMode = false
  */
 global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), (process.platform != 'win32' ? '.' : '') + 'axonops-workbench') : null
 
+// Define a CLI object
 let CLI
 
 try {
-  CLI = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'argv'))
+  // Attempt to get the CLI module
+  CLI = require(Path.join(__dirname, '..', 'custom_modules', 'main', 'argv'))
 
+  /**
+   * Initialize the CLI object
+   * The initialization process here checks if the workbench needs to start in CLI mode or not by chaning the value of `IsCLIMode`
+   */
   CLI.init()
 } catch (e) {}
 
@@ -124,66 +120,18 @@ try {
  * Node.js URL module
  * For URL resolution and parsing
  */
-const URL = require('url'),
-  /**
-   * Node.js events module
-   * Used for creating and handling custom events
-   */
-  EventEmitter = require('events'),
-  // Enable - ready to be used - right-click context menu
-  ContextMenu = require('electron-context-menu'),
-  // Used to position the windows of the application.
-  Positioner = require('electron-positioner'),
-  // Loads environment variables from a .env file into process.env
-  DotEnv = require('dotenv')
-
+const URL = require('url')
 /**
- * Import the custom node modules for the main thread
- *
- * `Modules` constant will contain all the custom modules
+ * Node.js events module
+ * Used for creating and handling custom events
  */
-global.Modules = []
-
-try {
-  // Define the folder's path of the custom node modules
-  let modulesFilesPath = Path.join(__dirname, '..', 'custom_node_modules', 'main'),
-    // Read all files inside the folder
-    modulesFiles = FS.readdirSync(modulesFilesPath)
-
-  /**
-   * Loop through each module file
-   * Main modules are `pty`, `dialogs`, and `scripts`
-   */
-  modulesFiles.forEach((moduleFile) => {
-    try {
-      // Make sure the module file name is lowered case
-      moduleFile = `${moduleFile}`.toLowerCase()
-
-      // Ignore any file which is not `JS`
-      if (!moduleFile.endsWith('.js') || moduleFile.startsWith('argv'))
-        return
-
-      // Define the module's name
-      let moduleName = moduleFile.slice(0, moduleFile.indexOf('.js'))
-
-      // Capitalize the name
-      moduleName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1)
-
-      // Import the module
-      Modules[moduleName] = require(Path.join(modulesFilesPath, moduleFile))
-    } catch (e) {}
-  })
-} catch (e) {}
-
-// Load environment variables from .env file
-try {
-  DotEnv.config({
-    path: Path.join(__dirname, '..', '.env')
-  })
-} catch (e) {}
-
-// Flag to tell whether or not dev tools are enabled
-const isDevToolsEnabled = process.env.AXONOPS_DEV_TOOLS == 'true'
+global.EventEmitter = require('events')
+// Enable - ready to be used - right-click context menu
+global.ContextMenu = require('electron-context-menu')
+// Used to position the windows of the application.
+global.Positioner = require('electron-positioner')
+// Loads environment variables from a .env file into process.env
+global.DotEnv = require('dotenv')
 
 /**
  * Define global variables that will be used in different scopes in the main thread
@@ -196,10 +144,95 @@ global.eventEmitter = new EventEmitter()
 // Import the set customized logging addition function and make it global across the entire thread
 global.addLog = null
 
+// Define customized function to create an error log
+global.errorLog = null
+
+// Whether or not logging feature is enabled
+global.isLoggingFeatureEnabled = false
+
 // Set the proper add log function
 try {
-  global.addLog = require(Path.join(__dirname, '..', 'custom_node_modules', 'main', 'setlogging')).addLog
+  global.addLog = require(Path.join(__dirname, '..', 'custom_modules', 'main', 'setlogging')).addLog
 } catch (e) {}
+
+// Set an error log function
+try {
+  global.errorLog = (error, process) => {
+    /**
+     * Whether the error is a number or not
+     * If so, then this error has been thrown for a purpose and there's no need to log it
+     */
+    let isErrorNotNumber = isNaN(parseInt(error.toString()))
+
+    // If this flag is false then don't log the error
+    if (!isErrorNotNumber)
+      return
+
+    // Add the error stack if possible
+    let errorStack = ''
+
+    try {
+      errorStack = error.stack ? `. Stack ${error.stack}` : ''
+    } catch (e) {}
+
+    // Log the error
+    try {
+      addLog(`Error in process ${process}. Details: ${error}${errorStack}`, 'error')
+    } catch (e) {}
+  }
+} catch (e) {}
+
+/**
+ * Import the custom node modules for the main thread
+ *
+ * `Modules` constant will contain all the custom modules
+ */
+global.Modules = []
+
+try {
+  // Define the folder's path of the custom node modules
+  let modulesFilesPath = Path.join(__dirname, '..', 'custom_modules', 'main'),
+    // Read all files inside the folder
+    modulesFiles = FS.readdirSync(modulesFilesPath)
+
+  /**
+   * Loop through each module file
+   * Main modules are `pty`, `dialogs`, and `scripts`
+   */
+  modulesFiles.forEach((moduleFile) => {
+    try {
+      // Make sure the module file name is lowered case
+      moduleFile = `${moduleFile}`.toLowerCase()
+
+      // Ignore any file which is not `JS` or it's the arguments module
+      if (!moduleFile.endsWith('.js') || moduleFile.startsWith('argv'))
+        return
+
+      // Define the module's name
+      let moduleName = moduleFile.slice(0, moduleFile.indexOf('.js'))
+
+      // Capitalize the name
+      moduleName = moduleName.charAt(0).toUpperCase() + moduleName.slice(1)
+
+      // Import the module
+      Modules[moduleName] = require(Path.join(modulesFilesPath, moduleFile))
+
+      try {
+        addLog(`'${moduleName}' has been loaded in the main thread`)
+      } catch (e) {}
+    } catch (e) {}
+  })
+} catch (e) {}
+
+// Load environment variables from .env file
+try {
+  DotEnv.config({
+    path: Path.join(__dirname, '..', '.env')
+  })
+} catch (e) {}
+
+// Flag to tell whether or not dev tools are enabled
+const areDevToolsEnabled = process.env.AXONOPS_DEV_TOOLS == 'true'
 
 // Object that will hold all views/windows of the app
 global.views = {
@@ -211,12 +244,12 @@ global.views = {
   backgroundProcesses: null
 }
 
-// An array that will save all cqlsh instances with their ID given by the renderer thread
-let CQLSHInstances = [],
-  // Whether or not the user wants to completely quit the application. This occurs when all renderer threads are terminated or closed
-  isMacOSForcedClose = false,
-  // A `logging` object which will be created once the app is ready
-  logging = null
+// An array which saves all cqlsh instances with their ID - connection ID - given by the renderer thread
+global.CQLSHInstances = []
+// Whether or not the user wants to completely quit the application. This occurs when all renderer threads are terminated or closed
+global.isMacOSForcedClose = false
+// A `logging` object which will be created once the app is ready
+global.logging = null
 
 /**
  * Create a window with different passed properties
@@ -234,7 +267,9 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
   let windowObject = null // Window object which be returned
 
   // Create a window with the given properties
-  windowObject = new Window(properties)
+  try {
+    windowObject = new Window(properties)
+  } catch (e) {}
 
   // Load the main HTML file of that window
   try {
@@ -262,22 +297,22 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
      *
      * Maximizing the window size
      */
-    if (extraProperties.maximize)
-      try {
+    try {
+      if (extraProperties.maximize)
         windowObject.maximize()
-      } catch (e) {}
+    } catch (e) {}
 
     // Whether or not the window should be shown
-    if (extraProperties.show && !global.IsCLIMode)
-      try {
+    try {
+      if (extraProperties.show && !global.IsCLIMode)
         windowObject.show()
-      } catch (e) {}
+    } catch (e) {}
 
     // Whether or not developer tools should be opened
-    if (extraProperties.openDevTools && !global.IsCLIMode)
-      try {
+    try {
+      if (extraProperties.openDevTools && !global.IsCLIMode)
         windowObject.webContents.openDevTools()
-      } catch (e) {}
+    } catch (e) {}
 
     // Send the window's content's ID
     try {
@@ -325,7 +360,7 @@ let properties = {
     backgroundColor: '#17181a',
     show: false,
     webPreferences: {
-      devTools: isDevToolsEnabled,
+      devTools: areDevToolsEnabled,
       nodeIntegration: true,
       webviewTag: true,
       enableRemoteModule: true,
@@ -336,7 +371,7 @@ let properties = {
   extraProperties = {
     maximize: false,
     show: false,
-    openDevTools: isDevToolsEnabled
+    openDevTools: areDevToolsEnabled
   },
   contextMenuProperties = {
     showLearnSpelling: false,
@@ -351,23 +386,16 @@ let properties = {
 // Define the properties of the right-click context menu
 ContextMenu(contextMenuProperties)
 
-// Start the crash handler immediately before the app gets ready
-/*
-try {
-  Modules.Reports.startCrashingHandler()
-} catch (e) {}
-*/
-
 // When the app is ready a renderer thread should be created and started
 App.on('ready', () => {
   // Force to run only one instance of the app at once
   try {
-    // https://www.electronjs.org/docs/latest/api/app#apprequestsingleinstancelockadditionaldata
-    if (App.requestSingleInstanceLock() || global.IsCLIMode)
-      throw 0
-
-    // Quit/terminate that new instance
-    App.quit()
+    /**
+     * https://www.electronjs.org/docs/latest/api/app#apprequestsingleinstancelockadditionaldata
+     * Quit/terminate that new instance
+     */
+    if (!(App.requestSingleInstanceLock() || global.IsCLIMode))
+      App.quit()
   } catch (e) {}
 
   // Create the main view, and pass the properties
@@ -389,6 +417,10 @@ App.on('ready', () => {
       views.backgroundProcesses.webContents.send(`extra-resources-path`, extraResourcesPath)
     } catch (e) {}
 
+    /**
+     * Call the `start` function of the CLI mode
+     * It'll be effective in case the workbench has started in CLI mode
+     */
     try {
       CLI.start()
     } catch (e) {}
@@ -418,6 +450,7 @@ App.on('ready', () => {
       parent: views.main
     })
 
+    // In CLI mode there's no need to wait for an acknowledgement from the renderer thread about being loaded and initialized
     if (global.IsCLIMode) {
       status.loaded = true
       status.initialized = true
@@ -444,20 +477,22 @@ App.on('ready', () => {
       } catch (e) {}
     } catch (e) {}
   })
+
+  // Define the status of the renderer thread
   let status = {
     initialized: false,
     loaded: false
   }
 
-  // Once a `loaded` event is received from the main view
-  IPCMain.on('loaded', () => {
-    status.loaded = true
-  })
+  /**
+   * Once a `loaded` message is received from the main view - renderer thread -
+   * Also `initialized` message
+   */
+  IPCMain.on('loaded', () => status.loaded = true)
 
-  IPCMain.on('initialized', () => {
-    status.initialized = true
-  })
+  IPCMain.on('initialized', () => status.initialized = true)
 
+  // Define a function to check the renderer view status
   let checkStatus = () => {
     setTimeout(() => {
       if (!status.loaded || !status.initialized)
@@ -483,18 +518,19 @@ App.on('ready', () => {
          * Send a `shown` status to the main view
          * This will tell the app to load workspaces
          */
-        setTimeout(() => views.main.webContents.send('windows-shown'), 100)
-      }, 800)
-    }, 900)
+        views.main.webContents.send('windows-shown')
+      }, 100)
+    }, 125)
   }
 
+  // Call the checking function
   checkStatus()
 
   // Set the menu bar to `null`; so it won't be created
   Menu.setApplicationMenu(null)
 
   // Variable to prevent the immediate closure of the main view; so we have time to save the logs and terminate cqlsh sessions
-  let isMainViewPreventClose = true
+  let isMainViewClosePrevented = true
 
   // Once the `close` event is triggered
   views.main.on('close', (event) => {
@@ -519,14 +555,14 @@ App.on('ready', () => {
     // The way we handle this event is by preventing its default behavior only once, then, we do what we need to do before the termination and after all processes are finished the `close` event is triggered again but it won't be prevented this time
     try {
       // If we don't need to prevent the `close` default behavior then we may skip this try-catch block
-      if (!isMainViewPreventClose)
+      if (!isMainViewClosePrevented)
         throw 0
 
       // Prevent the default behavior for this event
       event.preventDefault()
 
       // Set to `false`; to skip this try-catch block on the next call of event `close`
-      isMainViewPreventClose = false
+      isMainViewClosePrevented = false
     } catch (e) {}
 
     // Close all active work areas - connections and sandbox projects -
@@ -570,6 +606,7 @@ App.on('window-all-closed', () => {
 // On attempt to run a second instance
 App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
   try {
+    // If the attempt is to run the workbench in CLI mode then there's no need to restore the main view or focus on it
     if (global.IsCLIMode || (argv || []).includes('--is-cli'))
       throw 0
 
@@ -584,508 +621,5 @@ App.on('second-instance', (event, argv, workingDirectory, additionalData) => {
 
 // Handle all requests from the renderer thread
 {
-  /**
-   * Requests related to pty instances
-   * All requests have the prefix `pty:`
-   */
-  {
-    // Create a pty instance - which will create a cqlsh instance as well -
-    IPCMain.on('pty:create', (_, data) => {
-      // Close/end any instance related to the connection
-      try {
-        CQLSHInstances[data.id].close()
-      } catch (e) {}
-
-      // Create a pty instance
-      try {
-        CQLSHInstances[data.id] = new Modules.Pty.Pty(views.main, data)
-      } catch (e) {}
-
-      // Call that instance to create a cqlsh instance
-      try {
-        CQLSHInstances[data.id].createCQLSHInstance(data)
-      } catch (e) {}
-    })
-
-    // Send a command to the pty instance
-    IPCMain.on('pty:command', (_, data) => {
-      try {
-        if (!data.isSourceCommand)
-          throw 0
-
-        CQLSHInstances[data.id].sourceCommand(data.cmd, data.blockID, views.backgroundProcesses)
-
-        views.backgroundProcesses.webContents.send('cql:file:execute', data)
-
-        return
-      } catch (e) {}
-
-      try {
-        CQLSHInstances[data.id].command(data.cmd, data.blockID)
-      } catch (e) {}
-    })
-
-    IPCMain.on('cql:file:execute:data', (_, data) => views.main.webContents.send(`cql:file:execute:data:${data.id}`, data))
-
-    // Send a realtime data to the pty instance - while the user is acutally typing
-    IPCMain.on('pty:data', (_, data) => {
-      try {
-        CQLSHInstances[data.id].realtimeData(data.char)
-      } catch (e) {}
-    })
-
-    // Send a resize request to the pty instance based on the app's associated UI terminal
-    IPCMain.on('pty:resize', (_, data) => {
-      try {
-        CQLSHInstances[data.id].resize(data)
-      } catch (e) {}
-    })
-
-    // Get the metadata of a connection
-    IPCMain.on('pty:metadata', (_, data) => {
-      try {
-        CQLSHInstances[data.id].getMetadata(data.metadataSendID, data.currentBuffer)
-      } catch (e) {}
-    })
-
-    // Get the CQL description of a connection, keyspace in it, or table
-    IPCMain.on('pty:cql-desc', (_, data) => {
-      try {
-        CQLSHInstances[data.id].getCQLDescription(data.cqlDescSendID, data.scope, data.currentBuffer)
-      } catch (e) {}
-    })
-
-    // Check the connectivity with a connection
-    IPCMain.on('pty:check-connection', (_, data) => {
-      try {
-        CQLSHInstances[data.id].checkConnectivity(data.checkConnectivityRequestID, data.currentBuffer)
-      } catch (e) {}
-    })
-
-    // Get the result of the query tracing process
-    IPCMain.on('pty:query-tracing', (_, data) => {
-      try {
-        CQLSHInstances[data.connectionID].getQueryTracing(data.id, data.sessionID, data.currentBuffer)
-      } catch (e) {}
-    })
-
-    // Pause the pty instance
-    IPCMain.on('pty:pause', (_, id) => {
-      try {
-        CQLSHInstances[id].pause()
-      } catch (e) {}
-    })
-
-    // Resume the pty instance
-    IPCMain.on('pty:resume', (_, id) => {
-      try {
-        CQLSHInstances[id].resume()
-      } catch (e) {}
-    })
-
-    // Close the instance (kill and destroy)
-    IPCMain.on('pty:close', (_, id) => {
-      try {
-        CQLSHInstances[id].close()
-      } catch (e) {}
-    })
-
-    // Test connection with a connection
-    IPCMain.on('pty:test-connection', (_, data) => {
-      // Call this function from `pty.js` file
-      Modules.Pty.testConnection(views.main, data)
-    })
-
-    // Terminate a connection test process - especially docker/sandbox project -
-    IPCMain.on(`pty:test-connection:terminate`, (_, requestID) => {
-      // Send the request to associated renderer thread
-      views.main.webContents.send(`pty:test-connection:${requestID}`, {
-        connected: false,
-        terminated: true,
-        requestID
-      })
-    })
-
-    // Create a Bash session
-    IPCMain.on(`pty:create:bash-session`, (_, data) => {
-      Modules.Pty.bashSession(views.main, {
-        ...data,
-        IPCMain
-      })
-    })
-
-    IPCMain.on('pty:cqlsh:initialize', () => Modules.Pty.initializeCQLSH(views.main))
-  }
-
-  /**
-   * Requests related to the logging system
-   * All requests have the prefix `logging:`
-   */
-  {
-    // Initialize the logging system
-    IPCMain.on('logging:init', (_, data) => {
-      // Create a `logging` object and refer to it via the global `logging` variable
-      try {
-        logging = new Modules.Logging.Logging(data)
-      } catch (e) {}
-    })
-
-    // Get logs folder's path and current session's log file name if possible
-    IPCMain.handle('logging:get:info', () => {
-      let loggingSessionFileName = null
-
-      try {
-        loggingSessionFileName = logging.logginSessionFileName
-      } catch (e) {}
-
-      return {
-        folder: Path.join(extraResourcesPath != null ? App.getPath('logs') : Path.join(__dirname, '..', 'data', 'logging')),
-        file: loggingSessionFileName
-      }
-    })
-
-    /**
-     * Add a new log text
-     *
-     * Adding a new log can be processed via two methods:
-     * First is using the `ipcMain` module, this method is used by the renderer threads
-     * Second is by triggering a custom event using the `eventEmitter` module, this method is used inside the main thread
-     */
-    {
-      // Define the event's name and its function/method
-      let event = {
-        name: 'logging:add',
-        func: (_, data) => {
-          try {
-            logging.addLog(data)
-          } catch (e) {}
-        }
-      }
-
-      // Add a custom event to be triggered inside the main thread
-      eventEmitter.addListener(event.name, event.func)
-
-      // Listen to `add` log request from the renderer thread
-      IPCMain.on(event.name, event.func)
-    }
-  }
-
-  /**
-   * Requests to perform processes in the background
-   * Processes will be executed in the `views.backgroundProcesses` view
-   */
-  {
-    // SSH tunnel creation and related processes
-    {
-      // Create an SSH tunnel
-      IPCMain.on('ssh-tunnel:create', (_, data) => {
-        // Send the request to the background processes' renderer thread
-        views.backgroundProcesses.webContents.send('ssh-tunnel:create', data)
-
-        // Once a response is received
-        IPCMain.on(`ssh-tunnel:create:result:${data.requestID}`, (_, data) => {
-          // Send the response to the renderer thread
-          views.main.webContents.send(`ssh-tunnel:create:result:${data.requestID}`, data)
-        })
-      })
-
-      // Close an SSH tunnel based on the given connection's ID - or the port -
-      IPCMain.on(`ssh-tunnel:close`, (_, connectionID) => {
-        // Send the request to the background processes' renderer thread
-        views.backgroundProcesses.webContents.send('ssh-tunnel:close', connectionID)
-      })
-
-      /**
-       * Update an SSH tunnel's key/ID in the `sshTunnelsObjects` array with another new one
-       * The process is mainly for changing the old temporary tunnel ID with the associated connection's ID
-       */
-      IPCMain.on(`ssh-tunnel:update`, (_, data) => {
-        // Send the request to the background processes' renderer thread
-        views.backgroundProcesses.webContents.send('ssh-tunnel:update', data)
-      })
-
-      // Terminate an SSH tunnel creation process
-      IPCMain.on(`ssh-tunnel:terminate`, (_, requestID) => {
-        // Send the request to the background processes' renderer thread
-        views.main.webContents.send(`ssh-tunnel:create:result:${requestID}`, {
-          object: null,
-          port: 0,
-          error: 'Creation process has been terminated',
-          terminated: true,
-          requestID
-        })
-
-        // Send request to close the created SSH tunnel as the process has been terminated
-        views.backgroundProcesses.webContents.send(`ssh-tunnel:close:queue`, requestID)
-      })
-    }
-
-    // Detect differentiation between two texts
-    {
-      IPCMain.on('detect-differentiation', (_, data) => {
-        // Send the request to the background processes' renderer thread
-        views.backgroundProcesses.webContents.send('detect-differentiation', data)
-
-        // Once we received a response
-        IPCMain.on(`detect-differentiation:result:${data.requestID}`, (_, data) => {
-          // Send the response to the renderer thread
-          views.main.webContents.send(`detect-differentiation:result:${data.requestID}`, data)
-        })
-      })
-    }
-
-    {
-      IPCMain.on('blob:read-convert', (_, data) => {
-        // Send the request to the background processes' renderer thread
-        views.backgroundProcesses.webContents.send('blob:read-convert', data)
-
-        IPCMain.on(`blob:read-convert:result:${data.requestID}`, (_, data) => {
-          // Send the response to the renderer thread
-          views.main.webContents.send(`blob:read-convert:result:${data.requestID}`, data)
-        })
-      })
-
-      IPCMain.on('blob:convert-write', (_, data) => {
-        // Send the request to the background processes' renderer thread
-        views.backgroundProcesses.webContents.send('blob:convert-write', data)
-
-        IPCMain.on(`blob:convert-write:result:${data.requestID}`, (_, data) => {
-          // Send the response to the renderer thread
-          views.main.webContents.send(`blob:convert-write:result:${data.requestID}`, data)
-        })
-      })
-    }
-  }
-
-  /**
-   * Requests from extra options/actions
-   * All requests have the prefix `options:`
-   */
-  {
-    // Toggle the fullscreen mode
-    IPCMain.on('options:view:toggle-fullscreen', () => views.main.setFullScreen(!views.main.isFullScreen()))
-
-    // Restart the entire app
-    IPCMain.on('options:actions:restart', () => {
-      // Make sure the quit action will be performed well on macOS
-      isMacOSForcedClose = true
-
-      // Close the main window
-      views.main.close()
-
-      // Relaunch the app
-      App.relaunch()
-    })
-
-    // Entirely quit from the app
-    IPCMain.on('options:actions:quit', () => {
-      // Make sure the quit action will be performed well on macOS
-      isMacOSForcedClose = true
-
-      // Close the main window
-      views.main.close()
-    })
-  }
-
-  /**
-   * Different requests that aren't related
-   * Request to create a dialog
-   */
-  IPCMain.on('dialog:create', (_, data) => Modules.Dialogs.createDialog(views.main, data))
-
-  // Request to know whether the main window is currently being focused on or not
-  IPCMain.on('window:focused', (_, data) => views.main.webContents.send('window:focused', views.main.isFocused()))
-
-  // Request to get the public key from the keys generator tool
-  IPCMain.on('public-key:get', (_, id) => {
-    let runKeysGenerator = () => {
-      // Define the bin folder path
-      // let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
-      let binFolder = Path.join((extraResourcesPath != null ? Path.join(__dirname, '..', '..', 'main') : Path.join(__dirname)), 'bin', 'keys_generator')
-
-      // Switch to the single-file mode
-      try {
-        if (!FS.lstatSync(binFolder).isDirectory())
-          binFolder = Path.join(binFolder, '..')
-      } catch (e) {}
-
-      // Run the keys generator tool
-      let binCall = `./keys_generator`
-
-      // If the host is Windows
-      binCall = (process.platform == 'win32') ? `keys_generator.exe` : binCall
-
-      // Execute the command, get the public key, and send it to the renderer thread
-      Terminal.run(`cd "${binFolder}" && ${binCall}`, (err, publicKey, stderr) => views.main.webContents.send(`public-key:${id}`, (err || stderr) ? '' : publicKey))
-    }
-
-    try {
-      if (OS.platform() != 'darwin') {
-        runKeysGenerator()
-        throw 0
-      }
-
-      Modules.Pty.runKeysGenerator((publicKey) => {
-        if (publicKey != null)
-          return views.main.webContents.send(`public-key:${id}`, publicKey)
-
-        runKeysGenerator()
-      })
-    } catch (e) {}
-  })
-
-  /**
-   * Request to run a script
-   * Given data: {id, scriptPath}
-   */
-  IPCMain.on('script:run', (_, data) => Modules.Scripts.executeScript(views.main, Terminal, data))
-
-  // Request to change the content protection state
-  IPCMain.on('content-protection', (_, apply) => views.main.setContentProtection(apply))
-
-  // Request to get the app's current path
-  IPCMain.handle('app-path:get', () => {
-    // Get the app's path
-    let path = App.getAppPath()
-
-    // If the app in production environment
-    if (App.isPackaged)
-      path = Path.join(path, '..')
-
-    // Return the app's final path
-    return path
-  })
-
-  // Request to get the copyright acknowledgement status
-  IPCMain.on('cassandra-copyright-acknowledged', () => Modules.Config.getConfig((config) => {
-    // Define the initial value
-    let result = false
-
-    // Attempt to get the saved value
-    try {
-      result = config.get('security', 'cassandraCopyrightAcknowledged') == 'true'
-    } catch (e) {}
-
-    // Send the result
-    views.intro.webContents.send('cassandra-copyright-acknowledged', result)
-  }))
-
-  // Request to set the copyright acknowledgement to be `true`
-  IPCMain.on('cassandra-copyright-acknowledged:true', () => {
-    setTimeout(() => {
-      // Get the app's current config
-      Modules.Config.getConfig((config) => {
-        try {
-          // Set the associated key to be `true`
-          config.set('security', 'cassandraCopyrightAcknowledged', 'true')
-
-          // Write the new config values
-          Modules.Config.setConfig(config)
-        } catch (e) {}
-      })
-    }, 5000)
-  })
-
-  /**
-   * Show a pop-up context menu with passed items
-   * Mainly used for getting CQL descriptions of right-clicked elements in the metadata tree view
-   */
-  {
-    // Define a variable to hold the last request's timestamp
-    let lastRequestTimestamp = 0,
-      handleItems = (items) => {
-        for (let item of items) {
-          if (item.submenu != undefined)
-            handleItems(item.submenu)
-
-          try {
-            // Use `eval` to convert the click's content from string format to actual function
-            try {
-              item.click = eval(item.click)
-            } catch (e) {}
-
-            try {
-              item.icon = NativeImage.createFromPath(item.icon)
-            } catch (e) {
-              item.icon = ''
-            }
-          } catch (e) {}
-        }
-      }
-
-    // Received a request to show a right-click context-menu
-    IPCMain.on('show-context-menu', (_, items) => {
-      // Get the timestamp of receiving the request
-      let requestTimestamp = new Date().getTime()
-
-      // Make sure there's a 0.5s delay between each request
-      if (requestTimestamp - lastRequestTimestamp <= 500)
-        return
-
-      // Update the last accepted request's timestamp
-      lastRequestTimestamp = requestTimestamp
-
-      // Create a menu object that will be a pop-up menu
-      let popUpMenu = new Menu()
-
-      // Parse the passed items from string format to JSON object
-      items = JSON.parse(items)
-
-      // Loop through each menu item
-      for (let item of items) {
-        if (item.submenu != undefined)
-          handleItems(item.submenu)
-
-        try {
-          // Use `eval` to convert the click's content from string format to actual function
-          try {
-            item.click = eval(item.click)
-          } catch (e) {}
-
-          // Append the menu item as a `MenuItem` object
-          popUpMenu.append(new MenuItem(item))
-        } catch (e) {}
-      }
-
-      // Pop-up/show the created menu
-      popUpMenu.popup(views.main)
-    })
-  }
-
-  // Check whether or not the current app's format supported by the auto update process
-  IPCMain.handle('check-app-format', () => {
-    let info = {}
-
-    try {
-      info = {
-        devMode: !App.isPackaged,
-        macOSAppStore: process.mas,
-        windowsStore: process.windowsStore,
-        linuxSnap: process.env.SNAP || process.env.SNAP_REVISION,
-        linuxFlatpak: process.env.FLATPAK_ID
-      }
-
-      Object.keys(info).forEach((format) => {
-        info[format] = info[format] || false
-      })
-    } catch (e) {}
-
-    return info
-  })
-
-  IPCMain.on('badge:update', (_, numOfActiveWorkareas) => {
-    try {
-      App.setBadgeCount(numOfActiveWorkareas)
-    } catch (e) {}
-  })
+  require(Path.join(__dirname, 'ipc'))
 }
-
-/**
- * Enabling this code block will cause the app to crash within 5 seconds
- * It's useful to test the crash report system
- */
-// try {
-//   setTimeout(() => {
-//     process.crash()
-//   }, 5000)
-// } catch (e) {}

@@ -16,7 +16,7 @@
 
 const FS = require('fs-extra');
 const Path = require('path');
-const { migrateDockerComposeFile } = require('../../../custom_node_modules/renderer/docker-migration');
+const { migrateDockerComposeFile } = require('../../../custom_modules/renderer/docker-migration');
 
 // Mock fs-extra
 jest.mock('fs-extra');
@@ -26,7 +26,7 @@ global.addLog = jest.fn();
 global.errorLog = jest.fn();
 
 describe('Docker Compose Migration', () => {
-  const testFolderPath = '/test/localclusters/test-project';
+  const testFolderPath = '/test/localconnections/test-project';
   const composePath = Path.join(testFolderPath, 'docker-compose.yml');
   
   beforeEach(() => {

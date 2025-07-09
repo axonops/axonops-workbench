@@ -408,7 +408,7 @@
       variableNameID,
       variableValueID,
       deleteBtnID
-    ] = getRandomID(15, 3),
+    ] = getRandom.id(15, 3),
       // Check if the variable's value has nested variables
       isNestedVariablesExist = `${variable.value}`.match(/\${(.*?)}/gm) != null
 
@@ -724,7 +724,7 @@
         continue
 
       // Get the editor's content
-      let editorContent = editor.getValue(),
+      let editorContent = addEditConnectionEditor.getValue(),
         // New content will be manipulated after updating values to variables
         newContent = await Modules.Connections.updateFilesVariables(workspace.id, editorContent, null, removedVariables, changedVariables, {
           before: variablesBeforeUpdate,
@@ -732,7 +732,7 @@
         })
 
       // Set the new content
-      editor.setValue(newContent)
+      addEditConnectionEditor.setValue(newContent)
     }
 
     // Reset arrays
@@ -814,4 +814,242 @@
     // Return the detected missing variables
     return missingVariables
   }
+}
+
+/**
+ * Convert full or a part of a JSON object's values to variables
+ * The function may also return the saved variables only as raw data, taking into account the scope of variables against the given workspace ID
+ * For returning raw data only, the function `getProperVariables(workspaceID)` can be used as a shorthand
+ *
+ * @Parameters:
+ * {string} `workspaceID` the ID of the active or target workspace
+ * {object} `object` the JSON object whose values will be manipulated
+ * {boolean} `?rawData` only return the proper variables based on the given workspace ID
+ *
+ * @Return: {object} the passed object after manipulation
+ */
+let variablesManipulation = async (workspaceID, object, rawData = false) => {
+  let result = object // Final result which be returned
+
+  try {
+    // Get the object's values
+    let objectValues = Object.keys(object),
+      // Retrieve all saved variables
+      savedVariables = await retrieveAllVariables(true)
+
+    // Define the final variables object
+    let variables = []
+
+    // Filter the variables based on their scope
+    variables = savedVariables.filter(
+      // The filter is whether or not the variable's scope includes the current workspace, or it includes all workspaces
+      (variable) => variable.scope.some(
+        (workspace) => [
+          workspaceID,
+          'workspace-all'
+        ].includes(workspace))
+    )
+
+    // If the call is about getting the available variables for the workspace then return `variables` and skip the upcoming code
+    if (rawData)
+      return variables
+
+    // Loop through the object's values, and change what needed to variables
+    objectValues.forEach((objectValue) => {
+      // Get the current object's value
+      let value = result[objectValue],
+        // Check if there's a variable's value - or more - in the current value
+        exists = variables.filter((variable) => value.search(variable.value))
+
+      try {
+        /**
+         * If the `value` type is an `object`, this means that the `value` is an array of other sub-values, and another loop through that array is needed
+         * It's guaranteed that the given object won't exceed two levels of depth
+         */
+        if (typeof value != 'object')
+          throw 0
+
+        // Get the sub-values' keys
+        let subValues = Object.keys(value)
+
+        // Loop through the sub-values, and make changes to them as needed
+        subValues.forEach((_subValue) => {
+          // Get the current object's value
+          let subValue = value[_subValue],
+            // Check if there's a variable's value - or more - in the current value
+            exists = variables.filter((variable) => subValue.search(variable.value))
+
+          // If there's no variable's value found in the current `value` then skip it and move to the next one
+          if (exists.length <= 0)
+            return
+
+          // Loop through the existing variables
+          exists.forEach((variable) => {
+            // Match its value anywhere in the object's value
+            let regex = createRegex(`${variable.value}`, `gm`)
+
+            // Replace the variable's value with its name
+            subValue = `${subValue}`.replace(regex, '${' + variable.name + '}')
+          })
+
+          // Update the object's value with the manipulated one
+          result[objectValue][_subValue] = subValue
+        })
+
+        // Skip the upcoming code
+        return
+      } catch (e) {
+        try {
+          errorLog(e, 'functions')
+        } catch (e) {}
+      }
+
+      /**
+       * Reaching here means the current `value` is not an `object` but a `string`
+       *
+       * If there's no variable's value found in the current `value` then skip it and move to the next one
+       */
+      if (exists.length <= 0)
+        return
+
+      // Loop through the existing variables
+      exists.forEach((variable) => {
+        // Match its value anywhere in the object's value
+        let regex = createRegex(`${variable.value}`, `gm`)
+
+        // Replace the variable's value with its name
+        value = `${value}`.replace(regex, '${' + variable.name + '}')
+      })
+
+      // Update the object's value with the manipulated one
+      result[objectValue] = value
+    })
+  } catch (e) {
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
+  } finally {
+    // Return the final result in case more than raw data is wanted
+    if (!rawData)
+      return result
+  }
+}
+
+/**
+ * Shorthand the function `variablesManipulation(workspaceID, object, ?rawData)` in case only raw data is needed - saved variables with their values -
+ *
+ * @Parameters:
+ * {string} `workspaceID` the ID of the active or target workspace
+ *
+ * @Return: {object} raw data - saved variables with their values -
+ */
+let getProperVariables = async (workspaceID) => await variablesManipulation(workspaceID, [], true)
+
+/**
+ * Convert JSON object's values - which have been, fully or partly - converted to variables - to their proper values
+ *
+ * @Parameters:
+ * {object} `object` the JSON object whose values will be manipulated
+ * {object} `variables` the variables that will be checked in the object's values
+ *
+ * @Return: {object} the passed object after manipulation
+ */
+let variablesToValues = (object, variables) => {
+  try {
+    // Get keys of the given object
+    let keys = Object.keys(object)
+
+    // Loop through all keys
+    keys.forEach((key) => {
+      // Get the value of the current key
+      let value = object[key],
+        // Check if there is a variable or more in the value
+        exists = variables.filter((variable) => value.search('${' + variable.name + '}'))
+
+      // If no variable has been found in the key's value then skip it and move to the next key
+      if (exists.length <= 0)
+        return
+
+      // Loop through existing variables
+      exists.forEach((variable) => {
+        // Create a regular expression to match the variable anywhere in the object's value
+        let regex = createRegex('${' + variable.name + '}', 'gm')
+
+        // Replace the object's value with the variable's value
+        value = `${value}`.replace(regex, variable.value)
+      })
+
+      // Update the object's value with the manipulated one
+      object[key] = value
+    })
+  } catch (e) {
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
+  }
+
+  // Return the object after manipulation
+  return object
+}
+
+/**
+ * Resolve variables inside variables' values
+ *
+ * @Parameters:
+ * {object} `variables` the variables to be manipulated
+ *
+ * @Return: {object} final result after the manipulation process
+ */
+let resolveNestedVariables = (variables) => {
+  // Inner function to resolve a passed variable's value
+  let resolveValue = (savedVariable) => {
+    // The final variable to be returned
+    let finalValue = `${savedVariable.value}`,
+      // Define and match all available variables in the current variable's value
+      foundVariables = finalValue.match(new RegExp(/\${(.*?)}/, 'gm'))
+
+    try {
+      // If no variable has been found in the current variable's value then skip this try-catch block
+      if (foundVariables == null)
+        throw 0
+
+      // Loop through the found variables in the value
+      for (let foundVariable of foundVariables) {
+        // Get the variable's name
+        let variableName = `${foundVariable}`.slice(2, foundVariable.length - 1),
+          // Get that nested variable
+          variable = variables.find(
+            (variable) => variable.name == variableName && savedVariable.scope.some(
+              (workspace) => variable.scope.find(
+                (_workspace) => ['workspace-all', workspace].includes(_workspace) || _workspace == 'workspace-all')
+            )
+          )
+
+        // If the nested variable hasn't been defined or it's actually the current variable then skip it
+        if (variable == undefined || variable === savedVariable)
+          continue
+
+        // Resolve the variable's value recursively
+        let resolvedValue = resolveValue(variable)
+
+        // Set the new updated value
+        finalValue = `${finalValue}`.replace(foundVariable, resolvedValue)
+      }
+    } catch (e) {}
+
+    // Return the final value
+    return finalValue
+  }
+
+  // Iterate through each variable and resolve its value
+  for (let variable of variables) {
+    // Hold the original value
+    variable.originalValue = `${variable.value}`
+
+    // Manipulate the variable's value
+    variable.value = resolveValue(variable)
+  }
+
+  // Return the variables
+  return variables
 }

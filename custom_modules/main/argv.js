@@ -1,8 +1,14 @@
 // Import the base of the command line interface feature
-const Argv = ElectronApp.commandLine,
+const Argv = App.commandLine,
   CommandLineUsage = require('command-line-usage'),
   AppInfo = require(Path.join(__dirname, '..', '..', 'package.json')),
-  PTY = require('node-pty')
+  PTY = require('node-pty'),
+  Consts = require(Path.join(__dirname, '..', '..', 'custom_modules', 'main', 'consts')),
+  /**
+   * An implementation of PHP `strip_tags` in Node.js
+   * Used for stripping HTML tags from a given string
+   */
+  StripTags = require('@ramumb/strip-tags')
 
 /**
  * Get platform (`win32`, `linux` or `darwin`)
@@ -165,7 +171,7 @@ let init = () => {
     spinnerObj.stop()
   }
 
-  ElectronApp.whenReady().then(() => ElectronApp.on('before-quit', () => exitApp()))
+  App.whenReady().then(() => App.on('before-quit', () => exitApp()))
 
   sections = [{
       header: `${AppInfo.title}`,
@@ -173,7 +179,7 @@ let init = () => {
     },
     {
       header: `Copyright Notices`,
-      content: 'AxonOps is a registered trademark of AxonOps Limited. Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation (http://www.apache.org/) or its subsidiaries in Canada, the United States and/or other countries. Elasticsearch is a trademark of Elasticsearch B.V., registered in the U.S. and in other countries. DataStax is registered trademarks of DataStax, Inc. and its subsidiaries in the United States and/or other countries. Docker is a trademark or registered trademark of Docker, Inc. in the United States and/or other countries.'
+      content: StripTags(`${Consts.LegalNotice}`)
     },
     {
       header: 'Supported Arguments',

@@ -1094,7 +1094,7 @@
     $(this).attr('disabled', '')
 
     // Get the public key; to be used for the credentials encryption process
-    getKey('public', (key) => {
+    getRSAKey('public', (key) => {
       try {
         // If the `DB authentication` section is not required then skip this try-catch block
         if (onlyOneSection != 'auth' && onlyOneSection != '')
@@ -1102,8 +1102,8 @@
 
         // Set the DB auth credentials
         connectionElement.attr({
-          'data-username': credentialsArray.authusername.trim().length <= 0 ? null : encrypt(key, credentialsArray.authusername),
-          'data-password': credentialsArray.authpassword.trim().length <= 0 ? null : encrypt(key, credentialsArray.authpassword)
+          'data-username': credentialsArray.authusername.trim().length <= 0 ? null : encryptText(key, credentialsArray.authusername),
+          'data-password': credentialsArray.authpassword.trim().length <= 0 ? null : encryptText(key, credentialsArray.authpassword)
         })
       } catch (e) {}
 
@@ -1114,9 +1114,9 @@
 
         // Set the SSH credentials
         connectionElement.attr({
-          'data-ssh-username': credentialsArray.sshusername.trim().length <= 0 ? null : encrypt(key, credentialsArray.sshusername),
-          'data-ssh-password': credentialsArray.sshpassword.trim().length <= 0 ? null : encrypt(key, credentialsArray.sshpassword),
-          'data-ssh-passphrase': credentialsArray.sshpassphrase.trim().length <= 0 ? null : encrypt(key, credentialsArray.sshpassphrase)
+          'data-ssh-username': credentialsArray.sshusername.trim().length <= 0 ? null : encryptText(key, credentialsArray.sshusername),
+          'data-ssh-password': credentialsArray.sshpassword.trim().length <= 0 ? null : encryptText(key, credentialsArray.sshpassword),
+          'data-ssh-passphrase': credentialsArray.sshpassphrase.trim().length <= 0 ? null : encryptText(key, credentialsArray.sshpassphrase)
         })
       } catch (e) {}
 
@@ -1164,11 +1164,11 @@
 
               // Save `username`
               if (credentialsArray.authusername.trim().length != 0)
-                connection.info.secrets.username = encrypt(key, credentialsArray.authusername)
+                connection.info.secrets.username = encryptText(key, credentialsArray.authusername)
 
               // Save `password`
               if (credentialsArray.authpassword.trim().length != 0)
-                connection.info.secrets.password = encrypt(key, credentialsArray.authpassword)
+                connection.info.secrets.password = encryptText(key, credentialsArray.authpassword)
             } catch (e) {
               try {
                 errorLog(e, 'common')
@@ -1182,15 +1182,15 @@
 
               // Save the SSH `username`
               if (credentialsArray.sshusername.trim().length != 0)
-                connection.info.secrets.sshUsername = encrypt(key, credentialsArray.sshusername)
+                connection.info.secrets.sshUsername = encryptText(key, credentialsArray.sshusername)
 
               // Save the SSH `password`
               if (credentialsArray.sshpassword.trim().length != 0)
-                connection.info.secrets.sshPassword = encrypt(key, credentialsArray.sshpassword)
+                connection.info.secrets.sshPassword = encryptText(key, credentialsArray.sshpassword)
 
               // Save the SSH `passphrase`
               if (credentialsArray.sshpassphrase.trim().length != 0)
-                connection.info.secrets.sshPassphrase = encrypt(key, credentialsArray.sshpassphrase)
+                connection.info.secrets.sshPassphrase = encryptText(key, credentialsArray.sshpassphrase)
             } catch (e) {
               try {
                 errorLog(e, 'common')

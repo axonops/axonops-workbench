@@ -82,10 +82,10 @@ global.$ = global.jQuery = jest.fn((selector) => {
     get: jest.fn(() => document.createElement('div')),
     toArray: jest.fn(() => [document.createElement('div')])
   };
-  
+
   // Make it array-like
   element[0] = document.createElement('div');
-  
+
   return element;
 });
 
@@ -292,11 +292,11 @@ global.Terminal = jest.fn().mockImplementation(() => ({
 
 // Mock Modules object (from renderer)
 global.Modules = {
-  Clusters: {
-    getClusters: jest.fn().mockResolvedValue([]),
-    saveCluster: jest.fn().mockResolvedValue(true),
-    deleteCluster: jest.fn().mockResolvedValue(true),
-    updateCluster: jest.fn().mockResolvedValue(true)
+  Connections: {
+    getConnections: jest.fn().mockResolvedValue([]),
+    saveConnection: jest.fn().mockResolvedValue(true),
+    deleteConnection: jest.fn().mockResolvedValue(true),
+    updateConnection: jest.fn().mockResolvedValue(true)
   },
   Docker: {
     getProjects: jest.fn().mockResolvedValue([]),

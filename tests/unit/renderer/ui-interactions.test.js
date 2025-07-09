@@ -30,7 +30,7 @@ describe('UI Interactions', () => {
         <div class="content">
           <div class="sidebar">
             <ul class="menu">
-              <li class="menu-item" data-action="clusters">Clusters</li>
+              <li class="menu-item" data-action="connections">Connections</li>
               <li class="menu-item" data-action="workspaces">Workspaces</li>
               <li class="menu-item" data-action="settings">Settings</li>
             </ul>
@@ -52,7 +52,7 @@ describe('UI Interactions', () => {
     test('should handle search input', () => {
       const searchInput = $('#search');
       const searchBtn = $('#search-btn');
-      const searchTerm = 'test cluster';
+      const searchTerm = 'test connection';
       
       // Set search value
       searchInput.val(searchTerm);
@@ -105,15 +105,15 @@ describe('UI Interactions', () => {
     });
 
     test('should highlight active menu item', () => {
-      const clustersItem = $('.menu-item[data-action="clusters"]');
+      const connectionsItem = $('.menu-item[data-action="connections"]');
       
       // Remove active from all
       $('.menu-item').removeClass('active');
       
       // Add active to clicked item
-      clustersItem.addClass('active');
+      connectionsItem.addClass('active');
       
-      expect(clustersItem.addClass).toHaveBeenCalledWith('active');
+      expect(connectionsItem.addClass).toHaveBeenCalledWith('active');
     });
 
     test('should handle menu keyboard navigation', () => {

@@ -17,7 +17,7 @@
 const FS = require('fs-extra');
 const Path = require('path');
 const os = require('os');
-const { migrateDockerComposeFile } = require('../../../custom_node_modules/renderer/docker-migration');
+const { migrateDockerComposeFile } = require('../../../custom_modules/renderer/docker-migration');
 
 // Use real file system for integration tests
 jest.unmock('fs-extra');
@@ -83,7 +83,7 @@ services:
   cassandra-0:
     image: registry.axonops.com/axonops-public/axonops-docker/cassandra:4.1
     environment:
-      - CASSANDRA_CLUSTER_NAME=sandbox-cluster`;
+      - CASSANDRA_CLUSTER_NAME=sandbox-connection`;
 
       const composePath = Path.join(testProjectPath, 'docker-compose.yml');
       await FS.writeFile(composePath, legacyContent);

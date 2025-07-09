@@ -54,7 +54,7 @@
             descriptionFileName = Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), descriptionFileName)
           } catch (e) {}
 
-          let dialogID = getRandomID(5),
+          let dialogID = getRandom.id(5),
             dialogData = {
               id: dialogID,
               title: I18next.capitalize(I18next.t('save CQL description')),
@@ -142,7 +142,7 @@
         } catch (e) {}
 
         // Get a random ID for the description's editor's container
-        let editorContainerID = getRandomID(10)
+        let editorContainerID = getRandom.id(10)
 
         // Description's UI element structure
         let element = `
@@ -265,7 +265,9 @@
               theme: 'vs-dark',
               scrollBeyondLastLine: false,
               mouseWheelZoom: true,
-              fontSize: 11
+              fontSize: 12,
+              fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
+              fontLigatures: true
             })
 
             /**
@@ -358,13 +360,13 @@
 
       IPCRenderer.on('alter-keyspace', (_, data) => {
         let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal'),
-          metadataInfo = JSON.parse(repairJSON($('#rightClickActionsMetadata').attr('data-keyspace-info')))
+          metadataInfo = JSON.parse(repairJSONString($('#rightClickActionsMetadata').attr('data-keyspace-info')))
 
         $('div.modal#rightClickActionsMetadata div[action]').hide()
         $('div.modal#rightClickActionsMetadata div[action="keyspaces"]').show()
 
         try {
-          metadataInfo.replication_strategy = JSON.parse(repairJSON(metadataInfo.replication_strategy))
+          metadataInfo.replication_strategy = JSON.parse(repairJSONString(metadataInfo.replication_strategy))
         } catch (e) {}
 
         try {
@@ -1511,7 +1513,7 @@
                           if (typeof type != 'object')
                             throw 0
 
-                          let itemMainNodeID = getRandomID(30),
+                          let itemMainNodeID = getRandom.id(30),
                             itemMainNodeStrucutre = {
                               id: itemMainNodeID,
                               parent: hiddenNodeID,
@@ -1529,7 +1531,7 @@
                                   <span mulang="name" capitalize></span>
                                   <ion-icon name="right-arrow-filled"></ion-icon>
                                 </span>
-                                <span class="name-value">Item #${getRandomID(3)}</span>
+                                <span class="name-value">Item #${getRandom.id(3)}</span>
                               </div>
                               <div class="input-group-text for-insertion for-actions ignored-applied">
                                 <span class="actions">
@@ -2061,7 +2063,7 @@
                             throw 0
                           }
 
-                          let pickerContainerID = getRandomID(30),
+                          let pickerContainerID = getRandom.id(30),
                             isDataCleared = false
 
                           tippyInstance = tippy(tippyReference[0], {
@@ -2097,7 +2099,7 @@
                                     secondsInputID,
                                     clearBtnID,
                                     confirmBtnID
-                                  ] = getRandomID(10, 8).map((id) => `_${id}_du`),
+                                  ] = getRandom.id(10, 8).map((id) => `_${id}_du`),
                                     durationForm = `
                                     <div class="row for-duration">
                                       <div class="input-group">
@@ -2340,7 +2342,7 @@
                       case 'upload-item': {
                         let inputField = $(this).parent().parent().parent().parent().find('input'),
                           inputObject = getElementMDBObject(inputField),
-                          dialogID = getRandomID(5),
+                          dialogID = getRandom.id(5),
                           data = {
                             id: dialogID,
                             title: I18next.capitalizeFirstLetter(I18next.t('upload item for BLOB field')),
@@ -2384,7 +2386,7 @@
                               if (itemSize > maxItemSize)
                                 return showToast(I18next.capitalize(I18next.t('upload item')), I18next.capitalizeFirstLetter(I18next.replaceData('the size of the uploaded item is [b]$data[/b], which is greater than the maximum allowed size of [b]$data[/b]. Please consider to change that in the config file or try with smaller item', [Bytes(itemSize), Bytes(maxItemSize)])) + '.', 'failure')
 
-                              let requestID = getRandomID(20),
+                              let requestID = getRandom.id(20),
                                 ringSpinnerElement = $(this).parent().parent().parent().children('l-ring-2'),
                                 showRingSpinnerTimeout = null,
                                 showRingSpinner = () => {
@@ -2446,7 +2448,7 @@
                               itemType = result.ext
                             } catch (e) {}
 
-                            let requestID = getRandomID(20),
+                            let requestID = getRandom.id(20),
                               ringSpinnerElement = $(this).parent().parent().parent().children('l-ring-2'),
                               showRingSpinnerTimeout = null,
                               showRingSpinner = () => {
@@ -2464,7 +2466,7 @@
                               requestID,
                               itemType,
                               blobHEXString,
-                              randomID: getRandomID(15)
+                              randomID: getRandom.id(15)
                             })
 
                             // Wait for the response
@@ -3055,7 +3057,7 @@
                             if (typeof type != 'object')
                               throw 0
 
-                            let itemMainNodeID = getRandomID(30),
+                            let itemMainNodeID = getRandom.id(30),
                               itemMainNodeStrucutre = {
                                 id: itemMainNodeID,
                                 parent: hiddenNodeID,
@@ -3073,7 +3075,7 @@
                                   <span mulang="name" capitalize></span>
                                   <ion-icon name="right-arrow-filled"></ion-icon>
                                 </span>
-                                <span class="name-value">Item #${getRandomID(3)}</span>
+                                <span class="name-value">Item #${getRandom.id(3)}</span>
                               </div>
                               <div class="input-group-text for-deletion for-actions ignored-applied">
                                 <span class="actions">
@@ -3714,13 +3716,13 @@
 
                       $(node).attr('data-deletion-changes-applied', 'true')
 
-                      let operatorsDropDownID = `_${getRandomID(10)}`
+                      let operatorsDropDownID = `_${getRandom.id(10)}`
 
                       let isPartition = $(node).attr('partition') == 'true',
                         isCollectionType = $(node).attr('is-collection-type') == 'true',
                         isBooleanType = $(node).attr('type') == 'boolean',
-                        hiddenOperatorsBtnID = `_${getRandomID(10)}`,
-                        operatorsContainerID = `_${getRandomID(10)}`,
+                        hiddenOperatorsBtnID = `_${getRandom.id(10)}`,
+                        operatorsContainerID = `_${getRandom.id(10)}`,
                         isTypeAllowed = !(['boolean', 'blob'].some((type) => $(node).attr('type') == type)),
                         rangeOperators = `
                         <span>
@@ -3955,7 +3957,7 @@
                             throw 0
 
                           let iconName = isPartition ? 'partition' : 'clustering',
-                            iconPath = Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra', `${iconName}-key.png`)
+                            iconPath = Path.join(__dirname, '..', '..', '..', 'js', 'external', 'jstree', 'theme', 'extra', `${iconName}-key.png`)
 
                           // isPartition
                           // partition-key.png
@@ -4642,7 +4644,7 @@
                             if (typeof type != 'object')
                               throw 0
 
-                            let itemMainNodeID = getRandomID(30),
+                            let itemMainNodeID = getRandom.id(30),
                               itemMainNodeStrucutre = {
                                 id: itemMainNodeID,
                                 parent: hiddenNodeID,
@@ -4660,7 +4662,7 @@
                                   <span mulang="name" capitalize></span>
                                   <ion-icon name="right-arrow-filled"></ion-icon>
                                 </span>
-                                <span class="name-value">Item #${getRandomID(3)}</span>
+                                <span class="name-value">Item #${getRandom.id(3)}</span>
                               </div>
                               <div class="input-group-text for-deletion for-actions ignored-applied">
                                 <span class="actions">
@@ -5301,13 +5303,13 @@
 
                       $(node).attr('data-deletion-changes-applied', 'true')
 
-                      let operatorsDropDownID = `_${getRandomID(10)}`
+                      let operatorsDropDownID = `_${getRandom.id(10)}`
 
                       let isPartition = $(node).attr('partition') == 'true',
                         isCollectionType = $(node).attr('is-collection-type') == 'true',
                         isBooleanType = $(node).attr('type') == 'boolean',
-                        hiddenOperatorsBtnID = `_${getRandomID(10)}`,
-                        operatorsContainerID = `_${getRandomID(10)}`,
+                        hiddenOperatorsBtnID = `_${getRandom.id(10)}`,
+                        operatorsContainerID = `_${getRandom.id(10)}`,
                         isTypeAllowed = !(['boolean', 'blob'].some((type) => $(node).attr('type') == type)),
                         rangeOperators = `
                         <span>
@@ -5542,7 +5544,7 @@
                             throw 0
 
                           let iconName = isPartition ? 'partition' : 'clustering',
-                            iconPath = Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra', `${iconName}-key.png`)
+                            iconPath = Path.join(__dirname, '..', '..', '..', 'js', 'external', 'jstree', 'theme', 'extra', `${iconName}-key.png`)
 
                           // isPartition
                           // partition-key.png
@@ -5558,7 +5560,7 @@
                           if ($(node).attr('is-hidden-node') == 'true')
                             throw 0
 
-                          let aggregateFunctionsBtnID = `_${getRandomID(10)}btn`
+                          let aggregateFunctionsBtnID = `_${getRandom.id(10)}btn`
 
                           $(node).find('div.input-group').append($(`
                             <div class="input-group-text for-deletion for-aggregate-functions column-aggregate-functions">
@@ -6594,7 +6596,7 @@
                 collectionKeyTypeID,
                 collectionItemTypeID,
                 fieldDataTypeID
-              ] = getRandomID(10, 3).map((id) => `_${id}`),
+              ] = getRandom.id(10, 3).map((id) => `_${id}`),
                 element = `
             <div class="data-field row" ${keyspaceUDTs.length > 0 ? 'for-udt-data-field' : ''}>
             <div class="col-md-5">
@@ -8271,7 +8273,7 @@
                   collectionKeyTypeID,
                   collectionItemTypeID,
                   partitionKeyTypeID
-                ] = getRandomID(10, 3).map((id) => `_${id}`),
+                ] = getRandom.id(10, 3).map((id) => `_${id}`),
                   element = `
                   <div class="counter-table-partition-key-field row">
                     <div class="col-md-1" style="text-align: center;">
@@ -8769,7 +8771,7 @@
                   collectionKeyTypeID,
                   collectionItemTypeID,
                   clusteringKeyTypeID
-                ] = getRandomID(10, 3).map((id) => `_${id}`),
+                ] = getRandom.id(10, 3).map((id) => `_${id}`),
                   element = `
                   <div class="counter-table-clustering-key-field row">
                     <div class="col-md-1" style="text-align: center;">
@@ -9465,7 +9467,7 @@
                 throw 0
 
               try {
-                fields = JSON.parse(repairJSON(fields))
+                fields = JSON.parse(repairJSONString(fields))
               } catch (e) {
                 fields = []
               }
@@ -10667,7 +10669,7 @@
                   collectionKeyTypeID,
                   collectionItemTypeID,
                   partitionKeyTypeID
-                ] = getRandomID(10, 3).map((id) => `_${id}`),
+                ] = getRandom.id(10, 3).map((id) => `_${id}`),
                   element = `
                 <div class="standard-table-partition-key-field row">
                   <div class="col-md-1" style="text-align: center;">
@@ -11168,7 +11170,7 @@
                   collectionKeyTypeID,
                   collectionItemTypeID,
                   clusteringKeyTypeID
-                ] = getRandomID(10, 3).map((id) => `_${id}`),
+                ] = getRandom.id(10, 3).map((id) => `_${id}`),
                   element = `
                   <div class="standard-table-clustering-key-field row">
                     <div class="col-md-1" style="text-align: center;">
@@ -11668,7 +11670,7 @@
                   columnTypeID,
                   isColumnStaticCheckboxID,
                   isDateTypeFrozenCheckboxID
-                ] = getRandomID(10, 5).map((id) => `_${id}`),
+                ] = getRandom.id(10, 5).map((id) => `_${id}`),
                   element = `
                   <div class="standard-table-column-field row">
                     <div class="col-md-1" style="text-align: center; display:none;">
@@ -12243,7 +12245,7 @@
                   columnTypeID,
                   isColumnStaticCheckboxID,
                   isDateTypeFrozenCheckboxID
-                ] = getRandomID(10, 3).map((id) => `_${id}`),
+                ] = getRandom.id(10, 3).map((id) => `_${id}`),
                   element = `
                   <div class="standard-table-udt-column-field row">
                     <div class="col-md-3" col="columnName">
@@ -12646,7 +12648,7 @@
                 throw 0
 
               try {
-                fields = JSON.parse(repairJSON(fields))
+                fields = JSON.parse(repairJSONString(fields))
               } catch (e) {
                 fields = []
               }
@@ -13242,7 +13244,7 @@
           throw 0
         }
 
-        let pickerContainerID = getRandomID(30),
+        let pickerContainerID = getRandom.id(30),
           isDataCleared = false,
           viewMode = 'YMDHMS'
 
@@ -16007,8 +16009,6 @@
       selectionButtons.click(function() {
         if ($(this).hasClass('active'))
           return
-
-        console.log("HERE");
 
         let type = $(this).attr('data-type')
 

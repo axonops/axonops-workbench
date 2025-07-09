@@ -45,7 +45,7 @@ module.exports = {
         'renderer/js/**/*.js',
         '!renderer/js/external/**',
         '!renderer/js/**/*.min.js',
-        '!custom_node_modules/**'
+        '!custom_modules/**'
       ],
       testEnvironmentOptions: {
         url: 'http://localhost'
@@ -58,7 +58,7 @@ module.exports = {
   coverageReporters: ['text', 'lcov', 'html'],
   coveragePathIgnorePatterns: [
     '/node_modules/',
-    '<rootDir>/custom_node_modules/'
+    '<rootDir>/custom_modules/'
   ],
   coverageThreshold: {
     global: {
@@ -89,7 +89,7 @@ module.exports = {
   testPathIgnorePatterns: [
     '/node_modules/',
     '/dist/',
-    '/custom_node_modules/',
+    '/custom_modules/',
     '/.git/'
   ],
   

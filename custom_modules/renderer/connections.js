@@ -221,7 +221,7 @@ let getConnections = async (workspaceID, rawData = false) => {
               })
             )
 
-            await FS.writeFileSync(Path.join(connectionFolderPath, 'config', 'ssh-tunnel.json'), applyJSONBeautify(sshTunnel))
+            await FS.writeFileSync(Path.join(connectionFolderPath, 'config', 'ssh-tunnel.json'), beautifyJSON(sshTunnel))
           } catch (e) {}
 
           sshTunnel.passphrase = temp.info.secrets.sshPassphrase
@@ -339,7 +339,7 @@ let saveConnection = async (workspaceID, connection) => {
       } catch (e) {}
 
       // Write final SSH tunneling info in the `ssh-tunnel.json` file
-      await FS.writeFileSync(Path.join(connectionFolderPath, 'config', 'ssh-tunnel.json'), applyJSONBeautify(connection.ssh))
+      await FS.writeFileSync(Path.join(connectionFolderPath, 'config', 'ssh-tunnel.json'), beautifyJSON(connection.ssh))
 
       /**
        * Update the `cqlsh.rc` file content by replacing strings with variables
@@ -373,10 +373,10 @@ let saveConnection = async (workspaceID, connection) => {
     } catch (e) {}
 
     // Write the info content in `info.json` file
-    await FS.writeFileSync(Path.join(connectionFolderPath, 'info.json'), applyJSONBeautify(connection.info))
+    await FS.writeFileSync(Path.join(connectionFolderPath, 'info.json'), beautifyJSON(connection.info))
 
     // Update saved `connections.json` file by adding the new connection
-    await FS.writeFileSync(Path.join(connectionFolderPath, '..', 'connections.json'), applyJSONBeautify(connections))
+    await FS.writeFileSync(Path.join(connectionFolderPath, '..', 'connections.json'), beautifyJSON(connections))
 
     // Successfully saved
     status = true
@@ -498,7 +498,7 @@ let updateConnection = async (workspaceID, connection) => {
       } catch (e) {}
 
       // Write final SSH tunneling info in the `ssh-tunnel.json` file
-      await FS.writeFileSync(Path.join(newConnectionFolderPath, 'config', 'ssh-tunnel.json'), applyJSONBeautify(connection.ssh))
+      await FS.writeFileSync(Path.join(newConnectionFolderPath, 'config', 'ssh-tunnel.json'), beautifyJSON(connection.ssh))
     } catch (e) {}
 
     try {
@@ -535,10 +535,10 @@ let updateConnection = async (workspaceID, connection) => {
     delete connection.info.secrets
 
     // Write the updated info content in the `info.json` file
-    await FS.writeFileSync(Path.join(newConnectionFolderPath, 'info.json'), applyJSONBeautify(connection.info))
+    await FS.writeFileSync(Path.join(newConnectionFolderPath, 'info.json'), beautifyJSON(connection.info))
 
     // Update saved `connections.json` file by adding the new connection
-    await FS.writeFileSync(Path.join(newConnectionFolderPath, '..', 'connections.json'), applyJSONBeautify(connections))
+    await FS.writeFileSync(Path.join(newConnectionFolderPath, '..', 'connections.json'), beautifyJSON(connections))
 
     // Successfully updated
     status = true
@@ -586,7 +586,7 @@ let deleteConnection = async (workspaceFolder, connectionFolder, connectionID, c
 
     // Keep the connection's folder, however, add a prefix `_DEL_` with random digits
     if (keepFiles)
-      await FS.moveSync(connectionPath, `${connectionPath}_DEL_${getRandomID(5)}`, {
+      await FS.moveSync(connectionPath, `${connectionPath}_DEL_${getRandom.id(5)}`, {
         overwrite: true
       })
 
@@ -604,7 +604,7 @@ let deleteConnection = async (workspaceFolder, connectionFolder, connectionID, c
     connections = connections.filter((connection) => connection.folder != connectionFolder)
 
     // Convert connections object to JSON string
-    connections = applyJSONBeautify(connections)
+    connections = beautifyJSON(connections)
 
     // Handle when we now have no added connections
     connections = connections == '[]' ? '' : connections
@@ -802,7 +802,7 @@ let setCQLSHRCContent = (sections, cqlshrc = null, editor = null) => {
        * Create a regular expression
        * It'll match the entire block of a passed section
        */
-      let regex = new RegExp('^((?![\\;\\[])|(\\;*\s*\\[))' + quoteForRegex(section) + '\\](.|\n)*?\\[', 'gm')
+      let regex = new RegExp('^((?![\\;\\[])|(\\;*\\s*\\[))' + quoteForRegex(section) + '\\](.|\n)*?(?=^\\s*\\[)', 'gm')
 
       // Get the sections' block
       let block = (content.match(regex))[0]
@@ -1234,7 +1234,7 @@ let updateFilesVariables = async (workspaceID, cqlshrc, cqlshrcPath, removedVari
       }
 
       // Write new info
-      await FS.writeFileSync(Path.join(cqlshrcPath, '..', 'ssh-tunnel.json'), applyJSONBeautify(sshTunnelingInfo))
+      await FS.writeFileSync(Path.join(cqlshrcPath, '..', 'ssh-tunnel.json'), beautifyJSON(sshTunnelingInfo))
     } catch (e) {}
 
     // If `cqlshrcPath` is `null` then we've passed the editor content and want the final results
@@ -1266,7 +1266,7 @@ let getMetadata = (connectionID, callback) => {
    * Get a random ID for that request
    * It'll be sent to the main thread
    */
-  let metadataSendID = getRandomID(5)
+  let metadataSendID = getRandom.id(5)
 
   // Send the request
   IPCRenderer.send('pty:metadata', {
@@ -1276,7 +1276,7 @@ let getMetadata = (connectionID, callback) => {
 
   /**
    * Listen to the response from the main thread
-   * The main thread will send the JSON string in parts, and they'll be grouped in the `connectionsMetadata` array, and then converted to JSON object using the `repairJSON` function
+   * The main thread will send the JSON string in parts, and they'll be grouped in the `connectionsMetadata` array, and then converted to JSON object using the `repairJSONString` function
    */
   IPCRenderer.on(`connection:metadata:${metadataSendID}:${connectionID}`, (_, data) => {
     try {
@@ -1288,7 +1288,7 @@ let getMetadata = (connectionID, callback) => {
       let metadata = data.metadata
 
       // "Repair" the given metadata to be parsed later
-      metadata = repairJSON(metadata)
+      metadata = repairJSONString(metadata)
 
       // Call the `callback` function and pass the final metadata JSON object
       callback(metadata)
@@ -1314,7 +1314,7 @@ let getCQLDescription = (connectionID, scope, callback) => {
    * Get a random ID for that request
    * It'll be sent to the main thread
    */
-  let cqlDescSendID = getRandomID(10)
+  let cqlDescSendID = getRandom.id(10)
 
   // Send the request to the main thread
   IPCRenderer.send('pty:cql-desc', {
@@ -1395,7 +1395,7 @@ let getSSHTunnelingInfo = async (workspaceID, connectionFolder) => {
 let getQueryTracingResult = (connectionID, sessionID, callback) => {
   let result = '', // Final result which be returned
     requestTimeout = null, // Timeout to be triggered if we don't get a valid result
-    requestID = getRandomID(10), // Generate a random ID for the request
+    requestID = getRandom.id(10), // Generate a random ID for the request
     isResultSent = false // Flag to tell if the result has already been sent for the current request
 
   // Send a request to get the query tracing result from the main thread, which will use functions in class `Pty`
@@ -1481,7 +1481,7 @@ let getQueryTracingResult = (connectionID, sessionID, callback) => {
 
         temp = temp.map((row) => {
           try {
-            return JSON.parse(repairJSON(row))
+            return JSON.parse(repairJSONString(row))
           } catch (e) {}
 
           return row
@@ -1607,7 +1607,7 @@ let checkConnectivity = (connectionID, callback) => {
    * Get a random ID for that check request
    * It'll be sent to the main thread
    */
-  let checkConnectivityRequestID = getRandomID(10)
+  let checkConnectivityRequestID = getRandom.id(10)
 
   // Send the request to the main thread
   IPCRenderer.send('pty:check-connection', {
@@ -1630,6 +1630,185 @@ let checkConnectivity = (connectionID, callback) => {
   })
 }
 
+/**
+ * Execute a given array of scripts
+ *
+ * @Parameters:
+ * {integer} `scriptID` the index of the script to execute in the `scripts` array
+ * {object} `scripts` an array of paths of scripts
+ * {object} `callback` function that will be triggered with passing the final result
+ *
+ * @Return: {object}: {integer} `scriptID`, {object} `scripts`, {integer} `status`
+ *
+ * If `status` is not `0`, then the last executed script didn't return the success code `0`, otherwise, all scripts have been successfully executed
+ */
+let executeScript = (scriptID, scripts, callback) => {
+  // Get a random ID for the execution request
+  let requestID = getRandom.id(20)
+
+  // Add log about executing the current script
+  try {
+    addLog(`Executing the script '${scripts[scriptID]}' within a connection process`, 'process')
+  } catch (e) {}
+
+  // Send the execution request
+  IPCRenderer.send('script:run', {
+    id: requestID,
+    scriptPath: scripts[scriptID]
+  })
+
+  // Handle the response
+  IPCRenderer.on(`script:result:${requestID}`, (_, status) => {
+    // Preserve the original status' value before parsing
+    let originalStatus = status
+
+    /**
+     * Get the execution's status
+     * If it's not the success code `0`, then the last script hasn't executed properly
+     */
+    status = parseInt(status)
+
+    // Add log for the execution's status
+    try {
+      addLog(`Execution status of the script '${scripts[scriptID]}' is '${isNaN(status) ? originalStatus : status}'`)
+    } catch (e) {}
+
+    try {
+      // If the status/returned value is not `0` then it is considered an error
+      if (status != 0)
+        throw 0; // This semicolon is critical here
+
+      // Otherwise, the status value is `0` and the current script has been successfully executed
+      ++scriptID
+
+      // If condition `true`, then all scripts have been executed without errors
+      if (scriptID + 1 > scripts.length)
+        throw 0
+
+      // Call the execution function again in a recursive way
+      executeScript(scriptID, scripts, callback)
+    } catch (e) {
+      try {
+        errorLog(e, 'functions')
+      } catch (e) {}
+
+      /**
+       * Call the callback function
+       * Pass the last executed script ID, all scripts array, and the last execution status
+       */
+      return callback({
+        scriptID: scriptID,
+        scripts: scripts,
+        status: isNaN(status) ? originalStatus : status
+      })
+    }
+  })
+}
+
+/**
+ * Get all pre and post-connection scripts of a given connection
+ *
+ * @Parameters:
+ * {string} `workspaceID` the ID of the target workspace
+ * {string} `?connectionID` the target connection's ID, or null to check the editor's content
+ *
+ * @Return: {object} JSON object which has `pre` and `post` attributes, each attribute holds an array of scripts' paths
+ */
+let getPrePostScripts = async (workspaceID, connectionID = null) => {
+  // Final result to be returned - scripts to be executed -
+  let scripts = {
+      pre: [], // Pre-connection scripts' paths
+      post: [] // Post-connection scripts' paths
+    },
+    /**
+     * Flag which tells if sensitive data has been found in the connection's `cqlsh.rc` content
+     * This is an extra attribute
+     */
+    foundSensitiveData = false,
+    // An object which holds the content of the connection's cqlsh.rc file
+    cqlshContent = null
+
+  // Define the text to be added to the log regards the workspace
+  let workspace = `workspace #${workspaceID}`
+
+  // Add log about this process
+  try {
+    addLog(`Get all pre and post-connection scripts of ${connectionID != null ? 'connection #' + connectionID + ' in ' : ' a connection about to be added/updated in '}${workspace}`, 'process')
+  } catch (e) {}
+
+  // Check pre and post-connection scripts
+  try {
+    // Set connection to be null by default
+    let connection = null
+
+    try {
+      // If there's no connection ID has been passed then skip this try-catch block
+      if (connectionID == null)
+        throw 0
+
+      // Get all saved connections
+      let connections = await getConnections(workspaceID)
+
+      // Get the target connection's object
+      connection = connections.filter((connection) => connection.info.id == connectionID)[0]
+    } catch (e) {
+      try {
+        errorLog(e, 'functions')
+      } catch (e) {}
+    }
+
+    // Get the connection's `cqlsh.rc` file's content
+    cqlshContent = connection != null ? await getCQLSHRCContent(workspaceID, connection.cqlshrc) : await getCQLSHRCContent(workspaceID, null, addEditConnectionEditor),
+      // Define the file's sections
+      sections = Object.keys(cqlshContent)
+
+    // If there are no sections in the `cqlsh.rc` file then skip this try-catch block
+    if (sections.length <= 0)
+      throw 0
+
+    // Loop through each section
+    for (let section of sections) {
+      // Define the current section's keys/options
+      let keys = Object.keys(cqlshContent[section])
+
+      // If no keys have been found in this section then skip it and move to the next one
+      if (keys.length <= 0)
+        continue
+
+      // Loop through keys/options
+      for (let key of keys) {
+        // If the current key/option is considered sensitive - for instance; it is `username` -
+        if (Modules.Consts.SensitiveData.includes(key))
+          foundSensitiveData = true
+
+        // Check if there are scripts
+        let script = cqlshContent[section][key]
+
+        // Check if there're pre or post connect scripts
+        if (['preconnect', 'postconnect'].includes(section))
+          scripts[section == 'preconnect' ? 'pre' : 'post'].push(script)
+      }
+    }
+  } catch (e) {
+    try {
+      errorLog(e, 'functions')
+    } catch (e) {}
+  }
+
+  // Add log if scripts have been found
+  if (scripts.length != 0)
+    try {
+      addLog(`Pre and post-connection scripts of ${connectionID != null ? 'connection #' + connectionID + ' in ' : ' a connection about to be added/updated in '}${workspace} are (${JSON.stringify(scripts)})`, 'process')
+    } catch (e) {}
+
+  // Return the final result
+  return {
+    ...scripts,
+    foundSensitiveData,
+    cqlshContent
+  }
+}
+
 module.exports = {
   // Main connection's operations
   getConnections,
@@ -1649,5 +1828,7 @@ module.exports = {
   getSSHTunnelingInfo,
   getQueryTracingResult,
   getSnapshots,
-  getNewestSnapshot
+  getNewestSnapshot,
+  executeScript,
+  getPrePostScripts
 }

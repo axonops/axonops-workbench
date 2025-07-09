@@ -314,7 +314,9 @@ const Constants = {
     }
   },
   // This array will be updated with +500 extensions using `text-extensions` modules
-  SupportedTextFilesExtenstions: ['sql', 'cql']
+  SupportedTextFilesExtenstions: ['sql', 'cql'],
+  // The legal notice shown in the intro view and CLI mode
+  LegalNotice: `AxonOps is a registered trademark of AxonOps Limited. Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation (<span class="link"><span class="content">http://www.apache.org/</span></span>) or its subsidiaries in Canada, the United States and/or other countries. Elasticsearch is a trademark of Elasticsearch B.V., registered in the U.S. and in other countries. DataStax is registered trademarks of DataStax, Inc. and its subsidiaries in the United States and/or other countries. Docker is a trademark or registered trademark of Docker, Inc. in the United States and/or other countries`
 }
 
 module.exports = Constants

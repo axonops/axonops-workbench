@@ -38,12 +38,12 @@ $minorWeights: 'thin', 'extralight', 'light', 'regular', 'medium', 'semibold', '
   }
 }
 /*
-* Fustat
-* https://fonts.google.com/specimen/Fustat
+* Space Grotesk
+* https://fonts.google.com/specimen/Space+Grotesk
 * Font name: 'Brand'
 */
 @font-face {
-  @include fontface('Brand', 'fustat', 'medium', 'ttf', normal, 500)
+  @include fontface('Brand', 'space_grotesk', 'medium', 'ttf', normal, 500)
 }
 /*
 * Noto Sans Simplified Chinese

@@ -48,9 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
         </div>`,
-      checkForTheSideMenuTimeout,
-      checkForTheSideMenu = () => {
-        checkForTheSideMenuTimeout = setTimeout(() => {
+      checkTheSideMenuTimeout,
+      checkTheSideMenu = () => {
+        checkTheSideMenuTimeout = setTimeout(() => {
           if (document.querySelector('div[data-id="reloadWebView"]') != null)
             return
 
@@ -67,12 +67,12 @@ document.addEventListener('DOMContentLoaded', () => {
           } catch (e) {}
 
           if (document.querySelector('div.\\:sideMenu > div') == null)
-            checkForTheSideMenu()
+            checkTheSideMenu()
         }, 1000)
       }
 
-    checkForTheSideMenu()
+    checkTheSideMenu()
 
-    $(`#__next > div > div.pagesIndex__inner > div.termsAndConditions > div.\\:flex\\:center\\:between > div:nth-child(2) > button`).click(() => checkForTheSideMenu())
+    $(`#__next > div > div.pagesIndex__inner > div.termsAndConditions > div.\\:flex\\:center\\:between > div:nth-child(2) > button`).click(() => checkTheSideMenu())
   }, 1000)
 })

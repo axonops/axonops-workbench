@@ -44,7 +44,7 @@ class DockerCompose {
      * Set the instance's folder name
      * It can be given, or it'll be random - in case of creating a new container -
      */
-    this.folderName = folderName || getRandomID(5)
+    this.folderName = folderName || getRandom.id(5)
 
     /**
      * Set the docker container name
@@ -65,7 +65,7 @@ class DockerCompose {
     } catch (e) {}
 
     // Get a random free-to-use ports for the AxonOps agent and Apache Cassandra
-    [this.axonopsPort, this.cassandraPort] = await getRandomPort(2)
+    [this.axonopsPort, this.cassandraPort] = await getRandom.port(2)
 
     // Load the default Docker Compose YAML file content
     let yamlContent = Modules.Consts.DockerComposeYAML
@@ -170,7 +170,7 @@ class DockerCompose {
            * Get a unique port
            * Exception for the first node `cassandra-0`
            */
-          let nodePort = (node == 'cassandra-0') ? this.cassandraPort : await getRandomPort()
+          let nodePort = (node == 'cassandra-0') ? this.cassandraPort : await getRandom.port()
 
           // Set the port in format `{Unique Port}:{9043, 9044, 9045, 9043 + n}`
           latestYamlObject.services[node].ports[0] = `${nodePort}:${nodePort}`
@@ -568,7 +568,7 @@ let checkCassandraInContainer = (pinnedToastID, port, callback, timestamp = null
     return
 
   // Manipulate the requestID in a way it won't be `null` whatsoever
-  requestID = requestID || getRandomID(10)
+  requestID = requestID || getRandom.id(10)
 
   // Same thing to the timestamp, it won't be `null` at all
   timestamp = timestamp || new Date().getTime()
@@ -598,7 +598,7 @@ let checkCassandraInContainer = (pinnedToastID, port, callback, timestamp = null
         throw 0
 
       // Close the associated pinned toast
-      updatePinnedToast(pinnedToastID, true, true)
+      pinnedToast.update(pinnedToastID, true, true)
 
       // Call the callback function
       callback(result)
@@ -612,7 +612,7 @@ let checkCassandraInContainer = (pinnedToastID, port, callback, timestamp = null
 
     // If the result has already been sent then skip the upcoming code
     if (!send)
-      return updatePinnedToast(pinnedToastID, true, true)
+      return pinnedToast.update(pinnedToastID, true, true)
 
     // If the received result tells that Cassandra is ready then call the callback function and finish the process
     if (result.connected && result.version != undefined) {
@@ -634,7 +634,7 @@ let checkCassandraInContainer = (pinnedToastID, port, callback, timestamp = null
     // Call the update function telling that Cassandra isn't ready yet
     let message = `Cassandra is not ready yet, recheck again in ${TimeOut.retry/1000} seconds`
 
-    updatePinnedToast(pinnedToastID, `++${message}.`)
+    pinnedToast.update(pinnedToastID, `++${message}.`)
 
     try {
       addLog(`${message}. Listen to port '${port}'`)
@@ -808,7 +808,7 @@ let saveProject = async (project) => {
     projects.push(project)
 
     // Update the `docker.json` file; by adding the new project
-    await FS.writeFileSync(Path.join(DockerContainersPath, 'localclusters.json'), applyJSONBeautify(projects))
+    await FS.writeFileSync(Path.join(DockerContainersPath, 'localclusters.json'), beautifyJSON(projects))
 
     // Successfully saved
     status = 1
@@ -850,7 +850,7 @@ let deleteProject = async (folderName, keepFiles = false) => {
 
     // Keep the workspace's folder, however, add a prefix `_DEL_` with random digits
     if (keepFiles)
-      await FS.moveSync(Path.join(DockerContainersPath, folderName), `${Path.join(DockerContainersPath, folderName)}_DEL_${getRandomID(5)}`, {
+      await FS.moveSync(Path.join(DockerContainersPath, folderName), `${Path.join(DockerContainersPath, folderName)}_DEL_${getRandom.id(5)}`, {
         overwrite: true
       })
 
@@ -869,7 +869,7 @@ let deleteProject = async (folderName, keepFiles = false) => {
 
     // Update the saved project's JSON file
     try {
-      await FS.writeFileSync(Path.join(DockerContainersPath, 'localclusters.json'), applyJSONBeautify(projects), 'utf8')
+      await FS.writeFileSync(Path.join(DockerContainersPath, 'localclusters.json'), beautifyJSON(projects), 'utf8')
     } catch (e) {
       try {
         errorLog(e, 'local clusters')
@@ -902,7 +902,7 @@ Terminal.spawn = (command, pinnedToastID, process, callback) => {
    * Define a temporary file name
    * This file will be updated with the command's output
    */
-  let tempFileName = Path.join(OS.tmpdir(), `${getRandomID(10)}.tmp`),
+  let tempFileName = Path.join(OS.tmpdir(), `${getRandom.id(10)}.tmp`),
     // Set the process' start time
     startTime = new Date().getTime(),
     // Define an output watcher - will watch the temporary file changes
@@ -943,7 +943,7 @@ Terminal.spawn = (command, pinnedToastID, process, callback) => {
 
             // Update the associated pinned toast's body content
             if (pinnedToastID != undefined)
-              updatePinnedToast(pinnedToastID, commandOutput)
+              pinnedToast.update(pinnedToastID, commandOutput)
           })
         } catch (e) {}
       })
@@ -987,14 +987,14 @@ Terminal.spawn = (command, pinnedToastID, process, callback) => {
       try {
         // The process is `start` a docker project, thus the app needs to tell the user about the next sub-process
         if (process == 'start' && !error && !stderr) {
-          updatePinnedToast(pinnedToastID, '++Waiting for Cassandra to be up and ready.')
+          pinnedToast.update(pinnedToastID, '++Waiting for Cassandra to be up and ready.')
 
           // Skip the upcoming code in the try-catch block
           throw 0
         }
 
         // The process is `stop` a docker project thus there's no need to keep the pinned toast
-        updatePinnedToast(pinnedToastID, true, true)
+        pinnedToast.update(pinnedToastID, true, true)
       } catch (e) {}
 
       // Delete the temporary file

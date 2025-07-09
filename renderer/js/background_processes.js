@@ -44,12 +44,12 @@ const FS = require('fs-extra'),
   IPCRenderer = require('electron').ipcRenderer,
   /**
    * Get a random free-to-use port
-   * It has been implemented within the function `getRandomPort(?amount)`
+   * It has been implemented within the function `getRandom.port(?amount)`
    */
   PortGet = require('port-get'),
   /**
    * Create an SSH tunnel with the ability to close it, and listen to its traffic
-   * It has been implemented within the function `createSSHTunnel(data)`
+   * It has been implemented within the function `tunnelSSH.createTunnel(data)`
    */
   OpenSSHTunnel = require(Path.join(__dirname, '..', 'js', 'external', 'open_ssh_tunnel.js')),
   /**
@@ -72,7 +72,7 @@ let extraResourcesPath = null,
   // An array to hold all created SSH tunnels
   sshTunnelsObjects = [],
   // Boolean value used to tell if the logging system should be enabled in the current session or not
-  isLoggingEnabled = true,
+  isLoggingFeatureEnabled = true,
   // An array that tells which SSH tunnel should be closed - after terminating the process -
   toBeClosedSSHTunnels = []
 
@@ -82,7 +82,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
   extraResourcesPath = path
 
   // The config module; to get the app's config and sync with any change
-  const Config = require(Path.join(__dirname, '..', '..', 'custom_node_modules', 'renderer', 'config'))
+  const Config = require(Path.join(__dirname, '..', '..', 'custom_modules', 'renderer', 'config'))
 
   $(document).ready(() => {
     /**
@@ -102,10 +102,10 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
    */
   Config.getConfig(async (config) => {
     // Check the status of either enabling or disabling the logging feature
-    isLoggingEnabled = config.get('security', 'loggingEnabled') || isLoggingEnabled
+    isLoggingFeatureEnabled = config.get('security', 'loggingEnabled') || isLoggingFeatureEnabled
 
     // Convert the flag to a boolean instead of a string
-    isLoggingEnabled = isLoggingEnabled == 'false' ? false : true
+    isLoggingFeatureEnabled = isLoggingFeatureEnabled == 'false' ? false : true
   })
 
   // Handle all communication channels with the main thread
@@ -137,7 +137,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
             let [
               srcPort,
               localPort
-            ] = await getRandomPort(2)
+            ] = await getRandom.port(2)
 
             // If no specific port passed for the SSH server then use 22
             data.port = data.port || 22

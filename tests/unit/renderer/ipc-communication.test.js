@@ -228,19 +228,19 @@ describe('Renderer IPC Communication', () => {
     });
   });
 
-  describe('Cluster Operations via IPC', () => {
+  describe('Connection Operations via IPC', () => {
     test('should execute CQL query', async () => {
       const query = 'SELECT * FROM system.local';
       const results = {
-        rows: [{ key: 'local', cluster_name: 'Test Cluster' }],
-        metadata: { columns: ['key', 'cluster_name'] }
+        rows: [{ key: 'local', connection_name: 'Test Connection' }],
+        metadata: { columns: ['key', 'connection_name'] }
       };
       
-      ipcRenderer.mockHandler('execute-cql', (clusterId, queryStr) => {
+      ipcRenderer.mockHandler('execute-cql', (connectionId, queryStr) => {
         return { success: true, results };
       });
       
-      const result = await ipcRenderer.invoke('execute-cql', 'cluster-1', query);
+      const result = await ipcRenderer.invoke('execute-cql', 'connection-1', query);
       
       expect(result.success).toBe(true);
       expect(result.results.rows).toHaveLength(1);
@@ -249,18 +249,18 @@ describe('Renderer IPC Communication', () => {
     test('should handle CQL execution error', async () => {
       const query = 'INVALID QUERY';
       
-      ipcRenderer.mockHandler('execute-cql', (clusterId, queryStr) => {
+      ipcRenderer.mockHandler('execute-cql', (connectionId, queryStr) => {
         return { success: false, error: 'Syntax error in CQL query' };
       });
       
-      const result = await ipcRenderer.invoke('execute-cql', 'cluster-1', query);
+      const result = await ipcRenderer.invoke('execute-cql', 'connection-1', query);
       
       expect(result.success).toBe(false);
       expect(result.error).toBe('Syntax error in CQL query');
     });
 
-    test('should test cluster connection', async () => {
-      const clusterConfig = {
+    test('should test connection connection', async () => {
+      const connectionConfig = {
         host: 'localhost',
         port: 9042,
         username: 'cassandra',
@@ -271,7 +271,7 @@ describe('Renderer IPC Communication', () => {
         return { success: true, message: 'Connection successful' };
       });
       
-      const result = await ipcRenderer.invoke('test-connection', clusterConfig);
+      const result = await ipcRenderer.invoke('test-connection', connectionConfig);
       
       expect(result.success).toBe(true);
       expect(result.message).toBe('Connection successful');

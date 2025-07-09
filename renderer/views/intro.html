@@ -16,7 +16,10 @@
  */
 -->
 
-<!-- The intro view which is shown while loading the main (index) view -->
+<!--
+  * The intro view
+  * Shown while loading both threads - main and renderer threads -
+-->
 
 <head>
   <meta charset="UTF-8">
@@ -33,26 +36,20 @@
       <div class="icon">
         <img src="../assets/images/axonops-logo-no-border.png">
       </div>
-      <div class="info">
+      <div class="app-info">
         <div id="title"></div>
         <div id="version"></div>
       </div>
     </div>
-    <div class="loading">
-      <l-squircle size="45" stroke="4" stroke-length="0.15" bg-opacity="0.25" speed="0.75" color="#dfdfdf"></l-squircle>
+    <div class="loading-spinner">
+      <l-squircle size="47" stroke="4" stroke-length="0.2" bg-opacity="0.3" speed="0.6" color="#e3e3e3"></l-squircle>
     </div>
-    <div class="notice">
-      AxonOps is a registered trademark of AxonOps Limited. Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache Software Foundation (<span class="link"><span class="content">http://www.apache.org/</span></span>) or its subsidiaries in Canada, the United States and/or other countries. Elasticsearch is a trademark of Elasticsearch B.V., registered in the U.S. and in other countries. DataStax is registered trademarks of DataStax, Inc. and its subsidiaries in the United States and/or other countries. Docker is a trademark or registered trademark of Docker, Inc. in the United States and/or other countries.
-    </div>
+    <div class="notice"></div>
     <div class="copyright-acknowledgement">
       <div class="form-check margin-bottom">
-        <input class="form-check-input" type="checkbox" value id="cassandraCopyrightAcknowledged">
-        <label class="form-check-label" for="cassandraCopyrightAcknowledged">
-          I have read and acknowledge the above copyright notices
-        </label>
-        <div class="hint">
-          This box needs to be checked for the first time in order to proceed
-        </div>
+        <input class="form-check-input" type="checkbox" id="cassandraCopyrightAcknowledged">
+        <label class="form-check-label" for="cassandraCopyrightAcknowledged">I have read and acknowledge the above copyright notices.</label>
+        <div class="hint">This box needs to be checked for the first time in order to proceed</div>
       </div>
     </div>
   </center>

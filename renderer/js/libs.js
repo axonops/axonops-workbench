@@ -15,6 +15,12 @@
  */
 
 /**
+ * Import the compilation cache optimizer
+ * It attaches a require hook to use V8's code cache to speed up instantiation time
+ */
+require('v8-compile-cache')
+
+/**
  * Libraries, packages and custom modules importing file
  *
  * Import all essential libraries and modules
@@ -49,12 +55,12 @@ const OS = require('os'),
   /**
    * Generate a random string
    * Mainly used for generating IDs for connections, workspaces, UI elements, and so on
-   * It has been implemented within the function `getRandomID(length, ?amount)`
+   * It has been implemented within the function `getRandom.id(length, ?amount)`
    */
   RandomID = require('id-16'),
   /**
    * Get a random flat color
-   * It has been implemented within the function `getRandomColor(?amount)`
+   * It has been implemented within the function `getRandom.color(?amount)`
    */
   RandomFlatColors = require('random-flat-colors'),
   /**
@@ -64,6 +70,7 @@ const OS = require('os'),
   TinyColor = require('tinycolor2'),
   // Convert a color's value from HEX to RGB
   HEXToRGB = require('hex-to-rgb'),
+  // JavaScript syntax highlighter
   Highlight = require('highlight.js/lib/core'),
   // Convert ANSI escaped text streams to html
   ANSIToHTML = require('ansi-to-html'),
@@ -73,24 +80,20 @@ const OS = require('os'),
   AppData = require('appdata-path'),
   /**
    * `JSON.stringify` with fixed maximum character width
-   * It has been implemented within the function `applyJSONBeautify(object, ?sort)`
+   * It has been implemented within the function `beautifyJSON(object, ?sort)`
    */
   BeautifyJSON = require('json-beautify'),
   /**
    * This module takes JSON content and returns a copy of the same content but with the sorted keys
-   * It has been implemented within the function `applyJSONBeautify(object, ?sort)`
+   * It has been implemented within the function `beautifyJSON(object, ?sort)`
    */
   SortJSON = require('sort-json'),
   // Convert an array of Objects into a table format
   ConvertJSONTable = require('json-to-table'),
   // Generate interactive HTML table
-  Tabulator = require('tabulator-tables')
-
-// Sanitize a string to be safe for use as a file name; by removing directory paths and invalid characters
-let Sanitize = require('sanitize-filename')
-
-// Promise based HTTP client for the browser and node.js
-const Axios = require('axios'),
+  Tabulator = require('tabulator-tables'),
+  // Promise based HTTP client for the browser and node.js
+  Axios = require('axios'),
   /**
    * An implementation of PHP `strip_tags` in Node.js
    * Used for stripping HTML tags from a given string
@@ -104,12 +107,12 @@ const Axios = require('axios'),
   Marked = require('marked'),
   /**
    * Pure Node.js RSA library implemented
-   * It has been implemented within the functions `encrypt(publicKey, text)` and `decrypt(privateKey, text)`
+   * It has been implemented within the functions `encryptText(publicKey, text)` and `decryptText(privateKey, text)`
    */
   NodeRSA = require('node-rsa'),
   /**
    * Node.js module to manage system keychain
-   * It has been implemented within the function `getKey(type, callback)`
+   * It has been implemented within the function `getRSAKey(type, callback)`
    */
   Keytar = require('keytar'),
   /**
@@ -132,12 +135,12 @@ const Axios = require('axios'),
   IsTimestamp = require('is-timestamp'),
   /**
    * Get a random free-to-use port
-   * It has been implemented within the function `getRandomPort(?amount)`
+   * It has been implemented within the function `getRandom.port(?amount)`
    */
   PortGet = require('port-get'),
   /**
    * Fix a given JSON in string format
-   * It has been implemented within the function `repairJSON(json)`
+   * It has been implemented within the function `repairJSONString(json)`
    */
   JSONRepair = require('jsonrepair').jsonrepair,
   // Cross-browser storage for all use cases
@@ -160,6 +163,9 @@ const Axios = require('axios'),
   // Addon for ensuring that webfonts load correctly before attempting to draw characters in an xterm instance
   XtermWebFonts = require('xterm-webfont')
 
+// Sanitize a string to be safe for use as a file name; by removing directory paths and invalid characters
+let Sanitize = require('sanitize-filename')
+
 /**
  * Import the custom node modules for the renderer thread
  *
@@ -174,7 +180,7 @@ try {
    *
    * `Path` module has been imported in the initialization file `init.js`
    */
-  const modulesFilesPath = Path.join(__dirname, '..', '..', 'custom_node_modules', 'renderer')
+  const modulesFilesPath = Path.join(__dirname, '..', '..', 'custom_modules', 'renderer')
 
   // Read files inside the folder
   let modulesFiles = FS.readdirSync(modulesFilesPath)

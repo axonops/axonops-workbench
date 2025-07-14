@@ -102,6 +102,11 @@ jobs:
         with:
           node-version: 20.19.2
 
+      - name: Install AxonOps Developer Workbench dependencies
+        run: |
+          npm cache clean --force
+          npm i
+
       - name: Get credits and add them to the database
         run: |
           cd get_credits
@@ -109,11 +114,6 @@ jobs:
           npm i
           npm rebuild
           node get_credits.js
-
-      - name: Install AxonOps Developer Workbench dependencies
-        run: |
-          npm cache clean --force
-          npm i
 
       - name: Run tests
         run: npm run test:ci

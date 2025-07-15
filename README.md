@@ -36,7 +36,6 @@
 - 🎯 **Cassandra-Native Design** - Engineered specifically for Cassandra's unique architecture and workflows
 - 🛠️ **Developer-Friendly** - Intuitive interface with powerful productivity features
 - 🔒 **Secure by Design** - Built-in SSH tunneling and credential management
-- 🤖 **AI-Powered** - Experimental AI assistant to help with queries and troubleshooting
 - 🏃 **Local Development** - Spin up local Cassandra clusters with one click
 - 📊 **Advanced Analytics** - Deep query tracing and performance insights
 - 🌍 **Cross-Platform** - Available for macOS, Windows, and Linux
@@ -47,7 +46,7 @@
 2. **Set up Docker/Podman** - Required for running local clusters only
 3. **Create a Workspace** - Organize your clusters and connections
 4. **Connect to Cassandra** - Support for Apache Cassandra, DataStax Enterprise, and Astra DB
-5. **Start Exploring** - Use the CQL console, query tracing, and AI assistant
+5. **Start Exploring** - Use the CQL console and query tracing
 
 ---
 
@@ -58,7 +57,6 @@
 | Feature | Description |
 |---------|-------------|
 | 🖥️ **CQL Console** | Advanced editor with syntax highlighting, auto-completion |
-| 🤖 **AI Assistant (Experimental)** | Get intelligent help with query optimization and troubleshooting |
 | 🔍 **Query Tracing** | Deep performance analysis with execution plans and bottleneck detection |
 | 🏃 **Local Clusters** | Spin up Cassandra clusters instantly with Docker/Podman integration |
 | 🔒 **SSH Tunneling** | Secure remote connections without external tools |
@@ -129,11 +127,6 @@ Experience the most advanced CQL editor with syntax highlighting, auto-completio
 Deep dive into query performance with detailed tracing, execution plans, and bottleneck identification.
 
 ![Advanced_query_tracing](https://github.com/user-attachments/assets/346cbdc4-60f2-4482-9a57-874919a4f711)
-
-### 🤖 AI Assistant (Experimental)
-Get intelligent query suggestions, performance optimization tips, and troubleshooting help powered by AI.
-
-![AI_Expert_Assistant](https://github.com/user-attachments/assets/41f737c4-7511-4732-8556-771a6dd8d8a3)
 
 ### 📁 Workspace Management
 Organize your clusters into workspaces and securely share configurations through source control.

@@ -88,6 +88,31 @@ jobs:
           CQLSH_BUILD_VERSION: "0.17.3"
           CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download' }}"
 
+      - name: Azure login
+        if: runner.os == 'Windows'
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install AzureSignTool
+        if: runner.os == 'Windows'
+        run: dotnet tool install --no-cache --global AzureSignTool --version 4.0.1
+
+      - name: Azure token to use with AzureSignTool
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $az_token=$(az account get-access-token --scope https://vault.azure.net/.default --query accessToken --output tsv)
+          echo "::add-mask::$az_token"
+          echo "AZ_TOKEN=$az_token" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build signed installer
+        if: runner.os == 'Windows'
+        run: |
+          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "main/bin/cqlsh/cqlsh.exe"
+          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "main/bin/keys_generator/keys_generator.exe"
+        shell: cmd
+
       - name: Setup Python v3.12
         uses: actions/setup-python@v5
         with:
@@ -181,24 +206,6 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-
-      - name: Azure login
-        if: runner.os == 'Windows'
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Install AzureSignTool
-        if: runner.os == 'Windows'
-        run: dotnet tool install --no-cache --global AzureSignTool --version 4.0.1
-
-      - name: Azure token to use with AzureSignTool
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $az_token=$(az account get-access-token --scope https://vault.azure.net/.default --query accessToken --output tsv)
-          echo "::add-mask::$az_token"
-          echo "AZ_TOKEN=$az_token" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Build signed installer
         if: runner.os == 'Windows'

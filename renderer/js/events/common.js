@@ -447,7 +447,8 @@
         basicCQLSHEnabled = config.get('features', 'basicCQLSH'),
         checkForUpdates = config.get('updates', 'checkForUpdates'),
         autoUpdate = config.get('updates', 'autoUpdate'),
-        displayLanguage = config.get('ui', 'language')
+        displayLanguage = config.get('ui', 'language'),
+        axonOpsIntegration = config.get('features', 'axonOpsIntegration')
 
       // Add log for this action
       try {
@@ -475,6 +476,8 @@
 
       // Check the logging system
       $('input#loggingSystem[type="checkbox"]').prop('checked', loggingEnabled == 'true')
+
+      $('input#enableAxonOpsDashboardIntegration[type="checkbox"]').prop('checked', axonOpsIntegration == 'true')
 
       $('input#checkForUpdatesOnLanuch[type="checkbox"]').prop('checked', checkForUpdates == 'true')
       $('input#autoUpdateWithNotification[type="checkbox"]').prop('checked', autoUpdate == 'true')
@@ -767,6 +770,8 @@
       let contentProtection = $('input#contentProtection[type="checkbox"]').prop('checked'),
         // Check logging system enable/disable status
         loggingEnabled = $('input#loggingSystem[type="checkbox"]').prop('checked'),
+        // AxonOps Integration feature
+        axonOpsIntegration = $('input#enableAxonOpsDashboardIntegration[type="checkbox"]').prop('checked'),
         // Check the sandbox projects enable/disable status
         sandboxProjectsEnabled = $('input#sandboxProjects[type="checkbox"]').prop('checked'),
         basicCQLSHEnabled = $('input#basicCQLSH[type="checkbox"]').prop('checked'),
@@ -819,6 +824,7 @@
           config.set('features', 'localClusters', sandboxProjectsEnabled)
           config.set('features', 'basicCQLSH', basicCQLSHEnabled)
           config.set('features', 'containersManagementTool', containersManagementTool)
+          config.set('features', 'axonOpsIntegration', axonOpsIntegration)
           Keytar.setPassword('AxonOpsWorkbenchAIAssistant', 'value', `${assistantAIEnabled}`)
           config.set('limit', 'cqlsh', maxNumCQLSHSessions)
           config.set('limit', 'sandbox', maxNumSandboxProjects)
@@ -1406,4 +1412,16 @@
       numOfActiveWorkareas = numUpdate
     }, 1500)
   } catch (e) {}
+}
+
+{
+  $('input[type="checkbox"][role="switch"]').on('change input', function() {
+    $(this).parent().find(`label[for="${$(this).attr('id')}"]`).css('opacity', $(this).prop('checked') ? '1' : '0.65')
+  })
+}
+
+{
+  IPCRenderer.send('theme:is-dark')
+
+  IPCRenderer.on('theme:is-dark', (_, isHostThemeDarkUpdated) => isHostThemeDark = isHostThemeDarkUpdated)
 }

@@ -105,3 +105,7 @@ let mdbObjects = [],
     addConnectionActionButton: null,
     refreshConnectionActionButton: null
   }
+
+let isHostThemeDark = false
+
+let isInitAxonOpsIntegrationEnabled = false

@@ -2696,10 +2696,12 @@ div#noColumnMatched {
 }
 
 div.allow-filtering-hint,
+div.axonops-integration-status-hint,
 div.consistency-level-enhanced-console-info,
 div.consistency-level-warning-delete,
 div.consistency-level-warning-insert,
 div.delete-columns-hint,
+div.general-hint,
 div.in-operator-error,
 div.lwt-hint,
 div.lwt-hint-insert,
@@ -2726,12 +2728,18 @@ div.non-pk-columns-warning {
     width: calc(100% - 30px);
   }
 
+  &.axonops-integration-status-hint {
+    margin: 0;
+    width: 100%;
+  }
+
   ion-icon {
     font-size: 150%;
     bottom: 1px;
     margin-right: -1px;
   }
 
+  &.axonops-integration-status-hint,
   &.consistency-level-warning-delete,
   &.consistency-level-warning-insert,
   &.non-pk-columns-warning {
@@ -2870,5 +2878,43 @@ button.aggregate-functions-btn {
     &:after {
       opacity: 1;
     }
+  }
+}
+
+.for-axonops-url {
+  border-color: #4e4e4e;
+  height: calc(1.6em + 1rem + 2px + 1px) !important;
+}
+
+span.link.general {
+  span.content {
+    text-decoration: underline;
+  }
+  opacity: 1;
+  cursor: pointer;
+  transition: opacity 0.2s ease-in-out;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  ion-icon {
+    vertical-align: middle;
+    font-size: 100%;
+    margin: 0 -5px 0 -2px;
+  }
+}
+
+div.general-hint.axonops-integration {
+  display: block;
+  margin-top: 0;
+  margin-bottom: 20px;
+  margin-left: 0;
+  width: 100%;
+}
+
+div.modal-section[section="axonops-integration"] {
+  div.axonops-self-host {
+    display: none;
   }
 }

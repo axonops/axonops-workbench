@@ -30,7 +30,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
   // Get the app's config
   Modules.Config.getConfig((config) => {
     // Check the status of whether or not the sandbox projects feature is enabled
-    isSandboxProjectsEnabled = config.get('features', 'localClusters') == 'true'
+    let isSandboxProjectsEnabled = config.get('features', 'localClusters') == 'true'
 
     // Get all saved workspaces
     Modules.Workspaces.getWorkspaces().then(async (workspaces) => {
@@ -85,8 +85,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             enterBtnID,
             folderBtnID,
             settingsBtnID,
-            deleteBtnID
-          ] = getRandom.id(15, 4),
+            deleteBtnID,
+            axonOpsIntegrationBtnID
+          ] = getRandom.id(15, 5),
           // Determine whether or not the workspace will be appended in the container UI, by default it's `true`
           append = true
 
@@ -99,6 +100,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
         // Determine if the current workspace is the docker/sandbox - one
         let isSandbox = workspace.id == 'workspace-sandbox',
+          // Check if AxonOps Integration feature is disabled for this workspace
+          isAxonOpsIntegrationDisabled = Store.get(`${workspace.id}:AxonOpsIntegrationEnabled`) != undefined && !Store.get(`${workspace.id}:AxonOpsIntegrationEnabled`),
           /**
            * Determine if the workspace folder is accessible or not by checking the `connections` object
            * The value will be `undefined` if the app wasn't able to access the workspace folder and it's not the docker/sandbox workspace
@@ -129,7 +132,12 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                       <span mulang="enter"></span>
                     </button>
                   </div>
-                  <div class="actions ${isSandbox ? 'sandbox' : ''}">
+                  <div class="actions ${isSandbox ? 'sandbox' : ''} ${isInitAxonOpsIntegrationEnabled ? 'axonops-integration' : ''}">
+                    <div class="action btn btn-tertiary ${!isAxonOpsIntegrationDisabled ? 'enabled' : ''}" data-mdb-ripple-color="#fff" style="overflow: visible !important;" reference-id="${workspaceID}" button-id="${axonOpsIntegrationBtnID}" action="axonops-integration" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Toggle the AxonOps integration feature over the entire workspace" data-mulang="toggle the AxonOps integration feature over the entire workspace" capitalize-first ${isSandbox || !isInitAxonOpsIntegrationEnabled ? 'hidden' : ''}>
+                    <div class="background" ${connectionsMiniIconsBackgroundColor}></div>
+                      <ion-icon name="axonops"></ion-icon>
+                      <ion-icon name="${isAxonOpsIntegrationDisabled ? 'close' : 'check'}" class="status"></ion-icon>
+                    </div>
                     <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${workspaceID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the workspace folder"
                       data-mulang="open the workspace folder" capitalize-first>
                       <ion-icon name="folder-open"></ion-icon>
@@ -738,6 +746,38 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                     })
                   }, false, 'keep the associated files in the system')
                 })
+
+                $(`div.btn[button-id="${axonOpsIntegrationBtnID}"]`).click(function() {
+                  // Check if there is any active connection - connected with - in the workspace
+                  let foundActiveConnection = false
+
+                  // Loop through all workspace's connections
+                  $(`div.connection[data-workspace-id="${workspaceID}"]`).each(function() {
+                    // Only one active connection is needed to change the `foundActiveConnection` value
+                    if (getAttributes($(this), 'data-workarea') != 'false') {
+                      foundActiveConnection = true
+                      return true
+                    }
+                  })
+
+                  // If an active connection has been found then end the process
+                  if (foundActiveConnection)
+                    return showToast(I18next.capitalize(I18next.t('toggle AxonOps integration feature')), I18next.capitalizeFirstLetter(I18next.replaceData('one connection or more in the workspace [b]$data[/b] are open, please make sure to close the connections before attempting to toggle the feature', [getAttributes(workspaceElement, 'data-name')])) + '.', 'warning')
+
+                  let isAxonOpsIntegrationEnabled = !(Store.get(`${workspaceID}:AxonOpsIntegrationEnabled`) != undefined && !Store.get(`${workspaceID}:AxonOpsIntegrationEnabled`))
+
+                  Store.set(`${workspaceID}:AxonOpsIntegrationEnabled`, !isAxonOpsIntegrationEnabled)
+
+                  $(this).toggleClass('enabled', !isAxonOpsIntegrationEnabled)
+
+                  $(this).find('ion-icon.status').attr('name', !isAxonOpsIntegrationEnabled ? 'check' : 'close')
+
+                  $(`div.connection[data-workspace-id="${workspaceID}"][data-axonops-integration-organization]`).each(function() {
+                    $(this).find('div.footer').find('div.actions').toggleClass('axonops-integration', !isAxonOpsIntegrationEnabled)
+                    $(this).find('div.footer').find('div.actions').find('div.action[action="axonops-integration"]').toggle(!isAxonOpsIntegrationEnabled)
+                    $(this).find('div.footer').find('div.actions').find('div.action[action="axonops-integration"]').attr('hidden', !isAxonOpsIntegrationEnabled ? null : '')
+                  })
+                })
               }
             })
 
@@ -946,7 +986,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
           // If an active connection has been found then end the process
           if (foundActiveConnection)
-            return showToast(I18next.capitalize(I18next.t('workspace settings')), I18next.capitalizeFirstLetter(I18next.replaceData('one connection or more in the workspace [b]$data[/b] is open, please make sure to close the connections before attempting to edit the workspace', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
+            return showToast(I18next.capitalize(I18next.t('workspace settings')), I18next.capitalizeFirstLetter(I18next.replaceData('one connection or more in the workspace [b]$data[/b] are open, please make sure to close the connections before attempting to edit the workspace', [getAttributes(workspaceElement, 'data-name')])) + '.', 'failure')
 
           // Attempt to Update the workspace
           Modules.Workspaces.updateWorkspace({

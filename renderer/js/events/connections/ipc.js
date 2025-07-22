@@ -16035,3 +16035,110 @@
     }
   })
 }
+
+{
+  IPCRenderer.on('axonops-integration', (_, data) => {
+    let workareaElement = $(`div.workarea[workarea-id="${data.workareaID}"]`),
+      connectionElement = $(`div.connection[data-id="${data.connectionID}"]`),
+      webviewElement = workareaElement.find('div.tab-pane[tab="axonops-integration"]').find('webview'),
+      [integOrg, integClusterName, integURL] = getAttributes(connectionElement, ['data-axonops-integration-organization', 'data-axonops-integration-clustername', 'data-axonops-integration-url']),
+      targetElement = data.clusterName != undefined ? 'cluster' : (data.tableName != undefined ? 'table' : 'keyspace'),
+      urlHost = integURL == 'axonops-saas' ? Modules.Consts.AxonOpsIntegration.DefaultURL : `${integURL}`,
+      urlParams = '',
+      finalURL = '',
+      getClusterURL = (withParams = false) => {
+        try {
+          let _urlParams = Modules.Consts.AxonOpsIntegration.Patterns.Cluster
+
+          _urlParams = _urlParams.replace('{ORG}', `${integOrg}`)
+
+          _urlParams = _urlParams.replace('{CLUSTERNAME}', `${integClusterName}`)
+
+          if (withParams)
+            return {
+              url: (new URL(_urlParams, urlHost)).href,
+              params: _urlParams
+            }
+
+          urlParams = _urlParams
+
+          return (new URL(urlParams, urlHost)).href
+        } catch (e) {}
+
+        return ''
+      }
+
+    try {
+      switch (targetElement) {
+        case 'cluster': {
+
+          finalURL = getClusterURL()
+
+          break
+        }
+
+        case 'keyspace': {
+          urlParams = Modules.Consts.AxonOpsIntegration.Patterns.Keyspace
+
+          urlParams = urlParams.replace('{ORG}', `${integOrg}`)
+
+          urlParams = urlParams.replace('{CLUSTERNAME}', `${integClusterName}`)
+
+          urlParams = urlParams.replace('{KEYSPACENAME}', `${data.keyspaceName}`)
+
+          finalURL = (new URL(urlParams, urlHost)).href
+
+          break
+        }
+
+        case 'table': {
+          urlParams = Modules.Consts.AxonOpsIntegration.Patterns.Table
+
+          urlParams = urlParams.replace('{ORG}', `${integOrg}`)
+
+          urlParams = urlParams.replace('{CLUSTERNAME}', `${integClusterName}`)
+
+          urlParams = urlParams.replace('{KEYSPACENAME}', `${data.keyspaceName}`)
+
+          urlParams = urlParams.replace('{TABLENAME}', `${data.tableName}`)
+
+          finalURL = (new URL(urlParams, urlHost)).href
+
+          break
+        }
+      }
+    } catch (e) {}
+
+    if (finalURL.length <= 0)
+      return showToast(I18next.capitalize(I18next.t('axonOps integration feature')), I18next.capitalizeFirstLetter(I18next.replaceData('the provided URL for this connection [code]$data[/code] seems invalid, consider to update the connection and try again', [urlHost])) + '.', 'failure')
+
+    workareaElement.find('li.nav-item.axonops-integration-tab').show()
+
+    try {
+      let clusterURL = getClusterURL(true)
+
+      workareaElement.find('div.webview-action.btn[action="home"]').attr({
+        'home-url': clusterURL.url,
+        'home-url-params': clusterURL.params
+      })
+    } catch (e) {}
+
+    try {
+      let axonopsTab = workareaElement.find('li.nav-item.axonops-integration-tab').children('a.nav-link'),
+        axonopsTabObject = getElementMDBObject(axonopsTab, 'Tab')
+
+      axonopsTabObject.show()
+    } catch (e) {}
+
+    try {
+      $(webviewElement).attr('src', finalURL)
+    } catch (e) {}
+
+    try {
+      let tooltip = getElementMDBObject(workareaElement.find('div.webview-action.btn.webview-current-link'), 'Tooltip')
+
+      tooltip.setContent(urlParams)
+    } catch (e) {}
+
+  })
+}

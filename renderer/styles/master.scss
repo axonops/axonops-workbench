@@ -1341,7 +1341,8 @@ div.body {
                       }
                     }
 
-                    div.axonops-agent {
+                    div.axonops-agent,
+                    div.axonops-integration-icon {
                       @include position(absolute, auto, auto, 20px, auto);
                       opacity: 0;
                       pointer-events: none;
@@ -1351,6 +1352,39 @@ div.body {
                       &:hover {
                         opacity: 1 !important;
                       }
+                    }
+
+                    div.axonops-integration-icon {
+                      transform: translateY(30px) translateX(-1px);
+                      font-size: 110%;
+
+                      ion-icon {
+                        font-size: 105%;
+                        transition: opacity 0.1s ease-in-out;
+
+                        &[name="globe"] {
+                          position: absolute;
+                          inset: 0;
+                          margin: auto;
+                          opacity: 0;
+                          font-size: 95%;
+                        }
+                      }
+
+                      &:hover {
+                        ion-icon[name="axonops"] {
+                          opacity: 0;
+                        }
+
+                        ion-icon[name="globe"] {
+                          opacity: 1;
+                        }
+                      }
+                    }
+
+                    div.axonops-integration-icon:not([hidden]) {
+                      opacity: 0.9 !important;
+                      pointer-events: all;
                     }
 
                     div.connection-status {
@@ -1984,6 +2018,10 @@ div.body {
                     width: 26.67px;
                   }
 
+                  &.axonops-integration:not(.sandbox) {
+                    width: 106.68px;
+                  }
+
                   div.action {
                     width: 100%;
 
@@ -1998,6 +2036,76 @@ div.body {
 
                     &[action="delete"] {
                       color: var(--mdb-danger);
+                    }
+
+                    &[action="axonops-integration"] {
+                      div.background {
+                        content: '';
+                        position: absolute;
+                        bottom: 3px;
+                        right: 0;
+                        left: 0;
+                        margin: auto;
+                        height: 0;
+                        border-radius: 40px;
+                        width: 85%;
+                        opacity: 0;
+                        transition: all 0.4s linear;
+                      }
+
+                      ion-icon[name="axonops"] {
+                        font-size: 125%;
+                        opacity: 0.5;
+                        transition: all 0.15s ease-in-out;
+                      }
+
+                      &.enabled {
+                        ion-icon[name="axonops"] {
+                          opacity: 1;
+                        }
+                      }
+
+                      ion-icon.status {
+                        position: absolute;
+                        top: -10px;
+                        left: 0;
+                        right: 0;
+                        margin: auto;
+                        color: #e3e3e3;
+                        opacity: 0;
+                        transform: translateY(5px);
+                        transition: opacity 0.1s ease-in-out 0s, transform 0.1s ease-in-out 0s;
+
+                        &[name="close"] {
+                          font-size: 160%;
+                        }
+                      }
+
+                      &:hover {
+                        div.background {
+                          height: calc(100% + 11px);
+                          opacity: 1;
+                          transition-delay: 0.2s;
+                        }
+
+                        ion-icon[name="axonops"] {
+                          opacity: 1;
+                        }
+
+                        ion-icon.status {
+                          transition: opacity 0.15s ease-in-out 0.5s, transform 0.1s ease-in-out 0.55s;
+                          transform: translateY(0px);
+                          opacity: 1;
+                        }
+                      }
+
+                      div.ripple-wave {
+                        width: 100% !important;
+                        height: calc(100%) !important;
+                        position: absolute !important;
+                        inset: 0 !important;
+                        margin: auto !important;
+                      }
                     }
                   }
                 }
@@ -2108,7 +2216,7 @@ div.body {
             }
 
             div.connection {
-              width: 370px;
+              width: 395px;
 
               div.footer {
                 div.actions {
@@ -2121,6 +2229,14 @@ div.body {
                 div.footer {
                   div.actions {
                     width: calc(80px - 26.67px);
+                  }
+                }
+              }
+
+              &[axonops-integration="ture"]:not([data-is-sandbox="true"]) {
+                div.footer {
+                  div.actions {
+                    width: 106.68px;
                   }
                 }
               }
@@ -2363,7 +2479,8 @@ div[class*="col-md"].flex {
         opacity: 0.5;
       }
 
-      &.reset-path {
+      &.reset-path,
+      &.reset-url {
         height: 20px;
         width: 20px;
         position: relative;
@@ -5135,6 +5252,7 @@ div.management-tools {
   }
 }
 
+ion-icon.hint-icon,
 ion-icon.management-tools-hint-icon {
   font-size: 130%;
   vertical-align: middle;
@@ -5356,6 +5474,49 @@ div.create-item {
       color: #202023;
     }
   }
+}
+
+div.axonops-webview-actions {
+  position: absolute;
+  bottom: 40px;
+  right: 0;
+  left: 0;
+  margin: auto;
+  width: fit-content;
+  background: #48484b;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-content: center;
+  justify-content: flex-start;
+  align-items: center;
+  border-radius: 7px;
+  overflow: hidden;
+
+  div.webview-action {
+    width: 50px;
+    height: 39px;
+    color: #e3e3e3;
+    transition: opacity 0.15s ease-in-out;
+
+    &:hover {
+      opacity: 0.8;
+    }
+
+    ion-icon {
+      font-size: 135%;
+      opacity: 0.85;
+
+      &[name="home"] {
+        font-size: 140%;
+        filter: invert(1) drop-shadow(0px 0px 0px white);
+      }
+    }
+  }
+}
+
+li.nav-item.axonops-integration-tab {
+  display: none;
 }
 /**
 * Import right-to-left style

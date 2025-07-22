@@ -691,6 +691,11 @@
                     <span mulang="SSL configuration" capitalize></span>
                   </div>
                 </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="axonops-integration">
+                    <span mulang="AxonOps integration" capitalize></span>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="side-right">
@@ -933,18 +938,79 @@
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-check form-switch form-white margin-bottom">
-                      <input class="form-check-input checkbox-checked" type="checkbox" role="switch" info-section="connection" info-key="ssl" default-value="false" id="_V1KYvEUU">
-                      <label class="form-check-label" for="_V1KYvEUU">
+                      <input class="form-check-input checkbox-checked fixed-colors" type="checkbox" role="switch" info-section="connection" info-key="ssl" default-value="false" id="_V1KYvEUU">
+                      <label class="form-check-label" style="opacity:0.65;" for="_V1KYvEUU">
                         <span mulang="enable connection with SSL" capitalize-first></span>
                       </label>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-check form-switch form-white margin-bottom" style="float: right;">
-                      <input class="form-check-input checkbox-checked" type="checkbox" role="switch" checked info-section="ssl" info-key="validate" default-value="true" id="_8oQQyBuL">
+                      <input class="form-check-input checkbox-checked fixed-colors" type="checkbox" role="switch" checked info-section="ssl" info-key="validate" default-value="true" id="_8oQQyBuL">
                       <label class="form-check-label" for="_8oQQyBuL">
                         <span mulang="validate files" capitalize-first></span>
                       </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-section" section="axonops-integration" hidden>
+                <div class="axonops-integration-status-hint" style="margin-bottom: 10px;">
+                  <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> AxonOps integration feature is currently disabled, you can enable it from settings.
+                </div>
+                <div class="general-hint axonops-integration">
+                  <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> Enter your AxonOps connection details below to enable seamless integration. This allows you to view dashboards, make API calls, and manage your AxonOps
+                  environment directly from Workbench.<br /><b style="padding-top: 4px; display: inline-block;">Note</b>: AxonOps Workbench is open source and using it with AxonOps is completely optional. Visit the AxonOps website (<span
+                    class="link general"><span class="content">https://axonops.com</span>
+                    <ion-icon name="external-link"></ion-icon>
+                  </span>) for more details on monitoring and operations for Apache Cassandra® and Kafka® clusters.
+                </div>
+                <div class="form-outline form-white margin-bottom" style="margin-bottom: 25px;">
+                  <ion-icon name class="trailing"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="none" info-key="axonops-organization">
+                  <label class="form-label">
+                    <span mulang="AxonOps organization" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                </div>
+                <div class="form-outline form-white margin-bottom" style="margin-bottom: 30px;">
+                  <ion-icon name class="trailing"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="none" info-key="axonops-clustername">
+                  <label class="form-label">
+                    <span mulang="AxonOps cluster name" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback"></div>
+                </div>
+                <div class="row" style="margin-top: -10px; margin-bottom: 10px;">
+                  <div class="col-md-12">
+                    <div style="display: inline-block; margin-right: 5px;">AxonOps URL:</div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="axonOpsURL" id="axonOpsSaaS" checked>
+                      <label class="form-check-label" for="axonOpsSaaS">AxonOps SaaS</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="axonOpsURL" id="axonOpsSelfHost">
+                      <label class="form-check-label" for="axonOpsSelfHost">AxonOps Self-Host</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="general-hint axonops-integration axonops-saas">
+                  <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> The URL is automatically set to the AxonOps Cloud service endpoint and cannot be changed. Choose this option if you are using the managed AxonOps Cloud
+                  platform.
+                </div>
+                <div class="axonops-self-host">
+                  <div class="general-hint axonops-integration">
+                    <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> Enter the URL of your self-hosted AxonOps server. This allows you to connect to an AxonOps instance running in your own infrastructure or private cloud.
+                  </div>
+                  <div class="input-group mb-3">
+                    <div class="form-outline form-white" style="width: 115px;">
+                      <input type="text" class="form-control form-control-lg" id="axonOpsDashboardIntegrationDefaultURLProtocol" placeholder="https" info-section="none" info-key="axonops-url-protocol">
+                    </div>
+                    <span class="input-group-text form-control-lg for-axonops-url">://</span>
+                    <div class="form-outline form-white">
+                      <input type="text" class="form-control form-control-lg" id="axonOpsDashboardIntegrationDefaultURL" placeholder="dash.axonops.cloud" info-section="none" info-key="axonops-url-host">
                     </div>
                   </div>
                 </div>
@@ -1386,6 +1452,26 @@
                       <div class="form-helper">
                         Hint: Paths are separated by a pipe <code>/path1/|/path2/</code>.
                       </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row flex margin-bottom more-margin flex-advanced">
+                  <div class="col-md-3">
+                    <div>
+                      <span mulang="AxonOps Integration" capitalize></span>:
+                    </div>
+                  </div>
+                  <div class="col-md-9">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="enableAxonOpsDashboardIntegration" no-color>
+                      <label class="form-check-label" style="display: inline;" for="enableAxonOpsDashboardIntegration">
+                        <span mulang="integrate AxonOps dashboards with active connections" capitalize-first></span>.
+                      </label>
+                    </div>
+                    <div class="small-hint no-select">
+                      <small>
+                        <span mulang="this update needs an app restart" capitalize-first></span>.
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -1835,7 +1921,7 @@
                   </div>
                   <div class="hint">
                     <span mulang="drag and drop" capitalize-first></span>
-                    <span selection-feautre>
+                    <span selection-feature>
                       <span mulang="or"></span>
                       <span mulang="click to select"></span>
                     </span>

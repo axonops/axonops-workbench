@@ -22,6 +22,14 @@
 const Constants = {
   // When set to `false`, the AI assistant will be completely hidden in the UI, and no way to interact with it
   EnableAIAssistant: true,
+  AxonOpsIntegration: {
+    DefaultURL: `https://dash.axonops.cloud`,
+    Patterns: {
+      Cluster: '{ORG}/cassandra/{CLUSTERNAME}/deeplink/dashboard/cluster',
+      Keyspace: '{ORG}/cassandra/{CLUSTERNAME}/deeplink/dashboard/keyspace?keyspace={KEYSPACENAME}',
+      Table: '{ORG}/cassandra/{CLUSTERNAME}/deeplink/dashboard/keyspace?keyspace={KEYSPACENAME}&table={TABLENAME}',
+    }
+  },
   URLS: {
     Workbench: 'https://github.com/axonops/axonops-workbench',
     Binaries: 'https://github.com/axonops/axonops-workbench-cqlsh',

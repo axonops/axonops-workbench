@@ -1,3 +1,6 @@
+const NativeImage = Electron.nativeImage,
+  NativeTheme = Electron.nativeTheme
+
 /**
  * Requests related to pty instances
  * All requests have the prefix `pty:`
@@ -439,6 +442,12 @@ IPCMain.on('cassandra-copyright-acknowledged:true', () => {
         try {
           item.click = eval(item.click)
         } catch (e) {}
+
+        try {
+          item.icon = NativeImage.createFromPath(item.icon)
+        } catch (e) {
+          item.icon = ''
+        }
       }
     }
 
@@ -470,6 +479,12 @@ IPCMain.on('cassandra-copyright-acknowledged:true', () => {
         try {
           item.click = eval(item.click)
         } catch (e) {}
+
+        try {
+          item.icon = NativeImage.createFromPath(item.icon)
+        } catch (e) {
+          item.icon = ''
+        }
 
         // Append the menu item as a `MenuItem` object
         popUpMenu.append(new MenuItem(item))
@@ -507,3 +522,9 @@ IPCMain.on('badge:update', (_, numOfActiveWorkareas) => {
     App.setBadgeCount(numOfActiveWorkareas)
   } catch (e) {}
 })
+
+{
+  IPCMain.on('theme:is-dark', () => views.main.webContents.send('theme:is-dark', NativeTheme.shouldUseDarkColors))
+
+  NativeTheme.on('updated', () => views.main.webContents.send('theme:is-dark', NativeTheme.shouldUseDarkColors))
+}

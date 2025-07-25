@@ -105,3 +105,10 @@ let mdbObjects = [],
     addConnectionActionButton: null,
     refreshConnectionActionButton: null
   }
+
+let isHostThemeDark = false
+
+let isInitAxonOpsIntegrationEnabled = false
+
+// Array to hold temp objects to be used in specific process and then set to be `null`
+let tempObjects = []

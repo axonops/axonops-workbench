@@ -305,7 +305,9 @@ class DockerCompose {
 
     // Automatically migrate legacy docker-compose file if needed
     try {
-      const { migrateDockerComposeFile } = require('./docker-migration');
+      const {
+        migrateDockerComposeFile
+      } = require('./docker-migration');
       const migrationResult = await migrateDockerComposeFile(Path.join(DockerContainersPath, this.folderName));
 
       // Log migration status (no user interaction needed)

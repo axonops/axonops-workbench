@@ -270,8 +270,12 @@ $(document).on('initialize', () => {
   try {
     setTimeout(async () => {
       // If the saved language is invalid, the chosen language will be `English`
-      let adminOption = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || false,
+      let adminOption = false,
         isAIAssistantEnabled = `${adminOption}` == 'true' && Modules.Consts.EnableAIAssistant
+
+      try {
+        adminOption = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant')
+      } catch (e) {}
 
       /**
        * Whether or not the AI assistant feature should be available
@@ -307,7 +311,7 @@ $(document).on('initialize', () => {
       })
 
       // Update the web view element `src` with the AI Assistant's server URL
-      webviewAIAssistant.attr('src', Modules.Consts.URLS.AIAssistantServer)
+      // webviewAIAssistant.attr('src', Modules.Consts.URLS.AIAssistantServer)
 
       // Show/hide the loading spinner based on the status
       webviewAIAssistant
@@ -357,7 +361,7 @@ $(document).on('initialize', () => {
       })
 
       // Logout from the AxonOps AI Chat
-      buttons.logout.click(() => webviewAIAssistant.attr('src', `${(new URL(Modules.Consts.URLS.AIAssistantServer)).origin}/logout`))
+      // buttons.logout.click(() => webviewAIAssistant.attr('src', `${(new URL(Modules.Consts.URLS.AIAssistantServer)).origin}/logout`))
 
       // Check and enable/disable the back/forward buttons based on the status
       setInterval(() => {
@@ -599,6 +603,20 @@ $(document).on('initialize', () => {
         errorLog(e, 'initialization')
       } catch (e) {}
     }
+  })
+})
+
+// Initialize some parts of the UI based on the status of the AxonOps integration feature
+$(document).on('initialize', () => {
+  // Get the app's config
+  Modules.Config.getConfig((config) => {
+    let integrationFeatureSection = $('#addEditConnectionDialog').find('div.modal-section[section="axonops-integration"]'),
+      isAxonOpsIntegrationEnabled = config.get('features', 'axonOpsIntegration') == 'true'
+
+    integrationFeatureSection.css('overflow-y', isAxonOpsIntegrationEnabled ? 'none' : 'scroll')
+    integrationFeatureSection.find('div.axonops-integration-status-hint').toggle(!isAxonOpsIntegrationEnabled)
+
+    isInitAxonOpsIntegrationEnabled = isAxonOpsIntegrationEnabled
   })
 })
 
@@ -846,7 +864,8 @@ $(document).on('initialize', () => {
     let monacoPath = Path.join(__dirname, '..', '..', 'node_modules', 'monaco-editor', 'min'),
       editorUIElement = $('div.modal#addEditConnectionDialog div.modal-body div.editor-container div.editor'),
       rightClickActionsKeyspaceEditorUIElement = $('div.modal#rightClickActionsMetadata div.modal-body div.action-editor div.editor'),
-      dropKeyspaceEditorUIElement = $('div.modal#extraDataActions .editor')
+      dropKeyspaceEditorUIElement = $('div.modal#extraDataActions .editor'),
+      generateInsertStatementsEditorUIElement = $('div.modal#generateInsertStatements .editor')
 
     // Initialize the editor
     let amdLoader = require(Path.join(monacoPath, 'vs', 'loader.js')),
@@ -1148,59 +1167,36 @@ $(document).on('initialize', () => {
       }
     })
 
-    amdRequire(['vs/editor/editor.main'], () => {
-      try {
-        monaco.editor.create(rightClickActionsKeyspaceEditorUIElement[0], {
-          language: 'sql',
-          minimap: {
-            enabled: false
-          },
-          padding: {
-            top: 10,
-            bottom: 10
-          },
-          wordWrap: 'on',
-          glyphMargin: false, // This option allows to render an object in the line numbering side
-          suggest: {
-            showFields: false,
-            showFunctions: false
-          },
-          theme: 'vs-dark',
-          scrollBeyondLastLine: false,
-          mouseWheelZoom: true,
-          fontSize: 12,
-          fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
-          fontLigatures: true
+    {
+      for (let editorUIElement of [generateInsertStatementsEditorUIElement, rightClickActionsKeyspaceEditorUIElement, dropKeyspaceEditorUIElement]) {
+        amdRequire(['vs/editor/editor.main'], () => {
+          try {
+            monaco.editor.create(editorUIElement[0], {
+              language: 'sql',
+              minimap: {
+                enabled: false
+              },
+              padding: {
+                top: 10,
+                bottom: 10
+              },
+              wordWrap: 'on',
+              glyphMargin: false, // This option allows to render an object in the line numbering side
+              suggest: {
+                showFields: false,
+                showFunctions: false
+              },
+              theme: 'vs-dark',
+              scrollBeyondLastLine: false,
+              mouseWheelZoom: true,
+              fontSize: 12,
+              fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
+              fontLigatures: true
+            })
+          } catch (e) {}
         })
-      } catch (e) {}
-    })
-
-    amdRequire(['vs/editor/editor.main'], () => {
-      try {
-        monaco.editor.create(dropKeyspaceEditorUIElement[0], {
-          language: 'sql',
-          minimap: {
-            enabled: false
-          },
-          padding: {
-            top: 10,
-            bottom: 10
-          },
-          wordWrap: 'on',
-          glyphMargin: false, // This option allows to render an object in the line numbering side
-          suggest: {
-            showFields: false,
-            showFunctions: false
-          },
-          theme: 'vs-dark',
-          scrollBeyondLastLine: false,
-          mouseWheelZoom: true,
-          fontSize: 12,
-          fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
-          fontLigatures: true
-        })
-      } catch (e) {}
-    })
+      }
+    }
   }
 
   {
@@ -1424,7 +1420,7 @@ $(document).on('initialize', () => {
   })
 
   // Enable the click event and opening of external links
-  $('div.modal#appAbout').find('span.link').click(function() {
+  $('span.link.general').add($('div.modal#appAbout').find('span.link')).click(function() {
     Open($(this).children('span.content').text())
   })
 })
@@ -1445,7 +1441,7 @@ $(document).on('initialize', () => {
 
     // NOTE: In case we've faced the multi-selection bug on Linux we can enable this line
     setTimeout(() => {
-      $('span[selection-feautre]').hide()
+      $('span[selection-feature]').hide()
       $('div.modal-section div.drag-drop-workspaces').unbind('click').css('cursor', 'default')
     }, 1000)
   } catch (e) {}

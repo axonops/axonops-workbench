@@ -908,6 +908,8 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
             movableColumns: true,
             pagination: 'local',
             paginationSize,
+            selectableRows: !paginationSizeSelectorEnabled,
+            selectableRowsRangeMode: 'click',
             virtualDom: true,
             paginationSizeSelector: paginationSizeSelectorEnabled ? [5, 10, 20, 40, 60, 80, 100] : false,
             paginationCounter: 'rows',
@@ -3062,8 +3064,10 @@ let getRSAKey = async (type, callback, called = false) => {
        * If the key is not valid then add a custom key and then delete it,
        * then call the `getRSAKey` again, and it should return the key this time
        */
-      await Keytar.setPassword(Service, 'key', ' ')
-      await Keytar.deletePassword(Service, 'key')
+      try {
+        await Keytar.setPassword(Service, 'key', ' ')
+        await Keytar.deletePassword(Service, 'key')
+      } catch (e) {}
 
       /**
        * Ask for the actual key again
@@ -3835,10 +3839,19 @@ let setUIColor = (workspaceColor) => {
           .ui-resizable-handle:hover {background: ${backgroundColor.hover.replace('70%', '40%')} !important}
           .checkbox-checked:checked:focus:before {box-shadow: 3px -1px 0 13px ${backgroundColor.hover.replace('70%', '100%')} !important;}
           .form-check-input:not([no-color]):checked:focus:before {box-shadow: 0 0 0 13px ${backgroundColor.hover.replace('70%', '100%')} !important;}
+          .checkbox-checked.fixed-colors {background:#af2828 !important}
+          .checkbox-checked.fixed-colors:after {background:#af2828 !important}
+          .checkbox-checked.fixed-colors:checked {background:#1b8523 !important}
+          .checkbox-checked.fixed-colors:checked:after {background:#1b8523 !important}
+          .checkbox-checked.fixed-colors:checked:focus:before {box-shadow: 3px -1px 0 13px #1b8523 !important;}
+          .form-check-input:not([no-color])[type=checkbox].fixed-colors:checked, .form-check-input:not([no-color]).fixed-colors:checked {background:#1b8523 !important}
           .form-check-input[type=radio]:not([no-color]):checked:after {border-color: ${backgroundColor.hover.replace('70%', '35%')} !important; background-color: ${backgroundColor.hover.replace('70%', '35%')} !important;}
           .form-check-input[type=radio]:not([no-color]):checked {background: ${backgroundColor.hover.replace('70%', '25%')} !important;}
           .changed-color {color: ${textColor} !important}
           .actions-bg {background: ${backgroundColor.default.replace('70%', '5%')} !important; box-shadow: inset 0px 0px 20px 0px ${backgroundColor.default.replace('70%', '10%')} !important;}
+          .tabulator-row.tabulator-selectable:hover { background: ${backgroundColor.default.replace('70%', '5%')} !important; }
+          .tabulator-row.tabulator-selected { background: ${backgroundColor.default.replace('70%', '35%')} !important; }
+          .tabulator-row.tabulator-selected:hover { background: ${backgroundColor.default.replace('70%', '25%')} !important; }
           .column.selected:after {background: ${backgroundColor.default.replace('70%', '100%')} !important;}
           .column.selected > ion-icon {color: ${backgroundColor.default.replace('70%', '100%')} !important;}
           button.aggregate-functions-btn:after, button.column-order-type:after {background: ${backgroundColor.default.replace('70%', '85%')} !important;}

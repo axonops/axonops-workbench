@@ -908,6 +908,8 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
             movableColumns: true,
             pagination: 'local',
             paginationSize,
+            selectableRows: !paginationSizeSelectorEnabled,
+            selectableRowsRangeMode: 'click',
             virtualDom: true,
             paginationSizeSelector: paginationSizeSelectorEnabled ? [5, 10, 20, 40, 60, 80, 100] : false,
             paginationCounter: 'rows',
@@ -3847,6 +3849,9 @@ let setUIColor = (workspaceColor) => {
           .form-check-input[type=radio]:not([no-color]):checked {background: ${backgroundColor.hover.replace('70%', '25%')} !important;}
           .changed-color {color: ${textColor} !important}
           .actions-bg {background: ${backgroundColor.default.replace('70%', '5%')} !important; box-shadow: inset 0px 0px 20px 0px ${backgroundColor.default.replace('70%', '10%')} !important;}
+          .tabulator-row.tabulator-selectable:hover { background: ${backgroundColor.default.replace('70%', '5%')} !important; }
+          .tabulator-row.tabulator-selected { background: ${backgroundColor.default.replace('70%', '35%')} !important; }
+          .tabulator-row.tabulator-selected:hover { background: ${backgroundColor.default.replace('70%', '25%')} !important; }
           .column.selected:after {background: ${backgroundColor.default.replace('70%', '100%')} !important;}
           .column.selected > ion-icon {color: ${backgroundColor.default.replace('70%', '100%')} !important;}
           button.aggregate-functions-btn:after, button.column-order-type:after {background: ${backgroundColor.default.replace('70%', '85%')} !important;}

@@ -3198,6 +3198,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                               jsonString = `${output}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
 
+                              jsonString = jsonString.replace(/KEYWORD:TABLEMETA:INFO:\[.+\]/, '')
+
                               if (tableObj != undefined) {
                                 convertJSONToTable(jsonString, (newPage) => {
                                   tableObj.blockRedraw()
@@ -3362,6 +3364,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 // The sub output structure UI
                                 let element = `
                                          <div class="sub-output ${isErrorFound ? 'error' : ''} ${isOutputInfo ? 'info': ''}">
+                                           <div class="general-hint select-rows">
+                                            <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> To perform a range selection hold <kbd>SHIFT</kbd> key and click on the end row, also, hold <kbd>CTRL</kbd> key and click on a row to deselect it.
+                                           </div>
                                            <div class="sub-output-content"></div>
                                            <div class="sub-actions" hidden>
                                              <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block" data-mulang="download the block" capitalize-first>
@@ -3459,6 +3464,16 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                     jsonString = `${match}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
 
+                                    let selectorTableInfo = ''
+                                    try {
+                                      if (!jsonString.includes('KEYWORD:TABLEMETA:INFO'))
+                                        throw 0
+
+                                      selectorTableInfo = jsonString.match(/KEYWORD:TABLEMETA:INFO:\[(.+)\]/)[1]
+
+                                      jsonString = jsonString.replace(/KEYWORD:TABLEMETA:INFO:\[.+\]/, '')
+                                    } catch (e) {}
+
                                     // Convert the JSON string to HTML table related to a Tabulator object
                                     convertTableToTabulator(jsonString, outputElement.find('div.sub-output-content'), activeSessionsPaginationSize || 50, false, (_tabulatorObject) => {
                                       // As a tabulator object has been created add the associated class
@@ -3468,6 +3483,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                       // Hold the created object
                                       tabulatorObject = _tabulatorObject
+
+                                      tabulatorObject.selectorTableInfo = selectorTableInfo
 
                                       let paginator = outputElement.find('div.sub-output-content').find('span.tabulator-paginator')
 
@@ -3496,6 +3513,49 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                           })
                                         })
                                       }))
+
+                                      tabulatorObject.on('rowContext', function(e, row) {
+                                        e.preventDefault()
+
+                                        let selectedRows = tabulatorObject.getSelectedRows()
+
+                                        if (selectedRows.length <= 0)
+                                          selectedRows.push(row)
+
+                                        let [keyspaceName, tableName] = tabulatorObject.selectorTableInfo.split('.'),
+                                          keyspaceObject = latestMetadata.keyspaces.find((keyspace) => keyspace.name == keyspaceName),
+                                          tableObject = keyspaceObject.tables.find((table) => table.name == tableName)
+
+                                        selectedRows = selectedRows.map((selectedRow) => selectedRow._row.data)
+
+                                        let generationInfo = {
+                                            keyspaceName,
+                                            tableName,
+                                            tableObject,
+                                            selectedRows
+                                          },
+                                          tempObjectID = `_${getRandom.id(10)}`
+
+                                        tempObjects[tempObjectID] = generationInfo
+
+                                        IPCRenderer.send('show-context-menu', JSON.stringify([{
+                                          label: I18next.capitalizeFirstLetter(`${I18next.t('generate insert statement(s)')}`),
+                                          click: `() => views.main.webContents.send('insert-statements:generate', {
+                                                    tempObjectID: '${tempObjectID}'
+                                                  })`
+                                        }]))
+                                      })
+
+                                      let handleRowClick = () => {
+                                        let selectedRows = tabulatorObject.getSelectedRows(),
+                                          hintElement = outputElement.find('div.general-hint.select-rows')
+
+                                        hintElement.toggle(selectedRows.length > 0)
+                                      }
+
+                                      tabulatorObject.on('rowSelected', () => handleRowClick())
+
+                                      tabulatorObject.on('rowDeselected', () => handleRowClick())
                                     })
 
                                     try {
@@ -3687,6 +3747,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       throw 0
 
                                     jsonString = `${match}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
+
+                                    jsonString = jsonString.replace(/KEYWORD:TABLEMETA:INFO:\[.+\]/, '')
 
                                     if (!pathIsAccessible(`${jsonString.trim()}`))
                                       throw 0
@@ -6261,6 +6323,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                             // Flag to tell if the workarea is actually visible
                             let isWorkareaVisible = workarea.is(':visible')
+
+                            for (let editorUI of workarea.find('div.monaco-editor').get()) {
+                              try {
+                                (monaco.editor.getEditors().find((editor) => $(editorUI).parent().is(editor._domElement))).dispose()
+                              } catch (e) {}
+                            }
 
                             // Remove the work area element
                             workarea.remove()
@@ -11765,4 +11833,42 @@ const ConnectionTestProcessTerminationTimeout = 250
     modalSection.find('div.axonops-self-host').toggle(isSelectedValueSelfHost)
     modalSection.find('div.general-hint.axonops-integration.axonops-saas').toggle(!isSelectedValueSelfHost)
   })
+}
+
+{
+  setTimeout(() => {
+    try {
+      let generateInsertStatementsEditorObject = monaco.editor.getEditors().find((editor) => $('div.modal#generateInsertStatements .editor').is(editor._domElement)),
+        generateInsertStatementsModal = getElementMDBObject($('#generateInsertStatements'), 'Modal')
+
+      $('button#copyGeneratedInsertStatements').click(function() {
+        let generatedStatements = generateInsertStatementsEditorObject.getValue(),
+          statementsSize = Bytes(ValueSize(generatedStatements))
+
+        // Copy the result to the clipboard
+        try {
+          Clipboard.writeText(generatedStatements)
+        } catch (e) {
+          try {
+            errorLog(e, 'connections')
+          } catch (e) {}
+        }
+
+        // Give feedback to the user
+        showToast(I18next.capitalize(I18next.t('copy generated insert statements')), I18next.capitalizeFirstLetter(I18next.replaceData('generated insert statements have been copied to the clipboard, the size is $data', [statementsSize])) + '.', 'success')
+
+        generateInsertStatementsModal.hide()
+      })
+
+      $('button#executeGeneratedInsertStatements').click(function() {
+        let consoleEditoObject = monaco.editor.getEditors().find((editor) => $(`div.workarea[connection-id="${activeConnectionID}"]`).find('div.console-editor').is(editor._domElement))
+
+        consoleEditoObject.setValue(generateInsertStatementsEditorObject.getValue())
+
+        $(`div.workarea[connection-id="${activeConnectionID}"]`).find('div.execute').find('button').click()
+
+        generateInsertStatementsModal.hide()
+      })
+    } catch (e) {}
+  }, 10000)
 }

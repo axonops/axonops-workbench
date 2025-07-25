@@ -2918,3 +2918,19 @@ div.modal-section[section="axonops-integration"] {
     display: none;
   }
 }
+
+div.modal#generateInsertStatements {
+  div.modal-body {
+    min-height: 500px;
+
+    div.statements-editor {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+
+      div.editor {
+        @include position();
+      }
+    }
+  }
+}

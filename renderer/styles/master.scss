@@ -5518,6 +5518,18 @@ div.axonops-webview-actions {
 li.nav-item.axonops-integration-tab {
   display: none;
 }
+
+div.general-hint.select-rows {
+  width: 100%;
+  margin: 5px 0 10px;
+  font-family: 'Main', 'Minor', 'SimplifiedChinese', sans-serif !important;
+  font-size: 100%;
+
+  kbd {
+    background: #717171;
+  }
+}
+
 /**
 * Import right-to-left style
 */

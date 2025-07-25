@@ -864,7 +864,8 @@ $(document).on('initialize', () => {
     let monacoPath = Path.join(__dirname, '..', '..', 'node_modules', 'monaco-editor', 'min'),
       editorUIElement = $('div.modal#addEditConnectionDialog div.modal-body div.editor-container div.editor'),
       rightClickActionsKeyspaceEditorUIElement = $('div.modal#rightClickActionsMetadata div.modal-body div.action-editor div.editor'),
-      dropKeyspaceEditorUIElement = $('div.modal#extraDataActions .editor')
+      dropKeyspaceEditorUIElement = $('div.modal#extraDataActions .editor'),
+      generateInsertStatementsEditorUIElement = $('div.modal#generateInsertStatements .editor')
 
     // Initialize the editor
     let amdLoader = require(Path.join(monacoPath, 'vs', 'loader.js')),
@@ -1166,59 +1167,36 @@ $(document).on('initialize', () => {
       }
     })
 
-    amdRequire(['vs/editor/editor.main'], () => {
-      try {
-        monaco.editor.create(rightClickActionsKeyspaceEditorUIElement[0], {
-          language: 'sql',
-          minimap: {
-            enabled: false
-          },
-          padding: {
-            top: 10,
-            bottom: 10
-          },
-          wordWrap: 'on',
-          glyphMargin: false, // This option allows to render an object in the line numbering side
-          suggest: {
-            showFields: false,
-            showFunctions: false
-          },
-          theme: 'vs-dark',
-          scrollBeyondLastLine: false,
-          mouseWheelZoom: true,
-          fontSize: 12,
-          fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
-          fontLigatures: true
+    {
+      for (let editorUIElement of [generateInsertStatementsEditorUIElement, rightClickActionsKeyspaceEditorUIElement, dropKeyspaceEditorUIElement]) {
+        amdRequire(['vs/editor/editor.main'], () => {
+          try {
+            monaco.editor.create(editorUIElement[0], {
+              language: 'sql',
+              minimap: {
+                enabled: false
+              },
+              padding: {
+                top: 10,
+                bottom: 10
+              },
+              wordWrap: 'on',
+              glyphMargin: false, // This option allows to render an object in the line numbering side
+              suggest: {
+                showFields: false,
+                showFunctions: false
+              },
+              theme: 'vs-dark',
+              scrollBeyondLastLine: false,
+              mouseWheelZoom: true,
+              fontSize: 12,
+              fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
+              fontLigatures: true
+            })
+          } catch (e) {}
         })
-      } catch (e) {}
-    })
-
-    amdRequire(['vs/editor/editor.main'], () => {
-      try {
-        monaco.editor.create(dropKeyspaceEditorUIElement[0], {
-          language: 'sql',
-          minimap: {
-            enabled: false
-          },
-          padding: {
-            top: 10,
-            bottom: 10
-          },
-          wordWrap: 'on',
-          glyphMargin: false, // This option allows to render an object in the line numbering side
-          suggest: {
-            showFields: false,
-            showFunctions: false
-          },
-          theme: 'vs-dark',
-          scrollBeyondLastLine: false,
-          mouseWheelZoom: true,
-          fontSize: 12,
-          fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
-          fontLigatures: true
-        })
-      } catch (e) {}
-    })
+      }
+    }
   }
 
   {

@@ -16142,3 +16142,92 @@
 
   })
 }
+
+{
+  IPCRenderer.on('insert-statements:generate', (_, data) => {
+    let editorObject = monaco.editor.getEditors().find((editor) => $('div.modal#generateInsertStatements .editor').is(editor._domElement)),
+      generateInsertStatementsModal = getElementMDBObject($('#generateInsertStatements'), 'Modal'),
+      dataObject = tempObjects[data.tempObjectID],
+      tableColumns = dataObject.tableObject.columns.map((column) => {
+        return {
+          name: column.name,
+          type: column.cql_type
+        }
+      }),
+      writeConsistencyLevel = `-- CONSISTENCY ${activeSessionsConsistencyLevels[activeConnectionID].standard} Note: CQL session already using this CL`,
+      serialConsistencyLevel = `-- SERIAL CONSISTENCY ${activeSessionsConsistencyLevels[activeConnectionID].serial} Note: CQL session already using this CL`,
+      statements = [],
+      fieldsNames = tableColumns.map((column, index) => `    ${addDoubleQuotes(column.name)}${(index + 1) >= tableColumns.length ? '' : ','} -- ${column.type}`)
+
+    for (let selectedRow of dataObject.selectedRows) {
+      let rowFieldsValues = []
+
+      for (let tableColumn of Object.keys(tableColumns)) {
+        let fieldValue = selectedRow[tableColumns[tableColumn].name]
+
+        try {
+          let isSingleQuotesNeeded = false
+
+          try {
+            try {
+              if (['text', 'varchar', 'ascii', 'inet'].some((type) => type == tableColumns[tableColumn].type))
+                isSingleQuotesNeeded = true
+            } catch (e) {}
+
+            try {
+              if (['time', 'timestamp'].every((type) => tableColumns[tableColumn].type != type))
+                throw 0
+
+              if (ValidateDate(fieldValue, 'boolean') || !fieldValue.endsWith(')'))
+                isSingleQuotesNeeded = true
+            } catch (e) {}
+
+            try {
+              if (tableColumns[tableColumn].type != 'date')
+                throw 0
+
+              if (ValidateDate(fieldValue, 'boolean') || !fieldValue.endsWith(')'))
+                isSingleQuotesNeeded = true
+            } catch (e) {}
+          } catch (e) {}
+
+          try {
+            if (!isSingleQuotesNeeded)
+              throw 0
+
+            fieldValue = `${fieldValue}`.replace(/(^|[^'])'(?!')/g, "$1''")
+
+            fieldValue = `'${fieldValue}'`
+          } catch (e) {}
+
+          rowFieldsValues.push(`    ${fieldValue}${(parseInt(tableColumn) + 1) >= tableColumns.length ? '' : ','} -- ${tableColumns[tableColumn].type}`)
+        } catch (e) {}
+      }
+
+      let statement =
+        `INSERT INTO ${addDoubleQuotes(dataObject.keyspaceName)}.${addDoubleQuotes(dataObject.tableName)} (` + OS.EOL +
+        `${fieldsNames.join(OS.EOL)}` + OS.EOL + `) VALUES (` + OS.EOL +
+        `${rowFieldsValues.join(OS.EOL)}` + OS.EOL + `) IF NOT EXISTS;`
+
+      statements.push(statement)
+    }
+
+    let statement =
+      `${writeConsistencyLevel}` + OS.EOL + `${serialConsistencyLevel}` + OS.EOL +
+      statements.join(OS.EOL + OS.EOL)
+
+    try {
+      editorObject.setValue(statement)
+    } catch (e) {}
+
+    $(window.visualViewport).trigger('resize')
+
+    generateInsertStatementsModal.show()
+
+    setTimeout(() => {
+      try {
+        delete tempObjects[data.tempObjectID]
+      } catch (e) {}
+    }, 500)
+  })
+}

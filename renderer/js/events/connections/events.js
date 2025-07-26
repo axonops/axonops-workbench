@@ -921,6 +921,18 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                              </button>
                                            </div>
                                            <div class="actions-right-side">
+                                           <div class="session-action query-tracing" action="query-tracing">
+                                           <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
+                                             <ion-icon name="query-tracing"></ion-icon>
+                                             <span mulang="query tracing">query tracing</span>:
+                                             <span class="staus" style="margin-left: 7px;"></span>
+                                             <div class="tooltip-info" style="transform: translateY(1px) translateX(5px);" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
+                                             data-title="Query tracing captures detailed diagnostic information about query execution across the cluster. Useful for troubleshooting performance issues and understanding query paths.<br><br><b>Note</b>: Tracing adds overhead to your queries and should only be used temporarily for debugging specific queries. Enabling tracing for extended periods or bulk operations may impact cluster performance."
+                                               data-tippy-delay="[300, 0]">
+                                               <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
+                                             </div>
+                                           </button>
+                                           </div>
                                            <div class="session-action pagination-size" action="pagination-size">
                                            <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
                                              <ion-icon name="pagination"></ion-icon>
@@ -2131,6 +2143,14 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 cmd: 'PAGING;',
                                 blockID: getRandom.id(10)
                               })
+
+                              setTimeout(() => {
+                                IPCRenderer.send('pty:command', {
+                                  id: connectionID,
+                                  cmd: 'TRACING;',
+                                  blockID: getRandom.id(10)
+                                })
+                              }, 1000)
                             }, 1000)
                           }, 1000)
                         }, 1000)
@@ -2192,7 +2212,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           }
 
                           // Get the cluster's metadata
-                          Modules.Connections.getMetadata(connectionID, (metadata) => {
+                          Modules.Connections.getMetadata(connectionID, async (metadata) => {
                             try {
                               // Convert the metadata from JSON string to an object
                               try {
@@ -2212,7 +2232,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               latestMetadata = metadata
 
                               // Build the tree view
-                              let treeview = buildTreeview(JSON.parse(JSON.stringify(metadata)), true),
+                              let treeview = await buildTreeview(JSON.parse(JSON.stringify(metadata)), true),
                                 // Point at the metadata content's container
                                 metadataContent = workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`)
 
@@ -2224,6 +2244,22 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                               try {
                                 jsTreeObject.unbind('contextmenu')
+                                jsTreeObject.unbind('loaded.jstree')
+                                jsTreeObject.unbind('search.jstree')
+                                jsTreeObject.unbind('after_open.jstree')
+                                jsTreeObject.unbind('select_node.jstree')
+                              } catch (e) {}
+
+                              try {
+                                jsTreeObject.on('loaded.jstree', () => {
+                                  setTimeout(() => {
+                                    if (metadataContent.data('jstreeLastOpenedNodeID') != undefined && metadataContent.data('jstreeLastOpenedNodeID').length == 32)
+                                      jsTreeObject.jstree()._open_to(metadataContent.data('jstreeLastOpenedNodeID'))
+
+                                    if (metadataContent.data('jstreeLastSelectedNodeID') != undefined && metadataContent.data('jstreeLastSelectedNodeID').length == 32)
+                                      jsTreeObject.jstree().select_node(metadataContent.data('jstreeLastSelectedNodeID'))
+                                  })
+                                })
                               } catch (e) {}
 
                               /**
@@ -2727,6 +2763,14 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       lastSearchResults[0].click()
                                     } catch (e) {}
                                   } catch (e) {}
+                                })
+
+                                jsTreeObject.on('after_open.jstree', function(event, data) {
+                                  metadataContent.data('jstreeLastOpenedNodeID', `${data.node.id}`)
+                                })
+
+                                jsTreeObject.on('select_node.jstree', function(event, data) {
+                                  metadataContent.data('jstreeLastSelectedNodeID', `${data.node.id}`)
                                 })
 
                                 // Clicks either the previous or the next buttons/arrows
@@ -3359,6 +3403,23 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   } catch (e) {}
 
                                   paginationAction.find(`span.size`).text(`${detectedPagingSize}`)
+                                } catch (e) {}
+
+                                // For paging
+                                try {
+                                  if (minifyText(statementIdentifier) != 'tracing')
+                                    throw 0
+
+                                  let queryTracingAction = workareaElement.find('div.session-action.query-tracing[action="query-tracing"]')
+
+                                  if (queryTracingAction.css('display') == 'none')
+                                    queryTracingAction.fadeIn('fast')
+
+                                  let isTracingEnabled = `${match}`.includes('ON')
+
+                                  queryTracingAction.data('tracingStatus', isTracingEnabled)
+
+                                  queryTracingAction.find(`span.staus`).text(`${isTracingEnabled ? 'ON' : 'OFF'}`)
                                 } catch (e) {}
 
                                 // The sub output structure UI
@@ -7179,6 +7240,28 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                     }
 
                     {
+                      let queryTracingActionContainer = $(this).find('div.session-action[action="query-tracing"]')
+
+                      queryTracingActionContainer.find('button.btn').click(function() {
+                        try {
+                          let isTracingEnabled = queryTracingActionContainer.data('tracingStatus') == true,
+                            statement = `TRACING ${isTracingEnabled ? 'OFF' : 'ON'}`
+
+                          try {
+                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`)
+                            statementInputField.val(statement)
+                            statementInputField.trigger('input').focus()
+                            AutoSize.update(statementInputField[0])
+                          } catch (e) {}
+
+                          try {
+                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).click(), 100)
+                          } catch (e) {}
+                        } catch (e) {}
+                      })
+                    }
+
+                    {
                       let executeFilesModal = $('div.modal#executeCQLFiles'),
                         filesContainer = executeFilesModal.find('div.cql-files-container'),
                         filesExecutionBtn = workareaElement.find('div.session-action[action="execute-file"]').find('button.btn')
@@ -9896,7 +9979,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                        *
                        * Get the success feedback suffix
                        */
-                      let suffix = I18next.t('you may now save it')
+                      let suffix = I18next.t('you may now add it')
 
                       // Change the suffix if the dialog's current mode is `edit`
                       if (getAttributes(dialogElement, 'data-edit-connection-id') != undefined)
@@ -10296,7 +10379,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                        *
                        * Get the success feedback suffix
                        */
-                      let suffix = I18next.t('you may now save it')
+                      let suffix = I18next.t('you may now add it')
 
                       // Change the suffix if the dialog's current mode is `edit`
                       if (getAttributes(dialogElement, 'data-edit-connection-id') != undefined)
@@ -10624,7 +10707,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                   throw 0
 
                 // Show feedback to the user about the failure
-                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), `${I18next.capitalizeFirstLetter(I18next.t(editingMode ? 'failed to update the connection' : 'failed to save the new connection'))}.`, 'failure')
+                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), `${I18next.capitalizeFirstLetter(I18next.t(editingMode ? 'failed to update the connection' : 'failed to add the new connection'))}.`, 'failure')
 
                 // Skip the upcoming code - end the process -
                 return
@@ -10635,7 +10718,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                *
                * Show feedback to the user
                */
-              showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), `${I18next.capitalizeFirstLetter(I18next.t(editingMode ? 'the connection has been successfully updated' : 'the new connection has been successfully saved'))}.`, 'success')
+              showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), `${I18next.capitalizeFirstLetter(I18next.t(editingMode ? 'the connection has been successfully updated' : 'the new connection has been successfully added'))}.`, 'success')
 
               // Click the close button
               $(`${dialog}-right`).parent().parent().find('button.btn-close').click()
@@ -10925,7 +11008,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                 $('#astraDBConnectionName').addClass('is-invalid')
 
                 // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('to save a connection, a unique valid name is required to be provided')) + '.', 'failure')
+                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('to add a connection, a unique valid name is required to be provided')) + '.', 'failure')
 
                 // Skip the upcoming code - terminate the connection's saving/updating process -
                 return
@@ -11096,7 +11179,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                 basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
 
               // Show feedback to the user
-              showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('to save a connection, a unique valid name is required to be provided')) + '.', 'failure')
+              showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('to add a connection, a unique valid name is required to be provided')) + '.', 'failure')
 
               // Skip the upcoming code - terminate the connection's saving/updating process -
               return

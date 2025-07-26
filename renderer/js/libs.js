@@ -145,6 +145,9 @@ const OS = require('os'),
   JSONRepair = require('jsonrepair').jsonrepair,
   // Cross-browser storage for all use cases
   Store = require('store'),
+  // Lightning fast hash function library for Node.js
+  HashWASM = require('hash-wasm'),
+  MD5 = HashWASM.md5,
   // Run commands using sudo, prompting the user with a graphical OS dialog
   Sudo = require('sudo-prompt'),
   // The fastest and simplest library for SQLite3 in Node.js

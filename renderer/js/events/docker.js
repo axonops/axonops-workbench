@@ -162,10 +162,10 @@
             Modules.Docker.saveProject(project).then((status) => {
               // Failed to save the project
               if (status != 1)
-                return showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to save the local cluster')) + '.', 'failure')
+                return showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to add the local cluster')) + '.', 'failure')
 
               // Successfully saved the project
-              showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster with Apache Cassandra v$data has been successfully created and saved', [cassandraVersion])) + '.', 'success')
+              showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('the local cluster with Apache Cassandra v$data has been successfully created and added', [cassandraVersion])) + '.', 'success')
 
               // Either `refresh` or `get` workspaces based on the state of the process
               $(document).trigger(getAttributes($(this), 'data-refresh') == 'false' ? 'getWorkspaces' : 'refreshWorkspaces')

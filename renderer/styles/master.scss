@@ -4005,7 +4005,8 @@ div.tab-content {
             }
 
             &.consistency-level,
-            &.pagination-size {
+            &.pagination-size,
+            &.query-tracing {
               display: none;
 
               button {
@@ -4020,6 +4021,11 @@ div.tab-content {
                 ion-icon[name="pagination"] {
                   font-size: 170%;
                   transform: translateX(17px);
+                }
+
+                ion-icon[name="query-tracing"] {
+                  transform: translateX(9px) translateY(1px) scale(0.65);
+                  font-size: 300%;
                 }
 
                 span.badge {
@@ -5529,7 +5535,6 @@ div.general-hint.select-rows {
     background: #717171;
   }
 }
-
 /**
 * Import right-to-left style
 */

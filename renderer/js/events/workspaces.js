@@ -1933,7 +1933,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     let savingResultsTxt = ''
 
     for (let result of savingResults) {
-      savingResultsTxt += `, ${result.name}: ${I18next.capitalizeFirstLetter(I18next.t(result.status == 1 ? 'successfully saved' : 'failed to save'))}`
+      savingResultsTxt += `, ${result.name}: ${I18next.capitalizeFirstLetter(I18next.t(result.status == 1 ? 'successfully added' : 'failed to add'))}`
     }
 
     savingResultsTxt = savingResultsTxt.slice(2)

@@ -972,16 +972,34 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
  *
  * @Return: {object} a valid tree structure to be rendered
  */
-let buildTreeview = (metadata, ignoreTitles = false) => {
+let buildTreeview = async (metadata, ignoreTitles = false) => {
   /**
    * Due to the way JSTree is coded, there's an issue with the paths in Windows
    * To solve this issue, this inner function replaces the backward slashes
    * If the OS is not Windows it'll simply return the path without any manipulation
    */
-  let normalizePath = (path) => OS.platform == 'win32' ? `${path}`.replace(/\\/gm, '/') : `${path}`
+  let normalizePath = (path) => OS.platform == 'win32' ? `${path}`.replace(/\\/gm, '/') : `${path}`,
+    counterIDs = 0,
+    getMD5IDForNode = async (amount = 1) => {
+      let ids = []
+
+      for (let i = 0; i < amount; i++) {
+        counterIDs = counterIDs + 1
+
+        try {
+          ids.push(await MD5(`${counterIDs}`))
+        } catch (e) {
+          try {
+            errorLog(e, 'functions')
+          } catch (e) {}
+        }
+      }
+
+      return amount == 1 ? ids[0] : ids
+    }
 
   // Get a keyspaces container's random ID
-  let [connectionID, keyspacesID] = getRandom.id(30, 2),
+  let [connectionID, keyspacesID] = await getMD5IDForNode(2),
     // Define the path of extra icons to be used with each leaf
     extraIconsPath = normalizePath(Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra')),
     // The initial tree structure
@@ -1020,7 +1038,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             }
           },
           {
-            'id': getRandom.id(30),
+            'id': await getMD5IDForNode(),
             'parent': connectionID,
             'text': `Partitioner: <span>${metadata.partitioner.replace(/.+\.(.+)/gi, '$1')}</span>`,
             'type': 'default',
@@ -1049,7 +1067,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
     }
 
   // Get a random ID for the system's keyspaces container
-  let systemKeyspacesParentID = getRandom.id(30),
+  let systemKeyspacesParentID = await getMD5IDForNode(),
     /**
      * Count the number of found system keyspaces in the connected to connection
      *
@@ -1068,7 +1086,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
    * {string} `?icon` the name of the icon to be used with the leaf
    * {string} `?parentType` the child's parent type - partition, clustering, etc... -
    */
-  let buildTreeViewForChild = (parentID, childID, text, object, icon = null, parentType = '') => {
+  let buildTreeViewForChild = async (parentID, childID, text, object, icon = null, parentType = '') => {
       // Define the parent's type
       let setParentType = icon || `${parentType}`
 
@@ -1168,7 +1186,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           attributes = attributes.slice(0, -2)
 
         // Loop through them all
-        attributes.forEach((attribute) => {
+        for (let attribute of attributes) {
           // If the child doesn't have this attribute then skip it and move to the next one
           if (object[attribute] == undefined)
             return
@@ -1181,7 +1199,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           // Otherwise, define that attribute's structure
           let structure = {
-            id: getRandom.id(30),
+            id: await getMD5IDForNode(),
             parent: childID,
             text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: <span class="material-icons for-treeview">${materialIcon}</span>`,
             type: 'default'
@@ -1208,7 +1226,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
           // Append that attribute to the child
           treeStructure.core.data.push(structure)
-        })
+        }
       } catch (e) {}
 
       // Check if the child has a CQL type
@@ -1259,23 +1277,23 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
   sortItemsAlphabetically(metadata.keyspaces, 'name')
 
   // Loop through the keyspaces
-  metadata.keyspaces.forEach((keyspace) => {
+  for (let keyspace of metadata.keyspaces) {
     // Get a unique ID for the current keyspace, and an ID for its tables' container
     let [
       keyspaceID,
       tablesID
-    ] = getRandom.id(30, 2),
+    ] = await getMD5IDForNode(2),
       indexesInfo = []
 
     // Build tree view for the keyspace
-    buildTreeViewForChild(keyspacesID, keyspaceID, `Keyspace`, keyspace, 'keyspace')
+    await buildTreeViewForChild(keyspacesID, keyspaceID, `Keyspace`, keyspace, 'keyspace')
 
     try {
       if (keyspace.replication_strategy == undefined)
         throw 0
 
       let replicationStrategy = JSON.parse(repairJSONString(keyspace.replication_strategy)),
-        replicationStrategyID = getRandom.id(30)
+        replicationStrategyID = await getMD5IDForNode()
 
       // Tables' container that will be under the keyspace container
       let replicationStrategyStructure = {
@@ -1289,15 +1307,15 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       // Append the tables' container to the tree structure
       treeStructure.core.data.push(replicationStrategyStructure); // This semicolon is critical here
 
-      Object.keys(replicationStrategy).forEach((key) => {
+      for (let key of Object.keys(replicationStrategy)) {
         treeStructure.core.data.push({
-          id: getRandom.id(30),
+          id: await getMD5IDForNode(),
           parent: replicationStrategyID,
           text: `${key}: ${replicationStrategy[key]}`,
           type: 'default',
           icon: normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
         })
-      })
+      }
     } catch (e) {}
 
     // Tables' container that will be under the keyspace container
@@ -1319,7 +1337,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
     sortItemsAlphabetically(keyspace.tables, 'name')
 
-    let counterTablesID = getRandom.id(30),
+    let counterTablesID = await getMD5IDForNode(),
       counterTablesStructure = {
         id: counterTablesID,
         parent: tablesID,
@@ -1339,7 +1357,8 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
     treeStructure.core.data.push(counterTablesStructure)
 
     // Loop through every table in the keyspace
-    keyspace.tables.forEach((table) => {
+    for (let table of keyspace.tables) {
+
       // Get random IDs for all upcoming children
       let [
         tableID,
@@ -1350,7 +1369,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         triggersID,
         viewsID,
         indexesID
-      ] = getRandom.id(30, 8)
+      ] = await getMD5IDForNode(8)
 
       let isCounterTable = table.columns.find((column) => column.cql_type == 'counter') != undefined
 
@@ -1361,13 +1380,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
        * Build a tree view for the table
        * For the `parentType` parameter set it to be the table's keyspace's name; to set a correct scope for getting a CQL description
        */
-      buildTreeViewForChild(tablesID, tableID, `Table`, table, 'table', {
+      await buildTreeViewForChild(tablesID, tableID, `Table`, table, 'table', {
         keyspace: keyspace.name,
         isCounterTable
       })
 
       if (isCounterTable)
-        buildTreeViewForChild(counterTablesID, `${tableID}_${counterTablesID}`, `Table`, table, 'table', {
+        await buildTreeViewForChild(counterTablesID, `${tableID}_${counterTablesID}`, `Table`, table, 'table', {
           keyspace: keyspace.name,
           isCounterTable: true
         })
@@ -1394,17 +1413,17 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         sortItemsAlphabetically(table.primary_key, 'name')
 
         // Loop through primary keys
-        table.primary_key.forEach((primaryKey) => {
+        for (let primaryKey of table.primary_key) {
           // Get a random ID for the key
-          let primaryKeyID = getRandom.id(30),
+          let primaryKeyID = await getMD5IDForNode(),
             isPartitionKey = table.partition_key.find((partitionKey) => primaryKey.name == partitionKey.name) != undefined
 
           // Build tree view for the key
-          buildTreeViewForChild(primaryKeysID, primaryKeyID, `Key`, primaryKey, isPartitionKey ? 'partition-key' : 'clustering-key')
+          await buildTreeViewForChild(primaryKeysID, primaryKeyID, `Key`, primaryKey, isPartitionKey ? 'partition-key' : 'clustering-key')
 
           if (isCounterTable)
-            buildTreeViewForChild(`${primaryKeysID}_${counterTablesID}`, `${primaryKeyID}_${counterTablesID}`, `Key`, primaryKey, isPartitionKey ? 'partition-key' : 'clustering-key')
-        })
+            await buildTreeViewForChild(`${primaryKeysID}_${counterTablesID}`, `${primaryKeyID}_${counterTablesID}`, `Key`, primaryKey, isPartitionKey ? 'partition-key' : 'clustering-key')
+        }
       }
 
       // Table's partition key
@@ -1429,16 +1448,16 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         sortItemsAlphabetically(table.partition_key, 'name')
 
         // Loop through keys
-        table.partition_key.forEach((partitionKey) => {
+        for (let partitionKey of table.partition_key) {
           // Get a random ID for the key
-          let partitionKeyID = getRandom.id(30)
+          let partitionKeyID = await getMD5IDForNode()
 
           // Build tree view for the key
-          buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
+          await buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
 
           if (isCounterTable)
-            buildTreeViewForChild(`${partitionKeysID}_${counterTablesID}`, `${partitionKeyID}_${counterTablesID}`, `Key`, partitionKey, 'partition-key', 'partitionKeys')
-        })
+            await buildTreeViewForChild(`${partitionKeysID}_${counterTablesID}`, `${partitionKeyID}_${counterTablesID}`, `Key`, partitionKey, 'partition-key', 'partitionKeys')
+        }
       }
 
       // Loop through the table's children, starting from the clustering keys
@@ -1463,16 +1482,16 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         sortItemsAlphabetically(table.clustering_key, 'name')
 
         // Loop through clustering keys
-        table.clustering_key.forEach((clusteringKey) => {
+        for (let clusteringKey of table.clustering_key) {
           // Get a random ID for the key
-          let clusteringKeyID = getRandom.id(30)
+          let clusteringKeyID = await getMD5IDForNode()
 
           // Build tree view for the key
-          buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
+          await buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
 
           if (isCounterTable)
-            buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'clustering-key')
-        })
+            await buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'clustering-key')
+        }
       }
 
       {
@@ -1497,9 +1516,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         sortItemsAlphabetically(staticColumns, 'name')
 
         // Loop through columns
-        staticColumns.forEach((column) => {
+        for (let column of staticColumns) {
           // Get a random ID for the column
-          let columnID = getRandom.id(30),
+          let columnID = await getMD5IDForNode(),
             isPartitionKey = table.partition_key.find((partitionKey) => column.name == partitionKey.name) != undefined,
             isClusteringKey = table.clustering_key.find((clusteringKey) => column.name == clusteringKey.name) != undefined
 
@@ -1508,11 +1527,11 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             delete column.is_reversed
 
           // Build a tree view for the column
-          buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'static-column'))
+          await buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'static-column'))
 
           if (isCounterTable)
-            buildTreeViewForChild(`${columnsID}_${counterTablesID}_static`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'static-column'))
-        })
+            await buildTreeViewForChild(`${columnsID}_${counterTablesID}_static`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'static-column'))
+        }
       }
 
       // Table's columns
@@ -1541,9 +1560,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         allColumns = removeArrayDuplicates(allColumns, 'name')
 
         // Loop through columns
-        allColumns.forEach((column) => {
+        for (let column of allColumns) {
           // Get a random ID for the column
-          let columnID = getRandom.id(30),
+          let columnID = await getMD5IDForNode(),
             isPartitionKey = table.partition_key.find((partitionKey) => column.name == partitionKey.name) != undefined,
             isClusteringKey = table.clustering_key.find((clusteringKey) => column.name == clusteringKey.name) != undefined,
             isStatic = column['is_static']
@@ -1553,17 +1572,17 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             delete column.is_reversed
 
           // Build a tree view for the column
-          buildTreeViewForChild(columnsID, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : (isStatic ? 'static-column' : 'column')))
+          await buildTreeViewForChild(columnsID, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : (isStatic ? 'static-column' : 'column')))
 
           if (isCounterTable)
-            buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : (isStatic ? 'static-column' : 'column')))
-        })
+            await buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : (isStatic ? 'static-column' : 'column')))
+        }
       }
 
       // Define an inner function to handle the appending process of options to the tree structure
-      let appendOptions = (options, parentID) => {
+      let appendOptions = async (options, parentID) => {
         // Loop through the passed `options`
-        Object.keys(options).forEach((option) => {
+        for (let option of Object.keys(options)) {
           // Manipulate the option's key/text
           let text = I18next.capitalize(`${option}`.replace(/\_/g, ' ')),
             // Get the option's value
@@ -1585,7 +1604,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               throw 0
 
             // Get a random ID for the current parent's options node
-            let parentOptionsID = getRandom.id(30),
+            let parentOptionsID = await getMD5IDForNode(),
               // Define the node/leaf structure
               parentOptionsStructure = {
                 id: parentOptionsID,
@@ -1606,7 +1625,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               })
 
             // Make a recursive call to the same function
-            return appendOptions(value, parentOptionsID)
+            return await appendOptions(value, parentOptionsID)
           } catch (e) {}
 
           try {
@@ -1618,7 +1637,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
            * Reaching here means the current option's value is not an object
            * Get a random ID for the option's node
            */
-          let optionID = getRandom.id(30),
+          let optionID = await getMD5IDForNode(),
             // Define the node/leaf structure
             optionStructure = {
               id: optionID,
@@ -1637,14 +1656,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
               id: `${optionID}_${counterTablesID}`,
               parent: `${parentID}_${counterTablesID}`
             })
-        })
+        }
       }
 
       try {
         if (table.options.length <= 0)
           throw 0
 
-        appendOptions({
+        await appendOptions({
           compaction: {
             ...table.options['compaction'],
             bloom_filter_fp_chance: table.options['bloom_filter_fp_chance']
@@ -1658,7 +1677,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * Options' container that will be under the table overall container
          * Get a random ID for the options' parent/container node
          */
-        let optionsID = getRandom.id(30),
+        let optionsID = await getMD5IDForNode(),
           // Define the node/leaf structure
           optionsStructure = {
             id: optionsID,
@@ -1683,7 +1702,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           throw 0
 
         // Initial call to the inner function
-        appendOptions(table.options, optionsID)
+        await appendOptions(table.options, optionsID)
       } catch (e) {}
 
       // Table's triggers
@@ -1710,16 +1729,16 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           //   })
 
           // Loop through triggers
-          table.triggers.forEach((trigger) => {
+          for (let trigger of table.triggers) {
             // Get a random ID for the trigger
-            let triggerID = getRandom.id(30)
+            let triggerID = await getMD5IDForNode()
 
             // Build a tree view for the trigger
-            buildTreeViewForChild(triggersID, triggerID, `Trigger`, trigger, 'trigger')
+            await buildTreeViewForChild(triggersID, triggerID, `Trigger`, trigger, 'trigger')
 
             // if (isCounterTable)
-            //   buildTreeViewForChild(`${triggersID}_${counterTablesID}`, `${triggerID}_${counterTablesID}`, `Trigger`, trigger, 'trigger')
-          })
+            //   await buildTreeViewForChild(`${triggersID}_${counterTablesID}`, `${triggerID}_${counterTablesID}`, `Trigger`, trigger, 'trigger')
+          }
         } catch (e) {}
       }
 
@@ -1732,7 +1751,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * Views' container that will be under the table container
          * Get a random ID for the views' parent node
          */
-        let viewsID = getRandom.id(30),
+        let viewsID = await getMD5IDForNode(),
           // Define the node/leaf structure
           viewsStructure = {
             id: viewsID,
@@ -1757,25 +1776,25 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           throw 0
 
         // Loop through every view in the table
-        table.views.forEach((view) => {
+        for (let view of table.view) {
           // Get random IDs for all upcoming children
           let [
             viewID,
             clusteringKeysID,
             partitionKeysID,
             columnsID
-          ] = getRandom.id(30, 4)
+          ] = await getMD5IDForNode(4)
 
           /**
            * Build a tree view for the current view
            * For the `parentType` parameter set it to be the view's keyspace's name; to set a correct scope for getting a CQL description
            */
-          buildTreeViewForChild(viewsID, viewID, `View`, view, 'view', {
+          await buildTreeViewForChild(viewsID, viewID, `View`, view, 'view', {
             keyspace: keyspace.name
           })
 
           // if (isCounterTable)
-          //   buildTreeViewForChild(`${viewsID}_${counterTablesID}`, `${viewID}_${counterTablesID}`, `View`, view, 'view', {
+          //   await buildTreeViewForChild(`${viewsID}_${counterTablesID}`, `${viewID}_${counterTablesID}`, `View`, view, 'view', {
           //     keyspace: keyspace.name
           //   })
 
@@ -1800,16 +1819,16 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           sortItemsAlphabetically(view.clustering_key, 'name')
 
           // Loop through clustering keys
-          view.clustering_key.forEach((clusteringKey) => {
+          for (let clusteringKey of view.clustering_key) {
             // Get a random ID for the key
-            let clusteringKeyID = getRandom.id(30)
+            let clusteringKeyID = await getMD5IDForNode()
 
             // Build tree view for the key
-            buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
+            await buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
 
             if (isCounterTable)
-              buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'clustering-key')
-          })
+              await buildTreeViewForChild(`${clusteringKeysID}_${counterTablesID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, clusteringKey, 'clustering-key')
+          }
           // End of view's clustering keys
 
           // View's partition key
@@ -1833,16 +1852,16 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           sortItemsAlphabetically(view.partition_key, 'name')
 
           // Loop through keys
-          view.partition_key.forEach((partitionKey) => {
+          for (let partitionKey of view.partition_key) {
             // Get a random ID for the key
-            let partitionKeyID = getRandom.id(30)
+            let partitionKeyID = await getMD5IDForNode()
 
             // Build tree view for the key
-            buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
+            await buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
 
             if (isCounterTable)
-              buildTreeViewForChild(`${partitionKeysID}_${partitionKeyID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, partitionKey, 'partition-key', 'partitionKeys')
-          })
+              await buildTreeViewForChild(`${partitionKeysID}_${partitionKeyID}`, `${clusteringKeyID}_${counterTablesID}`, `Key`, partitionKey, 'partition-key', 'partitionKeys')
+          }
           // End of view's partition key
 
           {
@@ -1861,16 +1880,16 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             sortItemsAlphabetically(staticColumns, 'name')
 
             // Loop through columns
-            staticColumns.forEach((column) => {
+            for (let column of staticColumns) {
               // Get rid of `is_reversed` attribute
               delete column.is_reversed
 
               // Get a random ID for the column
-              let columnID = getRandom.id(30)
+              let columnID = await getMD5IDForNode()
 
               // Build a tree view for the column
-              buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, 'static-column')
-            })
+              await buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, 'static-column')
+            }
           }
 
           // View's columns
@@ -1898,20 +1917,20 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           allColumns = removeArrayDuplicates(allColumns, 'name')
 
           // Loop through columns
-          allColumns.forEach((column) => {
+          for (let column of allColumns) {
             // Get rid of `is_reversed` attribute
             delete column.is_reversed
 
             // Get a random ID for the column
-            let columnID = getRandom.id(30)
+            let columnID = await getMD5IDForNode()
 
             // Build a tree view for the column
-            buildTreeViewForChild(columnsID, columnID, `Column`, column, column['is_static'] ? 'static-column' : 'column')
+            await buildTreeViewForChild(columnsID, columnID, `Column`, column, column['is_static'] ? 'static-column' : 'column')
 
             // if (isCounterTable)
-            //   buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, 'column')
-          })
-        })
+            //   await buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, 'column')
+          }
+        }
       } catch (e) {}
 
       // Show an `Indexes` node/leaf if the current table has at least one index
@@ -1923,7 +1942,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * Indexes' container that will be under the table container
          * Get a random ID for the indexes' parent node
          */
-        let indexesID = getRandom.id(30),
+        let indexesID = await getMD5IDForNode(),
           // Define the node/leaf structure
           indexesStructure = {
             id: indexesID,
@@ -1948,12 +1967,12 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           throw 0
 
         // Loop through every index in the table
-        table.indexes.forEach((index) => {
+        for (let index of table.indexes) {
           // Get random IDs for the current index and its kind/type
           let [
             indexID,
             kindID
-          ] = getRandom.id(30, 2)
+          ] = await getMD5IDForNode(2)
 
           indexesInfo.push({
             name: index.name,
@@ -1962,13 +1981,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           })
 
           // Build a tree view for the current UDT
-          buildTreeViewForChild(indexesID, indexID, `Index`, index, 'index', {
+          await buildTreeViewForChild(indexesID, indexID, `Index`, index, 'index', {
             keyspace: keyspace.name,
             table: table.name
           })
 
           // if (isCounterTable)
-          //   buildTreeViewForChild(`${indexesID}_${counterTablesID}`, `${indexID}_${counterTablesID}`, `Index`, index, 'index', {
+          //   await buildTreeViewForChild(`${indexesID}_${counterTablesID}`, `${indexID}_${counterTablesID}`, `Index`, index, 'index', {
           //     keyspace: keyspace.name,
           //     table: table.name
           //   })
@@ -1988,9 +2007,9 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           //     text: `Kind: <span>${I18next.capitalizeFirstLetter(EscapeHTML(index.kind.toLowerCase()))}</span>`,
           //     type: 'default'
           //   })
-        })
+        }
       } catch (e) {}
-    })
+    }
 
     try {
       let counterTablesNode = treeStructure.core.data.find((node) => node.id == counterTablesID)
@@ -2006,7 +2025,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
        * Views' container that will be under the keyspace container
        * Get a random ID for the views' parent node
        */
-      let viewsID = getRandom.id(30),
+      let viewsID = await getMD5IDForNode(),
         // Define the node/leaf structure
         viewsStructure = {
           id: viewsID,
@@ -2024,24 +2043,25 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         throw 0
 
       // Loop through every view in the keyspace
-      keyspace.views.forEach((view) => {
+      for (let view of keyspace.views) {
+
         // Get random IDs for all upcoming children
         let [
           viewID,
           clusteringKeysID,
           partitionKeysID,
           columnsID
-        ] = getRandom.id(30, 4)
+        ] = await getMD5IDForNode(4)
 
         /**
          * Build a tree view for the current view
          * For the `parentType` parameter set it to be the view's keyspace's name; to set a correct scope for getting a CQL description
          */
-        buildTreeViewForChild(viewsID, viewID, `View`, view, 'view', keyspace.name)
+        await buildTreeViewForChild(viewsID, viewID, `View`, view, 'view', keyspace.name)
 
         // Add a node/leaf about the view's base table's name
         treeStructure.core.data.push({
-          id: getRandom.id(30),
+          id: await getMD5IDForNode(),
           parent: viewID,
           text: `Base Table: <span>${EscapeHTML(view.base_table_name)}</span>`,
           type: 'default'
@@ -2061,13 +2081,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         sortItemsAlphabetically(view.clustering_key, 'name')
 
         // Loop through clustering keys
-        view.clustering_key.forEach((clusteringKey) => {
+        for (let clusteringKey of view.clustering_key) {
           // Get a random ID for the key
-          let clusteringKeyID = getRandom.id(30)
+          let clusteringKeyID = await getMD5IDForNode()
 
           // Build tree view for the key
-          buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
-        })
+          await buildTreeViewForChild(clusteringKeysID, clusteringKeyID, `Key`, clusteringKey, 'clustering-key')
+        }
         // End of view's clustering keys
 
         // View's partition key
@@ -2084,13 +2104,13 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         sortItemsAlphabetically(view.partition_key, 'name')
 
         // Loop through keys
-        view.partition_key.forEach((partitionKey) => {
+        for (let partitionKey of view.partition_key) {
           // Get a random ID for the key
-          let partitionKeyID = getRandom.id(30)
+          let partitionKeyID = await getMD5IDForNode()
 
           // Build tree view for the key
-          buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
-        })
+          await buildTreeViewForChild(partitionKeysID, partitionKeyID, `Key`, partitionKey, 'partition-key', 'partitionKeys')
+        }
         // End of view's partition key
 
         {
@@ -2109,16 +2129,16 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           sortItemsAlphabetically(view.staticColumns, 'name')
 
           // Loop through columns
-          staticColumns.forEach((column) => {
+          for (let column of staticColumns) {
             // Get rid of `is_reversed` attribute
             delete column.is_reversed
 
             // Get a random ID for the column
-            let columnID = getRandom.id(30)
+            let columnID = await getMD5IDForNode()
 
             // Build a tree view for the column
-            buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, 'static-column')
-          })
+            await buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, 'static-column')
+          }
         }
 
         // View's columns
@@ -2139,17 +2159,17 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         allColumns = removeArrayDuplicates(allColumns, 'name')
 
         // Loop through columns
-        allColumns.forEach((column) => {
+        for (let column of allColumns) {
           // Get rid of `is_reversed` attribute
           delete column.is_reversed
 
           // Get a random ID for the column
-          let columnID = getRandom.id(30)
+          let columnID = await getMD5IDForNode()
 
           // Build a tree view for the column
-          buildTreeViewForChild(columnsID, columnID, `Column`, column, column['is_static'] ? 'static-column' : 'column')
-        })
-      })
+          await buildTreeViewForChild(columnsID, columnID, `Column`, column, column['is_static'] ? 'static-column' : 'column')
+        }
+      }
     } catch (e) {}
 
     // Show an `Indexes` node/leaf if the current keyspace has at least one index
@@ -2158,7 +2178,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
        * Indexes' container that will be under the keyspace container
        * Get a random ID for the indexes' parent node
        */
-      let indexesID = getRandom.id(30),
+      let indexesID = await getMD5IDForNode(),
         // Define the node/leaf structure
         indexesStructure = {
           id: indexesID,
@@ -2176,13 +2196,14 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         throw 0
 
       // Loop through every index in the keyspace
-      keyspace.indexes.forEach((index) => {
+      for (let index of keyspace.indexes) {
+
         // Get random IDs for the current index and its kind/type
         let [
           indexID,
           kindID,
           relatedTableID
-        ] = getRandom.id(30, 3)
+        ] = await getMD5IDForNode(3)
 
         let indexInfo = {}
 
@@ -2191,7 +2212,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
         } catch (e) {}
 
         // Build a tree view for the current UDT
-        buildTreeViewForChild(indexesID, indexID, `Index`, index, 'index', {
+        await buildTreeViewForChild(indexesID, indexID, `Index`, index, 'index', {
           keyspace: keyspace.name,
           table: indexInfo.table
         })
@@ -2211,7 +2232,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           type: 'default',
           icon: normalizePath(Path.join(extraIconsPath, 'table.png'))
         })
-      })
+      }
     } catch (e) {}
 
     // Check if the current keyspace has any user-defined element
@@ -2223,7 +2244,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           aggregates: keyspace.aggregates.length
         },
         // Get random ID for the main node/leaf
-        userDefinedElementsID = getRandom.id(30)
+        userDefinedElementsID = await getMD5IDForNode()
 
       // // Define the main node's structure
       // let userDefinedElementsStructure = {
@@ -2243,7 +2264,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * UDTs' parent node that will be under the main node
          * Get a random ID for the UDTs' parent node
          */
-        let userTypesID = getRandom.id(30),
+        let userTypesID = await getMD5IDForNode(),
           // Define the node/leaf structure
           userTypesStructure = {
             id: userTypesID,
@@ -2266,37 +2287,42 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           throw 0
 
         // Loop through every UDT in the keyspace
-        keyspace.user_types.forEach((userType) => {
+        for (let userType of keyspace.user_types) {
           // Get random IDs for the current UDT and its fields
           let [
             userTypeID,
             fieldsID
-          ] = getRandom.id(30, 2)
+          ] = await getMD5IDForNode(2)
 
           // Build a tree view for the current UDT
-          buildTreeViewForChild(userTypesID, userTypeID, `User Type`, {
+          await buildTreeViewForChild(userTypesID, userTypeID, `User Type`, {
             ...userType,
             keyspace: keyspace.name
           }, 'udt')
 
           // Loop through each field of the current UDT
-          userType.field_names.forEach((field, index) => {
-            // Get random IDs for the current field and its type
-            let [
-              fieldID, fieldTypeID
-            ] = getRandom.id(30, 2),
-              // Get the field's type
-              type = userType.field_types[index]
+          {
+            let index = 0
+            for (let field of userType.field_names) {
+              // Get random IDs for the current field and its type
+              let [
+                fieldID, fieldTypeID
+              ] = await getMD5IDForNode(2),
+                // Get the field's type
+                type = userType.field_types[index]
 
-            // Push the field's tree view's node structure
-            treeStructure.core.data.push({
-              id: fieldID,
-              parent: userTypeID,
-              text: `<span>${field}</span>: <span>${EscapeHTML(type)}</span>`,
-              type: 'default'
-            })
-          })
-        })
+              // Push the field's tree view's node structure
+              treeStructure.core.data.push({
+                  id: fieldID,
+                  parent: userTypeID,
+                  text: `<span>${field}</span>: <span>${EscapeHTML(type)}</span>`,
+                  type: 'default'
+                })
+
+                ++index
+            }
+          }
+        }
       } catch (e) {}
 
       // Handle `User Defined Functions (UDF)`
@@ -2305,7 +2331,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * UDFs' parent node that will be under the main node
          * Get a random ID for the UDFs' parent node
          */
-        let userFuncsID = getRandom.id(30),
+        let userFuncsID = await getMD5IDForNode(),
           // Define the node/leaf structure
           userFuncsStructure = {
             id: userFuncsID,
@@ -2323,15 +2349,15 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           throw 0
 
         // Loop through every UDF in the keyspace
-        keyspace.functions.forEach((func) => {
+        for (let func of keyspace.functions) {
           // Get random IDs for the current UDF and its arguments
           let [
             funcID,
             argumentsID
-          ] = getRandom.id(30, 2)
+          ] = await getMD5IDForNode(2)
 
           // Build a tree view for the current UDF
-          buildTreeViewForChild(userFuncsID, funcID, `User Function`, func, 'udf')
+          await buildTreeViewForChild(userFuncsID, funcID, `User Function`, func, 'udf')
 
           // Add different attributes to the current UDF
           {
@@ -2345,15 +2371,15 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             ]
 
             // Loop through each attribute's text
-            attributes.forEach((attribute) => {
+            for (let attribute of attributes) {
               // Push the attribute within a tree view's node structure
               treeStructure.core.data.push({
-                id: getRandom.id(30),
+                id: await getMD5IDForNode(),
                 parent: funcID,
                 text: attribute,
                 type: 'default'
               })
-            })
+            }
           }
 
           // Push the current UDF's arguments' tree view's node structure
@@ -2366,23 +2392,28 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           })
 
           // Loop through each argument
-          func.argument_names.forEach((argument, index) => {
-            // Get random IDs for the current argument and its type
-            let [
-              argumentID, argumentTypeID
-            ] = getRandom.id(30, 2),
-              // Get the argument's type
-              type = func.argument_types[index]
+          {
+            let index = 0
+            for (let argument of func.argument_names) {
+              // Get random IDs for the current argument and its type
+              let [
+                argumentID, argumentTypeID
+              ] = await getMD5IDForNode(2),
+                // Get the argument's type
+                type = func.argument_types[index]
 
-            // Push the argument's tree tree view's node structure
-            treeStructure.core.data.push({
-              id: argumentID,
-              parent: argumentsID,
-              text: `<span>${argument}</span>: <span>${EscapeHTML(type)}</span>`,
-              type: 'default'
-            })
-          })
-        })
+              // Push the argument's tree tree view's node structure
+              treeStructure.core.data.push({
+                  id: argumentID,
+                  parent: argumentsID,
+                  text: `<span>${argument}</span>: <span>${EscapeHTML(type)}</span>`,
+                  type: 'default'
+                })
+
+                ++index
+            }
+          }
+        }
       } catch (e) {}
 
       // Handle `User Defined Aggregates (UDA)`
@@ -2391,7 +2422,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
          * UDA's parent node that will be under the main node
          * Get a random ID for the UDTs' parent node
          */
-        let userAggregatesID = getRandom.id(30),
+        let userAggregatesID = await getMD5IDForNode(),
           // Define the node/leaf structure
           userAggregatesStructure = {
             id: userAggregatesID,
@@ -2409,15 +2440,15 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           throw 0
 
         // Loop through every UDA in the keyspace
-        keyspace.aggregates.forEach((aggregate) => {
+        for (let aggregate of keyspace.aggregates) {
           // Get random IDs for the current UDA and its arguments
           let [
             aggregateID,
             argumentsID
-          ] = getRandom.id(30, 2)
+          ] = await getMD5IDForNode(2)
 
           // Build a tree view for the current UDA
-          buildTreeViewForChild(userAggregatesID, aggregateID, `User Function`, aggregate, 'aggregate')
+          await buildTreeViewForChild(userAggregatesID, aggregateID, `User Function`, aggregate, 'aggregate')
 
           // Add different attributes to the current UDA
           {
@@ -2432,15 +2463,15 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
             ]
 
             // Loop through each attribute's text
-            attributes.forEach((attribute) => {
+            for (let attribute of attributes) {
               // Push the attribute within a tree view's node structure
               treeStructure.core.data.push({
-                id: getRandom.id(30),
+                id: await getMD5IDForNode(),
                 parent: aggregateID,
                 text: attribute,
                 type: 'default'
               })
-            })
+            }
           }
 
           // Push the current UDA's arguments types' tree view's node structure
@@ -2453,22 +2484,27 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
           })
 
           // Loop through each argument type of the current UDA
-          aggregate.argument_types.forEach((argumentType, index) => {
-            // Get random IDs for the current argument type
-            let argumentTypeID = getRandom.id(30)
+          {
+            let index = 0
+            for (let argumentType of aggregate.argument_types) {
+              // Get random IDs for the current argument type
+              let argumentTypeID = await getMD5IDForNode()
 
-            // Push the argument type's tree view's node structure
-            treeStructure.core.data.push({
-              id: argumentTypeID,
-              parent: argumentsID,
-              text: `<span>${EscapeHTML(argumentType)}</span>`,
-              type: 'default'
-            })
-          })
-        })
+              // Push the argument type's tree view's node structure
+              treeStructure.core.data.push({
+                  id: argumentTypeID,
+                  parent: argumentsID,
+                  text: `<span>${EscapeHTML(argumentType)}</span>`,
+                  type: 'default'
+                })
+
+                ++index
+            }
+          }
+        }
       } catch (e) {}
     } catch (e) {}
-  })
+  }
 
   // Add the system's keyspaces container node
   try {
@@ -2510,7 +2546,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
       throw 0
 
     // Get a random ID for the `Virtual Keyspaces` node
-    let virtualKeyspacesParentID = getRandom.id(30)
+    let virtualKeyspacesParentID = await getMD5IDForNode()
 
     // Define the node structure
     let structure = {
@@ -2529,7 +2565,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
     treeStructure.core.data.unshift(structure)
 
     // Loop through all remaining nodes after the filtering process
-    virtualNodes.forEach((node) => {
+    for (let node of virtualNodes) {
       // Get the keyspace node and clone it
       let keyspace = {
         ...treeStructure.core.data.filter((_node) => _node.id == node.parent)[0]
@@ -2548,7 +2584,7 @@ let buildTreeview = (metadata, ignoreTitles = false) => {
 
       // Push the keyspace node again
       treeStructure.core.data.push(keyspace)
-    })
+    }
   } catch (e) {}
 
   // Return the final tree structure
@@ -4276,7 +4312,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
         'check_callback': true,
         'data': []
       },
-      'plugins': ['dnd', 'state', 'noclose']
+      'plugins': ['dnd', 'noclose']
     },
     getInputType = (fieldType) => {
       let type = 'text',

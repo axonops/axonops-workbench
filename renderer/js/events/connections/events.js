@@ -717,7 +717,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                            </li>`
                   } catch (e) {}
 
-                  let isAxonOpsIntegrationActionEnabled = isInitAxonOpsIntegrationEnabled && !(Store.get(`${workspaceID}:AxonOpsIntegrationEnabled`) != undefined && !Store.get(`${workspaceID}:AxonOpsIntegrationEnabled`)) && !(Store.get(`${connectionID}:AxonOpsIntegrationEnabled`) != undefined && !Store.get(`${connectionID}:AxonOpsIntegrationEnabled`))
+                  let isAxonOpsIntegrationActionEnabled = isInitAxonOpsIntegrationEnabled && !(Store.get(`${workspaceID}:AxonOpsIntegrationEnabled`) != undefined && !Store.get(`${workspaceID}:AxonOpsIntegrationEnabled`)) && !(Store.get(`${connectionID}:AxonOpsIntegrationEnabled`) != undefined && !Store.get(`${connectionID}:AxonOpsIntegrationEnabled`)) && connectionElement.attr('data-axonops-integration-organization') != undefined
 
                   // Connection work area's UI element structure
                   let element = `
@@ -759,9 +759,16 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                        </div>
                                        <div class="text no-select-reverse">${getAttributes(connectionElement, 'data-datacenter')}</div>
                                      </div>
+                                     <div class="info" info="cluster-name">
+                                       <div class="title">cluster name
+                                         <ion-icon name="right-arrow-filled"></ion-icon>
+                                       </div>
+                                       <div class="text no-select-reverse"></div>
+                                       <div class="_placeholder" style="width: 50px;"></div>
+                                     </div>
                                    </div>
                                  </div>
-                                 <div class="connection-metadata loading" ${isSCBConnection ? 'style="height: calc(100% - 196px + 32px);"' : ''}>
+                                 <div class="connection-metadata loading" ${isSCBConnection ? 'style="height: calc(100% - 196px);"' : ''}>
                                    <div class="search-in-metadata">
                                      <div class="form-outline form-white margin-bottom">
                                        <input type="text" class="form-control form-icon-trailing form-control-sm">
@@ -2231,6 +2238,15 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               // Update latest metadata
                               latestMetadata = metadata
 
+                              {
+                                let clusterNameInfoElement = workareaElement.find('div.connection-info').find('div.info[info="cluster-name"]')
+
+                                try {
+                                  clusterNameInfoElement.children('div._placeholder').hide()
+                                  clusterNameInfoElement.children('div.text').text(`${metadata.cluster_name == undefined || metadata.cluster_name.length <= 0 ? 'Unknown' : metadata.cluster_name}`)
+                                } catch (e) {}
+                              }
+
                               // Build the tree view
                               let treeview = await buildTreeview(JSON.parse(JSON.stringify(metadata)), true),
                                 // Point at the metadata content's container
@@ -2721,8 +2737,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     action: 'axonops-integration',
                                     click,
                                     enabled: isAxonOpsIntegrationActionEnabled,
-                                    icon: Path.join(__dirname, '..', '..', '..', 'assets', 'images', `axonops-icon-transparent-16x16${!isHostThemeDark ? '-dark' : ''}.png`),
-                                    visible: true
+                                    icon: Path.join(__dirname, '..', '..', '..', 'assets', 'images', `axonops-icon-transparent-16x16${!isHostThemeDark ? '-dark' : ''}.png`)
                                   }])
                                 } catch (e) {}
 
@@ -4777,7 +4792,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                           try {
                             if (OS.platform() == 'win32')
-                              statement = `${statement.replace(new RegExp(OS.EOL, 'g'), ' ' + OS.EOL + OS.EOL)}`
+                              statement = `${statement.replace(new RegExp('\n|\r', 'g'), ' \n\n')}`
                           } catch (e) {}
 
                           // Send the command to the main thread to be executed
@@ -5410,6 +5425,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           monaco.languages.registerCompletionItemProvider('sql', {
                             triggerCharacters: [' ', '.', '"', '*', ';'],
                             provideCompletionItems: function(model, position) {
+                              if (model != consoleEditor.getModel())
+                                return {
+                                  suggestions: []
+                                }
+
                               let statement = model.getValueInRange(new monaco.Range(position.lineNumber, 1, position.lineNumber, position.column)),
                                 closestWord = '',
                                 WordAtPosition = model.getWordAtPosition(position),
@@ -7517,7 +7537,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                     // Get the maximum allowed number of running projects at the same time
                     let maximumRunningSandbox = parseInt(config.get('limit', 'sandbox')),
                       // Get the number of currently running projects
-                      numRunningSandbox = $(`div[content="workarea"] div.workarea:not([connection-id*="connection-"])`).length,
+                      numRunningSandbox = $(`div[content="workarea"] div.workarea:not([connection-id*="connection-"])`).filter(function() {
+                        let connectionID = $(this).attr('connection-id'),
+                          connectionElement = $(`div.connections-container div.connections[workspace-id="workspace-sandbox"] div.connection[data-id="${connectionID}"]`)
+
+                        return (connectionElement.length > 0)
+                      }).length,
                       // Get the number of currently attempting-to-start projects
                       numAttemptingSandbox = $(`div[content="connections"] div.connections-container div.connection[data-is-sandbox="true"].test-connection`).length
 

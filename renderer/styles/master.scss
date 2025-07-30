@@ -1501,6 +1501,17 @@ div.body {
                         animation-delay: 0.7s;
                       }
 
+                      &[info="cluster-name"] {
+                        animation-delay: 0.8s;
+
+                        div.text {
+                          max-width: 150px;
+                          overflow: hidden;
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                        }
+                      }
+
                       &[info="nodes"] {
                         animation-delay: 0.8s;
 
@@ -1522,7 +1533,7 @@ div.body {
 
                 div.connection-metadata {
                   position: relative;
-                  height: calc(100% - 196px);
+                  height: calc(100% - 227px);
                   margin: 25px 10px 10px;
                   border-radius: 5px;
                   text-align: left;

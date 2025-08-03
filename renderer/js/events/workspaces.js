@@ -596,7 +596,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 // Clicks the folder button
                 $(`div.btn[button-id="${folderBtnID}"]`).click(() => {
                   // Set the path to open based on whether or not the workspace is the docker/sandbox
-                  let path = !isSandbox ? getWorkspaceFolderPath(workspaceID) : Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localconnections')
+                  let path = !isSandbox ? getWorkspaceFolderPath(workspaceID) : Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters')
 
                   // Open the set path
                   Open(path)
@@ -1032,6 +1032,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             workspaceElement.find('div._connections').css('background', `rgb(${colorRGB} / 25%)`)
 
             workspaceElement.find('div._connections').children('div._connection').css('background', `rgb(${colorRGB} / 100%)`)
+
+            workspaceElement.find('l-line-wobble').attr('color', `${color.val()}`)
 
             // Update the workspace switcher's background color
             try {

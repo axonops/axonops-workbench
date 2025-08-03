@@ -5546,6 +5546,29 @@ div.general-hint.select-rows {
     background: #717171;
   }
 }
+
+div.sub-output-content {
+  div.select-page-rows-container {
+    background: #101010;
+    padding: 6px;
+    margin-bottom: -3px;
+    padding-bottom: 10px;
+    padding-top: 8px;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    position: relative;
+
+    &:after {
+      content: '';
+      position: absolute;
+      bottom: 3px;
+      left: 0;
+      right: 0;
+      margin: auto;
+      height: 1px;
+    }
+  }
+}
 /**
 * Import right-to-left style
 */

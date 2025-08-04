@@ -21,7 +21,7 @@
  */
 const Constants = {
   // When set to `false`, the AI assistant will be completely hidden in the UI, and no way to interact with it
-  EnableAIAssistant: true,
+  EnableAIAssistant: false,
   AxonOpsIntegration: {
     DefaultURL: `https://dash.axonops.cloud`,
     Patterns: {
@@ -318,6 +318,13 @@ const Constants = {
       Patterns: [
         /^\s*(DESC|DESCRIBE)\s*.*?\s+KEYSPACE\s+(\w+)?\S*(?!.)/i,
         /^\s*(DESC|DESCRIBE)\s+\S*(?!.)/i
+      ]
+    },
+    Where: {
+      Basic: /^\s*WHERE/i,
+      Patterns: [
+        /(?:\bWHERE\s+$)|(?:\b(?:AND|OR)\s+$)/i,
+        /(?:\SET\s+$)|(?:\b(?:,)\s+$)/i
       ]
     }
   },

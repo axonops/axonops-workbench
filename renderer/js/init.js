@@ -281,7 +281,7 @@ $(document).on('initialize', () => {
        * Whether or not the AI assistant feature should be available
        * This is determined by a constant in the `Consts` module
        */
-      $(`div.body div.left div.content div.navigation div.group div.item[action="ai"]`).add('div.ai-assistant-answers-limitation').toggle(isAIAssistantEnabled)
+      $(`div.body div.left div.content div.navigation div.group div.item[action="ai"]`).add('div.ai-assistant-answers-limitation').add(`div.row.flex-advanced.ai-assistant-feature`).toggle(isAIAssistantEnabled)
 
       /**
        * Load the AI Assistant webview

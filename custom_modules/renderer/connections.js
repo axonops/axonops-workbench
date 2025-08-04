@@ -1347,7 +1347,7 @@ let getCQLDescription = (connectionID, scope, callback) => {
  *
  * @Return: {object} the SSH tunneling info in JSON object
  */
-let getSSHTunnelingInfo = async (workspaceID, connectionFolder) => {
+let getSSHTunnelingInfo = async (workspaceID, connectionFolder, connectionID) => {
   let result = null // Final result which be returned
 
   try {
@@ -1360,6 +1360,35 @@ let getSSHTunnelingInfo = async (workspaceID, connectionFolder) => {
 
     // Convert JSON content from string to object
     info = JSON.parse(info)
+
+    let secrets = []
+
+    try {
+      // Get all saved secrets from the keychain
+      secrets = await Keytar.findCredentials('AxonOpsWorkbenchClustersSecrets')
+    } catch (e) {
+      try {
+        errorLog(e, 'connections')
+      } catch (e) {}
+    }
+
+    let secret = secrets.find((secret) => secret.account == connectionID)
+
+    try {
+      let sshTunnelSecrets = secret.password
+
+      if (sshTunnelSecrets == undefined)
+        throw 0
+
+      sshTunnelSecrets = JSON.parse(sshTunnelSecrets)
+
+      for (let sshTunnelSecret of Object.keys(sshTunnelSecrets)) {
+        if (!sshTunnelSecret.startsWith('ssh'))
+          continue
+
+        info[sshTunnelSecret.slice(3).toLowerCase()] = sshTunnelSecrets[sshTunnelSecret]
+      }
+    } catch (e) {}
 
     // Change variables inside SSH values to their values
     try {

@@ -3894,6 +3894,7 @@ let setUIColor = (workspaceColor) => {
           .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active, form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus, .form-check-input:not([no-color]):checked, .form-check-input:not([no-color]):checked:focus {border-color: ${backgroundColor.default} !important}
           ion-icon[name="lock-closed"] {color: ${backgroundColor.default} !important}
           .jstree-default-dark .jstree-search {background: ${backgroundColor.hover.replace('70%', '15%')} !important;}
+          div.sub-output-content div.select-page-rows-container:after {background: ${backgroundColor.default} !important;}
           .tabulator .tabulator-header{border-bottom-color:${backgroundColor.default} !important;}
           .tabulator .tabulator-footer{border-top-color:${backgroundColor.default} !important;}
           .tabulator .tabulator-header .tabulator-col input:focus, .tabulator .tabulator-header .tabulator-col select:focus{border-color: ${backgroundColor.default} !important}

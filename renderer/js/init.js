@@ -486,12 +486,12 @@ $(document).on('initialize', () => {
                 // Loop through the allowed HTML tags
                 Modules.Consts.AllowedHTMLTags.forEach((tag) => {
                   // Define a regex for the tag's opening
-                  let opening = createRegex(`[${tag}]`, 'gm'),
+                  let opening = new RegExp(`\\[${tag}(.*?)\\]`, 'gm'),
                     // The same thing with the tag's close
                     close = createRegex(`[/${tag}]`, 'gm')
 
                   // Update the opening
-                  text = text.replace(opening, `<${tag}>`)
+                  text = text.replace(opening, `<${tag}$1>`)
 
                   // Update the close
                   text = text.replace(close, `</${tag}>`)
@@ -1764,3 +1764,9 @@ $(document).ready(() => IPCRenderer.on('windows-shown', () => {
 
   $(document).trigger('getWorkspaces')
 }))
+
+$(document).on('initialize', () => {
+  try {
+    $('div.modal-section[section="notices"]').children('div.notice').html(`${Modules.Consts.LegalNotice}.`)
+  } catch (e) {}
+})

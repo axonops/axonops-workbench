@@ -1148,3 +1148,34 @@ img[src*=".gif"] {
 img {
   user-select: none !important;
 }
+
+[data-tippy-root] {
+  p {
+    margin-bottom: 10px;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  ul {
+    margin-bottom: auto;
+  }
+}
+
+table._lwt_table {
+  background: #212121;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 14px;
+
+  * {
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  td,
+  th {
+    padding: 7px;
+  }
+}

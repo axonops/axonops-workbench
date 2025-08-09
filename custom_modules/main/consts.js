@@ -48,7 +48,7 @@ const Constants = {
   // Define sensitive data to be checked inside the `cqlsh.rc` content
   SensitiveData: ['username', 'password', 'credentials'],
   // Allowed HTML tags to be rendered in the localization process
-  AllowedHTMLTags: ['b', 'code', 'kbd', 'br', 'ul', 'li'],
+  AllowedHTMLTags: ['b', 'br', 'code', 'kbd', 'li', 'p', 'strong', 'table', 'tbody', 'td', 'th', 'thead', 'tr', 'ul'],
   /**
    * Define CQL keywords
    *

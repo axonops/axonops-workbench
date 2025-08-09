@@ -54,7 +54,7 @@
 
           <!-- Fixed, back to the workspaces' list -->
           <div class="workspace" home>
-            <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="right" data-mdb-html="true" data-title="Workspaces" data-mulang="workspaces" capitalize>
+            <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="right" data-mdb-html="true" data-title data-mulang="workspaces" capitalize>
               <ion-icon name="home"></ion-icon>
             </button>
           </div>
@@ -83,7 +83,7 @@
           <div class="group">
             <!-- The AI assistant
             Users can ask questions about Apache Cassandra, AxonOps, and related topics -->
-            <div class="item" action="ai" data-tippy="tooltip" data-mdb-placement="right" data-mulang="AI assistant" data-title="AI Assistant" capitalize>
+            <div class="item" action="ai" data-tippy="tooltip" data-mdb-placement="right" data-mulang="AI assistant" data-title capitalize>
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <ion-icon name="brain"></ion-icon>
               </div>
@@ -95,7 +95,7 @@
 
             <!-- Help and app's documentation
             It is an offline documentation that users can browse easily and search for unclear topics -->
-            <div class="item" action="help" data-tippy="tooltip" data-mdb-placement="right" data-mulang="help and documentation" capitalize data-title="Help and Documentation">
+            <div class="item" action="help" data-tippy="tooltip" data-mdb-placement="right" data-mulang="help and documentation" capitalize data-title>
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <ion-icon name="help"></ion-icon>
               </div>
@@ -104,14 +104,14 @@
 
           <!-- The app's settings -->
           <div class="group">
-            <div class="item" action="notifications-center" data-tippy="tooltip" data-mdb-placement="right" data-mulang="notifications center" capitalize data-title="Notifications Center">
+            <div class="item" action="notifications-center" data-tippy="tooltip" data-mdb-placement="right" data-mulang="notifications center" capitalize data-title>
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <div class="notify">
                   <img class="gif" src="../assets/lottie/notification-f1.gif">
                 </div>
               </div>
             </div>
-            <div class="item" action="settings" data-tippy="tooltip" data-mdb-placement="right" data-mulang="settings" capitalize data-title="Settings">
+            <div class="item" action="settings" data-tippy="tooltip" data-mdb-placement="right" data-mulang="settings" capitalize data-title>
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <ion-icon name="cog"></ion-icon>
               </div>
@@ -120,7 +120,7 @@
 
           <!-- The app's settings -->
           <div class="group">
-            <div class="item" action="about" data-tippy="tooltip" data-mdb-placement="right" data-mulang="about" capitalize data-title="About">
+            <div class="item" action="about" data-tippy="tooltip" data-mdb-placement="right" data-mulang="about" capitalize data-title>
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <ion-icon name="about"></ion-icon>
               </div>
@@ -128,7 +128,7 @@
           </div>
 
           <div class="group" style="display:none;">
-            <div class="item" action="update" data-tippy="tooltip" data-mdb-placement="right" data-mulang="a new update is available" capitalize-first data-title="A new update is available">
+            <div class="item" action="update" data-tippy="tooltip" data-mdb-placement="right" data-mulang="a new update is available" capitalize-first data-title>
               <div class="sub-content btn" data-mdb-ripple-color="dark" style="position:relative;">
                 <div class="circle"></div>
                 <ion-icon name="arrow-up-circle" style="color: white;"></ion-icon>
@@ -399,21 +399,21 @@
 
             <!-- Add a new workspace action -->
             <div class="action" action="add">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add workspace" capitalize data-title="Add Workspace" id="addWorkspaceAction">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add workspace" capitalize data-title id="addWorkspaceAction">
                 <ion-icon name="plus"></ion-icon>
               </button>
             </div>
 
             <!-- Import workspaces action -->
             <div class="action" action="import">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="import workspaces" capitalize data-title="Import Workspaces" id="importWorkspacesAction">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="import workspaces" capitalize data-title id="importWorkspacesAction">
                 <ion-icon name="import"></ion-icon>
               </button>
             </div>
 
             <!-- Refresh workspaces' list action -->
             <div class="action" action="refresh">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh workspace" capitalize data-title="Refresh Workspaces" id="refreshWorkspacesAction">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh workspace" capitalize data-title id="refreshWorkspacesAction">
                 <ion-icon name="refresh"></ion-icon>
               </button>
             </div>
@@ -470,21 +470,21 @@
 
             <!-- Add a new connection action -->
             <div class="action" action="add">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add connection" capitalize data-title="Add Connection" id="addConnectionAction">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add connection" capitalize data-title id="addConnectionAction">
                 <ion-icon name="plus"></ion-icon>
               </button>
             </div>
 
             <!-- Refresh connections' list action -->
             <div class="action" action="refresh">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title="Refresh Connections" id="refreshConnectionsAction">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title id="refreshConnectionsAction">
                 <ion-icon name="refresh"></ion-icon>
               </button>
             </div>
 
             <!-- Refresh connections' list action -->
             <!-- <div class="action" action="clean">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title="Refresh Connections">
+              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title>
                 <ion-icon name="clean"></ion-icon>
               </button>
             </div> -->
@@ -550,7 +550,7 @@
               </div>
               <div class="col-md-1 flex col-add-border">
                 <div class="icon-button" style="top: auto; left: 3px;">
-                  <div class="action btn btn-tertiary reset-path" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="set default path" capitalize-first data-title="Set default path" data-action="defaultPath"
+                  <div class="action btn btn-tertiary reset-path" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="set default path" capitalize-first data-title data-action="defaultPath"
                     data-reference="workspace">
                     <ion-icon name="undo"></ion-icon>
                   </div>
@@ -615,7 +615,7 @@
                   <ion-icon name class="trailing"></ion-icon>
                   <input type="text" id="astraDBClientID" class="astradb-data-field form-control form-icon-trailing form-control-lg">
                   <label class="form-label">
-                    <span mulang="username" capitalize></span> (Client ID)
+                    <span mulang="username" capitalize></span> (<span mulang="client ID" capitalize-first></span>)
                   </label>
                   <div class="valid-feedback"></div>
                   <div class="invalid-feedback"></div>
@@ -632,7 +632,7 @@
                   </div>
                   <input type="password" id="astraDBClientSecret" class="astradb-data-field form-control form-control-lg">
                   <label class="form-label">
-                    <span mulang="password" capitalize></span> (Client Secret)
+                    <span mulang="password" capitalize></span> (<span mulang="client secret" capitalize></span>)
                   </label>
                   <div class="valid-feedback"></div>
                   <div class="invalid-feedback"></div>
@@ -644,7 +644,7 @@
                 <div class="form-outline form-white file" style="margin-bottom: 20px;" role="file-selector" file-name="-" data-mulang="Secure Connection Bundle" capitalize file-info="Secure Connection Bundle">
                   <input data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000" type="text" id="astraDBSCBPath" class="astradb-data-field form-control form-icon-trailing form-control-lg" readonly>
                   <div class="form-helper" hidden>
-                    <span mulang="hint" capitalize></span>: you can drag and drop the bundle file.
+                    <span mulang="hint" capitalize></span>: <span mulang="you can drag and drop the bundle file" capitalize-first></span>.
                   </div>
                 </div>
               </div>
@@ -655,8 +655,7 @@
               </div>
             </div>
             <div class="terminate-process">
-              <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" id="terminateConnectionTestProcessAstraDB" data-tippy="tooltip" data-mdb-placement="right" data-title="Terminate the process"
-                data-mulang="terminate the process" capitalize-first>
+              <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" id="terminateConnectionTestProcessAstraDB" data-tippy="tooltip" data-mdb-placement="right" data-title data-mulang="terminate the process" capitalize-first>
                 <ion-icon name="close"></ion-icon>
               </div>
             </div>
@@ -709,7 +708,7 @@
                   <div class="valid-feedback"></div>
                   <div class="invalid-feedback"></div>
                   <div class="form-helper">
-                    <span mulang="example" capitalize></span>: Main Node
+                    <span mulang="example" capitalize></span>: Node1
                   </div>
                 </div>
                 <div class="form-outline form-white margin-bottom">
@@ -728,7 +727,7 @@
                   <ion-icon name class="trailing"></ion-icon>
                   <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="connection" info-key="hostname">
                   <label class="form-label">
-                    <span mulang="cassandra host name" capitalize></span>
+                    <span mulang="cassandra hostname" capitalize></span>
                     <span class="badge badge-dark-1 rounded-pill badge-mandatory">
                       <span mulang="mandatory" capitalize></span>
                     </span>
@@ -764,15 +763,15 @@
                   <div class="valid-feedback"></div>
                   <div class="invalid-feedback"></div>
                   <div class="form-helper">
-                    The time type to be used by the cqlsh tool in insertion processes.
+                    <span mulang="the time type to be used by the cqlsh tool in insertion processes" capitalize-first></span>.
                   </div>
                 </div>
                 <div class="dropdown" for-select="timestampGenerator">
                   <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
                   <ul class="dropdown-menu top-margin" style="width: 100% !important;">
-                    <li><a class="dropdown-item" href="#" value="Not Set">Not Set</a></li>
-                    <li><a class="dropdown-item" href="#" value="MonotonicTimestampGenerator">MonotonicTimestampGenerator - Client-Side Time (Desktop Time)</a></li>
-                    <li><a class="dropdown-item" href="#" value="None">None - Server-Side Time (Cassandra Server Time)</a></li>
+                    <li><a class="dropdown-item" href="#" value="Not Set"><span mulang="not set" capitalize></span></a></li>
+                    <li><a class="dropdown-item" href="#" value="MonotonicTimestampGenerator">MonotonicTimestampGenerator - <span mulang="client-side time" capitalize></span> (<span mulang="desktop time" capitalize></span>)</a></li>
+                    <li><a class="dropdown-item" href="#" value="None"><span mulang="none" capitalize></span> - <span mulang="server-side time" capitalize></span> (<span mulang="cassandra server time" capitalize></span>)</a></li>
                   </ul>
                 </div>
               </div>
@@ -823,7 +822,7 @@
                       <div class="valid-feedback"></div>
                       <div class="invalid-feedback"></div>
                       <div class="form-helper">
-                        <span mulang="hint" capitalize></span>: The server to SSH onto to create the tunnel
+                        <span mulang="hint" capitalize></span>: <span mulang="the server to SSH onto to create the tunnel" capitalize-first></span>
                       </div>
                     </div>
                   </div>
@@ -956,14 +955,14 @@
               </div>
               <div class="modal-section" section="axonops-integration" hidden>
                 <div class="axonops-integration-status-hint" style="margin-bottom: 10px;">
-                  <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> AxonOps integration feature is currently disabled, you can enable it from settings.
+                  <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> <span mulang="AxonOps integration feature is currently disabled, you can enable it from settings" capitalize-first></span>.
                 </div>
                 <div class="general-hint axonops-integration">
-                  <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> Enter your AxonOps connection details below to enable seamless integration. This allows you to view dashboards, make API calls, and manage your AxonOps
-                  environment directly from Workbench.<br /><b style="padding-top: 4px; display: inline-block;">Note</b>: AxonOps Workbench is open source and using it with AxonOps is completely optional. Visit the AxonOps website (<span
-                    class="link general"><span class="content">https://axonops.com</span>
-                    <ion-icon name="external-link"></ion-icon>
-                  </span>) for more details on monitoring and operations for Apache Cassandra® and Kafka® clusters.
+                  <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> <span
+                    mulang="enter your AxonOps connection details below to enable seamless integration. This allows you to view dashboards, make API calls, and manage your AxonOps environment directly from Workbench" capitalize-first></span>.<br /><b
+                    style="padding-top: 4px; display: inline-block;"><span mulang="note" capitalize></span></b>: <span
+                    mulang="AxonOps Workbench is open source and using it with AxonOps is completely optional. Visit the AxonOps website $data for more details on monitoring and operations for Apache Cassandra® and Kafka® clusters" capitalize-first
+                    lang-data-1="(<span class='link general'><span class='content'>https://axonops.com</span> <ion-icon name='external-link'></ion-icon> </span>)"></span>.
                 </div>
                 <div class="form-outline form-white margin-bottom" style="margin-bottom: 25px;">
                   <ion-icon name class="trailing"></ion-icon>
@@ -985,24 +984,25 @@
                 </div>
                 <div class="row" style="margin-top: -10px; margin-bottom: 10px;">
                   <div class="col-md-12">
-                    <div style="display: inline-block; margin-right: 5px;">AxonOps URL:</div>
+                    <div style="display: inline-block; margin-right: 5px;">AxonOps <span mulang="URL" capitalize></span>:</div>
                     <div class="form-check form-check-inline">
                       <input class="form-check-input" type="radio" name="axonOpsURL" id="axonOpsSaaS" checked>
                       <label class="form-check-label" for="axonOpsSaaS">AxonOps SaaS</label>
                     </div>
                     <div class="form-check form-check-inline">
                       <input class="form-check-input" type="radio" name="axonOpsURL" id="axonOpsSelfHost">
-                      <label class="form-check-label" for="axonOpsSelfHost">AxonOps Self-Host</label>
+                      <label class="form-check-label" for="axonOpsSelfHost">AxonOps <span mulang="self-Host" capitalize></span></label>
                     </div>
                   </div>
                 </div>
                 <div class="general-hint axonops-integration axonops-saas">
-                  <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> The URL is automatically set to the AxonOps Cloud service endpoint and cannot be changed. Choose this option if you are using the managed AxonOps Cloud
-                  platform.
+                  <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> <span
+                    mulang="the URL is automatically set to the AxonOps Cloud service endpoint and cannot be changed. Choose this option if you are using the managed AxonOps Cloud platform" capitalize-first></span>.
                 </div>
                 <div class="axonops-self-host">
                   <div class="general-hint axonops-integration">
-                    <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> Enter the URL of your self-hosted AxonOps server. This allows you to connect to an AxonOps instance running in your own infrastructure or private cloud.
+                    <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> <span
+                      mulang="enter the URL of your self-hosted AxonOps server. This allows you to connect to an AxonOps instance running in your own infrastructure or private cloud" capitalize-first></span>.
                   </div>
                   <div class="input-group mb-3">
                     <div class="form-outline form-white" style="width: 115px;">
@@ -1025,8 +1025,7 @@
               </div>
             </div>
             <div class="terminate-process">
-              <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" id="terminateConnectionTestProcess" data-tippy="tooltip" data-mdb-placement="right" data-title="Terminate the process" data-mulang="terminate the process"
-                capitalize-first>
+              <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" id="terminateConnectionTestProcess" data-tippy="tooltip" data-mdb-placement="right" data-title data-mulang="terminate the process" capitalize-first>
                 <ion-icon name="close"></ion-icon>
               </div>
             </div>
@@ -1037,7 +1036,7 @@
                 <ion-icon name="switch"></ion-icon>
                 <span mulang="switch editor"></span>
               </button>
-              <button type="button" class="btn btn-sm btn-tertiary expand-editor" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-mulang="expand editor" capitalize data-title="Expand editor" id="expandEditor">
+              <button type="button" class="btn btn-sm btn-tertiary expand-editor" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-mulang="expand editor" capitalize data-title id="expandEditor">
                 <ion-icon name="expand"></ion-icon>
               </button>
             </div>
@@ -1450,7 +1449,7 @@
                         <span mulang="tool location extra paths" capitalize></span>
                       </label>
                       <div class="form-helper">
-                        Hint: Paths are separated by a pipe <code>/path1/|/path2/</code>.
+                        <span mulang="hint" capitalize></span>: <span mulang="paths are separated by a pipe" capitalize-first></span> <code>/part1/|/part2/</code>.
                       </div>
                     </div>
                   </div>
@@ -1830,14 +1829,13 @@
                       <div id="apptitle" style="font-size: 150%;margin-top: 15px;"></div>
                       <div id="appversion" class="badge badge-secondary" style="padding-top: 6px;margin-top: 20px;"></div>
                       <div class="app-info-actions">
-                        <button id="copyReleaseVersion" type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the version" data-mulang="copy the release version"
-                          capitalize-first>
+                        <button id="copyReleaseVersion" type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="copy the release version" capitalize-first>
                           <ion-icon name="copy"></ion-icon>
                         </button>
-                        <button id="githubProject" type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Release notes" data-mulang="GitHub project" capitalize-first>
+                        <button id="githubProject" type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="GitHub project" capitalize-first>
                           <ion-icon name="github"></ion-icon>
                         </button>
-                        <button id="releaseNotes" type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Release notes" data-mulang="release notes" capitalize-first>
+                        <button id="releaseNotes" type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="release notes" capitalize-first>
                           <ion-icon name="external-link"></ion-icon>
                         </button>
                       </div>
@@ -1867,14 +1865,7 @@
                 </center>
               </div>
               <div class="modal-section" section="notices" hidden>
-                <div class="notice">
-                  AxonOps is a registered trademark of AxonOps Limited. Apache, Apache Cassandra, Cassandra, Apache Spark, Spark, Apache TinkerPop, TinkerPop, Apache Kafka and Kafka are either registered trademarks or trademarks of the Apache
-                  Software Foundation (<span class="link"><span class="content">http://www.apache.org/</span>
-                    <ion-icon name="external-link"></ion-icon>
-                  </span>) or its subsidiaries in Canada, the United States and/or other countries. Elasticsearch is a trademark of
-                  Elasticsearch B.V., registered in the U.S. and in other countries. DataStax is registered trademarks of DataStax, Inc. and its subsidiaries in the United States and/or other countries. Docker is a trademark or registered trademark
-                  of Docker, Inc. in the United States and/or other countries.
-                </div>
+                <div class="notice"></div>
               </div>
               <div class="modal-section" section="cassandra-license" hidden>
                 <div class="notice">
@@ -2401,20 +2392,19 @@
                 <div class="sections">
                   <div class="section">
                     <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="standard">
-                      Standard
+                      <span mulang="standard" capitalize></span>
                     </div>
                   </div>
                   <div class="section">
                     <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="lwt">
-                      Lightweight Transaction (LWT)
+                      <span mulang="lightweight transaction" capitalize></span> (LWT)
                     </div>
                   </div>
                 </div>
               </div>
               <div class="lwt-hint-insert">
-                <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> Lightweight transactions (LWTs) provide strong consistency but can impact performance and scalability. Use them only
-                when
-                required.
+                <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span
+                  mulang="lightweight transactions (LWTs) provide strong consistency but can impact performance and scalability. Use them only when required" capitalize-first></span>.
               </div>
               <div class="fields-badge-action" style="padding: 10px;">
                 <span class="badge badge-secondary">
@@ -2432,9 +2422,9 @@
                     <div class="valid-feedback"></div>
                     <div class="invalid-feedback"></div>
                   </div>
-                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true"
-                    data-title="Consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.<br><br>However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:<br><code>R + W > RF</code><br>(Read replicas + Write replicas > Replication Factor)<br><br>Example: With <code>RF=3</code>, using <code>QUORUM (2)</code> for both reads and writes ensures strong consistency <code>(2+2>3)</code> while maintaining availability and tolerance to failure."
-                    data-tippy-delay="[100, 0]">
+                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true" data-title
+                    data-mulang="consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.[br][br]However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:[br][code]R + W > RF[/code][br](Read replicas + Write replicas > Replication Factor)[br][br]Example: With [code]RF=3[/code], using [code]QUORUM (2)[/code] for both reads and writes ensures strong consistency [code](2+2>3)[/code] while maintaining availability and tolerance to failure"
+                    capitalize-first data-tippy-delay="[100, 0]">
                     <ion-icon name="info-circle-outline" style="transform: translateX(0px);"></ion-icon>
                   </div>
                   <div class="dropdown" for-select="insertWriteConsistencyLevel">
@@ -2462,9 +2452,9 @@
                     <div class="valid-feedback"></div>
                     <div class="invalid-feedback"></div>
                   </div>
-                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true"
-                    data-title="<p style='margin-bottom: 10px;'>This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL</p><ul><li><strong>SERIAL</strong>: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.</li><li><strong>LOCAL_SERIAL</strong>: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments</li></ul><p style=' margin-bottom: 10px;'>Recommended Consistency Level Combinations for LWTs</p><table style='width: 100%;' class='lwtConsistencyLevelTooltipTable'><thead><tr><th>Deployment Scenario</th><th>Write Consistency Level</th><th>Serial Consistency Level</th></tr></thead><tbody><tr><td><strong>Multi-DC Strong Consistency</strong></td><td><code>EACH_QUORUM</code></td><td><code>SERIAL</code></td></tr><tr><td><strong>Multi-DC High Performance</strong></td><td><code>LOCAL_QUORUM</code></td><td><code>LOCAL_SERIAL</code></td></tr><tr><td><strong>Single-DC Clusters</strong></td><td><code>QUORUM</code></td><td><code>SERIAL</code></td></tr></tbody></table>"
-                    data-tippy-delay="[100, 0]" data-tippy-maxWidth="590">
+                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true" data-title
+                    data-mulang="[p]This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL[/p][ul][li][strong]SERIAL[/strong]: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.[/li][li][strong]LOCAL_SERIAL[/strong]: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments[/li][/ul][p]Recommended Consistency Level Combinations for LWTs[/p][table class='_lwt_table'][thead][tr][th]Deployment Scenario[/th][th]Write Consistency Level[/th][th]Serial Consistency Level[/th][/tr][/thead][tbody][tr][td][strong]Multi-DC Strong Consistency[/strong][/td][td][code]EACH_QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][tr][td][strong]Multi-DC High Performance[/strong][/td][td][code]LOCAL_QUORUM[/code][/td][td][code]LOCAL_SERIAL[/code][/td][/tr][tr][td][strong]Single-DC Clusters[/strong][/td][td][code]QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][/tbody][/table]"
+                    capitalize-first data-tippy-delay="[100, 0]" data-tippy-maxWidth="590">
                     <ion-icon name="info-circle-outline" style="transform: translateX(0px);"></ion-icon>
                   </div>
                   <div class="dropdown" for-select="insertSerialConsistencyLevel">
@@ -2864,8 +2854,8 @@
                     <div class="valid-feedback"></div>
                     <div class="invalid-feedback"></div>
                   </div>
-                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true"
-                    data-title="Consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.<br><br>However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:<br><code>R + W > RF</code><br>(Read replicas + Write replicas > Replication Factor)<br><br>Example: With <code>RF=3</code>, using <code>QUORUM (2)</code> for both reads and writes ensures strong consistency <code>(2+2>3)</code> while maintaining availability and tolerance to failure."
+                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true" data-title
+                    data-mulang="consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.[br][br]However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:[br][code]R + W > RF[/code][br](Read replicas + Write replicas > Replication Factor)[br][br]Example: With [code]RF=3[/code], using [code]QUORUM (2)[/code] for both reads and writes ensures strong consistency [code](2+2>3)[/code] while maintaining availability and tolerance to failure"
                     data-tippy-delay="[100, 0]">
                     <ion-icon name="info-circle-outline" style="transform: translateX(0px);"></ion-icon>
                   </div>
@@ -2894,8 +2884,8 @@
                     <div class="valid-feedback"></div>
                     <div class="invalid-feedback"></div>
                   </div>
-                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true"
-                    data-title="<p style='margin-bottom: 10px;'>This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL</p><ul><li><strong>SERIAL</strong>: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.</li><li><strong>LOCAL_SERIAL</strong>: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments</li></ul><p style=' margin-bottom: 10px;'>Recommended Consistency Level Combinations for LWTs</p><table style='width: 100%;' class='lwtConsistencyLevelTooltipTable'><thead><tr><th>Deployment Scenario</th><th>Write Consistency Level</th><th>Serial Consistency Level</th></tr></thead><tbody><tr><td><strong>Multi-DC Strong Consistency</strong></td><td><code>EACH_QUORUM</code></td><td><code>SERIAL</code></td></tr><tr><td><strong>Multi-DC High Performance</strong></td><td><code>LOCAL_QUORUM</code></td><td><code>LOCAL_SERIAL</code></td></tr><tr><td><strong>Single-DC Clusters</strong></td><td><code>QUORUM</code></td><td><code>SERIAL</code></td></tr></tbody></table>"
+                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true" data-title
+                    data-mulang="[p]This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL[/p][ul][li][strong]SERIAL[/strong]: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.[/li][li][strong]LOCAL_SERIAL[/strong]: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments[/li][/ul][p]Recommended Consistency Level Combinations for LWTs[/p][table class='_lwt_table'][thead][tr][th]Deployment Scenario[/th][th]Write Consistency Level[/th][th]Serial Consistency Level[/th][/tr][/thead][tbody][tr][td][strong]Multi-DC Strong Consistency[/strong][/td][td][code]EACH_QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][tr][td][strong]Multi-DC High Performance[/strong][/td][td][code]LOCAL_QUORUM[/code][/td][td][code]LOCAL_SERIAL[/code][/td][/tr][tr][td][strong]Single-DC Clusters[/strong][/td][td][code]QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][/tbody][/table]"
                     data-tippy-delay="[100, 0]" data-tippy-maxWidth="590">
                     <ion-icon name="info-circle-outline" style="transform: translateX(0px);"></ion-icon>
                   </div>
@@ -2919,7 +2909,7 @@
                   </span>
                 </div>
                 <div class="in-operator-error" style="margin-top: 0px; margin-bottom: 10px;">
-                  <ion-icon name="error-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> The <code>IN</code> operator for partition key(s) is not supported in case a LWT option is selected.
+                  <ion-icon name="error-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> <span mulang="the [code]IN[/code] operator for partition key(s) is not supported in case a LWT option is selected" capitalize-first></span>.
                 </div>
                 <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeyTreeDeleteAction"></div>
                 <div class="fields-badge-action" id="deleteNonPKColumns" style="padding: 10px;">
@@ -2928,8 +2918,7 @@
                   </span>
                 </div>
                 <div class="delete-columns-hint">
-                  <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> When executing a delete command for column(s) all primary key columns must be defined unless deleting a static
-                  column. With static columns, these can be deleted with only the partition key columns defined.
+                  <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span mulang="when executing a delete command for column(s) all primary key columns must be defined unless deleting a static column. With static columns, these can be deleted with only the partition key columns defined" capitalize-first></span>.
                 </div>
                 <div id="tableFieldsNonPKColumnsDeleteAction">
                   <div class="form-outline form-white margin-bottom" style="margin-bottom:10px;">
@@ -2942,7 +2931,7 @@
                   <div class="columns">
                   </div>
                   <div id="noColumnMatched">
-                    No column matches the filtering text.
+                    <span mulang="no column matches the filtering text" capitalize-first></span>.
                   </div>
                 </div>
 
@@ -2964,14 +2953,14 @@
                         <span mulang="delete data older than timestamp" capitalize></span>
                       </label>
                       <div class="invalid-feedback" style="white-space: nowrap;">
-                        Please choose between using a Lightweight Transaction (LWT) or setting a timestamp. You cannot use both.
+                        <span mulang="please choose between using a Lightweight Transaction (LWT) or setting a timestamp. You cannot use both" capitalize-first></span>.
                       </div>
                     </div>
                   </div>
                   <div class="col-md-1" style="top: 5px; width: fit-content; padding-left: 7px; margin-right: 4px;">
-                    <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
-                      data-title="<div>When you use a timestamp in a <code>DELETE</code> statement, Cassandra will:</div><ul style='margin-bottom: auto;'><li>Apply the delete operation with the specified timestamp.<li>Use this timestamp to determine which operations take precedence in case of conflicts.<li>Only delete elements that are older than the specified timestamp (matching the <code>WHERE</code> conditions).</ul>"
-                      data-tippy-delay="[100, 0]">
+                    <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title
+                      data-mulang="[div]When you use a timestamp in a [code]DELETE[/code] statement, Cassandra will:[/div][ul][li]Apply the delete operation with the specified timestamp.[li]Use this timestamp to determine which operations take precedence in case of conflicts.[li]Only delete elements that are older than the specified timestamp (matching the [code]WHERE[/code] conditions).[/ul]"
+                      capitalize-first data-tippy-delay="[100, 0]">
                       <ion-icon name="info-circle-outline"></ion-icon>
                     </div>
                   </div>
@@ -2992,25 +2981,24 @@
                 <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
                   <input class="form-check-input" type="radio" name="lwtDeleteOptions" value id="deleteNoSelectOption" checked>
                   <label class="form-check-label" for="deleteNoSelectOption">
-                    No Selection.
+                    <span mulang="no selection" capitalize-first></span>.
                   </label>
                 </div>
                 <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
                   <input class="form-check-input" type="radio" name="lwtDeleteOptions" value id="deleteIfExistsOption">
                   <label class="form-check-label" for="deleteIfExistsOption">
-                    Include <code>IF EXISTS</code> keyword.
+                    <span mulang="include [code]IF EXISTS[/code] keyword" capitalize-first></span>.
                   </label>
                 </div>
                 <div class="form-check margin-bottom" style="padding-left: 32px;">
                   <input class="form-check-input" type="radio" name="lwtDeleteOptions" value id="deleteIfColumnOption">
                   <label class="form-check-label" for="deleteIfColumnOption">
-                    Use <code>IF column =</code>.
+                    <span mulang="use [code]IF column =[/code]" capitalize-first></span>.
                   </label>
                 </div>
 
                 <div id="non-pk-columns-warning" class="non-pk-columns-warning" style="display: block;">
-                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span>All primary key columns must be in the standard WHERE clause to apply LWT conditions to
-                    columns that are not a part of the primary key</span>.
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span mulang="all primary key columns must be in the standard [code]WHERE[/code] clause to apply LWT conditions to columns that are not a part of the primary key" capitalize-first></span>.
                 </div>
 
                 <div class="fields-badge-action" id="deleteRegularColumnsBadge" style="padding: 10px;">

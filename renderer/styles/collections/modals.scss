@@ -2934,3 +2934,70 @@ div.modal#generateInsertStatements {
     }
   }
 }
+
+div.modal#cqlSnippets {
+  div.modal-dialog {
+    max-width: 80%;
+  }
+
+  div.modal-body {
+    padding: 0;
+  }
+
+  div.snippets-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    min-height: 650px;
+    align-content: flex-start;
+  }
+
+  div.side {
+    position: relative;
+
+    &.objects-treeview {
+      width: 21%;
+
+      div.snippets-objects-treeview {
+        background: #17181a;
+        position: relative;
+        height: calc(100% - 20px);
+        max-height: calc(100% - 20px);
+        overflow-y: scroll;
+        margin: 10px;
+        border-radius: 7px;
+        padding: 5px;
+      }
+    }
+
+    &.snippets-list {
+      width: 28%;
+
+      div.cql-snippets {
+        background: #17181a;
+        position: relative;
+        height: calc(100% - 20px);
+        margin: 10px;
+        border-radius: 7px;
+        padding: 5px;
+        margin-left: 2px;
+      }
+    }
+
+    &.snippet-editor {
+      width: 51%;
+
+      div.cql-snippet-editor {
+        background: #17181a;
+        position: relative;
+        height: calc(100% - 20px);
+        margin: 10px;
+        border-radius: 7px;
+        padding: 5px;
+        margin-left: 2px;
+      }
+    }
+  }
+}

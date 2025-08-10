@@ -102,6 +102,14 @@
             </div>
           </div>
 
+          <div class="group">
+            <div class="item" action="cql-snippets" data-tippy="tooltip" data-mdb-placement="right" data-mulang="CQL snippets" capitalize data-title>
+              <div class="sub-content btn" data-mdb-ripple-color="dark">
+                <ion-icon name="snippets"></ion-icon>
+              </div>
+            </div>
+          </div>
+
           <!-- The app's settings -->
           <div class="group">
             <div class="item" action="notifications-center" data-tippy="tooltip" data-mdb-placement="right" data-mulang="notifications center" capitalize data-title>
@@ -1619,29 +1627,6 @@
     <!-- Hidden button to show and hide the snapshot's dialog -->
     <button type="button" data-mdb-toggle="modal" data-mdb-target="#loadSnapshot" id="showLoadSnapshotDialog" hidden></button>
 
-    <!-- General purpose dialog -->
-    <div class="modal top fade" id="generalPurposeDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-body"></div>
-          <div class="form-check margin-bottom" style="margin: var(--mdb-modal-padding);display: flex;flex-direction: row;flex-wrap: nowrap;align-items: flex-start;justify-content: flex-start;align-content: flex-start;margin-top: 0px; display:none;">
-            <input class="form-check-input" type="checkbox" id="_VCC8RIhj">
-            <label class="form-check-label" for="_VCC8RIhj" style="width: 90%;">
-              <span mulang="" capitalize-first></span>.
-            </label>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal">
-              <span mulang="cancel"></span>
-            </button>
-            <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color">
-              <span mulang="confirm"></span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Ask for connection's credentials -->
     <div class="modal top fade" id="connectionCredentials" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
       <div class="modal-dialog modal-dialog-centered">
@@ -3110,7 +3095,6 @@
       </div>
     </div>
 
-    <!-- General purpose dialog -->
     <div class="modal top fade" id="extraDataActions" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -3119,6 +3103,65 @@
             <div class="editor-container">
               <div class="editor"></div>
             </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal">
+              <span mulang="cancel"></span>
+            </button>
+            <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color">
+              <span mulang="confirm"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal top fade" id="cqlSnippets" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              CQL Snippets
+            </h5>
+            <span class="badge badge-secondary"></span>
+            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="snippets-container">
+              <div class="side objects-treeview">
+                <div class="snippets-objects-treeview">
+                  Tree
+                </div>
+              </div>
+              <div class="side snippets-list">
+                <div class="cql-snippets">
+                  snippets
+                </div>
+              </div>
+              <div class="side snippet-editor">
+                <div class="cql-snippet-editor">
+                  SNIPPET EDITOR
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer" style="justify-content: space-between;">
+            FOOTER
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- General purpose dialog -->
+    <div class="modal top fade" id="generalPurposeDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-body"></div>
+          <div class="form-check margin-bottom" style="margin: var(--mdb-modal-padding);display: flex;flex-direction: row;flex-wrap: nowrap;align-items: flex-start;justify-content: flex-start;align-content: flex-start;margin-top: 0px; display:none;">
+            <input class="form-check-input" type="checkbox" id="_VCC8RIhj">
+            <label class="form-check-label" for="_VCC8RIhj" style="width: 90%;">
+              <span mulang="" capitalize-first></span>.
+            </label>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal">

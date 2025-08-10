@@ -531,6 +531,14 @@
     $(`${selector}[action="about"]`).click(() => aboutModal.show())
   }
 
+  // Point at the `CQL Snippets` modal
+  {
+    let cqlSnippetsModal = getElementMDBObject($('#cqlSnippets'), 'Modal')
+
+    // Show it when click the associated icon
+    $(`${selector}[action="cql-snippets"]`).click(() => cqlSnippetsModal.show())
+  }
+
   {
     let appUpdateModal = getElementMDBObject($('#appUpdate'), 'Modal')
 

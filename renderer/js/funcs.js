@@ -963,6 +963,14 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
   })
 }
 
+
+/**
+ * Due to the way JSTree is coded, there's an issue with the paths in Windows
+ * To solve this issue, this inner function replaces the backward slashes
+ * If the OS is not Windows it'll simply return the path without any manipulation
+ */
+let normalizePath = (path) => OS.platform == 'win32' ? `${path}`.replace(/\\/gm, '/') : `${path}`
+
 /**
  * Build a full tree-view model from a given metadata
  *
@@ -973,13 +981,7 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
  * @Return: {object} a valid tree structure to be rendered
  */
 let buildTreeview = async (metadata, ignoreTitles = false) => {
-  /**
-   * Due to the way JSTree is coded, there's an issue with the paths in Windows
-   * To solve this issue, this inner function replaces the backward slashes
-   * If the OS is not Windows it'll simply return the path without any manipulation
-   */
-  let normalizePath = (path) => OS.platform == 'win32' ? `${path}`.replace(/\\/gm, '/') : `${path}`,
-    counterIDs = 0,
+  let counterIDs = 0,
     getMD5IDForNode = async (amount = 1) => {
       let ids = []
 
@@ -2590,6 +2592,120 @@ let buildTreeview = async (metadata, ignoreTitles = false) => {
   // Return the final tree structure
   return treeStructure
 }
+
+let buildCQLSnippetsTreeView = async () => {
+  let extraIconsPath = normalizePath(Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra')),
+    workspacesParentID = `_${getRandom.id()}`,
+    treeStructure = {
+      'types': {
+        'default': {
+          'icon': normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
+        }
+      },
+      'dnd': {
+        'is_draggable': false,
+        'check_while_dragging': false
+      },
+      'core': {
+        'strings': {
+          'Loading ...': ' '
+        },
+        'themes': {
+          'responsive': true,
+          'name': 'default-dark'
+        },
+        'data': [{
+          'id': workspacesParentID,
+          'parent': '#',
+          'text': `Workspaces`,
+          'type': 'default',
+          'icon': normalizePath(Path.join(extraIconsPath, 'workspaces.png')),
+          'state': {
+            'opened': true,
+            'selected': false
+          },
+          'a_attr': {
+            'allow-right-context': 'true',
+            'object-id': 'workspaces',
+            'type': 'workspace'
+          }
+        }]
+      },
+      'plugins': ['types', 'contextmenu'],
+      'contextmenu': {
+        'select_node': false
+      }
+    }
+
+  let workspaces = Modules.Workspaces.getWorkspacesNoAsync()
+
+  for (let workspace of workspaces) {
+    let workspaceNodeID = `_${getRandom.id()}`,
+      workspaceStructure = {
+        'id': workspaceNodeID,
+        'parent': workspacesParentID,
+        'text': `${StripTags(workspace.name)}`,
+        'type': 'default',
+        'icon': normalizePath(Path.join(extraIconsPath, 'workspace.png')),
+        'state': {
+          'opened': false,
+          'selected': false
+        },
+        'a_attr': {
+          'allow-right-context': 'true',
+          'object-id': `${workspace.id}`,
+          'type': 'workspace'
+        }
+      }
+
+    treeStructure.core.data.push(workspaceStructure)
+
+    let workspaceConnections = await Modules.Connections.getConnections(workspace.id)
+
+    for (let connection of workspaceConnections) {
+      let connectionNodeID = `_${getRandom.id()}`,
+        connectionStructure = {
+          'id': connectionNodeID,
+          'parent': workspaceNodeID,
+          'text': `${StripTags(connection.name)}`,
+          'type': 'default',
+          'icon': normalizePath(Path.join(extraIconsPath, 'connection.png')),
+          'state': {
+            'opened': false,
+            'selected': false
+          },
+          'a_attr': {
+            'allow-right-context': 'true',
+            'object-id': `${connection.info.id}`,
+            'type': 'workspace'
+          }
+        }
+
+      treeStructure.core.data.push(connectionStructure)
+    }
+  }
+
+  return treeStructure
+}
+
+let encryptTextBG = (text, keychainOSName = null) => getRSAKey('public', (key) => IPCRenderer.send(`background:text:encrypt`, {
+  key,
+  text,
+  keychainOSName
+}))
+
+let decryptTextBG = (text, callback, keychainOSName = null) => getRSAKey('private', (key) => {
+  let requestID = `_${getRandom.id()}`
+
+  IPCRenderer.send(`background:text:decrypt`, {
+    requestID,
+    key,
+    text,
+    keychainOSName
+  })
+
+  IPCRenderer.on(`background:text:decrypt:result:${requestID}`, (_, text) => callback(text))
+})
 
 /**
  * Find a suitable suggestion from a group of given suggestions

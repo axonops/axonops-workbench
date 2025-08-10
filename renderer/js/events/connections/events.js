@@ -2238,6 +2238,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               // Update latest metadata
                               latestMetadata = metadata
 
+                              // Save the latest metadata in the OS keychain
+                              try {
+                                encryptTextBG(JSON.stringify(latestMetadata), `metadata_${connectionID}`)
+                              } catch (e) {}
+
                               {
                                 let clusterNameInfoElement = workareaElement.find('div.connection-info').find('div.info[info="cluster-name"]')
 
@@ -4355,12 +4360,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         try {
                           // Get the keyspaces names and their tables' names
                           let temp = {},
-                          keyspaces = latestMetadata.keyspaces.map((keyspace) => {
-                            return {
-                              name: keyspace.name,
-                              tables: keyspace.tables
-                            }
-                          })
+                            keyspaces = latestMetadata.keyspaces.map((keyspace) => {
+                              return {
+                                name: keyspace.name,
+                                tables: keyspace.tables
+                              }
+                            })
 
                           // Loop through each keyspace and set its tables' names in array
                           for (let keyspace of keyspaces)
@@ -5562,7 +5567,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   throw 0
 
                                 let [keyspace, table] = keyspaceAndTable.split('.').map((name) => `${name}`.replace(/^\"*(.*?)\"*$/g, '$1')),
-                                columns = metadataInfo[keyspace][table]
+                                  columns = metadataInfo[keyspace][table]
 
                                 finalSuggestions = columns
                               } catch (e) {}
@@ -8894,645 +8899,645 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
      * {string} `?sshTunnelCreationRequestID` the ID of the SSH tunnel creation process - if needed -
      * {boolean} `?clickConnectBtn` whether or not the `CONNECT` button should be clicked
      */
-     let testConnection = async (connectionElement, testConnectionProcessID = '', sshTunnelCreationRequestID = '', clickConnectBtn = false) => {
-       // Point at the Apache Cassandra's version UI element
-       let cassandraVersion = connectionElement.find('div[info="cassandra"]'),
-         // Point at the data center element
-         dataCenterElement = connectionElement.find('div[info="data-center"]'),
-         // Point at the `CONNECT` button
-         connectBtn = connectionElement.children('div.footer').children('div.button').children('button.connect'),
-         // Point at the `TEST CONNECTION` button
-         testConnectionBtn = connectionElement.children('div.footer').children('div.button').children('button.test-connection'),
-         // Point at the status element - the flashing circle at the top right -
-         statusElement = connectionElement.children('div.status'),
-         // Get the connection's ID from its attribute
-         connectionID = getAttributes(connectionElement, 'data-id'),
-         // Username and password - for Apache Cassandra DB Auth - to be passed if needed
-         username = '',
-         password = '',
-         // By default, there's no wait for encrypting username and password
-         waitForEncryption = false,
-         isSCBConnection = connectionElement.attr('data-scb-path') != undefined
-
-       // Get all saved connections
-       let allConnections = await Modules.Connections.getConnections(workspaceID),
-         // Filter connections; by finding the target one based on its ID
-         connectionObject = allConnections.find((_connection) => _connection.info.id == connectionID),
-         // Check if any sensitive data was added to the `cqlsh.rc` file
-         foundSensitiveData = false,
-         // Check if there are scripts to run in pre or post-connection
-         scripts = {
-           pre: [],
-           post: []
-         }
-
-       // Make sure the connection's object exists
-       try {
-         // If the target connection has been found then skip this try-catch block
-         if (connectionObject != undefined)
-           throw 0
-
-         // Show feedback to the user about not finding the target connection
-         showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with [code]cqlsh.rc[/code] file', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
-
-         setTimeout(() => {
-           // Enable the `TEST CONNECTION` button
-           testConnectionBtn.removeAttr('disabled')
-
-           // Remove multiple classes for the connection and its status elements
-           connectionElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
-
-           // Hide the termination process' button after a set time out
-           setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-         })
-
-         // Skip the upcoming code
-         return
-       } catch (e) {}
-
-       try {
-         if (isSCBConnection)
-           throw 0
-
-         /**
-          * Check pre and post-connect scripts
-          * Get all scripts associated with the connection
-          */
-         let check = await Modules.Connections.getPrePostScripts(workspaceID, connectionID)
-
-         // Set the received data
-         scripts.pre = check.pre
-         scripts.post = check.post
-         foundSensitiveData = check.foundSensitiveData
-
-         try {
-           // If no sensitive data has been found then skip this try-catch block
-           if (!foundSensitiveData)
-             throw 0
-
-           // Show feedback to the user about having sensitive data in the `cqlsh.rc` file
-           showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t(`workbench stores sensitive data encrypted and securely using the appropriate secure storage mechanism for your OS. The [code]cqlsh.rc[/code] content added contains sensitive information (such as username, password or a path to a credentials file), which is not permitted. Please remove this sensitive data before attempting to connect again`)) + '.', 'failure')
-
-           // Enable the `CONNECT` button
-           testConnectionBtn.removeAttr('disabled')
-
-           // Remove multiple classes for the connection and its status elements
-           connectionElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
-
-           // Hide the termination process' button after a set time out
-           setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-           // Skip the upcoming code
-           return
-         } catch (e) {}
-       } catch (e) {}
-
-       // Define the test data; the connection's ID and its `cqlsh.rc` file's path
-       let testData = {
-         id: connectionObject.info.id,
-         cqlshrcPath: connectionObject.cqlshrcPath
-       }
-
-       if (isSCBConnection)
-         testData.scbFilePath = connectionElement.attr('data-scb-path')
-
-       // Check if there is a username and password for Apache Cassandra
-       try {
-         // Username and password have been encrypted already and added to the connection's UI attributes
-         [username, password] = getAttributes(connectionElement, ['data-username', 'data-password'])
-
-         // If both username and password values are not valid then stop then skip this try-catch block
-         if ([username, password].some((secret) => secret == undefined || secret.trim().length <= 0))
-           throw 0
-
-         // Add the username and the password in the `secrets` sub-object
-         testData.secrets = {
-           username: username,
-           password: password
-         }
-       } catch (e) {}
-
-       /**
-        * Inner function to start the connection test process with connection
-        *
-        * @Parameters:
-        * {object} `?sshCreation` the SSH tunnel object associated with the connection
-        */
-       let startTestConnection = async (sshCreation = null) => {
-         // Define an SSH port object to be passed if needed
-         let sshInfo = {},
-           // Get a random ID for the connection test's request
-           requestID = getRandom.id(10)
-
-         // If the `sshCreation` object has been passed then use the random used port in the creation process instead of the one the user has passed
-         if (sshCreation != null) {
-           sshInfo.sshPort = sshCreation.port
-           sshInfo.sshHost = sshCreation.host
-         }
-
-         // Get variables manifest and values
-         try {
-           if (isSCBConnection)
-             throw 0
-
-           // Define JSON object which will hold the names of the temporary files
-           let files = {}
-
-           // Loop through the names of the content
-           for (let name of ['manifest', 'values']) {
-             // Get the content from the OS keychain
-             let content = name == 'manifest' ? await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`) : JSON.stringify(await retrieveAllVariables(true))
-
-             // Create a name for the temporary file
-             files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandom.id(20)}.aocwtmp`))
-
-             // Create the temporary file with related content
-             await FS.writeFileSync(files[name], content || '')
-           }
-
-           // Update the creation data to adopt the variables' info
-           testData = {
-             ...testData,
-             variables: {
-               ...files
-             }
-           }
-         } catch (e) {}
-
-         // Send test request to the main thread and pass the final `testData`
-         IPCRenderer.send('pty:test-connection', {
-           workspaceID: getActiveWorkspaceID(),
-           processID: testConnectionProcessID,
-           requestID,
-           ...testData,
-           ...sshInfo
-         })
-
-         // Once a response from the main thread has been received
-         IPCRenderer.on(`pty:test-connection:${requestID}`, (_, result) => {
-           setTimeout(() => {
-             /**
-              * Implement a data center(s) check
-              * By default, no data center is set unless the user provides one
-              */
-             let dataCenter = getAttributes(connectionElement, 'data-datacenter'),
-               // Define a flag to tell if the provided data center - if provided - exists and is seen by the app or not
-               isDataCenterExists = true,
-               // Hold all detected/seen data centers' names in array
-               allDataCenters
-
-             // Handle when the process has been terminated
-             try {
-               // If the process hasn't been terminated then skip this try-catch block
-               if (result.terminated != true)
-                 throw 0
-
-               /**
-                * Make sure to remove all listeners to the process' result
-                * This will prevent showing success/failure of the process after being terminated
-                */
-               IPCRenderer.removeAllListeners(`pty:test-connection:${requestID}`)
-             } catch (e) {}
-
-             try {
-               // If there's no provided data center by the user then skip this try-catch block
-               if (dataCenter.trim().length <= 0)
-                 throw 0
-
-               // Determine if the provided data center exists
-               isDataCenterExists = result.datacenters.filter((_dataCenter) => _dataCenter.datacenter == dataCenter).length != 0
-
-               // Hold all detected/seen data centers
-               allDataCenters = [...new Set(result.datacenters.map((_dataCenter) => _dataCenter.datacenter))]
-             } catch (e) {}
-
-             // Failed to connect with the connection
-             try {
-               // If the `connected` attribute in the result is `true`, and the Apache Cassandra's version has been identified, or the testing process hasn't been terminated then skip this try-catch block
-               if (result.connected && ![undefined, null].includes(result.version) && result.terminated == undefined)
-                 throw 0
-
-               // If the provided data center doesn't exist
-               if (!isDataCenterExists) {
-                 let allDataCentersStr = JSON.stringify(allDataCenters)
-
-                 // Format the string format of the data centers array for the toast
-                 allDataCentersStr = allDataCentersStr.slice(1, allDataCentersStr.length - 1).replace(/\"/g, '').split(',').join('[/code], [code]')
-
-                 // Show feedback to the user
-                 showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
-
-                 // Enable or disable the save button based on the test's result
-                 $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
-
-                 // Skip the upcoming code
-                 throw 0
-               }
-
-               /**
-                * Update connection UI element
-                *
-                * Change the `connected` attribute's value to `false` - failed to connect with the connection -
-                */
-               connectionElement.attr('data-connected', 'false')
-
-               try {
-                 // If the testing process has been terminated then skip this try-catch block - as ther's no need to show an error feedback to the user -
-                 if (result.terminated)
-                   throw 0
-
-                 // Whether or not the error details will be shown
-                 let error = result.error.trim().length != 0 ? `, ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
-
-                 // Show feedback to the user
-                 showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to activate connection [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)]))}${error}.`, 'failure')
-               } catch (e) {}
-
-               // Close the SSH tunnel if it exists
-               try {
-                 IPCRenderer.send('ssh-tunnel:close', getAttributes(connectionElement, 'data-id'))
-               } catch (e) {}
-
-               setTimeout(() => {
-                 // Test process has finished
-                 connectionElement.removeClass('test-connection enable-terminate-process')
-
-                 // Hide the termination process' button after a set time out
-                 setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-                 // Show failure feedback if the testing process hasn't been terminated
-                 statusElement.removeClass('success').toggleClass('show failure', result.terminated == undefined)
-
-                 // Enable the test connection button again
-                 testConnectionBtn.removeAttr('disabled')
-               })
-
-               // Get the credentials attributes
-               let [credentialsAuth, credentialsSSH] = getAttributes(connectionElement, ['data-credentials-auth', 'data-credentials-ssh'])
-
-               // If there are no DB authentication credentials for the connection then remove all associated attributes
-               try {
-                 if (credentialsAuth == undefined)
-                   throw 0
-
-                 connectionElement.removeAttr('data-username data-password data-got-credentials')
-               } catch (e) {}
-
-               // If there's no SSH credentials for the connection then remove all associated attributes
-               try {
-                 if (credentialsSSH == undefined)
-                   throw 0
-
-                 connectionElement.removeAttr('data-ssh-username data-ssh-password data-ssh-passphrase data-got-credentials')
-               } catch (e) {}
-
-               /**
-                * Check if we have post-connection scripts to run
-                *
-                * Define a variable to save the scripts' execution feedback
-                */
-               let executionFeedback = ''
-
-               try {
-                 // If there's no post-connection script to execute then skip this try-catch block
-                 if (scripts.post.length <= 0)
-                   throw 0
-
-                 // Show feedback to the user about starting the execution process
-                 setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
-
-                 // Execute the post-connection scripts in order
-                 Modules.Connections.executeScript(0, scripts.post, (executionResult) => {
-                   try {
-                     // If we've got `0` - as a final result - then it means all scripts have been executed with success and returned `0`; so skip this try-catch block and call the post-process function
-                     if (executionResult.status == 0)
-                       throw 0
-
-                     // Show feedback to the user about the script which failed
-                     let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
-
-                     if (status == -1000)
-                       info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
-
-                     // Set final feedback
-                     executionFeedback = `. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`
-
-                     // Show feedback to the user
-                     setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('post'), getAttributes(connectionElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
-                   } catch (e) {
-                     // Show success feedback to the user if the error is `0` code
-                     if (e == 0)
-                       setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(connectionElement, 'data-name')])) + '.', 'success'), 50)
-                   }
-                 })
-               } catch (e) {}
-
-               // Skip the upcoming code
-               return
-             } catch (e) {}
-
-             /**
-              * Successfully connected with the connection
-              *
-              * Add the created SSH tunnel object to the `sshTunnelsObjects` array; to have the ability to identify if the connection has an SSH tunnel associated with it
-              */
-             sshTunnelsObjects[connectionObject.info.id] = sshCreation
-
-             // Show Apache Cassandra version
-             cassandraVersion.children('div._placeholder').hide()
-             cassandraVersion.children('div.text').text(`v${result.version}`)
-
-             try {
-               // If there's no provided data center by the user then skip this try-catch block
-               if (dataCenter.trim().length <= 0 || `${dataCenter}` == 'undefined')
-                 throw 0
-
-               // If the provided data center is not the same as the one connected with then show feedback to the user
-               if (dataCenter != result.datacenter)
-                 showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData(`the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]`, [dataCenter, result.datacenter]) + '.'), 'warning')
-             } catch (e) {}
-
-             // Show data center
-             if (result.datacenter != undefined) {
-               dataCenterElement.children('div._placeholder').hide()
-               dataCenterElement.children('div.text').text(`${result.datacenter}`)
-             }
-
-             // Update some attributes for the connection UI element alongside some classes
-             connectionElement.attr({
-               'data-cassandra-version': result.version,
-               'data-datacenter': result.datacenter,
-               'data-datacenters': result.datacenters ? JSON.stringify(result.datacenters) : null,
-               'data-connected': 'true'
-             })
-
-             // Add the success state to the connection's UI element
-             statusElement.removeClass('failure')
-
-             try {
-               // If the version of Cassandra is not v3 then skip this try-catch block
-               if (!result.version.startsWith('3.'))
-                 throw 0
-
-               // Just warn the user about that unsupported version
-               setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
-             } catch (e) {}
-
-             // Show success feedback to the user
-             if (!clickConnectBtn)
-               showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('test connection [b]$data[/b] in workspace [b]$data[/b] has finished with success, you can now connect with it and start a session', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
-
-             setTimeout(() => {
-               // Enable the `CONNECT` button
-               connectBtn.add(testConnectionBtn).removeAttr('disabled')
-
-               // Remove the test connection state
-               connectionElement.removeClass('test-connection enable-terminate-process')
-
-               // Hide the termination process' button after a set time out
-               setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-               try {
-                 if (!clickConnectBtn)
-                   throw 0
-
-                 setTimeout(() => connectBtn.click())
-               } catch (e) {}
-             })
-           })
-         })
-       }
-
-       /**
-        * Inner function to do processes that come after checking SSH tunneling info
-        *
-        * @Parameters:
-        * {object} `?sshCreation` the SSH tunnel object associated with the connection
-        */
-       let afterSSHTunnelingCheck = async (sshCreation = null) => {
-         try {
-           // If there's no pre-connection script to execute then skip this try-catch block
-           if (scripts.pre.length <= 0)
-             throw 0
-
-           // Add the loading/processing class to the connection UI element
-           connectionElement.addClass('test-connection')
-
-           // Show the termination process' button
-           setTimeout(() => connectionElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-           // Show feedback to the user about starting the execution process
-           setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('pre-connection scripts are being executed before starting with connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
-
-           // Execute the pre-connection scripts with order
-           Modules.Connections.executeScript(0, scripts.pre, (executionResult) => {
-             // All scripts have been executed successfully; thus start the connection test process
-             if (executionResult.status == 0) {
-               // Show a success feedback to the user
-               setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('pre'), getAttributes(connectionElement, 'data-name')])) + '.', 'success'), 50)
-
-               // Start the connection test process
-               startTestConnection(sshCreation)
-
-               // Skip the upcoming code
-               return
-             }
-
-             /**
-              * There's an issue with one or more script
-              *
-              * Define the feedback info
-              */
-             let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>`
-
-             // `-1000` error code means the app couldn't find the script in the given path
-             if (status == -1000)
-               info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
-
-             // Show feedback to the user
-             setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('pre'), getAttributes(connectionElement, 'data-name')]))}. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`, 'failure'), 50)
-
-             // Call the error feedback function
-             errorVisualFeedback()
-           })
-
-           // Skip the upcoming code
-           return
-         } catch (e) {}
-
-         // If there's no pre-connection script to execute then call the test connection function immediately
-         startTestConnection(sshCreation)
-       }
-
-       // Inner function that do the changes in connection element when an error occurs
-       let errorVisualFeedback = (isProcessTerminated = false) => {
-         // Remove the test connection class
-         connectionElement.removeClass('test-connection enable-terminate-process')
-
-         // Hide the termination process' button after a set time out
-         setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-         // Show failure feedback if the process hasn't been terminated
-         statusElement.removeClass('success')[isProcessTerminated ? 'removeClass' : 'addClass']('show failure')
-
-         // Enable the `CONNECT` button
-         testConnectionBtn.removeAttr('disabled')
-
-         // Get the credentials from the associated attributes
-         let [credentialsAuth, credentialsSSH] = getAttributes(connectionElement, ['data-credentials-auth', 'data-credentials-ssh'])
-
-         try {
-           // If there are no DB authentication credentials then skip this try-catch block
-           if (credentialsAuth == undefined)
-             throw 0
-
-           // Remove all related attributes
-           connectionElement.removeAttr('data-username data-password data-got-credentials')
-         } catch (e) {}
-
-         try {
-           // If there are no SSH credentials then skip this try-catch block
-           if (credentialsSSH == undefined)
-             throw 0
-
-           // Remove all related attributes
-           connectionElement.removeAttr('data-ssh-username data-ssh-password data-got-credentials')
-         } catch (e) {}
-       }
-
-       /**
-        * The workflow of the `testConnection` function is:
-        * Pre-processes and checks -> Checking SSH tunneling info -> Create an SSH Tunnel || No need to create an SSH tunnel -> afterSSHTunnelingCheck() -> startTestConnection()
-        *
-        * Get the SSH tunnel creation info for the connection
-        */
-       let sshTunnelingInfo = await Modules.Connections.getSSHTunnelingInfo(workspaceID, getAttributes(connectionElement, 'data-folder'), getAttributes(connectionElement, 'data-id'))
-
-       try {
-         // If there's no need to create an SSH tunnel then skip this try-catch block
-         if (sshTunnelingInfo == null || typeof sshTunnelingInfo != 'object' || sshTunnelingInfo.length <= 0)
-           throw 0
-
-         // Check if an SSH client is installed and accessible
-         tunnelSSH.checkClient((exists) => {
-           // If the SSH client doesn't exist
-           if (!exists) {
-             // Show feedback to the user
-             showToast(I18next.capitalize(I18next.t('test connection')), I18next.t('SSH client has to be installed and accessible in order to establish SSH tunnel, please make sure to install it on your machine') + '.', 'failure')
-
-             // Call the error's visual feedback function
-             errorVisualFeedback()
-
-             // Skip the upcoming code - terminate the process -
-             return
-           }
-
-           /**
-            * Prepare the SSH tunnel's info
-            *
-            * Everything needed is present, except username and password - if no SSH private key file is provided -, so we'll get them, decrypt them, and add them to the object final SSH object
-            */
-           let [sshUsername, sshPassword, sshPassphrase] = getAttributes(connectionElement, ['data-ssh-username', 'data-ssh-password', 'data-ssh-passphrase'])
-
-           // Check that the username is at least, and maybe password values are valid
-           if (([sshUsername, sshPassword, sshPassphrase].every((secret) => secret == undefined || secret.trim().length <= 0))) {
-             // If not then stop the test process and show feedback to the user
-             showToast(I18next.capitalize(I18next.t('test connection')), I18next.t('SSH tunnel can\'t be established without passing at least a username, please check given info before attempting to connect again') + '.', 'failure')
-
-             // Call the error's visual feedback function
-             errorVisualFeedback()
-
-             // Skip the upcoming code
-             return
-           }
-
-           // Get the RSA private key - of our project -; to decrypt username and/or password
-           getRSAKey('private', (key) => {
-             try {
-               // If the received key is valid then skip this try-catch block
-               if (key.length > 0)
-                 throw 0
-
-               // Show feedback to the user about the app wasn't able to get the private key
-               showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
-
-               // Call the error's visual feedback function
-               errorVisualFeedback()
-
-               // Skip the upcoming code
-               return
-             } catch (e) {}
-
-             /**
-              * Reaching here means we need to decrypt the SSH username at least
-              *
-              * Decrypt the SSH username
-              */
-             sshUsername = decryptText(key, sshUsername)
-
-             // Decrypt the SSH password
-             sshPassword = decryptText(key, sshPassword)
-
-             // Decrypt the SSH private key's passphrase
-             sshPassphrase = decryptText(key, sshPassphrase)
-
-             // Adopt the decrypted SSH password if it's valid
-             if (sshPassword.trim().length > 0)
-               sshTunnelingInfo.password = sshPassword
-
-             // Adopt the decrypted SSH passphrase if it's valid
-             if (sshPassphrase.trim().length > 0)
-               sshTunnelingInfo.passphrase = sshPassphrase
-
-             // Adopt the decrypted SSH username
-             sshTunnelingInfo.username = sshUsername
-
-             // Define the host and port to be passed to the SSH tunneling creation's function
-             let host = sshTunnelingInfo.dstAddr != '127.0.0.1' ? sshTunnelingInfo.dstAddr : sshTunnelingInfo.host,
-               port = sshTunnelingInfo.dstPort
-
-             // Define the connection's ID in the SSH tunneling info object
-             sshTunnelingInfo.connectionID = getAttributes(connectionElement, 'data-id')
-
-             // Add the passed requestID
-             sshTunnelingInfo = {
-               ...sshTunnelingInfo,
-               requestID: sshTunnelCreationRequestID
-             }
-
-             // Create an SSH tunnel based on the final `sshTunnelingInfo` object
-             tunnelSSH.createTunnel(sshTunnelingInfo, (creationResult) => {
-               // If there's no error then call the `afterSSHTunnelingCheck` function
-               if (creationResult.error == undefined)
-                 return afterSSHTunnelingCheck({
-                   port: creationResult.port, // The port to be shown to the user
-                   oport: port, // The original port to be used within the creation process
-                   ...creationResult,
-                   host
-                 })
-
-               /**
-                * The app failed to establish an SSH tunnel
-                *
-                * Show feedback to the user
-                */
-               if (!creationResult.terminated)
-                 showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to establish an SSH tunnel for connection [b]$data[/b]', [getAttributes(connectionElement, 'data-name')]))}</b>. ${creationResult.error}.`, 'failure')
-
-               // Call the error's visual feedback function
-               errorVisualFeedback(creationResult.terminated)
-
-               // End the testing process
-               return
-             })
-           })
-         })
-         return
-       } catch (e) {}
-
-       // If there's no need to create an SSH tunnel then simply call the `afterSSHTunnelingCheck` function
-       afterSSHTunnelingCheck()
-     }
+    let testConnection = async (connectionElement, testConnectionProcessID = '', sshTunnelCreationRequestID = '', clickConnectBtn = false) => {
+      // Point at the Apache Cassandra's version UI element
+      let cassandraVersion = connectionElement.find('div[info="cassandra"]'),
+        // Point at the data center element
+        dataCenterElement = connectionElement.find('div[info="data-center"]'),
+        // Point at the `CONNECT` button
+        connectBtn = connectionElement.children('div.footer').children('div.button').children('button.connect'),
+        // Point at the `TEST CONNECTION` button
+        testConnectionBtn = connectionElement.children('div.footer').children('div.button').children('button.test-connection'),
+        // Point at the status element - the flashing circle at the top right -
+        statusElement = connectionElement.children('div.status'),
+        // Get the connection's ID from its attribute
+        connectionID = getAttributes(connectionElement, 'data-id'),
+        // Username and password - for Apache Cassandra DB Auth - to be passed if needed
+        username = '',
+        password = '',
+        // By default, there's no wait for encrypting username and password
+        waitForEncryption = false,
+        isSCBConnection = connectionElement.attr('data-scb-path') != undefined
+
+      // Get all saved connections
+      let allConnections = await Modules.Connections.getConnections(workspaceID),
+        // Filter connections; by finding the target one based on its ID
+        connectionObject = allConnections.find((_connection) => _connection.info.id == connectionID),
+        // Check if any sensitive data was added to the `cqlsh.rc` file
+        foundSensitiveData = false,
+        // Check if there are scripts to run in pre or post-connection
+        scripts = {
+          pre: [],
+          post: []
+        }
+
+      // Make sure the connection's object exists
+      try {
+        // If the target connection has been found then skip this try-catch block
+        if (connectionObject != undefined)
+          throw 0
+
+        // Show feedback to the user about not finding the target connection
+        showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('something went wrong while attempt to test connection [b]$data[/b] in workspace [b]$data[/b], mostly it is an issue with [code]cqlsh.rc[/code] file', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'failure')
+
+        setTimeout(() => {
+          // Enable the `TEST CONNECTION` button
+          testConnectionBtn.removeAttr('disabled')
+
+          // Remove multiple classes for the connection and its status elements
+          connectionElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
+
+          // Hide the termination process' button after a set time out
+          setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+        })
+
+        // Skip the upcoming code
+        return
+      } catch (e) {}
+
+      try {
+        if (isSCBConnection)
+          throw 0
+
+        /**
+         * Check pre and post-connect scripts
+         * Get all scripts associated with the connection
+         */
+        let check = await Modules.Connections.getPrePostScripts(workspaceID, connectionID)
+
+        // Set the received data
+        scripts.pre = check.pre
+        scripts.post = check.post
+        foundSensitiveData = check.foundSensitiveData
+
+        try {
+          // If no sensitive data has been found then skip this try-catch block
+          if (!foundSensitiveData)
+            throw 0
+
+          // Show feedback to the user about having sensitive data in the `cqlsh.rc` file
+          showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t(`workbench stores sensitive data encrypted and securely using the appropriate secure storage mechanism for your OS. The [code]cqlsh.rc[/code] content added contains sensitive information (such as username, password or a path to a credentials file), which is not permitted. Please remove this sensitive data before attempting to connect again`)) + '.', 'failure')
+
+          // Enable the `CONNECT` button
+          testConnectionBtn.removeAttr('disabled')
+
+          // Remove multiple classes for the connection and its status elements
+          connectionElement.add(statusElement).removeClass('test-connection enable-terminate-process show failure success')
+
+          // Hide the termination process' button after a set time out
+          setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
+          // Skip the upcoming code
+          return
+        } catch (e) {}
+      } catch (e) {}
+
+      // Define the test data; the connection's ID and its `cqlsh.rc` file's path
+      let testData = {
+        id: connectionObject.info.id,
+        cqlshrcPath: connectionObject.cqlshrcPath
+      }
+
+      if (isSCBConnection)
+        testData.scbFilePath = connectionElement.attr('data-scb-path')
+
+      // Check if there is a username and password for Apache Cassandra
+      try {
+        // Username and password have been encrypted already and added to the connection's UI attributes
+        [username, password] = getAttributes(connectionElement, ['data-username', 'data-password'])
+
+        // If both username and password values are not valid then stop then skip this try-catch block
+        if ([username, password].some((secret) => secret == undefined || secret.trim().length <= 0))
+          throw 0
+
+        // Add the username and the password in the `secrets` sub-object
+        testData.secrets = {
+          username: username,
+          password: password
+        }
+      } catch (e) {}
+
+      /**
+       * Inner function to start the connection test process with connection
+       *
+       * @Parameters:
+       * {object} `?sshCreation` the SSH tunnel object associated with the connection
+       */
+      let startTestConnection = async (sshCreation = null) => {
+        // Define an SSH port object to be passed if needed
+        let sshInfo = {},
+          // Get a random ID for the connection test's request
+          requestID = getRandom.id(10)
+
+        // If the `sshCreation` object has been passed then use the random used port in the creation process instead of the one the user has passed
+        if (sshCreation != null) {
+          sshInfo.sshPort = sshCreation.port
+          sshInfo.sshHost = sshCreation.host
+        }
+
+        // Get variables manifest and values
+        try {
+          if (isSCBConnection)
+            throw 0
+
+          // Define JSON object which will hold the names of the temporary files
+          let files = {}
+
+          // Loop through the names of the content
+          for (let name of ['manifest', 'values']) {
+            // Get the content from the OS keychain
+            let content = name == 'manifest' ? await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`) : JSON.stringify(await retrieveAllVariables(true))
+
+            // Create a name for the temporary file
+            files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandom.id(20)}.aocwtmp`))
+
+            // Create the temporary file with related content
+            await FS.writeFileSync(files[name], content || '')
+          }
+
+          // Update the creation data to adopt the variables' info
+          testData = {
+            ...testData,
+            variables: {
+              ...files
+            }
+          }
+        } catch (e) {}
+
+        // Send test request to the main thread and pass the final `testData`
+        IPCRenderer.send('pty:test-connection', {
+          workspaceID: getActiveWorkspaceID(),
+          processID: testConnectionProcessID,
+          requestID,
+          ...testData,
+          ...sshInfo
+        })
+
+        // Once a response from the main thread has been received
+        IPCRenderer.on(`pty:test-connection:${requestID}`, (_, result) => {
+          setTimeout(() => {
+            /**
+             * Implement a data center(s) check
+             * By default, no data center is set unless the user provides one
+             */
+            let dataCenter = getAttributes(connectionElement, 'data-datacenter'),
+              // Define a flag to tell if the provided data center - if provided - exists and is seen by the app or not
+              isDataCenterExists = true,
+              // Hold all detected/seen data centers' names in array
+              allDataCenters
+
+            // Handle when the process has been terminated
+            try {
+              // If the process hasn't been terminated then skip this try-catch block
+              if (result.terminated != true)
+                throw 0
+
+              /**
+               * Make sure to remove all listeners to the process' result
+               * This will prevent showing success/failure of the process after being terminated
+               */
+              IPCRenderer.removeAllListeners(`pty:test-connection:${requestID}`)
+            } catch (e) {}
+
+            try {
+              // If there's no provided data center by the user then skip this try-catch block
+              if (dataCenter.trim().length <= 0)
+                throw 0
+
+              // Determine if the provided data center exists
+              isDataCenterExists = result.datacenters.filter((_dataCenter) => _dataCenter.datacenter == dataCenter).length != 0
+
+              // Hold all detected/seen data centers
+              allDataCenters = [...new Set(result.datacenters.map((_dataCenter) => _dataCenter.datacenter))]
+            } catch (e) {}
+
+            // Failed to connect with the connection
+            try {
+              // If the `connected` attribute in the result is `true`, and the Apache Cassandra's version has been identified, or the testing process hasn't been terminated then skip this try-catch block
+              if (result.connected && ![undefined, null].includes(result.version) && result.terminated == undefined)
+                throw 0
+
+              // If the provided data center doesn't exist
+              if (!isDataCenterExists) {
+                let allDataCentersStr = JSON.stringify(allDataCenters)
+
+                // Format the string format of the data centers array for the toast
+                allDataCentersStr = allDataCentersStr.slice(1, allDataCentersStr.length - 1).replace(/\"/g, '').split(',').join('[/code], [code]')
+
+                // Show feedback to the user
+                showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
+
+                // Enable or disable the save button based on the test's result
+                $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
+
+                // Skip the upcoming code
+                throw 0
+              }
+
+              /**
+               * Update connection UI element
+               *
+               * Change the `connected` attribute's value to `false` - failed to connect with the connection -
+               */
+              connectionElement.attr('data-connected', 'false')
+
+              try {
+                // If the testing process has been terminated then skip this try-catch block - as ther's no need to show an error feedback to the user -
+                if (result.terminated)
+                  throw 0
+
+                // Whether or not the error details will be shown
+                let error = result.error.trim().length != 0 ? `, ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
+
+                // Show feedback to the user
+                showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to activate connection [b]$data[/b] in workspace [b]$data[/b]', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)]))}${error}.`, 'failure')
+              } catch (e) {}
+
+              // Close the SSH tunnel if it exists
+              try {
+                IPCRenderer.send('ssh-tunnel:close', getAttributes(connectionElement, 'data-id'))
+              } catch (e) {}
+
+              setTimeout(() => {
+                // Test process has finished
+                connectionElement.removeClass('test-connection enable-terminate-process')
+
+                // Hide the termination process' button after a set time out
+                setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
+                // Show failure feedback if the testing process hasn't been terminated
+                statusElement.removeClass('success').toggleClass('show failure', result.terminated == undefined)
+
+                // Enable the test connection button again
+                testConnectionBtn.removeAttr('disabled')
+              })
+
+              // Get the credentials attributes
+              let [credentialsAuth, credentialsSSH] = getAttributes(connectionElement, ['data-credentials-auth', 'data-credentials-ssh'])
+
+              // If there are no DB authentication credentials for the connection then remove all associated attributes
+              try {
+                if (credentialsAuth == undefined)
+                  throw 0
+
+                connectionElement.removeAttr('data-username data-password data-got-credentials')
+              } catch (e) {}
+
+              // If there's no SSH credentials for the connection then remove all associated attributes
+              try {
+                if (credentialsSSH == undefined)
+                  throw 0
+
+                connectionElement.removeAttr('data-ssh-username data-ssh-password data-ssh-passphrase data-got-credentials')
+              } catch (e) {}
+
+              /**
+               * Check if we have post-connection scripts to run
+               *
+               * Define a variable to save the scripts' execution feedback
+               */
+              let executionFeedback = ''
+
+              try {
+                // If there's no post-connection script to execute then skip this try-catch block
+                if (scripts.post.length <= 0)
+                  throw 0
+
+                // Show feedback to the user about starting the execution process
+                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
+
+                // Execute the post-connection scripts in order
+                Modules.Connections.executeScript(0, scripts.post, (executionResult) => {
+                  try {
+                    // If we've got `0` - as a final result - then it means all scripts have been executed with success and returned `0`; so skip this try-catch block and call the post-process function
+                    if (executionResult.status == 0)
+                      throw 0
+
+                    // Show feedback to the user about the script which failed
+                    let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
+
+                    if (status == -1000)
+                      info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
+
+                    // Set final feedback
+                    executionFeedback = `. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`
+
+                    // Show feedback to the user
+                    setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('post'), getAttributes(connectionElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
+                  } catch (e) {
+                    // Show success feedback to the user if the error is `0` code
+                    if (e == 0)
+                      setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(connectionElement, 'data-name')])) + '.', 'success'), 50)
+                  }
+                })
+              } catch (e) {}
+
+              // Skip the upcoming code
+              return
+            } catch (e) {}
+
+            /**
+             * Successfully connected with the connection
+             *
+             * Add the created SSH tunnel object to the `sshTunnelsObjects` array; to have the ability to identify if the connection has an SSH tunnel associated with it
+             */
+            sshTunnelsObjects[connectionObject.info.id] = sshCreation
+
+            // Show Apache Cassandra version
+            cassandraVersion.children('div._placeholder').hide()
+            cassandraVersion.children('div.text').text(`v${result.version}`)
+
+            try {
+              // If there's no provided data center by the user then skip this try-catch block
+              if (dataCenter.trim().length <= 0 || `${dataCenter}` == 'undefined')
+                throw 0
+
+              // If the provided data center is not the same as the one connected with then show feedback to the user
+              if (dataCenter != result.datacenter)
+                showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData(`the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]`, [dataCenter, result.datacenter]) + '.'), 'warning')
+            } catch (e) {}
+
+            // Show data center
+            if (result.datacenter != undefined) {
+              dataCenterElement.children('div._placeholder').hide()
+              dataCenterElement.children('div.text').text(`${result.datacenter}`)
+            }
+
+            // Update some attributes for the connection UI element alongside some classes
+            connectionElement.attr({
+              'data-cassandra-version': result.version,
+              'data-datacenter': result.datacenter,
+              'data-datacenters': result.datacenters ? JSON.stringify(result.datacenters) : null,
+              'data-connected': 'true'
+            })
+
+            // Add the success state to the connection's UI element
+            statusElement.removeClass('failure')
+
+            try {
+              // If the version of Cassandra is not v3 then skip this try-catch block
+              if (!result.version.startsWith('3.'))
+                throw 0
+
+              // Just warn the user about that unsupported version
+              setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
+            } catch (e) {}
+
+            // Show success feedback to the user
+            if (!clickConnectBtn)
+              showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('test connection [b]$data[/b] in workspace [b]$data[/b] has finished with success, you can now connect with it and start a session', [getAttributes(connectionElement, 'data-name'), getWorkspaceName(workspaceID)])) + '.', 'success')
+
+            setTimeout(() => {
+              // Enable the `CONNECT` button
+              connectBtn.add(testConnectionBtn).removeAttr('disabled')
+
+              // Remove the test connection state
+              connectionElement.removeClass('test-connection enable-terminate-process')
+
+              // Hide the termination process' button after a set time out
+              setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
+              try {
+                if (!clickConnectBtn)
+                  throw 0
+
+                setTimeout(() => connectBtn.click())
+              } catch (e) {}
+            })
+          })
+        })
+      }
+
+      /**
+       * Inner function to do processes that come after checking SSH tunneling info
+       *
+       * @Parameters:
+       * {object} `?sshCreation` the SSH tunnel object associated with the connection
+       */
+      let afterSSHTunnelingCheck = async (sshCreation = null) => {
+        try {
+          // If there's no pre-connection script to execute then skip this try-catch block
+          if (scripts.pre.length <= 0)
+            throw 0
+
+          // Add the loading/processing class to the connection UI element
+          connectionElement.addClass('test-connection')
+
+          // Show the termination process' button
+          setTimeout(() => connectionElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
+          // Show feedback to the user about starting the execution process
+          setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('pre-connection scripts are being executed before starting with connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
+
+          // Execute the pre-connection scripts with order
+          Modules.Connections.executeScript(0, scripts.pre, (executionResult) => {
+            // All scripts have been executed successfully; thus start the connection test process
+            if (executionResult.status == 0) {
+              // Show a success feedback to the user
+              setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('pre'), getAttributes(connectionElement, 'data-name')])) + '.', 'success'), 50)
+
+              // Start the connection test process
+              startTestConnection(sshCreation)
+
+              // Skip the upcoming code
+              return
+            }
+
+            /**
+             * There's an issue with one or more script
+             *
+             * Define the feedback info
+             */
+            let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>`
+
+            // `-1000` error code means the app couldn't find the script in the given path
+            if (status == -1000)
+              info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
+
+            // Show feedback to the user
+            setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('pre'), getAttributes(connectionElement, 'data-name')]))}. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`, 'failure'), 50)
+
+            // Call the error feedback function
+            errorVisualFeedback()
+          })
+
+          // Skip the upcoming code
+          return
+        } catch (e) {}
+
+        // If there's no pre-connection script to execute then call the test connection function immediately
+        startTestConnection(sshCreation)
+      }
+
+      // Inner function that do the changes in connection element when an error occurs
+      let errorVisualFeedback = (isProcessTerminated = false) => {
+        // Remove the test connection class
+        connectionElement.removeClass('test-connection enable-terminate-process')
+
+        // Hide the termination process' button after a set time out
+        setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
+        // Show failure feedback if the process hasn't been terminated
+        statusElement.removeClass('success')[isProcessTerminated ? 'removeClass' : 'addClass']('show failure')
+
+        // Enable the `CONNECT` button
+        testConnectionBtn.removeAttr('disabled')
+
+        // Get the credentials from the associated attributes
+        let [credentialsAuth, credentialsSSH] = getAttributes(connectionElement, ['data-credentials-auth', 'data-credentials-ssh'])
+
+        try {
+          // If there are no DB authentication credentials then skip this try-catch block
+          if (credentialsAuth == undefined)
+            throw 0
+
+          // Remove all related attributes
+          connectionElement.removeAttr('data-username data-password data-got-credentials')
+        } catch (e) {}
+
+        try {
+          // If there are no SSH credentials then skip this try-catch block
+          if (credentialsSSH == undefined)
+            throw 0
+
+          // Remove all related attributes
+          connectionElement.removeAttr('data-ssh-username data-ssh-password data-got-credentials')
+        } catch (e) {}
+      }
+
+      /**
+       * The workflow of the `testConnection` function is:
+       * Pre-processes and checks -> Checking SSH tunneling info -> Create an SSH Tunnel || No need to create an SSH tunnel -> afterSSHTunnelingCheck() -> startTestConnection()
+       *
+       * Get the SSH tunnel creation info for the connection
+       */
+      let sshTunnelingInfo = await Modules.Connections.getSSHTunnelingInfo(workspaceID, getAttributes(connectionElement, 'data-folder'), getAttributes(connectionElement, 'data-id'))
+
+      try {
+        // If there's no need to create an SSH tunnel then skip this try-catch block
+        if (sshTunnelingInfo == null || typeof sshTunnelingInfo != 'object' || sshTunnelingInfo.length <= 0)
+          throw 0
+
+        // Check if an SSH client is installed and accessible
+        tunnelSSH.checkClient((exists) => {
+          // If the SSH client doesn't exist
+          if (!exists) {
+            // Show feedback to the user
+            showToast(I18next.capitalize(I18next.t('test connection')), I18next.t('SSH client has to be installed and accessible in order to establish SSH tunnel, please make sure to install it on your machine') + '.', 'failure')
+
+            // Call the error's visual feedback function
+            errorVisualFeedback()
+
+            // Skip the upcoming code - terminate the process -
+            return
+          }
+
+          /**
+           * Prepare the SSH tunnel's info
+           *
+           * Everything needed is present, except username and password - if no SSH private key file is provided -, so we'll get them, decrypt them, and add them to the object final SSH object
+           */
+          let [sshUsername, sshPassword, sshPassphrase] = getAttributes(connectionElement, ['data-ssh-username', 'data-ssh-password', 'data-ssh-passphrase'])
+
+          // Check that the username is at least, and maybe password values are valid
+          if (([sshUsername, sshPassword, sshPassphrase].every((secret) => secret == undefined || secret.trim().length <= 0))) {
+            // If not then stop the test process and show feedback to the user
+            showToast(I18next.capitalize(I18next.t('test connection')), I18next.t('SSH tunnel can\'t be established without passing at least a username, please check given info before attempting to connect again') + '.', 'failure')
+
+            // Call the error's visual feedback function
+            errorVisualFeedback()
+
+            // Skip the upcoming code
+            return
+          }
+
+          // Get the RSA private key - of our project -; to decrypt username and/or password
+          getRSAKey('private', (key) => {
+            try {
+              // If the received key is valid then skip this try-catch block
+              if (key.length > 0)
+                throw 0
+
+              // Show feedback to the user about the app wasn't able to get the private key
+              showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
+
+              // Call the error's visual feedback function
+              errorVisualFeedback()
+
+              // Skip the upcoming code
+              return
+            } catch (e) {}
+
+            /**
+             * Reaching here means we need to decrypt the SSH username at least
+             *
+             * Decrypt the SSH username
+             */
+            sshUsername = decryptText(key, sshUsername)
+
+            // Decrypt the SSH password
+            sshPassword = decryptText(key, sshPassword)
+
+            // Decrypt the SSH private key's passphrase
+            sshPassphrase = decryptText(key, sshPassphrase)
+
+            // Adopt the decrypted SSH password if it's valid
+            if (sshPassword.trim().length > 0)
+              sshTunnelingInfo.password = sshPassword
+
+            // Adopt the decrypted SSH passphrase if it's valid
+            if (sshPassphrase.trim().length > 0)
+              sshTunnelingInfo.passphrase = sshPassphrase
+
+            // Adopt the decrypted SSH username
+            sshTunnelingInfo.username = sshUsername
+
+            // Define the host and port to be passed to the SSH tunneling creation's function
+            let host = sshTunnelingInfo.dstAddr != '127.0.0.1' ? sshTunnelingInfo.dstAddr : sshTunnelingInfo.host,
+              port = sshTunnelingInfo.dstPort
+
+            // Define the connection's ID in the SSH tunneling info object
+            sshTunnelingInfo.connectionID = getAttributes(connectionElement, 'data-id')
+
+            // Add the passed requestID
+            sshTunnelingInfo = {
+              ...sshTunnelingInfo,
+              requestID: sshTunnelCreationRequestID
+            }
+
+            // Create an SSH tunnel based on the final `sshTunnelingInfo` object
+            tunnelSSH.createTunnel(sshTunnelingInfo, (creationResult) => {
+              // If there's no error then call the `afterSSHTunnelingCheck` function
+              if (creationResult.error == undefined)
+                return afterSSHTunnelingCheck({
+                  port: creationResult.port, // The port to be shown to the user
+                  oport: port, // The original port to be used within the creation process
+                  ...creationResult,
+                  host
+                })
+
+              /**
+               * The app failed to establish an SSH tunnel
+               *
+               * Show feedback to the user
+               */
+              if (!creationResult.terminated)
+                showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.replaceData('failed to establish an SSH tunnel for connection [b]$data[/b]', [getAttributes(connectionElement, 'data-name')]))}</b>. ${creationResult.error}.`, 'failure')
+
+              // Call the error's visual feedback function
+              errorVisualFeedback(creationResult.terminated)
+
+              // End the testing process
+              return
+            })
+          })
+        })
+        return
+      } catch (e) {}
+
+      // If there's no need to create an SSH tunnel then simply call the `afterSSHTunnelingCheck` function
+      afterSSHTunnelingCheck()
+    }
     // End of `testConnection` function
 
     /**

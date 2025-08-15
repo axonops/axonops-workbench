@@ -333,7 +333,7 @@
     "ansi-to-html": "^0.7.2",
     "appdata-path": "^1.0.0",
     "autosize": "^6.0.1",
-    "axios": "^1.8.3",
+    "axios": "^1.11.0",
     "better-sqlite3": "^11.10.0",
     "bytes": "^3.1.2",
     "chalk": "4.1.2",

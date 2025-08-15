@@ -339,7 +339,7 @@
     "chalk": "4.1.2",
     "chart.js": "^4.4.9",
     "chartjs-plugin-zoom": "^2.2.0",
-    "cheerio": "^1.0.0",
+    "cheerio": "^1.1.2",
     "cli-spinner": "^0.2.10",
     "co": "^4.6.0",
     "command-line-usage": "^7.0.3",

@@ -544,7 +544,7 @@
               </div>
             </div>
             <div class="row">
-              <div class="col-md-11">
+              <div class="col-md-10">
                 <div class="form-outline form-white margin-bottom sm notch-no-radius">
                   <ion-icon name class="trailing"></ion-icon>
                   <input type="text" class="form-control form-icon-trailing form-control-lg" tabindex="-1" id="workspacePath" style="overflow: hidden; text-overflow: ellipsis;">
@@ -553,7 +553,15 @@
                   </label>
                   <div class="valid-feedback"></div>
                   <div class="invalid-feedback"></div>
-                  <div class="clickable" for-input="workspacePath" data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000"></div>
+                  <div class="clickable" for-input="workspacePath" data-empty-not-allowed="true" data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000"></div>
+                </div>
+              </div>
+              <div class="col-md-1 flex col-add-border" style="border-radius:0px">
+                <div class="icon-button" style="top: auto; left: 3px;">
+                  <div class="action btn btn-tertiary select-path" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="select workspace path" capitalize-first data-title data-action="selectPath"
+                    data-reference="workspace">
+                    <ion-icon name="folder-open"></ion-icon>
+                  </div>
                 </div>
               </div>
               <div class="col-md-1 flex col-add-border">
@@ -1930,10 +1938,15 @@
                       <th width="5%">
                         <input class="form-check-input" type="checkbox" id="importWorkspacesCheckbox">
                       </th>
-                      <th width="30%"><span mulang="name" capitalize></span></th>
-                      <th width="20%"><span mulang="color" capitalize></span></th>
-                      <th width="30%"><span mulang="checks" capitalize></span></th>
-                      <th width="15%"><span mulang="connections" capitalize></span></th>
+                      <th width="25%"><span mulang="name" capitalize></span></th>
+                      <th width="14%"><span mulang="color" capitalize></span></th>
+                      <th width="27%"><span mulang="checks" capitalize></span></th>
+                      <th width="14%"><span mulang="connections" capitalize></span></th>
+                      <th width="15%" style="white-space: nowrap;"><input class="form-check-input" type="checkbox" style="margin-top: 0; margin-right: 0px; margin-right: 5px;" id="importWorkspacesDefaultPathCheckbox">
+                        <label class="form-check-label" for="importWorkspacesDefaultPathCheckbox">
+                          <span mulang="default path" capitalize></span>
+                        </label>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>

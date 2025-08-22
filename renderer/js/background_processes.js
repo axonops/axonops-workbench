@@ -62,7 +62,24 @@ const FS = require('fs-extra'),
   // Convert to/from HEX strings and byte arrays
   ConvertHEX = require('convert-hex'),
   // Sanitize a string to be safe for use as a file name; by removing directory paths and invalid characters
-  Sanitize = require('sanitize-filename')
+  Sanitize = require('sanitize-filename'),
+  /**
+   * Pure Node.js RSA library implemented
+   * It has been implemented within the functions `encryptText(publicKey, text)` and `decryptText(privateKey, text)`
+   */
+  NodeRSA = require('node-rsa'),
+  /**
+   * Node.js module to manage system keychain
+   * It has been implemented within the function `getRSAKey(type, callback)`
+   */
+  Keytar = require('keytar'),
+  /**
+   * Generate a random string
+   * Mainly used for generating IDs for connections, workspaces, UI elements, and so on
+   * It has been implemented within the function `getRandom.id(length, ?amount)`
+   */
+  RandomID = require('id-16'),
+  ZLib = require('zlib')
 
 /**
  * Get the set extra resources path
@@ -74,7 +91,12 @@ let extraResourcesPath = null,
   // Boolean value used to tell if the logging system should be enabled in the current session or not
   isLoggingFeatureEnabled = true,
   // An array that tells which SSH tunnel should be closed - after terminating the process -
-  toBeClosedSSHTunnels = []
+  toBeClosedSSHTunnels = [],
+  /**
+   * Store the apps' RSA public key
+   * In this way, there's no need to request the key every time from the keys generator tool
+   */
+  publicKey = ''
 
 // Get the set extra resources path from the main thread
 $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
@@ -606,6 +628,78 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
       }
 
       IPCRenderer.on('cql:file:execute', (_, data) => handleCQLExecution(data))
+    }
+
+    // Encrypt/Decrypt provided metadata
+    {
+      IPCRenderer.on('background:text:encrypt', async (_, data) => {
+        let encryptedText = ''
+
+        try {
+          encryptedText = encryptText(data.key, data.text)
+        } catch (e) {}
+
+        try {
+          ZLib.gzip(encryptedText, {
+            level: ZLib.constants.Z_BEST_COMPRESSION
+          }, async (err, compressedText) => {
+            try {
+              if (err)
+                return
+
+              try {
+                encryptedText = compressedText.toString('base64')
+              } catch (e) {}
+
+              if (encryptedText.length <= 0 || data.keychainOSName == null)
+                return
+
+              try {
+                await Keytar.setPassword(
+                  'AxonOpsWorkbenchClustersSecrets',
+                  `${data.keychainOSName}`, encryptedText)
+              } catch (e) {}
+            } catch (e) {}
+          })
+        } catch (e) {}
+      })
+
+      IPCRenderer.on(`background:text:decrypt`, async (_, data) => {
+        let decryptedText = '',
+          sendResult = () => IPCRenderer.send(`background:text:decrypt:result:${data.requestID}`, decryptedText)
+
+        try {
+          if (data.keychainOSName == null)
+            throw 0
+
+          let workbenchSecrets = await Keytar.findCredentials('AxonOpsWorkbenchClustersSecrets')
+
+          data.text = workbenchSecrets.find((secret) => secret.account == data.keychainOSName).password
+
+          ZLib.gunzip(Buffer.from(data.text, 'base64'), async (err, decompressed) => {
+            if (err)
+              return sendResult()
+
+            try {
+              decryptedText = decompressed.toString()
+            } catch (e) {}
+
+            try {
+              decryptedText = decryptText(data.key, decryptedText)
+            } catch (e) {}
+
+            sendResult()
+          })
+
+          return
+        } catch (e) {}
+
+        try {
+          decryptedText = decryptText(data.key, data.text)
+        } catch (e) {}
+
+        sendResult()
+      })
     }
   }
 }))

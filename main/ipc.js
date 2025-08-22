@@ -274,6 +274,21 @@ const NativeImage = Electron.nativeImage,
       })
     })
   }
+
+  {
+    IPCMain.on('background:text:encrypt', (_, data) => views.backgroundProcesses.webContents.send('background:text:encrypt', data))
+
+    IPCMain.on('background:text:decrypt', (_, data) => {
+      // Send the request to the background processes' renderer thread
+      views.backgroundProcesses.webContents.send('background:text:decrypt', data)
+
+      // Once a response is received
+      IPCMain.on(`background:text:decrypt:result:${data.requestID}`, (_, decryptedText) => {
+        // Send the response to the renderer thread
+        views.main.webContents.send(`background:text:decrypt:result:${data.requestID}`, decryptedText)
+      })
+    })
+  }
 }
 
 /**

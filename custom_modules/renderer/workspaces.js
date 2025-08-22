@@ -154,9 +154,10 @@ let saveWorkspace = async (workspace) => {
         throw 0
 
       // Copy the workspace's folder to the new location - the default path -
-      await FS.copySync(originalWorkspace.connectionsPath, workspacePath, {
-        overwrite: true
-      })
+      if (originalWorkspace.connectionsPath != workspacePath)
+        await FS.copySync(originalWorkspace.connectionsPath, workspacePath, {
+          overwrite: true
+        })
 
       // Get all saved connections in the about-to-imported workspace
       let connectionsManifest = await FS.readFileSync(Path.join(workspacePath, 'connections.json'), 'utf8')

@@ -486,12 +486,12 @@ $(document).on('initialize', () => {
                 // Loop through the allowed HTML tags
                 Modules.Consts.AllowedHTMLTags.forEach((tag) => {
                   // Define a regex for the tag's opening
-                  let opening = createRegex(`[${tag}]`, 'gm'),
+                  let opening = new RegExp(`\\[${tag}(.*?)\\]`, 'gm'),
                     // The same thing with the tag's close
                     close = createRegex(`[/${tag}]`, 'gm')
 
                   // Update the opening
-                  text = text.replace(opening, `<${tag}>`)
+                  text = text.replace(opening, `<${tag}$1>`)
 
                   // Update the close
                   text = text.replace(close, `</${tag}>`)
@@ -834,7 +834,7 @@ $(document).on('initialize', () => {
   // ldrs.js
   {
     let ldrsPath = Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js'),
-      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'momentum', 'ring2', 'wobble', 'hatch', 'chaoticOrbit', 'ripples']
+      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'zoomies', 'momentum', 'ring2', 'wobble', 'hatch', 'chaoticOrbit', 'ripples']
 
     try {
       import(ldrsPath).then((loaders) => usedLoaders.forEach((loader) => loaders[loader].register()))
@@ -1196,6 +1196,132 @@ $(document).on('initialize', () => {
           } catch (e) {}
         })
       }
+    }
+
+    {
+      amdRequire(['vs/editor/editor.main'], () => {
+        try {
+          cqlSnippets.editor = monaco.editor.create($('#cqlSnippetsEditor')[0], {
+            language: 'sql',
+            minimap: {
+              enabled: true
+            },
+            padding: {
+              top: 10,
+              bottom: 10
+            },
+            wordWrap: 'on',
+            glyphMargin: false,
+            suggest: {
+              showFields: false,
+              showFunctions: false
+            },
+            theme: 'vs-dark',
+            scrollBeyondLastLine: false,
+            mouseWheelZoom: true,
+            fontSize: 12,
+            fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
+            fontLigatures: true
+          })
+
+          monaco.languages.registerCompletionItemProvider('sql', {
+            triggerCharacters: [' ', '.', '"', '*', ';'],
+            provideCompletionItems: function(model, position) {
+              if (model != cqlSnippets.editor.getModel())
+                return {
+                  suggestions: []
+                }
+
+              let statement = model.getValueInRange(new monaco.Range(position.lineNumber, 1, position.lineNumber, position.column)),
+                closestWord = '',
+                WordAtPosition = model.getWordAtPosition(position),
+                range = WordAtPosition ?
+                new monaco.Range(position.lineNumber, WordAtPosition.startColumn, position.lineNumber, position.column) :
+                new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+                suggestions = []
+
+              // Get the closest word to the cursor in the input field
+              try {
+                closestWord = WordAtPosition.word
+              } catch (e) {}
+
+              try {
+                if (closestWord.length <= 0)
+                  closestWord = /\S+$/.exec(statement)[0]
+              } catch (e) {}
+
+              // The default array for suggestions is the CQL keywords with the commands
+              let suggestionsArray = Modules.Consts.CQLKeywords.concat(Modules.Consts.CQLSHCommands)
+
+              let finalSuggestions = suggestionSearch(closestWord, suggestionsArray, false)
+
+              if ((JSON.stringify(finalSuggestions) == JSON.stringify(suggestionsArray)))
+                return {
+                  suggestions: []
+                }
+
+              suggestions = finalSuggestions.map((suggestionItem) => {
+                let suggestion = suggestionItem,
+                  isItemObject = typeof suggestionItem == 'object'
+
+                if (isItemObject)
+                  suggestion = suggestionItem.name
+
+                insertText = suggestion
+
+                return {
+                  label: !isItemObject ? suggestion : `${suggestionItem.name}: ${suggestionItem.type}`,
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText,
+                  range
+                }
+              })
+
+              try {
+                suggestions = removeArrayDuplicates(suggestions, 'label')
+              } catch (e) {}
+
+              // Handle if the keyword is DESC/DESCRIBE
+              try {
+                if (Modules.Consts.CQLRegexPatterns.Desc.Patterns.some((regex) => statement.match(regex) != null))
+                  suggestions.unshift({
+                    label: 'SCHEMA',
+                    kind: monaco.languages.CompletionItemKind.Keyword,
+                    insertText: 'SCHEMA',
+                    range
+                  })
+              } catch (e) {}
+
+              return {
+                suggestions
+              }
+            }
+          })
+
+          let snippetsListContainer = $('div.modal#cqlSnippets').find('div.side.snippets-list')
+
+          // When the editor has been changed
+          cqlSnippets.editor.getModel().onDidChangeContent(() => {
+            let editorContent = minifyText(cqlSnippets.editor.getValue()),
+              areFieldsValuesValid = ['input#snippetTitle', 'input#snippetAuthorName', 'textarea#snippetDescription'].every((inputField) => minifyText($(inputField).val()).length > 0)
+
+            $('div.modal#cqlSnippets').find('div.side.snippet-editor').find('div.destructive-keywords-warning').toggle(Modules.Consts.CQLSHDestructiveCommands.some((command) => editorContent.includes(minifyText(command))))
+
+            if (editorContent.length <= 0 || !areFieldsValuesValid)
+              return $('button#createSnippet, button#executeSnippet, button#updateSnippet, button#snippetRevertChanges').attr('disabled', '')
+
+            if (editorContent.length > 0 && areFieldsValuesValid) {
+              let isOrphanedList = ($('#cqlSnippets').find('span.badge.current-scope').data('scope') || [])[0] == 'orphaned'
+
+              $(`${!isOrphanedList ? 'button#createSnippet, ' : ''}button#executeSnippet`).attr('disabled', null)
+
+              let editingMode = snippetsListContainer.find('div.snippet.active').length > 0
+
+              $('button#updateSnippet, button#snippetRevertChanges').attr('disabled', !editingMode ? '' : null)
+            }
+          })
+        } catch (e) {}
+      })
     }
   }
 
@@ -1764,3 +1890,9 @@ $(document).ready(() => IPCRenderer.on('windows-shown', () => {
 
   $(document).trigger('getWorkspaces')
 }))
+
+$(document).on('initialize', () => {
+  try {
+    $('div.modal-section[section="notices"]').children('div.notice').html(`${Modules.Consts.LegalNotice}.`)
+  } catch (e) {}
+})

@@ -353,6 +353,7 @@
     "electron-positioner": "^4.1.0",
     "escape-html": "^1.0.3",
     "extract-string": "^1.0.2",
+    "front-matter": "^4.0.2",
     "fs-extra": "^11.3.0",
     "hash-wasm": "^4.12.0",
     "hex-to-rgb": "^1.0.1",
@@ -402,6 +403,7 @@
     "value-size": "^1.0.1",
     "xterm-theme": "^1.1.0",
     "xterm-webfont": "^2.0.0",
+    "yaml": "^2.8.1",
     "yargs": "^17.7.2"
   }
 }

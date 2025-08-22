@@ -430,7 +430,8 @@
   // Get the MDB objects for the settings modal, and different UI elements inside it
   let settingsModal = getElementMDBObject($('#appSettings'), 'Modal'),
     maxNumCQLSHSessionsObject = getElementMDBObject($('input#maxNumCQLSHSessions')),
-    maxNumSandboxProjectsObject = getElementMDBObject($('input#maxNumSandboxProjects'))
+    maxNumSandboxProjectsObject = getElementMDBObject($('input#maxNumSandboxProjects')),
+    cqlSnippetsAuthorNameObject = getElementMDBObject($('input#cqlSnippetsAuthorName'))
 
   // Clicks the settings button
   $(`${selector}[action="settings"]`).click(() => {
@@ -445,6 +446,7 @@
         sandboxProjectsEnabled = config.get('features', 'localClusters'),
         containersManagementTool = config.get('features', 'containersManagementTool') || 'none',
         basicCQLSHEnabled = config.get('features', 'basicCQLSH'),
+        cqlSnippetsAuthorName = config.get('features', 'cqlSnippetsAuthorName') || '',
         checkForUpdates = config.get('updates', 'checkForUpdates'),
         autoUpdate = config.get('updates', 'autoUpdate'),
         displayLanguage = config.get('ui', 'language'),
@@ -495,6 +497,9 @@
 
       $('input#basicCQLSH[type="checkbox"]').prop('checked', basicCQLSHEnabled == 'true')
 
+      $('input#cqlSnippetsAuthorName').val(minifyText(cqlSnippetsAuthorName).length <= 0 ? '' : cqlSnippetsAuthorName)
+      setTimeout(() => cqlSnippetsAuthorNameObject.update())
+
       /**
        * Check the chosen display language - whether it's valid or not -
        * Point at the language's option in the UI - if it exists then it means the app has loaded it successfully at the initialization process -
@@ -529,6 +534,1041 @@
 
     // Show it when click the associated icon
     $(`${selector}[action="about"]`).click(() => aboutModal.show())
+  }
+
+  // Point at the `CQL Snippets` modal
+  {
+    let cqlSnippetsModal = getElementMDBObject($('#cqlSnippets'), 'Modal'),
+      objectsTreeView = $('#cqlSnippets').find('div.side.objects-treeview'),
+      snippetsListContainer = $('#cqlSnippets').find('div.side.snippets-list').find('div.cql-snippets'),
+      snippetsContainer = snippetsListContainer.find('div.snippets'),
+      snippetTagsContainer = $('#cqlSnippets').find('div.row.snippet-tags'),
+      snippetsActionsContainer = snippetsListContainer.find('div.snippets-list-header').find('div.actions'),
+      scopeBadge = $('#cqlSnippets').find('span.badge.current-scope'),
+      extraIconsPath = normalizePath(Path.join(__dirname, '..', '..', 'renderer', 'js', 'external', 'jstree', 'theme', 'extra')),
+      extraIcons = ['workspace', 'connection', 'keyspace', 'table'],
+      // Tree view actions
+      treeViewActionsContainer = objectsTreeView.find('div.treeview-actions'),
+      snippetsTreeviewObject = null,
+      // Flag to tell if the search container is shown already
+      isSearchShown = false,
+      // The timeout function to be defined for the starting the search process
+      searchTimeout,
+      // Define the current index of the search results
+      currentIndex = 0,
+      // Hold the last search results in an array
+      lastSearchResults = [],
+      selectedNodeID = ''
+
+    let createSnippetElement = (snippet, callback = () => {}) => {
+        try {
+          let tags = ''
+
+          try {
+            tags = (snippet.attributes.tags || []).map((tag) => `<div class="tag"><ion-icon name="tag"></ion-icon><span>${tag}</span></div>`).join('')
+          } catch (e) {}
+
+          let snippetStrucutre = `
+            <div class="snippet">
+              <div class="checkbox">
+                <input class="form-check-input" type="checkbox">
+              </div>
+              <div class="content">
+                <div class="snippet-name">${StripTags(snippet.attributes.title)}</div>
+                <div class="snippet-description">${StripTags(snippet.attributes.description)}</div>
+                <div class="snippet-tags">${tags}</div>
+              </div>
+              <div class="actions">
+                <div class="action">
+                  <button action="delete" class="btn btn-tertiary btn-rounded btn-sm" data-mdb-ripple-color="light" data-confirmed="false">
+                    <ion-icon name="trash"></ion-icon>
+                  </button>
+                </div>
+              </div>
+            </div>`
+
+          snippetsContainer.prepend($(snippetStrucutre).show(function() {
+            let snippetElement = $(this)
+
+            callback(snippetElement)
+
+            snippetElement.data('json-data', snippet)
+
+            snippetElement.children('div.content').click(function() {
+              let snippetData = snippetElement.data('json-data')
+
+              if (!snippetElement.hasClass('active')) {
+                snippetsContainer.children('div.snippet').removeClass('active')
+                snippetElement.addClass('active')
+              }
+
+              // Load snippet's data in the editor
+              try {
+                let snippetTitle = $('input#snippetTitle')
+
+                snippetTitle.val(`${snippetData.attributes.title}`)
+
+                snippetTitle.trigger('input')
+
+                getElementMDBObject(snippetTitle).update()
+              } catch (e) {}
+
+              try {
+                let snippetAuthorName = $('input#snippetAuthorName')
+
+                snippetAuthorName.val(`${snippetData.attributes.created_by}`)
+
+                snippetAuthorName.trigger('input')
+
+                getElementMDBObject(snippetAuthorName).update()
+              } catch (e) {}
+
+              try {
+                let snippetDescription = $('textarea#snippetDescription')
+
+                snippetDescription.val(`${snippetData.attributes.description}`)
+
+                snippetDescription.trigger('input')
+
+                getElementMDBObject(snippetDescription).update()
+              } catch (e) {}
+
+              try {
+                let snippetTags = (snippetData.attributes.tags || [])
+
+                snippetTagsContainer.find('div.added-tags').find('div.tag').remove()
+
+                for (let snippetTag of snippetTags)
+                  snippetTagsContainer.find('div.add-tag').find('div.btn').trigger('click', snippetTag)
+              } catch (e) {}
+
+              try {
+                cqlSnippets.editor.setValue(snippetData.content)
+
+                cqlSnippets.editor.layout()
+              } catch (e) {}
+            })
+
+            // The delete button
+            snippetElement.find('div.actions').find('button[action="delete"]').click(function(_, isConfirmed = false) {
+              let deleteSnippet = () => {
+                  Modules.Snippets.deleteSnippet(snippetPath).then((isDeleted) => {
+                    if (!isDeleted)
+                      return errorToast()
+
+                    if (snippetElement.hasClass('active'))
+                      $('button#updateSnippet, button#snippetRevertChanges').attr('disabled', '')
+
+                    snippetElement.remove()
+
+                    MD5(JSON.stringify($('#cqlSnippets').find('span.badge.current-scope').data('scope'))).then((hashedScope) => {
+                      try {
+                        let snippetsCounter = $(`span.snippets-counter[data-hashed-scope="${hashedScope}"]`),
+                          currentCount = parseInt($(snippetsCounter[0]).find('counter').text()) || 0
+
+                        snippetsCounter.each(function() {
+                          $(this).toggleClass('show', (currentCount - 1) > 0)
+
+                          $(this).find('counter').text(`${(currentCount - 1) || 0}`)
+                        })
+                      } catch (e) {}
+                    })
+
+                    let numOfSnippets = snippetsContainer.find('div.snippet').length
+
+                    if (numOfSnippets <= 0) {
+                      snippetsContainer.find('div.empty-snippets').addClass('show')
+                      snippetsContainer.find('div.empty-snippets').find('div.message').addClass('show')
+                      snippetsContainer.find('div.empty-snippets').find('div.loading').removeClass('show')
+                    }
+
+                  })
+                },
+                errorToast = () => showToast(I18next.capitalize(I18next.t('delete snippet')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to delete the snippet')) + '.', 'failure'),
+                snippetPath = '',
+                snippetName = ''
+
+              try {
+                snippetPath = snippetElement.data('json-data').path
+              } catch (e) {}
+
+              try {
+                snippetName = snippetElement.data('json-data').attributes.title
+              } catch (e) {}
+
+              if (snippetPath == undefined || snippetPath.length <= 0)
+                return errorToast()
+
+              if (isConfirmed)
+                return deleteSnippet()
+
+              openDialog(I18next.capitalizeFirstLetter(I18next.replaceData('do you want to delete the snippet [b]$data[/b]? once you confirm, there is no undo', [(snippetName || '')])), (isConfirmed) => {
+                // If canceled, or not confirmed then skip the upcoming code
+                if (!isConfirmed)
+                  return
+
+                deleteSnippet()
+              }, true)
+            })
+          }))
+        } catch (e) {}
+      },
+      updateSnippetElement = (updateSnippetElement) => {
+        try {
+          let snippetData = updateSnippetElement.data('json-data')
+
+          try {
+            let tags = ''
+
+            try {
+              tags = (snippetData.attributes.tags || []).map((tag) => `<div class="tag"><ion-icon name="tag"></ion-icon><span>${tag}</span></div>`).join('')
+            } catch (e) {}
+
+            updateSnippetElement.find('div.snippet-name').text(snippetData.attributes.title)
+            updateSnippetElement.find('div.snippet-description').text(snippetData.attributes.description)
+            updateSnippetElement.find('div.snippet-tags').html(`${tags}`)
+          } catch (e) {}
+        } catch (e) {}
+      }
+
+    // Show it when click the associated icon
+    $(`${selector}[action="cql-snippets"]`).click(function(_, internalData = null) {
+      cqlSnippetsModal.show()
+
+      $('button#clearSnippetFields').trigger('click')
+
+      $('button#executeSnippet').toggle(internalData != null)
+
+      $('button#executeSnippet').data('workareaID', internalData != null ? internalData.workareaID : null)
+
+      $('button#createSnippet').toggleClass('btn-primary', internalData == null).toggleClass('btn-secondary', internalData != null)
+
+      $('#cqlSnippets').find('span.badge.current-scope').html('')
+      $('#cqlSnippets').find('span.badge.current-scope').data('scope', null)
+
+      $('button#createSnippet, button#executeSnippet, button#updateSnippet, button#snippetRevertChanges').attr('disabled', '')
+
+      snippetsListContainer.find('div.empty').addClass('show')
+
+      objectsTreeView.removeClass('searching-in-tree')
+
+      objectsTreeView.children('div.search-in-tree').removeClass('show')
+
+      objectsTreeView.children('div.search-in-tree').find('input').val('').trigger('input')
+
+      objectsTreeView.addClass('loading')
+
+      if (snippetsTreeviewObject != null)
+        try {
+          snippetsTreeviewObject.trigger('search.jstree', {
+            nodes: []
+          })
+
+          objectsTreeView.find('div.snippets-objects-treeview').jstree('destroy')
+        } catch (e) {}
+
+      let keyspaceName = null,
+        tableName = null
+
+      try {
+        keyspaceName = internalData.targetNode.keyspaceName || null
+      } catch (e) {}
+
+      try {
+        tableName = internalData.targetNode.tableName || null
+      } catch (e) {}
+
+      Modules.Snippets.buildTreeView(internalData != null ? {
+        connectionID: `${activeConnectionID}`,
+        workspaceID: getActiveWorkspaceID()
+      } : null).then(async (data) => {
+        snippetsTreeviewObject = objectsTreeView.find('div.snippets-objects-treeview').jstree(data.treeStructure)
+
+        setTimeout(() => {
+          searchTimeout = null
+          currentIndex = 0
+          lastSearchResults = []
+          isSearchShown = false
+
+          try {
+            snippetsTreeviewObject.unbind('loaded.jstree')
+            snippetsTreeviewObject.unbind('open_all.jstree')
+            snippetsTreeviewObject.unbind('close_all.jstree')
+            snippetsTreeviewObject.unbind('init_loading_finished.jstree')
+            snippetsTreeviewObject.unbind('open_node.jstree')
+            snippetsTreeviewObject.unbind('search.jstree')
+            snippetsTreeviewObject.unbind('refresh.jstree')
+            snippetsTreeviewObject.unbind('contextmenu')
+            snippetsTreeviewObject.unbind('select_node.jstree')
+          } catch (e) {}
+
+          snippetsTreeviewObject.on('loaded.jstree', () => {
+            setTimeout(() => {
+              cqlSnippets.loadingMetadataNodes = []
+
+              cqlSnippets.finishedLoadingMetadataNodes = []
+
+              cqlSnippets.treeObjectID = `tree_${getRandom.id()}`
+
+              snippetsTreeviewObject.hide()
+              snippetsTreeviewObject.jstree().open_all()
+            })
+          })
+
+          snippetsTreeviewObject.on('open_all.jstree', async () => {
+            setTimeout(async () => {
+              /**
+               * Loop through each connection
+               * The one that has a saved metadata will be fetched and loaded in the tree view
+               */
+              let workbenchSecrets = await Keytar.findCredentials('AxonOpsWorkbenchClustersSecrets')
+
+              for (let treeConnectionInfo of data.treeConnectionsInfo) {
+                connectionLatestMetadata = workbenchSecrets.find((secret) => secret.account == `metadata_${treeConnectionInfo.connectionID}`),
+                  nodeElement = objectsTreeView.find(`a.jstree-anchor[id="${treeConnectionInfo.nodeID}_anchor"]`)
+
+                if (connectionLatestMetadata == undefined || nodeElement.length <= 0)
+                  continue
+
+                cqlSnippets.loadingMetadataNodes.push({
+                  nodeID: treeConnectionInfo.nodeID,
+                  workspaceNodeID: treeConnectionInfo.workspaceNodeID
+                })
+
+                Modules.Snippets.loadConnectionMetadata(treeConnectionInfo.workspaceID, treeConnectionInfo.workspaceName, treeConnectionInfo.connectionID, treeConnectionInfo.connectionName, treeConnectionInfo.nodeID, `${cqlSnippets.treeObjectID}`, internalData != null ? {
+                  metadata: internalData.connectionMetadata,
+                  keyspaceName: keyspaceName,
+                  tableName: tableName
+                } : null)
+              }
+
+              setTimeout(() => {
+                snippetsTreeviewObject.show()
+                snippetsTreeviewObject.jstree().close_all()
+                snippetsTreeviewObject.trigger('init_loading_finished.jstree')
+              })
+            })
+          })
+
+          let handleMetadataLoadingSpinner = () => {
+            setTimeout(() => {
+              for (let finishedLoadingNodes of cqlSnippets.finishedLoadingMetadataNodes) {
+                try {
+                  Object.keys(finishedLoadingNodes).forEach((id) => objectsTreeView.find(`a.jstree-anchor[id="${finishedLoadingNodes[id]}_anchor"]`).removeClass('perform-process'))
+                } catch (e) {}
+              }
+
+              for (let loadingNode of cqlSnippets.loadingMetadataNodes) {
+                try {
+                  Object.keys(loadingNode).forEach((id) => objectsTreeView.find(`a.jstree-anchor[id="${loadingNode[id]}_anchor"]`).addClass('perform-process'))
+                } catch (e) {}
+              }
+
+              objectsTreeView.find('span.snippets-counter').trigger('input')
+            })
+          }
+
+          snippetsTreeviewObject.on('init_loading_finished.jstree', async () => {
+            let clickTargetNode = () => {
+              setTimeout(() => {
+                let targetNode
+
+                if (tableName != null) {
+                  try {
+                    targetNode = snippetsTreeviewObject.find(`a.jstree-anchor[type="table"][object-id="${tableName}"][keyspace-id="${keyspaceName}"]`)
+                  } catch (e) {}
+                } else {
+                  // Select a keyspace
+                  if (keyspaceName != null && tableName == null) {
+                    try {
+                      targetNode = snippetsTreeviewObject.find(`a.jstree-anchor[type="keyspace"][object-id="${keyspaceName}"]`)
+                    } catch (e) {}
+                  }
+                }
+
+                try {
+                  if (targetNode == undefined || targetNode.length <= 0) {
+                    clickTargetNode()
+                  } else {
+                    targetNode.click()
+                  }
+                } catch (e) {
+
+                } finally {
+
+                }
+              }, 100)
+            }
+
+            setTimeout(() => {
+              objectsTreeView.removeClass('loading')
+
+              snippetsTreeviewObject.jstree().open_node(data.workspacesParentID)
+
+              if (keyspaceName != null || tableName != null)
+                clickTargetNode()
+
+              handleMetadataLoadingSpinner()
+            }, 100)
+          })
+
+          snippetsTreeviewObject.on('refresh.jstree', async () => handleMetadataLoadingSpinner())
+
+          snippetsTreeviewObject.on('open_node.jstree', async () => handleMetadataLoadingSpinner())
+
+          // Once a search process is completed
+          snippetsTreeviewObject.on('search.jstree', function(event, data) {
+            try {
+              // Reset the current index to be the first result
+              currentIndex = 0
+
+              // Hold the search results
+              lastSearchResults = objectsTreeView.find('a.jstree-search')
+
+              // Remove the click animation class from all results; to be able to execute the animation again
+              lastSearchResults.removeClass('animate-click')
+
+              // Whether or not the search container should be shown
+              objectsTreeView.find('div.right-elements').toggleClass('show', data.nodes.length > 0)
+
+              // Reset the current result where the pointer has reached
+              objectsTreeView.find('div.result-count span.current').text(`1`)
+
+              // Set the new number of results
+              objectsTreeView.find('div.result-count span.total').text(`${lastSearchResults.length}`)
+
+              // If there's at least one result for this search then attempt to click the first result
+              try {
+                lastSearchResults[0].click()
+              } catch (e) {}
+            } catch (e) {}
+          })
+
+          snippetsTreeviewObject.on('select_node.jstree', async function(event, data) {
+            let nodeID = data.node.id
+
+            if (selectedNodeID == nodeID) {
+              return
+            } else {
+              selectedNodeID = nodeID
+            }
+
+            $('button#updateSnippet').add('button#snippetRevertChanges').attr('disabled', '')
+
+            let nodeAttributes = data.node.a_attr,
+              objectID = nodeAttributes['object-id'],
+              handleSnippets = (snippets) => {
+                snippetsContainer.children('div.snippet').remove()
+
+                snippetsContainer.find('div.empty-snippets').toggleClass('show', snippets.length <= 0)
+
+                snippetsContainer.find('div.empty-snippets').find('div.message').addClass('show')
+                snippetsContainer.find('div.empty-snippets').find('div.loading').removeClass('show')
+
+                // Order snippets based on the creation timestamp
+                try {
+                  snippets = snippets.sort((a, b) => a.creationTimestamp - b.creationTimestamp)
+                } catch (e) {}
+
+                for (let snippet of snippets)
+                  createSnippetElement(snippet)
+              },
+              scopeBadgeContent = {
+                names: '',
+                ids: ''
+              }
+
+            // Especial state for the orphaned snippets
+            snippetsActionsContainer.filter('.right-side').find('div.action').find('button[action="open-folder"]').toggleClass('hide', nodeAttributes.type == 'orphaned')
+
+            if (nodeAttributes.type == 'orphaned')
+              $('button#createSnippet').attr('disabled', '')
+
+            snippetsListContainer.find('div.empty').removeClass('show')
+            snippetsContainer.find('div.empty-snippets').addClass('show')
+            snippetsContainer.find('div.empty-snippets').find('div.message').removeClass('show')
+            snippetsContainer.find('div.empty-snippets').find('div.loading').addClass('show')
+
+            switch (nodeAttributes.type) {
+              case 'workspace': {
+                scopeBadgeContent.names = [objectID == 'workspaces' ? 'Workspaces' : nodeAttributes['object-name']]
+                scopeBadgeContent.ids = [objectID]
+
+                Modules.Snippets.getSnippets([objectID]).then((snippets) => handleSnippets(snippets))
+
+                break
+              }
+              case 'connection': {
+                let workspaceID = nodeAttributes['workspace-id']
+
+                scopeBadgeContent.names = [nodeAttributes['workspace-name'], nodeAttributes['object-name']]
+                scopeBadgeContent.ids = [workspaceID, objectID]
+
+                Modules.Snippets.getSnippets([workspaceID, objectID]).then((snippets) => handleSnippets(snippets))
+
+                break
+              }
+              case 'keyspace': {
+                let workspaceID = nodeAttributes['workspace-id'],
+                  connectionID = nodeAttributes['connection-id']
+
+                scopeBadgeContent.names = [nodeAttributes['workspace-name'], nodeAttributes['connection-name'], objectID]
+                scopeBadgeContent.ids = [workspaceID, connectionID, objectID]
+
+                Modules.Snippets.getSnippets([workspaceID, connectionID, objectID]).then((snippets) => handleSnippets(snippets))
+
+                break
+              }
+              case 'table': {
+                let workspaceID = nodeAttributes['workspace-id'],
+                  connectionID = nodeAttributes['connection-id'],
+                  keyspaceName = nodeAttributes['keyspace-id']
+
+                scopeBadgeContent.names = [nodeAttributes['workspace-name'], nodeAttributes['connection-name'], keyspaceName, objectID]
+                scopeBadgeContent.ids = [workspaceID, connectionID, keyspaceName, objectID]
+
+                Modules.Snippets.getSnippets([workspaceID, connectionID, keyspaceName, objectID]).then((snippets) => handleSnippets(snippets))
+
+                break
+              }
+              case 'orphaned': {
+                scopeBadgeContent.names = ['Orphaned Snippets']
+                scopeBadgeContent.ids = ['orphaned']
+
+                Modules.Snippets.getSnippets(['orphaned']).then((snippets) => handleSnippets(snippets))
+
+                break
+              }
+            }
+
+            scopeBadge.data('scope', scopeBadgeContent.ids)
+
+            $('input#snippetTitle').trigger('input')
+
+            let scopeElements = scopeBadgeContent.names.map((name, index) => {
+              let icon = extraIcons[index]
+
+              try {
+                if (icon == undefined)
+                  throw 0
+
+                if (index == 0)
+                  icon = `${icon}` + (name == 'Workspaces' ? 's' : '')
+
+                icon = `<img src="${normalizePath(Path.join(extraIconsPath, icon + '.png'))}">`
+              } catch (e) {
+                icon = ''
+              }
+
+              return `<span>${icon}${name}</span>`
+            }).join('<ion-icon name="arrow-up-circle"></ion-icon>')
+
+            scopeBadge.html(scopeElements)
+          })
+
+          snippetsTreeviewObject.on('contextmenu', async function(event) {
+            // Remove the default contextmenu created by the plugin
+            $('.vakata-context').remove()
+
+            // Point at the right-clicked node
+            let clickedNode = $(event.target)
+
+            // If the node is not one of the specified types then skip this process
+            if (['a', 'i', 'span'].every((type) => !clickedNode.is(clickedNode)))
+              return
+
+            /**
+             * The main element in the node is the anchor `a`
+             * If the clicked element is not `a` but `i` or `span` then the `a` is actually their parent
+             */
+            try {
+              // If the right-clicked node is an anchor already then skip this try-catch block
+              if (clickedNode.is('a'))
+                throw 0
+
+              // Point at the clicked element's parent `a`
+              clickedNode = clickedNode.parent()
+            } catch (e) {}
+
+            // If after the manipulation the final element is not an anchor or doesn't have a required attribute then skip the process
+            if (!clickedNode.is('a') || clickedNode.attr('allow-right-context') != 'true')
+              return
+
+            let nodeType = clickedNode.attr('type')
+
+            let contextMenu = [{
+                label: I18next.capitalize(I18next.t('create a CQL snippet')),
+                click: `() => views.main.webContents.send('cql:snippets:create', {
+                        datacenters: 'true'
+                      })`
+              },
+              {
+                label: I18next.capitalize(I18next.t('refresh/Fetch metadata')),
+                click: `() => views.main.webContents.send('cql:snippets:metadata:fetch', {
+                        datacenters: 'true'
+                      })`,
+                visible: nodeType == 'connection'
+              }
+            ]
+
+            IPCRenderer.send('show-context-menu', JSON.stringify(contextMenu))
+          })
+        })
+      })
+    })
+
+    treeViewActionsContainer.children('div.action[action="refresh"]').children('div.btn').click(() => $(`${selector}[action="cql-snippets"]`).trigger('click'))
+
+    treeViewActionsContainer.children('div.action[action="search"]').children('div.btn').click(function(_, overrideFlag = null) {
+      // If an override flag has been passed - true/false for showing the search container - then adopt this flag
+      if (overrideFlag != null)
+        isSearchShown = overrideFlag
+
+      setTimeout(() => {
+        // Apply a special effect for the tree view based on the current showing status
+        objectsTreeView.toggleClass('show-search-input', !isSearchShown)
+
+        // Show or hide the search input based on the current showing status
+        objectsTreeView.children('div.search-in-tree').toggleClass('show', !isSearchShown)
+
+        objectsTreeView.toggleClass('searching-in-tree', !isSearchShown)
+
+        // Toggle the flag
+        isSearchShown = !isSearchShown
+
+        // If the new status is to show the search input then skip the upcoming code
+        if (isSearchShown)
+          return
+
+        // Empty the search value - if there's one -
+        objectsTreeView.children('div.search-in-tree').find('input').val('').trigger('input')
+
+        // Hide the navigation arrows
+        objectsTreeView.children('div.search-in-tree').find('div.right-elements').removeClass('show')
+      })
+    })
+
+    // When the user types in the search input
+    objectsTreeView.children('div.search-in-tree').find('input').on('input', function() {
+      // Make sure to clear any ongoing timeout processes
+      if (searchTimeout != null)
+        clearTimeout(searchTimeout)
+
+      /**
+       * Perform a search process after a set time of finish typing
+       * This delay will avoid any potential performance issues
+       */
+      searchTimeout = setTimeout(() => {
+        try {
+          let searchValue = $(this).val()
+
+          snippetsTreeviewObject.jstree(true).search(searchValue, true, false)
+
+          if (minifyText(searchValue).length <= 0)
+            snippetsTreeviewObject.trigger('search.jstree', {
+              nodes: []
+            })
+        } catch (e) {}
+      }, 500)
+    })
+
+    objectsTreeView.children('div.search-in-tree').find('div.right-elements').find('div.btn').click(function() {
+      try {
+        // Increase the index if the clicked button is `next`, otherwise decrease it
+        currentIndex += $(this).hasClass('next') ? 1 : -1
+
+        // If the pointer has reached the first result already then move to the last one
+        if (currentIndex < 0)
+          currentIndex = lastSearchResults.length - 1
+
+        // If the pointer has reached the last result then move to the first one
+        if (currentIndex > lastSearchResults.length - 1)
+          currentIndex = 0
+
+        // Update the current index text
+        objectsTreeView.find('div.result-count span.current').text(`${currentIndex + 1}`)
+
+        // Attempt to click the reached result
+        lastSearchResults[currentIndex].click()
+
+        // Remove the click animation class from the reached result
+        $(lastSearchResults[currentIndex]).removeClass('animate-click')
+
+        // Add the click animation class to the reached result
+        setTimeout(() => $(lastSearchResults[currentIndex]).addClass('animate-click'), 50)
+      } catch (e) {}
+    })
+
+    snippetsActionsContainer.filter('.right-side').find('div.action').find('button').click(function() {
+      let action = `${$(this).attr('action')}`
+
+      switch (action) {
+        case 'open-folder': {
+          Modules.Snippets.getSnippets((scopeBadge.data('scope') || []), true).then((snippetsPath) => {
+            try {
+              Open(snippetsPath)
+            } catch (e) {}
+          })
+
+          break
+        }
+      }
+    })
+
+    snippetsActionsContainer.filter('.left-side').find('a.btn').click(function() {
+      let action = $(this).attr('action')
+
+      switch (action) {
+        case 'delete': {
+          let selectedSnippets = snippetsContainer.find('div.snippet').filter(function() {
+            let isSnippetSelected = $(this).find('div.checkbox').find('input[type="checkbox"]').prop('checked')
+
+            return isSnippetSelected
+          })
+
+          if (selectedSnippets.length <= 0)
+            return
+
+
+          openDialog(I18next.capitalizeFirstLetter(I18next.t('do you want to delete the selected snippet(s)? once you confirm, there is no undo')), (isConfirmed) => {
+            // If canceled, or not confirmed then skip the upcoming code
+            if (!isConfirmed)
+              return
+
+            selectedSnippets.each(function() {
+              $(this).find('div.actions').find('button[action="delete"]').trigger('click', true)
+            })
+          }, true)
+
+          break
+        }
+      }
+    })
+
+    snippetsListContainer.find('div.search-snippet').find('input[type="text"]').on('input', function() {
+      let searchText = `${$(this).val()}`.toLowerCase(),
+        snippets = snippetsContainer.find('div.snippet'),
+        isMatchedSnippetFound = false
+
+      if (searchText.length <= 0)
+        snippets.show()
+
+      for (let snippet of snippets.get()) {
+        try {
+          let metadata = $(snippet).find('div.content').text().toLowerCase(),
+            content = $(snippet).data('json-data').content.toLowerCase(),
+            searchContent = `${metadata} ${content}`,
+            isSnippetMatch = searchContent.indexOf(searchText) != -1
+
+          if (isSnippetMatch)
+            isMatchedSnippetFound = true
+
+          $(snippet).toggle(isSnippetMatch)
+        } catch (e) {}
+      }
+
+      // TODO: Show feedback to the user
+    })
+
+    {
+      snippetTagsContainer.find('div.add-tag').find('input[type="text"]').on('input', function() {
+        let tag = $(this).val()
+
+        if (tag.length <= 0) {
+          $(this).removeClass('is-invalid')
+
+          snippetTagsContainer.find('div.add-tag').find('div.btn').addClass('disabled')
+
+          return
+        }
+
+        if (tag.match(/^#?[^\s!@#$%^&*()=+./,\[{\]};:'"?><]+$/) == null || snippetTagsContainer.find('div.added-tags').find(`div.tag[data-tag="${tag}"]`).length != 0) {
+          $(this).addClass('is-invalid')
+
+          snippetTagsContainer.find('div.add-tag').find('div.btn').addClass('disabled')
+
+          return
+        }
+
+        $(this).removeClass('is-invalid')
+
+        snippetTagsContainer.find('div.add-tag').find('div.btn').removeClass('disabled')
+      }).on('keypress', function(e) {
+        // Enter key pressed
+        if (e.keyCode == 13)
+          snippetTagsContainer.find('div.add-tag').find('div.btn').click()
+      })
+
+      snippetTagsContainer.find('div.add-tag').find('div.btn').click(function(_, tagName = null) {
+        if (tagName == null && ($(this).hasClass('disabled') || snippetTagsContainer.find('div.add-tag').find('input[type="text"]').hasClass('is-invalid')))
+          return
+
+        let tag = (tagName || snippetTagsContainer.find('div.add-tag').find('input[type="text"]').val())
+
+        let tagElement = `
+            <div class="tag" data-tag="${tag}">
+              <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                <ion-icon name="close"></ion-icon>
+                <ion-icon name="tag"></ion-icon>
+                <span>${tag}</span>
+              </div>
+            </div>`
+
+        snippetTagsContainer.find('div.added-tags').append($(tagElement).show(function() {
+          snippetTagsContainer.find('div.add-tag').css('margin-left', '10px')
+
+          if (tagName == null)
+            snippetTagsContainer.find('div.add-tag').find('input[type="text"]').val('').trigger('input').trigger('focus')
+
+          setTimeout(() => {
+            try {
+              snippetTagsContainer.find('div.added-tags')[0].scrollTo(snippetTagsContainer.find('div.added-tags')[0].scrollWidth, 0)
+            } catch (e) {}
+          })
+
+          $(this).click(function() {
+            $(this).remove()
+
+            snippetTagsContainer.find('div.add-tag').css('margin-left', snippetTagsContainer.find('div.added-tags').find('div.tag').length <= 0 ? '0px' : '10px')
+          })
+        }))
+      })
+    }
+
+    $('button#createSnippet').click(function() {
+      let snippetMetadata = {
+          title: $('input#snippetTitle').val(),
+          description: $('textarea#snippetDescription').val(),
+          tags: '',
+          created_by: $('input#snippetAuthorName').val(),
+          created_date: new Date().getTime(),
+          last_modified: new Date().getTime(),
+          associated_with: ''
+        },
+        snippetScope = $('#cqlSnippets').find('span.badge.current-scope').data('scope'),
+        snippetContent = ''
+
+      if (snippetScope == null)
+        return showToast(I18next.capitalize(I18next.t('create snippet')), I18next.capitalizeFirstLetter(I18next.t('to create a snippet, please click an object in the tree view so that the snippet can be associated with it, then try again')) + '.', 'failure')
+
+      try {
+        snippetContent = cqlSnippets.editor.getValue()
+      } catch (e) {}
+
+      Modules.Snippets.getSnippets(snippetScope, true).then((snippetFolderPath) => {
+        // Get added tags
+        try {
+          let addedTags = snippetTagsContainer.find('div.added-tags').find('div.tag')
+
+          if (addedTags.length <= 0)
+            throw 0
+
+          snippetMetadata.tags = [...addedTags.get()].map((tagElement) => $(tagElement).attr('data-tag'))
+        } catch (e) {}
+
+        // Set the snippet scope
+        try {
+          // If it's only a workspace snippet - or global - then no need to set the scope
+          if (snippetScope.length > 1)
+            snippetMetadata.associated_with = [...snippetScope.slice(1)]
+        } catch (e) {}
+
+        Modules.Snippets.createSnippet(snippetMetadata, snippetContent, snippetFolderPath).then((result) => {
+          if (!result.isCreated)
+            return showToast(I18next.capitalize(I18next.t('create snippet')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to create the snippet')) + '.', 'failure')
+
+          showToast(I18next.capitalize(I18next.t('create snippet')), I18next.capitalizeFirstLetter(I18next.replaceData('the snippet has been successfully created with a file name [b]$data[/b]', [result.fileName])) + '.', 'success')
+
+          MD5(JSON.stringify(snippetScope)).then((hashedScope) => {
+            try {
+              let snippetsCounter = $(`span.snippets-counter[data-hashed-scope="${hashedScope}"]`),
+                currentCount = parseInt($(snippetsCounter[0]).find('counter').text()) || 0
+
+              snippetsCounter.each(function() {
+                $(this).addClass('show')
+
+                $(this).find('counter').text(`${currentCount + 1}`)
+              })
+            } catch (e) {}
+          })
+
+          createSnippetElement({
+            ...result.snippet,
+            content: result.snippet.body,
+            path: result.path,
+            creationTimestamp: new Date(result.snippet.attributes.created_date).getTime()
+          }, (snippetElement) => {
+            snippetsContainer.find('div.empty-snippets').removeClass('show')
+
+            setTimeout(() => snippetElement.find('div.content').click())
+          })
+        })
+      })
+    })
+
+    $('button#executeSnippet').click(function() {
+      let workareaElement = $(`div.workarea[workarea-id="${$(this).data('workareaID')}"]`)
+
+      if (workareaElement.length <= 0)
+        return showToast(I18next.capitalize(I18next.t('execute snippet')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to execute the snippet')) + '.', 'failure')
+
+      let cqlContent = cqlSnippets.editor.getValue()
+
+      try {
+        workareaElement.find(`textarea[data-role="cqlsh-textarea"]`).val(cqlContent)
+
+        workareaElement.find(`textarea[data-role="cqlsh-textarea"]`).trigger('input')
+      } catch (e) {}
+
+      try {
+        getElementMDBObject(workareaElement.find(`a.nav-link.btn[tab-content="cqlsh-session"]`), 'Tab').show()
+      } catch (e) {}
+
+      cqlSnippetsModal.hide()
+
+      workareaElement.find('div.execute').find('button.btn').click()
+    })
+
+    $('button#updateSnippet').click(function() {
+      let activeSnippetElement = snippetsContainer.children('div.snippet.active')
+
+      if (activeSnippetElement.length <= 0)
+        return showToast(I18next.capitalize(I18next.t('update snippet')), I18next.capitalizeFirstLetter(I18next.t('to update a snippet, please click one from the list, then try again')) + '.', 'failure')
+
+      let snippetMetadata = {
+          title: $('input#snippetTitle').val(),
+          description: $('textarea#snippetDescription').val(),
+          tags: '',
+          created_by: $('input#snippetAuthorName').val(),
+          last_modified: new Date()
+        },
+        snippetFilePath = '',
+        snippetContent = ''
+
+      try {
+        snippetFilePath = activeSnippetElement.data('json-data').path
+      } catch (e) {}
+
+      if (snippetFilePath == undefined || snippetFilePath.length <= 0)
+        return showToast(I18next.capitalize(I18next.t('create snippet')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to update the snippet')) + '.', 'failure')
+
+      try {
+        snippetContent = cqlSnippets.editor.getValue()
+      } catch (e) {}
+
+      // Get added tags
+      try {
+        let addedTags = snippetTagsContainer.find('div.added-tags').find('div.tag')
+
+        if (addedTags.length <= 0)
+          throw 0
+
+        snippetMetadata.tags = [...addedTags.get()].map((tagElement) => $(tagElement).attr('data-tag'))
+      } catch (e) {}
+
+      let finalSnippetData = {}
+
+      try {
+        let snippetSavedMetadata = activeSnippetElement.data('json-data'),
+          temp = {}
+
+        temp = {
+          ...snippetSavedMetadata
+        }
+
+        temp.attributes.title = snippetMetadata.title
+        temp.attributes.description = snippetMetadata.description
+        temp.attributes.tags = snippetMetadata.tags
+        temp.attributes.created_by = snippetMetadata.created_by
+        temp.attributes.last_modified = snippetMetadata.last_modified
+
+        temp.content = snippetContent
+
+        finalSnippetData = {
+          ...temp
+        }
+      } catch (e) {}
+
+      Modules.Snippets.updateSnippet(finalSnippetData).then((result) => {
+        if (!result.isUpdated)
+          return showToast(I18next.capitalize(I18next.t('update snippet')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to update the snippet')) + '.', 'failure')
+
+        showToast(I18next.capitalize(I18next.t('update snippet')), I18next.capitalizeFirstLetter(I18next.t('the snippet has been successfully updated')) + '.', 'success')
+
+        updateSnippetElement(activeSnippetElement)
+      })
+    })
+
+    $('button#snippetRevertChanges').click(() => snippetsContainer.children('div.snippet.active').find('div.content').trigger('click'))
+
+    $('button#clearSnippetFields').click(function() {
+      Modules.Config.getConfig((config) => {
+        let authorName = config.get('features', 'cqlSnippetsAuthorName')
+
+        try {
+          if (authorName == undefined || minifyText(authorName).length <= 0)
+            authorName = OS.userInfo().username
+        } catch (e) {
+          authorName = ''
+        }
+
+        $(`input#snippetAuthorName`).val(authorName)
+
+        setTimeout(() => {
+          try {
+            getElementMDBObject($(`input#snippetAuthorName`)).update()
+          } catch (e) {}
+        })
+      })
+
+      $('button#createSnippet, button#executeSnippet, button#updateSnippet, button#snippetRevertChanges').attr('disabled', '')
+
+      $('input#snippetTitle').val('')
+
+      try {
+        getElementMDBObject($('input#snippetTitle')).update()
+      } catch (e) {}
+
+      $('textarea#snippetDescription').val('')
+
+      try {
+        getElementMDBObject($('textarea#snippetDescription')).update()
+      } catch (e) {}
+
+      try {
+        cqlSnippets.editor.setValue('')
+
+        cqlSnippets.editor.layout()
+      } catch (e) {}
+
+      {
+        snippetTagsContainer.find('div.added-tags').find('div.tag').remove()
+
+        snippetTagsContainer.find('div.add-tag').css('margin-left', '0px')
+
+        snippetTagsContainer.find('div.add-tag').find('input[type="text"]').val('').trigger('input')
+      }
+
+      snippetsContainer.children('div.snippet').removeClass('active')
+    })
+
+    $('input#snippetTitle, input#snippetAuthorName, textarea#snippetDescription').on('input', () => {
+      let editorContent = minifyText(cqlSnippets.editor.getValue()),
+        areFieldsValuesValid = ['input#snippetTitle', 'input#snippetAuthorName', 'textarea#snippetDescription'].every((inputField) => minifyText($(inputField).val()).length > 0)
+
+      if (editorContent.length <= 0 || !areFieldsValuesValid)
+        return $('button#createSnippet, button#executeSnippet, button#updateSnippet, button#snippetRevertChanges').attr('disabled', '')
+
+      if (editorContent.length > 0 && areFieldsValuesValid) {
+        let isOrphanedList = ($('#cqlSnippets').find('span.badge.current-scope').data('scope') || [])[0] == 'orphaned'
+
+        $(`${!isOrphanedList ? 'button#createSnippet, ' : ''}button#executeSnippet`).attr('disabled', null)
+
+        let editingMode = snippetsListContainer.find('div.snippet.active').length > 0
+
+        $('button#updateSnippet, button#snippetRevertChanges').attr('disabled', !editingMode ? '' : null)
+      }
+    })
   }
 
   {
@@ -775,6 +1815,7 @@
         // Check the sandbox projects enable/disable status
         sandboxProjectsEnabled = $('input#sandboxProjects[type="checkbox"]').prop('checked'),
         basicCQLSHEnabled = $('input#basicCQLSH[type="checkbox"]').prop('checked'),
+        cqlSnippetsAuthorName = $('input#cqlSnippetsAuthorName').val(),
         assistantAIEnabled = $('input#enableAIAssistant[type="checkbox"]').prop('checked'),
         // Get the maximum allowed running instances
         maxNumCQLSHSessions = $('input#maxNumCQLSHSessions').val(),
@@ -823,6 +1864,7 @@
           config.set('security', 'loggingEnabled', loggingEnabled)
           config.set('features', 'localClusters', sandboxProjectsEnabled)
           config.set('features', 'basicCQLSH', basicCQLSHEnabled)
+          config.set('features', 'cqlSnippetsAuthorName', minifyText(cqlSnippetsAuthorName).length <= 0 ? '' : cqlSnippetsAuthorName)
           config.set('features', 'containersManagementTool', containersManagementTool)
           config.set('features', 'axonOpsIntegration', axonOpsIntegration)
           Keytar.setPassword('AxonOpsWorkbenchAIAssistant', 'value', `${assistantAIEnabled}`)

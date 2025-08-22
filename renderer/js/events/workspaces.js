@@ -648,9 +648,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                       clickableAreaTooltip = getElementMDBObject(clickableArea, 'Tooltip'),
                       workspaceSetPath = workspaceFolderPath == 'default' ? workspaceFolderPathElement.attr('data-default-path') : workspaceFolderPath
 
-
                     clickableAreaTooltip.setContent(workspaceSetPath)
-
 
                     // Change its value
                     workspaceFolderPathElement.val(workspaceSetPath)
@@ -827,15 +825,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             // Get its MDB object
             inputObject = getElementMDBObject(input)
 
-          try {
-            if (inputID != 'workspacePath')
-              throw 0
-
-            $('div.btn[data-action="defaultPath"][data-reference="workspace"]').click()
-          } catch (e) {
-            // Remove its value and remove the `active` class
-            input.val('').removeClass('active')
-          }
+          // Remove its value and remove the `active` class
+          input.val('').removeClass('active')
 
           // Update the MDB object
           inputObject.update()
@@ -925,8 +916,11 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           let path = folderPath.val()
 
           // Make sure it's not empty; because if it's then use the default path
-          if (path.trim().length <= 0 || path == folderPath.attr('data-default-path'))
+          if (path == folderPath.attr('data-default-path'))
             throw 0
+
+          if (path.trim().length <= 0)
+            return showToast(I18next.capitalize(I18next.t('add workspace')), I18next.capitalizeFirstLetter(I18next.t('please consider to either select a path for the workspace or set the default path')) + '.', 'failure')
 
           // Test the path accessibility
           let accessible = pathIsAccessible(path)
@@ -1139,15 +1133,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   // Get its MDB object
                   inputObject = getElementMDBObject(input)
 
-                try {
-                  if (inputID != 'workspacePath')
-                    throw 0
-
-                  $('div.btn[data-action="defaultPath"][data-reference="workspace"]').click()
-                } catch (e) {
-                  // Remove its value and remove the `active` class
-                  input.val('').removeClass('active')
-                }
+                // Remove its value and remove the `active` class
+                input.val('').removeClass('active')
 
                 // Update the MDB object
                 inputObject.update()
@@ -1196,6 +1183,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
       getElementMDBObject($('#workspacePath')).update()
     })
+
+    $('div.btn[data-action="selectPath"][data-reference="workspace"]').click(() => $('div.clickable[for-input="workspacePath"]').click())
   }
 }
 
@@ -1318,11 +1307,11 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
   workspacePathElement.attr('data-default-path', defaultPath)
 
-  workspacePathElement.val(defaultPath)
+  // workspacePathElement.val(defaultPath)
 
   clickableAreaTooltip.props.delay = 250
 
-  clickableAreaTooltip.setContent(defaultPath)
+  // clickableAreaTooltip.setContent(defaultPath)
 
   workspacePathElement.on('inputChanged', () => clickableAreaTooltip.setContent(workspacePathElement.val()))
 }
@@ -1452,20 +1441,21 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
       // Define different IDs for different elements
       let [
         importWorkspacesCheckboxInputID,
+        importWorkspacesDefaultPathCheckboxInputID,
         importConnectionsCheckboxInputID,
         workspaceNameInputID,
         workspaceColorInputID,
         workspaceChecksID,
         workspaceConnectionsBtnID,
         workspaceConnectionsListID
-      ] = getRandom.id(10, 7),
+      ] = getRandom.id(10, 8),
         // Get a random color for the workspace
         workspaceColor = getRandom.color(),
         // Workspace UI element structure
         element = `
         <tr data-id="${workspaceIndex}" data-connections-path="${workspace.path}">
           <td>
-            <input type="checkbox" id="_${importWorkspacesCheckboxInputID}" class="form-check-input for-import-workspaces" checked="true" />
+            <input type="checkbox" id="_${importWorkspacesCheckboxInputID}" for-selection class="form-check-input for-import-workspaces" checked="true" />
           </td>
           <td>
             <div class="form-outline form-white label-top">
@@ -1489,6 +1479,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               <span class="badge badge-primary connections-count">0</span>
               <ion-icon name="dash"></ion-icon>
             </button>
+          </td>
+          <td style="text-align: center;">
+            <input type="checkbox" id="_${importWorkspacesDefaultPathCheckboxInputID}" for-default-path class="form-check-input for-import-workspaces-default-path" />
           </td>
         </tr>`
 
@@ -1517,6 +1510,14 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             } catch (e) {}
 
             $(`input#_${importConnectionsCheckboxInputID}`).prop('checked', $(this).prop('checked')).trigger('change')
+          })
+
+          $(`input#_${importWorkspacesDefaultPathCheckboxInputID}`).change(function() {
+            let allRelatedCheckboxes = [...$('input.for-import-workspaces-default-path[type="checkbox"]')]
+
+            try {
+              $('#importWorkspacesDefaultPathCheckbox').prop('checked', (allRelatedCheckboxes.every((checkbox) => $(checkbox).prop('checked'))))
+            } catch (e) {}
           })
 
           // When clicks the button to show/hide connections
@@ -1567,7 +1568,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             // Connections UI element structure
             let element = `
                 <tr for-workspace-id="${workspaceIndex}">
-                  <td colspan="5" class="connections-table" style="height: fit-content; padding: 0;">
+                  <td colspan="6" class="connections-table" style="height: fit-content; padding: 0;">
                     <div id="_${workspaceConnectionsListID}" style="display:none;">
                       <table class="table align-middle mb-0" style="background: transparent;">
                         <thead>
@@ -1879,7 +1880,15 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     let isChecked = $(this).prop('checked')
 
     // Based on the status change all checkboxes
-    $('input.for-import-workspaces[type="checkbox"]:not([disabled]), input.for-import-connections[type="checkbox"]:not([disabled])').prop('checked', isChecked).trigger('change')
+    $('input.for-import-workspaces[type="checkbox"][for-selection]:not([disabled]), input.for-import-connections[type="checkbox"]:not([disabled])').prop('checked', isChecked).trigger('change')
+  })
+
+  $('#importWorkspacesDefaultPathCheckbox').change(function() {
+    // Whether or not the checkbox is checked
+    let isChecked = $(this).prop('checked')
+
+    // Based on the status change all checkboxes
+    $('input.for-import-workspaces-default-path[type="checkbox"][for-default-path]:not([disabled])').prop('checked', isChecked).trigger('change')
   })
 
   // Handle the click of sections' navigation buttons
@@ -1910,12 +1919,15 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     for (let workspace of [...workspacesTRElements]) {
       try {
         let workspaceStructure = {
-          defaultPath: true,
+          defaultPath: $(workspace).find(`input[type="checkbox"][for-default-path]`).prop('checked'),
           name: $(workspace).find(`input.workspace-name`).val(),
           color: $(workspace).find(`input.workspace-color`).val(),
           id: `workspace-${getRandom.id(10)}`,
           connectionsPath: $(workspace).attr('data-connections-path')
         }
+
+        if (!workspaceStructure.defaultPath)
+          workspaceStructure.path = Path.join(workspaceStructure.connectionsPath, '..')
 
         let connectionsTRElements = $('table#importWorkspacesValidate').find(`tr[for-workspace-id="${$(workspace).attr('data-id')}"]`).find(`tr[for-connection-id]`).filter(function() {
           return $(this).find('input[type="checkbox"].for-import-connections-sub').prop('checked')

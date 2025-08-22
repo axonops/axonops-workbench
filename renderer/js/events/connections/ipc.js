@@ -16231,3 +16231,7 @@
     }, 500)
   })
 }
+
+{
+  IPCRenderer.on('cql-snippets:view', (_, data) => $(`div.workarea[workarea-id="${data.workareaID}"]`).find('div.session-action[action="cql-snippets"]').find('button.btn').trigger('click', data))
+}

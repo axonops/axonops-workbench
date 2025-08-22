@@ -169,7 +169,17 @@ let applyLanguageSpecific = (elements) => {
      */
     spans.each(function() {
       // Get the value of the localized text based on the `mulang` value
-      let text = I18next.t(getAttributes($(this), 'mulang'))
+      let text = I18next.t(getAttributes($(this), 'mulang')),
+        textDataVariables = $(this).getAllAttributes().filter((attribute) => attribute.startsWith('lang-data'))
+
+      try {
+        if (textDataVariables.length <= 0)
+          throw 0
+
+        let dataValues = textDataVariables.map((attribute) => $(this).attr(attribute))
+
+        text = I18next.replaceData(getAttributes($(this), 'mulang'), dataValues)
+      } catch (e) {}
 
       // Capitalize the text if needed
       if ($(this).attr('capitalize') != undefined)
@@ -180,7 +190,7 @@ let applyLanguageSpecific = (elements) => {
         text = I18next.capitalizeFirstLetter(text)
 
       // Apply the updated text
-      $(this)[Modules.Consts.AllowedHTMLTags.some((tag) => text.indexOf(`<${tag}>`) != -1) ? 'html' : 'text'](text)
+      $(this)[Modules.Consts.AllowedHTMLTags.some((tag) => text.indexOf(`<${tag}>`) != -1) || textDataVariables.length > 0 ? 'html' : 'text'](text)
     })
 
     // Loop through each `tooltip`
@@ -188,7 +198,17 @@ let applyLanguageSpecific = (elements) => {
       // Get the value of the localized text based on the `data-mulang` value
       let text = I18next.t(getAttributes($(this), 'data-mulang')),
         // Get the MDB object for this tooltip
-        tooltipObject = getElementMDBObject($(this), 'Tooltip')
+        tooltipObject = getElementMDBObject($(this), 'Tooltip'),
+        textDataVariables = $(this).getAllAttributes().filter((attribute) => attribute.startsWith('lang-data'))
+
+      try {
+        if (textDataVariables.length <= 0)
+          throw 0
+
+        let dataValues = textDataVariables.map((attribute) => $(this).attr(attribute))
+
+        text = I18next.replaceData(getAttributes($(this), 'data-mulang'), dataValues)
+      } catch (e) {}
 
       // Capitalize the text if needed
       if ($(this).attr('capitalize') != undefined)

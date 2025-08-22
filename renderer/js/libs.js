@@ -105,6 +105,10 @@ const OS = require('os'),
   EscapeHTML = require('escape-html'),
   // A markdown parser and compiler. Built for speed
   Marked = require('marked'),
+  // YAML parser and stringifier for JavaScript
+  YAML = require('yaml'),
+  // Extract YAML front matter from strings
+  FrontMatter = require('front-matter'),
   /**
    * Pure Node.js RSA library implemented
    * It has been implemented within the functions `encryptText(publicKey, text)` and `decryptText(privateKey, text)`

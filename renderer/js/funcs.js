@@ -963,6 +963,14 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
   })
 }
 
+
+/**
+ * Due to the way JSTree is coded, there's an issue with the paths in Windows
+ * To solve this issue, this inner function replaces the backward slashes
+ * If the OS is not Windows it'll simply return the path without any manipulation
+ */
+let normalizePath = (path) => OS.platform == 'win32' ? `${path}`.replace(/\\/gm, '/') : `${path}`
+
 /**
  * Build a full tree-view model from a given metadata
  *
@@ -972,14 +980,8 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
  *
  * @Return: {object} a valid tree structure to be rendered
  */
-let buildTreeview = async (metadata, ignoreTitles = false) => {
-  /**
-   * Due to the way JSTree is coded, there's an issue with the paths in Windows
-   * To solve this issue, this inner function replaces the backward slashes
-   * If the OS is not Windows it'll simply return the path without any manipulation
-   */
-  let normalizePath = (path) => OS.platform == 'win32' ? `${path}`.replace(/\\/gm, '/') : `${path}`,
-    counterIDs = 0,
+let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _connectionID = '') => {
+  let counterIDs = 0,
     getMD5IDForNode = async (amount = 1) => {
       let ids = []
 
@@ -1101,11 +1103,26 @@ let buildTreeview = async (metadata, ignoreTitles = false) => {
         numOfFoundSystemKeyspaces += 1
       } catch (e) {}
 
+      let snippetsCounter = ''
+
+      try {
+        if (['keyspace', 'table'].every((type) => icon != type))
+          throw 0
+
+        let snippetsScope = icon == 'keyspace' ? [_workspaceID, _connectionID, object.name] : [_workspaceID, _connectionID, parentType.keyspace, object.name],
+          snippetsCount = await Modules.Snippets.getSnippets(snippetsScope),
+          hashedScope = await MD5(JSON.stringify(snippetsScope))
+
+        snippetsCount = snippetsCount.length
+
+        snippetsCounter = `<span class="snippets-counter ${snippetsCount >= 1 ? 'show' : ''}" data-hashed-scope="${hashedScope}"><ion-icon name="snippets"></ion-icon><counter>${snippetsCount}</counter></span>`
+      } catch (e) {}
+
       // Define the child's structure
       let structure = {
         id: childID,
         parent: parentID,
-        text: `<span>${EscapeHTML(object.name)}</span>`,
+        text: `<span>${EscapeHTML(object.name)}</span> ${snippetsCounter}`,
         type: 'default',
         parentType: setParentType
       }
@@ -1257,19 +1274,6 @@ let buildTreeview = async (metadata, ignoreTitles = false) => {
         materialIcon = attribute ? 'arrow_downward' : 'arrow_upward'
 
         structure.text = `${structure.text} <span class="is-reversed-node">${attribute ? 'DESC' : 'ASC'} <span class="material-icons for-treeview">${materialIcon}</span></span>`
-      } catch (e) {}
-    },
-    sortItemsAlphabetically = (array, sortBy) => {
-      try {
-        array.sort((a, b) => {
-          if (`${a[sortBy]}`.toLowerCase() < `${b[sortBy]}`.toLowerCase())
-            return -1
-
-          if (`${a[sortBy]}`.toLowerCase() > `${b[sortBy]}`.toLowerCase())
-            return 1
-
-          return 0
-        })
       } catch (e) {}
     }
 
@@ -2590,6 +2594,40 @@ let buildTreeview = async (metadata, ignoreTitles = false) => {
   // Return the final tree structure
   return treeStructure
 }
+
+
+let sortItemsAlphabetically = (array, sortBy) => {
+  try {
+    array.sort((a, b) => {
+      if (`${a[sortBy]}`.toLowerCase() < `${b[sortBy]}`.toLowerCase())
+        return -1
+
+      if (`${a[sortBy]}`.toLowerCase() > `${b[sortBy]}`.toLowerCase())
+        return 1
+
+      return 0
+    })
+  } catch (e) {}
+}
+
+let encryptTextBG = (text, keychainOSName = null) => getRSAKey('public', (key) => IPCRenderer.send(`background:text:encrypt`, {
+  key,
+  text,
+  keychainOSName
+}))
+
+let decryptTextBG = (text, callback, keychainOSName = null) => getRSAKey('private', (key) => {
+  let requestID = `_${getRandom.id()}`
+
+  IPCRenderer.send(`background:text:decrypt`, {
+    requestID,
+    key,
+    text,
+    keychainOSName
+  })
+
+  IPCRenderer.on(`background:text:decrypt:result:${requestID}`, (_, text) => callback(text))
+})
 
 /**
  * Find a suitable suggestion from a group of given suggestions
@@ -4904,3 +4942,15 @@ let groupActivitiesBySource = (activities) => {
 }
 
 let removeArrayDuplicates = (arr, attr) => arr.filter((stObj, i, a) => a.findIndex(ndObj => ndObj[attr] === stObj[attr]) === i)
+
+let convertJSONObjectToYAML = (jsonObject) => {
+  let yamlString = ''
+
+  try {
+    yamlString = YAML.stringify(jsonObject)
+
+    yamlString = `---\n${yamlString}---\n`
+  } catch (e) {}
+
+  return yamlString
+}

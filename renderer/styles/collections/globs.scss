@@ -459,7 +459,8 @@ div.terminate-process {
   }
 }
 
-div.search-in-metadata {
+div.search-in-metadata,
+div.search-in-tree {
   background: #2c2c2c;
   border-radius: 8px;
   padding: 13px 6px 6px;
@@ -496,6 +497,10 @@ div.search-in-metadata {
       transition: all 0.35s ease-out;
       transition-delay: 0.2s;
       opacity: 1;
+    }
+
+    &.search-in-tree {
+      margin: 30px 20px 20px;
     }
   }
 
@@ -581,6 +586,15 @@ div.search-in-metadata {
         transition-delay: 0.15s;
       }
     }
+  }
+
+  &.search-in-tree {
+    position: sticky;
+    top: 10px;
+    right: 0;
+    left: 0;
+    border-top-right-radius: 5px;
+    margin: 0;
   }
 }
 
@@ -1069,7 +1083,8 @@ div.tippy-content.no-padding {
 
 a.jstree-anchor {
   span.is-reversed-node,
-  span.is-static-node {
+  span.is-static-node,
+  span.snippets-counter {
     background: #353535;
     display: inline-block;
     height: 20px;
@@ -1081,6 +1096,7 @@ a.jstree-anchor {
     padding-left: 9px;
     vertical-align: middle;
     margin-left: -6px;
+    pointer-events: none;
 
     span.material-icons {
       bottom: 1px;
@@ -1088,6 +1104,24 @@ a.jstree-anchor {
 
     &.is-static-node {
       padding: 0 9px;
+    }
+  }
+
+  span.snippets-counter {
+    padding: 5px;
+    vertical-align: middle;
+    line-height: 0;
+    display: none;
+
+    &.show {
+      display: inline-block;
+    }
+
+    ion-icon {
+      vertical-align: middle;
+      margin-right: 4px;
+      transform: translateY(-1px);
+      opacity: 0.8;
     }
   }
 }
@@ -1147,4 +1181,39 @@ img[src*=".gif"] {
 
 img {
   user-select: none !important;
+}
+
+[data-tippy-root] {
+  p {
+    margin-bottom: 10px;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  ul {
+    margin-bottom: auto;
+  }
+}
+
+table._lwt_table {
+  background: #212121;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 14px;
+
+  * {
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  td,
+  th {
+    padding: 7px;
+  }
+}
+
+.jstree-default-dark .jstree-search {
+  background: rgba(36, 136, 224, 0.15) !important;
 }

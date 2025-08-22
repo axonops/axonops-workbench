@@ -815,19 +815,23 @@
             })
           })
 
+          let openAllNodesProcessTimeout
+
           snippetsTreeviewObject.on('open_all.jstree', async () => {
-            setTimeout(async () => {
+            try {
+              clearTimeout(openAllNodesProcessTimeout)
+            } catch (e) {}
+
+            openAllNodesProcessTimeout = setTimeout(async () => {
               /**
                * Loop through each connection
                * The one that has a saved metadata will be fetched and loaded in the tree view
                */
-              let workbenchSecrets = await Keytar.findCredentials('AxonOpsWorkbenchClustersSecrets')
-
               for (let treeConnectionInfo of data.treeConnectionsInfo) {
-                connectionLatestMetadata = workbenchSecrets.find((secret) => secret.account == `metadata_${treeConnectionInfo.connectionID}`),
+                connectionLatestMetadata = pathIsAccessible(Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'internal_data', `metadata_${treeConnectionInfo.connectionID}.blob`)),
                   nodeElement = objectsTreeView.find(`a.jstree-anchor[id="${treeConnectionInfo.nodeID}_anchor"]`)
 
-                if (connectionLatestMetadata == undefined || nodeElement.length <= 0)
+                if (!connectionLatestMetadata || nodeElement.length <= 0)
                   continue
 
                 cqlSnippets.loadingMetadataNodes.push({

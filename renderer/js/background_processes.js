@@ -69,11 +69,6 @@ const FS = require('fs-extra'),
    */
   NodeRSA = require('node-rsa'),
   /**
-   * Node.js module to manage system keychain
-   * It has been implemented within the function `getRSAKey(type, callback)`
-   */
-  Keytar = require('keytar'),
-  /**
    * Generate a random string
    * Mainly used for generating IDs for connections, workspaces, UI elements, and so on
    * It has been implemented within the function `getRandom.id(length, ?amount)`
@@ -105,6 +100,8 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
   // The config module; to get the app's config and sync with any change
   const Config = require(Path.join(__dirname, '..', '..', 'custom_modules', 'renderer', 'config'))
+
+  let internalDataPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'internal_data')
 
   $(document).ready(() => {
     /**
@@ -655,9 +652,11 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
                 return
 
               try {
-                await Keytar.setPassword(
-                  'AxonOpsWorkbenchClustersSecrets',
-                  `${data.keychainOSName}`, encryptedText)
+                await FS.ensureDir(internalDataPath)
+              } catch (e) {}
+
+              try {
+                await FS.writeFileSync(Path.join(internalDataPath, `${data.keychainOSName}.blob`), encryptedText)
               } catch (e) {}
             } catch (e) {}
           })
@@ -672,9 +671,13 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
           if (data.keychainOSName == null)
             throw 0
 
-          let workbenchSecrets = await Keytar.findCredentials('AxonOpsWorkbenchClustersSecrets')
+          try {
+            await FS.ensureDir(internalDataPath)
+          } catch (e) {}
 
-          data.text = workbenchSecrets.find((secret) => secret.account == data.keychainOSName).password
+          try {
+            data.text = await FS.readFileSync(Path.join(internalDataPath, `${data.keychainOSName}.blob`), 'utf8')
+          } catch (e) {}
 
           ZLib.gunzip(Buffer.from(data.text, 'base64'), async (err, decompressed) => {
             if (err)

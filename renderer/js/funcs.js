@@ -980,7 +980,7 @@ let normalizePath = (path) => OS.platform == 'win32' ? `${path}`.replace(/\\/gm,
  *
  * @Return: {object} a valid tree structure to be rendered
  */
-let buildTreeview = async (metadata, ignoreTitles = false) => {
+let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _connectionID = '') => {
   let counterIDs = 0,
     getMD5IDForNode = async (amount = 1) => {
       let ids = []
@@ -1103,11 +1103,26 @@ let buildTreeview = async (metadata, ignoreTitles = false) => {
         numOfFoundSystemKeyspaces += 1
       } catch (e) {}
 
+      let snippetsCounter = ''
+
+      try {
+        if (['keyspace', 'table'].every((type) => icon != type))
+          throw 0
+
+        let snippetsScope = icon == 'keyspace' ? [_workspaceID, _connectionID, object.name] : [_workspaceID, _connectionID, parentType.keyspace, object.name],
+          snippetsCount = await Modules.Snippets.getSnippets(snippetsScope),
+          hashedScope = await MD5(JSON.stringify(snippetsScope))
+
+        snippetsCount = snippetsCount.length
+
+        snippetsCounter = `<span class="snippets-counter ${snippetsCount >= 1 ? 'show' : ''}" data-hashed-scope="${hashedScope}"><ion-icon name="snippets"></ion-icon><counter>${snippetsCount}</counter></span>`
+      } catch (e) {}
+
       // Define the child's structure
       let structure = {
         id: childID,
         parent: parentID,
-        text: `<span>${EscapeHTML(object.name)}</span>`,
+        text: `<span>${EscapeHTML(object.name)}</span> ${snippetsCounter}`,
         type: 'default',
         parentType: setParentType
       }
@@ -1259,19 +1274,6 @@ let buildTreeview = async (metadata, ignoreTitles = false) => {
         materialIcon = attribute ? 'arrow_downward' : 'arrow_upward'
 
         structure.text = `${structure.text} <span class="is-reversed-node">${attribute ? 'DESC' : 'ASC'} <span class="material-icons for-treeview">${materialIcon}</span></span>`
-      } catch (e) {}
-    },
-    sortItemsAlphabetically = (array, sortBy) => {
-      try {
-        array.sort((a, b) => {
-          if (`${a[sortBy]}`.toLowerCase() < `${b[sortBy]}`.toLowerCase())
-            return -1
-
-          if (`${a[sortBy]}`.toLowerCase() > `${b[sortBy]}`.toLowerCase())
-            return 1
-
-          return 0
-        })
       } catch (e) {}
     }
 
@@ -2593,99 +2595,19 @@ let buildTreeview = async (metadata, ignoreTitles = false) => {
   return treeStructure
 }
 
-let buildCQLSnippetsTreeView = async () => {
-  let extraIconsPath = normalizePath(Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra')),
-    workspacesParentID = `_${getRandom.id()}`,
-    treeStructure = {
-      'types': {
-        'default': {
-          'icon': normalizePath(Path.join(__dirname, '..', 'assets', 'images', 'tree-icons', 'default.png'))
-        }
-      },
-      'dnd': {
-        'is_draggable': false,
-        'check_while_dragging': false
-      },
-      'core': {
-        'strings': {
-          'Loading ...': ' '
-        },
-        'themes': {
-          'responsive': true,
-          'name': 'default-dark'
-        },
-        'data': [{
-          'id': workspacesParentID,
-          'parent': '#',
-          'text': `Workspaces`,
-          'type': 'default',
-          'icon': normalizePath(Path.join(extraIconsPath, 'workspaces.png')),
-          'state': {
-            'opened': true,
-            'selected': false
-          },
-          'a_attr': {
-            'allow-right-context': 'true',
-            'object-id': 'workspaces',
-            'type': 'workspace'
-          }
-        }]
-      },
-      'plugins': ['types', 'contextmenu'],
-      'contextmenu': {
-        'select_node': false
-      }
-    }
 
-  let workspaces = Modules.Workspaces.getWorkspacesNoAsync()
+let sortItemsAlphabetically = (array, sortBy) => {
+  try {
+    array.sort((a, b) => {
+      if (`${a[sortBy]}`.toLowerCase() < `${b[sortBy]}`.toLowerCase())
+        return -1
 
-  for (let workspace of workspaces) {
-    let workspaceNodeID = `_${getRandom.id()}`,
-      workspaceStructure = {
-        'id': workspaceNodeID,
-        'parent': workspacesParentID,
-        'text': `${StripTags(workspace.name)}`,
-        'type': 'default',
-        'icon': normalizePath(Path.join(extraIconsPath, 'workspace.png')),
-        'state': {
-          'opened': false,
-          'selected': false
-        },
-        'a_attr': {
-          'allow-right-context': 'true',
-          'object-id': `${workspace.id}`,
-          'type': 'workspace'
-        }
-      }
+      if (`${a[sortBy]}`.toLowerCase() > `${b[sortBy]}`.toLowerCase())
+        return 1
 
-    treeStructure.core.data.push(workspaceStructure)
-
-    let workspaceConnections = await Modules.Connections.getConnections(workspace.id)
-
-    for (let connection of workspaceConnections) {
-      let connectionNodeID = `_${getRandom.id()}`,
-        connectionStructure = {
-          'id': connectionNodeID,
-          'parent': workspaceNodeID,
-          'text': `${StripTags(connection.name)}`,
-          'type': 'default',
-          'icon': normalizePath(Path.join(extraIconsPath, 'connection.png')),
-          'state': {
-            'opened': false,
-            'selected': false
-          },
-          'a_attr': {
-            'allow-right-context': 'true',
-            'object-id': `${connection.info.id}`,
-            'type': 'workspace'
-          }
-        }
-
-      treeStructure.core.data.push(connectionStructure)
-    }
-  }
-
-  return treeStructure
+      return 0
+    })
+  } catch (e) {}
 }
 
 let encryptTextBG = (text, keychainOSName = null) => getRSAKey('public', (key) => IPCRenderer.send(`background:text:encrypt`, {
@@ -5020,3 +4942,15 @@ let groupActivitiesBySource = (activities) => {
 }
 
 let removeArrayDuplicates = (arr, attr) => arr.filter((stObj, i, a) => a.findIndex(ndObj => ndObj[attr] === stObj[attr]) === i)
+
+let convertJSONObjectToYAML = (jsonObject) => {
+  let yamlString = ''
+
+  try {
+    yamlString = YAML.stringify(jsonObject)
+
+    yamlString = `---\n${yamlString}---\n`
+  } catch (e) {}
+
+  return yamlString
+}

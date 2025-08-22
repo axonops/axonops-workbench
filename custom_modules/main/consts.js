@@ -26,8 +26,8 @@ const Constants = {
     DefaultURL: `https://dash.axonops.cloud`,
     Patterns: {
       Cluster: '{ORG}/cassandra/{CLUSTERNAME}/deeplink/dashboard/cluster',
-      Keyspace: '{ORG}/cassandra/{CLUSTERNAME}/deeplink/dashboard/keyspace?keyspace={KEYSPACENAME}',
-      Table: '{ORG}/cassandra/{CLUSTERNAME}/deeplink/dashboard/keyspace?keyspace={KEYSPACENAME}&table={TABLENAME}',
+      Keyspace: '{ORG}/cassandra/{CLUSTERNAME}/deeplink/dashboard/keyspace?keyspace={KEYSPACENAME}&scope=.*',
+      Table: '{ORG}/cassandra/{CLUSTERNAME}/deeplink/dashboard/keyspace?keyspace={KEYSPACENAME}&scope={TABLENAME}',
     }
   },
   URLS: {
@@ -240,6 +240,9 @@ const Constants = {
     Regular: ['ANY', 'LOCAL_ONE', 'ONE', 'TWO', 'THREE', 'QUORUM', 'LOCAL_QUORUM', 'EACH_QUORUM', 'ALL'],
     Serial: ['SERIAL', 'LOCAL_SERIAL']
   },
+  CQLSHDestructiveCommands: ['DELETE', 'DROP', 'TRUNCATE', 'INSERT', 'UPDATE',
+    'ALTER', 'BATCH', 'CREATE', 'GRANT', 'REVOKE'
+  ],
   // List of Cassandra system's keyspaces
   CassandraSystemKeyspaces: ['system', 'system_auth', 'system_distributed', 'system_schema', 'system_traces'],
   // All possible patterns where keyspaces should be suggested

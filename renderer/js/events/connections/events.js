@@ -821,7 +821,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                    <div class="connection-tabs">
                                      <ul class="nav nav-tabs nav-justified mb-3" id="ex-with-icons" role="tablist">
                                        <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL console" capitalize data-title="CQL console">
-                                         <a class="nav-link btn btn-tertiary active" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlshSessionContentID}" role="tab" aria-selected="true">
+                                         <a tab-content="cqlsh-session" class="nav-link btn btn-tertiary active" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlshSessionContentID}" role="tab" aria-selected="true">
                                            <span class="icon">
                                              <ion-icon name="terminal"></ion-icon>
                                            </span>
@@ -927,6 +927,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                                <span mulang="execute CQL file(s)"></span>
                                              </button>
                                            </div>
+                                           <div class="session-action" action="cql-snippets">
+                                             <button class="btn btn-secondary btn-rounded disabled" type="button" data-mdb-ripple-color="light" disabled>
+                                               <ion-icon name="snippets"></ion-icon>
+                                               <span mulang="CQL snippets"></span>
+                                             </button>
+                                           </div>
                                            <div class="actions-right-side">
                                            <div class="session-action query-tracing" action="query-tracing">
                                            <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
@@ -1004,7 +1010,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                            <div class="textarea">
                                              <div class="form-outline form-white margin-bottom">
                                                <div class="suggestion"></div>
-                                               <textarea spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionStatementInputID}"></textarea>
+                                               <textarea spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionStatementInputID}" data-role="cqlsh-textarea"></textarea>
                                                <label class="form-label">
                                                  <span mulang="execute a cql statement" capitalize-first></span>
                                                </label>
@@ -2240,7 +2246,14 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                               // Save the latest metadata in the OS keychain
                               try {
-                                encryptTextBG(JSON.stringify(latestMetadata), `metadata_${connectionID}`)
+                                let snippetsMetadata = latestMetadata.keyspaces.map((keyspace) => {
+                                  return {
+                                    name: keyspace.name,
+                                    tables: [...keyspace.tables, ...keyspace.indexes, ...keyspace.views].map((_object) => _object.name)
+                                  }
+                                })
+
+                                encryptTextBG(JSON.stringify(snippetsMetadata), `metadata_${connectionID}`)
                               } catch (e) {}
 
                               {
@@ -2253,7 +2266,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               }
 
                               // Build the tree view
-                              let treeview = await buildTreeview(JSON.parse(JSON.stringify(metadata)), true),
+                              let treeview = await buildTreeview(JSON.parse(JSON.stringify(metadata)), true, getActiveWorkspaceID(), connectionID),
                                 // Point at the metadata content's container
                                 metadataContent = workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`)
 
@@ -2269,6 +2282,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 jsTreeObject.unbind('search.jstree')
                                 jsTreeObject.unbind('after_open.jstree')
                                 jsTreeObject.unbind('select_node.jstree')
+                                workareaElement.find('div.right-elements div.arrows div.btn').unbind('click')
                               } catch (e) {}
 
                               try {
@@ -2711,7 +2725,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                   contextMenu = contextMenu.concat([{
                                     type: 'separator',
-                                  }])
+                                  },
+                                  {
+                                      label: I18next.capitalize(I18next.t('Features')),
+                                      enabled: false
+                                    }])
 
                                   let click = ''
 
@@ -2743,6 +2761,25 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     click,
                                     enabled: isAxonOpsIntegrationActionEnabled,
                                     icon: Path.join(__dirname, '..', '..', '..', 'assets', 'images', `axonops-icon-transparent-16x16${!isHostThemeDark ? '-dark' : ''}.png`)
+                                  }])
+
+                                  // The snippets feature
+                                  contextMenu = contextMenu.concat([{
+                                    label: I18next.capitalize(I18next.t(`view related snippets`)),
+                                    action: 'cql-snippets',
+                                    click: nodeType == 'keyspace' ? `() => views.main.webContents.send('cql-snippets:view', {
+                                      workareaID: '${workareaElement.attr('workarea-id')}',
+                                      connectionID: '${connectionID}',
+                                      keyspaceName: '${targetName}',
+                                      workareaID: '${workareaElement.attr('workarea-id')}'
+                                      })` : `() => views.main.webContents.send('cql-snippets:view', {
+                                        workareaID: '${workareaElement.attr('workarea-id')}',
+                                        connectionID: '${connectionID}',
+                                        tableName: '${clickedNode.attr('name')}',
+                                        keyspaceName: '${keyspaceName}',
+                                        workareaID: '${workareaElement.attr('workarea-id')}'
+                                      })`,
+                                    enabled: nodeType != 'cluster'
                                   }])
                                 } catch (e) {}
 
@@ -2950,7 +2987,14 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               }
 
                               // Hide the loading indicator in the tree view section
-                              setTimeout(() => metadataContent.parent().removeClass('loading'), 150)
+                              setTimeout(() => {
+                                metadataContent.parent().removeClass('loading')
+
+                                let cqlSnippetsButton = workareaElement.find('div.session-action[action="cql-snippets"]').find('button.btn')
+
+                                cqlSnippetsButton.removeClass('disabled')
+                                cqlSnippetsButton.attr('disabled', 'null')
+                              }, 150)
                             } catch (e) {
                               try {
                                 errorLog(e, 'connections')
@@ -7515,6 +7559,29 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         try {
                           setTimeout(() => $(`button#_${executeStatementBtnID}`).click())
                         } catch (e) {}
+                      })
+                    }
+
+                    {
+                      let cqlSnippetsBtn = workareaElement.find('div.session-action[action="cql-snippets"]').find('button.btn')
+
+                      try {
+                        cqlSnippetsBtn.unbind('click')
+                      } catch (e) {}
+
+                      cqlSnippetsBtn.click(function(_, targetNode = null) {
+                        let connectionMetadata = latestMetadata.keyspaces.map((keyspace) => {
+                          return {
+                            name: keyspace.name,
+                            tables: [...keyspace.tables, ...keyspace.indexes, ...keyspace.views].map((_object) => _object.name)
+                          }
+                        })
+
+                        $(`div.body div.left div.content div.navigation div.group div.item[action="cql-snippets"]`).trigger('click', {
+                          connectionMetadata,
+                          targetNode: targetNode,
+                          workareaID: workareaElement.attr('workarea-id')
+                        })
                       })
                     }
 

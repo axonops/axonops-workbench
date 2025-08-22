@@ -506,7 +506,7 @@
 
     <!-- All dialogs/modals in the app
     Workspace's dialog; used for adding and editing -->
-    <div class="modal top fade" id="addEditWorkspaceDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+    <div class="modal top fade" id="addEditWorkspaceDialog" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
@@ -553,7 +553,7 @@
                   </label>
                   <div class="valid-feedback"></div>
                   <div class="invalid-feedback"></div>
-                  <div class="clickable" for-input="workspacePath" data-empty-not-allowed="true" data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000"></div>
+                  <div class="clickable" for-input="workspacePath" data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000"></div>
                 </div>
               </div>
               <div class="col-md-1 flex col-add-border">
@@ -579,7 +579,7 @@
     </div>
 
     <!-- Connection's dialog; used for adding and editing -->
-    <div class="modal top fade" id="addEditConnectionDialog" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true" data-selected-modal-body="apache-cassandra">
+    <div class="modal top fade" id="addEditConnectionDialog" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true" data-selected-modal-body="apache-cassandra">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="transition: height 0.2s ease-in-out;">
           <div class="modal-header">
@@ -1502,6 +1502,24 @@
                     </div>
                   </div>
                 </div>
+                <div class="row flex margin-bottom more-margin flex-advanced">
+                  <div class="col-md-3">
+                    <div>
+                      <span mulang="CQL snippets author name" capitalize></span>:
+                    </div>
+                  </div>
+                  <div class="col-md-9">
+                    <div class="form-outline form-white">
+                      <input type="text" class="form-control form-control-lg" id="cqlSnippetsAuthorName">
+                      <label for="cqlSnippetsAuthorName" class="form-label">
+                        <span mulang="author name" capitalize></span>
+                      </label>
+                      <div class="form-helper">
+                        <span mulang="default" capitalize></span>: <span mulang="your username in the host" capitalize-first></span>.
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div class="row flex margin-bottom more-margin flex-advanced ai-assistant-feature">
                   <div class="col-md-3">
                     <div>
@@ -1628,7 +1646,7 @@
     <button type="button" data-mdb-toggle="modal" data-mdb-target="#loadSnapshot" id="showLoadSnapshotDialog" hidden></button>
 
     <!-- Ask for connection's credentials -->
-    <div class="modal top fade" id="connectionCredentials" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+    <div class="modal top fade" id="connectionCredentials" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
@@ -1864,7 +1882,7 @@
       </div>
     </div>
 
-    <div class="modal top fade" id="importWorkspaces" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+    <div class="modal top fade" id="importWorkspaces" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true">
       <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
@@ -2012,7 +2030,7 @@
       </div>
     </div>
 
-    <div class="modal top fade" id="rightClickActionsMetadata" aria-hidden="true" data-mdb-backdrop="true" data-mdb-focus="false" data-mdb-keyboard="true">
+    <div class="modal top fade" id="rightClickActionsMetadata" aria-hidden="true" data-mdb-backdrop="static" data-mdb-focus="false" data-mdb-keyboard="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
@@ -2894,7 +2912,8 @@
                   </span>
                 </div>
                 <div class="in-operator-error" style="margin-top: 0px; margin-bottom: 10px;">
-                  <ion-icon name="error-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> <span mulang="the [code]IN[/code] operator for partition key(s) is not supported in case a LWT option is selected" capitalize-first></span>.
+                  <ion-icon name="error-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> <span mulang="the [code]IN[/code] operator for partition key(s) is not supported in case a LWT option is selected"
+                    capitalize-first></span>.
                 </div>
                 <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeyTreeDeleteAction"></div>
                 <div class="fields-badge-action" id="deleteNonPKColumns" style="padding: 10px;">
@@ -2903,7 +2922,9 @@
                   </span>
                 </div>
                 <div class="delete-columns-hint">
-                  <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span mulang="when executing a delete command for column(s) all primary key columns must be defined unless deleting a static column. With static columns, these can be deleted with only the partition key columns defined" capitalize-first></span>.
+                  <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span
+                    mulang="when executing a delete command for column(s) all primary key columns must be defined unless deleting a static column. With static columns, these can be deleted with only the partition key columns defined"
+                    capitalize-first></span>.
                 </div>
                 <div id="tableFieldsNonPKColumnsDeleteAction">
                   <div class="form-outline form-white margin-bottom" style="margin-bottom:10px;">
@@ -2983,7 +3004,8 @@
                 </div>
 
                 <div id="non-pk-columns-warning" class="non-pk-columns-warning" style="display: block;">
-                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span mulang="all primary key columns must be in the standard [code]WHERE[/code] clause to apply LWT conditions to columns that are not a part of the primary key" capitalize-first></span>.
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span
+                    mulang="all primary key columns must be in the standard [code]WHERE[/code] clause to apply LWT conditions to columns that are not a part of the primary key" capitalize-first></span>.
                 </div>
 
                 <div class="fields-badge-action" id="deleteRegularColumnsBadge" style="padding: 10px;">
@@ -3116,37 +3138,195 @@
       </div>
     </div>
 
-    <div class="modal top fade" id="cqlSnippets" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+    <div class="modal top fade" id="cqlSnippets" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true">
       <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
               CQL Snippets
             </h5>
-            <span class="badge badge-secondary"></span>
+            <span class="badge badge-secondary current-scope"></span>
             <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="snippets-container">
               <div class="side objects-treeview">
-                <div class="snippets-objects-treeview">
-                  Tree
+                <div class="search-in-tree">
+                  <div class="form-outline form-white margin-bottom">
+                    <input type="text" class="form-control form-icon-trailing form-control-sm">
+                    <label class="form-label">
+                      <span mulang="search in the tree" capitalize-first></span>
+                    </label>
+                    <div class="right-elements">
+                      <div class="result-count">
+                        <span class="current"></span>/<span class="total"></span>
+                      </div>
+                      <div class="arrows">
+                        <div class="next btn btn-tertiary" data-mdb-ripple-color="light">
+                          <ion-icon name="arrow-down"></ion-icon>
+                        </div>
+                        <div class="previous btn btn-tertiary" data-mdb-ripple-color="light">
+                          <ion-icon name="arrow-up"></ion-icon>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="snippets-objects-treeview"></div>
+                <div class="treeview-actions">
+                  <div class="action" action="refresh">
+                    <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="refresh the tree" capitalize-first>
+                      <ion-icon name="refresh"></ion-icon>
+                    </div>
+                  </div>
+                  <div class="action" action="search">
+                    <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="search in the tree" capitalize-first>
+                      <ion-icon name="search" style="font-size: 135%;"></ion-icon>
+                    </div>
+                  </div>
+                </div>
+                <div class="loading">
+                  <div class="sub-content">
+                    <img src="../assets/lottie/loading-metadata.gif" background="transparent" style="position: absolute; inset: 0; margin: auto; width: -webkit-fill-available;">
+                  </div>
                 </div>
               </div>
               <div class="side snippets-list">
                 <div class="cql-snippets">
-                  snippets
+                  <div class="snippets-list-header">
+                    <div class="sides-actions">
+                      <div class="actions left-side">
+                        <a action="delete" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false">
+                          <ion-icon name="trash"></ion-icon> <span mulang="delete selected snippets" capitalize></span>
+                        </a>
+                      </div>
+                      <div class="actions right-side">
+                        <div class="action" hidden>
+                          <button action="sort" class="btn btn-tertiary btn-rounded btn-sm" data-mdb-ripple-color="light" data-confirmed="false">
+                            <ion-icon name="sort-asc"></ion-icon>
+                          </button>
+                        </div>
+                        <div class="action">
+                          <button action="open-folder" class="btn btn-tertiary btn-rounded btn-sm" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="open snippets folder" capitalize-first>
+                            <ion-icon name="folder-open"></ion-icon>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="search-snippet">
+                      <div class="form-outline form-white margin-bottom">
+                        <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                        <input spellcheck="false" type="text" class="form-control form-icon-trailing form-control-sm">
+                        <label class="form-label" style="padding-top: 1px;">
+                          <span mulang="search for a snippet" capitalize-first></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="snippets">
+                    <div class="empty-snippets">
+                      <div class="sub-content">
+                        <ion-icon name="empty-snippets"></ion-icon>
+                        <div class="message">
+                          <span mulang="no created snippets detected for that object" capitalize-first></span>
+                        </div>
+                        <div class="loading">
+                          <l-zoomies size="100" stroke="4" bg-opacity="0.1" speed="0.77" color="#919293"></l-zoomies>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="empty show">
+                    <div class="sub-content">
+                      <ion-icon name="snippets"></ion-icon>
+                      <div class="message">
+                        <span mulang="click an object in the tree to browse related snippets" capitalize-first></span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="side snippet-editor">
                 <div class="cql-snippet-editor">
-                  SNIPPET EDITOR
+                  <div class="snippet-metadata">
+                    <div class="row">
+                      <div class="col-8">
+                        <div class="form-outline form-white" style="width: calc(100% - 5px);">
+                          <input type="text" class="form-control form-control-sm" id="snippetTitle">
+                          <label class="form-label">Snippet Title</label>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="form-outline form-white">
+                          <input type="text" class="form-control form-control-sm" id="snippetAuthorName">
+                          <label class="form-label">Author Name</label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-12">
+                        <div class="form-outline form-white">
+                          <textarea type="text" class="form-control form-control-sm" style="resize: none; height: 43px;" id="snippetDescription"></textarea>
+                          <label class="form-label">Snippet Description</label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row snippet-tags">
+                      <div class="col-12">
+                        <div class="added-tags">
+                        </div>
+                        <div class="add-tag">
+                          <div class="input-group input-group-sm">
+                            <div class="form-outline form-white" style="z-index: 1;">
+                              <input type="text" class="form-control form-control-sm">
+                              <label class="form-label">Tag</label>
+                            </div>
+                            <div class="input-group-text">
+                              <div class="btn btn-tertiary disabled" data-mdb-ripple-color="light">
+                                <ion-icon name="plus"></ion-icon>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="snippet-editor-container" id="cqlSnippetsEditor">
+                  </div>
+                  <div class="editor-footer">
+                    <div class="clear-inputs">
+                      <button type="button" class="btn btn-secondary btn-dark btn-sm" id="clearSnippetFields">
+                        <ion-icon name="close"></ion-icon>
+                        <span mulang="clear fields"></span>
+                      </button>
+                    </div>
+
+                    <div class="destructive-keywords-warning">
+                      <ion-icon name="danger"></ion-icon>
+                      <span mulang="the snippet might include commands that can change data or database structure" capitalize-first></span>.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
           <div class="modal-footer" style="justify-content: space-between;">
-            FOOTER
+            <div class="float-right">
+              <button type="button" class="btn btn-secondary btn-dark btn-sm" disabled id="updateSnippet">
+                <span mulang="update snippet"></span>
+              </button>
+              <button type="button" class="btn btn-primary btn-dark btn-sm" disabled id="createSnippet">
+                <span mulang="create snippet"></span>
+              </button>
+              <button type="button" class="btn btn-primary btn-dark btn-sm" id="executeSnippet" style="display:none;">
+                <span mulang="execute snippet"></span>
+              </button>
+            </div>
+            <div class="float-left">
+              <button type="button" class="btn btn-secondary btn-dark btn-sm" disabled id="snippetRevertChanges">
+                <span mulang="revert changes"></span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

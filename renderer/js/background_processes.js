@@ -636,12 +636,12 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
         let encryptedText = ''
 
         try {
-          encryptedText = encryptText(data.key, encryptedText)
+          encryptedText = encryptText(data.key, data.text)
         } catch (e) {}
 
         try {
-          ZLib.gzip(data.text, {
-            level: ZLib.constants.Z_BEST_SPEED
+          ZLib.gzip(encryptedText, {
+            level: ZLib.constants.Z_BEST_COMPRESSION
           }, async (err, compressedText) => {
             try {
               if (err)
@@ -685,7 +685,7 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
             } catch (e) {}
 
             try {
-              decryptedText = decryptText(data.key, data.text)
+              decryptedText = decryptText(data.key, decryptedText)
             } catch (e) {}
 
             sendResult()

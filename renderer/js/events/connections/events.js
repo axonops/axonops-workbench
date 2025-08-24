@@ -4446,6 +4446,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           if (basicTerminal.css('display') != 'none')
                             throw 0
 
+                          if (!onlyInit)
+                            switchTerminalBtn.parent().css('z-index', '5')
+                          
                           try {
                             // If the terminal has already been initialized then skip this try-catch block
                             if (basicTerminal.attr('data-initialized') == 'true')
@@ -4498,6 +4501,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                            * Show the interactive terminal
                            */
                           interactiveTerminal.show()
+
+                          switchTerminalBtn.parent().css('z-index', '3')
 
                           // Hide the basic terminal
                           basicTerminal.hide()

@@ -599,7 +599,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   let path = !isSandbox ? getWorkspaceFolderPath(workspaceID) : Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters')
 
                   // Open the set path
-                  Open(path)
+                  try {
+                    Open(path)
+                  } catch (e) {}
                 })
 
                 // Clicks the settings button

@@ -2474,7 +2474,9 @@
                               if (data.error)
                                 throw 0
 
-                              Open(data.itemTempFile)
+                              try {
+                                Open(data.itemTempFile)
+                              } catch (e) {}
 
                               try {
                                 clearTimeout(showRingSpinnerTimeout)

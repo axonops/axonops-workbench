@@ -272,7 +272,9 @@
   // Clicks the help/documentation button
   $(`${selector}[action="help"]`).click(() => {
     // Open the documentation's web page
-    Open('https://axonops.com/docs/')
+    try {
+      Open('https://axonops.com/docs/')
+    } catch (e) {}
 
     // Add log for this action
     try {
@@ -1778,7 +1780,9 @@
           throw 0
 
         // Open the link
-        Open(link)
+        try {
+          Open(link)
+        } catch (e) {}
 
         // Skip the upcoming code
         return
@@ -2426,7 +2430,11 @@
 }
 
 {
-  $('div.body div.left div.content div.logo').click(() => Open(`https://axonops.com`))
+  $('div.body div.left div.content div.logo').click(() => {
+    try {
+      Open(`https://axonops.com`)
+    } catch (e) {}
+  })
 }
 
 {

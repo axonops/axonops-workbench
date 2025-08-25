@@ -1538,7 +1538,9 @@ $(document).on('initialize', () => {
 
           // Clicks the link-badge
           $(this).find('span.badge.btn').click(function() {
-            Open($(this).attr('data-link'))
+            try {
+              Open($(this).attr('data-link'))
+            } catch (e) {}
           })
         }))
       }
@@ -1547,7 +1549,9 @@ $(document).on('initialize', () => {
 
   // Enable the click event and opening of external links
   $('span.link.general').add($('div.modal#appAbout').find('span.link')).click(function() {
-    Open($(this).children('span.content').text())
+    try {
+      Open($(this).children('span.content').text())
+    } catch (e) {}
   })
 })
 
@@ -1853,7 +1857,9 @@ $(document).on('checkForUpdates', function(e, manualCheck = false) {
                   </div>`
 
               assetsContainer.append($(element).click(function() {
-                Open(`${$(this).attr('download-url')}`)
+                try {
+                  Open(`${$(this).attr('download-url')}`)
+                } catch (e) {}
               }))
             }
           } catch (e) {}

@@ -4446,6 +4446,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           if (basicTerminal.css('display') != 'none')
                             throw 0
 
+                          if (!onlyInit)
+                            switchTerminalBtn.parent().css('z-index', '5')
+                          
                           try {
                             // If the terminal has already been initialized then skip this try-catch block
                             if (basicTerminal.attr('data-initialized') == 'true')
@@ -4498,6 +4501,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                            * Show the interactive terminal
                            */
                           interactiveTerminal.show()
+
+                          switchTerminalBtn.parent().css('z-index', '3')
 
                           // Hide the basic terminal
                           basicTerminal.hide()
@@ -5734,7 +5739,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           setTimeout(() => IPCRenderer.send('pty:create:bash-session', {
                             id: `${connectionID}-bash-${sessionID}`,
                             projectID: `cassandra_${connectionID}`,
-                            path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..', '..')), 'data', 'localclusters', connectionID),
+                            path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..', '..', '..')), 'data', 'localclusters', connectionID),
                             dockerComposeBinary: Modules.Docker.getDockerComposeBinary()
                           }), 500)
 
@@ -6309,7 +6314,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           let workspacePath = getWorkspaceFolderPath(workspaceID),
                             folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(connectionElement, 'data-folder'), 'snapshots')
 
-                          Open(folderPath)
+                          try {
+                            Open(folderPath)
+                          } catch (e) {}
                         })
 
                         // Change the editors view - vertical and horizontal -
@@ -6511,7 +6518,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   }))
 
                                   // Clicks the globe icon in the connection's info
-                                  workareaElement.find(`div[content="workarea"] div.workarea[connection-id="${connectionID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
+                                  workareaElement.find(`div[content="workarea"] div.workarea[connection-id="${connectionID}"]`).find('div.axonops-agent').click(() => {
+                                    try {
+                                      Open(axonopsURL)
+                                    } catch (e) {}
+                                  })
                                 } catch (e) {}
                               }, 1000)
 
@@ -7631,7 +7642,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         if (!isValidURL)
                           return showToast(I18next.capitalize(I18next.t('axonOps integration feature')), I18next.capitalizeFirstLetter(I18next.replaceData('the provided URL for this connection [code]$data[/code] seems invalid, consider to update the connection and try again', [urlHost])) + '.', 'failure')
 
-                        Open(url)
+                        try {
+                          Open(url)
+                        } catch (e) {}
                       })
                     }
                   }))
@@ -8035,7 +8048,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       }))
 
                                       // Clicks the globe icon in the connection's info
-                                      $(`div[content="workarea"] div.workarea[connection-id="${connectionID}"]`).find('div.axonops-agent').click(() => Open(axonopsURL))
+                                      $(`div[content="workarea"] div.workarea[connection-id="${connectionID}"]`).find('div.axonops-agent').click(() => {
+                                        try {
+                                          Open(axonopsURL)
+                                        } catch (e) {}
+                                      })
                                     } catch (e) {}
                                   }, 1000)
                                 }, 3000)
@@ -8612,11 +8629,13 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                   elementPath = Path.join(getWorkspaceFolderPath(getAttributes(connectionElement, 'data-workspace-id')), getAttributes(connectionElement, 'data-folder'))
                 } catch (e) {
                   // Get the sandbox project's path
-                  elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..', '..')), 'data', 'localclusters', getAttributes(connectionElement, 'data-folder'))
+                  elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..', '..', '..')), 'data', 'localclusters', getAttributes(connectionElement, 'data-folder'))
                 }
 
                 // Open the final path
-                Open(elementPath)
+                try {
+                  Open(elementPath)
+                } catch (e) {}
               })
 
               $(`div.btn[button-id="${axonOpsIntegrationBtnID}"]`).click(function() {

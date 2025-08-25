@@ -272,7 +272,9 @@
   // Clicks the help/documentation button
   $(`${selector}[action="help"]`).click(() => {
     // Open the documentation's web page
-    Open('https://axonops.com/docs/')
+    try {
+      Open('https://axonops.com/docs/')
+    } catch (e) {}
 
     // Add log for this action
     try {
@@ -815,19 +817,23 @@
             })
           })
 
+          let openAllNodesProcessTimeout
+
           snippetsTreeviewObject.on('open_all.jstree', async () => {
-            setTimeout(async () => {
+            try {
+              clearTimeout(openAllNodesProcessTimeout)
+            } catch (e) {}
+
+            openAllNodesProcessTimeout = setTimeout(async () => {
               /**
                * Loop through each connection
                * The one that has a saved metadata will be fetched and loaded in the tree view
                */
-              let workbenchSecrets = await Keytar.findCredentials('AxonOpsWorkbenchClustersSecrets')
-
               for (let treeConnectionInfo of data.treeConnectionsInfo) {
-                connectionLatestMetadata = workbenchSecrets.find((secret) => secret.account == `metadata_${treeConnectionInfo.connectionID}`),
+                connectionLatestMetadata = pathIsAccessible(Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'internal_data', `metadata_${treeConnectionInfo.connectionID}.blob`)),
                   nodeElement = objectsTreeView.find(`a.jstree-anchor[id="${treeConnectionInfo.nodeID}_anchor"]`)
 
-                if (connectionLatestMetadata == undefined || nodeElement.length <= 0)
+                if (!connectionLatestMetadata || nodeElement.length <= 0)
                   continue
 
                 cqlSnippets.loadingMetadataNodes.push({
@@ -1774,7 +1780,9 @@
           throw 0
 
         // Open the link
-        Open(link)
+        try {
+          Open(link)
+        } catch (e) {}
 
         // Skip the upcoming code
         return
@@ -2422,7 +2430,11 @@
 }
 
 {
-  $('div.body div.left div.content div.logo').click(() => Open(`https://axonops.com`))
+  $('div.body div.left div.content div.logo').click(() => {
+    try {
+      Open(`https://axonops.com`)
+    } catch (e) {}
+  })
 }
 
 {

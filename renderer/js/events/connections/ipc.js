@@ -1525,25 +1525,25 @@
                                 'is-map-item': true
                               },
                               text: `
-                            <div class="input-group">
-                              <div class="input-group-text for-insertion for-name ignored-applied">
-                                <span class="name">
-                                  <span mulang="name" capitalize></span>
-                                  <ion-icon name="right-arrow-filled"></ion-icon>
-                                </span>
-                                <span class="name-value">Item #${getRandom.id(3)}</span>
-                              </div>
-                              <div class="input-group-text for-insertion for-actions ignored-applied">
-                                <span class="actions">
-                                  <span mulang="actions" capitalize></span>
-                                  <ion-icon name="right-arrow-filled"></ion-icon>
-                                </span>
-                                <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
-                                  <ion-icon name="trash-outline"></ion-icon>
-                                  <span mulang="delete item"></span>
-                                </button>
-                              </div>
-                            </div>`
+                              <div class="input-group">
+                                <div class="input-group-text for-insertion for-name ignored-applied">
+                                  <span class="name">
+                                    <span mulang="name" capitalize></span>
+                                    <ion-icon name="right-arrow-filled"></ion-icon>
+                                  </span>
+                                  <span class="name-value">Item #${getRandom.id(3)}</span>
+                                </div>
+                                <div class="input-group-text for-insertion for-actions ignored-applied">
+                                  <span class="actions">
+                                    <span mulang="actions" capitalize></span>
+                                    <ion-icon name="right-arrow-filled"></ion-icon>
+                                  </span>
+                                  <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
+                                    <ion-icon name="trash-outline"></ion-icon>
+                                    <span mulang="delete item"></span>
+                                  </button>
+                                </div>
+                              </div>`
                             }
 
                           let mapKeyUDTObject = keyspaceUDTs.find((udt) => udt.name == type[0]),
@@ -3071,25 +3071,25 @@
                                   'is-map-item': true
                                 },
                                 text: `
-                            <div class="input-group">
-                              <div class="input-group-text for-deletion for-name ignored-applied">
-                                <span class="name">
-                                  <span mulang="name" capitalize></span>
-                                  <ion-icon name="right-arrow-filled"></ion-icon>
-                                </span>
-                                <span class="name-value">Item #${getRandom.id(3)}</span>
-                              </div>
-                              <div class="input-group-text for-deletion for-actions ignored-applied">
-                                <span class="actions">
-                                  <span mulang="actions" capitalize></span>
-                                  <ion-icon name="right-arrow-filled"></ion-icon>
-                                </span>
-                                <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
-                                  <ion-icon name="trash-outline"></ion-icon>
-                                  <span mulang="delete item"></span>
-                                </button>
-                              </div>
-                            </div>`
+                                <div class="input-group">
+                                  <div class="input-group-text for-deletion for-name ignored-applied">
+                                    <span class="name">
+                                      <span mulang="name" capitalize></span>
+                                      <ion-icon name="right-arrow-filled"></ion-icon>
+                                    </span>
+                                    <span class="name-value">Item #${getRandom.id(3)}</span>
+                                  </div>
+                                  <div class="input-group-text for-deletion for-actions ignored-applied">
+                                    <span class="actions">
+                                      <span mulang="actions" capitalize></span>
+                                      <ion-icon name="right-arrow-filled"></ion-icon>
+                                    </span>
+                                    <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
+                                      <ion-icon name="trash-outline"></ion-icon>
+                                      <span mulang="delete item"></span>
+                                    </button>
+                                  </div>
+                                </div>`
                               }
 
                             let mapKeyUDTObject = keyspaceUDTs.find((udt) => udt.name == type[0]),
@@ -4658,25 +4658,25 @@
                                   'is-map-item': true
                                 },
                                 text: `
-                            <div class="input-group">
-                              <div class="input-group-text for-deletion for-name ignored-applied">
-                                <span class="name">
-                                  <span mulang="name" capitalize></span>
-                                  <ion-icon name="right-arrow-filled"></ion-icon>
-                                </span>
-                                <span class="name-value">Item #${getRandom.id(3)}</span>
-                              </div>
-                              <div class="input-group-text for-deletion for-actions ignored-applied">
-                                <span class="actions">
-                                  <span mulang="actions" capitalize></span>
-                                  <ion-icon name="right-arrow-filled"></ion-icon>
-                                </span>
-                                <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
-                                  <ion-icon name="trash-outline"></ion-icon>
-                                  <span mulang="delete item"></span>
-                                </button>
-                              </div>
-                            </div>`
+                                <div class="input-group">
+                                  <div class="input-group-text for-deletion for-name ignored-applied">
+                                    <span class="name">
+                                      <span mulang="name" capitalize></span>
+                                      <ion-icon name="right-arrow-filled"></ion-icon>
+                                    </span>
+                                    <span class="name-value">Item #${getRandom.id(3)}</span>
+                                  </div>
+                                  <div class="input-group-text for-deletion for-actions ignored-applied">
+                                    <span class="actions">
+                                      <span mulang="actions" capitalize></span>
+                                      <ion-icon name="right-arrow-filled"></ion-icon>
+                                    </span>
+                                    <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
+                                      <ion-icon name="trash-outline"></ion-icon>
+                                      <span mulang="delete item"></span>
+                                    </button>
+                                  </div>
+                                </div>`
                               }
 
                             let mapKeyUDTObject = keyspaceUDTs.find((udt) => udt.name == type[0]),
@@ -4810,10 +4810,10 @@
 
                               let nodeText = Cheerio.load(nodeTypeStructure[i].text),
                                 deleteItemBtn = `
-                            <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
-                              <ion-icon name="trash-outline"></ion-icon>
-                              <span mulang="delete item"></span>
-                            </button>`
+                                <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
+                                  <ion-icon name="trash-outline"></ion-icon>
+                                  <span mulang="delete item"></span>
+                                </button>`
 
                               try {
                                 nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')

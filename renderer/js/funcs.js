@@ -1089,193 +1089,193 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
    * {string} `?parentType` the child's parent type - partition, clustering, etc... -
    */
   let buildTreeViewForChild = async (parentID, childID, text, object, icon = null, parentType = '') => {
-      // Define the parent's type
-      let setParentType = icon || `${parentType}`
+    // Define the parent's type
+    let setParentType = icon || `${parentType}`
 
-      try {
-        if (!(Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == object.name)))
-          throw 0
+    try {
+      if (!(Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == object.name)))
+        throw 0
 
-        // Update the parent's ID to be the `System Keyspaces` node
-        parentID = systemKeyspacesParentID
+      // Update the parent's ID to be the `System Keyspaces` node
+      parentID = systemKeyspacesParentID
 
-        // Increase the counter
-        numOfFoundSystemKeyspaces += 1
-      } catch (e) {}
+      // Increase the counter
+      numOfFoundSystemKeyspaces += 1
+    } catch (e) {}
 
-      let snippetsCounter = ''
+    let snippetsCounter = ''
 
-      try {
-        if (['keyspace', 'table'].every((type) => icon != type))
-          throw 0
+    try {
+      if (['keyspace', 'table'].every((type) => icon != type))
+        throw 0
 
-        let snippetsScope = icon == 'keyspace' ? [_workspaceID, _connectionID, object.name] : [_workspaceID, _connectionID, parentType.keyspace, object.name],
-          snippetsCount = await Modules.Snippets.getSnippets(snippetsScope),
-          hashedScope = await MD5(JSON.stringify(snippetsScope))
+      let snippetsScope = icon == 'keyspace' ? [_workspaceID, _connectionID, object.name] : [_workspaceID, _connectionID, parentType.keyspace, object.name],
+        snippetsCount = await Modules.Snippets.getSnippets(snippetsScope),
+        hashedScope = await MD5(JSON.stringify(snippetsScope))
 
-        snippetsCount = snippetsCount.length
+      snippetsCount = snippetsCount.length
 
-        snippetsCounter = `<span class="snippets-counter ${snippetsCount >= 1 ? 'show' : ''}" data-hashed-scope="${hashedScope}"><ion-icon name="snippets"></ion-icon><counter>${snippetsCount}</counter></span>`
-      } catch (e) {}
+      snippetsCounter = `<span class="snippets-counter ${snippetsCount >= 1 ? 'show' : ''}" data-hashed-scope="${hashedScope}"><ion-icon name="snippets"></ion-icon><counter>${snippetsCount}</counter></span>`
+    } catch (e) {}
 
-      // Define the child's structure
-      let structure = {
-        id: childID,
-        parent: parentID,
-        text: `<span>${EscapeHTML(object.name)}</span> ${snippetsCounter}`,
-        type: 'default',
-        parentType: setParentType
-      }
+    // Define the child's structure
+    let structure = {
+      id: childID,
+      parent: parentID,
+      text: `<span>${EscapeHTML(object.name)}</span> ${snippetsCounter}`,
+      type: 'default',
+      parentType: setParentType
+    }
 
-      // If the title needs to be added then do this addition as a prefix
-      if (!ignoreTitles)
-        structure.text = `${text}: ${structure.text}`
+    // If the title needs to be added then do this addition as a prefix
+    if (!ignoreTitles)
+      structure.text = `${text}: ${structure.text}`
 
-      // If an icon has been passed then add it to the leaf's structure
-      if (icon != null)
-        structure.icon = normalizePath(Path.join(extraIconsPath, `${icon}.png`))
+    // If an icon has been passed then add it to the leaf's structure
+    if (icon != null)
+      structure.icon = normalizePath(Path.join(extraIconsPath, `${icon}.png`))
 
-      // Add the parent's ID
+    // Add the parent's ID
+    structure.a_attr = {
+      'parent': `${parentID}`
+    }
+
+    try {
+      if (text != `Index`)
+        throw 0
+
+      structure.a_attr.table = parentType.table || null
+    } catch (e) {}
+
+    try {
+      // If the child is not any of the defined types then skip this try-catch block
+      if (['Keyspace', 'Table', 'View', 'Index', 'User Type'].every((type) => text != type))
+        throw 0
+
+      // Set an `a_attr` attribute with important sub-attributes
       structure.a_attr = {
-        'parent': `${parentID}`
+        ...structure.a_attr,
+        'allow-right-context': 'true',
+        'name': object.name,
+        'type': `${text}`.toLowerCase()
       }
 
       try {
-        if (text != `Index`)
-          throw 0
-
-        structure.a_attr.table = parentType.table || null
+        structure.a_attr.keyspace = parentType.keyspace
       } catch (e) {}
 
       try {
-        // If the child is not any of the defined types then skip this try-catch block
-        if (['Keyspace', 'Table', 'View', 'Index', 'User Type'].every((type) => text != type))
+        structure.a_attr['is-counter-table'] = parentType.isCounterTable
+      } catch (e) {}
+
+      try {
+        structure.a_attr.table = parentType.table
+      } catch (e) {}
+
+      try {
+        if (minifyText(text) != 'usertype')
           throw 0
 
-        // Set an `a_attr` attribute with important sub-attributes
-        structure.a_attr = {
-          ...structure.a_attr,
-          'allow-right-context': 'true',
-          'name': object.name,
-          'type': `${text}`.toLowerCase()
+        structure.a_attr.type = 'udt'
+        structure.a_attr.keyspace = object.keyspace
+      } catch (e) {}
+    } catch (e) {}
+
+    /**
+     * If the child is a table or view then make sure to set the `parentType` to empty
+     * Not doing this would lead to incorrect structure
+     */
+    if (['Table', 'View'].some((type) => type == text))
+      parentType = ''
+
+    // Push the structure into the overall tree structure
+    treeStructure.core.data.push(structure)
+
+    try {
+      /**
+       * Check if the child has one or more of these attributes
+       *
+       * Define the attributes' names
+       */
+      let attributes = ['virtual', 'durable_writes']
+
+      if (parentType == 'partitionKeys')
+        attributes = attributes.slice(0, -2)
+
+      // Loop through them all
+      for (let attribute of attributes) {
+        // If the child doesn't have this attribute then skip it and move to the next one
+        if (object[attribute] == undefined)
+          return
+
+        // For `durable_writes`, it should be displayed if its value is only `false`
+        if (attribute == 'durable_writes' && object[attribute])
+          return
+
+        let materialIcon = object[attribute] ? 'check' : 'close'
+
+        // Otherwise, define that attribute's structure
+        let structure = {
+          id: await getMD5IDForNode(),
+          parent: childID,
+          text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: <span class="material-icons for-treeview">${materialIcon}</span>`,
+          type: 'default'
         }
 
+        // Some changes would be applied if the current attribute is `virtual`
         try {
-          structure.a_attr.keyspace = parentType.keyspace
-        } catch (e) {}
-
-        try {
-          structure.a_attr['is-counter-table'] = parentType.isCounterTable
-        } catch (e) {}
-
-        try {
-          structure.a_attr.table = parentType.table
-        } catch (e) {}
-
-        try {
-          if (minifyText(text) != 'usertype')
+          // If the attribute is not `virtual` then skip this try-catch block
+          if (attribute != 'virtual')
             throw 0
 
-          structure.a_attr.type = 'udt'
-          structure.a_attr.keyspace = object.keyspace
-        } catch (e) {}
-      } catch (e) {}
+          // Add the `virtual` attribute value as sub attribute in the structure
+          structure.virtualValue = object[attribute] ? true : false
 
-      /**
-       * If the child is a table or view then make sure to set the `parentType` to empty
-       * Not doing this would lead to incorrect structure
-       */
-      if (['Table', 'View'].some((type) => type == text))
-        parentType = ''
+          // If the `virtual` value is `true` then it should be shown to the user
+          if (structure.virtualValue)
+            throw 0
 
-      // Push the structure into the overall tree structure
-      treeStructure.core.data.push(structure)
-
-      try {
-        /**
-         * Check if the child has one or more of these attributes
-         *
-         * Define the attributes' names
-         */
-        let attributes = ['virtual', 'durable_writes']
-
-        if (parentType == 'partitionKeys')
-          attributes = attributes.slice(0, -2)
-
-        // Loop through them all
-        for (let attribute of attributes) {
-          // If the child doesn't have this attribute then skip it and move to the next one
-          if (object[attribute] == undefined)
-            return
-
-          // For `durable_writes`, it should be displayed if its value is only `false`
-          if (attribute == 'durable_writes' && object[attribute])
-            return
-
-          let materialIcon = object[attribute] ? 'check' : 'close'
-
-          // Otherwise, define that attribute's structure
-          let structure = {
-            id: await getMD5IDForNode(),
-            parent: childID,
-            text: `${I18next.capitalize(attribute.replace(/\_/gm, ' ')).replace(/Cql/gm, 'CQL')}: <span class="material-icons for-treeview">${materialIcon}</span>`,
-            type: 'default'
+          // Otherwise, hide the node which indicate's the node `virtual` value as it's `false` by default
+          structure.state = {
+            hidden: true
           }
+        } catch (e) {}
 
-          // Some changes would be applied if the current attribute is `virtual`
-          try {
-            // If the attribute is not `virtual` then skip this try-catch block
-            if (attribute != 'virtual')
-              throw 0
+        // Append that attribute to the child
+        treeStructure.core.data.push(structure)
+      }
+    } catch (e) {}
 
-            // Add the `virtual` attribute value as sub attribute in the structure
-            structure.virtualValue = object[attribute] ? true : false
+    // Check if the child has a CQL type
+    try {
+      // If the child doesn't have a cql_type attribute then skip this try-catch block
+      if (object.cql_type == undefined)
+        throw 0
 
-            // If the `virtual` value is `true` then it should be shown to the user
-            if (structure.virtualValue)
-              throw 0
+      // Otherwise, add the type to the node's text
+      structure.text = `${structure.text}: <span>${EscapeHTML(object.cql_type)}</span>`
+    } catch (e) {}
 
-            // Otherwise, hide the node which indicate's the node `virtual` value as it's `false` by default
-            structure.state = {
-              hidden: true
-            }
-          } catch (e) {}
+    try {
+      if (object['is_static'] == undefined)
+        throw 0
 
-          // Append that attribute to the child
-          treeStructure.core.data.push(structure)
-        }
-      } catch (e) {}
+      let attribute = object['is_static']
 
-      // Check if the child has a CQL type
-      try {
-        // If the child doesn't have a cql_type attribute then skip this try-catch block
-        if (object.cql_type == undefined)
-          throw 0
+      structure.text = `${structure.text}${attribute ? ' <span class="is-static-node">STATIC</span>' : ''}`
+    } catch (e) {}
 
-        // Otherwise, add the type to the node's text
-        structure.text = `${structure.text}: <span>${EscapeHTML(object.cql_type)}</span>`
-      } catch (e) {}
+    try {
+      if (object['is_reversed'] == undefined || icon != 'clustering-key')
+        throw 0
 
-      try {
-        if (object['is_static'] == undefined)
-          throw 0
+      let attribute = object['is_reversed']
 
-        let attribute = object['is_static']
+      materialIcon = attribute ? 'arrow_downward' : 'arrow_upward'
 
-        structure.text = `${structure.text}${attribute ? ' <span class="is-static-node">STATIC</span>' : ''}`
-      } catch (e) {}
-
-      try {
-        if (object['is_reversed'] == undefined || icon != 'clustering-key')
-          throw 0
-
-        let attribute = object['is_reversed']
-
-        materialIcon = attribute ? 'arrow_downward' : 'arrow_upward'
-
-        structure.text = `${structure.text} <span class="is-reversed-node">${attribute ? 'DESC' : 'ASC'} <span class="material-icons for-treeview">${materialIcon}</span></span>`
-      } catch (e) {}
-    }
+      structure.text = `${structure.text} <span class="is-reversed-node">${attribute ? 'DESC' : 'ASC'} <span class="material-icons for-treeview">${materialIcon}</span></span>`
+    } catch (e) {}
+  }
 
   // Sort keyspaces alphabetically
   sortItemsAlphabetically(metadata.keyspaces, 'name')
@@ -3955,6 +3955,7 @@ let setUIColor = (workspaceColor) => {
           .perfect-datetimepicker table.tt input:focus { border-color: ${backgroundColor.default}; box-shadow: 0 0 6px ${backgroundColor.hover.replace('70%', '60%')}; }
           .perfect-datetimepicker tbody td.today { color: ${highlightColors[0]}; }
           .perfect-datetimepicker tbody td.selected { border: 1px solid ${backgroundColor.default}; background-color: ${backgroundColor.default}; }
+          div.connection.highlight {box-shadow: 0px 0px 25px 0px ${backgroundColor.default.replace('70%', '50%')}, inset 0px 0px 0 2px ${backgroundColor.default.replace('70%', '50%')}; transition: box-shadow 0.15s ease-in-out;}
           .perfect-datetimepicker table td.weekend { color: ${highlightColors[4]}; opacity: 0.5; }
         </style>`
 
@@ -4176,7 +4177,7 @@ let closeAllWorkareas = () => {
        * If the work area is actually for a sandbox project
        */
       if (isSandboxProject)
-        return showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of local connection [b]$data[/b] is being terminated`, [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
+        return showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of local cluster [b]$data[/b] is being terminated`, [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
 
       // Otherwise, show this toast
       showToast(I18next.capitalize(I18next.t('close work area')), I18next.capitalizeFirstLetter(I18next.replaceData(`the work area of connection [b]$data[/b] in workspace [b]$data[/b] has been successfully closed`, [getAttributes(connectionElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')

@@ -16,7 +16,7 @@
 
 // When the window is being resized
 {
-  $(window.visualViewport).on('resize', () => {
+  $(window.visualViewport).on('resize', function(_, options = {}) {
     // Resize all created editors
     resizeEditors()
 
@@ -72,6 +72,17 @@
 
       // Enable/disable the work area's tabs' tooltips
       mdbObjects.filter((mdbObject) => mdbObject.element.attr('tab-tooltip') != undefined && mdbObject.element.find('span.title.ignore-resize').length <= 0).forEach((mdbObject) => mdbObject.object[!showTabsTitles ? 'enable' : 'disable']())
+
+      if (options.ignoreLabels)
+        throw 0
+
+      // Show/hide session actions buttons
+      let hideRightSideButtonsLabels = (windowWidth < 1600 || rightSideWidth < 1510),
+        hideButtonsLabels = (windowWidth < 1330 || rightSideWidth < 1245)
+
+      $('div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-actions').toggleClass('hide-labels-right-side', hideRightSideButtonsLabels)
+
+      $('div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-actions').toggleClass('hide-labels', hideButtonsLabels)
     } catch (e) {}
 
     // Update the switchers' container's status
@@ -1707,11 +1718,23 @@
 
     // Listen to key presses in relation to the more options/settings shortcuts
     setTimeout(() => {
+      let searchModalObject = getElementMDBObject($("#searchConnections"), 'Modal')
+
       try {
         tinyKeys.tinykeys(window, {
           "$mod+Shift+Equal": () => actionButton.filter('[action="zoomIn"]').click(),
           "$mod+Shift+Minus": () => actionButton.filter('[action="zoomOut"]').click(),
-          "$mod+Shift+Digit0": () => actionButton.filter('[action="zoomReset"]').click()
+          "$mod+Shift+Digit0": () => actionButton.filter('[action="zoomReset"]').click(),
+          "$mod+K": () => {
+            try {
+              let searchConnectionsButtonContainer = $('div.body div.right div.content-info div._right div.action[action="search"]')
+
+              if (!searchConnectionsButtonContainer.is(':visible') || searchModalObject._isShown)
+                return
+
+              searchConnectionsButtonContainer.find('button.btn').trigger('click')
+            } catch (e) {}
+          }
         })
 
         if (OS.platform() == 'darwin')

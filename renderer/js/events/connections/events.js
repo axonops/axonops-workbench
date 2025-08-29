@@ -352,7 +352,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
             // Apply different actions once the UI element is created
             {
               // Fade in the element based on the index
-              setTimeout(() => $(this).addClass(`show-${currentIndex + 1}`))
+              setTimeout(() => $(this).addClass(`show-${(currentIndex + 1) > 300 ? 300 : (currentIndex + 1)}`))
 
               // Enable tooltip for the actions buttons
               setTimeout(() => ([settingsBtnID, deleteBtnID, folderBtnID]).forEach((btn) => getElementMDBObject($(`div[button-id="${btn}"]`), 'Tooltip')))
@@ -918,26 +918,26 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                            <div class="session-action" action="history">
                                              <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light" disabled>
                                                <ion-icon name="history"></ion-icon>
-                                               <span mulang="statements history"></span>
+                                               <span class="button-label"><span mulang="statements history"></span></span>
                                              </button>
                                            </div>
                                            <div class="session-action" action="execute-file">
                                              <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
                                                <ion-icon name="files"></ion-icon>
-                                               <span mulang="execute CQL file(s)"></span>
+                                               <span class="button-label"><span mulang="execute CQL file(s)"></span></span>
                                              </button>
                                            </div>
                                            <div class="session-action" action="cql-snippets">
                                              <button class="btn btn-secondary btn-rounded disabled" type="button" data-mdb-ripple-color="light" disabled>
                                                <ion-icon name="snippets"></ion-icon>
-                                               <span mulang="CQL snippets"></span>
+                                               <span class="button-label"><span mulang="CQL snippets"></span></span>
                                              </button>
                                            </div>
                                            <div class="actions-right-side">
                                            <div class="session-action query-tracing" action="query-tracing">
                                            <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
                                              <ion-icon name="query-tracing"></ion-icon>
-                                             <span mulang="query tracing">query tracing</span>:
+                                             <span class="button-label"><span mulang="query tracing">query tracing</span>:</span>
                                              <span class="staus" style="margin-left: 7px;"></span>
                                              <div class="tooltip-info" style="transform: translateY(1px) translateX(5px);" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
                                              data-title="Query tracing captures detailed diagnostic information about query execution across the cluster. Useful for troubleshooting performance issues and understanding query paths.<br><br><b>Note</b>: Tracing adds overhead to your queries and should only be used temporarily for debugging specific queries. Enabling tracing for extended periods or bulk operations may impact cluster performance."
@@ -949,14 +949,14 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                            <div class="session-action pagination-size" action="pagination-size">
                                            <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
                                              <ion-icon name="pagination"></ion-icon>
-                                             <span mulang="page size">page size</span>:
+                                             <span class="button-label"><span mulang="page size">page size</span>:</span>
                                              <span class="size" style="margin-left: 7px;">0</span>
                                            </button>
                                            </div>
                                            <div class="session-action consistency-level" action="consistency-level">
                                            <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
                                              <ion-icon name="consistency"></ion-icon>
-                                             <span mulang="consistency">consistency</span>:
+                                             <span class="button-label"><span mulang="consistency">consistency</span>:</span>
                                              <span class="badge rounded-pill badge-dark"><b standard></b></span>
                                              <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
                                                data-title="Consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.<br><br>However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:<br><code>R + W > RF</code><br>(Read replicas + Write replicas > Replication Factor)<br><br>Example: With <code>RF=3</code>, using <code>QUORUM (2)</code> for both reads and writes ensures strong consistency <code>(2+2>3)</code> while maintaining availability and tolerance to failure."
@@ -2694,7 +2694,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   }])
 
                                 contextMenu = contextMenu.concat([{
-                                    label: I18next.capitalize(I18next.t('Commands')),
+                                    label: I18next.capitalize(I18next.t('commands')),
                                     enabled: false
                                   },
                                   {
@@ -2724,12 +2724,13 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     throw 0
 
                                   contextMenu = contextMenu.concat([{
-                                    type: 'separator',
-                                  },
-                                  {
-                                      label: I18next.capitalize(I18next.t('Features')),
+                                      type: 'separator',
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('features')),
                                       enabled: false
-                                    }])
+                                    }
+                                  ])
 
                                   let click = ''
 
@@ -2756,7 +2757,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     })`
 
                                   contextMenu = contextMenu.concat([{
-                                    label: I18next.capitalize(I18next.t(`view ${nodeType} dashboard`)),
+                                    label: I18next.capitalize(I18next.replaceData(`view $data dashboard`, [I18next.t(`${nodeType}`)])),
                                     action: 'axonops-integration',
                                     click,
                                     enabled: isAxonOpsIntegrationActionEnabled,
@@ -4448,7 +4449,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                           if (!onlyInit)
                             switchTerminalBtn.parent().css('z-index', '5')
-                          
+
                           try {
                             // If the terminal has already been initialized then skip this try-catch block
                             if (basicTerminal.attr('data-initialized') == 'true')
@@ -6855,7 +6856,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               } catch (e) {}
 
                               // Set a global timeout object
-                              global.resizeTriggerOnResize = setTimeout(() => $(window.visualViewport).trigger('resize'))
+                              global.resizeTriggerOnResize = setTimeout(() => $(window.visualViewport).trigger('resize', {
+                                ignoreLabels: true
+                              }))
                             }
 
                             // Get the minimum width allowed to be reached for the right side before hiding the tabs' titles
@@ -6873,6 +6876,15 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               .toggleClass('ignore-resize', !showTabsTitles)
                               .toggle(showTabsTitles)
 
+                            console.log(rightSide.outerWidth());
+
+                            let hideRightSideButtonsLabels = rightSide.outerWidth() <= 1145,
+                              hideButtonsLabels = rightSide.outerWidth() <= 920
+
+                            $('div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-actions').toggleClass('hide-labels-right-side', hideRightSideButtonsLabels)
+
+                            $('div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-actions').toggleClass('hide-labels', hideButtonsLabels)
+
                             // Enable/disable the work area's tabs' tooltips
                             workareaTooltipObjects.forEach((mdbObject) => mdbObject.object[!showTabsTitles ? 'enable' : 'disable']())
                           },
@@ -6885,7 +6897,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                              * Trigger the `resize` function of the window
                              * This will fit and resize related elements in the work area - especially the terminal -
                              */
-                            $(window.visualViewport).trigger('resize')
+                            $(window.visualViewport).trigger('resize', {
+                              ignoreLabels: true
+                            })
                           }
                         })
                       })
@@ -7430,7 +7444,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           // Set other attributes to be used to create the dialog
                           data = {
                             id: requestID,
-                            title: I18next.capitalizeFirstLetter(I18next.t('select file(s) to be imported')),
+                            title: I18next.capitalizeFirstLetter(I18next.t('select file(s) to be executed')),
                             properties: ['openFile', 'multiSelections', 'showHiddenFiles'],
                             filters: [{
                                 name: I18next.capitalize(I18next.t('supported text files')),
@@ -8952,6 +8966,13 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 } catch (e) {}
               }
             }
+
+            setTimeout(() => {
+              try {
+                if (passedData.callback != null && (currentIndex + 1) >= connections.length)
+                  passedData.callback()
+              } catch (e) {}
+            }, 1000)
           }))
           // End of the process when appending a connection in the container
         } catch (e) {
@@ -10700,7 +10721,7 @@ const ConnectionTestProcessTerminationTimeout = 250
                 ssh.connectionID = tempConnectionID
 
                 if (minifyText(ssh.host).length <= 0) {
-                  showToast(I18next.capitalize(I18next.t('test connection')), I18next.t('A valid SSH host is required in order to establish SSH tunnel, please make sure to provide it and try again') + '.', 'failure')
+                  showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t('a valid SSH host is required in order to establish SSH tunnel, please make sure to provide it and try again')) + '.', 'failure')
 
                   $('[info-section="none"][info-key="ssh-host"]').addClass('is-invalid')
 
@@ -11516,7 +11537,7 @@ const ConnectionTestProcessTerminationTimeout = 250
               finalConnection.ssh.dstPort = $('[info-section="connection"][info-key="port"]').val()
 
               if (minifyText(finalConnection.ssh.host).length <= 0) {
-                showToast(I18next.t(!editingMode ? 'add connection' : 'update connection'), I18next.t('A valid SSH host is required in order to establish SSH tunnel, please make sure to provide it and try again') + '.', 'failure')
+                showToast(I18next.t(!editingMode ? 'add connection' : 'update connection'), I18next.capitalizeFirstLetter(I18next.t('a valid SSH host is required in order to establish SSH tunnel, please make sure to provide it and try again')) + '.', 'failure')
 
                 $('[info-section="none"][info-key="ssh-host"]').addClass('is-invalid')
 
@@ -12144,4 +12165,173 @@ const ConnectionTestProcessTerminationTimeout = 250
       })
     } catch (e) {}
   }, 10000)
+}
+
+{
+  let searchModalObject = getElementMDBObject($("#searchConnections"), 'Modal'),
+    searchInputField = $('input#searchConnectionsInputField'),
+    workspacesAndConnections = [],
+    enableSearchFeature = (data, finished = false) => {
+      workspacesAndConnections.push(data)
+
+      if (!finished)
+        return
+
+      workspacesAndConnections = workspacesAndConnections.filter((data) => data.connections.length > 0)
+
+      searchInputField.attr('disabled', null)
+
+      setTimeout(() => searchInputField.focus())
+
+      $("#searchConnections").find('div.search-input').removeClass('loading')
+    }
+
+  $('button#searchConnectionsButton').click(function() {
+    try {
+      searchModalObject.show()
+    } catch (e) {}
+
+    searchInputField.val('')
+
+    searchInputField.attr('disabled', '')
+
+    workspacesAndConnections = []
+
+    $("#searchConnections").find('div.search-input').addClass('loading')
+
+    try {
+      getElementMDBObject($('input#searchConnectionsInputField')).update()
+    } catch (e) {}
+
+    $('div#searchConnections div.search-result').hide()
+
+    $('div#searchConnections div.search-result').html('')
+
+    Modules.Workspaces.getWorkspaces().then((workspaces) => {
+      let numOfHandledWorkspaces = 0
+
+      workspaces.forEach(async (workspace) => {
+        let connections = await Modules.Connections.getConnections(workspace.id)
+
+        for (let connection of connections)
+          connection.cqlshrc = await Modules.Connections.getCQLSHRCContent(workspace.id, connection.cqlshrc)
+
+        numOfHandledWorkspaces += 1
+
+        enableSearchFeature({
+          workspace,
+          connections
+        }, numOfHandledWorkspaces >= workspaces.length)
+      })
+    })
+  })
+
+  searchInputField.on('input', function() {
+    let searchValue = minifyText($(this).val())
+
+    if (searchValue.length <= 0) {
+      $('div#searchConnections div.search-result').hide()
+
+      $('div#searchConnections div.search-result').html('')
+
+      return
+    }
+
+    let matchedData = workspacesAndConnections.map((data) => {
+      let matchedConnections = data.connections.filter((connection) => {
+        let isMatched = false
+
+        try {
+          // 1: Match with the name and folder host
+          if (minifyText(`${connection.info.name}${connection.folder}`).includes(searchValue))
+            isMatched = true
+        } catch (e) {}
+
+        try {
+          // 2: Match with the host and datacenter
+          if (!isMatched && minifyText(`${connection.host}${connection.info.datacenter}`).includes(searchValue))
+            isMatched = true
+        } catch (e) {}
+
+        return isMatched
+      })
+
+      return {
+        workspace: data.workspace,
+        connections: matchedConnections
+      }
+    })
+
+    matchedData = matchedData.filter((data) => data.connections.length > 0)
+
+    $('div#searchConnections div.search-result').html('')
+
+    $('div#searchConnections div.search-result').toggle(matchedData.length > 0)
+
+    for (let data of matchedData) {
+      let workspace = data.workspace,
+        color = HEXToRGB(workspace.color).join(' ')
+
+      for (let connection of data.connections) {
+        let connectionElement = `
+            <div class="result-connection" data-workspace-id="${workspace.id}" data-connection-id="${connection.info.id}" style="box-shadow: inset 0px 0px 0px 1px rgb(${color} / 50%);">
+              <div class="header">
+                <div class="name">${connection.name}</div>
+                <div class="workspace" style="background: rgb(${color} / 70%); ${TinyColor(workspace.color).isLight() ? 'color: #252525;' : ''}"><span class="name">${workspace.name}</span></div>
+              </div>
+              <div class="connection-info">
+                <div class="info" info="host">
+                  <div class="title"><span mulang="host" capitalize></span>
+                    <ion-icon name="right-arrow-filled" role="img" class="md hydrated" aria-label="right arrow filled"></ion-icon>
+                  </div>
+                  <div class="text">${connection.info.secureConnectionBundlePath != undefined ? 'AstraDB DataStax' : connection.host}</div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-tertiary navigate" data-mdb-ripple-color="light">
+                <ion-icon name="arrow-down"></ion-icon>
+              </button>
+            </div>`
+
+        $('div#searchConnections div.search-result').append($(connectionElement).show(function() {
+          let connectionElement = $(this)
+
+          $(this).find('button.navigate').click(function() {
+            let [workspaceID, connectionID] = getAttributes(connectionElement, ['data-workspace-id', 'data-connection-id'])
+
+            try {
+              searchModalObject.hide()
+            } catch (e) {}
+
+            try {
+              let connectionSwitcher = $(`div.body div.left div.content div.switch-connections div.connection[_connection-id="${connectionID}"]`)
+
+              if (connectionSwitcher.length > 0)
+                return connectionSwitcher.find('button.btn').click()
+            } catch (e) {}
+
+            $(`div.body div.right div.content div[content="workspaces"] div.workspaces-container`).find(`div.workspace[data-id="${workspaceID}"]`).find('button.enter').trigger('click', {
+              callback: () => {
+                setTimeout(() => {
+                  let connectionCardElement = $(`div.body div.right div.content div[content="connections"] div.connections-container div.connections[workspace-id="${workspaceID}"]`).find(`div.connection[data-id="${connectionID}"]`)
+
+                  connectionCardElement.addClass('highlight')
+
+                  setTimeout(() => {
+                    try {
+                      connectionCardElement.removeClass('highlight')
+                    } catch (e) {}
+                  }, 5000)
+                }, 300)
+              }
+            })
+          })
+
+          // Apply the chosen language on the UI element after being fully loaded
+          setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+        }))
+      }
+    }
+  })
+
+  // searchModalObject._element.addEventListener('shown.mdb.modal', () => setTimeout(() => searchInputField.focus()))
 }

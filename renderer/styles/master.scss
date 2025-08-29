@@ -960,6 +960,11 @@ div.body {
         position: relative;
         bottom: 5px;
         text-align: -webkit-right;
+        display: flex;
+        flex-direction: row-reverse;
+        flex-wrap: nowrap;
+        align-content: center;
+        align-items: stretch;
 
         div._actions {
           display: flex;
@@ -994,51 +999,59 @@ div.body {
               transform: translateY(-35px);
             }
           }
+        }
 
-          div.action {
+        div.action {
+          width: 100%;
+          height: 100%;
+          margin: 0 5px;
+
+          button {
+            color: inherit !important;
             width: 100%;
             height: 100%;
-            margin: 0 5px;
+            position: relative;
+            transition: opacity 0.2s ease-in-out;
+            opacity: 0.75;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-content: center;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0 5px;
 
-            button {
-              color: inherit !important;
-              width: 100%;
-              height: 100%;
-              position: relative;
-              transition: opacity 0.2s ease-in-out;
-              opacity: 0.75;
-              display: flex;
-              flex-direction: row;
-              flex-wrap: nowrap;
-              align-content: center;
-              align-items: center;
-              justify-content: flex-start;
-              padding: 0 5px;
-
-              ion-icon {
-                margin-right: 5px;
-              }
-
-              span {
-                white-space: nowrap;
-              }
-
-              &:hover {
-                opacity: 0.95;
-              }
+            ion-icon {
+              margin-right: 5px;
             }
 
-            &[action="import"] button ion-icon {
-              font-size: 130%;
+            span {
+              white-space: nowrap;
             }
 
-            &[action="add"] button ion-icon {
-              font-size: 160%;
+            &:hover {
+              opacity: 0.95;
             }
+          }
 
-            &[action="refresh"] button ion-icon {
-              font-size: 140%;
+          &[action="search"] {
+            margin-left: 0;
+
+            ion-icon {
+              font-size: 135%;
             }
+          }
+
+          &[action="import"] button ion-icon {
+            font-size: 130%;
+          }
+
+          &[action="add"] button ion-icon {
+            font-size: 160%;
+          }
+
+          &[action="refresh"] button ion-icon {
+            font-size: 140%;
           }
         }
       }
@@ -2143,8 +2156,8 @@ div.body {
                 &.show-#{$i} {
                   animation: {
                     name: show;
-                    duration: 1s;
-                    delay: #{$i/8}s;
+                    duration: 0.75s;
+                    delay: #{$i/9}s;
                     timing-function: cubic-bezier(0.4, 0, 0.2, 1);
                     fill-mode: forwards;
                   }
@@ -3999,6 +4012,7 @@ div.tab-content {
             button {
               transition: opacity 0.2s ease-in-out;
               position: relative;
+              height: 37px !important;
 
               ion-icon {
                 position: absolute;
@@ -4010,7 +4024,7 @@ div.tab-content {
                 font-size: 150%;
               }
 
-              span {
+              span:not(.button-label) {
                 margin-left: 20px;
               }
             }
@@ -4048,6 +4062,41 @@ div.tab-content {
                   background-color: #1e1e1e;
                   pointer-events: none;
                 }
+              }
+            }
+          }
+
+          &.hide-labels-right-side {
+            div.actions-right-side {
+              button.btn {
+                padding-left: 40px;
+              }
+
+              span.button-label {
+                display: none;
+              }
+            }
+          }
+
+          &.hide-labels {
+            div.session-action {
+              button.btn {
+                padding-right: 34px;
+              }
+
+              span.button-label {
+                display: none;
+              }
+            }
+
+            div.actions-right-side {
+              button.btn {
+                padding-left: 40px;
+                padding-right: 24px;
+              }
+
+              span.button-label {
+                display: none;
               }
             }
           }

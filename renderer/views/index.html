@@ -307,39 +307,48 @@
         </div>
 
         <div class="_right">
-          <div class="_actions _for-workspaces show">
-            <div class="action" action="add" onclick="$('button#addWorkspaceAction').click()">
-              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
-                <ion-icon name="plus"></ion-icon>
-                <span mulang="add workspace"></span>
-              </button>
-            </div>
-            <div class="action" action="refresh" onclick="$('button#refreshWorkspacesAction').click()">
-              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
-                <ion-icon name="refresh"></ion-icon>
-                <span mulang="refresh workspaces"></span>
-              </button>
-            </div>
-            <div class="action" action="import" onclick="$('button#importWorkspacesAction').click()">
-              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
-                <ion-icon name="import"></ion-icon>
-                <span mulang="import workspaces"></span>
-              </button>
-            </div>
+          <div class="action" action="search">
+            <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" id="searchConnectionsButton">
+              <ion-icon name="search"></ion-icon>
+              <span mulang="search connection"></span>
+              <span for-kbd style="margin-left: 7px;"><kbd ctrl>CTRL</kbd><kbd style="margin:0px 5px;">K</kbd></span>
+            </button>
           </div>
-
-          <div class="_actions _for-connections">
-            <div class="action" action="add" onclick="$('button#addConnectionAction').click()">
-              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
-                <ion-icon name="plus"></ion-icon>
-                <span mulang="add connection"></span>
-              </button>
+          <div class="actions-group">
+            <div class="_actions _for-workspaces show">
+              <div class="action" action="add" onclick="$('button#addWorkspaceAction').click()">
+                <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                  <ion-icon name="plus"></ion-icon>
+                  <span mulang="add workspace"></span>
+                </button>
+              </div>
+              <div class="action" action="refresh" onclick="$('button#refreshWorkspacesAction').click()">
+                <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                  <ion-icon name="refresh"></ion-icon>
+                  <span mulang="refresh workspaces"></span>
+                </button>
+              </div>
+              <div class="action" action="import" onclick="$('button#importWorkspacesAction').click()">
+                <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                  <ion-icon name="import"></ion-icon>
+                  <span mulang="import workspaces"></span>
+                </button>
+              </div>
             </div>
-            <div class="action" action="refresh" onclick="$('button#refreshConnectionsAction').click()">
-              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
-                <ion-icon name="refresh"></ion-icon>
-                <span mulang="refresh connections"></span>
-              </button>
+
+            <div class="_actions _for-connections">
+              <div class="action" action="add" onclick="$('button#addConnectionAction').click()">
+                <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                  <ion-icon name="plus"></ion-icon>
+                  <span mulang="add connection"></span>
+                </button>
+              </div>
+              <div class="action" action="refresh" onclick="$('button#refreshConnectionsAction').click()">
+                <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                  <ion-icon name="refresh"></ion-icon>
+                  <span mulang="refresh connections"></span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -560,7 +569,7 @@
                 <div class="icon-button" style="top: auto; left: 3px;">
                   <div class="action btn btn-tertiary select-path" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="select workspace path" capitalize-first data-title data-action="selectPath"
                     data-reference="workspace">
-                    <ion-icon name="folder-open"></ion-icon>
+                    <ion-icon name="folder"></ion-icon>
                   </div>
                 </div>
               </div>
@@ -1353,10 +1362,10 @@
                       <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
                       <ul class="dropdown-menu">
                         <li>
-                          <a class="dropdown-item" style="font-family:'Terminal', monospace;" href="#" value="Default" hidden-value="default">Default</a>
+                          <a class="dropdown-item" style="font-family:'Terminal', monospace;" href="#" value="Default" hidden-value="default"><span mulang="default" capitalize></span></a>
                         </li>
                         <li>
-                          <a class="dropdown-item" style="font-family:'Terminal', monospace;" href="#" value="System" hidden-value="system">System</a>
+                          <a class="dropdown-item" style="font-family:'Terminal', monospace;" href="#" value="System" hidden-value="system"><span mulang="system" capitalize></span></a>
                         </li>
                       </ul>
                     </div>
@@ -2575,7 +2584,7 @@
                         <span mulang="data insertion timestamp" capitalize></span>
                       </label>
                       <div class="invalid-feedback" style="white-space: nowrap;">
-                        Please choose between using a Lightweight Transaction (LWT) or setting a timestamp. You cannot use both.
+                        <span mulang="please choose between using a Lightweight Transaction (LWT) or setting a timestamp" capitalize-first></span>. <span mulang="you cannot use both" capitalize-first></span>.
                       </div>
                     </div>
                   </div>
@@ -2596,7 +2605,7 @@
                         <span mulang="default omitted columns value" capitalize></span>
                       </label>
                       <div class="valid-feedback"></div>
-                      <div class="invalid-feedback">Any column omitted from the JSON map its value will be set to <code>NULL</code>.</div>
+                      <div class="invalid-feedback"><span mulang="any column omitted from the JSON map its value will be set to [code]NULL[/code]" capitalize-first></span>.</div>
                     </div>
                     <div class="dropdown" for-select="defaultOmittedColumnsValue">
                       <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
@@ -2617,38 +2626,36 @@
                 <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
                   <input class="form-check-input" type="radio" name="lwtInsertOptions" value id="insertNoSelectOption" checked>
                   <label class="form-check-label" for="insertNoSelectOption">
-                    No Selection.
+                    <span mulang="no selection" capitalize></span>.
                   </label>
                 </div>
                 <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
                   <input class="form-check-input" type="radio" name="lwtInsertOptions" value id="insertIfNotExistsOption">
                   <label class="form-check-label" for="insertIfNotExistsOption">
-                    Include <code>IF NOT EXISTS</code> keyword.
+                    <span mulang="include [code]IF NOT EXISTS[/code] keyword" capitalize></span>
                   </label>
                 </div>
               </div>
             </div>
-
             <div action="select-row" style="margin-top: -20px;">
               <div class="types-of-transactions">
                 <div class="sections">
                   <div class="section">
                     <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="standard">
-                      Standard
+                      <span mulang="standard" capitalize></span>
                     </div>
                   </div>
                   <div class="section">
                     <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="allow-filtering">
-                      Allow Filtering
+                      <span mulang="allow filtering" capitalize></span>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="allow-filtering-hint">
-                <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> Using 'Allow Filtering' can lead to inefficient queries and performance issues, especially on large datasets. It should
-                be used sparingly and only when necessary.
+                <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> Using '<span mulang="allow filtering" capitalize></span>' <span
+                  mulang="can lead to inefficient queries and performance issues, especially on large datasets. It should be used sparingly and only when necessary" capitalize-first></span>.
               </div>
-
               <div section="standard">
                 <div class="fields-badge-action" id="selectPrimaryKeyBadge" style="padding: 10px;">
                   <span class="badge badge-secondary">
@@ -2656,11 +2663,12 @@
                   </span>
                 </div>
                 <div id="no-pk-columns-warning-select" class="non-pk-columns-warning" style="display: block; margin-top: 0px; width: calc(100% - 30px); margin-bottom: 10px;">
-                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span>This SELECT operation does not specify a partition key, which will trigger a full
-                    cluster scan. This may result in poor performance and timeout issues</span>.
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span
+                    mulang="this [code]SELECT[/code] operation does not specify a partition key, which will trigger a full cluster scan. This may result in poor performance and timeout issues" capitalize-first></span>.
                 </div>
                 <div class="in-operator-error" style="margin-top: 0px; margin-bottom: 10px;">
-                  <ion-icon name="error-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> The <code>IN</code> operator for partition key(s) is not supported in case a LWT option is selected.
+                  <ion-icon name="error-circle-outline" class="management-tools-hint-icon no-select"></ion-icon> <span mulang="the [code]IN[/code] operator for partition key(s) is not supported in case a LWT option is selected"
+                    capitalize-first></span>.
                 </div>
                 <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeyTreeSelectAction"></div>
                 <div class="fields-badge-action" id="selectNonPKColumns" style="padding: 10px;">
@@ -2679,7 +2687,7 @@
                   <div class="columns">
                   </div>
                   <div id="noColumnMatched">
-                    No column matches the filtering text.
+                    <span mulang="no column matches the filtering text" capitalize-first></span>.
                   </div>
                 </div>
 
@@ -2750,26 +2758,25 @@
                 <div class="row flex data-select-aggregate-functions" style="margin-top: 15px; margin-bottom: 10px; display: none;">
                   <div class="col-md-12">
                     <div style="display: inline-block; margin-right: 3px;">
-                      Order by:
+                      <span mulang="order by" capitalize></span>:
                     </div>
                     <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
                       <input class="form-check-input" type="radio" name="selectOrderBy" id="selectOBNone" value="none" checked>
-                      <label class="form-check-label" for="selectOBNone">None</label>
+                      <label class="form-check-label" for="selectOBNone"><span mulang="none" capitalize></span>:</label>
                     </div>
 
                     <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
                       <input class="form-check-input" type="radio" name="selectOrderBy" id="selectOBDefault" value="default">
-                      <label class="form-check-label" for="selectOBDefault">As defined</label>
+                      <label class="form-check-label" for="selectOBDefault"><span mulang="as defined" capitalize></span></label>
                     </div>
 
                     <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
                       <input class="form-check-input" type="radio" name="selectOrderBy" id="selectOBDefaultReversed" value="defaultReversed">
-                      <label class="form-check-label" for="selectOBDefaultReversed">As defined (reversed)</label>
+                      <label class="form-check-label" for="selectOBDefaultReversed"><span mulang="as defined" capitalize></span> (<span mulang="reversed" capitalize></span>)</label>
                     </div>
                   </div>
                 </div>
               </div>
-
               <div section="allow-filtering" style="display: none;">
                 <div class="fields-badge-action" style="padding: 10px;">
                   <span class="badge badge-secondary">
@@ -2779,19 +2786,19 @@
                 <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
                   <input class="form-check-input" type="radio" name="selectAllowFilteringOptions" value id="selectAllowFilteringNoSelectOption" checked>
                   <label class="form-check-label" for="selectAllowFilteringNoSelectOption">
-                    No Selection.
+                    <span mulang="no selection" capitalize-first></span>.
                   </label>
                 </div>
                 <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
                   <input class="form-check-input" type="radio" name="selectAllowFilteringOptions" value id="selectAllowFilteringEnableOption">
                   <label class="form-check-label" for="selectAllowFilteringEnableOption">
-                    Enable <code>ALLOW FILTERING</code> keyword.
+                    <span mulang="enable [code]ALLOW FILTERING[/code] keyword" capitalize-first></span>.
                   </label>
                 </div>
 
                 <div id="non-pk-columns-warning-select" class="non-pk-columns-warning" style="display: block;">
-                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span>Applying conditions to columns that are not a part of the primary key require enabling
-                    the <code>ALLOW FILTERING</code> feature</span>.
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span
+                    mulang="applying conditions to columns that are not a part of the primary key require enabling the [code]ALLOW FILTERING[/code] feature" capitalize-first></span>.
                 </div>
 
                 <div class="fields-badge-action" id="selectRegularColumnsBadge" style="padding: 10px;">
@@ -2837,21 +2844,20 @@
                 <div class="sections">
                   <div class="section">
                     <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="standard">
-                      Standard
+                      <span mulang="standard" capitalize></span>
                     </div>
                   </div>
                   <div class="section">
                     <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="lwt">
-                      Lightweight Transaction (LWT)
+                      <span mulang="lightweight transaction" capitalize></span> (LWT)
                     </div>
                   </div>
                 </div>
               </div>
 
               <div class="lwt-hint">
-                <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> Lightweight transactions (LWTs) provide strong consistency but can impact performance and scalability. Use them only
-                when
-                required.
+                <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span mulang="lightweight transactions" capitalize></span> (LWTs) <span
+                  mulang="provide strong consistency but can impact performance and scalability. Use them only when required" capitalize-first></span>.
               </div>
 
               <div class="fields-badge-action" style="padding: 10px;">
@@ -3156,7 +3162,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
-              CQL Snippets
+              CQL <span mulang="snippets" capitalize></span>
             </h5>
             <span class="badge badge-secondary current-scope"></span>
             <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
@@ -3266,13 +3272,13 @@
                       <div class="col-8">
                         <div class="form-outline form-white" style="width: calc(100% - 5px);">
                           <input type="text" class="form-control form-control-sm" id="snippetTitle">
-                          <label class="form-label">Snippet Title</label>
+                          <label class="form-label"><span mulang="snippet title" capitalize></span></label>
                         </div>
                       </div>
                       <div class="col-4">
                         <div class="form-outline form-white">
                           <input type="text" class="form-control form-control-sm" id="snippetAuthorName">
-                          <label class="form-label">Author Name</label>
+                          <label class="form-label"><span mulang="author name" capitalize></span></label>
                         </div>
                       </div>
                     </div>
@@ -3280,7 +3286,7 @@
                       <div class="col-12">
                         <div class="form-outline form-white">
                           <textarea type="text" class="form-control form-control-sm" style="resize: none; height: 43px;" id="snippetDescription"></textarea>
-                          <label class="form-label">Snippet Description</label>
+                          <label class="form-label"><span mulang="snippet description" capitalize></span></label>
                         </div>
                       </div>
                     </div>
@@ -3292,7 +3298,7 @@
                           <div class="input-group input-group-sm">
                             <div class="form-outline form-white" style="z-index: 1;">
                               <input type="text" class="form-control form-control-sm">
-                              <label class="form-label">Tag</label>
+                              <label class="form-label"><span mulang="tag" capitalize></span></label>
                             </div>
                             <div class="input-group-text">
                               <div class="btn btn-tertiary disabled" data-mdb-ripple-color="light">
@@ -3363,6 +3369,29 @@
             <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color">
               <span mulang="confirm"></span>
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal top fade" id="searchConnections" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-body">
+            <div class="search-input loading">
+              <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
+                <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                <l-ring-2 class="loading-spinner" size="18" stroke="2" stroke-length="0.25" bg-opacity="0.25" speed="0.44" color="#ffffff"></l-ring-2>
+                <input type="text" class="form-control form-icon-trailing form-control-lg" id="searchConnectionsInputField" disabled>
+                <label class="form-label">
+                  <span mulang="search" capitalize></span>
+                </label>
+                <div class="form-helper">
+                  <span mulang="hint" capitalize></span>: <span mulang="search by name, hostname, and relative data" capitalize-first></span>.
+                </div>
+              </div>
+            </div>
+            <div class="search-result"></div>
           </div>
         </div>
       </div>

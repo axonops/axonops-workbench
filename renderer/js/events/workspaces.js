@@ -61,7 +61,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           defaultPath: true,
           folder: 'localclusters',
           name: 'Local Clusters',
-          color: '#03A9F4'
+          color: '#0e8cc4'
         })
       } catch (e) {}
 
@@ -119,43 +119,45 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
         // Workspace UI element structure
         let element = `
-              <div class="workspace ${inAccessible ? 'inaccessible' : ''} ${isSandbox ? 'sandbox' : ''}" data-id="${workspaceID}" data-name="${workspace.name}" data-folder="${workspace.folder}" data-color="${workspace.color}"
-                data-folder-path="${workspace.defaultPath ? 'default' : workspace.path}" style="box-shadow: inset 0px 0px 0 3px #161719, inset 0px 0px 0 4px rgb(${color} / 50%);">
-                <ion-icon name="sandbox" ${!isSandbox ? 'hidden' : '' }></ion-icon>
-                <div class="header">
-                  <div class="title workspace-name">${isSandbox ? '<span mulang="local clusters" capitalize></span>' : workspace.name}</div>
-                  <div class="_connections" ${connectionsMiniIconsBackgroundColor}></div>
+            <div class="workspace ${inAccessible ? 'inaccessible' : ''} ${isSandbox ? 'sandbox' : ''}" data-id="${workspaceID}" data-name="${workspace.name}" data-folder="${workspace.folder}" data-color="${workspace.color}"
+              data-folder-path="${workspace.defaultPath ? 'default' : workspace.path}" style="box-shadow: inset 0px 0px 0 3px #161719, inset 0px 0px 0 4px rgb(${color} / 50%);">
+              <ion-icon name="sandbox" ${!isSandbox ? 'hidden' : '' }></ion-icon>
+              <div class="header">
+                <div class="title workspace-name">${isSandbox ? '<span mulang="local clusters" capitalize></span>' : workspace.name}</div>
+                <div class="_connections" ${connectionsMiniIconsBackgroundColor}></div>
+              </div>
+              <div class="footer">
+                <div class="button">
+                  <button type="button" class="btn btn-primary btn-dark btn-sm enter" reference-id="${workspaceID}" button-id="${enterBtnID}" ${backgroundColor}>
+                    <span mulang="enter"></span>
+                  </button>
                 </div>
-                <div class="footer">
-                  <div class="button">
-                    <button type="button" class="btn btn-primary btn-dark btn-sm" reference-id="${workspaceID}" button-id="${enterBtnID}" ${backgroundColor}>
-                      <span mulang="enter"></span>
-                    </button>
-                  </div>
-                  <div class="actions ${isSandbox ? 'sandbox' : ''} ${isInitAxonOpsIntegrationEnabled ? 'axonops-integration' : ''}">
-                    <div class="action btn btn-tertiary ${!isAxonOpsIntegrationDisabled ? 'enabled' : ''}" data-mdb-ripple-color="#fff" style="overflow: visible !important;" reference-id="${workspaceID}" button-id="${axonOpsIntegrationBtnID}" action="axonops-integration" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Toggle the AxonOps integration feature over the entire workspace" data-mulang="toggle the AxonOps integration feature over the entire workspace" capitalize-first ${isSandbox || !isInitAxonOpsIntegrationEnabled ? 'hidden' : ''}>
+                <div class="actions ${isSandbox ? 'sandbox' : ''} ${isInitAxonOpsIntegrationEnabled ? 'axonops-integration' : ''}">
+                  <div class="action btn btn-tertiary ${!isAxonOpsIntegrationDisabled ? 'enabled' : ''}" data-mdb-ripple-color="#fff" style="overflow: visible !important;" reference-id="${workspaceID}" button-id="${axonOpsIntegrationBtnID}"
+                    action="axonops-integration" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="toggle the AxonOps integration feature over the entire workspace" capitalize-first ${isSandbox || !isInitAxonOpsIntegrationEnabled
+                    ? 'hidden' : '' }>
                     <div class="background" ${connectionsMiniIconsBackgroundColor}></div>
-                      <ion-icon name="axonops"></ion-icon>
-                      <ion-icon name="${isAxonOpsIntegrationDisabled ? 'close' : 'check'}" class="status"></ion-icon>
-                    </div>
-                    <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${workspaceID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the workspace folder"
-                      data-mulang="open the workspace folder" capitalize-first>
-                      <ion-icon name="folder-open"></ion-icon>
-                    </div>
-                    <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${workspaceID}" button-id="${settingsBtnID}" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Workspace settings"
-                      data-mulang="workspace settings" capitalize-first ${isSandbox ? 'hidden' : '' }>
-                      <ion-icon name="cog"></ion-icon>
-                    </div>
-                    <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${workspaceID}" button-id="${deleteBtnID}" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete workspace"
-                      data-mulang="delete workspace" capitalize-first ${isSandbox ? 'hidden' : '' }>
-                      <ion-icon name="trash"></ion-icon>
-                    </div>
+                    <ion-icon name="axonops"></ion-icon>
+                    <ion-icon name="${isAxonOpsIntegrationDisabled ? 'close' : 'check'}" class="status"></ion-icon>
+                  </div>
+                  <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${workspaceID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="open the workspace folder"
+                    capitalize-first>
+                    <ion-icon name="folder-open"></ion-icon>
+                  </div>
+                  <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${workspaceID}" button-id="${settingsBtnID}" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="workspace settings"
+                    capitalize-first ${isSandbox ? 'hidden' : '' }>
+                    <ion-icon name="cog"></ion-icon>
+                  </div>
+                  <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${workspaceID}" button-id="${deleteBtnID}" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="delete workspace"
+                    capitalize-first ${isSandbox ? 'hidden' : '' }>
+                    <ion-icon name="trash"></ion-icon>
                   </div>
                 </div>
-                <div class="loading" style="background: rgb(${color} / 10%)">
-                  <l-line-wobble class="ldr" size="50" stroke="5" bg-opacity="0.25" speed="1.3"  color="${workspace.color}"></l-line-wobble>
-                </div>
-              </div>`
+              </div>
+              <div class="loading" style="background: rgb(${color} / 10%)">
+                <l-line-wobble class="ldr" size="50" stroke="5" bg-opacity="0.25" speed="1.3" color="${workspace.color}"></l-line-wobble>
+              </div>
+            </div>`
 
         try {
           /**
@@ -227,7 +229,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                * Clicks the `ENTER` button
                * If `instant` is `true` then some transitions will not be applied
                */
-              $(`button[button-id="${enterBtnID}"]`).on('click', function(_, instant = false) {
+              $(`button[button-id="${enterBtnID}"]`).on('click', function(_, options = null) {
                 // Immediately update the active workspace ID
                 activeWorkspaceID = workspaceID
 
@@ -300,6 +302,13 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   // Show the current workspace connections' container
                   workspaceConnections.show()
 
+                  setTimeout(() => {
+                    try {
+                      if (options.callback != null)
+                        options.callback()
+                    } catch (e) {}
+                  }, 1000)
+
                   // Get the number of connections added to the clicked workspace
                   let numOfConnections = $(`div.connections div.connection[data-id][data-workspace-id="${workspaceID}"]`).length,
                     // Point at the connection's content container
@@ -322,7 +331,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
                   try {
                     // If the `instant` value is not `true` then skip this try-catch block
-                    if (!instant || $('div.body div.right div.content div[content="workarea"]').is(':visible'))
+                    if ((options == null || !options.instant) || $('div.body div.right div.content div[content="workarea"]').is(':visible'))
                       throw 0
 
                     // Hide all content elements
@@ -412,11 +421,18 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   // Get the workspace's color
                   let [r, g, b] = HEXToRGB(getAttributes(workspaceElement, 'data-color'))
 
-                  // Trigger the `getConnections` event for the current workspace
-                  $(document).trigger('getConnections', {
+                  let getConnectionsOptions = {
                     workspaceID,
                     containersManagementTool: config.get('features', 'containersManagementTool') || 'none'
-                  })
+                  }
+
+                  try {
+                    if (options != null && options.callback != null)
+                      getConnectionsOptions.callback = options.callback
+                  } catch (e) {}
+
+                  // Trigger the `getConnections` event for the current workspace
+                  $(document).trigger('getConnections', getConnectionsOptions)
 
                   // Add the workspace to the workspaces' switcher in the left side
                   try {
@@ -573,7 +589,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                               tooltip.hide()
 
                               // Click the `ENTER` button of the workspace UI element
-                              setTimeout(() => workspaceElement.find('div.footer div.button button').trigger('click', true))
+                              setTimeout(() => workspaceElement.find('div.footer div.button button').trigger('click', {
+                                instant: true
+                              }))
 
                               handleContentInfo('connections', workspaceElement)
                             })
@@ -624,6 +642,12 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   // Change the dialog's primary button's text, and enable it
                   $(`button#addWorkspace`).text(I18next.t('update workspace'))
                   $(`button#addWorkspace`).removeAttr('disabled')
+
+                  try {
+                    let workspacePathTooltip = getElementMDBObject($(`${dialog}`).find('div.select-path[data-action="selectPath"]'), 'Tooltip')
+
+                    workspacePathTooltip.setContent(I18next.capitalizeFirstLetter(I18next.t('move workspace folder')))
+                  } catch (e) {}
 
                   // $('input#workspaceName').parent().toggle(workspaceID != 'workspace-sandbox')
 
@@ -814,6 +838,12 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         $(`${dialog}`).removeAttr('data-edit-workspace-id')
         $(`${dialog} button#addWorkspace`).attr('disabled', 'disabled')
         $(`${dialog} button#addWorkspace`).text(I18next.t('add workspace'))
+
+        try {
+          let workspacePathTooltip = getElementMDBObject($(`${dialog}`).find('div.select-path[data-action="selectPath"]'), 'Tooltip')
+
+          workspacePathTooltip.setContent(I18next.capitalizeFirstLetter(I18next.t('select workspace path')))
+        } catch (e) {}
 
         // $('input#workspaceName').parent().show()
 
@@ -1457,7 +1487,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
         element = `
         <tr data-id="${workspaceIndex}" data-connections-path="${workspace.path}">
           <td>
-            <input type="checkbox" id="_${importWorkspacesCheckboxInputID}" for-selection class="form-check-input for-import-workspaces" checked="true" />
+            <input type="checkbox" id="_${importWorkspacesCheckboxInputID}" for-selection class="form-check-input for-import-workspaces" checked="true">
           </td>
           <td>
             <div class="form-outline form-white label-top">
@@ -1483,7 +1513,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             </button>
           </td>
           <td style="text-align: center;">
-            <input type="checkbox" id="_${importWorkspacesDefaultPathCheckboxInputID}" for-default-path class="form-check-input for-import-workspaces-default-path" />
+            <input type="checkbox" id="_${importWorkspacesDefaultPathCheckboxInputID}" for-default-path class="form-check-input for-import-workspaces-default-path">
           </td>
         </tr>`
 

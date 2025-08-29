@@ -616,6 +616,8 @@ $(document).on('initialize', () => {
     integrationFeatureSection.css('overflow-y', isAxonOpsIntegrationEnabled ? 'none' : 'scroll')
     integrationFeatureSection.find('div.axonops-integration-status-hint').toggle(!isAxonOpsIntegrationEnabled)
 
+    $('#addEditConnectionDialog').find('div.modal-body').find('div.btn[section="axonops-integration"]').parent().toggle(isAxonOpsIntegrationEnabled)
+
     isInitAxonOpsIntegrationEnabled = isAxonOpsIntegrationEnabled
   })
 })

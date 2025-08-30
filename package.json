@@ -354,7 +354,7 @@
     "escape-html": "^1.0.3",
     "extract-string": "^1.0.2",
     "front-matter": "^4.0.2",
-    "fs-extra": "^11.3.0",
+    "fs-extra": "^11.3.1",
     "hash-wasm": "^4.12.0",
     "hex-to-rgb": "^1.0.1",
     "highlight.js": "^11.11.1",

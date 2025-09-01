@@ -696,7 +696,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                     if (getAttributes(connectionElement, 'data-axonops-installed') === 'true') {
                       axonopsTab = `
                              <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title="AxonOps">
-                               <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${localClustersAxonopsContentID}" role="tab" aria-selected="true">
+                               <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${localClustersAxonopsContentID}" role="tab" aria-selected="true">
                                  <span class="icon"><ion-icon name="axonops"></ion-icon></span>
                                  <span class="title">AxonOps</span>
                                </a>
@@ -706,7 +706,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                     // Define the content of the bash session tab to be added
                     bashSessionTab = `
                            <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="bash session" capitalize data-title="Bash Session">
-                             <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${bashSessionContentID}" role="tab" aria-selected="true">
+                             <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${bashSessionContentID}" role="tab" aria-selected="true">
                                <span class="icon">
                                  <ion-icon name="bash"></ion-icon>
                                </span>
@@ -922,7 +922,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                              </button>
                                            </div>
                                            <div class="session-action" action="execute-file">
-                                             <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
+                                             <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light" disabled>
                                                <ion-icon name="files"></ion-icon>
                                                <span class="button-label"><span mulang="execute CQL file(s)"></span></span>
                                              </button>
@@ -1491,7 +1491,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                        </span>
                                        <div class="text"><pre>${statementText}</pre></div>
                                        <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
-                                         <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="right" data-title="Copy the statement" onclick="copyStatement(this)"
+                                         <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="execute-statement" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Execute the statement" onclick="executeStatement(this)"
+                                           data-mulang="execute the statement" capitalize-first>
+                                           <ion-icon name="execute-solid" style="font-size: 125%;"></ion-icon>
+                                         </div>
+                                         <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the statement" onclick="copyStatement(this)"
                                            data-mulang="copy the statement" capitalize-first>
                                            <ion-icon name="copy-solid"></ion-icon>
                                          </div>
@@ -3273,12 +3277,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           setTimeout(() => {
                             workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute button').parent().removeClass('busy')
 
-                            workareaElement.find('div.session-actions').find('button').attr('disabled', null)
+                            workareaElement.find('div.session-actions').find(`div.session-action${(Store.get(connectionID) || []).length <= 0 ? ':not([action="history"])' : ''}`).find('button').attr('disabled', null)
                             workareaElement.find('.disableable').removeClass('disabled')
                             workareaElement.removeClass('busy-cqlsh')
 
                             killProcessBtn.parent().removeClass('show')
-                          }, 1700)
+                          }, 2000)
                         } else {
                           detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:PAGING:CONTINUE/gm)
                         }
@@ -4627,6 +4631,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             statementTextContainer.addClass('executing')
 
                             executeBtn.parent().addClass('busy')
+
+                            element.find('div.actions.for-statement').hide()
 
                             {
                               try {
@@ -6876,8 +6882,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               .toggleClass('ignore-resize', !showTabsTitles)
                               .toggle(showTabsTitles)
 
-                            console.log(rightSide.outerWidth());
-
                             let hideRightSideButtonsLabels = rightSide.outerWidth() <= 1145,
                               hideButtonsLabels = rightSide.outerWidth() <= 920
 
@@ -7076,6 +7080,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                          <pre>${historyItem}</pre>
                                        </div>
                                        <div class="click-area"></div>
+                                       <div class="action-execute">
+                                         <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                           <ion-icon name="execute-solid"></ion-icon>
+                                         </span>
+                                       </div>
                                        <div class="action-copy">
                                          <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
                                            <ion-icon name="copy-solid"></ion-icon>
@@ -7097,9 +7106,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               if ($(this).attr('data-is-source-command') != 'true')
                                 throw 0
 
-                              $(this).children('div.action-copy').css({
+                              $(this).find('div.action-copy, div.action-execute').css({
                                 'opacity': '0.2',
-                                'pointer - events': 'none',
                                 'cursor': 'default',
                                 'pointer-events': 'none'
                               })
@@ -7149,6 +7157,28 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               } catch (e) {}
                             })
 
+                            $(this).find('div.action-execute').find('span.btn').click(() => {
+                              try {
+                                // Click the backdrop element to close the history items' container
+                                $(`div.backdrop:last`).click()
+
+                                // Get the index of the saved item in the array
+                                let statementIndex = parseInt($(this).attr('data-index')) - 1,
+                                  // Get the statement's content
+                                  statement = savedHistoryItems[statementIndex]
+
+                                // Set the statement
+                                statementInputField.val(statement).trigger('input')
+
+                                // Update the MDB object
+                                try {
+                                  getElementMDBObject(statementInputField).update()
+                                } catch (e) {}
+
+                                workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').find('button').click()
+                              } catch (e) {}
+                            })
+
                             $(this).find('div.action-copy').find('span.btn').click(() => {
                               let statement = $(this).find('div.inner-content').children('pre').text(),
                                 icon = $(this).find('div.action-copy').find('span.btn').children('ion-icon')
@@ -7165,7 +7195,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   errorLog(e, 'connections')
                                 } catch (e) {}
                               }
-
                             })
 
                             // Delete a history item
@@ -7177,7 +7206,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               savedHistoryItems.splice(statementIndex, 1)
 
                               // Reverse the array before save it
-                              savedHistoryItems.reverse()
+                              // savedHistoryItems.reverse()
 
                               // Set the manipulated array
                               Store.set(connectionID, [...new Set(savedHistoryItems)])

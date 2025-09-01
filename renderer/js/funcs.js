@@ -1001,7 +1001,7 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
     }
 
   // Get a keyspaces container's random ID
-  let [connectionID, keyspacesID] = await getMD5IDForNode(2),
+  let [connectionID, keyspacesID, dataCentersID] = await getMD5IDForNode(3),
     // Define the path of extra icons to be used with each leaf
     extraIconsPath = normalizePath(Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra')),
     // The initial tree structure
@@ -1044,6 +1044,13 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
             'parent': connectionID,
             'text': `Partitioner: <span>${metadata.partitioner.replace(/.+\.(.+)/gi, '$1')}</span>`,
             'type': 'default',
+          },
+          {
+            'id': dataCentersID,
+            'parent': connectionID,
+            'text': `Data Centers (<span>${(metadata.hosts_info || []).length}</span>)`,
+            'type': 'default',
+            'icon': normalizePath(Path.join(extraIconsPath, 'datacenter.png'))
           },
           {
             'id': keyspacesID,
@@ -1276,6 +1283,106 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
       structure.text = `${structure.text} <span class="is-reversed-node">${attribute ? 'DESC' : 'ASC'} <span class="material-icons for-treeview">${materialIcon}</span></span>`
     } catch (e) {}
   }
+
+  // Handle the data centers (hosts)
+  try {
+    let dataCenters = metadata.hosts_info.reduce((result, item) => {
+      let {
+        datacenter,
+        rack
+      } = item
+
+      if (!result[datacenter])
+        result[datacenter] = {}
+
+      if (!result[datacenter][rack])
+        result[datacenter][rack] = []
+
+      result[datacenter][rack].push(item)
+
+      return result
+    }, {})
+
+    for (let dataCenterName of Object.keys(dataCenters)) {
+      let dataCenter = dataCenters[dataCenterName],
+        dataCenterID = await getMD5IDForNode(),
+        dataCenterStructure = {
+          id: dataCenterID,
+          parent: dataCentersID,
+          text: `DC: ${dataCenterName}`,
+          type: 'default',
+          state: {
+            opened: false,
+            selected: false
+          },
+          icon: normalizePath(Path.join(extraIconsPath, 'datacenter.png'))
+        }
+
+      treeStructure.core.data.unshift(dataCenterStructure)
+
+      // Loop through racks
+      for (let rackName of Object.keys(dataCenter)) {
+        let rack = dataCenter[rackName],
+          rackID = await getMD5IDForNode(),
+          rackStructure = {
+            id: rackID,
+            parent: dataCenterID,
+            text: `Rack: ${rackName}`,
+            type: 'default',
+            state: {
+              opened: false,
+              selected: false
+            },
+            icon: normalizePath(Path.join(extraIconsPath, 'rack.png'))
+          }
+
+        treeStructure.core.data.unshift(rackStructure)
+
+        // Loop through nodes in the rack
+        for (let rackNode of rack) {
+          let rackNodeID = await getMD5IDForNode(),
+            nodeStatus = rackNode.is_up == null ? '' : `-${(rackNode.is_up ? 'up' : 'down')}`,
+            rackNodeStructure = {
+              id: rackNodeID,
+              parent: rackID,
+              text: `${rackNode.address} (${nodeStatus.length <= 0 ? 'N/A' : nodeStatus.slice(1).toUpperCase()})`,
+              type: 'default',
+              state: {
+                opened: false,
+                selected: false
+              },
+              icon: normalizePath(Path.join(extraIconsPath, `node${nodeStatus}.png`))
+            }
+
+          treeStructure.core.data.unshift(rackNodeStructure)
+
+          for (let nodeInfo of ['dse_version', 'broadcast_rpc_address']) {
+            if (nodeInfo == 'dse_version' && rackNode[nodeInfo] == null)
+              continue
+
+            if (nodeInfo == 'broadcast_rpc_address' && `${rackNode[nodeInfo]}`.trim() == `${rackNode.address}`.trim())
+              continue
+
+            let infoID = await getMD5IDForNode(),
+              infoText = nodeInfo == 'dse_version' ? `Cassandra version: ${rackNode[nodeInfo] || 'N/A'}` : `Broadcast RPC Address: ${rackNode.broadcast_rpc_address}:${rackNode.broadcast_rpc_port}`,
+              infoStructure = {
+                id: infoID,
+                parent: rackNodeID,
+                text: `${infoText}`,
+                type: 'default',
+                state: {
+                  opened: false,
+                  selected: false
+                }
+              }
+
+            treeStructure.core.data.unshift(infoStructure)
+          }
+        }
+      }
+    }
+
+  } catch (e) {}
 
   // Sort keyspaces alphabetically
   sortItemsAlphabetically(metadata.keyspaces, 'name')
@@ -4273,6 +4380,22 @@ let copyStatement = (button) => {
 
   // Give feedback to the user
   showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
+}
+
+/**
+ * Execute a cql statement in the enhanced console
+ *
+ * @Parameters:
+ * {object} `button` the execution button, it's passed in order to catch the statement's content
+ */
+let executeStatement = (button) => {
+  // Get the block's statement
+  let content = `${$(button).parent().parent().children('div.text').text()}`,
+    workareaElement = $(button).closest('div.workarea[workarea-id][connection-id]')
+
+  workareaElement.find(`textarea[data-role="cqlsh-textarea"]`).val(`${content}`).trigger('input')
+
+  setTimeout(() => workareaElement.find(`div.tab-pane[tab="cqlsh-session"]`).find('div.execute').find('button').click())
 }
 
 let isHostUbuntu = () => {

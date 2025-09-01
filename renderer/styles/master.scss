@@ -3251,8 +3251,8 @@ div.tab-content {
             }
 
             div.actions.for-statement {
-              width: 30px;
-              right: -15px;
+              width: 60px;
+              right: -30px;
               left: auto;
               bottom: -15px;
               top: auto;
@@ -3633,7 +3633,7 @@ div.tab-content {
                   padding: 0 5px;
                   border-radius: 3px;
                   height: 25px;
-                  width: calc(100% - 110px);
+                  width: calc(100% - 165px);
 
                   pre {
                     overflow: hidden;
@@ -3643,7 +3643,8 @@ div.tab-content {
                 }
 
                 div.action-copy,
-                div.action-delete {
+                div.action-delete,
+                div.action-execute {
                   width: 25px;
                   height: 25px;
                   margin-left: 7px;

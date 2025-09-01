@@ -1,18 +1,1 @@
-[
-  {
-    "ports": { "axonops": 38127, "cassandra": 36395 },
-    "axonops": true,
-    "folder": "e66ba",
-    "name": "Test",
-    "cassandraVersion": "5.0",
-    "nodes": 1
-  },
-  {
-    "ports": { "axonops": 42579, "cassandra": 44965 },
-    "axonops": false,
-    "folder": "e873c",
-    "name": "Test2",
-    "cassandraVersion": "5.0",
-    "nodes": 1
-  }
-]
+

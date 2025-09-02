@@ -8280,7 +8280,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       $('#axonOpsSelfHost').prop('checked', true)
                       $('#axonOpsSelfHost').trigger('change')
 
-                      $(`[info-section="none"][info-key="axonops-url-protocol"]`).val(customURL.protocol)
+                      $(`[info-section="none"][info-key="axonops-url-protocol"]`).val(`${customURL.protocol}`.replace(':', ''))
                       $(`[info-section="none"][info-key="axonops-url-host"]`).val(customURL.host)
                     } catch (e) {}
 
@@ -11495,8 +11495,14 @@ const ConnectionTestProcessTerminationTimeout = 250
                   throw 0
                 }
 
-                let protocol = `${$('input#axonOpsDashboardIntegrationDefaultURLProtocol').val()}`,
+                let protocol = `${$('input#axonOpsDashboardIntegrationDefaultURLProtocol').val()}` || `https`,
                   url = `${$('input#axonOpsDashboardIntegrationDefaultURL').val()}`
+
+                if ([protocol, url].some((value) => minifyText(value).length <= 0)) {
+                  showToast(I18next.capitalizeFirstLetter(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.replaceData('when the AxonOps Self-Host option is selected, a valid URL with both protocol and host is required. Please provide these before $data the connection', [editingMode ? 'saving' : 'updating'])) + '.', 'failure')
+
+                  return postProcess(false)
+                }
 
                 axonOpsIntegration.url = [protocol, url].some((part) => minifyText(part).length <= 0) ? '' : `${protocol}://${url}`
               } catch (e) {}
@@ -11566,7 +11572,7 @@ const ConnectionTestProcessTerminationTimeout = 250
               finalConnection.ssh.dstPort = $('[info-section="connection"][info-key="port"]').val()
 
               if (minifyText(finalConnection.ssh.host).length <= 0) {
-                showToast(I18next.t(!editingMode ? 'add connection' : 'update connection'), I18next.capitalizeFirstLetter(I18next.t('a valid SSH host is required in order to establish SSH tunnel, please make sure to provide it and try again')) + '.', 'failure')
+                showToast(I18next.capitalizeFirstLetter(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('a valid SSH host is required in order to establish SSH tunnel, please make sure to provide it and try again')) + '.', 'failure')
 
                 $('[info-section="none"][info-key="ssh-host"]').addClass('is-invalid')
 

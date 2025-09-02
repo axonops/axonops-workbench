@@ -695,7 +695,10 @@
       "clear fields": "clear fields",
       "the snippet might include commands that can change data or database structure": "the snippet might include commands that can change data or database structure",
       "revert changes": "revert changes",
-      "search by name, hostname, and relative data": "search by name, hostname, and relative data"
-    }
+      "search by name, hostname, and relative data": "search by name, hostname, and relative data",
+      "when the AxonOps Self-Host option is selected, a valid URL with both protocol and host is required. Please provide these before $data the connection": "when the AxonOps Self-Host option is selected, a valid URL with both protocol and host is required. Please provide these before $data the connection",
+      "updating": "updating",
+      "saving": "saving"
+  }
   }
 }

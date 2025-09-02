@@ -1000,6 +1000,29 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
       return amount == 1 ? ids[0] : ids
     }
 
+  let dataCenters = {}
+
+  sortItemsAlphabetically(metadata.hosts_info, 'datacenter')
+
+  try {
+    dataCenters = metadata.hosts_info.reduce((result, item) => {
+      let {
+        datacenter,
+        rack
+      } = item
+
+      if (!result[datacenter])
+        result[datacenter] = {}
+
+      if (!result[datacenter][rack])
+        result[datacenter][rack] = []
+
+      result[datacenter][rack].push(item)
+
+      return result
+    }, {})
+  } catch (e) {}
+
   // Get a keyspaces container's random ID
   let [connectionID, keyspacesID, dataCentersID] = await getMD5IDForNode(3),
     // Define the path of extra icons to be used with each leaf
@@ -1048,7 +1071,7 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
           {
             'id': dataCentersID,
             'parent': connectionID,
-            'text': `Data Centers (<span>${(metadata.hosts_info || []).length}</span>)`,
+            'text': `Data Centers (<span>${(Object.keys(dataCenters) || []).length}</span>)`,
             'type': 'default',
             'icon': normalizePath(Path.join(extraIconsPath, 'datacenter.png'))
           },
@@ -1286,30 +1309,13 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
 
   // Handle the data centers (hosts)
   try {
-    let dataCenters = metadata.hosts_info.reduce((result, item) => {
-      let {
-        datacenter,
-        rack
-      } = item
-
-      if (!result[datacenter])
-        result[datacenter] = {}
-
-      if (!result[datacenter][rack])
-        result[datacenter][rack] = []
-
-      result[datacenter][rack].push(item)
-
-      return result
-    }, {})
-
     for (let dataCenterName of Object.keys(dataCenters)) {
       let dataCenter = dataCenters[dataCenterName],
         dataCenterID = await getMD5IDForNode(),
         dataCenterStructure = {
           id: dataCenterID,
           parent: dataCentersID,
-          text: `DC: ${dataCenterName}`,
+          text: `DC: ${dataCenterName} (${(Object.keys(dataCenter) || []).length})`,
           type: 'default',
           state: {
             opened: false,
@@ -1320,6 +1326,14 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
 
       treeStructure.core.data.unshift(dataCenterStructure)
 
+      try {
+        dataCenter = Object.keys(dataCenter).sort().reduce((acc, key) => {
+          acc[key] = obj[key]
+
+          return acc
+        }, {})
+      } catch (e) {}
+
       // Loop through racks
       for (let rackName of Object.keys(dataCenter)) {
         let rack = dataCenter[rackName],
@@ -1327,7 +1341,7 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
           rackStructure = {
             id: rackID,
             parent: dataCenterID,
-            text: `Rack: ${rackName}`,
+            text: `Rack: ${rackName} (${rack.length})`,
             type: 'default',
             state: {
               opened: false,
@@ -1337,6 +1351,8 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
           }
 
         treeStructure.core.data.unshift(rackStructure)
+
+        sortItemsAlphabetically(rack, 'address')
 
         // Loop through nodes in the rack
         for (let rackNode of rack) {

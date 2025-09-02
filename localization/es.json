@@ -470,7 +470,7 @@
       "the snippet has been successfully updated": "el fragmento se ha actualizado correctamente",
       "toggle the AxonOps integration feature for this connection": "alternar la integración de AxonOps para esta conexión",
       "AxonOps": "AxonOps",
-      "axonOps integration feature is enabled": "la integración de AxonOps está habilitada",
+      "launch AxonOps": "lanzar AxonOps",
       "CQL console": "consola CQL",
       "close and disconnect": "cerrar y desconectar",
       "statements history": "historial de sentencias",

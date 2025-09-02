@@ -657,7 +657,10 @@
       "the snippet might include commands that can change data or database structure": "el fragmento puede incluir comandos que modifiquen datos o la estructura de la base de datos",
       "revert changes": "revertir cambios",
       "search by name, hostname, and relative data": "buscar por nombre, host y datos relativos",
-      "hint": "pista"
-  }
+      "hint": "pista",
+      "when the AxonOps Self-Host option is selected, a valid URL with both protocol and host is required. Please provide these before $data the connection": "cuando se selecciona la opción AxonOps Self-Host, se requiere una URL válida con protocolo y host. Por favor proporciónelos antes de $data la conexión",
+      "updating": "actualizando",
+      "saving": "guardando"
+    }
   }
 }

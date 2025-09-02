@@ -657,7 +657,10 @@
       "the snippet might include commands that can change data or database structure": "l'extrait peut contenir des commandes susceptibles de modifier les données ou la structure de la base",
       "revert changes": "annuler les modifications",
       "search by name, hostname, and relative data": "rechercher par nom, hôte et données relatives",
-      "hint": "tep"
+      "hint": "tep",
+      "when the AxonOps Self-Host option is selected, a valid URL with both protocol and host is required. Please provide these before $data the connection": "Lorsque l’option AxonOps Self-Host est sélectionnée, une URL valide comprenant à la fois le protocole et l’hôte est requise. Veuillez les fournir avant de $data la connexion",
+      "updating": "mise à jour",
+      "saving": "enregistrement"
     }
   }
 }

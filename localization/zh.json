@@ -470,7 +470,7 @@
       "the snippet has been successfully updated": "片段已成功更新",
       "toggle the AxonOps integration feature for this connection": "切换此连接的 AxonOps 集成功能",
       "AxonOps": "AxonOps",
-      "axonOps integration feature is enabled": "AxonOps 集成功能已启用",
+      "launch AxonOps": "启动 AxonOps",
       "CQL console": "CQL 控制台",
       "close and disconnect": "关闭并断开连接",
       "statements history": "语句历史",

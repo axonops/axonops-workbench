@@ -2502,3 +2502,10 @@
 
   IPCRenderer.on('theme:is-dark', (_, isHostThemeDarkUpdated) => isHostThemeDark = isHostThemeDarkUpdated)
 }
+
+// Prevent mouse click on `a` elements from opening a new tab
+{
+  window.addEventListener("auxclick", (event) => {
+    if (event.button === 1) event.preventDefault()
+  })
+}

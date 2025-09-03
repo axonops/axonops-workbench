@@ -732,7 +732,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                      <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps in browser" capitalize-first data-title="Open AxonOps in browser" ${getAttributes(connectionElement, 'data-axonops-installed') !== 'true' ? 'hidden' : ''}>
                                        <ion-icon name="globe"></ion-icon>
                                      </div>
-                                     <div class="axonops-integration-icon" data-tippy="tooltip" data-mdb-placement="left" data-mulang="axonOps integration feature is enabled" capitalize-first data-title="AxonOps integration feature is enabled" ${!isAxonOpsIntegrationActionEnabled ? 'hidden' : ''}>
+                                     <div class="axonops-integration-icon" data-tippy="tooltip" data-mdb-placement="left" data-mulang="launch AxonOps" capitalize-first data-title="Launch AxonOps" ${!isAxonOpsIntegrationActionEnabled ? 'hidden' : ''}>
                                        <ion-icon name="axonops"></ion-icon>
                                        <ion-icon name="globe"></ion-icon>
                                      </div>
@@ -7672,7 +7672,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       })
 
                       workareaElement.find('div.axonops-integration-icon').click(() => {
-                        let url = connectionElement.attr('data-axonops-integration-url') == 'axonops-saas' ? Modules.Consts.AxonOpsIntegration.DefaultURL : `${connectionElement.attr('data-axonops-integration-url')}`,
+                        let isAxonOpsSaaS = connectionElement.attr('data-axonops-integration-url') == 'axonops-saas',
+                          url = isAxonOpsSaaS ? Modules.Consts.AxonOpsIntegration.DefaultURL : `${connectionElement.attr('data-axonops-integration-url')}`,
                           isValidURL = false
 
                         try {
@@ -7684,6 +7685,15 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                         if (!isValidURL)
                           return showToast(I18next.capitalize(I18next.t('axonOps integration feature')), I18next.capitalizeFirstLetter(I18next.replaceData('the provided URL for this connection [code]$data[/code] seems invalid, consider to update the connection and try again', [urlHost])) + '.', 'failure')
+
+                        try {
+                          if (!isAxonOpsSaaS)
+                            throw 0
+
+                          let [organization, clustername] = getAttributes(connectionElement, ['data-axonops-integration-organization', 'data-axonops-integration-clustername'])
+
+                          url = new URL(`${organization}/cassandra/${clustername}`, url).href
+                        } catch (e) {}
 
                         try {
                           Open(url)

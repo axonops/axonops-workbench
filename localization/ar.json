@@ -470,7 +470,7 @@
       "the snippet has been successfully updated": "تم تحديث القصاصة بنجاح",
       "toggle the AxonOps integration feature for this connection": "تبديل ميزة دمج AxonOps لهذا الاتصال",
       "AxonOps": "AxonOps",
-      "axonOps integration feature is enabled": "ميزة دمج AxonOps مفعلة",
+      "launch AxonOps": "تشغيل AxonOps",
       "CQL console": "الكونسول CQL",
       "close and disconnect": "إغلاق وفصل الاتصال",
       "statements history": "سجل الاوامر",

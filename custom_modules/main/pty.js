@@ -888,7 +888,53 @@ let testConnection = (window, data) => {
     // All output from the testing process is appended here
     fullOutput = '',
     // The connection test process' ID
-    processID = data.processID
+    processID = data.processID,
+    terminateProcess = () => {
+      // Define final status to be returned
+      let status = false
+
+      try {
+        // Call the `destroy` function from the pty instance
+        tempProcess.destroy()
+
+        // Attempt to kill the pty instance process by its process ID
+        Kill(tempProcess.pid, 'SIGKILL')
+
+        // Successfully terminated
+        status = true
+      } catch (e) {
+        try {
+          // If the error is a number then don't log the error
+          if (!isNaN(parseInt(e.toString())))
+            throw 0
+
+          addLog(`Error in process terminal. Details: ${e}`, 'error')
+        } catch (e) {}
+      } finally {
+        // Send final status
+        window.webContents.send(`process:terminate:${processID}:result`, status)
+
+        // Send to the renderer thread that the test process has been finished with `terminated` attribute
+        window.webContents.send(`pty:test-connection:${data.requestID}`, {
+          ...result,
+          terminated: true
+        })
+      }
+    }
+
+  try {
+    let request = global.terminatedTestsIDs.find((id) => id.requestID == data.requestID)
+
+    if (request == undefined)
+      throw 0
+
+    if (!request.replySent)
+      terminateProcess()
+
+    request.replySent = true
+
+    return
+  } catch (e) {}
 
   // There might be duplicated code here; as this function is isolated from the Pty class
   try {
@@ -1104,38 +1150,7 @@ let testConnection = (window, data) => {
     }
 
     // Received request to terminate the connection test process
-    IPCMain.on(`process:terminate:${processID}`, (_, __) => {
-      // Define final status to be returned
-      let status = false
-
-      try {
-        // Call the `destroy` function from the pty instance
-        tempProcess.destroy()
-
-        // Attempt to kill the pty instance process by its process ID
-        Kill(tempProcess.pid, 'SIGKILL')
-
-        // Successfully terminated
-        status = true
-      } catch (e) {
-        try {
-          // If the error is a number then don't log the error
-          if (!isNaN(parseInt(e.toString())))
-            throw 0
-
-          addLog(`Error in process terminal. Details: ${e}`, 'error')
-        } catch (e) {}
-      } finally {
-        // Send final status
-        window.webContents.send(`process:terminate:${processID}:result`, status)
-
-        // Send to the renderer thread that the test process has been finished with `terminated` attribute
-        window.webContents.send(`pty:test-connection:${data.requestID}`, {
-          ...result,
-          terminated: true
-        })
-      }
-    })
+    IPCMain.on(`process:terminate:${processID}`, (_, __) => terminateProcess())
   } catch (e) {
     try {
       // If the error is a number then don't log the error

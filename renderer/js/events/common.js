@@ -1621,7 +1621,10 @@
     // Point at the items
     let actionButton = $(`div.dropdown.more-actions ul.dropdown-menu li a.dropdown-item`),
       // Set the zoom level - initially 100% -
-      zoomLevel = 100
+      zoomLevel = parseInt(Store.get('zooming')) || 100
+
+    if (zoomLevel != 100)
+      $('body').css('zoom', `${zoomLevel}%`)
 
     // Listen to the `click` event
     actionButton.click(function() {
@@ -1635,6 +1638,9 @@
           $('body').css('zoom', `${zoomLevel}%`)
           $('div.terminal-container div.terminal.xterm').trigger('changefont', 187)
 
+          // Store the value as it'll be applied in the next launch
+          Store.set('zooming', zoomLevel)
+
           // Add log for this action
           try {
             addLog(`Zoom in the UI by '${zoomLevel}%'`, 'action')
@@ -1646,6 +1652,9 @@
           $('body').css('zoom', `${zoomLevel}%`)
           $('div.terminal-container div.terminal.xterm').trigger('changefont', 189)
 
+          // Store the value as it'll be applied in the next launch
+          Store.set('zooming', zoomLevel)
+
           // Add log for this action
           try {
             addLog(`Zoom out the UI by '${zoomLevel}%'`, 'action')
@@ -1656,6 +1665,9 @@
           zoomLevel = 100
           $('body').css('zoom', `${zoomLevel}%`)
           $('div.terminal-container div.terminal.xterm').trigger('changefont', 48)
+
+          // Store the value as it'll be applied in the next launch
+          Store.set('zooming', zoomLevel)
 
           // Add log for this action
           try {

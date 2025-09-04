@@ -100,6 +100,8 @@ global.IsCLIMode = false
  */
 global.extraResourcesPath = App.isPackaged ? Path.join(App.getPath('home'), (process.platform != 'win32' ? '.' : '') + 'axonops-workbench') : null
 
+global.terminatedTestsIDs = []
+
 // Define a CLI object
 let CLI
 

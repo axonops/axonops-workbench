@@ -115,6 +115,14 @@ const NativeImage = Electron.nativeImage,
 
   // Terminate a connection test process - especially docker/sandbox project -
   IPCMain.on(`pty:test-connection:terminate`, (_, requestID) => {
+    if (global.terminatedTestsIDs.find((id) => id.requestID == requestID) != undefined)
+      return
+
+    global.terminatedTestsIDs.push({
+      requestID,
+      replySent: false
+    })
+
     // Send the request to associated renderer thread
     views.main.webContents.send(`pty:test-connection:${requestID}`, {
       connected: false,

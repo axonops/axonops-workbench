@@ -24,6 +24,10 @@ const YAML = require('js-yaml')
 // Set the docker container's default path
 const DockerContainersPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters')
 
+const {
+  migrateDockerComposeFile
+} = require('./docker-migration')
+
 /**
  * Set the default docker compose binary to be used
  * Will be updated with Podman tool if needed
@@ -305,24 +309,19 @@ class DockerCompose {
 
     // Automatically migrate legacy docker-compose file if needed
     try {
-      const {
-        migrateDockerComposeFile
-      } = require('./docker-migration');
-      const migrationResult = await migrateDockerComposeFile(Path.join(DockerContainersPath, this.folderName));
+      let migrationResult = await migrateDockerComposeFile(Path.join(DockerContainersPath, this.folderName))
 
       // Log migration status (no user interaction needed)
-      if (migrationResult.migrated) {
-        try {
+      try {
+        if (migrationResult.migrated)
           addLog(`Docker Compose file automatically migrated to new format. Backup created: ${migrationResult.backupPath}`, 'info')
-        } catch (e) {}
-      }
+      } catch (e) {}
 
       // If migration was needed but failed, log it but continue anyway
-      if (migrationResult.needed && !migrationResult.migrated) {
-        try {
+      try {
+        if (migrationResult.needed && !migrationResult.migrated)
           addLog(`Warning: Could not migrate docker-compose.yml: ${migrationResult.message}`, 'warning')
-        } catch (e) {}
-      }
+      } catch (e) {}
     } catch (migrationError) {
       // Log migration error but don't stop the process
       try {
@@ -551,7 +550,10 @@ let getDockerComposeBinary = () => dockerComposeBinary
  *
  * @Return: {boolean}
  */
-let checkCassandraInContainer = (pinnedToastID, port, callback, timestamp = null, requestID = null, send = true) => {
+let checkCassandraInContainer = (pinnedToastID, port, callback, timestamp = null, requestID = null, send = true, isTerminated = false) => {
+  if (isTerminated)
+    return
+
   // Define the checking process' different timeout values
   const TimeOut = {
     // Maximum timeout - when it's exceeded the process will be terminated with failure -
@@ -588,7 +590,8 @@ let checkCassandraInContainer = (pinnedToastID, port, callback, timestamp = null
   // Send test request to the main thread and pass the port and the request's ID
   IPCRenderer.send('pty:test-connection', {
     sshPort: port,
-    requestID
+    requestID,
+    processID: getRandom.id(20)
   })
 
   // Once a response from the main thread has been received
@@ -650,7 +653,7 @@ let checkCassandraInContainer = (pinnedToastID, port, callback, timestamp = null
      * Call the function again in a recursive loop
      * Calling it after defined seconds is to give the main thread enough time to terminate the PTY instance and get rid of artifacts
      */
-    setTimeout(() => checkCassandraInContainer(pinnedToastID, port, callback, timestamp, requestID, send), TimeOut.retry)
+    setTimeout(() => checkCassandraInContainer(pinnedToastID, port, callback, timestamp, requestID, send, result.terminated || isTerminated), TimeOut.retry)
   })
 }
 
@@ -907,76 +910,110 @@ Terminal.spawn = (command, pinnedToastID, process, callback) => {
   let tempFileName = Path.join(OS.tmpdir(), `${getRandom.id(10)}.tmp`),
     // Set the process' start time
     startTime = new Date().getTime(),
-    // Define an output watcher - will watch the temporary file changes
-    outputWatcher,
-    // Define the initial command's output
-    commandOutput = ''
+    // Define watching interval and timeout controls
+    watchingInterval,
+    // Stop the watching process if it's set to be `false`
+    isWatchingActive = true,
+    // Define the initial command's output and last file size
+    commandOutput = '',
+    /**
+     * New way has been implemented:
+     * Instead of `watch`, we compare the last detected size and last modification timestamp with the new provided ones
+     */
+    lastFileSize = 0,
+    lastModified = 0
 
-  // Inner function to watch the temporary file's changes
+  // Inner function to watch (now poll) the temporary file for changes
   let watchTempFile = () => {
+    // If the watching process should be stopped then exit from the execution cycle
+    if (!isWatchingActive)
+      return
+
     try {
-      // Set a watching process
-      outputWatcher = FS.watch(tempFileName, (eventType, _) => {
+      // Check if file exists and get its stats
+      FS.stat(tempFileName, (err, stats) => {
+        if (err || !isWatchingActive)
+          return
+
+        // Check if file has been modified since last check
+        let currentModified = stats.mtime.getTime(),
+          currentSize = stats.size
+
         try {
-          // If the event type is not `change` in content then skip this try-catch block
-          if (eventType != 'change')
+          // If there's no change since the last check then skip this try-catch block
+          if (!(currentModified > lastModified || currentSize !== lastFileSize))
             throw 0
 
-          /**
-           * Reaching here means the temporary file's content has been changed
-           * Read the file's content
-           */
-          FS.readFile(tempFileName, (err, output) => {
-            // If there's any error then skip the upcoming code
-            if (err)
+          lastModified = currentModified
+
+          lastFileSize = currentSize
+
+          // Read the file content
+          FS.readFile(tempFileName, 'utf8', (readErr, output) => {
+            if (readErr || !isWatchingActive)
               return
 
-            // Convert the output to a string
-            output = output.toString()
+            try {
+              // Strip all HTML tags from the output
+              output = StripTags(output)
 
-            // Strip all HTML tags from the output
-            output = StripTags(output)
+              // Replace the break line character `\n` with HTML break line `<br>`
+              output = output.replace(/\n/g, '<br>')
 
-            // Replace the break line character `\n` with HTML break line `<br>`
-            output = output.replace(/\n/g, '<br>')
+              // Wrap the output inside a `code` element
+              commandOutput = `<code>${output}</code>`
 
-            // Wrap the output inside a `code` element
-            commandOutput = `<code>${output}</code>`
-
-            // Update the associated pinned toast's body content
-            if (pinnedToastID != undefined)
-              pinnedToast.update(pinnedToastID, commandOutput)
+              // Update the associated pinned toast's body content
+              if (pinnedToastID != undefined && isWatchingActive)
+                pinnedToast.update(pinnedToastID, commandOutput)
+            } catch (e) {}
           })
         } catch (e) {}
+
+        // Continue watching if still active
+        if (isWatchingActive)
+          setTimeout(watchTempFile, 300)
       })
-    } catch (e) {}
+    } catch (e) {
+      if (isWatchingActive)
+        setTimeout(watchTempFile, 5000)
+    }
   }
 
-  // Inner function to check - and watch - whether or not the temporary file has been created
+  // Inner function to check if the temporary file has been created
   let checkFileCreated = () => {
+    if (!isWatchingActive)
+      return
+
     setTimeout(() => {
       // Get this checking/watching process' starting time
       let currentTime = new Date().getTime(),
         // Determine if the watching process overall has exceeded 1 minute
         isTimeExceeded = (currentTime - startTime) > 60000
 
-      // Check the temporary file's existence
-      FS.exists(tempFileName, (exists) => {
-        // If the file does not exist and the process hasn't exceeded 1 minute then keep the process alive
-        if (!exists && !isTimeExceeded)
-          checkFileCreated()
+      // If the process has exceeded 1 minute then end it
+      if (isTimeExceeded) {
+        isWatchingActive = false
 
-        // If the process has exceeded 1 minute then end it
-        if (isTimeExceeded)
+        return
+      }
+
+      // Check the temporary file's existence
+      FS.access(tempFileName, FS.constants.F_OK, (err) => {
+        if (!isWatchingActive)
           return
 
-        // The file has been created and its content is ready to be watched
+        // File doesn't exist yet, keep checking
+        if (err)
+          return checkFileCreated()
+
+        // File exists, start watching for changes
         watchTempFile()
       })
     }, 500)
   }
 
-  // Call the file's existence watcher
+  // Start checking for file creation
   checkFileCreated()
 
   // Update the passed command by dumping its output to the temporary file
@@ -984,40 +1021,52 @@ Terminal.spawn = (command, pinnedToastID, process, callback) => {
 
   // Execute the manipulated command
   Terminal.run(command, (error, stdout, stderr) => {
-    // Once the execution finish
-    FS.readFile(tempFileName, 'utf8', (_, content) => {
-      try {
-        // The process is `start` a docker project, thus the app needs to tell the user about the next sub-process
-        if (process == 'start' && !error && !stderr) {
-          pinnedToast.update(pinnedToastID, '++Waiting for Cassandra to be up and ready.')
+    // Stop all watching activities
+    isWatchingActive = false
 
-          // Skip the upcoming code in the try-catch block
-          throw 0
-        }
+    try {
+      clearTimeout(watchingInterval)
+    } catch (e) {}
 
-        // The process is `stop` a docker project thus there's no need to keep the pinned toast
-        pinnedToast.update(pinnedToastID, true, true)
-      } catch (e) {}
+    setTimeout(() => {
+      // Read the final content
+      FS.readFile(tempFileName, 'utf8', (readErr, content) => {
+        // Default to empty string if read fails
+        if (readErr)
+          content = ''
 
-      // Delete the temporary file
-      try {
-        setTimeout(() => FS.unlinkSync(tempFileName))
-      } catch (e) {}
+        try {
+          // The process is `start` a docker project, thus the app needs to tell the user about the next sub-process
+          if (process == 'start' && !error && !stderr) {
+            if (pinnedToastID != undefined)
+              pinnedToast.update(pinnedToastID, '++Waiting for Cassandra to be up and ready.')
 
-      // Close the temporary file's watcher
-      setTimeout(() => {
-        if (outputWatcher == null)
-          return
+            // Skip the upcoming code in the try-catch block
+            throw 0
+          }
 
-        outputWatcher.close()
+          // The process is `stop` a docker project thus there's no need to keep the pinned toast
+          if (pinnedToastID != undefined)
+            pinnedToast.update(pinnedToastID, true, true)
+        } catch (e) {}
+
+        // Delete the temporary file with better error handling
+        setTimeout(() => {
+          FS.unlink(tempFileName, (unlinkErr) => {
+            isWatchingActive = false
+
+            try {
+              clearTimeout(watchingInterval)
+            } catch (e) {}
+          })
+        }, 100)
+
+        // Call the callback function
+        callback(error, content, stderr)
       })
-
-      // Call the callback function
-      callback(error, content, stderr)
-    })
+    }, 100)
   })
 }
-
 
 /**
  * Manipulate the original `run` function if the platform is macOS

@@ -37,6 +37,8 @@ codesign*
 data/logging/*
 !data/logging/temp.txt
 
+internal_data/*
+
 data/workspaces/*
 !data/workspaces/temp.txt
 
@@ -52,4 +54,3 @@ main/bin/*
 **/__pycache__
 
 .env
-

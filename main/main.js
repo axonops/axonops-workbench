@@ -520,7 +520,7 @@ App.on('ready', () => {
          * Send a `shown` status to the main view
          * This will tell the app to load workspaces
          */
-        views.main.webContents.send('windows-shown')
+        setTimeout(() => views.main.webContents.send('windows-shown'))
       }, 100)
     }, 125)
   }

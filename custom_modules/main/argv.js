@@ -8,7 +8,8 @@ const Argv = App.commandLine,
    * An implementation of PHP `strip_tags` in Node.js
    * Used for stripping HTML tags from a given string
    */
-  StripTags = require('@ramumb/strip-tags')
+  StripTags = require('@ramumb/strip-tags'),
+  Table = require('cli-table3')
 
 /**
  * Get platform (`win32`, `linux` or `darwin`)
@@ -38,6 +39,9 @@ let exitApp = () => process.exit(0),
       func()
   }
 
+global.IPCMain.on('cli:ready', () => {
+  isReadyToCallFunctions = true
+})
 
 /**
  * Minify a given text by manipulating it, plus getting rid of new lines
@@ -73,55 +77,67 @@ var arguments = {},
       name: 'help',
       flag: 'h',
       typeLabel: ' ',
-      description: '> Print all supported arguments.'
+      description: '> Print all supported arguments.\n\n'
     },
     {
       name: 'version',
       flag: 'v',
       typeLabel: ' ',
-      description: '> Print the current version of AxonOps Workbench.'
+      description: '> Print the current version of AxonOps Workbench.\n\n'
     },
     {
       name: 'list-workspaces',
       flag: '',
       typeLabel: ' ',
-      description: '> List all saved workspaces in the workbench without their connections.'
+      description: '> List all saved workspaces in the workbench without their connections.\n\n'
+    },
+    {
+      name: 'list-connections',
+      typeLabel: '{underline Str: Workspace ID}',
+      flag: '',
+      description: '> List all saved connections in a specific workspace by passing its ID.\n\n'
     },
     {
       name: 'import-workspace',
       flag: '',
-      typeLabel: '{underline String: JSON or File Path}',
-      description: '> Import a workspace by either directly passing a JSON string containing specific data, or by passing an absolute path of a file containing a valid JSON string.'
+      typeLabel: '{underline Str: JSON or File/Folder Path}',
+      description: '> Import a workspace by either:\n>> Directly passing a JSON string containing specific data {italic - see the Readme file -}.\n>> Passing an absolute path of a file containing a valid JSON string {italic - see the Readme file -}.\n>> Passing an absolute path of a single workspace folder, or a folder contains multiple workspaces folders - one depth level -, the import process will also import the connections. {rgb(0,0,255).bold Note}: The Workbench will import all connections without specification, if there\'s a name duplication regarding the workspace name the process will be terminated.\n\n'
     },
     {
-      name: 'list-connections',
-      typeLabel: '{underline String: Workspace ID}',
+      name: 'copy-to-default',
       flag: '',
-      description: '> List all saved connections in a specific workspace by passing its ID.'
+      typeLabel: ' ',
+      description: '> For {bold import-workspace} argument, if the value is a folder path, the workspace will be copied to the default data directory. Without this argument, the import process detects workspaces and leaves them in the original path.\n\n'
     },
     {
       name: 'import-connection',
       flag: '',
-      typeLabel: '{underline String: JSON File Path}',
-      description: '> Import a connection by passing an absolute path of a file containing a valid JSON string. {rgb(0,0,255).bold Note}: {italic this action supports passing SSH tunnel info in a specific format, and a cqlsh.rc file path, however, username and password should be passed within the JSON string, if they exist in the cqlsh config file they will be ignored}.'
+      typeLabel: '{underline Str: JSON File Path}',
+      description: '> Import a connection by passing an absolute path of a file containing a valid JSON string. {rgb(0,0,255).bold Note}: {italic this action supports passing SSH tunnel info in a specific format, and a cqlsh.rc file path, however, username and password should be passed within the JSON string, if they exist in the cqlsh config file they will be ignored}.\n\n'
     },
     {
-      name: 'test-connection',
+      name: 'json',
       flag: '',
-      typeLabel: '{underline Boolean: true or false}',
-      description: '> For {bold import-connection} argument, test the connection about to be imported before finalizing the import process, passing it with {bold true} value will stop the importing process in case the connection has failed, otherwise, passing it without specifying a value or with {bold false} value will not stop the importing process, in both cases a feedback will be printed.'
+      typeLabel: ' ',
+      description: '> For {bold list-workspaces}, {bold list-connections}, {bold import-workspace} and {bold import-connections} arguments, the output will be a JSON object or an array of JSON items (as a string) instead of a formatted text.\n\n'
     },
     {
       name: 'delete-file',
       flag: '',
       typeLabel: ' ',
-      description: '> For {bold import-workspace} and {bold import-connection} arguments, delete the provided file after successful feedback.'
+      description: '> For {bold import-workspace} and {bold import-connection} arguments, it deletes the provided file - or folder - after successful import. {rgb(0,0,255).bold Note}: If {bold import-workspace} is given a folder path then the deletion request will be ignored.\n\n'
+    },
+    {
+      name: 'test-connection',
+      flag: '',
+      typeLabel: '{underline Bool: true or false}',
+      description: '> For {bold import-connection} argument, test the connection about to be imported before finalizing the import process, passing it with {bold true} value will stop the importing process in case the connection has failed, otherwise, passing it without specifying a value or with {bold false} value will not stop the importing process, in both cases a feedback will be printed.\n\n'
     },
     {
       name: 'connect',
       flag: '',
-      typeLabel: '{underline String: connection ID}',
-      description: '> Connect directly to a saved connection and start a cqlsh session by passing its ID.'
+      typeLabel: '{underline Str: connection ID}',
+      description: '> Connect directly to a saved connection and start a cqlsh session by passing its ID.\n\n'
     },
   ],
   supportedArguments = [],
@@ -175,11 +191,15 @@ let init = () => {
 
   sections = [{
       header: `${AppInfo.title}`,
-      content: 'CLI feature to interact with the workbench from the command line interface.'
+      content: 'CLI feature to interact with the workbench from the command line interface.\n\n{rgb(0,0,255).italic Readme:}\nhttps://github.com/axonops/axonops-workbench/blob/main/docs/cli.md'
     },
     {
       header: `Copyright Notices`,
-      content: StripTags(`${Consts.LegalNotice}`)
+      content: StripTags(`${Consts.LegalNotice}`) + '.'
+    },
+    {
+      header: `{rgb(0,0,255).underline Note For Windows}`,
+      content: `On Windows, the shell may show the prompt immediately without waiting for Workbench to finish, so run it as {bold start /wait "" "AxonOps Workbench.exe" (Arguments)} to ensure it waits until completion`
     },
     {
       header: 'Supported Arguments',
@@ -227,24 +247,39 @@ let start = async () => {
         if (argument != 'list-workspaces')
           throw 0
 
-        spinnerObj.setSpinnerTitle(`%s ${Chalk.bold('Retreving saved workspaces')}`)
-        spinnerObj.start()
+        let isJSONArgPassed = argumentsNames.includes('json')
+
+        if (!isJSONArgPassed) {
+          spinnerObj.setSpinnerTitle(`%s ${Chalk.bold('Retreving saved workspaces')}`)
+          spinnerObj.start()
+        }
 
         callWhenReady(() => {
           global.views.main.webContents.send('cli:list-workspaces')
 
           global.IPCMain.on('cli:list-workspaces:result', (_, workspaces) => {
-            spinnerObj.end()
+            if (!isJSONArgPassed)
+              spinnerObj.end()
 
-            workspaces = (workspaces || []).map((workspace) => {
-              return {
-                'Workspace ID': workspace.id,
-                'Workspace Name': workspace.name,
-                'Number of connections': workspace.connections.length
-              }
-            })
+            if (!isJSONArgPassed) {
+              let workspacesTable = new Table({
+                head: ['Workspace ID', 'Workspace Name', 'Number of Connections']
+              })
 
-            console.log(workspaces)
+              workspacesTable.push(...(workspaces || []).map((workspace) => [workspace.id, workspace.name, workspace.connections.length]))
+
+              console.log(workspacesTable.toString())
+            } else {
+              workspaces = (workspaces || []).map((workspace) => {
+                return {
+                  'id': workspace.id,
+                  'name': workspace.name,
+                  'connectionsCount': workspace.connections.length
+                }
+              })
+
+              console.log(JSON.stringify(workspaces))
+            }
 
             exitApp()
           })
@@ -257,16 +292,20 @@ let start = async () => {
         if (argument != 'list-connections')
           throw 0
 
-        let workspaceID = `${arguments[argument]}`
+        let isJSONArgPassed = argumentsNames.includes('json'),
+          workspaceID = `${arguments[argument]}`
 
-        spinnerObj.setSpinnerTitle(`%s ${Chalk.bold('Retreving saved connections in workspace #' + workspaceID)}`)
-        spinnerObj.start()
+        if (!isJSONArgPassed) {
+          spinnerObj.setSpinnerTitle(`%s ${Chalk.bold('Retreving saved connections in workspace #' + workspaceID)}`)
+          spinnerObj.start()
+        }
 
         callWhenReady(() => {
           global.views.main.webContents.send('cli:list-connections', workspaceID)
 
           global.IPCMain.on('cli:list-connections:result', (_, connections) => {
-            spinnerObj.end()
+            if (!isJSONArgPassed)
+              spinnerObj.end()
 
             connections = connections.map((connection) => {
               return {
@@ -276,7 +315,17 @@ let start = async () => {
               }
             })
 
-            console.log(connections)
+            if (!isJSONArgPassed) {
+              let connectionsTable = new Table({
+                head: ['Connection ID', 'Connection Name', 'Connection Hostname']
+              })
+
+              connectionsTable.push(...(connections || []).map((connection) => [connection.id, connection.name, connection.hostname]))
+
+              console.log(connectionsTable.toString())
+            } else {
+              console.log(JSON.stringify(connections))
+            }
 
             exitApp()
           })
@@ -289,37 +338,70 @@ let start = async () => {
         if (argument != 'import-workspace')
           throw 0
 
-        let isDeleteFileArgPassed = argumentsNames.includes('delete-file')
+        let isDeleteFileArgPassed = argumentsNames.includes('delete-file'),
+          isCopyToDefaultArgPassed = argumentsNames.includes('copy-to-default'),
+          isJSONArgPassed = argumentsNames.includes('json')
 
-        spinnerObj.setSpinnerTitle(`%s ${Chalk.bold('Importing workspace')}`)
-        spinnerObj.start()
+        if (!isJSONArgPassed) {
+          spinnerObj.setSpinnerTitle(`%s ${Chalk.bold('Importing workspace')}`)
+          spinnerObj.start()
+        }
 
         callWhenReady(() => {
-          global.views.main.webContents.send('cli:import-workspace', `${arguments[argument]}`)
+          global.views.main.webContents.send('cli:import-workspace', {
+            argumentInput: `${arguments[argument]}`,
+            copyToDefaultPath: isCopyToDefaultArgPassed
+          })
 
-          global.IPCMain.on('cli:import-workspace:result', (_, result) => {
-            spinnerObj.end()
+          global.IPCMain.on('cli:import-workspace:result', (_, results) => {
+            if (!isJSONArgPassed)
+              spinnerObj.end()
 
-            switch (result.code) {
-              case -3: {
-                console.log(Chalk.red(`[${Chalk.bold('ERROR')}]: Failed to import workspace. ${Chalk.underline('Reason')}: ${result.text}.`))
-                break
-              }
-              case -2: {
-                console.log(Chalk.red(`[${Chalk.bold('ERROR')}]: Failed to import workspace. ${Chalk.underline('Reason')}: ID duplication detected.`))
-                break
-              }
-              case -1: {
-                console.log(Chalk.red(`[${Chalk.bold('ERROR')}]: Failed to import workspace. ${Chalk.underline('Reason')}: Name duplication detected.`))
-                break
-              }
-              case 0: {
-                console.log(Chalk.red(`[${Chalk.bold('ERROR')}]: Failed to import workspace. ${Chalk.underline('Reason')}: Process has been interrupted.`))
-                break
-              }
-              case 1: {
-                console.log(Chalk.green(`[${Chalk.bold('SUCCESS')}]: Workspace ${Chalk.bold(result.text[0])} has been successfully imported and saved with ID ${Chalk.bold(result.text[1])}.`))
-                break
+            try {
+              results = typeof results[Symbol.iterator] != 'function' ? [results] : results
+            } catch (e) {}
+
+            if (isJSONArgPassed) {
+              console.log(JSON.stringify({
+                code: {
+                  '-3': 'Other reasons',
+                  '-2': 'ID duplication',
+                  '-1': 'Name duplication',
+                  '0': 'Process interrupted',
+                  '1': 'Successfully imported',
+                },
+                result: results
+              }))
+            } else {
+              for (let result of results) {
+                let workspaceName = ''
+
+                try {
+                  workspaceName = typeof result.text === 'object' ? result.text[0] : ''
+                } catch (e) {}
+
+                switch (result.code) {
+                  case -3: {
+                    console.log(Chalk.red(`[${Chalk.bold('ERROR')}]: Failed to import workspace${workspaceName.length != 0 ? (' ' + workspaceName) : ''}. ${Chalk.underline('Reason')}: ${result.text}.`))
+                    break
+                  }
+                  case -2: {
+                    console.log(Chalk.red(`[${Chalk.bold('ERROR')}]: Failed to import workspace${workspaceName.length != 0 ? (' ' + workspaceName) : ''}. ${Chalk.underline('Reason')}: ID duplication detected.`))
+                    break
+                  }
+                  case -1: {
+                    console.log(Chalk.red(`[${Chalk.bold('ERROR')}]: Failed to import workspace${workspaceName.length != 0 ? (' ' + workspaceName) : ''}. ${Chalk.underline('Reason')}: Name duplication detected.`))
+                    break
+                  }
+                  case 0: {
+                    console.log(Chalk.red(`[${Chalk.bold('ERROR')}]: Failed to import workspace${workspaceName.length != 0 ? (' ' + workspaceName) : ''}. ${Chalk.underline('Reason')}: Process has been interrupted.`))
+                    break
+                  }
+                  case 1: {
+                    console.log(Chalk.green(`[${Chalk.bold('SUCCESS')}]: Workspace ${Chalk.bold(result.text[0])} has been successfully imported and saved with ID ${Chalk.bold(result.text[1])}.`))
+                    break
+                  }
+                }
               }
             }
 
@@ -334,9 +416,10 @@ let start = async () => {
 
               FS.unlinkSync(`${arguments[argument]}`)
 
-              console.log(Chalk.rgb(154, 85, 0)(`[${Chalk.bold('DELETE FILE')}]: The provided JSON string file has beeen deleted.`))
+              if (!isJSONArgPassed)
+                console.log(Chalk.rgb(154, 85, 0)(`[${Chalk.bold('DELETE FILE')}]: The provided JSON string file has beeen deleted.`))
             } catch (e) {
-              if (e != 0)
+              if (e != 0 && !isJSONArgPassed)
                 console.log(Chalk.red(`[${Chalk.bold('DELETE FILE')}]: Something went wrong, failed to delete the provided JSON string file.`))
             }
 
@@ -351,12 +434,16 @@ let start = async () => {
         if (argument != 'import-connection')
           throw 0
 
-        spinnerObj.setSpinnerTitle(`%s ${Chalk.bold('Importing connection')}`)
-        spinnerObj.start()
 
         let isDeleteFileArgPassed = argumentsNames.includes('delete-file'),
           isTestConnectionArgPassed = argumentsNames.includes('test-connection'),
-          testConnectionValue = isTestConnectionArgPassed ? (arguments['test-connection'] == undefined ? false : arguments['test-connection'] == 'true') : ''
+          testConnectionValue = isTestConnectionArgPassed ? (arguments['test-connection'] == undefined ? false : arguments['test-connection'] == 'true') : '',
+          isJSONArgPassed = argumentsNames.includes('json')
+
+        if (!isJSONArgPassed) {
+          spinnerObj.setSpinnerTitle(`%s ${Chalk.bold('Importing connection')}`)
+          spinnerObj.start()
+        }
 
         callWhenReady(() => {
           global.views.main.webContents.send('cli:import-connection', {
@@ -367,40 +454,52 @@ let start = async () => {
             }
           })
 
-          global.IPCMain.on('cli:import-connection:found-sens-data', (_, data) => {
-            spinnerObj.end()
+          if (!isJSONArgPassed)
+            global.IPCMain.on('cli:import-connection:found-sens-data', (_, data) => {
+              spinnerObj.end()
 
-            console.log(Chalk.rgb(154, 85, 0)(`[${Chalk.bold('WARNING')}]: Sensitive data has been found in the provided cqlsh.rc file (${data.join(', ')}) and has been removed.`))
+              console.log(Chalk.rgb(154, 85, 0)(`[${Chalk.bold('WARNING')}]: Sensitive data has been found in the provided cqlsh.rc file (${data.join(', ')}) and has been removed.`))
 
-            spinnerObj.start()
-          })
+              spinnerObj.start()
+            })
 
           global.IPCMain.on('cli:import-connection:test-connection:result', (_, data) => {
-            spinnerObj.end()
+            if (!isJSONArgPassed) {
+              spinnerObj.end()
 
-            console.log(Chalk[data.success ? 'green' : 'red'](`[${Chalk.bold('TEST CONNECTION')}] The connection test has finished with ${data.success ? 'success, continue with importing the connection' : ('failure. Reason: ' + data.reason + '. ' + (testConnectionValue ? 'Importing process will be terminated' : 'Importing process will be continued'))}.`))
+              console.log(Chalk[data.success ? 'green' : 'red'](`[${Chalk.bold('TEST CONNECTION')}] The connection test has finished with ${data.success ? 'success, continue with importing the connection' : ('failure. Reason: ' + data.reason + '. ' + (testConnectionValue ? 'Importing process will be terminated' : 'Importing process will be continued'))}.`))
+            }
+
+            if (isJSONArgPassed && !data.success && testConnectionValue)
+              console.log(JSON.stringify(data))
 
             if (!data.success && testConnectionValue)
               exitApp()
 
-            spinnerObj.start()
+            if (!isJSONArgPassed)
+              spinnerObj.start()
           })
 
           global.IPCMain.on('cli:import-connection:result', (_, result) => {
-            spinnerObj.end()
+            if (!isJSONArgPassed)
+              spinnerObj.end()
 
-            switch (result.success) {
-              case true: {
-                console.log(Chalk.green(`[${Chalk.bold('SUCCESS')}]: Connection ${Chalk.bold(result.text[0])} has been successfully imported and saved with ID ${Chalk.bold(result.text[1])}.`))
-                break
-              }
-              case false: {
-                if (typeof result.text == 'object') {
-                  console.log(Chalk.red(`[${Chalk.bold('ERROR')}]: Failed to import connection. ${Chalk.underline('Reason')}: Possible name dupication has been detected, please recheck the provided JSON data.`))
-                } else {
-                  console.log(Chalk.red(`[${Chalk.bold('ERROR')}]: Failed to import connection. ${Chalk.underline('Reason')}: ${result.text}.`))
+            if (isJSONArgPassed) {
+              console.log(JSON.stringify(result))
+            } else {
+              switch (result.success) {
+                case true: {
+                  console.log(Chalk.green(`[${Chalk.bold('SUCCESS')}]: Connection ${Chalk.bold(result.text[0])} has been successfully imported and saved with ID ${Chalk.bold(result.text[1])}.`))
+                  break
                 }
-                break
+                case false: {
+                  if (typeof result.text == 'object') {
+                    console.log(Chalk.red(`[${Chalk.bold('ERROR')}]: Failed to import connection. ${Chalk.underline('Reason')}: Possible name dupication has been detected, please recheck the provided JSON data.`))
+                  } else {
+                    console.log(Chalk.red(`[${Chalk.bold('ERROR')}]: Failed to import connection. ${Chalk.underline('Reason')}: ${result.text}.`))
+                  }
+                  break
+                }
               }
             }
 
@@ -415,9 +514,10 @@ let start = async () => {
 
               FS.unlinkSync(`${arguments[argument]}`)
 
-              console.log(Chalk.rgb(154, 85, 0)(`[${Chalk.bold('DELETE FILE')}]: The provided JSON string file has beeen deleted.`))
+              if (!isJSONArgPassed)
+                console.log(Chalk.rgb(154, 85, 0)(`[${Chalk.bold('DELETE FILE')}]: The provided JSON string file has beeen deleted.`))
             } catch (e) {
-              if (e != 0)
+              if (e != 0 && !isJSONArgPassed)
                 console.log(Chalk.red(`[${Chalk.bold('DELETE FILE')}]: Something went wrong, failed to delete the provided JSON string file.`))
             }
 

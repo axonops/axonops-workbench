@@ -341,6 +341,7 @@
     "chartjs-plugin-zoom": "^2.2.0",
     "cheerio": "^1.1.2",
     "cli-spinner": "^0.2.10",
+    "cli-table3": "^0.6.5",
     "co": "^4.6.0",
     "command-line-usage": "^7.0.3",
     "configparser": "^0.3.10",

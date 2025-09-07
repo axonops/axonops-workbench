@@ -1893,11 +1893,24 @@ $(document).on('checkForUpdates', function(e, manualCheck = false) {
 })
 
 // Once the UI is ready, get all workspaces
-$(document).ready(() => IPCRenderer.on('windows-shown', () => {
-  IPCRenderer.send('cli:ready')
+$(document).ready(() => IPCRenderer.on('windows-shown', () => $(document).trigger('getWorkspaces')))
 
-  $(document).trigger('getWorkspaces')
-}))
+$(document).ready(() => {
+  let startTime = new Date().getTime(),
+    checkModulesAreLoaded = () => {
+      setTimeout(() => {
+        try {
+          if (Modules.Workspaces != undefined)
+            IPCRenderer.send('cli:ready')
+        } catch (e) {
+          if (new Date().getTime() - startTime < 5000)
+            checkModulesAreLoaded()
+        }
+      }, 25)
+    }
+
+  checkModulesAreLoaded()
+})
 
 $(document).on('initialize', () => {
   try {

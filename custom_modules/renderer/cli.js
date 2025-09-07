@@ -15,18 +15,24 @@
 }
 
 {
-  IPCRenderer.on('cli:import-workspace', async (_, argumentInput) => {
-    let isInputAPath = pathIsAccessible(`${argumentInput}`),
+  IPCRenderer.on('cli:import-workspace', async (_, data) => {
+    let isInputAPath = pathIsAccessible(`${data.argumentInput}`),
+      isInputADirectory = false,
       contentJSON = null,
       sendResult = (result) => IPCRenderer.send('cli:import-workspace:result', result)
 
+    // Check if the provided value is actually a directory
+    try {
+      isInputADirectory = FS.lstatSync(`${data.argumentInput}`).isDirectory() && isInputAPath
+    } catch (e) {}
+
     // Check if the given input is a path first
     try {
-      if (!isInputAPath)
+      if (!isInputAPath || isInputADirectory)
         throw 0
 
       // It's a path, attempt to read it
-      let fileContent = FS.readFileSync(`${argumentInput}`, 'utf8')
+      let fileContent = FS.readFileSync(`${data.argumentInput}`, 'utf8')
 
       // Attempt to repair it in case it's broken or invalid
       fileContent = repairJSONString(fileContent)
@@ -37,17 +43,123 @@
 
     // Check if the given input is a JSON string
     try {
-      if (isInputAPath)
+      if (isInputAPath || isInputADirectory)
         throw 0
 
       /**
        * It's not a valid path, so it's considered to be a JSON string
        * Attempt to repair it in case it's broken or invalid
        */
-      let inputContent = repairJSONString(`${argumentInput}`)
+      let inputContent = repairJSONString(`${data.argumentInput}`)
 
       // Now attempt to parse it to JSON object
       contentJSON = JSON.parse(inputContent)
+    } catch (e) {}
+
+    // Handle a folder path
+    try {
+      if (!isInputADirectory)
+        throw 0
+
+      let directoryPath = `${data.argumentInput}`,
+        itemsInDirectoryPath = await FS.readdirSync(directoryPath).map((item) => Path.join(directoryPath, item)),
+        // The final workspaces to be handled
+        workspaces = [],
+        savingResults = [],
+        foldersPaths = [directoryPath, ...itemsInDirectoryPath]
+
+      // Get workspaces folders
+      for (let folderPath of foldersPaths) {
+        // Get the path's base name - the name of the last folder/file -
+        let baseName = Path.basename(folderPath)
+
+        try {
+          // If the given path is inaccessible then skip this try-catch block
+          if (!pathIsAccessible(folderPath))
+            throw 0
+
+          // Flag to tell whether or not the given path is directory
+          let isPathDirectory = await FS.lstatSync(folderPath)
+
+          // If not then skip this try-catch block
+          if (!isPathDirectory)
+            throw 0
+
+          // Read the directory's items
+          let content = await FS.readdirSync(folderPath),
+            // The given directory is actually a workspace's directory if `connections.json` file has been found
+            isValidWorkspace = content.some((item) => item == 'connections.json')
+
+          // If the given directory is not a valid workspace then ignore it and skip this try-catch block
+          if (!isValidWorkspace)
+            throw 0
+
+          // Push info regards the current workspace to the `workspaces` array
+          workspaces.push({
+            name: baseName,
+            folder: baseName,
+            path: folderPath
+          })
+        } catch (e) {}
+      }
+
+      if (workspaces.length <= 0)
+        return sendResult({
+          code: -3,
+          text: 'No valid workspace folder has been found among the provided ones'
+        })
+
+      // Now get connections inside every workspaces
+      for (let workspace of workspaces) {
+        try {
+          // Attempt to get the workspace's connections' manifest
+          let connections = FS.readFileSync(Path.join(workspace.path, 'connections.json'), 'utf8')
+
+          // Convert the manifest to a JSON object
+          connections = JSON.parse(connections)
+
+          // If no connections have been found then skip this try-catch block
+          if (connections.length <= 0)
+            throw 0
+
+          // Add connections to the `workspace` object
+          workspace.connections = connections
+        } catch (e) {}
+      }
+
+      // Now attempt to save each workspace
+      for (let workspace of workspaces) {
+        try {
+          let workspaceStructure = {
+            defaultPath: data.copyToDefaultPath,
+            name: workspace.name,
+            color: getRandom.color(),
+            id: `workspace-${getRandom.id(10)}`,
+            connectionsPath: workspace.path
+          }
+
+          if (!workspaceStructure.defaultPath)
+            workspaceStructure.path = Path.join(workspaceStructure.connectionsPath, '..')
+
+          workspaceStructure.checkedConnections = (workspace.connections || []).map((connection) => connection.folder)
+
+          let saveWorkspace = await Modules.Workspaces.saveWorkspace(workspaceStructure)
+
+          savingResults.push({
+            name: workspaceStructure.name,
+            id: workspaceStructure.id,
+            status: saveWorkspace
+          })
+        } catch (e) {}
+      }
+
+      return sendResult(savingResults.map((result) => {
+        return {
+          code: result.status,
+          text: [`${result.name}`, `${result.id}`],
+          isInputAPath
+        }
+      }))
     } catch (e) {}
 
     // Saving process status: [-3: Invalid input, -2: Duplication in ID, -1: Duplication in name, 0: Not saved, 1: Saved]

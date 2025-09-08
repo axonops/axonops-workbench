@@ -660,7 +660,8 @@
       "hint": "تلميح",
       "when the AxonOps Self-Host option is selected, a valid URL with both protocol and host is required. Please provide these before $data the connection": "عندما يكون خيار AxonOps Self-Host محدداً، يجب تقديم عنوان ببروتوكول ومضيف صالح، من فضلك قم بتقديم هذه المعلومات قبل محاولة $data الاتصال",
       "updating": "تحديث",
-      "saving": "حفظ"
+      "saving": "حفظ",
+      "all workspaces": "جميع مساحات العمل"
     }
   }
 }

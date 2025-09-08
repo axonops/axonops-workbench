@@ -660,7 +660,8 @@
       "hint": "暗示",
       "when the AxonOps Self-Host option is selected, a valid URL with both protocol and host is required. Please provide these before $data the connection": "选择 AxonOps 自托管选项时，需要包含协议和主机的有效 URL。请在 $data 连接之前提供这些信息",
       "updating": "更新中",
-      "saving": "保存中"
+      "saving": "保存中",
+      "all workspaces": "所有工作区"
     }
   }
 }

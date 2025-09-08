@@ -660,7 +660,8 @@
       "hint": "pista",
       "when the AxonOps Self-Host option is selected, a valid URL with both protocol and host is required. Please provide these before $data the connection": "Cando se selecciona a opción AxonOps Self-Host, requírese un URL válido con protocolo e servidor. Forneza estes datos antes de $data a conexión",
       "updating": "actualizando",
-      "saving": "gardando"
+      "saving": "gardando",
+      "all workspaces": "todos os espazos de traballo"
     }
   }
 }

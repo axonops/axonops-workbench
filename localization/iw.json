@@ -660,7 +660,8 @@
       "hint": "רֶמֶז",
       "when the AxonOps Self-Host option is selected, a valid URL with both protocol and host is required. Please provide these before $data the connection": "כאשר נבחרת אפשרות ה-AxonOps Self-Host, נדרש כתובת URL תקינה הכוללת גם פרוטוקול וגם מארח. אנא ספק אותם לפני $data החיבור",
       "updating": "מעדכן",
-      "saving": "שומר"
+      "saving": "שומר",
+      "all workspaces": "כל סביבת העבודה"
     }
   }
 }

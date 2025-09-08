@@ -436,4 +436,8 @@ body.rtl {
   div.body div.right div.content div[content="workarea"] div.workarea div.sub-sides div.tab-content div.tab-pane[tab="cqlsh-session"] {
     direction: ltr !important;
   }
+
+  div.row.for-logging-info div.logs-info span {
+    margin-right: 25px;
+  }
 }

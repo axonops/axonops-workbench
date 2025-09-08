@@ -159,7 +159,7 @@ Automate your workflow with powerful CLI commands for workspace and connection m
 - **🔄 Import/Export** - Export query results to CSV, JSON, or other formats
 - **🌐 Multi-cluster Support** - Connect to multiple clusters simultaneously with easy switching
 - **🌍 Internationalization** - Available in multiple languages including English, Spanish, French, Arabic, Chinese, and more
-- **⚡ Performance Metrics** *(Coming Soon for AxonOps-managed clusters)* - Real-time cluster health and performance monitoring
+- **⚡ Performance Metrics** Real-time cluster health and performance monitoring via AxonOps
 - **🔧 Table Operations** - Visual tools for creating, altering, and managing tables
 - **📁 Data Import/Export** - Bulk data operations with progress tracking
 - **🔍 Full-text Search** - Search across your entire cluster metadata

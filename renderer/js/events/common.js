@@ -1946,10 +1946,10 @@
   // Attempt to change the `content protection` checkbox status
   $('input#contentProtection[type="checkbox"]').add($('input#enableAIAssistant[type="checkbox"]')).change(function(event) {
     // Get both; the initial status and whether or not the user has passed the authentication process
-    [initialStatus, isAuthenticated] = getAttributes($(this), ['data-initial-status', 'data-authenticated'])
+    isAuthenticated = getAttributes($(this), ['data-authenticated'])
 
     // Based on the given result the process may be skipped and no need for an authentication process
-    if (initialStatus == ($(this).is($('input#enableAIAssistant[type="checkbox"]')) ? 'true' : 'false') || isAuthenticated != 'false')
+    if (isAuthenticated != 'false')
       return
 
     // Get the new/updated status

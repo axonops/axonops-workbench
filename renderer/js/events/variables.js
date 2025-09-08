@@ -469,7 +469,7 @@
           // Define workspaces that will be added as badges, including the `All workspaces` badge
           workspacesToAdd = [{
               id: allWorkspacesID,
-              name: 'All workspaces',
+              name: '<span mulang="all workspaces" capitalize-first></span>',
               color: undefined
             },
             ...savedWorkspaces

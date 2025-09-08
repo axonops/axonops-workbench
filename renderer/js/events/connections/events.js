@@ -1943,16 +1943,21 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             if ($(this).hasClass('active'))
                               return
 
-                            let sourceIP = $(this).attr('data-source')
+                            let sourceIP = $(this).attr('data-source'),
+                              isFieldSource = true
+
+                            try {
+                              isFieldSource = activitesTabulatorObject.getColumnDefinitions().find((field) => field.title === 'Source') != undefined
+                            } catch (e) {}
 
                             $(`div.sources[id="_${sourcesContainerID}"]`).children('button').each(function() {
                               try {
-                                activitesTabulatorObject.removeFilter('Source', 'like', $(this).attr('data-source'))
+                                activitesTabulatorObject.removeFilter(!isFieldSource ? 'source' : 'Source', 'like', $(this).attr('data-source'))
                               } catch (e) {}
                             })
 
                             if (sourceIP != 'all')
-                              activitesTabulatorObject.setFilter('Source', 'like', sourceIP)
+                              activitesTabulatorObject.setFilter(!isFieldSource ? 'source' : 'Source', 'like', sourceIP)
 
                             $(`div.sources[id="_${sourcesContainerID}"]`).children('button').removeClass('btn-dark active').addClass('btn-secondary')
 

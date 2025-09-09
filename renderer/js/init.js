@@ -412,7 +412,7 @@ $(document).on('initialize', () => {
             isLanguageRTL = languageObject.length != 0 ? languageObject[0].rtl : false
 
             // Set RTL class if the language needs that
-            $('body').toggleClass('rtl', isLanguageRTL)
+            //$('body').toggleClass('rtl', isLanguageRTL)
 
             /**
              * Set a loading time for the default/selected language

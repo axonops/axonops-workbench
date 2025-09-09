@@ -1871,7 +1871,7 @@
         toolExtraPaths = $('input#toolExtraPaths').val()
 
       // Set RTL class if the language needs that
-      $('body').toggleClass('rtl', languageRTL == 'true')
+      //$('body').toggleClass('rtl', languageRTL == 'true')
 
       // Apply the chosen display language
       Modules.Localization.applyLanguage(chosenDisplayLanguage)

@@ -263,14 +263,14 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                  <div class="_placeholder" hidden></div>
                </div>`
 
-          isAxonOpsInstalled = `
-               <div class="info" info="axonops">
-                 <div class="title">AxonOps</span>
-                   <ion-icon name="right-arrow-filled"></ion-icon>
-                 </div>
-                 <div class="text"><ion-icon class="axonops-status ${connection.axonops}" name="${connection.axonops == true ? 'check' : 'close'}"></ion-icon></div>
-                 <div class="_placeholder" hidden></div>
-               </div>`
+          // isAxonOpsInstalled = `
+          //      <div class="info" info="axonops">
+          //        <div class="title">AxonOps</span>
+          //          <ion-icon name="right-arrow-filled"></ion-icon>
+          //        </div>
+          //        <div class="text"><ion-icon class="axonops-status ${connection.axonops}" name="${connection.axonops == true ? 'check' : 'close'}"></ion-icon></div>
+          //        <div class="_placeholder" hidden></div>
+          //      </div>`
 
           let containersManagementTool = passedData.containersManagementTool || 'none'
 

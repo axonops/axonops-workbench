@@ -1149,7 +1149,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                    <div class="tab-pane fade" tab="axonops-integration" id="_${axonopsIntegrationContentID}" role="tabpanel">
                                     <webview nodeIntegrationInSubFrames nodeintegration></webview>
                                     <div class="axonops-webview-actions">
-                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="home" data-tippy="tooltip" data-mdb-placement="top" data-title="Load cluster view" data-mulang="load cluster view" capitalize-first>
+                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="home" data-tippy="tooltip" data-mdb-placement="top" data-title="Load cluster view" data-mulang="load cluster view" hidden capitalize-first>
                                         <ion-icon name="home"></ion-icon>
                                       </div>
                                       <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="refresh" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh the view" data-mulang="refresh the view" capitalize-first>

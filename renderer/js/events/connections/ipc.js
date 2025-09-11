@@ -16048,6 +16048,7 @@
       urlHost = integURL == 'axonops-saas' ? Modules.Consts.AxonOpsIntegration.DefaultURL : `${integURL}`,
       urlParams = '',
       finalURL = '',
+      isWebViewLoaded = $(webviewElement).data('isLoaded'),
       getClusterURL = (withParams = false) => {
         try {
           let _urlParams = Modules.Consts.AxonOpsIntegration.Patterns.Cluster
@@ -16133,7 +16134,14 @@
     } catch (e) {}
 
     try {
-      $(webviewElement).attr('src', finalURL)
+      if (!isWebViewLoaded) {
+        $(webviewElement).attr('src', finalURL)
+        $(webviewElement).data('isLoaded', true)
+      } else {
+        webviewElement[0].executeJavaScript(`
+          window.next.router.replace("${new URL(getClusterURL(true).url).pathname}", undefined, { shallow: true })
+          setTimeout(() => window.next.router.replace("${urlParams}", undefined, { shallow: false }))`)
+      }
     } catch (e) {}
 
     try {

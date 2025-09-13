@@ -1162,6 +1162,17 @@ $(document).on('initialize', () => {
             })
           }, 250)
         })
+
+        addEditConnectionEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+          let text = Clipboard.readText(),
+            selection = addEditConnectionEditor.getSelection()
+
+          addEditConnectionEditor.executeEdits('paste', [{
+            range: selection,
+            text: text,
+            forceMoveMarkers: true
+          }])
+        })
       } catch (e) {
         try {
           errorLog(e, 'initialization')
@@ -1173,7 +1184,7 @@ $(document).on('initialize', () => {
       for (let editorUIElement of [generateInsertStatementsEditorUIElement, rightClickActionsKeyspaceEditorUIElement, dropKeyspaceEditorUIElement]) {
         amdRequire(['vs/editor/editor.main'], () => {
           try {
-            monaco.editor.create(editorUIElement[0], {
+            let tempEditorObject = monaco.editor.create(editorUIElement[0], {
               language: 'sql',
               minimap: {
                 enabled: false
@@ -1194,6 +1205,17 @@ $(document).on('initialize', () => {
               fontSize: 12,
               fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
               fontLigatures: true
+            })
+
+            tempEditorObject.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+              let text = Clipboard.readText(),
+                selection = tempEditorObject.getSelection()
+
+              tempEditorObject.executeEdits('paste', [{
+                range: selection,
+                text: text,
+                forceMoveMarkers: true
+              }])
             })
           } catch (e) {}
         })
@@ -1321,6 +1343,17 @@ $(document).on('initialize', () => {
 
               $('button#updateSnippet, button#snippetRevertChanges').attr('disabled', !editingMode ? '' : null)
             }
+          })
+
+          cqlSnippets.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+            let text = Clipboard.readText(),
+              selection = cqlSnippets.editor.getSelection()
+
+            cqlSnippets.editor.executeEdits('paste', [{
+              range: selection,
+              text: text,
+              forceMoveMarkers: true
+            }])
           })
         } catch (e) {}
       })

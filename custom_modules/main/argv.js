@@ -2,7 +2,7 @@
 const Argv = App.commandLine,
   CommandLineUsage = require('command-line-usage'),
   AppInfo = require(Path.join(__dirname, '..', '..', 'package.json')),
-  PTY = require('node-pty'),
+  PTY = require('@mhmdkrmabd/pty'),
   Consts = require(Path.join(__dirname, '..', '..', 'custom_modules', 'main', 'consts')),
   /**
    * An implementation of PHP `strip_tags` in Node.js

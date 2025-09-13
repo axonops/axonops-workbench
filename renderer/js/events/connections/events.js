@@ -5436,6 +5436,17 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             }
                           })
 
+                          consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+                            let text = Clipboard.readText(),
+                              selection = consoleEditor.getSelection()
+
+                            consoleEditor.executeEdits('paste', [{
+                              range: selection,
+                              text: text,
+                              forceMoveMarkers: true
+                            }])
+                          })
+
                           consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyL, () => $(document).trigger('clearEnhancedConsole'))
 
                           consoleEditor.addAction({

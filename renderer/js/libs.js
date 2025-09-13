@@ -89,7 +89,7 @@ const OS = require('os'),
    */
   SortJSON = require('sort-json'),
   // Convert an array of Objects into a table format
-  ConvertJSONTable = require('json-to-table'),
+  ConvertJSONTable = require(Path.join(__dirname, '..', 'js', 'external', 'json_to_table')),
   // Generate interactive HTML table
   Tabulator = require('tabulator-tables'),
   // Promise based HTTP client for the browser and node.js

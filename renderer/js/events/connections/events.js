@@ -9925,7 +9925,12 @@ const ConnectionTestProcessTerminationTimeout = 250
 
       // When change occurs in any of the input fields - except the connection's name - the `SAVE THE CLUSTER` button will be disabled
       {
-        $(`${dialog}-right div.modal-section [info-section][info-key]:not([info-key="connectionName"])`).on('input', () => $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null))
+        $(`${dialog}-right div.modal-section [info-section][info-key]`).filter(function() {
+          let isNotConnectionName = $(this).is(':not([info-key="connectionName"])'),
+            isNotAxonOpsIntegration = !($(this).attr('info-key').startsWith('axonops-'))
+
+          return isNotConnectionName && isNotAxonOpsIntegration
+        }).on('input', () => $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null))
       }
 
       /**

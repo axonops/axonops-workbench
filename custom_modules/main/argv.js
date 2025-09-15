@@ -173,7 +173,15 @@ let init = () => {
 
   global.IsCLIMode = true
 
-  global.Chalk = require('chalk')
+  // global.Chalk = require('chalk')
+  // NOTE: The chalk package was removed due to recent NPM security issues. A proxy is now used instead, which just returns the text as-is
+  global.Chalk = new Proxy(
+    (text) => text, // Base function: just return text
+    {
+      get: () => Chalk, // Any property access returns Chalk itself
+      apply: (_, __, args) => args[0], // Any function call returns first argument
+    }
+  )
 
   global.Spinner = require('cli-spinner').Spinner
 

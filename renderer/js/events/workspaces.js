@@ -124,7 +124,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               <ion-icon name="sandbox" ${!isSandbox ? 'hidden' : '' }></ion-icon>
               <div class="header">
                 <div class="title workspace-name">${isSandbox ? '<span mulang="local clusters" capitalize></span>' : workspace.name}</div>
-                <div class="_connections" ${connectionsMiniIconsBackgroundColor}></div>
+                <div class="_connections show" ${connectionsMiniIconsBackgroundColor}>
+                  <l-squircle class="loading-connections" size="14" stroke="2" stroke-length="0.3" bg-opacity="0.3" speed="0.65" color="${TinyColor(workspace.color).isValid() ? workspace.color : 'white'}"></l-squircle>
+                </div>
               </div>
               <div class="footer">
                 <div class="button">
@@ -193,14 +195,18 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 Modules.Connections.getConnections(workspaceID).then((connections) => {
                   connectionsList.toggleClass('show', connections.length > 0)
 
+                  let counter = 0
+
                   // Loop through each connection
                   for (let connection of (connections || []).slice(0, 12)) {
+                    counter += 1
+
                     // Set the connection's host
                     let connectionHost = connection.host.length > 20 ? `${connection.host.slice(0, 20)}...` : connection.host,
                       backgroundColor = TinyColor(workspace.color).isValid() ? `style="background: rgb(${color} / 100%);"` : '',
                       // The connection UI element structure
                       element = `
-                        <div class="_connection" ${backgroundColor} _connection-id="${connection.info.id}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="${connection.name}<br>${connectionHost}" data-mdb-html="true"></div>`
+                        <div class="_connection" ${backgroundColor} _connection-id="${connection.info.id}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="${connection.name}<br>${connectionHost}" data-mdb-html="true" hidden></div>`
 
                     // Append connection to the list
                     connectionsList.append($(element).show(function() {
@@ -213,6 +219,13 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                           return
 
                         $(`div.body div.left div.content div.switch-connections div.connection[_connection-id="${getAttributes($(this), '_connection-id')}"] button`).click()
+                      })
+
+                      setTimeout(() => {
+                        if (counter >= connections.length) {
+                          connectionsList.children('div._connection').add($(this)).attr('hidden', null)
+                          connectionsList.children('.loading-connections').hide()
+                        }
                       })
                     }))
                   }
@@ -679,6 +692,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                     // Change its value
                     workspaceFolderPathElement.val(workspaceSetPath)
 
+                    workspaceFolderPathElement.removeClass('is-invalid')
+
                     // Update its state
                     workspaceFolderPathObject.update()
                     workspaceFolderPathObject._deactivate()
@@ -858,7 +873,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             inputObject = getElementMDBObject(input)
 
           // Remove its value and remove the `active` class
-          input.val('').removeClass('active')
+          input.val('').removeClass('active is-invalid')
 
           // Update the MDB object
           inputObject.update()
@@ -951,8 +966,13 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
           if (path == folderPath.attr('data-default-path'))
             throw 0
 
-          if (path.trim().length <= 0)
-            return showToast(I18next.capitalize(I18next.t('add workspace')), I18next.capitalizeFirstLetter(I18next.t('please consider to either select a path for the workspace or set the default path')) + '.', 'failure')
+          if (path.trim().length <= 0) {
+            showToast(I18next.capitalize(I18next.t('add workspace')), I18next.capitalizeFirstLetter(I18next.t('please consider to either select a path for the workspace or set the default path')) + '.', 'failure')
+
+            folderPath.addClass('is-invalid')
+
+            return
+          }
 
           // Test the path accessibility
           let accessible = pathIsAccessible(path)
@@ -1345,7 +1365,11 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
   // clickableAreaTooltip.setContent(defaultPath)
 
-  workspacePathElement.on('inputChanged', () => clickableAreaTooltip.setContent(workspacePathElement.val()))
+  workspacePathElement.on('inputChanged', () => {
+    clickableAreaTooltip.setContent(workspacePathElement.val())
+
+    workspacePathElement.toggleClass('is-invalid', minifyText(workspacePathElement.val()).length <= 0)
+  })
 }
 
 // Handle the importing process of workspaces
@@ -1381,6 +1405,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     dragDropWorkspaces.on('dragstart dragover dragenter', function(e) {
       // Prevent the default behavior
       e.originalEvent.preventDefault()
+      e.originalEvent.dataTransfer.dropEffect = 'copy'
 
       // Show to the user in the UI that the dragging process is detected
       dragDropWorkspaces.addClass('drag')
@@ -1397,19 +1422,49 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
     // Handle items - files and folders - dropping process
     dragDropWorkspaces.on('drop', function(e) {
-      // Prevent the default behavior
       e.originalEvent.preventDefault()
 
-      // Show to the user in the UI that the dragging process has been detected as `finished`
       dragDropWorkspaces.removeClass('drag')
 
-      try {
-        // Get all selected folders' paths
-        let foldersPaths = [...e.originalEvent.dataTransfer.files].map((file) => file.path || '').filter((file) => `${file}`.length != 0)
+      let dataTransfer = e.originalEvent.dataTransfer,
+        items = []
 
-        // Call the check workspaces inner function
-        checkWorkspaces(foldersPaths)
+      // Attempt 1: If we've got a list of files
+      try {
+        if (!(dataTransfer.files && dataTransfer.files.length))
+          throw 0
+
+        for (let file of dataTransfer.files) {
+          let item = WebUtils.getPathForFile(file)
+
+          if (item)
+            items.push(item)
+        }
       } catch (e) {}
+
+      // Attempt 2: folders and files: decode text/uri-list
+      try {
+        let uriList = dataTransfer.getData?.('text/uri-list') || ''
+
+        if (!uriList)
+          throw 0
+
+        for (const line of uriList.split(/\r?\n/)) {
+          if (!line || line.startsWith('#'))
+            continue
+
+          let item = fileURLToLocalPath(line)
+
+          if (item)
+            items.push(item)
+        }
+      } catch (e) {}
+
+      // Remove any duplication (dedupe)
+      let seenItems = new Set(),
+        absolutePaths = items.filter((item) => (seenItems.has(item) ? false : (seenItems.add(item), true)))
+
+      checkWorkspaces(absolutePaths)
     })
   }
 

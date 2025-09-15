@@ -412,7 +412,7 @@ $(document).on('initialize', () => {
             isLanguageRTL = languageObject.length != 0 ? languageObject[0].rtl : false
 
             // Set RTL class if the language needs that
-            //$('body').toggleClass('rtl', isLanguageRTL)
+            $('body').toggleClass('rtl', isLanguageRTL)
 
             /**
              * Set a loading time for the default/selected language
@@ -836,7 +836,7 @@ $(document).on('initialize', () => {
   // ldrs.js
   {
     let ldrsPath = Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js'),
-      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'zoomies', 'momentum', 'ring2', 'wobble', 'hatch', 'chaoticOrbit', 'ripples']
+      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'squircle', 'zoomies', 'momentum', 'ring2', 'wobble', 'hatch', 'chaoticOrbit', 'ripples']
 
     try {
       import(ldrsPath).then((loaders) => usedLoaders.forEach((loader) => loaders[loader].register()))

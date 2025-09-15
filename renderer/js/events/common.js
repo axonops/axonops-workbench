@@ -756,7 +756,7 @@
 
       $('button#createSnippet').toggleClass('btn-primary', internalData == null).toggleClass('btn-secondary', internalData != null)
 
-      $('#cqlSnippets').find('span.badge.current-scope').html('')
+      $('#cqlSnippets').find('span.badge.current-scope').html('').hide()
       $('#cqlSnippets').find('span.badge.current-scope').data('scope', null)
 
       $('button#createSnippet, button#executeSnippet, button#updateSnippet, button#snippetRevertChanges').attr('disabled', '')
@@ -1080,7 +1080,7 @@
               return `<span>${icon}${name}</span>`
             }).join('<ion-icon name="arrow-up-circle"></ion-icon>')
 
-            scopeBadge.html(scopeElements)
+            scopeBadge.html(scopeElements).toggle(`${scopeElements}`.length > 0)
           })
 
           snippetsTreeviewObject.on('contextmenu', async function(event) {
@@ -1871,7 +1871,7 @@
         toolExtraPaths = $('input#toolExtraPaths').val()
 
       // Set RTL class if the language needs that
-      //$('body').toggleClass('rtl', languageRTL == 'true')
+      $('body').toggleClass('rtl', languageRTL == 'true')
 
       // Apply the chosen display language
       Modules.Localization.applyLanguage(chosenDisplayLanguage)
@@ -2520,4 +2520,15 @@
   window.addEventListener("auxclick", (event) => {
     if (event.button === 1) event.preventDefault()
   })
+}
+
+// Stop navigation on drops anywhere
+{
+  window.addEventListener('dragover', (e) => {
+    e.preventDefault()
+
+    e.dataTransfer.dropEffect = 'copy'
+  })
+
+  window.addEventListener('drop', (e) => e.preventDefault())
 }

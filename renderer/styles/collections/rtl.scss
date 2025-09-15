@@ -19,6 +19,10 @@
 body.rtl {
   direction: rtl;
 
+  .ltr {
+    direction: ltr;
+  }
+
   div.body div.left div.content div.navigation div.group div.item ul.dropdown-menu {
     margin: {
       left: auto !important;
@@ -439,5 +443,169 @@ body.rtl {
 
   div.row.for-logging-info div.logs-info span {
     margin-right: 25px;
+  }
+
+  div.modal#addEditConnectionDialog div.modal-body div.side-left div.sections div.section,
+  div.modal#appAbout div.modal-body div.side-left div.sections div.section,
+  div.modal#appSettings div.modal-body div.side-left div.sections div.section,
+  div.modal#connectionCredentials div.modal-body div.side-left div.sections div.section,
+  div.modal#importWorkspaces div.modal-body div.side-left div.sections div.section {
+    direction: rtl;
+  }
+
+  div.modal#addEditConnectionDialog div.modal-body div.side-left div.sections div.section div.btn,
+  div.modal#appAbout div.modal-body div.side-left div.sections div.section div.btn,
+  div.modal#appSettings div.modal-body div.side-left div.sections div.section div.btn,
+  div.modal#connectionCredentials div.modal-body div.side-left div.sections div.section div.btn,
+  div.modal#importWorkspaces div.modal-body div.side-left div.sections div.section div.btn {
+    text-align: right;
+  }
+
+  div#moreAbout,
+  div.modal-section div.notice {
+    direction: ltr;
+  }
+
+  div.modal#addEditConnectionDialog div.modal-body div.side-right div.modal-section,
+  div.modal#appAbout div.modal-body div.side-right div.modal-section,
+  div.modal#appSettings div.modal-body div.side-right div.modal-section,
+  div.modal#connectionCredentials div.modal-body div.side-right div.modal-section,
+  div.modal#importWorkspaces div.modal-body div.side-right div.modal-section {
+    padding: 5px 0 0 10px;
+  }
+
+  div.modal-section div.notice div.notice-header ion-icon[for-pre] {
+    left: 0;
+    right: auto;
+  }
+
+  #selectContainersManagementToolSettings,
+  div.modal#addEditConnectionDialog div.form-helper,
+  div.modal#appAbout div.form-helper,
+  div.modal#appSettings div.form-helper,
+  div.modal#connectionCredentials div.form-helper,
+  div.modal#importWorkspaces div.form-helper {
+    direction: rtl;
+  }
+
+  div.management-tools div.tool[tool="podman"] {
+    margin-right: 0;
+    margin-left: 6px;
+  }
+
+  div.management-tools div.tool div.icon {
+    margin-right: 0;
+    margin-left: 8px;
+  }
+
+  div.form-outline[for="cqlSnippetsAuthorName"] {
+    width: calc(100% - 10px);
+  }
+
+  div.monaco-editor {
+    direction: ltr;
+  }
+
+  div.modal div.modal-footer div.float-right {
+    direction: ltr;
+  }
+
+  div.snippets-objects-treeview {
+    .jstree-children,
+    .jstree-container-ul,
+    .jstree-node {
+      direction: rtl;
+    }
+  }
+
+  .modal-title {
+    direction: rtl;
+  }
+
+  div.modal#cqlSnippets {
+    .modal-title,
+    div.side.snippet-editor div.cql-snippet-editor div.snippet-metadata div.row.snippet-tags {
+      direction: ltr;
+    }
+  }
+
+  div.modal#cqlSnippets div.side.objects-treeview div.treeview-actions {
+    right: auto;
+    left: 24px;
+    direction: ltr;
+  }
+
+  div.modal#cqlSnippets div.side.snippets-list div.cql-snippets div.snippets-list-header div.sides-actions {
+    flex-direction: row-reverse;
+  }
+
+  div.modal#cqlSnippets div.side.snippets-list div.cql-snippets div.snippets div.snippet div.content div.snippet-tags {
+    direction: ltr;
+    text-align: right;
+    transform: scale(0.9) translateX(18px);
+  }
+
+  div.modal#cqlSnippets {
+    div.modal-header {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-content: center;
+      align-items: center;
+      justify-content: flex-start;
+
+      button.btn-close {
+        margin: auto auto auto 0;
+      }
+
+      span.badge.current-scope {
+        margin-left: 0;
+        margin-right: 10px;
+        direction: ltr;
+        display: flex;
+        flex-direction: row-reverse;
+        flex-wrap: nowrap;
+        align-content: center;
+        align-items: center;
+        justify-content: flex-start;
+
+        span {
+          direction: rtl;
+        }
+
+        ion-icon {
+          transform: rotate(-90deg) translateX(0px);
+        }
+      }
+    }
+
+    a.jstree-anchor div.processing {
+      left: auto;
+      right: 7px;
+    }
+  }
+
+  div.body div.right div.content div[content][content="workspaces"] div.connections-container div.connection div.loading .ldr,
+  div.body div.right div.content div[content][content="workspaces"] div.connections-container div.workspace div.loading .ldr,
+  div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.connection div.loading .ldr,
+  div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.workspace div.loading .ldr,
+  div.body div.right div.content div[content][content="connections"] div.connections-container div.connection div.loading .ldr,
+  div.body div.right div.content div[content][content="connections"] div.connections-container div.workspace div.loading .ldr,
+  div.body div.right div.content div[content][content="connections"] div.workspaces-container div.connection div.loading .ldr,
+  div.body div.right div.content div[content][content="connections"] div.workspaces-container div.workspace div.loading .ldr {
+    right: auto;
+    left: 20px;
+  }
+
+  div.icon-button {
+    &.defaultPath,
+    &.selectPath {
+      right: 3px !important;
+      left: auto !important;
+    }
+  }
+
+  div#searchConnections div.search-result {
+    direction: ltr;
   }
 }

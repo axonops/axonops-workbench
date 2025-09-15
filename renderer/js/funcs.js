@@ -653,9 +653,9 @@ let repairJSONString = (json) => {
 
     result = `${result}`.replace(/'comment'\s*:\s*'(.*?)',\s*'compaction'/g, (_, match) => {
 
-      let modifiedComment = match.replace(/"/g, '\\"');
+      let modifiedComment = match.replace(/"/g, '\\"')
 
-      return `'comment': '${modifiedComment}', 'compaction'`;
+      return `'comment': '${modifiedComment}', 'compaction'`
     })
   } catch (e) {}
 
@@ -5043,7 +5043,7 @@ let getBlobType = (blobHEXString, callback) => {
 
 let getCheckedValue = (groupName) => {
   let selectedValue = '',
-    radioButtons = document.getElementsByName(groupName);
+    radioButtons = document.getElementsByName(groupName)
 
   for (let i = 0; i < radioButtons.length; i++) {
     if ($(radioButtons[i]).prop('checked')) {
@@ -5093,4 +5093,20 @@ let convertJSONObjectToYAML = (jsonObject) => {
   } catch (e) {}
 
   return yamlString
+}
+
+/**
+ * Helper function to decode file:///… for folders
+ */
+let fileURLToLocalPath = (uri) => {
+  try {
+    let u = new URL(uri)
+
+    if (u.protocol !== 'file:')
+      return null
+
+    return decodeURI(u.pathname.replace(/^\/([A-Za-z]:)/, '$1'))
+  } catch {
+    return null
+  }
 }

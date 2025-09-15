@@ -35,6 +35,8 @@ const OS = require('os'),
    * Mainly used for copying the connection's metadata
    */
   Clipboard = require('electron').clipboard,
+  // A utility layer to interact with Web API objects (Files, Blobs, etc.)
+  WebUtils = require('electron').webUtils,
   /**
    * Convert a byte value to a human-readable string (9 KB, 2 MB, and so on), and vice-versa
    * Mainly used for showing the metadata size

@@ -1988,10 +1988,16 @@ div.body {
                   opacity: 0.75;
                   opacity: 0;
                   pointer-events: none;
+                  min-width: 25px;
 
                   &.show {
                     opacity: 1;
                     pointer-events: all;
+                  }
+
+                  .loading-connections {
+                    margin: 0 4px;
+                    opacity: 0.55;
                   }
 
                   div._connection {

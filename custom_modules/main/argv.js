@@ -2,7 +2,7 @@
 const Argv = App.commandLine,
   CommandLineUsage = require('command-line-usage'),
   AppInfo = require(Path.join(__dirname, '..', '..', 'package.json')),
-  PTY = require('node-pty'),
+  PTY = require('@axonops/node-pty'),
   Consts = require(Path.join(__dirname, '..', '..', 'custom_modules', 'main', 'consts')),
   /**
    * An implementation of PHP `strip_tags` in Node.js
@@ -173,7 +173,14 @@ let init = () => {
 
   global.IsCLIMode = true
 
-  global.Chalk = require('chalk')
+  // Note: The previously used chalk package (v4.1.2) was completely safe. However, we decided to remove it since it was not critical to the application, and we aim to keep only highly reputable and secure packages. A lightweight proxy is now used instead, which simply returns the text as-is
+  global.Chalk = new Proxy(
+    (text) => text, // Base function: just return text
+    {
+      get: () => Chalk, // Any property access returns Chalk itself
+      apply: (_, __, args) => args[0], // Any function call returns first argument
+    }
+  )
 
   global.Spinner = require('cli-spinner').Spinner
 

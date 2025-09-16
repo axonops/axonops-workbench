@@ -23,7 +23,7 @@
  * PTY module
  * Creates pseudo terminal, it returns a terminal object that allows interaction - reads and writes - with that terminal
  */
-const PTY = require('node-pty'),
+const PTY = require('@axonops/node-pty'),
   // Provides the ability to spawn subprocesses
   ChildProcessSpawn = require('child_process').spawn,
   // Strip all special characters in a given string

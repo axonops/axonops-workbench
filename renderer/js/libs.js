@@ -35,6 +35,8 @@ const OS = require('os'),
    * Mainly used for copying the connection's metadata
    */
   Clipboard = require('electron').clipboard,
+  // A utility layer to interact with Web API objects (Files, Blobs, etc.)
+  WebUtils = require('electron').webUtils,
   /**
    * Convert a byte value to a human-readable string (9 KB, 2 MB, and so on), and vice-versa
    * Mainly used for showing the metadata size
@@ -89,7 +91,7 @@ const OS = require('os'),
    */
   SortJSON = require('sort-json'),
   // Convert an array of Objects into a table format
-  ConvertJSONTable = require('json-to-table'),
+  ConvertJSONTable = require(Path.join(__dirname, '..', 'js', 'external', 'json_to_table')),
   // Generate interactive HTML table
   Tabulator = require('tabulator-tables'),
   // Promise based HTTP client for the browser and node.js

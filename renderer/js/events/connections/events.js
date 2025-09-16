@@ -1149,7 +1149,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                    <div class="tab-pane fade" tab="axonops-integration" id="_${axonopsIntegrationContentID}" role="tabpanel">
                                     <webview nodeIntegrationInSubFrames nodeintegration></webview>
                                     <div class="axonops-webview-actions">
-                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="home" data-tippy="tooltip" data-mdb-placement="top" data-title="Load cluster view" data-mulang="load cluster view" capitalize-first>
+                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="home" data-tippy="tooltip" data-mdb-placement="top" data-title="Load cluster view" data-mulang="load cluster view" hidden capitalize-first>
                                         <ion-icon name="home"></ion-icon>
                                       </div>
                                       <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="refresh" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh the view" data-mulang="refresh the view" capitalize-first>
@@ -5434,6 +5434,17 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 $(editor.getDomNode()).closest('div.interactive-terminal-container').find('div.execute button').trigger('click')
                               } catch (e) {}
                             }
+                          })
+
+                          consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+                            let text = Clipboard.readText(),
+                              selection = consoleEditor.getSelection()
+
+                            consoleEditor.executeEdits('paste', [{
+                              range: selection,
+                              text: text,
+                              forceMoveMarkers: true
+                            }])
                           })
 
                           consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyL, () => $(document).trigger('clearEnhancedConsole'))
@@ -9914,7 +9925,12 @@ const ConnectionTestProcessTerminationTimeout = 250
 
       // When change occurs in any of the input fields - except the connection's name - the `SAVE THE CLUSTER` button will be disabled
       {
-        $(`${dialog}-right div.modal-section [info-section][info-key]:not([info-key="connectionName"])`).on('input', () => $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null))
+        $(`${dialog}-right div.modal-section [info-section][info-key]`).filter(function() {
+          let isNotConnectionName = $(this).is(':not([info-key="connectionName"])'),
+            isNotAxonOpsIntegration = !($(this).attr('info-key').startsWith('axonops-'))
+
+          return isNotConnectionName && isNotAxonOpsIntegration
+        }).on('input', () => $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null))
       }
 
       /**

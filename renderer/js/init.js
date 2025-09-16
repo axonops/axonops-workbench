@@ -412,7 +412,7 @@ $(document).on('initialize', () => {
             isLanguageRTL = languageObject.length != 0 ? languageObject[0].rtl : false
 
             // Set RTL class if the language needs that
-            //$('body').toggleClass('rtl', isLanguageRTL)
+            $('body').toggleClass('rtl', isLanguageRTL)
 
             /**
              * Set a loading time for the default/selected language
@@ -836,7 +836,7 @@ $(document).on('initialize', () => {
   // ldrs.js
   {
     let ldrsPath = Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js'),
-      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'zoomies', 'momentum', 'ring2', 'wobble', 'hatch', 'chaoticOrbit', 'ripples']
+      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'squircle', 'zoomies', 'momentum', 'ring2', 'wobble', 'hatch', 'chaoticOrbit', 'ripples']
 
     try {
       import(ldrsPath).then((loaders) => usedLoaders.forEach((loader) => loaders[loader].register()))
@@ -1162,6 +1162,17 @@ $(document).on('initialize', () => {
             })
           }, 250)
         })
+
+        addEditConnectionEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+          let text = Clipboard.readText(),
+            selection = addEditConnectionEditor.getSelection()
+
+          addEditConnectionEditor.executeEdits('paste', [{
+            range: selection,
+            text: text,
+            forceMoveMarkers: true
+          }])
+        })
       } catch (e) {
         try {
           errorLog(e, 'initialization')
@@ -1173,7 +1184,7 @@ $(document).on('initialize', () => {
       for (let editorUIElement of [generateInsertStatementsEditorUIElement, rightClickActionsKeyspaceEditorUIElement, dropKeyspaceEditorUIElement]) {
         amdRequire(['vs/editor/editor.main'], () => {
           try {
-            monaco.editor.create(editorUIElement[0], {
+            let tempEditorObject = monaco.editor.create(editorUIElement[0], {
               language: 'sql',
               minimap: {
                 enabled: false
@@ -1194,6 +1205,17 @@ $(document).on('initialize', () => {
               fontSize: 12,
               fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
               fontLigatures: true
+            })
+
+            tempEditorObject.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+              let text = Clipboard.readText(),
+                selection = tempEditorObject.getSelection()
+
+              tempEditorObject.executeEdits('paste', [{
+                range: selection,
+                text: text,
+                forceMoveMarkers: true
+              }])
             })
           } catch (e) {}
         })
@@ -1321,6 +1343,17 @@ $(document).on('initialize', () => {
 
               $('button#updateSnippet, button#snippetRevertChanges').attr('disabled', !editingMode ? '' : null)
             }
+          })
+
+          cqlSnippets.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+            let text = Clipboard.readText(),
+              selection = cqlSnippets.editor.getSelection()
+
+            cqlSnippets.editor.executeEdits('paste', [{
+              range: selection,
+              text: text,
+              forceMoveMarkers: true
+            }])
           })
         } catch (e) {}
       })

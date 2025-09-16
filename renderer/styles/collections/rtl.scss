@@ -608,4 +608,21 @@ body.rtl {
   div#searchConnections div.search-result {
     direction: ltr;
   }
+
+  div.body div.right div.content div[content][content="workspaces"] div.connections-container div.connection div.test-connection .ldr,
+  div.body div.right div.content div[content][content="workspaces"] div.connections-container div.workspace div.test-connection .ldr,
+  div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.connection div.test-connection .ldr,
+  div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.workspace div.test-connection .ldr,
+  div.body div.right div.content div[content][content="connections"] div.connections-container div.connection div.test-connection .ldr,
+  div.body div.right div.content div[content][content="connections"] div.connections-container div.workspace div.test-connection .ldr,
+  div.body div.right div.content div[content][content="connections"] div.workspaces-container div.connection div.test-connection .ldr,
+  div.body div.right div.content div[content][content="connections"] div.workspaces-container div.workspace div.test-connection .ldr {
+    right: auto;
+    left: 8px;
+  }
+
+  div[content="connections"] div.connections-container div.connection.enable-terminate-process div.terminate-process {
+    left: 8px !important;
+    right: auto;
+  }
 }

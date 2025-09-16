@@ -173,8 +173,7 @@ let init = () => {
 
   global.IsCLIMode = true
 
-  // global.Chalk = require('chalk')
-  // NOTE: The chalk package was removed due to recent NPM security issues. A proxy is now used instead, which just returns the text as-is
+  // Note: The previously used chalk package (v4.1.2) was completely safe. However, we decided to remove it since it was not critical to the application, and we aim to keep only highly reputable and secure packages. A lightweight proxy is now used instead, which simply returns the text as-is
   global.Chalk = new Proxy(
     (text) => text, // Base function: just return text
     {

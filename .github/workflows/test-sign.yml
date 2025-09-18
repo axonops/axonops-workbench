@@ -18,20 +18,6 @@ jobs:
     strategy:
       matrix:
         include:
-          # - os: [ubuntu-24.04]
-          #   target: Linux
-
-          # - os: [ubuntu-24.04-arm]
-          #   target: Linux
-
-          # # M1
-          # - os: macos-14
-          #   target: Macos
-
-          # # X86
-          # - os: macos-13
-          #   target: Macos
-
           - os: windows-latest
             target: Windows
     steps:

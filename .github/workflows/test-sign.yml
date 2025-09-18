@@ -10,7 +10,6 @@ defaults:
     shell: bash
 
 jobs:
-  release:
   build:
     name: Build on ${{ matrix.target }}
     runs-on: ${{ matrix.os }}

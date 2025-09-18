@@ -192,20 +192,13 @@ jobs:
         if: runner.os == 'Windows'
         run: dotnet tool install --no-cache --global AzureSignTool --version 6.0.1
 
-      - name: Azure token to use with AzureSignTool
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          $az_token=$(az account get-access-token --scope https://vault.azure.net/.default --query accessToken --output tsv)
-          echo "::add-mask::$az_token"
-          echo "AZ_TOKEN=$az_token" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
       - name: Build signed installer
         if: runner.os == 'Windows'
-        run: |
-          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kvm -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.exe"
-          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kvm -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.msi"
-        shell: cmd
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.exe"
+            azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.msi"
 
       # Ensure this task is right before the Upload
       - name: Create checksum files

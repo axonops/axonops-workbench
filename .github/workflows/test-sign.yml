@@ -29,7 +29,8 @@ jobs:
           sed -i.bak 's/"version": "[^"]*"/"version": "'"$VERSION"'"/' package.json && rm package.json.bak
           rm -f package.json.bak
           mkdir -p dist
-          touch "dist/AxonOps.Workbench-${VERSION}-win-x64.exe"
+          cd dist
+          curl -LO https://github.com/axonops/axonops-workbench/releases/download/v1.0.0/AxonOps.Workbench-1.0.0-win-x64.exe
 
       - name: Install AzureSignTool
         if: runner.os == 'Windows'
@@ -52,7 +53,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           az account show
-          azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.exe"
+          azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-1.0.0-win-x64.exe"
         shell: cmd
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}

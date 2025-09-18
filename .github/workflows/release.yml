@@ -121,43 +121,39 @@ jobs:
           NODE_ENV: test
         continue-on-error: true  # Don't block release for now, but log results
 
-      # - name: Install Snapcraft
-      #   uses: samuelmeuli/action-snapcraft@v2
-      #   if: ${{ runner.os != 'Windows' }}
+      # - name: Pack AxonOps Developer Workbench
+      #   run: |
+      #     if [ "$(uname -m)" == "aarch64" ] && [ "$(uname -s)" == "Linux" ]; then
+      #       sudo apt-get -y install ruby
+      #       sudo gem install dotenv -v 2.8.1
+      #       sudo gem instal fpm
+      #       export USE_SYSTEM_FPM=true
+      #     fi
 
-      - name: Pack AxonOps Developer Workbench
-        run: |
-          if [ "$(uname -m)" == "aarch64" ] && [ "$(uname -s)" == "Linux" ]; then
-            sudo apt-get -y install ruby
-            sudo gem install dotenv -v 2.8.1
-            sudo gem instal fpm
-            export USE_SYSTEM_FPM=true
-          fi
-
-          if [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "arm64" ]; then
-            npm run mac:arm64
-          elif [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "x86_64" ]; then
-            npm run mac
-          fi
-          export CSC_IDENTITY_AUTO_DISCOVERY=false
-          if [ "$(uname -s )" == "Linux" ]; then
-            npm run linux
-          fi
-          if [[ "$(uname -s)" =~ "MINGW64" ]]; then
-            unset CSC_KEY_PASSWORD
-            unset CSC_LINK
-            unset CSC_LINK_PATH
-            npm run win
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
-          CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
+      #     if [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "arm64" ]; then
+      #       npm run mac:arm64
+      #     elif [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "x86_64" ]; then
+      #       npm run mac
+      #     fi
+      #     export CSC_IDENTITY_AUTO_DISCOVERY=false
+      #     if [ "$(uname -s )" == "Linux" ]; then
+      #       npm run linux
+      #     fi
+      #     if [[ "$(uname -s)" =~ "MINGW64" ]]; then
+      #       unset CSC_KEY_PASSWORD
+      #       unset CSC_LINK
+      #       unset CSC_LINK_PATH
+      #       npm run win
+      #     fi
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+      #     CSC_LINK: ${{ secrets.CSC_LINK }}
+      #     APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      #     APPLE_ID: ${{ secrets.APPLE_ID }}
+      #     APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      #     CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
+      #     CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
 
       - name: Setup temporary installer signing keychain
         uses: apple-actions/import-codesign-certs@v3
@@ -191,15 +187,25 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Azure CLI script to sign Windows binaries
-        uses: azure/cli@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az account show
-            dotnet tool install --no-cache --global AzureSignTool --version 6.0.1
-            azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.exe"
-            azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.msi"
+      - name: Azure token to use with AzureSignTool
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $az_token=$(az account get-access-token --scope https://vault.azure.net/.default --query accessToken --output tsv)
+          echo "::add-mask::$az_token"
+          echo "AZ_TOKEN=$az_token" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build signed installer
+        if: runner.os == 'Windows'
+        run: |
+          az account show
+          azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.exe"
+          azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.msi"
+        shell: cmd
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
 
       # Ensure this task is right before the Upload
       - name: Create checksum files

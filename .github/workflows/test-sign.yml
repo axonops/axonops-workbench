@@ -33,9 +33,8 @@ jobs:
           curl -LO https://github.com/axonops/axonops-workbench/releases/download/v1.0.0/AxonOps.Workbench-1.0.0-win-x64.exe
 
       - name: Azure login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          cat ${{ secrets.AZURE_CREDENTIALS }} | jq .
 
       - name: Build & sign (Azure Key Vault)
         if: runner.os == 'Windows'

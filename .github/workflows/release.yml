@@ -121,39 +121,39 @@ jobs:
           NODE_ENV: test
         continue-on-error: true  # Don't block release for now, but log results
 
-      # - name: Pack AxonOps Developer Workbench
-      #   run: |
-      #     if [ "$(uname -m)" == "aarch64" ] && [ "$(uname -s)" == "Linux" ]; then
-      #       sudo apt-get -y install ruby
-      #       sudo gem install dotenv -v 2.8.1
-      #       sudo gem instal fpm
-      #       export USE_SYSTEM_FPM=true
-      #     fi
+      - name: Pack AxonOps Developer Workbench
+        run: |
+          if [ "$(uname -m)" == "aarch64" ] && [ "$(uname -s)" == "Linux" ]; then
+            sudo apt-get -y install ruby
+            sudo gem install dotenv -v 2.8.1
+            sudo gem instal fpm
+            export USE_SYSTEM_FPM=true
+          fi
 
-      #     if [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "arm64" ]; then
-      #       npm run mac:arm64
-      #     elif [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "x86_64" ]; then
-      #       npm run mac
-      #     fi
-      #     export CSC_IDENTITY_AUTO_DISCOVERY=false
-      #     if [ "$(uname -s )" == "Linux" ]; then
-      #       npm run linux
-      #     fi
-      #     if [[ "$(uname -s)" =~ "MINGW64" ]]; then
-      #       unset CSC_KEY_PASSWORD
-      #       unset CSC_LINK
-      #       unset CSC_LINK_PATH
-      #       npm run win
-      #     fi
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-      #     CSC_LINK: ${{ secrets.CSC_LINK }}
-      #     APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-      #     APPLE_ID: ${{ secrets.APPLE_ID }}
-      #     APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      #     CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
-      #     CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
+          if [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "arm64" ]; then
+            npm run mac:arm64
+          elif [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "x86_64" ]; then
+            npm run mac
+          fi
+          export CSC_IDENTITY_AUTO_DISCOVERY=false
+          if [ "$(uname -s )" == "Linux" ]; then
+            npm run linux
+          fi
+          if [[ "$(uname -s)" =~ "MINGW64" ]]; then
+            unset CSC_KEY_PASSWORD
+            unset CSC_LINK
+            unset CSC_LINK_PATH
+            npm run win
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
+          CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
 
       - name: Setup temporary installer signing keychain
         uses: apple-actions/import-codesign-certs@v3

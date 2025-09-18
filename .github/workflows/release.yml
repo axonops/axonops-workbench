@@ -47,19 +47,19 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: [ubuntu-24.04]
-            target: Linux
+          # - os: [ubuntu-24.04]
+          #   target: Linux
 
-          - os: [ubuntu-24.04-arm]
-            target: Linux
+          # - os: [ubuntu-24.04-arm]
+          #   target: Linux
 
-          # M1
-          - os: macos-14
-            target: Macos
+          # # M1
+          # - os: macos-14
+          #   target: Macos
 
-          # X86
-          - os: macos-13
-            target: Macos
+          # # X86
+          # - os: macos-13
+          #   target: Macos
 
           - os: windows-latest
             target: Windows
@@ -203,8 +203,8 @@ jobs:
       - name: Build signed installer
         if: runner.os == 'Windows'
         run: |
-          azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.exe"
-          azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.msi"
+          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kvm -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.exe"
+          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kvm -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.msi"
         shell: cmd
 
       # Ensure this task is right before the Upload

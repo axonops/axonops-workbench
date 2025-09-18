@@ -1,0 +1,60 @@
+name: Test signing with AzureSignTool
+
+on:
+  push:
+    branches:
+      - 'test-azure-sign'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build on ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target: Windows
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Change the package.json version to match the tag
+        run: |
+          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          sed -i.bak 's/"version": "[^"]*"/"version": "'"$VERSION"'"/' package.json && rm package.json.bak
+          rm -f package.json.bak
+          mkdir -p dist
+          touch "dist/AxonOps.Workbench-${VERSION}-win-x64.exe"
+
+      - name: Install AzureSignTool
+        if: runner.os == 'Windows'
+        run: dotnet tool install --no-cache --global AzureSignTool --version 6.0.1
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Azure token to use with AzureSignTool
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $az_token=$(az account get-access-token --scope https://vault.azure.net/.default --query accessToken --output tsv)
+          echo "::add-mask::$az_token"
+          echo "AZ_TOKEN=$az_token" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build signed installer
+        if: runner.os == 'Windows'
+        run: |
+          az account show
+          azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.exe"
+        shell: cmd
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}

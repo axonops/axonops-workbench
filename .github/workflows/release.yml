@@ -121,10 +121,6 @@ jobs:
           NODE_ENV: test
         continue-on-error: true  # Don't block release for now, but log results
 
-      # - name: Install Snapcraft
-      #   uses: samuelmeuli/action-snapcraft@v2
-      #   if: ${{ runner.os != 'Windows' }}
-
       - name: Pack AxonOps Developer Workbench
         run: |
           if [ "$(uname -m)" == "aarch64" ] && [ "$(uname -s)" == "Linux" ]; then
@@ -182,15 +178,14 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
-      - name: Azure login
+      - name: Install AzureSignTool
         if: runner.os == 'Windows'
+        run: dotnet tool install --no-cache --global AzureSignTool --version 6.0.1
+
+      - name: Azure login
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Install AzureSignTool
-        if: runner.os == 'Windows'
-        run: dotnet tool install --no-cache --global AzureSignTool --version 4.0.1
 
       - name: Azure token to use with AzureSignTool
         if: runner.os == 'Windows'
@@ -203,9 +198,13 @@ jobs:
       - name: Build signed installer
         if: runner.os == 'Windows'
         run: |
-          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.exe"
-          azuresigntool.exe sign --verbose -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.msi"
+          azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.exe"
+          azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.msi"
         shell: cmd
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
 
       # Ensure this task is right before the Upload
       - name: Create checksum files

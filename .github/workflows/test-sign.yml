@@ -34,7 +34,7 @@ jobs:
 
       - name: Azure login
         run: |
-          cat ${{ secrets.AZURE_CREDENTIALS }} | jq .
+          echo ${{ secrets.AZURE_CREDENTIALS }} | jq .
 
       - name: Build & sign (Azure Key Vault)
         if: runner.os == 'Windows'

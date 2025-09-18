@@ -42,17 +42,24 @@ jobs:
         shell: pwsh
         run: |
           dotnet tool install --no-cache --global AzureSignTool --version 6.0.1
-          $exe = "dist/AxonOps.Workbench-1.0.0-win-x64.exe"
-          azuresigntool.exe sign `
-            -kvu  "${{ secrets.AZURE_KEY_VAULT_URI }}" `
-            -kvi  "${{ secrets.AZURE_CLIENT_ID }}" `
-            -kvt  "${{ secrets.AZURE_TENANT_ID }}" `
-            -kvs  "${{ secrets.AZURE_CLIENT_SECRET }}" `
-            -kvc  "${{ secrets.AZURE_KEYVAULT_CERT_NAME }}" `
-            -fd   sha256 `
-            -tr   http://timestamp.digicert.com `
-            -v    "$exe"
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+          token = az account get-access-token --scope https://vault.azure.net/.default --query accessToken -o tsv
+
+          azuresigntool.exe sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvc "${{ secrets.AZURE_KEYVAULT_CERT_NAME }}" -kva $token -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-1.0.0-win-x64.exe"
+
+
+      # - name: Build & sign (Azure Key Vault)
+      #   if: runner.os == 'Windows'
+      #   shell: pwsh
+      #   run: |
+      #     dotnet tool install --no-cache --global AzureSignTool --version 6.0.1
+      #     $exe = "dist/AxonOps.Workbench-1.0.0-win-x64.exe"
+      #     azuresigntool.exe sign `
+      #       -kvu  "${{ secrets.AZURE_KEY_VAULT_URI }}" `
+      #       -kvi  "${{ secrets.AZURE_CLIENT_ID }}" `
+      #       -kvt  "${{ secrets.AZURE_TENANT_ID }}" `
+      #       -kvs  "${{ secrets.AZURE_CLIENT_SECRET }}" `
+      #       -kvc  "${{ secrets.AZURE_KEYVAULT_CERT_NAME }}" `
+      #       -fd   sha256 `
+      #       -tr   http://timestamp.digicert.com `
+      #       -v    "$exe"

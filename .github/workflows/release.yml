@@ -190,7 +190,7 @@ jobs:
 
       - name: Install AzureSignTool
         if: runner.os == 'Windows'
-        run: dotnet tool install --no-cache --global AzureSignTool --version 4.0.1
+        run: dotnet tool install --no-cache --global AzureSignTool --version 6.0.1
 
       - name: Azure token to use with AzureSignTool
         if: runner.os == 'Windows'

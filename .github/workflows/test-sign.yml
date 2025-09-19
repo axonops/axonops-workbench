@@ -34,9 +34,9 @@ jobs:
 
       - name: Check Certificate Expiration
         run: |
-          curl -LO https://github.com/digitalis-io/azure-cert-watchman/releases/download/v0.0.1/azure-cert-watchman-linux-amd64
-          chmod 755 ./azure-cert-watchman-linux-amd64
-          ./azure-cert-watchman-linux-amd64
+          curl -LO https://github.com/digitalis-io/azure-cert-watchman/releases/download/v0.0.1/azure-cert-watchman-windows-amd64.exe
+          
+          azure-cert-watchman-windows-amd64.exe
         env:
           AZURE_KEY_VAULT_URI: ${{ secrets.AZURE_KEY_VAULT_URI }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}

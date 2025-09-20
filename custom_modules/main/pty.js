@@ -889,16 +889,21 @@ let testConnection = (window, data) => {
     fullOutput = '',
     // The connection test process' ID
     processID = data.processID,
+    tempProcess,
     terminateProcess = () => {
       // Define final status to be returned
       let status = false
 
       try {
         // Call the `destroy` function from the pty instance
-        tempProcess.destroy()
+        try {
+          tempProcess.destroy()
+        } catch (e) {}
 
         // Attempt to kill the pty instance process by its process ID
-        Kill(tempProcess.pid, 'SIGKILL')
+        try {
+          Kill(tempProcess.pid, 'SIGKILL')
+        } catch (e) {}
 
         // Successfully terminated
         status = true
@@ -922,6 +927,11 @@ let testConnection = (window, data) => {
       }
     }
 
+  window.webContents.send(`process:can-be-terminated:${processID}`, true)
+
+  // Received request to terminate the connection test process
+  IPCMain.on(`process:terminate:${processID}`, () => terminateProcess())
+
   try {
     let request = global.terminatedTestsIDs.find((id) => id.requestID == data.requestID)
 
@@ -939,7 +949,7 @@ let testConnection = (window, data) => {
   // There might be duplicated code here; as this function is isolated from the Pty class
   try {
     // Create a temporary pty instance that will contain cqlsh instance
-    let tempProcess = PTY.spawn(Shell, [], {
+    tempProcess = PTY.spawn(Shell, [], {
       cwd: CWD,
       useConpty: false
     })
@@ -1148,9 +1158,6 @@ let testConnection = (window, data) => {
         sendTimeout = setTimeout(() => sendResult())
       }
     }
-
-    // Received request to terminate the connection test process
-    IPCMain.on(`process:terminate:${processID}`, (_, __) => terminateProcess())
   } catch (e) {
     try {
       // If the error is a number then don't log the error

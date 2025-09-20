@@ -3808,3 +3808,10 @@ div#searchConnections {
     }
   }
 }
+
+div#rightClickActionsMetadata {
+  div.modal-body {
+    max-height: 595px;
+    overflow-y: scroll;
+  }
+}

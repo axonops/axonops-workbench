@@ -7131,6 +7131,11 @@
             dataFieldsContainer.append($(getFieldElement()).show(function() {
               let row = $(this)
 
+              if ((fields || []).length <= 0)
+                setTimeout(() => !row.isVisibleInContainer() ? row.offsetParent().animate({
+                  scrollTop: row.position().top
+                }, 150) : '')
+
               setTimeout(() => {
                 let dropDownMDBObject = getElementMDBObject(row.find(`div.dropdown[for-select]`), 'Dropdown')
 
@@ -7540,6 +7545,11 @@
             dataUDTFieldsContainer.append($(getFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
 
+              if ((fields || []).length <= 0)
+                setTimeout(() => !row.isVisibleInContainer() ? row.offsetParent().animate({
+                  scrollTop: row.position().top
+                }, 150) : '')
+
               setTimeout(() => {
                 let dropDownMDBObject = getElementMDBObject(row.find(`div.dropdown[for-select]`), 'Dropdown')
 
@@ -7709,7 +7719,6 @@
                   updateActionStatusForUDTs()
                 } catch (e) {}
               })
-
             }))
           })
 
@@ -8519,6 +8528,11 @@
             dataFieldsContainer.append($(getPartitionKeyFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
 
+              if ((fields || []).length <= 0)
+                setTimeout(() => !row.isVisibleInContainer() ? row.offsetParent().animate({
+                  scrollTop: row.position().top
+                }, 150) : '')
+
               setTimeout(() => {
                 $(this).find(`a[action="delete-counter-table-partition-key"]`).click(function() {
                   $(this).parent().parent().remove()
@@ -9049,6 +9063,11 @@
             dataFieldsContainer.append($(getClusteringKeyFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
 
+              if ((fields || []).length <= 0)
+                setTimeout(() => !row.isVisibleInContainer() ? row.offsetParent().animate({
+                  scrollTop: row.position().top
+                }, 150) : '')
+
               setTimeout(() => {
                 $(this).find(`a[action="delete-counter-table-clustering-key"]`).click(function() {
                   $(this).parent().parent().remove()
@@ -9249,7 +9268,7 @@
             let dataFieldsContainer = dialogElement.find('div.counter-table-columns-fields'),
               getCounterColumnFieldElement = () => {
                 return `
-                <div class="counter-table-column-field row" >
+                <div class="counter-table-column-field row">
                   <div class="col-md-1" style="text-align: center; display:none;">
                     <div class="sort-handler" style="cursor:grab;">
                       <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
@@ -9330,6 +9349,11 @@
 
             dataFieldsContainer.append($(getCounterColumnFieldElement()).show(function() {
               let row = $(this)
+
+              if ((fields || []).length <= 0)
+                setTimeout(() => !row.isVisibleInContainer() ? row.offsetParent().animate({
+                  scrollTop: row.position().top
+                }, 150) : '')
 
               $(this).find(`a[action="delete-counter-table-column"]`).click(function() {
                 $(this).parent().parent().remove()
@@ -9819,6 +9843,11 @@
 
             dataFieldsContainer.append($(getTableOptionFieldElement()).show(function() {
               let row = $(this)
+
+              if ((fields || []).length <= 0)
+                setTimeout(() => !row.isVisibleInContainer() ? row.offsetParent().animate({
+                  scrollTop: row.position().top
+                }, 150) : '')
 
               $(this).find(`a[action="delete-counter-table-option"]`).click(function() {
                 $(this).parent().parent().remove()
@@ -10918,6 +10947,11 @@
             dataFieldsContainer.append($(getPartitionKeyFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
 
+              if ((fields || []).length <= 0)
+                setTimeout(() => !row.isVisibleInContainer() ? row.offsetParent().animate({
+                  scrollTop: row.position().top
+                }, 150) : '')
+
               setTimeout(() => {
                 $(this).find(`a[action="delete-standard-table-partition-key"]`).click(function() {
                   $(this).parent().parent().remove()
@@ -11417,6 +11451,11 @@
 
             dataFieldsContainer.append($(getClusteringKeyFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
+
+              if ((fields || []).length <= 0)
+                setTimeout(() => !row.isVisibleInContainer() ? row.offsetParent().animate({
+                  scrollTop: row.position().top
+                }, 150) : '')
 
               setTimeout(() => {
                 $(this).find(`a[action="delete-standard-table-clustering-key"]`).click(function() {
@@ -12002,6 +12041,11 @@
             dataFieldsContainer.append($(getStandardColumnFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
 
+              if ((fields || []).length <= 0)
+                setTimeout(() => !row.isVisibleInContainer() ? row.offsetParent().animate({
+                  scrollTop: row.position().top
+                }, 150) : '')
+
               $(this).find(`a[action="delete-standard-table-column"]`).click(function() {
                 $(this).parent().parent().remove()
 
@@ -12432,6 +12476,11 @@
             dataFieldsContainer.append($(getStandardUDTColumnFieldElement(keyspaceUDTs)).show(function() {
               let row = $(this)
 
+              if ((fields || []).length <= 0)
+                setTimeout(() => !row.isVisibleInContainer() ? row.offsetParent().animate({
+                  scrollTop: row.position().top
+                }, 150) : '')
+
               $(this).find(`a[action="delete-standard-table-udt-column"]`).click(function() {
                 $(this).parent().parent().remove()
 
@@ -12806,14 +12855,6 @@
                       updateActionStatusForStandardTables()
                     } catch (e) {}
                   })
-
-                  setTimeout(() => {
-                    try {
-                      dataFieldsContainer.animate({
-                        scrollTop: dataFieldsContainer.get(0).scrollHeight
-                      }, 10)
-                    } catch (e) {}
-                  })
                 }))
               }
 
@@ -12984,14 +13025,6 @@
                       updateActionStatusForStandardTables()
                     } catch (e) {}
                   })
-
-                  setTimeout(() => {
-                    try {
-                      dataFieldsContainer.animate({
-                        scrollTop: dataFieldsContainer.get(0).scrollHeight
-                      }, 10)
-                    } catch (e) {}
-                  })
                 }))
               }
 
@@ -13000,6 +13033,11 @@
 
             dataFieldsContainer.append($(getTableOptionFieldElement()).show(function() {
               let row = $(this)
+
+              if ((fields || []).length <= 0)
+                setTimeout(() => !row.isVisibleInContainer() ? row.offsetParent().animate({
+                  scrollTop: row.offsetParent().get(0).scrollHeight
+                }, 150) : '')
 
               $(this).find(`a[action="delete-standard-table-option"]`).click(function() {
                 $(this).parent().parent().remove()
@@ -13108,14 +13146,6 @@
               setTimeout(() => {
                 try {
                   updateActionStatusForStandardTables()
-                } catch (e) {}
-              })
-
-              setTimeout(() => {
-                try {
-                  dataFieldsContainer.animate({
-                    scrollTop: dataFieldsContainer.get(0).scrollHeight
-                  }, 10)
                 } catch (e) {}
               })
             }))

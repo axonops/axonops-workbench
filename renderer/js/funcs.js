@@ -1199,6 +1199,11 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
       } catch (e) {}
 
       try {
+        if (parentType.isVirtual)
+          object.virtual = true
+      } catch (e) {}
+
+      try {
         structure.a_attr.table = parentType.table
       } catch (e) {}
 
@@ -1509,13 +1514,15 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
        */
       await buildTreeViewForChild(tablesID, tableID, `Table`, table, 'table', {
         keyspace: keyspace.name,
-        isCounterTable
+        isCounterTable,
+        isVirtual: keyspace.virtual
       })
 
       if (isCounterTable)
         await buildTreeViewForChild(counterTablesID, `${tableID}_${counterTablesID}`, `Table`, table, 'table', {
           keyspace: keyspace.name,
-          isCounterTable: true
+          isCounterTable: true,
+          isVirtual: keyspace.virtual
         })
 
       // Table's primary keys
@@ -2661,10 +2668,20 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
   // Filter the virtual nodes with more conditions
   virtualNodes = virtualNodes.filter((node) => {
     // Get the node's parent
-    let parent = treeStructure.core.data.filter((_node) => _node.id == node.parent)[0]
+    let parent = treeStructure.core.data.find((_node) => _node.id == node.parent)
+
+    if (parent.parentType == 'table')
+      node.state = {
+        ...node.state,
+        hidden: true
+      }
+
+    try {
+      node.parentType = parent.parentType
+    } catch (e) {}
 
     // Keep the node only if the parent node is a keyspace
-    return parent.parentType == 'keyspace'
+    return ['keyspace', 'table'].some((type) => node.parentType == type)
   })
 
   try {
@@ -2694,7 +2711,7 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
     // Loop through all remaining nodes after the filtering process
     for (let node of virtualNodes) {
       // Get the keyspace node and clone it
-      let keyspace = {
+      let object = {
         ...treeStructure.core.data.filter((_node) => _node.id == node.parent)[0]
       }
 
@@ -2702,15 +2719,16 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
       treeStructure.core.data = treeStructure.core.data.filter((_node) => _node.id != node.parent)
 
       // Update the cloned keyspace node's parent ID to be the virtual keyspace node's ID
-      keyspace.parent = virtualKeyspacesParentID
+      if (node.parentType == 'keyspace')
+        object.parent = virtualKeyspacesParentID
 
-      keyspace.a_attr = {
-        ...keyspace.a_attr,
+      object.a_attr = {
+        ...object.a_attr,
         'data-is-virtual': `true`
       }
 
-      // Push the keyspace node again
-      treeStructure.core.data.push(keyspace)
+      // Push the object node again
+      treeStructure.core.data.push(object)
     }
   } catch (e) {}
 
@@ -2989,6 +3007,19 @@ jQuery.fn.extend({
       checkDisplayNone: true,
       checkContentVisibility: true
     })
+  },
+  isVisibleInContainer: function() {
+    let elementRect = $(this)[0].getBoundingClientRect(),
+      containerRect = $(this).offsetParent()[0].getBoundingClientRect()
+
+    let isVisible = (
+      elementRect.top >= containerRect.top &&
+      elementRect.left >= containerRect.left &&
+      elementRect.bottom <= containerRect.bottom &&
+      elementRect.right <= containerRect.right
+    )
+
+    return isVisible
   }
 })
 

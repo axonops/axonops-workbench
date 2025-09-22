@@ -496,7 +496,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 $(`div.btn[button-id="${terminateProcessBtnID}"]`).removeClass('disabled')
 
                 // Show the termination process' button
-                setTimeout(() => connectionElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+                IPCRenderer.removeAllListeners(`process:can-be-terminated:${testConnectionProcessID}`)
+                IPCRenderer.on(`process:can-be-terminated:${testConnectionProcessID}`, () => setTimeout(() => connectionElement.addClass('enable-terminate-process')))
 
                 // Disable the button
                 $(this).attr('disabled', 'disabled')
@@ -2383,31 +2384,36 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   submenu: [{
                                       label: I18next.capitalize(I18next.t('display in the work area')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
-                                                  connectionID: '${getAttributes(connectionElement, 'data-id')}',
-                                                  scope: '${scope}',
-                                                  tabID: '${cqlDescriptionContentID}',
-                                                  nodeID: '${getAttributes(clickedNode, 'id')}'
-                                                })`
+                                                    connectionID: '${getAttributes(connectionElement, 'data-id')}',
+                                                    scope: '${scope}',
+                                                    tabID: '${cqlDescriptionContentID}',
+                                                    nodeID: '${getAttributes(clickedNode, 'id')}'
+                                                  })`
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('save it as a text file')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
-                                                  connectionID: '${getAttributes(connectionElement, 'data-id')}',
-                                                  scope: '${scope}',
-                                                  tabID: '${cqlDescriptionContentID}',
-                                                  nodeID: '${getAttributes(clickedNode, 'id')}',
-                                                  saveAsFile: true
-                                                })`
+                                                    connectionID: '${getAttributes(connectionElement, 'data-id')}',
+                                                    scope: '${scope}',
+                                                    tabID: '${cqlDescriptionContentID}',
+                                                    nodeID: '${getAttributes(clickedNode, 'id')}',
+                                                    saveAsFile: true
+                                                  })`
                                     },
                                   ]
                                 }]
 
                                 let commands = {
-                                  ddl: [],
-                                  dql: [],
-                                  dml: [],
-                                  dcl: []
-                                }
+                                    ddl: [],
+                                    dql: [],
+                                    dml: [],
+                                    dcl: []
+                                  },
+                                  isSystemKeyspace = false,
+                                  replicationStrategy = {},
+                                  keyspaceJSONObj = {},
+                                  keyspaceUDTs = [],
+                                  keyspaceTables = []
 
                                 try {
                                   if (['cluster'].every((type) => nodeType != type))
@@ -2417,17 +2423,17 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     label: I18next.capitalize(I18next.t('create keyspace')),
                                     action: 'createKeyspace',
                                     click: `() => views.main.webContents.send('create-keyspace', {
-                                              datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
-                                              keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                              tabID: '_${cqlshSessionContentID}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`
+                                                datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`
                                   })
                                 } catch (e) {}
 
                                 try {
-                                  if (['keyspace', 'udts-parent', 'udt', 'tables-parent', 'counter-tables-parent', 'table'].every((type) => nodeType != type) || clickedNode.attr('data-is-virtual') != null)
+                                  if (['keyspace', 'udts-parent', 'udt', 'tables-parent', 'counter-tables-parent', 'table'].every((type) => nodeType != type) || (clickedNode.attr('data-is-virtual') != null && ['keyspace', 'table'].every((type) => nodeType != type)))
                                     throw 0
 
                                   try {
@@ -2440,21 +2446,24 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     targetName = keyspaceName
                                   } catch (e) {}
 
-                                  let keyspaceInfo = metadata.keyspaces.find((keyspace) => keyspace.name == targetName),
-                                    isSystemKeyspace = Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == keyspaceInfo.name)
+                                  let keyspaceInfo = metadata.keyspaces.find((keyspace) => keyspace.name == targetName)
+
+                                  isSystemKeyspace = Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == keyspaceInfo.name)
 
                                   try {
                                     $('#rightClickActionsMetadata').attr('data-keyspace-info', `${JSON.stringify(keyspaceInfo)}`)
                                   } catch (e) {}
 
-                                  let replicationStrategy = JSON.parse(repairJSONString(`${keyspaceInfo.replication_strategy}`) || `{}`)
+                                  replicationStrategy = JSON.parse(repairJSONString(`${keyspaceInfo.replication_strategy}`) || `{}`)
 
-                                  if (replicationStrategy.class == 'LocalStrategy' && isSystemKeyspace)
+                                  keyspaceJSONObj = metadata.keyspaces.find((keyspace) => keyspace.name == targetName)
+
+                                  keyspaceUDTs = keyspaceJSONObj.user_types
+
+                                  keyspaceTables = (keyspaceJSONObj.tables || []).map((table) => table.name)
+
+                                  if ((replicationStrategy || {}).class == 'LocalStrategy')
                                     throw 0
-
-                                  let keyspaceJSONObj = metadata.keyspaces.find((keyspace) => keyspace.name == targetName),
-                                    keyspaceUDTs = keyspaceJSONObj.user_types,
-                                    keyspaceTables = keyspaceJSONObj.tables.map((table) => table.name)
 
                                   if (contextMenu.length != 0)
                                     contextMenu = contextMenu.concat([{
@@ -2465,67 +2474,67 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       label: I18next.capitalize(I18next.t('create UDT')),
                                       action: 'createUDT',
                                       click: `() => views.main.webContents.send('create-udt', {
-                                              keyspaceName: '${targetName}',
-                                              udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                              numOfUDTs: ${keyspaceUDTs.length},
-                                              tabID: '_${cqlshSessionContentID}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`,
+                                                keyspaceName: '${targetName}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                numOfUDTs: ${keyspaceUDTs.length},
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
                                       visible: !isSystemKeyspace && ['keyspace', 'udts-parent'].some((type) => nodeType == type),
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('create table')),
                                       action: 'createStandardTable',
                                       click: `() => views.main.webContents.send('create-table', {
-                                              keyspaceName: '${targetName}',
-                                              tables: '${JSON.stringify(keyspaceTables) || []}',
-                                              udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                              numOfUDTs: ${keyspaceUDTs.length},
-                                              tabID: '_${cqlshSessionContentID}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                keyspaceName: '${targetName}',
+                                                tables: '${JSON.stringify(keyspaceTables) || []}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                numOfUDTs: ${keyspaceUDTs.length},
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                                })`,
                                       visible: !isSystemKeyspace && ['keyspace', 'tables-parent'].some((type) => nodeType == type)
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('create counter table')),
                                       action: 'createCounterTable',
                                       click: `() => views.main.webContents.send('create-counter-table', {
-                                              keyspaceName: '${targetName}',
-                                              tables: '${JSON.stringify(keyspaceTables) || []}',
-                                              udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                              numOfUDTs: ${keyspaceUDTs.length},
-                                              tabID: '_${cqlshSessionContentID}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`,
+                                                keyspaceName: '${targetName}',
+                                                tables: '${JSON.stringify(keyspaceTables) || []}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                numOfUDTs: ${keyspaceUDTs.length},
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
                                       visible: !isSystemKeyspace && ['keyspace', 'tables-parent', 'counter-tables-parent'].some((type) => nodeType == type)
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('alter UDT')),
                                       action: 'alterUDT',
                                       click: `() => views.main.webContents.send('alter-udt', {
-                                              keyspaceName: '${targetName}',
-                                              udtName: '${clickedNode.attr('name')}',
-                                              udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                              numOfUDTs: ${keyspaceUDTs.length},
-                                              tabID: '_${cqlshSessionContentID}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`,
+                                                keyspaceName: '${targetName}',
+                                                udtName: '${clickedNode.attr('name')}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                numOfUDTs: ${keyspaceUDTs.length},
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
                                       visible: nodeType == 'udt'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('drop UDT')),
                                       action: 'dropUDT',
                                       click: `() => views.main.webContents.send('drop-udt', {
-                                              udtName: '${clickedNode.attr('name')}',
-                                              tabID: '_${cqlshSessionContentID}',
-                                              keyspaceName: '${targetName}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`,
+                                                udtName: '${clickedNode.attr('name')}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${targetName}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
                                       visible: nodeType == 'udt'
                                     }
                                   ])
@@ -2534,80 +2543,49 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       label: I18next.capitalize(I18next.t('insert row as JSON')),
                                       action: 'insertRow',
                                       click: `() => views.main.webContents.send('insert-row', {
-                                              tableName: '${clickedNode.attr('name')}',
-                                              tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                              udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                              tabID: '_${cqlshSessionContentID}',
-                                              keyspaceName: '${keyspaceName}',
-                                              isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}',
-                                              asJSON: 'true'
-                                            })`,
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}',
+                                                asJSON: 'true'
+                                              })`,
                                       visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('insert row')),
                                       action: 'insertRow',
                                       click: `() => views.main.webContents.send('insert-row', {
-                                              tableName: '${clickedNode.attr('name')}',
-                                              tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                              udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                              tabID: '_${cqlshSessionContentID}',
-                                              keyspaceName: '${keyspaceName}',
-                                              isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`,
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
                                       visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                     }
                                   ])
-
-                                  commands.dql.push({
-                                    label: I18next.capitalize(I18next.t('select row as JSON')),
-                                    action: 'selectRow',
-                                    click: `() => views.main.webContents.send('select-row', {
-                                              tableName: '${clickedNode.attr('name')}',
-                                              tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                              udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                              tabID: '_${cqlshSessionContentID}',
-                                              keyspaceName: '${keyspaceName}',
-                                              isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}',
-                                              asJSON: 'true'
-                                            })`,
-                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
-                                  }, {
-                                    label: I18next.capitalize(I18next.t('select row')),
-                                    action: 'selectRow',
-                                    click: `() => views.main.webContents.send('select-row', {
-                                              tableName: '${clickedNode.attr('name')}',
-                                              tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                              udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                              tabID: '_${cqlshSessionContentID}',
-                                              keyspaceName: '${keyspaceName}',
-                                              isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`,
-                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
-                                  })
 
                                   commands.ddl.push({
                                     label: I18next.capitalize(I18next.t('alter table')),
                                     action: 'alterTable',
                                     click: `() => views.main.webContents.send('alter-table', {
-                                              tableName: '${clickedNode.attr('name')}',
-                                              tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                              udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                              numOfUDTs: ${keyspaceUDTs.length},
-                                              tabID: '_${cqlshSessionContentID}',
-                                              keyspaceName: '${keyspaceName}',
-                                              isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`,
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                numOfUDTs: ${keyspaceUDTs.length},
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
                                     visible: nodeType == 'table'
                                   })
 
@@ -2615,15 +2593,15 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     label: I18next.capitalize(I18next.t('delete row/colum')),
                                     action: 'insertRow',
                                     click: `() => views.main.webContents.send('delete-row-column', {
-                                              tableName: '${clickedNode.attr('name')}',
-                                              tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                              udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                              tabID: '_${cqlshSessionContentID}',
-                                              keyspaceName: '${keyspaceName}',
-                                              isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`,
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
                                     visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                   })
 
@@ -2631,53 +2609,89 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       label: I18next.capitalize(I18next.t('drop table')),
                                       action: 'dropTable',
                                       click: `() => views.main.webContents.send('drop-table', {
-                                              tableName: '${clickedNode.attr('name')}',
-                                              tabID: '_${cqlshSessionContentID}',
-                                              keyspaceName: '${keyspaceName}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`,
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
                                       visible: nodeType == 'table'
                                     }, {
                                       label: I18next.capitalize(I18next.t('truncate table')),
                                       action: 'truncateTable',
                                       click: `() => views.main.webContents.send('truncate-table', {
-                                              tableName: '${clickedNode.attr('name')}',
-                                              tabID: '_${cqlshSessionContentID}',
-                                              keyspaceName: '${keyspaceName}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`,
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
                                       visible: nodeType == 'table'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('alter keyspace')),
                                       action: 'alterKeyspace',
                                       click: `() => views.main.webContents.send('alter-keyspace', {
-                                              datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
-                                              keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                              keyspaceName: '${targetName}',
-                                              tabID: '_${cqlshSessionContentID}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`,
+                                                datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                                keyspaceName: '${targetName}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
                                       visible: nodeType == 'keyspace'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('drop keyspace')),
                                       action: 'dropKeyspace',
                                       click: `() => views.main.webContents.send('drop-keyspace', {
-                                              tabID: '_${cqlshSessionContentID}',
-                                              keyspaceName: '${targetName}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`,
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${targetName}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
                                       visible: nodeType == 'keyspace'
                                     }
                                   ])
 
                                   if (isSystemKeyspace)
                                     contextMenu = contextMenu.filter((item) => item.action != 'dropKeyspace')
+                                } catch (e) {}
+
+                                try {
+                                  if ((replicationStrategy || {}).class == 'LocalStrategy' && !isSystemKeyspace)
+                                    throw 0
+
+                                  commands.dql.push({
+                                    label: I18next.capitalize(I18next.t('select row as JSON')),
+                                    action: 'selectRow',
+                                    click: `() => views.main.webContents.send('select-row', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}',
+                                                asJSON: 'true'
+                                              })`,
+                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                  }, {
+                                    label: I18next.capitalize(I18next.t('select row')),
+                                    action: 'selectRow',
+                                    click: `() => views.main.webContents.send('select-row', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                  })
                                 } catch (e) {}
 
                                 try {
@@ -2688,12 +2702,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     label: I18next.capitalize(I18next.t('create keyspace')),
                                     action: 'createKeyspace',
                                     click: `() => views.main.webContents.send('create-keyspace', {
-                                              datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
-                                              keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                              tabID: '_${cqlshSessionContentID}',
-                                              textareaID: '_${cqlshSessionStatementInputID}',
-                                              btnID: '_${executeStatementBtnID}'
-                                            })`
+                                                datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`
                                   })
                                 } catch (e) {}
 
@@ -2701,6 +2715,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   contextMenu = contextMenu.concat([{
                                     type: 'separator',
                                   }])
+
+                                if (clickedNode.attr('data-is-virtual') == 'true') {
+                                  commands.ddl = []
+                                  commands.dml = []
+                                  commands.dcl = []
+                                }
 
                                 contextMenu = contextMenu.concat([{
                                     label: I18next.capitalize(I18next.t('commands')),
@@ -2745,25 +2765,25 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                   if (nodeType == 'cluster')
                                     click = `() => views.main.webContents.send('axonops-integration', {
-                                      workareaID: '${workareaElement.attr('workarea-id')}',
-                                      connectionID: '${connectionID}',
-                                      clusterName: 'cluster'
-                                    })`
+                                        workareaID: '${workareaElement.attr('workarea-id')}',
+                                        connectionID: '${connectionID}',
+                                        clusterName: 'cluster'
+                                      })`
 
                                   if (nodeType == 'keyspace')
                                     click = `() => views.main.webContents.send('axonops-integration', {
-                                      workareaID: '${workareaElement.attr('workarea-id')}',
-                                      connectionID: '${connectionID}',
-                                      keyspaceName: '${targetName}'
-                                    })`
+                                        workareaID: '${workareaElement.attr('workarea-id')}',
+                                        connectionID: '${connectionID}',
+                                        keyspaceName: '${targetName}'
+                                      })`
 
                                   if (nodeType == 'table')
                                     click = `() => views.main.webContents.send('axonops-integration', {
-                                      workareaID: '${workareaElement.attr('workarea-id')}',
-                                      connectionID: '${connectionID}',
-                                      tableName: '${clickedNode.attr('name')}',
-                                      keyspaceName: '${keyspaceName}'
-                                    })`
+                                        workareaID: '${workareaElement.attr('workarea-id')}',
+                                        connectionID: '${connectionID}',
+                                        tableName: '${clickedNode.attr('name')}',
+                                        keyspaceName: '${keyspaceName}'
+                                      })`
 
                                   contextMenu = contextMenu.concat([{
                                     label: I18next.capitalize(I18next.replaceData(`view $data dashboard`, [I18next.t(`${nodeType}`)])),
@@ -2778,17 +2798,17 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     label: I18next.capitalize(I18next.t(`view related snippets`)),
                                     action: 'cql-snippets',
                                     click: nodeType == 'keyspace' ? `() => views.main.webContents.send('cql-snippets:view', {
-                                      workareaID: '${workareaElement.attr('workarea-id')}',
-                                      connectionID: '${connectionID}',
-                                      keyspaceName: '${targetName}',
-                                      workareaID: '${workareaElement.attr('workarea-id')}'
-                                      })` : `() => views.main.webContents.send('cql-snippets:view', {
                                         workareaID: '${workareaElement.attr('workarea-id')}',
                                         connectionID: '${connectionID}',
-                                        tableName: '${clickedNode.attr('name')}',
-                                        keyspaceName: '${keyspaceName}',
+                                        keyspaceName: '${targetName}',
                                         workareaID: '${workareaElement.attr('workarea-id')}'
-                                      })`,
+                                        })` : `() => views.main.webContents.send('cql-snippets:view', {
+                                          workareaID: '${workareaElement.attr('workarea-id')}',
+                                          connectionID: '${connectionID}',
+                                          tableName: '${clickedNode.attr('name')}',
+                                          keyspaceName: '${keyspaceName}',
+                                          workareaID: '${workareaElement.attr('workarea-id')}'
+                                        })`,
                                     enabled: nodeType != 'cluster'
                                   }])
                                 } catch (e) {}
@@ -9486,7 +9506,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
           connectionElement.addClass('test-connection')
 
           // Show the termination process' button
-          setTimeout(() => connectionElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+          IPCRenderer.removeAllListeners(`process:can-be-terminated:${testConnectionProcessID}`)
+          IPCRenderer.on(`process:can-be-terminated:${testConnectionProcessID}`, () => setTimeout(() => connectionElement.addClass('enable-terminate-process')))
 
           // Show feedback to the user about starting the execution process
           setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('pre-connection scripts are being executed before starting with connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
@@ -10130,7 +10151,8 @@ const ConnectionTestProcessTerminationTimeout = 250
               dialogElement.addClass('test-connection')
 
               // Show the termination process' button
-              setTimeout(() => dialogElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+              IPCRenderer.removeAllListeners(`process:can-be-terminated:${testConnectionProcessID}`)
+              IPCRenderer.on(`process:can-be-terminated:${testConnectionProcessID}`, () => setTimeout(() => dialogElement.addClass('enable-terminate-process')))
 
               // Disable all the buttons in the footer
               button.add('#addConnection').add('#switchEditor').attr('disabled', 'disabled')
@@ -10397,7 +10419,8 @@ const ConnectionTestProcessTerminationTimeout = 250
             dialogElement.addClass('test-connection')
 
             // Show the termination process' button
-            setTimeout(() => dialogElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+            IPCRenderer.removeAllListeners(`process:can-be-terminated:${testConnectionProcessID}`)
+            IPCRenderer.on(`process:can-be-terminated:${testConnectionProcessID}`, () => setTimeout(() => dialogElement.addClass('enable-terminate-process')))
 
             // Disable all the buttons in the footer
             button.add('#addConnection').add('#switchEditor').attr('disabled', 'disabled')

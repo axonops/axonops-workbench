@@ -625,4 +625,52 @@ body.rtl {
     left: 8px !important;
     right: auto;
   }
+
+  div.content.notifications-center div.notifications-container div.toast div.hide-progress,
+  div.pinned-toast-container div.toast div.hide-progress,
+  div.toast-container div.toast div.hide-progress {
+    transform: scaleX(-1);
+  }
+
+  div.body div.right div.content div[content][content="workspaces"] div.connections-container div.connection div.terminate-process,
+  div.body div.right div.content div[content][content="workspaces"] div.connections-container div.workspace div.terminate-process,
+  div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.connection div.terminate-process,
+  div.body div.right div.content div[content][content="workspaces"] div.workspaces-container div.workspace div.terminate-process,
+  div.body div.right div.content div[content][content="connections"] div.connections-container div.connection div.terminate-process,
+  div.body div.right div.content div[content][content="connections"] div.connections-container div.workspace div.terminate-process,
+  div.body div.right div.content div[content][content="connections"] div.workspaces-container div.connection div.terminate-process,
+  div.body div.right div.content div[content][content="connections"] div.workspaces-container div.workspace div.terminate-process {
+    left: 12px;
+    right: auto;
+  }
+
+  div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type div.icon {
+    margin-right: 0;
+    margin-left: 5px;
+  }
+
+  div.axonops-url {
+    display: flex;
+    flex-direction: row;
+    align-content: flex-start;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
+
+  div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type:not(:last-of-type) {
+    margin-right: 0;
+    margin-left: 15px;
+  }
+
+  div.select-page-rows-container div.form-check {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+
+  div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.left div.connection-info div.name-ssl div.axonops-agent,
+  div.body div.right div.content div[content][content="workarea"] div.workarea div.sub-sides.left div.connection-info div.name-ssl div.axonops-integration-icon {
+    right: auto;
+    left: 20px;
+  }
 }

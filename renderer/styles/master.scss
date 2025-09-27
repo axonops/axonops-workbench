@@ -2736,6 +2736,10 @@ div.tab-content {
 
           div[class*="editor-container-"] {
             @include position();
+
+            div.monaco-diff-editor {
+              height: 100% !important;
+            }
           }
         }
 

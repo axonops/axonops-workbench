@@ -3802,8 +3802,8 @@ div#searchConnections {
         }
       }
 
-      &:not(first-of-type) {
-        margin-top: 7px;
+      &:not(:first-of-type) {
+        margin-top: 15px;
       }
     }
   }

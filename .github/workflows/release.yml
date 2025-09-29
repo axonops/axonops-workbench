@@ -94,6 +94,11 @@ jobs:
           python-version: 3.12
           cache: "pip"
 
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Install python dependencies
         run: pip3 install -r requirements.txt
 
@@ -104,19 +109,19 @@ jobs:
 
       - name: Install AxonOps Developer Workbench dependencies
         run: |
-          npm cache clean --force
-          npm i
+          pnpm cache clean --force
+          pnpm i
 
       - name: Get credits and add them to the database
         run: |
           cd get_credits
-          npm cache clean --force
-          npm i
-          npm rebuild
+          pnpm cache clean --force
+          pnpm i
+          pnpm rebuild
           node get_credits.js
 
       - name: Run tests
-        run: npm run test:ci
+        run: pnpm run test:ci
         env:
           NODE_ENV: test
         continue-on-error: true  # Don't block release for now, but log results
@@ -131,19 +136,19 @@ jobs:
           fi
 
           if [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "arm64" ]; then
-            npm run mac:arm64
+            pnpm run mac:arm64
           elif [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "x86_64" ]; then
-            npm run mac
+            pnpm run mac
           fi
           export CSC_IDENTITY_AUTO_DISCOVERY=false
           if [ "$(uname -s )" == "Linux" ]; then
-            npm run linux
+            pnpm run linux
           fi
           if [[ "$(uname -s)" =~ "MINGW64" ]]; then
             unset CSC_KEY_PASSWORD
             unset CSC_LINK
             unset CSC_LINK_PATH
-            npm run win
+            pnpm run win
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -271,8 +276,8 @@ jobs:
 
       - name: Install AxonOps Developer Workbench dependencies
         run: |
-          npm cache clean --force
-          npm i
+          pnpm cache clean --force
+          pnpm i
 
       - name: Generate SBOM 1/2
         uses: anchore/sbom-action@v0

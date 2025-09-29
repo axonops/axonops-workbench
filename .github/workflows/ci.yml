@@ -38,10 +38,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
       - name: Change the package.json version to match the tag
         run: |
           VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
@@ -77,6 +73,11 @@ jobs:
         with:
           node-version: 20.19.5
           cache: 'pnpm'
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Install AxonOps Developer Workbench dependencies
         run: |

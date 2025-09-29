@@ -1,0 +1,8 @@
+onlyBuiltDependencies:
+  - '@axonops/node-pty'
+  - better-sqlite3
+  - cpu-features
+  - electron
+  - electron-winstaller
+  - keytar
+  - ssh2

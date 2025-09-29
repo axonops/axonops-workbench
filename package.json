@@ -373,7 +373,7 @@
     "material-icons": "^1.13.14",
     "monaco-editor": "^0.53.0",
     "node-cmd": "^5.0.0",
-    "node-gyp": "^11.4.2",
+    "node-gyp": "^10.3.1",
     "node-machine-id": "^1.1.12",
     "node-rsa": "^1.1.1",
     "open": "^8.4.0",

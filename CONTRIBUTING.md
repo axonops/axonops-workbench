@@ -1,7 +1,7 @@
 # Contributing
 
 When contributing to this repository, please first discuss the change you wish to make via issue,
-email, or any other method with the owners of this repository before making a change. 
+email, or any other method with the owners of this repository before making a change.
 
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
@@ -18,7 +18,7 @@ When you open your first pull request, our CLA Assistant bot will automatically 
 ## Branching
 
 Developers must use a branch that it is linked to an opened issue. This is easily achieved by creating
-the branch from the GitHub UI. 
+the branch from the GitHub UI.
 
 1. Browse to the issue your changes relate to
 2. On the right hand side, ensure the issue is assigned to the developer and it has been labelled
@@ -36,7 +36,7 @@ https://docs.github.com/en/authentication/managing-commit-signature-verification
 
 ## Pull Request Process
 
-1. Ensure any install or build dependencies are removed before the end of the layer when doing a 
+1. Ensure any install or build dependencies are removed before the end of the layer when doing a
    build.
 2. Ensure all files contain the copyright notice
 3. It's strongly advised you use `linting` for your code. This will be enforced in the near future.
@@ -44,13 +44,13 @@ https://docs.github.com/en/authentication/managing-commit-signature-verification
 4. **Run the test suite** before submitting your PR:
    ```sh
    # Run all tests
-   npm test
+   pnpm test
    
    # Run tests with coverage
-   npm run test:coverage
-   
+   pnpm run test:coverage
+
    # Fix any linting issues
-   npm run lint
+   pnpm run lint
    ```
    See our comprehensive [Testing Guide](TESTING.md) for more details on writing and running tests.
 5. When creating a PR, the target branch should always be `main`

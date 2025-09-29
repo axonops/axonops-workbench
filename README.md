@@ -1,15 +1,15 @@
 <div align="center">
   <img src="renderer/assets/images/axonops-icon-512x512.png" alt="AxonOps Workbench Icon" width="128">
-  
+
   # AxonOps Workbench
-  
+
   **Purpose-Built Database Management Desktop App for Apache Cassandra®**
-  
+
   [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
   [![GitHub Issues](https://img.shields.io/github/issues/axonops/axonops-workbench)](https://github.com/axonops/axonops-workbench/issues)
   [![GitHub Discussions](https://img.shields.io/github/discussions/axonops/axonops-workbench)](https://github.com/axonops/axonops-workbench/discussions)
   [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)](https://axonops.com/workbench/download/)
-  
+
   [🚀 Download](https://axonops.com/workbench/download/) | [📚 Documentation](https://docs.axonops.com/) | [💬 Discussions](https://github.com/axonops/axonops-workbench/discussions/categories/ideas) | [🐛 Issues](https://github.com/axonops/axonops-workbench/issues/new/choose)
 </div>
 
@@ -18,12 +18,12 @@
 [AxonOps Workbench](https://axonops.com/workbench/) is a **powerful, free, and open-source** desktop application designed specifically for Cassandra developers and DBAs. Experience a revolutionary way to work with your distributed databases through an intuitive interface packed with advanced features.
 
 <div align="center">
-  
+
   ### 🎁 100% Free & Open Source
   **No hidden costs • No premium tiers • No license keys**
-  
+
   Community-driven development with full transparency
-  
+
 </div>
 
 ### 🔗 Supported Databases
@@ -75,9 +75,9 @@
 You can download a specific release from project [releases](https://github.com/axonops/axonops-workbench/releases), for the best experience we recommend downloading stable releases of AxonOps Workbench directly from our website:
 
 <div align="center">
-  
+
   **[⬇️ Download](https://axonops.com/workbench/download/)**
-  
+
   Available for macOS, Windows, and Linux
 </div>
 
@@ -197,7 +197,7 @@ Want to contribute or run AxonOps Workbench in development mode? Follow these in
 ### 📋 Requirements
 
 - Node.js >= 20.15.0
-- npm >= 10.7.0
+- pnpm >= 10.7.0
 - Python >= 3.12
 
 ### 🚀 Installation & Running
@@ -220,12 +220,12 @@ Want to contribute or run AxonOps Workbench in development mode? Follow these in
 
 4. Install Node.js dependencies
    ```sh
-   npm i
+   pnpm i
    ```
 
 5. Run in development mode
    ```sh
-   npm start
+   pnpm start
    ```
 
 ### 🧪 Testing
@@ -240,13 +240,13 @@ AxonOps Workbench includes a comprehensive test suite. See our [Testing Guide](T
 Quick test commands:
 ```sh
 # Run all tests
-npm test
+pnpm test
 
 # Run tests with coverage report
-npm run test:coverage
+pnpm run test:coverage
 
 # Run tests in watch mode (for development)
-npm run test:watch
+pnpm run test:watch
 ```
 
 ### 🤝 Contributing
@@ -279,11 +279,11 @@ If you'd like to create your own distribution package, you will need to install 
 
 ```sh
 # builds linux deb, rpm and tar.gz
-npm run linux
+pnpm run linux
 # OSX dmg and zip
-npm run mac
+pnpm run mac
 # windows
-npm run win
+pnpm run win
 ```
 
 See the `packages.json` for other build options.
@@ -361,4 +361,3 @@ These reports help us:
 - **DataStax** is a registered trademark of DataStax, Inc. and its subsidiaries in the United States and/or other countries.
 - **Elasticsearch** is a trademark of Elasticsearch B.V., registered in the U.S. and in other countries.
 - **Docker** is a trademark or registered trademark of Docker, Inc. in the United States and/or other countries.
-

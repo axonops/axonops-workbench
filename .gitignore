@@ -2,6 +2,7 @@
 **/node_modules/*
 **/packages-list.json
 package-lock.json
+pnpm-lock.yaml
 renderer/styles/*.css.map
 dev/*
 # test*/*  # Commented out to allow tests directory

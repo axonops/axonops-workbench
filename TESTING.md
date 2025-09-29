@@ -45,7 +45,7 @@ The AxonOps Workbench testing suite provides comprehensive coverage for our Elec
 ### Prerequisites
 
 - Node.js v20.17.0 or higher
-- npm v10.x or higher
+- pnpm v10.x or higher
 - All project dependencies installed
 
 ### Installation
@@ -56,24 +56,24 @@ git clone https://github.com/axonops/axonops-workbench.git
 cd axonops-workbench
 
 # Install dependencies
-npm install
+pnpm install
 
 # Run tests
-npm test
+pnpm test
 ```
 
 ### Essential Commands
 
 ```bash
 # Run all tests with coverage
-npm run test:coverage
+pnpm run test:coverage
 
 # Run tests in watch mode (recommended for development)
-npm run test:watch
+pnpm run test:watch
 
 # Run specific test suite
-npm run test:main      # Main process tests only
-npm run test:renderer  # Renderer process tests only
+pnpm run test:main      # Main process tests only
+pnpm run test:renderer  # Renderer process tests only
 ```
 
 ## 🏗️ Test Architecture
@@ -139,12 +139,12 @@ axonops-workbench/
 
 | Command | Description | Use Case |
 |---------|-------------|----------|
-| `npm test` | Run all tests | Quick validation |
-| `npm run test:watch` | Run tests in watch mode | Development |
-| `npm run test:coverage` | Generate coverage report | CI/CD, reporting |
-| `npm run test:main` | Test main process only | Main process development |
-| `npm run test:renderer` | Test renderer process only | UI development |
-| `npm run test:ci` | Optimized for CI | GitHub Actions |
+| `pnpm test` | Run all tests | Quick validation |
+| `pnpm run test:watch` | Run tests in watch mode | Development |
+| `pnpm run test:coverage` | Generate coverage report | CI/CD, reporting |
+| `pnpm run test:main` | Test main process only | Main process development |
+| `pnpm run test:renderer` | Test renderer process only | UI development |
+| `pnpm run test:ci` | Optimized for CI | GitHub Actions |
 
 ### Running Specific Tests
 
@@ -164,7 +164,7 @@ node --inspect-brk node_modules/.bin/jest --runInBand
 
 ### Coverage Reports
 
-After running `npm run test:coverage`, view the detailed HTML report:
+After running `pnpm run test:coverage`, view the detailed HTML report:
 
 ```bash
 # Open coverage report in browser (macOS)
@@ -204,10 +204,10 @@ describe('Feature Name', () => {
       // Arrange - Set up test data and conditions
       const input = { name: 'test', value: 42 };
       const expected = { result: 'success', data: 42 };
-      
+
       // Act - Execute the code under test
       const result = await functionUnderTest(input);
-      
+
       // Assert - Verify the outcome
       expect(result).toEqual(expected);
       expect(mockDependency.process).toHaveBeenCalledWith(input);
@@ -217,7 +217,7 @@ describe('Feature Name', () => {
       // Arrange
       const error = new Error('Connection failed');
       mockDependency.process.mockRejectedValue(error);
-      
+
       // Act & Assert
       await expect(functionUnderTest({})).rejects.toThrow('Connection failed');
     });
@@ -238,18 +238,18 @@ describe('Main Process Features', () => {
     const readyPromise = app.whenReady();
     app.emit('ready');
     await readyPromise;
-    
+
     expect(app.isReady).toBe(true);
   });
 
   test('should handle IPC communication', () => {
     const handler = jest.fn().mockResolvedValue({ success: true });
     ipcMain.handle('test-channel', handler);
-    
+
     // Simulate IPC call
     const event = { sender: { id: 1 } };
     const result = await handler(event, 'test-data');
-    
+
     expect(result).toEqual({ success: true });
   });
 });
@@ -273,16 +273,16 @@ describe('Renderer Process Features', () => {
   test('should handle user interactions', async () => {
     const button = document.getElementById('test-button');
     const clickHandler = jest.fn();
-    
+
     button.addEventListener('click', clickHandler);
     button.click();
-    
+
     expect(clickHandler).toHaveBeenCalled();
   });
 
   test('should communicate with main process', async () => {
     ipcRenderer.mockHandler('get-data', () => ({ data: 'test' }));
-    
+
     const result = await ipcRenderer.invoke('get-data');
     expect(result).toEqual({ data: 'test' });
   });
@@ -326,7 +326,7 @@ Our project maintains high test coverage across all metrics. To view current cov
 
 ```bash
 # Generate coverage report
-npm run test:coverage
+pnpm run test:coverage
 
 # View detailed HTML report
 open coverage/lcov-report/index.html  # macOS
@@ -349,7 +349,7 @@ We follow coverage standards similar to:
 
 ```bash
 # Generate and view coverage
-npm run test:coverage
+pnpm run test:coverage
 
 # View coverage in terminal
 cat coverage/lcov-report/index.html
@@ -411,10 +411,10 @@ jobs:
 
 ```bash
 # Simulate CI environment locally
-NODE_ENV=test ELECTRON_IS_TEST=1 npm run test:ci
+NODE_ENV=test ELECTRON_IS_TEST=1 pnpm run test:ci
 
 # Run with CI-like constraints
-npm run test:ci -- --maxWorkers=2 --coverage
+pnpm run test:ci -- --maxWorkers=2 --coverage
 ```
 
 ## 📚 Best Practices
@@ -446,10 +446,10 @@ npm run test:ci -- --maxWorkers=2 --coverage
 // Add debug output
 test('debugging example', () => {
   const result = complexFunction();
-  
+
   // Temporary debug output
   console.log('Result:', JSON.stringify(result, null, 2));
-  
+
   expect(result).toBeDefined();
 });
 
@@ -509,10 +509,10 @@ beforeEach(() => {
 
 ```bash
 # Run with verbose output
-npm test -- --verbose
+pnpm test -- --verbose
 
 # Run with detective mode
-npm test -- --detectOpenHandles
+pnpm test -- --detectOpenHandles
 
 # Run single test with debugging
 node --inspect-brk node_modules/.bin/jest --runInBand path/to/test.js
@@ -540,9 +540,9 @@ node --inspect-brk node_modules/.bin/jest --runInBand path/to/test.js
 
 ### Submitting Tests
 
-1. Run full test suite: `npm test`
-2. Check coverage: `npm run test:coverage`
-3. Fix any linting issues: `npm run lint`
+1. Run full test suite: `pnpm test`
+2. Check coverage: `pnpm run test:coverage`
+3. Fix any linting issues: `pnpm run lint`
 4. Commit with descriptive message
 5. Create pull request with test summary
 

@@ -1,0 +1,234 @@
+name: Release Workbench
+
+on:
+  push:
+    branches: [ main, develop, pnpm ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build on ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            target: Linux
+
+          - os: ubuntu-24.04-arm
+            target: Linux
+
+          # M1
+          - os: macos-14
+            target: Macos
+
+          # X86
+          - os: macos-13
+            target: Macos
+
+          - os: windows-latest
+            target: Windows
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Change the package.json version to match the tag
+        run: |
+          VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          sed -i.bak 's/"version": "[^"]*"/"version": "'"$VERSION"'"/' package.json && rm package.json.bak
+          rm -f package.json.bak
+
+      - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
+        run: |
+          mkdir -p main/bin
+          for binary in cqlsh keys_generator; do
+            curl -fL ${CQLSH_GITHUB_URL}/${CQLSH_BUILD_VERSION}/${binary}-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
+            mv main/bin/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}
+            mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
+          done
+          sed -i.bak "s/%CQLSH_VERSION%/$CQLSH_BUILD_VERSION/g" renderer/views/index.html
+          rm -f renderer/views/index.html.bak
+        env:
+          CQLSH_BUILD_VERSION: "0.17.13"
+          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download' }}"
+
+      - name: Setup Python v3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          cache: "pip"
+
+      - name: Install python dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Setup Node.js v20.19.5
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.5
+          cache: 'pnpm'
+
+      - name: Install AxonOps Developer Workbench dependencies
+        run: |
+          pnpm cache clean --force
+          pnpm i
+
+      - name: Get credits and add them to the database
+        run: |
+          cd get_credits
+          pnpm cache clean --force
+          pnpm i
+          pnpm rebuild
+          node get_credits.js
+
+      - name: Run tests
+        run: pnpm run test:ci
+        env:
+          NODE_ENV: test
+        continue-on-error: true  # Don't block release for now, but log results
+
+      - name: Pack AxonOps Developer Workbench
+        run: |
+          if [ "$(uname -m)" == "aarch64" ] && [ "$(uname -s)" == "Linux" ]; then
+            sudo apt-get -y install ruby
+            sudo gem install dotenv -v 2.8.1
+            sudo gem install fpm
+            export USE_SYSTEM_FPM=true
+          fi
+
+          if [ "$(uname -s)" == "Darwin" ] && [ "$(uname -m)" == "arm64" ]; then
+            pnpm run mac:arm64
+          elif [ "$(uname -s)" == "Darwin" ] && [ "$(uname -m)" == "x86_64" ]; then
+            pnpm run mac
+          fi
+          export CSC_IDENTITY_AUTO_DISCOVERY=false
+          if [ "$(uname -s)" == "Linux" ]; then
+            pnpm run linux
+          fi
+          if [[ "$(uname -s)" =~ "MINGW64" ]]; then
+            unset CSC_KEY_PASSWORD
+            unset CSC_LINK
+            unset CSC_LINK_PATH
+            pnpm run win
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
+          CSC_INSTALLER_LINK: ${{ secrets.CSC_INSTALLER_LINK }}
+
+      - name: Setup temporary installer signing keychain
+        uses: apple-actions/import-codesign-certs@v3
+        if: ${{ startsWith(runner.os, 'macos') }}
+        with:
+          p12-file-base64: ${{ secrets.CSC_INSTALLER_LINK }}
+          p12-password: ${{ secrets.CSC_INSTALLER_KEY_PASSWORD }}
+
+      - name: Sign the Apple pkg
+        if: ${{ startsWith(runner.os, 'macos') }}
+        run: |
+          for pkg_name in $(ls -1 dist/*.pkg); do
+            mv $pkg_name Unsigned-Workbench.pkg
+
+            productsign --sign "Developer ID Installer: AXONOPS Limited (UJ776LUP23)" Unsigned-Workbench.pkg $pkg_name
+            rm -f Unsigned-Workbench.pkg
+            xcrun notarytool submit $pkg_name --apple-id $APPLE_ID --team-id $APPLE_TEAM_ID --password $APPLE_APP_SPECIFIC_PASSWORD --wait
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      - name: Install AzureSignTool
+        if: runner.os == 'Windows'
+        run: dotnet tool install --no-cache --global AzureSignTool --version 6.0.1
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Azure token to use with AzureSignTool
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $az_token=$(az account get-access-token --scope https://vault.azure.net/.default --query accessToken --output tsv)
+          echo "::add-mask::$az_token"
+          echo "AZ_TOKEN=$az_token" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build signed installer
+        if: runner.os == 'Windows'
+        run: |
+          azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.exe"
+          azuresigntool.exe sign --verbose -kvt ${{ secrets.AZURE_TENANT_ID }} -kvu ${{ secrets.AZURE_KEY_VAULT_URI }} -kvc ${{ secrets.AZURE_KEYVAULT_CERT_NAME }} -kva %AZ_TOKEN% -fd sha256 -tr http://timestamp.digicert.com -v "dist/AxonOps.Workbench-%VERSION%-win-x64.msi"
+        shell: cmd
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      # Ensure this task is right before the Upload
+      - name: Create checksum files
+        run: |
+          SAVEIFS=$IFS
+          IFS=$(echo -en "\n\b")
+
+          cd dist
+
+          case "$(uname -s)" in
+          Darwin)
+            FILES=$(ls -1 *.dmg *.zip *.pkg)
+            for f in $FILES; do
+              shasum -a 256 $f > ${f}.sha256sum
+            done
+          ;;
+          MINGW64*)
+            FILES=$(ls -1 *.exe *.msi)
+            for f in $FILES; do
+              sha256sum $f > ${f}.sha256sum
+            done
+          ;;
+          Linux)
+            FILES=$(ls -1 *.tar.gz *.deb *.rpm)
+            for f in $FILES; do
+              sha256sum $f > ${f}.sha256sum
+            done
+          ;;
+          esac
+
+          IFS=$SAVEIFS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          path: |
+            dist/*.zip
+            dist/*.pkg
+            dist/*.dmg
+            dist/*.deb
+            dist/*.rpm
+            dist/*.exe
+            dist/*.tar.gz
+            dist/*.nsis
+            dist/*.msi
+            dist/*.sha256sum
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

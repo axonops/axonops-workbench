@@ -18,22 +18,22 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-24.04
-            target: Linux
-
-          # - os: ubuntu-24.04-arm
+          # - os: ubuntu-24.04
           #   target: Linux
 
-          # # M1
-          # - os: macos-14
-          #   target: Macos
+          - os: ubuntu-24.04-arm
+            target: Linux
 
-          # # X86
-          # - os: macos-13
-          #   target: Macos
+          # M1
+          - os: macos-14
+            target: Macos
 
-          # - os: windows-latest
-          #   target: Windows
+          # X86
+          - os: macos-13
+            target: Macos
+
+          - os: windows-latest
+            target: Windows
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -75,7 +75,7 @@ jobs:
           version: 10
 
       - name: Setup Node.js v20.19.5
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20.19.5
           cache: 'pnpm'

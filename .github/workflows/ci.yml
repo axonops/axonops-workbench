@@ -13,7 +13,7 @@ defaults:
 
 jobs:
   build:
-    name: Build on ${{ matrix.target }}
+    name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -39,6 +39,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Change the package.json version to match the tag
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           VERSION=$(echo $GITHUB_REF_NAME | sed 's/^v//g')
           echo "VERSION=${VERSION}" >> $GITHUB_ENV

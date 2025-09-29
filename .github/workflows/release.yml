@@ -111,6 +111,7 @@ jobs:
         run: |
           pnpm store prune
           pnpm i
+          pnpm rebuild
 
       - name: Get credits and add them to the database
         run: |

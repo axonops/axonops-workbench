@@ -306,9 +306,9 @@ let getOrphanedSnippets = async () => {
       }
 
       /**
-      * Reaching here means the connection exists
-      * Case 3: Check if there's a metadata for that connection in case the snippet is associated with an object in the node
-      */
+       * Reaching here means the connection exists
+       * Case 3: Check if there's a metadata for that connection in case the snippet is associated with an object in the node
+       */
       if (snippetAssociatedWith.length <= 1)
         continue
 

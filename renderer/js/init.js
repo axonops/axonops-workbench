@@ -862,380 +862,354 @@ $(document).on('initialize', () => {
   }
 
   // Monaco editor
-  {
-    let monacoPath = Path.join(__dirname, '..', '..', 'node_modules', 'monaco-editor', 'min'),
-      editorUIElement = $('div.modal#addEditConnectionDialog div.modal-body div.editor-container div.editor'),
+  setTimeout(async () => {
+    let editorUIElement = $('div.modal#addEditConnectionDialog div.modal-body div.editor-container div.editor'),
       rightClickActionsKeyspaceEditorUIElement = $('div.modal#rightClickActionsMetadata div.modal-body div.action-editor div.editor'),
       dropKeyspaceEditorUIElement = $('div.modal#extraDataActions .editor'),
-      generateInsertStatementsEditorUIElement = $('div.modal#generateInsertStatements .editor')
+      generateInsertStatementsEditorUIElement = $('div.modal#generateInsertStatements .editor'),
+      monacoInstance = null,
+      loadingPromise = null
 
-    // Initialize the editor
-    let amdLoader = require(Path.join(monacoPath, 'vs', 'loader.js')),
-      amdRequire = amdLoader.require,
-      amdDefine = amdRequire.define
+    loadMonaco = () => {
+      if (monacoInstance)
+        return Promise.resolve(monacoInstance);
 
-    // Inner function to create a URI from a given path
-    let uriFromPath = (path) => {
-      let pathName = Path.resolve(path).replace(/\\/g, '/')
+      if (loadingPromise)
+        return loadingPromise
 
-      if (pathName.length > 0 && pathName.charAt(0) !== '/')
-        pathName = '/' + pathName
+      loadingPromise = new Promise((resolve, reject) => {
+        loadStyleSheet(Path.join(__dirname, '..', '..', 'node_modules/monaco-editor/min/vs/style.css'))
 
-      return encodeURI('file://' + pathName)
+        loadScript(Path.join(__dirname, '..', '..', 'node_modules/monaco-editor/min/vs/loader.js'))
+
+        window.require.config({
+          paths: {
+            'vs': Path.join(__dirname, '..', '..', 'node_modules/monaco-editor/min/vs')
+          }
+        })
+
+        window.require(['vs/editor/editor.main'], function(_exports) {
+          let monaco = _exports.m || _exports.default || _exports || window.monaco;
+
+          if (!monaco || !monaco.editor)
+            return
+
+          monacoInstance = monaco
+          window.monaco = monaco
+
+          resolve(monaco)
+        })
+      })
+
+      return loadingPromise
     }
 
-    amdRequire.config({
-      baseUrl: uriFromPath(Path.join(monacoPath))
-    })
+    await loadMonaco()
 
     // Establish the editor with set properties
-    amdRequire(['vs/editor/editor.main'], () => {
-      try {
-        addEditConnectionEditor = monaco.editor.create(editorUIElement[0], {
-          value: Modules.Consts.CQLSHRC, // This is the default content of the `cqlsh.rc` file
-          language: 'ini', // This language is the perfect one that supports the `cqlsh.rc` file content's syntax highlighting
-          minimap: {
-            enabled: true
-          },
-          glyphMargin: true, // This option allows to render an object in the line numbering side
-          suggest: {
-            showFields: false,
-            showFunctions: false
-          },
-          theme: 'vs-dark',
-          scrollBeyondLastLine: true,
-          mouseWheelZoom: true,
-          fontSize: 12,
-          fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
-          fontLigatures: true
-        })
+    try {
+      addEditConnectionEditor = monaco.editor.create(editorUIElement[0], {
+        value: Modules.Consts.CQLSHRC, // This is the default content of the `cqlsh.rc` file
+        language: 'ini', // This language is the perfect one that supports the `cqlsh.rc` file content's syntax highlighting
+        minimap: {
+          enabled: true
+        },
+        glyphMargin: true, // This option allows to render an object in the line numbering side
+        suggest: {
+          showFields: false,
+          showFunctions: false
+        },
+        theme: 'vs-dark',
+        scrollBeyondLastLine: true,
+        mouseWheelZoom: true,
+        fontSize: 12,
+        fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
+        fontLigatures: true
+      })
 
-        // Once the editor is established save the default values in the `CQLSHValues` variable
-        Modules.Connections.getCQLSHRCContent(getActiveWorkspaceID(), Modules.Consts.CQLSHRC).then((_default) => {
-          // Update the global cqlsh values array with the default values
-          cqlshValues = _default
+      // Once the editor is established save the default values in the `CQLSHValues` variable
+      Modules.Connections.getCQLSHRCContent(getActiveWorkspaceID(), Modules.Consts.CQLSHRC).then((_default) => {
+        // Update the global cqlsh values array with the default values
+        cqlshValues = _default
 
-          // Trigger the `ChangeContent` event for the editor
-          addEditConnectionEditor.setValue(addEditConnectionEditor.getValue())
-        })
+        // Trigger the `ChangeContent` event for the editor
+        addEditConnectionEditor.setValue(addEditConnectionEditor.getValue())
+      })
 
-        /**
-         * Call the `layout` function
-         * It's used to optimize the editor's dimensions with the parent container
-         */
-        addEditConnectionEditor.layout()
+      /**
+       * Call the `layout` function
+       * It's used to optimize the editor's dimensions with the parent container
+       */
+      addEditConnectionEditor.layout()
 
-        let updateTimeout
+      let updateTimeout
 
-        // Once there is a change in the editor (by pasting, typing, etc...)
-        addEditConnectionEditor.getModel().onDidChangeContent(() => {
-          try {
-            clearTimeout(updateTimeout)
-          } catch (e) {}
+      // Once there is a change in the editor (by pasting, typing, etc...)
+      addEditConnectionEditor.getModel().onDidChangeContent(() => {
+        try {
+          clearTimeout(updateTimeout)
+        } catch (e) {}
 
-          updateTimeout = setTimeout(() => {
-            // If the editor is updating then stop once
-            if (isUpdatingEditor) {
-              isUpdatingEditor = false
+        updateTimeout = setTimeout(() => {
+          // If the editor is updating then stop once
+          if (isUpdatingEditor) {
+            isUpdatingEditor = false
 
-              // By doing this, the `ChangeContent` event is triggered again after updating the content
-              addEditConnectionEditor.setValue(addEditConnectionEditor.getValue())
+            // By doing this, the `ChangeContent` event is triggered again after updating the content
+            addEditConnectionEditor.setValue(addEditConnectionEditor.getValue())
 
-              // Skip the upcoming code
-              return
-            }
+            // Skip the upcoming code
+            return
+          }
 
-            // Disable the save connection button
-            $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
+          // Disable the save connection button
+          $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
 
-            // Detected sensitive data - username, password -
-            let detectedSensitiveData = false,
-              // Get the currently active workspace's ID
-              workspaceID = getActiveWorkspaceID()
+          // Detected sensitive data - username, password -
+          let detectedSensitiveData = false,
+            // Get the currently active workspace's ID
+            workspaceID = getActiveWorkspaceID()
 
-            // Get and parse the content of the current `cqlsh.rc `file and change inputs' values as needed
-            Modules.Connections.getCQLSHRCContent(workspaceID, null, addEditConnectionEditor).then((_content) => {
-              try {
-                // Update the global cqlsh values array with the current values from the editor
-                cqlshValues = _content
+          // Get and parse the content of the current `cqlsh.rc `file and change inputs' values as needed
+          Modules.Connections.getCQLSHRCContent(workspaceID, null, addEditConnectionEditor).then((_content) => {
+            try {
+              // Update the global cqlsh values array with the current values from the editor
+              cqlshValues = _content
 
-                // Define the sections [connection, ui, SSL, etc...]
-                let _sections = Object.keys(_content)
+              // Define the sections [connection, ui, SSL, etc...]
+              let _sections = Object.keys(_content)
 
-                // If there are no sections then the cqlsh is not - in terms of syntax - correct or something is missing then stop this process
-                if (_sections.length <= 0)
-                  throw 0
+              // If there are no sections then the cqlsh is not - in terms of syntax - correct or something is missing then stop this process
+              if (_sections.length <= 0)
+                throw 0
 
-                // Loop through each section
-                for (let _section of _sections) {
-                  // Define the current section's keys [hostname, port, SSL, etc...]
-                  let _keys = Object.keys(_content[_section])
+              // Loop through each section
+              for (let _section of _sections) {
+                // Define the current section's keys [hostname, port, SSL, etc...]
+                let _keys = Object.keys(_content[_section])
 
-                  // If the current section has no keys then skip this section and move to the next one
-                  if (_keys.length <= 0)
-                    continue
+                // If the current section has no keys then skip this section and move to the next one
+                if (_keys.length <= 0)
+                  continue
 
-                  // Loop through each key/option
-                  for (let _key of _keys) {
-                    // Check if this key/option is considered to be sensitive data that shouldn't be in the config file
-                    if (Modules.Consts.SensitiveData.includes(_key))
-                      detectedSensitiveData = true
+                // Loop through each key/option
+                for (let _key of _keys) {
+                  // Check if this key/option is considered to be sensitive data that shouldn't be in the config file
+                  if (Modules.Consts.SensitiveData.includes(_key))
+                    detectedSensitiveData = true
 
-                    // Get the current key/option input field's object
-                    let inputObject = getElementMDBObject($(`[info-section="${_section}"][info-key="${_key}"]`)),
-                      // Get the value for the key/option
-                      optionValue = _content[_section][_key],
-                      // Point at the input field
-                      input = $(`[info-section="${_section}"][info-key="${_key}"]`)
+                  // Get the current key/option input field's object
+                  let inputObject = getElementMDBObject($(`[info-section="${_section}"][info-key="${_key}"]`)),
+                    // Get the value for the key/option
+                    optionValue = _content[_section][_key],
+                    // Point at the input field
+                    input = $(`[info-section="${_section}"][info-key="${_key}"]`)
 
-                    // Try to set the value using the `setValue` method
-                    try {
-                      input.val(optionValue)
-                    } catch (e) {}
-
-                    // Add values to the checkbox inputs
-                    try {
-                      // If the input's type is not `checkbox` then skip this try-catch block
-                      if (input.attr('type') != 'checkbox')
-                        throw 0
-
-                      // Update the checkbox's status
-                      input.prop('checked', optionValue == 'true')
-                    } catch (e) {}
-
-                    // Add values to the file input fields
-                    try {
-                      // If the input field's type is not `file` then skip this try-catch block
-                      if (input.attr('type') == 'text' && input.parent().attr('role') != 'file-selector')
-                        throw 0
-
-                      /**
-                       * Update the tooltip's content and state
-                       * Get the object
-                       */
-                      let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is(input))
-
-                      // If the path to the file is invalid or inaccessible then don't adopt it
-                      if (!pathIsAccessible(optionValue)) {
-                        // Clear the input's value
-                        input.val('')
-
-                        // Clear the file's name preview
-                        input.parent().attr('file-name', '-')
-
-                        // Disable the tooltip
-                        try {
-                          tooltipObject[0].object.disable()
-                        } catch (e) {}
-
-                        // Skip the upcoming code in this try-catch block
-                        throw 0
-                      }
-
-                      // Enable the tooltip and update its content
-                      try {
-                        tooltipObject[0].object.enable()
-                        tooltipObject[0].object.setContent(optionValue)
-                      } catch (e) {}
-
-                      // Set the selected file's path
-                      input.val(optionValue)
-                      input.parent().attr('file-name', Path.basename(optionValue))
-                    } catch (e) {}
-
-                    // Update the input's object
-                    inputObject.update()
-                    inputObject._deactivate()
-                  }
-                }
-              } catch (e) {} finally {
-                // Check if there's any disabled key/option after the change and clear its input field in the UI
-                $('[info-section][info-key]').each(function() {
-                  // Get the input's Material Design object
-                  let object_ = getElementMDBObject($(this)),
-                    // Get the inputs' section, and its related key/option's name
-                    [section_, key_] = getAttributes($(this), ['info-section', 'info-key'])
-
-                  // If the input section is `none` then skip it and move to the next key/option
-                  if (section_ == 'none')
-                    return
-
+                  // Try to set the value using the `setValue` method
                   try {
+                    input.val(optionValue)
+                  } catch (e) {}
+
+                  // Add values to the checkbox inputs
+                  try {
+                    // If the input's type is not `checkbox` then skip this try-catch block
+                    if (input.attr('type') != 'checkbox')
+                      throw 0
+
+                    // Update the checkbox's status
+                    input.prop('checked', optionValue == 'true')
+                  } catch (e) {}
+
+                  // Add values to the file input fields
+                  try {
+                    // If the input field's type is not `file` then skip this try-catch block
+                    if (input.attr('type') == 'text' && input.parent().attr('role') != 'file-selector')
+                      throw 0
+
                     /**
-                     * Find the input's value from the editor
-                     * If it is not `undefined`; then it means this value has been updated already and no need to handle it as an empty or `undefined` value
+                     * Update the tooltip's content and state
+                     * Get the object
                      */
-                    if (_content[section_][key_] != undefined)
-                      return
+                    let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is(input))
 
-                    // Handle when the input is actually a file selector
-                    try {
-                      // If the input is not a file selector then skip this try-catch block
-                      if ($(this).parent().attr('file-name') == undefined)
-                        throw 0
-
-                      /**
-                       * Update the tooltip's content and state
-                       * Get the object
-                       */
-                      let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
+                    // If the path to the file is invalid or inaccessible then don't adopt it
+                    if (!pathIsAccessible(optionValue)) {
+                      // Clear the input's value
+                      input.val('')
 
                       // Clear the file's name preview
-                      $(this).parent().attr('file-name', '-')
+                      input.parent().attr('file-name', '-')
 
                       // Disable the tooltip
                       try {
                         tooltipObject[0].object.disable()
                       } catch (e) {}
+
+                      // Skip the upcoming code in this try-catch block
+                      throw 0
+                    }
+
+                    // Enable the tooltip and update its content
+                    try {
+                      tooltipObject[0].object.enable()
+                      tooltipObject[0].object.setContent(optionValue)
                     } catch (e) {}
 
-                    /**
-                     * If it is `undefined` then it hasn't been found in the `cqlsh.rc` file
-                     * Set the input value to ''
-                     */
-                    try {
-                      $(this).val('')
-                    } catch (e) {
-                      // If the previous set didn't work then try to call the `selected` attribute
-                      try {
-                        $(this).prop('checked', getAttributes($(this), 'default-value') == 'true' ? true : false)
-                      } catch (e) {}
-                    } finally {
-                      // Update the object
-                      object_.update()
-                      object_._deactivate()
-                    }
+                    // Set the selected file's path
+                    input.val(optionValue)
+                    input.parent().attr('file-name', Path.basename(optionValue))
                   } catch (e) {}
-                })
+
+                  // Update the input's object
+                  inputObject.update()
+                  inputObject._deactivate()
+                }
               }
+            } catch (e) {} finally {
+              // Check if there's any disabled key/option after the change and clear its input field in the UI
+              $('[info-section][info-key]').each(function() {
+                // Get the input's Material Design object
+                let object_ = getElementMDBObject($(this)),
+                  // Get the inputs' section, and its related key/option's name
+                  [section_, key_] = getAttributes($(this), ['info-section', 'info-key'])
 
-              // Remove all decorations
-              if (editorDecorations != null)
-                addEditConnectionEditor.removeDecorations(editorDecorations)
+                // If the input section is `none` then skip it and move to the next key/option
+                if (section_ == 'none')
+                  return
 
-              // Sensitive data has been detected, if not, just stop here
-              if (!detectedSensitiveData)
-                return
-
-              /**
-               * If sensitive data has been detected then get the line number for those data and add red highlighter to them
-               *
-               * Define the alerts array which will be passed to the editor to decorate them
-               */
-              let alerts = [],
-                // Get the editor's model object
-                editorModel = addEditConnectionEditor.getModel(),
-                // Get the number of lines in the editor
-                lines = editorModel.getLineCount()
-
-              // Loop through editor's lines
-              for (let i = 1; i <= lines; i++) {
                 try {
-                  // Get the current line based on the index
-                  let line = editorModel.getLineContent(i),
-                    // Get the option in that current line if possible, and make sure it is active if so
-                    active = line.match(/^((?![\;\[])|(\;*\s*\[)).+/gm),
-                    // Split that active option, and look at the key
-                    [key, value] = active[0].split(/\s*\=\s*/gm)
+                  /**
+                   * Find the input's value from the editor
+                   * If it is not `undefined`; then it means this value has been updated already and no need to handle it as an empty or `undefined` value
+                   */
+                  if (_content[section_][key_] != undefined)
+                    return
 
-                  // The key/option name is not considered sensitive data
-                  if (!Modules.Consts.SensitiveData.includes(key))
-                    continue
+                  // Handle when the input is actually a file selector
+                  try {
+                    // If the input is not a file selector then skip this try-catch block
+                    if ($(this).parent().attr('file-name') == undefined)
+                      throw 0
 
-                  // If the key is considered sensitive data then add highlighter to that data line
-                  let alert = {
-                    range: new monaco.Range(i, 0, i, 0),
-                    options: {
-                      isWholeLine: true,
-                      className: 'line-forbidden',
-                      glyphMarginClassName: 'forbidden',
-                    }
+                    /**
+                     * Update the tooltip's content and state
+                     * Get the object
+                     */
+                    let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
+
+                    // Clear the file's name preview
+                    $(this).parent().attr('file-name', '-')
+
+                    // Disable the tooltip
+                    try {
+                      tooltipObject[0].object.disable()
+                    } catch (e) {}
+                  } catch (e) {}
+
+                  /**
+                   * If it is `undefined` then it hasn't been found in the `cqlsh.rc` file
+                   * Set the input value to ''
+                   */
+                  try {
+                    $(this).val('')
+                  } catch (e) {
+                    // If the previous set didn't work then try to call the `selected` attribute
+                    try {
+                      $(this).prop('checked', getAttributes($(this), 'default-value') == 'true' ? true : false)
+                    } catch (e) {}
+                  } finally {
+                    // Update the object
+                    object_.update()
+                    object_._deactivate()
                   }
-
-                  // Push that alert to be applied later in the editor
-                  alerts.push(alert)
                 } catch (e) {}
-              }
+              })
+            }
 
-              // Apply highlighters/decorations
-              editorDecorations = addEditConnectionEditor.deltaDecorations([], alerts)
-            })
-          }, 250)
-        })
+            // Remove all decorations
+            if (editorDecorations != null)
+              addEditConnectionEditor.removeDecorations(editorDecorations)
 
-        addEditConnectionEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
-          let text = Clipboard.readText(),
-            selection = addEditConnectionEditor.getSelection()
+            // Sensitive data has been detected, if not, just stop here
+            if (!detectedSensitiveData)
+              return
 
-          addEditConnectionEditor.executeEdits('paste', [{
-            range: selection,
-            text: text,
-            forceMoveMarkers: true
-          }])
-        })
-      } catch (e) {
-        try {
-          errorLog(e, 'initialization')
-        } catch (e) {}
-      }
-    })
+            /**
+             * If sensitive data has been detected then get the line number for those data and add red highlighter to them
+             *
+             * Define the alerts array which will be passed to the editor to decorate them
+             */
+            let alerts = [],
+              // Get the editor's model object
+              editorModel = addEditConnectionEditor.getModel(),
+              // Get the number of lines in the editor
+              lines = editorModel.getLineCount()
 
-    {
-      for (let editorUIElement of [generateInsertStatementsEditorUIElement, rightClickActionsKeyspaceEditorUIElement, dropKeyspaceEditorUIElement]) {
-        amdRequire(['vs/editor/editor.main'], () => {
-          try {
-            let tempEditorObject = monaco.editor.create(editorUIElement[0], {
-              language: 'sql',
-              minimap: {
-                enabled: false
-              },
-              padding: {
-                top: 10,
-                bottom: 10
-              },
-              wordWrap: 'on',
-              glyphMargin: false, // This option allows to render an object in the line numbering side
-              suggest: {
-                showFields: false,
-                showFunctions: false
-              },
-              theme: 'vs-dark',
-              scrollBeyondLastLine: false,
-              mouseWheelZoom: true,
-              fontSize: 12,
-              fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
-              fontLigatures: true
-            })
+            // Loop through editor's lines
+            for (let i = 1; i <= lines; i++) {
+              try {
+                // Get the current line based on the index
+                let line = editorModel.getLineContent(i),
+                  // Get the option in that current line if possible, and make sure it is active if so
+                  active = line.match(/^((?![\;\[])|(\;*\s*\[)).+/gm),
+                  // Split that active option, and look at the key
+                  [key, value] = active[0].split(/\s*\=\s*/gm)
 
-            tempEditorObject.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
-              let text = Clipboard.readText(),
-                selection = tempEditorObject.getSelection()
+                // The key/option name is not considered sensitive data
+                if (!Modules.Consts.SensitiveData.includes(key))
+                  continue
 
-              tempEditorObject.executeEdits('paste', [{
-                range: selection,
-                text: text,
-                forceMoveMarkers: true
-              }])
-            })
-          } catch (e) {}
-        })
-      }
+                // If the key is considered sensitive data then add highlighter to that data line
+                let alert = {
+                  range: new monaco.Range(i, 0, i, 0),
+                  options: {
+                    isWholeLine: true,
+                    className: 'line-forbidden',
+                    glyphMarginClassName: 'forbidden',
+                  }
+                }
+
+                // Push that alert to be applied later in the editor
+                alerts.push(alert)
+              } catch (e) {}
+            }
+
+            // Apply highlighters/decorations
+            editorDecorations = addEditConnectionEditor.deltaDecorations([], alerts)
+          })
+        }, 250)
+      })
+
+      addEditConnectionEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+        let text = Clipboard.readText(),
+          selection = addEditConnectionEditor.getSelection()
+
+        addEditConnectionEditor.executeEdits('paste', [{
+          range: selection,
+          text: text,
+          forceMoveMarkers: true
+        }])
+      })
+    } catch (e) {
+      try {
+        errorLog(e, 'initialization')
+      } catch (e) {}
     }
 
     {
-      amdRequire(['vs/editor/editor.main'], () => {
+      for (let editorUIElement of [generateInsertStatementsEditorUIElement, rightClickActionsKeyspaceEditorUIElement, dropKeyspaceEditorUIElement]) {
         try {
-          cqlSnippets.editor = monaco.editor.create($('#cqlSnippetsEditor')[0], {
+          let tempEditorObject = monaco.editor.create(editorUIElement[0], {
             language: 'sql',
             minimap: {
-              enabled: true
+              enabled: false
             },
             padding: {
               top: 10,
               bottom: 10
             },
             wordWrap: 'on',
-            glyphMargin: false,
+            glyphMargin: false, // This option allows to render an object in the line numbering side
             suggest: {
               showFields: false,
               showFunctions: false
@@ -1248,117 +1222,156 @@ $(document).on('initialize', () => {
             fontLigatures: true
           })
 
-          monaco.languages.registerCompletionItemProvider('sql', {
-            triggerCharacters: [' ', '.', '"', '*', ';'],
-            provideCompletionItems: function(model, position) {
-              if (model != cqlSnippets.editor.getModel())
-                return {
-                  suggestions: []
-                }
-
-              let statement = model.getValueInRange(new monaco.Range(position.lineNumber, 1, position.lineNumber, position.column)),
-                closestWord = '',
-                WordAtPosition = model.getWordAtPosition(position),
-                range = WordAtPosition ?
-                new monaco.Range(position.lineNumber, WordAtPosition.startColumn, position.lineNumber, position.column) :
-                new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-                suggestions = []
-
-              // Get the closest word to the cursor in the input field
-              try {
-                closestWord = WordAtPosition.word
-              } catch (e) {}
-
-              try {
-                if (closestWord.length <= 0)
-                  closestWord = /\S+$/.exec(statement)[0]
-              } catch (e) {}
-
-              // The default array for suggestions is the CQL keywords with the commands
-              let suggestionsArray = Modules.Consts.CQLKeywords.concat(Modules.Consts.CQLSHCommands)
-
-              let finalSuggestions = suggestionSearch(closestWord, suggestionsArray, false)
-
-              if ((JSON.stringify(finalSuggestions) == JSON.stringify(suggestionsArray)))
-                return {
-                  suggestions: []
-                }
-
-              suggestions = finalSuggestions.map((suggestionItem) => {
-                let suggestion = suggestionItem,
-                  isItemObject = typeof suggestionItem == 'object'
-
-                if (isItemObject)
-                  suggestion = suggestionItem.name
-
-                insertText = suggestion
-
-                return {
-                  label: !isItemObject ? suggestion : `${suggestionItem.name}: ${suggestionItem.type}`,
-                  kind: monaco.languages.CompletionItemKind.Keyword,
-                  insertText,
-                  range
-                }
-              })
-
-              try {
-                suggestions = removeArrayDuplicates(suggestions, 'label')
-              } catch (e) {}
-
-              // Handle if the keyword is DESC/DESCRIBE
-              try {
-                if (Modules.Consts.CQLRegexPatterns.Desc.Patterns.some((regex) => statement.match(regex) != null))
-                  suggestions.unshift({
-                    label: 'SCHEMA',
-                    kind: monaco.languages.CompletionItemKind.Keyword,
-                    insertText: 'SCHEMA',
-                    range
-                  })
-              } catch (e) {}
-
-              return {
-                suggestions
-              }
-            }
-          })
-
-          let snippetsListContainer = $('div.modal#cqlSnippets').find('div.side.snippets-list')
-
-          // When the editor has been changed
-          cqlSnippets.editor.getModel().onDidChangeContent(() => {
-            let editorContent = minifyText(cqlSnippets.editor.getValue()),
-              areFieldsValuesValid = ['input#snippetTitle', 'input#snippetAuthorName', 'textarea#snippetDescription'].every((inputField) => minifyText($(inputField).val()).length > 0)
-
-            $('div.modal#cqlSnippets').find('div.side.snippet-editor').find('div.destructive-keywords-warning').toggle(Modules.Consts.CQLSHDestructiveCommands.some((command) => editorContent.includes(minifyText(command))))
-
-            if (editorContent.length <= 0 || !areFieldsValuesValid)
-              return $('button#createSnippet, button#executeSnippet, button#updateSnippet, button#snippetRevertChanges').attr('disabled', '')
-
-            if (editorContent.length > 0 && areFieldsValuesValid) {
-              let isOrphanedList = ($('#cqlSnippets').find('span.badge.current-scope').data('scope') || [])[0] == 'orphaned'
-
-              $(`${!isOrphanedList ? 'button#createSnippet, ' : ''}button#executeSnippet`).attr('disabled', null)
-
-              let editingMode = snippetsListContainer.find('div.snippet.active').length > 0
-
-              $('button#updateSnippet, button#snippetRevertChanges').attr('disabled', !editingMode ? '' : null)
-            }
-          })
-
-          cqlSnippets.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+          tempEditorObject.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
             let text = Clipboard.readText(),
-              selection = cqlSnippets.editor.getSelection()
+              selection = tempEditorObject.getSelection()
 
-            cqlSnippets.editor.executeEdits('paste', [{
+            tempEditorObject.executeEdits('paste', [{
               range: selection,
               text: text,
               forceMoveMarkers: true
             }])
           })
         } catch (e) {}
-      })
+      }
     }
-  }
+
+    {
+      try {
+        cqlSnippets.editor = monaco.editor.create($('#cqlSnippetsEditor')[0], {
+          language: 'sql',
+          minimap: {
+            enabled: true
+          },
+          padding: {
+            top: 10,
+            bottom: 10
+          },
+          wordWrap: 'on',
+          glyphMargin: false,
+          suggest: {
+            showFields: false,
+            showFunctions: false
+          },
+          theme: 'vs-dark',
+          scrollBeyondLastLine: false,
+          mouseWheelZoom: true,
+          fontSize: 12,
+          fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
+          fontLigatures: true
+        })
+
+        monaco.languages.registerCompletionItemProvider('sql', {
+          triggerCharacters: [' ', '.', '"', '*', ';'],
+          provideCompletionItems: function(model, position) {
+            if (model != cqlSnippets.editor.getModel())
+              return {
+                suggestions: []
+              }
+
+            let statement = model.getValueInRange(new monaco.Range(position.lineNumber, 1, position.lineNumber, position.column)),
+              closestWord = '',
+              WordAtPosition = model.getWordAtPosition(position),
+              range = WordAtPosition ?
+              new monaco.Range(position.lineNumber, WordAtPosition.startColumn, position.lineNumber, position.column) :
+              new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+              suggestions = []
+
+            // Get the closest word to the cursor in the input field
+            try {
+              closestWord = WordAtPosition.word
+            } catch (e) {}
+
+            try {
+              if (closestWord.length <= 0)
+                closestWord = /\S+$/.exec(statement)[0]
+            } catch (e) {}
+
+            // The default array for suggestions is the CQL keywords with the commands
+            let suggestionsArray = Modules.Consts.CQLKeywords.concat(Modules.Consts.CQLSHCommands)
+
+            let finalSuggestions = suggestionSearch(closestWord, suggestionsArray, false)
+
+            if ((JSON.stringify(finalSuggestions) == JSON.stringify(suggestionsArray)))
+              return {
+                suggestions: []
+              }
+
+            suggestions = finalSuggestions.map((suggestionItem) => {
+              let suggestion = suggestionItem,
+                isItemObject = typeof suggestionItem == 'object'
+
+              if (isItemObject)
+                suggestion = suggestionItem.name
+
+              insertText = suggestion
+
+              return {
+                label: !isItemObject ? suggestion : `${suggestionItem.name}: ${suggestionItem.type}`,
+                kind: monaco.languages.CompletionItemKind.Keyword,
+                insertText,
+                range
+              }
+            })
+
+            try {
+              suggestions = removeArrayDuplicates(suggestions, 'label')
+            } catch (e) {}
+
+            // Handle if the keyword is DESC/DESCRIBE
+            try {
+              if (Modules.Consts.CQLRegexPatterns.Desc.Patterns.some((regex) => statement.match(regex) != null))
+                suggestions.unshift({
+                  label: 'SCHEMA',
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: 'SCHEMA',
+                  range
+                })
+            } catch (e) {}
+
+            return {
+              suggestions
+            }
+          }
+        })
+
+        let snippetsListContainer = $('div.modal#cqlSnippets').find('div.side.snippets-list')
+
+        // When the editor has been changed
+        cqlSnippets.editor.getModel().onDidChangeContent(() => {
+          let editorContent = minifyText(cqlSnippets.editor.getValue()),
+            areFieldsValuesValid = ['input#snippetTitle', 'input#snippetAuthorName', 'textarea#snippetDescription'].every((inputField) => minifyText($(inputField).val()).length > 0)
+
+          $('div.modal#cqlSnippets').find('div.side.snippet-editor').find('div.destructive-keywords-warning').toggle(Modules.Consts.CQLSHDestructiveCommands.some((command) => editorContent.includes(minifyText(command))))
+
+          if (editorContent.length <= 0 || !areFieldsValuesValid)
+            return $('button#createSnippet, button#executeSnippet, button#updateSnippet, button#snippetRevertChanges').attr('disabled', '')
+
+          if (editorContent.length > 0 && areFieldsValuesValid) {
+            let isOrphanedList = ($('#cqlSnippets').find('span.badge.current-scope').data('scope') || [])[0] == 'orphaned'
+
+            $(`${!isOrphanedList ? 'button#createSnippet, ' : ''}button#executeSnippet`).attr('disabled', null)
+
+            let editingMode = snippetsListContainer.find('div.snippet.active').length > 0
+
+            $('button#updateSnippet, button#snippetRevertChanges').attr('disabled', !editingMode ? '' : null)
+          }
+        })
+
+        cqlSnippets.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+          let text = Clipboard.readText(),
+            selection = cqlSnippets.editor.getSelection()
+
+          cqlSnippets.editor.executeEdits('paste', [{
+            range: selection,
+            text: text,
+            forceMoveMarkers: true
+          }])
+        })
+      } catch (e) {}
+    }
+
+  }, 1500)
 
   {
     loadStyleSheet(Path.join(__dirname, '..', '..', 'node_modules', 'highlight.js', 'styles', 'hybrid.css'))

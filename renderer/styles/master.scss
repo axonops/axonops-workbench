@@ -2012,6 +2012,21 @@ div.body {
                       cursor: pointer;
                       opacity: 1;
                     }
+
+                    &.dots {
+                      &:after {
+                        content: '...';
+                        font-size: 180%;
+                        height: 10px;
+                        display: flex;
+                        flex-direction: row;
+                        flex-wrap: nowrap;
+                        align-items: center;
+                        justify-content: center;
+                        align-content: center;
+                        transform: translateY(-5px);
+                      }
+                    }
                   }
                 }
               }
@@ -2721,6 +2736,10 @@ div.tab-content {
 
           div[class*="editor-container-"] {
             @include position();
+
+            div.monaco-diff-editor {
+              height: 100% !important;
+            }
           }
         }
 

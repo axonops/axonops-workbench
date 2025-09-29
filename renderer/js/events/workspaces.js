@@ -195,18 +195,41 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 Modules.Connections.getConnections(workspaceID).then((connections) => {
                   connectionsList.toggleClass('show', connections.length > 0)
 
-                  let counter = 0
+                  let counter = 0,
+                    connectionsArray = [...connections],
+                    MaximumAllowedConnections = 12
+
+                  // Maximum number of allowed connections
+                  try {
+                    if (connectionsArray.length <= MaximumAllowedConnections)
+                      throw 0
+
+                    connectionsArray = [...connectionsArray.slice(0, MaximumAllowedConnections - 2), 'dots', connectionsArray.at(-1)]
+                  } catch (e) {}
 
                   // Loop through each connection
-                  for (let connection of (connections || []).slice(0, 12)) {
+                  for (let connection of connectionsArray) {
                     counter += 1
 
-                    // Set the connection's host
-                    let connectionHost = connection.host.length > 20 ? `${connection.host.slice(0, 20)}...` : connection.host,
-                      backgroundColor = TinyColor(workspace.color).isValid() ? `style="background: rgb(${color} / 100%);"` : '',
-                      // The connection UI element structure
-                      element = `
-                        <div class="_connection" ${backgroundColor} _connection-id="${connection.info.id}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="${connection.name}<br>${connectionHost}" data-mdb-html="true" hidden></div>`
+                    let element = ''
+
+                    switch (connection) {
+                      case 'dots': {
+                        element = `
+                          <div class="_connection dots" style="color: ${TinyColor(workspace.color).isValid() ? workspace.color : ''}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Total ${connections.length} connection(s)" hidden></div>`
+
+                        break
+                      }
+                      default: {
+                        // Set the connection's host
+                        let connectionHost = connection.host.length > 20 ? `${connection.host.slice(0, 20)}...` : connection.host,
+                          backgroundColor = TinyColor(workspace.color).isValid() ? `style="background: rgb(${color} / 100%);"` : ''
+
+                        // The connection UI element structure
+                        element = `
+                            <div class="_connection" ${backgroundColor} _connection-id="${connection.info.id}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="${connection.name}<br>${connectionHost}" data-mdb-html="true" hidden></div>`
+                      }
+                    }
 
                     // Append connection to the list
                     connectionsList.append($(element).show(function() {

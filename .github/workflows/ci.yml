@@ -68,16 +68,16 @@ jobs:
       - name: Install python dependencies
         run: pip3 install -r requirements.txt
 
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js v20.19.5
         uses: actions/setup-node@v4
         with:
           node-version: 20.19.5
           cache: 'pnpm'
-
-      - name: Enable pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Install AxonOps Developer Workbench dependencies
         run: |

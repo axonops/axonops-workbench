@@ -94,13 +94,13 @@ jobs:
           python-version: 3.12
           cache: "pip"
 
+      - name: Install python dependencies
+        run: pip3 install -r requirements.txt
+
       - name: Enable pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
-
-      - name: Install python dependencies
-        run: pip3 install -r requirements.txt
 
       - name: Setup Node.js v20.19.2
         uses: actions/setup-node@v4

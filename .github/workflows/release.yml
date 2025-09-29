@@ -102,7 +102,7 @@ jobs:
         with:
           version: 10
 
-      - name: Setup Node.js v20.19.2
+      - name: Setup Node.js v22
         uses: actions/setup-node@v5
         with:
           node-version: 22

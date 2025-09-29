@@ -74,10 +74,10 @@ jobs:
         with:
           version: 10
 
-      - name: Setup Node.js v20.19.2
+      - name: Setup Node.js v22
         uses: actions/setup-node@v5
         with:
-          node-version: 20.19.2
+          node-version: 22
           cache: 'pnpm'
 
       - name: Install AxonOps Developer Workbench dependencies

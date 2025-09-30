@@ -314,7 +314,7 @@
   "devDependencies": {
     "@babel/core": "^7.24.0",
     "@babel/preset-env": "^7.24.0",
-    "@electron/rebuild": "^3.6.0",
+    "@electron/rebuild": "^4.0.1",
     "babel-jest": "^29.7.0",
     "electron": "^37.5.0",
     "electron-builder": "^26.0.11",

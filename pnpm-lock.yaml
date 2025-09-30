@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@axonops/node-pty':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.0.1
+        version: 1.0.1
       '@ramumb/strip-tags':
         specifier: ^0.1.3
         version: 0.1.3
@@ -276,8 +276,8 @@ packages:
   7zip-bin@5.2.0:
     resolution: {integrity: sha512-ukTPVhqG4jNzMro2qA9HSCSSVJN3aN7tlb+hfqYCt3ER0yWroeA2VR38MNrOHLQ/cVj+DaIMad0kFCtWWowh/A==}
 
-  '@axonops/node-pty@1.0.0':
-    resolution: {integrity: sha512-b0BOw3HF6w1KDiiNFQy14+vk920SRW/jwzqUWFfNMRKI+cNtoGckqEfXsxsj1xSG1qV2tLeY0TbHPpmp2L/CqQ==}
+  '@axonops/node-pty@1.0.1':
+    resolution: {integrity: sha512-Z5nyM+ojCGRQEg1TYsEH1cM7uLlarB9IEnAKhbR57HmuE4hBU0eSfCGDopcCNrJglE72R2berXOGmnQzImAkAw==}
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -4160,7 +4160,7 @@ snapshots:
 
   7zip-bin@5.2.0: {}
 
-  '@axonops/node-pty@1.0.0':
+  '@axonops/node-pty@1.0.1':
     dependencies:
       node-addon-api: 7.1.1
 

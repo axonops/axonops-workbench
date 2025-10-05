@@ -325,6 +325,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
               // Catch any occurred error
               result.error = e.toString()
 
+              if (minifyText(result.error).includes('connectionrefused'))
+                result.error = `${result.error}. Ensure that Cassandra is up and running, then start taking additional steps if the error persists`
+
               // Send the creation result to the main thread
               IPCRenderer.send(`ssh-tunnel:create:result:${data.requestID}`, {
                 ...result,
@@ -338,6 +341,9 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
             // Catch any occurred error
             result.error = e.toString()
+
+            if (minifyText(result.error).includes('connectionrefused'))
+              result.error = `${result.error}. Ensure that Cassandra is up and running, then start taking additional steps if the error persists`
 
             // Send the creation result to the main thread
             IPCRenderer.send(`ssh-tunnel:create:result:${data.requestID}`, {

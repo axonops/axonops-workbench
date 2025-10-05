@@ -382,10 +382,27 @@ let deleteWorkspace = async (workspace, workspaces, keepFiles = false) => {
   }
 }
 
+let ignoredWorkspaces = [],
+  watchWorkspacePath = (workspaceID, workspacePath, callback) => {
+    if (Modules.Workspaces.ignoredWorkspaces.includes(workspaceID)) {
+      Modules.Workspaces.ignoredWorkspaces = Modules.Workspaces.ignoredWorkspaces.filter((id) => id != workspaceID)
+      return
+    }
+
+    setTimeout(() => {
+      if (!pathIsAccessible(workspacePath, false))
+        return callback()
+
+      watchWorkspacePath(workspaceID, workspacePath, callback)
+    }, getRandom.numberInterval(1000, 10000))
+  }
+
 module.exports = {
   getWorkspaces,
   getWorkspacesNoAsync,
   saveWorkspace,
   updateWorkspace,
-  deleteWorkspace
+  deleteWorkspace,
+  ignoredWorkspaces,
+  watchWorkspacePath
 }

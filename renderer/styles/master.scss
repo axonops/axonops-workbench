@@ -1436,6 +1436,7 @@ div.body {
                   div.additional {
                     width: fit-content;
                     opacity: 0.9;
+                    transform: scale(0.95);
                     font: {
                       size: 75%;
                       weight: 300;
@@ -1447,7 +1448,9 @@ div.body {
                     }
                     justify-content: flex-start;
                     align-items: flex-start;
-                    margin-top: 10px;
+                    margin-top: 5px;
+                    margin-left: -4px;
+                    margin-bottom: -6px;
 
                     div.info {
                       background: #2c2c2c;
@@ -1525,6 +1528,17 @@ div.body {
                         }
                       }
 
+                      &[info="cassandra-username"] {
+                        animation-delay: 0.9s;
+
+                        div.text {
+                          max-width: 150px;
+                          overflow: hidden;
+                          white-space: nowrap;
+                          text-overflow: ellipsis;
+                        }
+                      }
+
                       &[info="nodes"] {
                         animation-delay: 0.8s;
 
@@ -1546,7 +1560,7 @@ div.body {
 
                 div.connection-metadata {
                   position: relative;
-                  height: calc(100% - 227px);
+                  height: calc(100% - 249px);
                   margin: 25px 10px 10px;
                   border-radius: 5px;
                   text-align: left;
@@ -2156,19 +2170,41 @@ div.body {
                 }
               }
 
-              &.inaccessible {
-                filter: grayscale(1) brightness(0.8);
+              div.path-inaccessible {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                margin: auto;
+                font-size: 250%;
+                transition: opacity 0.2s ease-in-out;
+                opacity: 0;
                 pointer-events: none;
+                filter: drop-shadow(0px 0px 15px #dd4c64);
+                cursor: pointer;
+              }
+
+              &.inaccessible {
+                div.path-inaccessible {
+                  opacity: 1;
+                  pointer-events: all;
+                }
+
+                div.header {
+                  filter: grayscale(1);
+                  pointer-events: none;
+                }
 
                 div.actions {
                   div.action:not([action="delete"]) {
                     opacity: 0.45;
+                    pointer-events: none;
                   }
                 }
 
                 button {
                   background: #505050 !important;
                   color: #9f9f9f !important;
+                  pointer-events: none;
                 }
               }
               transform: translateX(-15px);

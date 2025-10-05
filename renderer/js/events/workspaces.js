@@ -156,6 +156,9 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   </div>
                 </div>
               </div>
+              <div class="path-inaccessible" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="the main folder for this workspace has become inaccessible. Click the icon to copy its path" capitalize-first>
+                <ion-icon name="danger"></ion-icon>
+              </div>
               <div class="loading" style="background: rgb(${color} / 10%)">
                 <l-line-wobble class="ldr" size="50" stroke="5" bg-opacity="0.25" speed="1.3" color="${workspace.color}"></l-line-wobble>
               </div>
@@ -167,6 +170,21 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
            * This line will update the inaccessibility status of the already-added workspace
            */
           $(`div.workspace[data-id="${workspaceID}"]`).toggleClass('inaccessible', inAccessible)
+
+          setTimeout(() => {
+            try {
+              if ($(`div.workspace[data-id="${workspaceID}"]`).hasClass('is-being-watched') || workspaceID == 'workspace-sandbox')
+                throw 0
+
+              $(`div.workspace[data-id="${workspaceID}"]`).addClass('is-being-watched')
+
+              Modules.Workspaces.watchWorkspacePath(workspaceID, getWorkspaceFolderPath(workspaceID), () => {
+                $(`div.workspace[data-id="${workspaceID}"]`).removeClass('is-being-watched')
+
+                $(`div.workspace[data-id="${workspaceID}"]`).addClass('inaccessible')
+              })
+            } catch (e) {}
+          })
 
           // If the current workspace won't be appended then skip this try-catch block
           if (!append)
@@ -187,73 +205,81 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               })
 
               // Add the connections inside the workspace's list
-              setTimeout(() => {
+              try {
                 // Point at the connections container inside the workspace UI element
                 let connectionsList = $(this).find('div._connections')
 
-                // Get all connections in the workspace
-                Modules.Connections.getConnections(workspaceID).then((connections) => {
-                  connectionsList.toggleClass('show', connections.length > 0)
+                if (isSandbox) {
+                  connectionsList.removeClass('show')
 
-                  let counter = 0,
-                    connectionsArray = [...connections],
-                    MaximumAllowedConnections = 12
+                  throw 0
+                }
 
-                  // Maximum number of allowed connections
-                  try {
-                    if (connectionsArray.length <= MaximumAllowedConnections)
-                      throw 0
+                setTimeout(() => {
+                  // Get all connections in the workspace
+                  Modules.Connections.getConnections(workspaceID).then((connections) => {
+                    connectionsList.toggleClass('show', connections.length > 0)
 
-                    connectionsArray = [...connectionsArray.slice(0, MaximumAllowedConnections - 2), 'dots', connectionsArray.at(-1)]
-                  } catch (e) {}
+                    let counter = 0,
+                      connectionsArray = [...connections],
+                      MaximumAllowedConnections = 12
 
-                  // Loop through each connection
-                  for (let connection of connectionsArray) {
-                    counter += 1
+                    // Maximum number of allowed connections
+                    try {
+                      if (connectionsArray.length <= MaximumAllowedConnections)
+                        throw 0
 
-                    let element = ''
+                      connectionsArray = [...connectionsArray.slice(0, MaximumAllowedConnections - 2), 'dots', connectionsArray.at(-1)]
+                    } catch (e) {}
 
-                    switch (connection) {
-                      case 'dots': {
-                        element = `
-                          <div class="_connection dots" style="color: ${TinyColor(workspace.color).isValid() ? workspace.color : ''}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Total ${connections.length} connection(s)" hidden></div>`
+                    // Loop through each connection
+                    for (let connection of connectionsArray) {
+                      counter += 1
 
-                        break
-                      }
-                      default: {
-                        // Set the connection's host
-                        let connectionHost = connection.host.length > 20 ? `${connection.host.slice(0, 20)}...` : connection.host,
-                          backgroundColor = TinyColor(workspace.color).isValid() ? `style="background: rgb(${color} / 100%);"` : ''
+                      let element = ''
 
-                        // The connection UI element structure
-                        element = `
-                            <div class="_connection" ${backgroundColor} _connection-id="${connection.info.id}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="${connection.name}<br>${connectionHost}" data-mdb-html="true" hidden></div>`
-                      }
-                    }
+                      switch (connection) {
+                        case 'dots': {
+                          element = `
+                            <div class="_connection dots" style="color: ${TinyColor(workspace.color).isValid() ? workspace.color : ''}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Total ${connections.length} connection(s)" hidden></div>`
 
-                    // Append connection to the list
-                    connectionsList.append($(element).show(function() {
-                      setTimeout(() => getElementMDBObject($(this), 'Tooltip'))
-
-                      // Once the user clicks this mini-connection element
-                      $(this).click(function() {
-                        // Make sure it's clickable - active and has workarea -
-                        if (!$(this).hasClass('clickable'))
-                          return
-
-                        $(`div.body div.left div.content div.switch-connections div.connection[_connection-id="${getAttributes($(this), '_connection-id')}"] button`).click()
-                      })
-
-                      setTimeout(() => {
-                        if (counter >= connections.length) {
-                          connectionsList.children('div._connection').add($(this)).attr('hidden', null)
-                          connectionsList.children('.loading-connections').hide()
+                          break
                         }
-                      })
-                    }))
-                  }
+                        default: {
+                          // Set the connection's host
+                          let connectionHost = connection.host.length > 20 ? `${connection.host.slice(0, 20)}...` : connection.host,
+                            backgroundColor = TinyColor(workspace.color).isValid() ? `style="background: rgb(${color} / 100%);"` : ''
+
+                          // The connection UI element structure
+                          element = `
+                              <div class="_connection" ${backgroundColor} _connection-id="${connection.info.id}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="${connection.name}<br>${connectionHost}" data-mdb-html="true" hidden></div>`
+                        }
+                      }
+
+                      // Append connection to the list
+                      connectionsList.append($(element).show(function() {
+                        setTimeout(() => getElementMDBObject($(this), 'Tooltip'))
+
+                        // Once the user clicks this mini-connection element
+                        $(this).click(function() {
+                          // Make sure it's clickable - active and has workarea -
+                          if (!$(this).hasClass('clickable'))
+                            return
+
+                          $(`div.body div.left div.content div.switch-connections div.connection[_connection-id="${getAttributes($(this), '_connection-id')}"] button`).click()
+                        })
+
+                        setTimeout(() => {
+                          if (counter >= connections.length) {
+                            connectionsList.children('div._connection').add($(this)).attr('hidden', null)
+                            connectionsList.children('.loading-connections').hide()
+                          }
+                        })
+                      }))
+                    }
+                  })
                 })
-              })
+              } catch (e) {}
             }
 
             // Handle the `click` event for actions buttons
@@ -839,6 +865,28 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                     $(this).find('div.footer').find('div.actions').find('div.action[action="axonops-integration"]').toggle(!isAxonOpsIntegrationEnabled)
                     $(this).find('div.footer').find('div.actions').find('div.action[action="axonops-integration"]').attr('hidden', !isAxonOpsIntegrationEnabled ? null : '')
                   })
+                })
+
+                $(this).find('div.path-inaccessible').click(function() {
+                  try {
+                    let inaccessibleWorkspacePath = getWorkspaceFolderPath(workspaceID)
+
+                    if (inaccessibleWorkspacePath.length <= 0)
+                      throw 0
+
+                    // Copy the path to the clipboard
+                    try {
+                      Clipboard.writeText(inaccessibleWorkspacePath)
+                    } catch (e) {
+                      try {
+                        errorLog(e, 'workspaces')
+                      } catch (e) {}
+                    }
+
+                    showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.t('the path has been copied to the clipboard. Once it becomes accessible again, click the refresh button to update the workspace status')) + '.', 'success')
+                  } catch (e) {
+                    showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to get the inaccessible path')) + '.', 'failure')
+                  }
                 })
               }
             })

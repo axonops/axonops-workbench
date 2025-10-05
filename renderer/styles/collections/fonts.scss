@@ -26,15 +26,15 @@ $mainWeights: 'thin', 'extralight', 'light', 'regular', 'medium', 'semibold', 'b
   }
 }
 /*
-* IBM Plex Sans Arabic
-* https://fonts.google.com/specimen/IBM+Plex+Sans+Arabic
+* Vazirmatn
+* https://fonts.google.com/specimen/Vazirmatn
 * Font name: 'Minor'
 */
-$minorWeights: 'thin', 'extralight', 'light', 'regular', 'medium', 'semibold', 'bold';
+$minorWeights: 'thin', 'extralight', 'light', 'regular', 'medium', 'semibold', 'bold', 'extrabold', 'black';
 @for $i from 1 through length($minorWeights) {
   $weight: nth($minorWeights, $i);
   @font-face {
-    @include fontface('Minor', 'ibm_plex_sans_arabic', $weight, 'ttf', normal, $i * 100)
+    @include fontface('Minor', 'vazirmatn', $weight, 'ttf', normal, $i * 100)
   }
 }
 /*

@@ -3490,7 +3490,17 @@ let getRandom = {
 
     // Return one `color` if only one is needed, or the entire array otherwise
     return colors.length == 1 ? colors[0] : colors
-  }
+  },
+  /**
+   * Get a random number in specific interval
+   *
+   * @Parameters:
+   * {integer} `min` the starting number of the interval
+   * {integer} `max` the ending number of the interval
+   *
+   * @Return: {integer} random number from the specific interval
+   */
+  numberInterval: (min, max) => Math.floor(Math.random() * (max - min + 1) + min)
 }
 
 /**
@@ -3805,10 +3815,11 @@ let getAttributes = (element, attributes) => {
  *
  * @Parameters:
  * {string} `path` the path to be checked
+ * {boolean} `?addLogLine` whether or not adding a log line for the process
  *
  * @Return: {boolean} the path is accessible or not
  */
-let pathIsAccessible = (path) => {
+let pathIsAccessible = (path, addLogLine = true) => {
   // Final result which be returned
   let accessible = false
 
@@ -3826,7 +3837,8 @@ let pathIsAccessible = (path) => {
 
   // Add log for this process
   try {
-    addLog(`Check the path '${path}' is accessible and the user has privileges to manipulate it, result is '${accessible ? '' : 'in'}accessible'`, 'process')
+    if (addLogLine)
+      addLog(`Check the path '${path}' is accessible and the user has privileges to manipulate it, result is '${accessible ? '' : 'in'}accessible'`, 'process')
   } catch (e) {}
 
   // Return the test result

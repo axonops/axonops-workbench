@@ -1838,6 +1838,21 @@ let getPrePostScripts = async (workspaceID, connectionID = null) => {
   }
 }
 
+let ignoredConnections = [],
+  watchConnectionPath = (connectionID, connectionPath, callback) => {
+    if (Modules.Connections.ignoredConnections.includes(connectionID)) {
+      Modules.Connections.ignoredConnections = Modules.Connections.ignoredConnections.filter((id) => id != connectionID)
+      return
+    }
+
+    setTimeout(() => {
+      if (!pathIsAccessible(connectionPath, false))
+        return callback()
+
+      watchConnectionPath(connectionID, connectionPath, callback)
+    }, getRandom.numberInterval(1000, 10000))
+  }
+
 module.exports = {
   // Main connection's operations
   getConnections,
@@ -1859,5 +1874,7 @@ module.exports = {
   getSnapshots,
   getNewestSnapshot,
   executeScript,
-  getPrePostScripts
+  getPrePostScripts,
+  ignoredConnections,
+  watchConnectionPath
 }

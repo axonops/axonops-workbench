@@ -188,16 +188,22 @@ class Pty {
               throw 0
 
             // Add the received data to the variable
-            instance.allOutput += minifyText(data)
+            instance.allOutput += minifyText(data, false)
 
             // If any of the keywords have been found
-            if ((['KEYWORD:OUTPUT:COMPLETED:ALL', 'KEYWORD:CQLSH:STARTED', 'cqlsh>']).some((keyword) => instance.allOutput.indexOf(minifyText(keyword)) != -1)) {
+            if ((['KEYWORD:OUTPUT:COMPLETED:ALL', 'KEYWORD:CQLSH:STARTED', 'cqlsh>']).some((keyword) => instance.allOutput.indexOf(minifyText(keyword, false)) != -1)) {
+              let loggedInUsername = ''
+
+              try {
+                loggedInUsername = instance.allOutput.match(/KEYWORD\:USERNAME\:\[(.*?)\]/i)[1]
+              } catch (e) {}
+
               // Add the ignore keyword
               instance.allOutput = 'ignore-text'
 
               // Send the `started` keyword to the renderer thread
               return instance[instance.windowBackground != null ? 'windowBackground' : 'window'].webContents.send(`pty:data:${instance.id}`, {
-                output: 'KEYWORD:CQLSH:STARTED'
+                output: (`${loggedInUsername}`.length != 0 ? (OS.EOL + `KEYWORD:USERNAME:[${loggedInUsername}] `) : '') + 'KEYWORD:CQLSH:STARTED'
               })
             }
           } catch (e) {
@@ -1282,7 +1288,7 @@ let cleanCommand = (command) => {
  *
  * @Return: {string} the manipulated text
  */
-let minifyText = (text) => {
+let minifyText = (text, toLowerCase = true) => {
   // Define the regex expression to be created
   let regexs = ['\\n', '\\r']
 
@@ -1296,7 +1302,10 @@ let minifyText = (text) => {
   })
 
   // Call the text manipulation function
-  text = `${text}`.replace(/\s+/gm, '').toLowerCase()
+  text = `${text}`.replace(/\s+/gm, '')
+
+  if (toLowerCase)
+    text = `${text}`.toLowerCase()
 
   // Return final result
   return text

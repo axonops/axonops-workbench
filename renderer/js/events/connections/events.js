@@ -293,9 +293,15 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
             scbFilePath = `data-scb-path="${connection.info.secureConnectionBundlePath}"`
         } catch (e) {}
 
+        let inAccessible = false
+
+        try {
+          inAccessible = !pathIsAccessible(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes($(`div.connection[data-id="${connectionID}"][data-workspace-id="${workspaceID}"]`), 'data-folder')))
+        } catch (e) {}
+
         // Connection UI element structure
         let element = `
-                 <div class="connection" data-name="${connection.name}" data-folder="${connection.folder}" data-id="${connectionID}" data-workspace-id="${workspaceID}" data-host="${connection.host}" data-datacenter="${connection.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-axonops-installed="${connection.axonops || 'unknown'}" data-workarea="false" ${secrets} ${credentials} ${scbFilePath} ${axonOpsIntegration} ${axonOpsIntegration.length != 0 ? 'axonops-integration="true"' : ''}>
+                 <div class="connection ${inAccessible ? 'inaccessible' : ''}" data-name="${connection.name}" data-folder="${connection.folder}" data-id="${connectionID}" data-workspace-id="${workspaceID}" data-host="${connection.host}" data-datacenter="${connection.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-axonops-installed="${connection.axonops || 'unknown'}" data-workarea="false" ${secrets} ${credentials} ${scbFilePath} ${axonOpsIntegration} ${axonOpsIntegration.length != 0 ? 'axonops-integration="true"' : ''}>
                    <div class="header">
                      <div class="title connection-name">${connection.name}</div>
                      <div class="connection-info" ${isSCBConnection ? 'style="flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; align-items: flex-start;"' : ''}>
@@ -306,7 +312,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                          <div class="text">${connection.host}</div>
                          <div class="_placeholder" hidden></div>
                        </div>
-                       <div class="info" info="cassandra">
+                       <div class="info" info="cassandra" ${isSandbox ? 'style="min-width: fit-content;"' : ''}>
                          <div class="title">cassandra
                            <ion-icon name="right-arrow-filled"></ion-icon>
                          </div>
@@ -325,6 +331,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                        ${managementTool}
                      </div>
                    </div>
+                   <div class="path-inaccessible" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="the main folder for this connection has become inaccessible. Click the icon to copy its path" capitalize-first>
+                     <ion-icon name="danger"></ion-icon>
+                   </div>
                    ${!isSandbox ? footerStructure.nonSandbox : footerStructure.sandbox}
                    <div class="status">
                      <l-ripples size="20" speed="7" color="#ff8000"></l-ripples>
@@ -342,7 +351,25 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                    </div>
                  </div>`
 
+
         try {
+          setTimeout(() => {
+            $(`div.connection[data-id="${connectionID}"][data-workspace-id="${workspaceID}"]`).toggleClass('inaccessible', inAccessible)
+
+            try {
+              if ($(`div.connection[data-id="${connectionID}"][data-workspace-id="${workspaceID}"]`).hasClass('is-being-watched'))
+                throw 0
+
+              $(`div.connection[data-id="${connectionID}"][data-workspace-id="${workspaceID}"]`).addClass('is-being-watched')
+
+              Modules.Connections.watchConnectionPath(connectionID, Path.join(getWorkspaceFolderPath(workspaceID), getAttributes($(`div.connection[data-id="${connectionID}"][data-workspace-id="${workspaceID}"]`), 'data-folder')), () => {
+                $(`div.connection[data-id="${connectionID}"][data-workspace-id="${workspaceID}"]`).removeClass('is-being-watched')
+
+                $(`div.connection[data-id="${connectionID}"][data-workspace-id="${workspaceID}"]`).addClass('inaccessible')
+              })
+            } catch (e) {}
+          })
+
           // If the current connection won't be appended then skip this try-catch block
           if (!isAppendAllowed)
             throw 0
@@ -767,9 +794,16 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                        <div class="text no-select-reverse"></div>
                                        <div class="_placeholder" style="width: 50px;"></div>
                                      </div>
+                                     <div class="info" info="cassandra-username">
+                                       <div class="title">username
+                                         <ion-icon name="right-arrow-filled"></ion-icon>
+                                       </div>
+                                       <div class="text no-select-reverse"></div>
+                                       <div class="_placeholder" style="width: 50px;"></div>
+                                     </div>
                                    </div>
                                  </div>
-                                 <div class="connection-metadata loading" ${isSCBConnection ? 'style="height: calc(100% - 196px);"' : ''}>
+                                 <div class="connection-metadata loading" ${isSCBConnection ? 'style="height: calc(100% - 217px);"' : ''}>
                                    <div class="search-in-metadata">
                                      <div class="form-outline form-white margin-bottom">
                                        <input type="text" class="form-control form-icon-trailing form-control-sm">
@@ -2069,7 +2103,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       detectedSessionsID = [],
                       // Flag to tell if an empty line has been found or not
                       isEmptyLineFound = false,
-                      isConnectionLost = false
+                      isConnectionLost = false,
+                      loggedInUsername = ''
 
                     try {
                       IPCRenderer.removeAllListeners(`pty:data:${connectionID}`)
@@ -2177,6 +2212,23 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             }, 1000)
                           }, 1000)
                         }, 1000)
+
+                        try {
+                          loggedInUsername = allOutput.match(/KEYWORD\:USERNAME\:\[(.*?)\]/i)[1]
+                        } catch (e) {}
+
+                        {
+                          let cassandraUsernameInfoElement = workareaElement.find('div.connection-info').find('div.info[info="cassandra-username"]')
+
+                          try {
+                            if (loggedInUsername == undefined || `${loggedInUsername}`.length <= 0)
+                              throw 0
+
+                            cassandraUsernameInfoElement.children('div._placeholder').hide()
+
+                            cassandraUsernameInfoElement.children('div.text').text(`${loggedInUsername}`)
+                          } catch (e) {}
+                        }
 
                         // Remove the loading class
                         workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).removeClass('loading')
@@ -8740,6 +8792,28 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 $(this).toggleClass('enabled', !isAxonOpsIntegrationEnabled)
 
                 $(this).find('ion-icon.status').attr('name', !isAxonOpsIntegrationEnabled ? 'check' : 'close')
+              })
+
+              $(this).find('div.path-inaccessible').click(function() {
+                try {
+                  let inaccessibleConnectionPath = Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(connectionElement, 'data-folder'))
+
+                  if (inaccessibleConnectionPath.length <= 0)
+                    throw 0
+
+                  // Copy the path to the clipboard
+                  try {
+                    Clipboard.writeText(inaccessibleConnectionPath)
+                  } catch (e) {
+                    try {
+                      errorLog(e, 'connections')
+                    } catch (e) {}
+                  }
+
+                  showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.t('the path has been copied to the clipboard. Once it becomes accessible again, click the refresh button to update the connection status')) + '.', 'success')
+                } catch (e) {
+                  showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to get the inaccessible path')) + '.', 'failure')
+                }
               })
 
               // Clicks the process termination button

@@ -76,7 +76,7 @@ Object.defineProperty(process, 'platform', {
 });
 
 // Mock node-pty
-jest.mock('node-pty', () => ({
+jest.mock('@axonops/node-pty', () => ({
   spawn: jest.fn(() => ({
     pid: 12345,
     process: 'mock-process',

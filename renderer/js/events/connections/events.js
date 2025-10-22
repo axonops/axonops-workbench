@@ -8236,6 +8236,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 if (hasWorkarea == 'true')
                   return showToast(I18next.capitalize(I18next.t('connection settings')), I18next.capitalizeFirstLetter(I18next.replaceData('this connection [b]$data[/b] has an active work area, make sure to close its work area before attempting to edit or delete it', [getAttributes(connectionElement, 'data-name')])) + '.', 'warning')
 
+                // Open the `Add New Connection` dialog
+                $(`button#addConnectionProcess`).trigger('click')
+
                 // Change the dialog's title
                 $(`${dialog}`).find('h5.modal-title').text(`${I18next.capitalize(I18next.t('connection settings'))} ${getAttributes(connectionElement, 'data-name')}`)
 
@@ -8270,6 +8273,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 // Hide passwords
                 $(`[info-section="none"][info-key="password"]`).add('input#astraDBClientSecret').attr('type', 'password')
                 $('span.reveal-password div.btn ion-icon').attr('name', 'eye-opened')
+
+                $('input[info-section="connection"][info-key="ssl"]').add('input[info-section="ssl"][info-key="validate"]').each(function() {
+                  $(this).prop('checked', $(this).attr('default-value') == 'true')
+                })
 
                 // Get all connections in the workspace
                 let allConnections = await Modules.Connections.getConnections(workspaceID),
@@ -8644,11 +8651,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                     }
                   })
                 } catch (e) {}
-
-                setTimeout(() => {
-                  // Open the `Add New Connection` dialog
-                  $(`button#addConnectionProcess`).trigger('click', true)
-                })
 
                 // The rest actions and events related to the dialog are handled in the dialog buttons events listeners
               })
@@ -12100,9 +12102,8 @@ const ConnectionTestProcessTerminationTimeout = 250
     let dialog = 'div.modal#addEditConnectionDialog'
 
     try {
-      // If the previous mode wasn't `editing` a workspace, or the mode is `edit` then skip this try-catch block
-      if (getAttributes($(`${dialog}`), 'data-edit-connection-id') == undefined || editingMode)
-        throw 0
+      // if (getAttributes($(`${dialog}`), 'data-edit-connection-id') == undefined || editingMode)
+      //   throw 0
 
       // Reset everything and make sure the `creation mode` is properly back
       $(`${dialog}`).find('h5.modal-title').text(I18next.capitalize(I18next.t('add connection')))
@@ -12114,7 +12115,7 @@ const ConnectionTestProcessTerminationTimeout = 250
       $('div.modal#addEditConnectionDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
 
       // Loop through all inputs in the dialog
-      $(`${dialog}`).find('[info-section="none"][info-key]').each(function() {
+      $(`${dialog}`).find('[info-section][info-key]').each(function() {
         // Get the input's Material Design object
         let object_ = getElementMDBObject($(this))
 
@@ -12148,16 +12149,17 @@ const ConnectionTestProcessTerminationTimeout = 250
          */
         try {
           $(this).val('')
-        } catch (e) {
-          // If the previous set didn't work then try to call the `selected` attribute
-          try {
+        } catch (e) {}
+
+        // If the previous set didn't work then try to call the `selected` attribute
+        try {
+          if ($(this).attr('type') == 'checkbox')
             $(this).prop('checked', getAttributes($(this), 'default-value') == 'true' ? true : false)
-          } catch (e) {}
-        } finally {
-          // Update the object
-          object_.update()
-          setTimeout(() => object_._deactivate())
-        }
+        } catch (e) {}
+
+        // Update the object
+        object_.update()
+        setTimeout(() => object_._deactivate())
       })
 
       // Reset editor's content

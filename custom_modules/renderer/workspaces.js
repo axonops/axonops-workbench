@@ -346,10 +346,10 @@ let deleteWorkspace = async (workspace, workspaces, keepFiles = false) => {
         })
 
       // Keep the workspace's folder, however, add a prefix `_DEL_` with random digits
-      if (keepFiles)
-        await FS.moveSync(workspaceFolderPath, `${workspaceFolderPath}_DEL_${getRandom.id(5)}`, {
-          overwrite: true
-        })
+      // if (keepFiles)
+      //   await FS.moveSync(workspaceFolderPath, `${workspaceFolderPath}_DEL_${getRandom.id(5)}`, {
+      //     overwrite: true
+      //   })
     } catch (e) {
       try {
         errorLog(e, 'workspaces')

@@ -854,10 +854,10 @@ let deleteProject = async (folderName, keepFiles = false) => {
       })
 
     // Keep the workspace's folder, however, add a prefix `_DEL_` with random digits
-    if (keepFiles)
-      await FS.moveSync(Path.join(DockerContainersPath, folderName), `${Path.join(DockerContainersPath, folderName)}_DEL_${getRandom.id(5)}`, {
-        overwrite: true
-      })
+    // if (keepFiles)
+    //   await FS.moveSync(Path.join(DockerContainersPath, folderName), `${Path.join(DockerContainersPath, folderName)}_DEL_${getRandom.id(5)}`, {
+    //     overwrite: true
+    //   })
 
     // Get all saved projects
     let projects = await FS.readFileSync(Path.join(DockerContainersPath, 'localclusters.json'), 'utf8')

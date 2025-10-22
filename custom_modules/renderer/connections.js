@@ -585,10 +585,10 @@ let deleteConnection = async (workspaceFolder, connectionFolder, connectionID, c
       })
 
     // Keep the connection's folder, however, add a prefix `_DEL_` with random digits
-    if (keepFiles)
-      await FS.moveSync(connectionPath, `${connectionPath}_DEL_${getRandom.id(5)}`, {
-        overwrite: true
-      })
+    // if (keepFiles)
+    //   await FS.moveSync(connectionPath, `${connectionPath}_DEL_${getRandom.id(5)}`, {
+    //     overwrite: true
+    //   })
 
     // Update `connections.json` file by removing the deleted connection
     let connections = await FS.readFileSync(Path.join(connectionPath, '..', 'connections.json'), 'utf8')

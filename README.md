@@ -43,7 +43,7 @@
 ## ⚡ Quick Start
 
 1. **Download & Install** - Get AxonOps Workbench from [axonops.com/workbench/download](https://axonops.com/workbench/download/)
-2. **Set up /Podman** - Required for running local clusters only
+2. **Set up Podman or Docker** - Required for running local clusters only
 3. **Create a Workspace** - Organize your clusters and connections
 4. **Connect to Cassandra** - Support for Apache Cassandra, DataStax Enterprise, and Astra DB
 5. **Start Exploring** - Use the CQL console and query tracing

@@ -3760,11 +3760,27 @@ let getWorkspaceFolderPath = (workspaceID, replaceDefault = true) => {
       [folderName, folderPath] = getAttributes(workspaceElement, ['data-folder', 'data-folder-path'])
 
     try {
+      if (workspaceID == 'workspace-sandbox')
+        defaultPath = Path.join(defaultPath, '..')
+    } catch (e) {}
+
+    try {
       if (![folderName, folderPath].some((attribute) => attribute == undefined))
         throw 0
 
-      let workspaces = Modules.Workspaces.getWorkspacesNoAsync(),
+      let workspace
+
+      if (workspaceID != 'workspace-sandbox') {
+        let workspaces = Modules.Workspaces.getWorkspacesNoAsync()
+
         workspace = workspaces.find((workspace) => manipulateText(workspace.id) == manipulateText(workspaceID))
+      } else {
+       workspace = {
+          id: 'workspace-sandbox',
+          defaultPath: true,
+          folder: 'localclusters'
+        }
+      }
 
       folderName = `${workspace.folder}`
       folderPath = `${workspace.defaultPath ? 'default' : workspace.path}`

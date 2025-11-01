@@ -130,7 +130,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               </div>
               <div class="footer">
                 <div class="button">
-                  <button type="button" class="btn btn-primary btn-dark btn-sm enter" reference-id="${workspaceID}" button-id="${enterBtnID}" ${backgroundColor}>
+                  <button type="button" class="btn btn-primary btn-sm enter" reference-id="${workspaceID}" button-id="${enterBtnID}" ${backgroundColor}>
                     <span mulang="enter"></span>
                   </button>
                 </div>
@@ -156,7 +156,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   </div>
                 </div>
               </div>
-              <div class="path-inaccessible" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="the main folder for this workspace has become inaccessible. Click the icon to copy its path" capitalize-first>
+              <div class="path-inaccessible" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="the main folder for this $data has become inaccessible. Click the icon to copy its path" capitalize-first lang-data-1="workspace">
                 <ion-icon name="danger"></ion-icon>
               </div>
               <div class="loading" style="background: rgb(${color} / 10%)">
@@ -241,7 +241,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                       switch (connection) {
                         case 'dots': {
                           element = `
-                            <div class="_connection dots" style="color: ${TinyColor(workspace.color).isValid() ? workspace.color : ''}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Total ${connections.length} connection(s)" hidden></div>`
+                            <div class="_connection dots" style="color: ${TinyColor(workspace.color).isValid() ? workspace.color : ''}" hidden></div>`
 
                           break
                         }
@@ -883,7 +883,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                       } catch (e) {}
                     }
 
-                    showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.t('the path has been copied to the clipboard. Once it becomes accessible again, click the refresh button to update the workspace status')) + '.', 'success')
+                    showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.replaceData('the path has been copied to the clipboard. Once it becomes accessible again, click the refresh button to update the $data status', ['workspace'])) + '.', 'success')
                   } catch (e) {
                     showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to get the inaccessible path')) + '.', 'failure')
                   }
@@ -1347,7 +1347,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
 // Handle the workspace' witcher's navigation arrows - up and down -
 {
-  $(`div.body div.left div.content div.switch-workspaces div.more-workspaces div.buttons button`).click(function() {
+  $(`div.body div.left div.content div.switch-workspaces div.show-more-workspaces div.buttons button`).click(function() {
     // Get the clicked button's navigation
     let navigation = $(this).attr('navigation'),
       // Point at the switchers' container
@@ -1633,7 +1633,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             <span class="badge rounded-pill badge-success" check="passed" style="display:none"><span mulang="passed" capitalize></span></span>
           </td>
           <td style="text-align: center;">
-            <button type="button" id="_${workspaceConnectionsBtnID}" class="btn btn-sm connections-list btn-dark disabled" data-mdb-ripple-init>
+            <button type="button" id="_${workspaceConnectionsBtnID}" class="btn btn-sm connections-list disabled" data-mdb-ripple-init>
               <span class="badge badge-primary connections-count">0</span>
               <ion-icon name="dash"></ion-icon>
             </button>

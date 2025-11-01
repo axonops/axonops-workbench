@@ -3775,7 +3775,7 @@ let getWorkspaceFolderPath = (workspaceID, replaceDefault = true) => {
 
         workspace = workspaces.find((workspace) => manipulateText(workspace.id) == manipulateText(workspaceID))
       } else {
-       workspace = {
+        workspace = {
           id: 'workspace-sandbox',
           defaultPath: true,
           folder: 'localclusters'

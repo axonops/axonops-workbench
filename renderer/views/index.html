@@ -19,8 +19,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Those files are the bootstrap for the entire app -->
+  <!-- Load the master CSS file for the entire app -->
   <link rel="stylesheet" href="../styles/master.css">
+  <!-- Load the initialization/booting JS file -->
   <script src="../js/init.js"></script>
 </head>
 
@@ -29,7 +30,7 @@
   Contains all essential elements of the UI
   The body is separated into left and right sides, a hidden area to show extra features like the AI assistant, and different modals/dialogs -->
   <div class="body">
-    <!-- The left side -->
+    <!-- The left side (main.left) -->
     <div class="main left">
       <div class="content">
         <div class="logo">
@@ -39,7 +40,7 @@
         <!-- Workspaces switcher -->
         <div class="switch-workspaces">
           <!-- Arrows to go up and down and show more active workspaces -->
-          <div class="more-workspaces">
+          <div class="show-more-workspaces">
             <div class="buttons">
               <!-- Goes down and show hidden active workspaces -->
               <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" navigation="down">
@@ -63,7 +64,7 @@
         <!-- Connections switcher -->
         <div class="switch-connections">
           <!-- Arrows to go up and down and show more active connections -->
-          <div class="more-connections">
+          <div class="show-more-connections">
             <div class="buttons">
               <!-- Goes down and show hidden active connections -->
               <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" navigation="down">
@@ -79,7 +80,7 @@
 
         <!-- Navigate between different sections in the app -->
         <div class="navigation">
-          <!-- Sections which alike in purpose or content are grouped in `group` -->
+          <!-- Sections which alike in purpose or content are grouped in a `group` container -->
           <div class="group">
             <!-- The AI assistant
             Users can ask questions about Apache Cassandra, AxonOps, and related topics -->
@@ -94,7 +95,7 @@
             </div>
 
             <!-- Help and app's documentation
-            It is an offline documentation that users can browse easily and search for unclear topics -->
+            It redirects the user to a fixed AxonOps documentation link -->
             <div class="item" action="help" data-tippy="tooltip" data-mdb-placement="right" data-mulang="help and documentation" capitalize data-title>
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <ion-icon name="help"></ion-icon>
@@ -103,6 +104,8 @@
           </div>
 
           <div class="group">
+            <!-- CQL Snippets
+            A new feautre where users can save, update and execute saved CQL snippets -->
             <div class="item" action="cql-snippets" data-tippy="tooltip" data-mdb-placement="right" data-mulang="CQL snippets" capitalize data-title>
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <ion-icon name="snippets"></ion-icon>
@@ -110,8 +113,9 @@
             </div>
           </div>
 
-          <!-- The app's settings -->
           <div class="group">
+            <!-- Notifications center
+            Where unseen, or missed notifications can be found here -->
             <div class="item" action="notifications-center" data-tippy="tooltip" data-mdb-placement="right" data-mulang="notifications center" capitalize data-title>
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <div class="notify">
@@ -119,6 +123,8 @@
                 </div>
               </div>
             </div>
+            <!-- The workbench's settings
+            Where most settings can be found and updated here -->
             <div class="item" action="settings" data-tippy="tooltip" data-mdb-placement="right" data-mulang="settings" capitalize data-title>
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <ion-icon name="cog"></ion-icon>
@@ -126,8 +132,9 @@
             </div>
           </div>
 
-          <!-- The app's settings -->
           <div class="group">
+            <!-- The About section
+            Info about the app, credits, and useful links -->
             <div class="item" action="about" data-tippy="tooltip" data-mdb-placement="right" data-mulang="about" capitalize data-title>
               <div class="sub-content btn" data-mdb-ripple-color="dark">
                 <ion-icon name="about"></ion-icon>
@@ -136,6 +143,8 @@
           </div>
 
           <div class="group" style="display:none;">
+            <!-- The Update section
+            Will show up whenever there's a new update -->
             <div class="item" action="update" data-tippy="tooltip" data-mdb-placement="right" data-mulang="a new update is available" capitalize-first data-title>
               <div class="sub-content btn" data-mdb-ripple-color="dark" style="position:relative;">
                 <div class="circle"></div>
@@ -149,7 +158,7 @@
           <div class="group">
             <div class="item" action="more">
               <div class="dropdown dropend more-actions">
-                <div class="sub-content btn" id="dropdownMenuButton" data-mdb-ripple-color="dark" data-mdb-toggle="dropdown" aria-expanded="false">
+                <div class="sub-content btn" id="dropdownMenuButton" data-mdb-ripple-color="dark" data-mdb-toggle="dropdown">
                   <ion-icon name="more-h"></ion-icon>
                 </div>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -178,16 +187,16 @@
                     </h6>
                   </li>
                   <li>
-                    <a class="dropdown-item" href="#" action="zoomIn"><span mulang="zoom in" capitalize-first></span> <span for-kbd><kbd ctrl>CTRL</kbd><kbd style="margin:0px 5px;">SHIFT</kbd><kbd>+</kbd></span></a>
+                    <a class="dropdown-item" href="#" action="zoomIn"><span mulang="zoom in" capitalize-first></span> <span for-kbd kbd-shortcut="zoom-in"></span></a>
                   </li>
                   <li>
-                    <a class="dropdown-item" href="#" action="zoomOut"><span mulang="zoom out" capitalize-first></span> <span for-kbd><kbd ctrl>CTRL</kbd><kbd style="margin:0px 5px;">SHIFT</kbd><kbd>-</kbd></span></a>
+                    <a class="dropdown-item" href="#" action="zoomOut"><span mulang="zoom out" capitalize-first></span> <span for-kbd kbd-shortcut="zoom-out"></span></a>
                   </li>
                   <li>
-                    <a class="dropdown-item" href="#" action="zoomReset"><span mulang="zoom reset" capitalize-first></span> <span for-kbd><kbd ctrl>CTRL</kbd><kbd style="margin:0px 5px;">SHIFT</kbd><kbd digit>0</kbd></span></a>
+                    <a class="dropdown-item" href="#" action="zoomReset"><span mulang="zoom reset" capitalize-first></span> <span for-kbd kbd-shortcut="zoom-reset"></span></a>
                   </li>
                   <li>
-                    <a class="dropdown-item" href="#" action="toggleFullscreen"><span mulang="toggle fullscreen" capitalize-first></span> <kbd>F11</kbd></a>
+                    <a class="dropdown-item" href="#" action="toggleFullscreen"><span mulang="toggle fullscreen" capitalize-first></span> <span kbd-shortcut="toggle-full-screen"></span></a>
                   </li>
                 </ul>
               </div>
@@ -311,7 +320,7 @@
             <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light" id="searchConnectionsButton">
               <ion-icon name="search"></ion-icon>
               <span mulang="search connection"></span>
-              <span for-kbd style="margin-left: 7px;"><kbd ctrl>CTRL</kbd><kbd style="margin:0px 5px;">K</kbd></span>
+              <span for-kbd style="margin-left: 7px;" kbd-shortcut="connections-search"></span>
             </button>
           </div>
           <div class="actions-group">
@@ -379,12 +388,12 @@
               </div>
               <div class="button">
                 <div class="for-workspaces buttons">
-                  <button type="button" class="btn btn-primary btn-dark" id="addWorkspaceProcess" data-mdb-toggle="modal" data-mdb-target="#addEditWorkspaceDialog">
+                  <button type="button" class="btn btn-primary" id="addWorkspaceProcess" data-mdb-toggle="modal" data-mdb-target="#addEditWorkspaceDialog">
                     <ion-icon name="plus"></ion-icon>
                     <span mulang="add workspace"></span>
                   </button>
                   <div class="import-workspaces-btn-container">
-                    <button type="button" class="btn btn-secondary btn-dark" data-mdb-toggle="modal" data-mdb-target="#importWorkspaces" id="importWorkspacesProcess">
+                    <button type="button" class="btn btn-secondary" data-mdb-toggle="modal" data-mdb-target="#importWorkspaces" id="importWorkspacesProcess">
                       <ion-icon name="import"></ion-icon>
                       <span mulang="import workspaces"></span>
                     </button>
@@ -396,7 +405,7 @@
                   </span>
                 </div>
                 <div class="sandbox-btn-container">
-                  <button type="button" class="btn btn-secondary btn-dark" data-mdb-toggle="modal" data-mdb-target="#createSandboxProjectDialog" id="createSandboxProjectProcess">
+                  <button type="button" class="btn btn-secondary" data-mdb-toggle="modal" data-mdb-target="#createSandboxProjectDialog" id="createSandboxProjectProcess">
                     <ion-icon name="sandbox"></ion-icon>
                     <span mulang="create local cluster"></span>
                   </button>
@@ -409,28 +418,28 @@
           <div class="section-actions" hidden>
             <!-- The main action; which shows up the two main actions -->
             <div class="main">
-              <button type="button" class="btn btn-secondary btn-lg btn-floating btn-dark" onclick="$(this).parent().parent().toggleClass('show')">
+              <button type="button" class="btn btn-secondary btn-lg btn-floating" onclick="$(this).parent().parent().toggleClass('show')">
                 <ion-icon name="cogs"></ion-icon>
               </button>
             </div>
 
             <!-- Add a new workspace action -->
             <div class="action" action="add">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add workspace" capitalize data-title id="addWorkspaceAction">
+              <button type="button" class="btn btn-secondary btn-floating" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add workspace" capitalize data-title id="addWorkspaceAction">
                 <ion-icon name="plus"></ion-icon>
               </button>
             </div>
 
             <!-- Import workspaces action -->
             <div class="action" action="import">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="import workspaces" capitalize data-title id="importWorkspacesAction">
+              <button type="button" class="btn btn-secondary btn-floating" data-tippy="tooltip" data-mdb-placement="left" data-mulang="import workspaces" capitalize data-title id="importWorkspacesAction">
                 <ion-icon name="import"></ion-icon>
               </button>
             </div>
 
             <!-- Refresh workspaces' list action -->
             <div class="action" action="refresh">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh workspace" capitalize data-title id="refreshWorkspacesAction">
+              <button type="button" class="btn btn-secondary btn-floating" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh workspace" capitalize data-title id="refreshWorkspacesAction">
                 <ion-icon name="refresh"></ion-icon>
               </button>
             </div>
@@ -466,10 +475,10 @@
                 <span mulang="no local clusters created yet, why not create one?" capitalize-first></span>
               </div>
               <div class="button">
-                <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#addEditConnectionDialog" id="addConnectionProcess">
+                <button type="button" class="btn btn-primary changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#addEditConnectionDialog" id="addConnectionProcess">
                   <span mulang="add connection"></span>
                 </button>
-                <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#createSandboxProjectDialog" for-sandbox id="addSandboxProjectProcess">
+                <button type="button" class="btn btn-primary changed-bg changed-color" data-mdb-toggle="modal" data-mdb-target="#createSandboxProjectDialog" for-sandbox id="addSandboxProjectProcess">
                   <span mulang="create local cluster"></span>
                 </button>
               </div>
@@ -480,28 +489,28 @@
           <div class="section-actions" hidden>
             <!-- The main action's button; which shows up the two main actions -->
             <div class="main">
-              <button type="button" class="btn btn-secondary btn-lg btn-floating btn-dark" onclick="$(this).parent().parent().toggleClass('show')">
+              <button type="button" class="btn btn-secondary btn-lg btn-floating" onclick="$(this).parent().parent().toggleClass('show')">
                 <ion-icon name="cogs"></ion-icon>
               </button>
             </div>
 
             <!-- Add a new connection action -->
             <div class="action" action="add">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add connection" capitalize data-title id="addConnectionAction">
+              <button type="button" class="btn btn-secondary btn-floating" data-tippy="tooltip" data-mdb-placement="left" data-mulang="add connection" capitalize data-title id="addConnectionAction">
                 <ion-icon name="plus"></ion-icon>
               </button>
             </div>
 
             <!-- Refresh connections' list action -->
             <div class="action" action="refresh">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title id="refreshConnectionsAction">
+              <button type="button" class="btn btn-secondary btn-floating" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title id="refreshConnectionsAction">
                 <ion-icon name="refresh"></ion-icon>
               </button>
             </div>
 
             <!-- Refresh connections' list action -->
             <!-- <div class="action" action="clean">
-              <button type="button" class="btn btn-secondary btn-floating btn-dark" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title>
+              <button type="button" class="btn btn-secondary btn-floating" data-tippy="tooltip" data-mdb-placement="left" data-mulang="refresh connections" capitalize data-title>
                 <ion-icon name="clean"></ion-icon>
               </button>
             </div> -->
@@ -584,10 +593,10 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal">
+            <button type="button" class="btn btn-secondary btn-sm" data-mdb-dismiss="modal">
               <span mulang="close"></span>
             </button>
-            <button type="button" class="btn btn-primary btn-dark btn-sm" id="addWorkspace" disabled>
+            <button type="button" class="btn btn-primary btn-sm" id="addWorkspace" disabled>
               <span mulang="add workspace"></span>
             </button>
           </div>
@@ -723,7 +732,7 @@
               </div>
             </div>
             <div class="side-right">
-              <div class="modal-section" section="basic">
+              <div class="modal-section" section="basic" style="overflow: hidden;">
                 <div class="form-outline form-white margin-bottom">
                   <ion-icon name class="trailing"></ion-icon>
                   <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="none" info-key="connectionName">
@@ -778,26 +787,44 @@
                     <span mulang="default" capitalize></span>: 9042
                   </div>
                 </div>
-                <div class="form-outline form-white" style="z-index: 2;">
-                  <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                  <input type="text" class="form-control form-icon-trailing form-control-lg" style="background-color: inherit; cursor: pointer;" id="timestampGenerator" info-section="connection" info-key="timestamp_generator" value="Not Set" readonly
-                    noopacity>
-                  <label class="form-label">
-                    <span mulang="connection time" capitalize></span>
-                  </label>
-                  <div class="valid-feedback"></div>
-                  <div class="invalid-feedback"></div>
-                  <div class="form-helper">
-                    <span mulang="the time type to be used by the cqlsh tool in insertion processes" capitalize-first></span>.
+                <div class="row">
+                  <div class="col-md-9">
+                    <div class="form-outline form-white" style="z-index: 2;">
+                      <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                      <input type="text" class="form-control form-icon-trailing form-control-lg" style="background-color: inherit; cursor: pointer;" id="timestampGenerator" info-section="connection" info-key="timestamp_generator" value="Not Set"
+                        readonly noopacity>
+                      <label class="form-label">
+                        <span mulang="connection time" capitalize></span>
+                      </label>
+                      <div class="valid-feedback"></div>
+                      <div class="invalid-feedback"></div>
+                      <div class="form-helper">
+                        <span mulang="the time type to be used by the cqlsh tool in insertion processes" capitalize-first></span>.
+                      </div>
+                    </div>
+                    <div class="dropdown fixed-top" for-select="timestampGenerator">
+                      <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                      <ul class="dropdown-menu top-margin" style="width: 100% !important;">
+                        <li><a class="dropdown-item" href="#" value="Not Set"><span mulang="not set" capitalize></span></a></li>
+                        <li><a class="dropdown-item" href="#" value="MonotonicTimestampGenerator">MonotonicTimestampGenerator - <span mulang="client-side time" capitalize></span> (<span mulang="desktop time" capitalize></span>)</a></li>
+                        <li><a class="dropdown-item" href="#" value="None"><span mulang="none" capitalize></span> - <span mulang="server-side time" capitalize></span> (<span mulang="cassandra server time" capitalize></span>)</a></li>
+                      </ul>
+                    </div>
                   </div>
-                </div>
-                <div class="dropdown" for-select="timestampGenerator">
-                  <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
-                  <ul class="dropdown-menu top-margin" style="width: 100% !important;">
-                    <li><a class="dropdown-item" href="#" value="Not Set"><span mulang="not set" capitalize></span></a></li>
-                    <li><a class="dropdown-item" href="#" value="MonotonicTimestampGenerator">MonotonicTimestampGenerator - <span mulang="client-side time" capitalize></span> (<span mulang="desktop time" capitalize></span>)</a></li>
-                    <li><a class="dropdown-item" href="#" value="None"><span mulang="none" capitalize></span> - <span mulang="server-side time" capitalize></span> (<span mulang="cassandra server time" capitalize></span>)</a></li>
-                  </ul>
+                  <div class="col-md-3 page-size">
+                    <div class="form-outline form-white margin-bottom">
+                      <ion-icon name class="trailing"></ion-icon>
+                      <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="cql" info-key="pagesize">
+                      <label class="form-label">
+                        <span mulang="page size" capitalize></span>
+                      </label>
+                      <div class="valid-feedback"></div>
+                      <div class="invalid-feedback"></div>
+                      <div class="form-helper">
+                        <span mulang="default" capitalize></span>: 100
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="modal-section" section="authentication" hidden>
@@ -1057,7 +1084,7 @@
           </div>
           <div class="modal-footer">
             <div class="float-left">
-              <button type="button" class="btn btn-secondary btn-dark btn-sm" id="switchEditor">
+              <button type="button" class="btn btn-secondary btn-sm" id="switchEditor">
                 <ion-icon name="switch"></ion-icon>
                 <span mulang="switch editor"></span>
               </button>
@@ -1066,10 +1093,10 @@
               </button>
             </div>
             <div class="float-right">
-              <button type="button" class="btn btn-secondary btn-dark btn-sm" id="testConnection">
+              <button type="button" class="btn btn-secondary btn-sm" id="testConnection">
                 <span mulang="test connection"></span>
               </button>
-              <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" disabled id="addConnection">
+              <button type="button" class="btn btn-primary btn-sm changed-bg changed-color" disabled id="addConnection">
                 <span mulang="add connection"></span>
               </button>
             </div>
@@ -1156,8 +1183,8 @@
                 </div>
               </div>
             </div>
-            <div class="form-check" style="margin-bottom: 10px;" hidden>
-              <input class="form-check-input" type="checkbox" value id="installAxonOps">
+            <div class="form-check" style="margin-bottom: 10px;">
+              <input class="form-check-input" type="checkbox" value id="installAxonOps" checked>
               <label class="form-check-label" for="installAxonOps">
                 <span mulang="install AxonOps within the local cluster" capitalize-first></span>.
               </label>
@@ -1170,7 +1197,7 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary btn-dark btn-sm" data-refresh="false" id="createDockerProject">
+            <button type="button" class="btn btn-primary btn-sm" data-refresh="false" id="createDockerProject">
               <span mulang="create local cluster"></span>
             </button>
           </div>
@@ -1179,7 +1206,7 @@
     </div>
 
     <!-- App's settings dialog -->
-    <div class="modal top fade" id="appSettings" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+    <div class="modal top fade" id="appSettings" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
@@ -1220,6 +1247,11 @@
                 <div class="section">
                   <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="updates">
                     <span mulang="updates" capitalize></span>
+                  </div>
+                </div>
+                <div class="section">
+                  <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="shortcuts">
+                    <span mulang="shortcuts" capitalize></span>
                   </div>
                 </div>
               </div>
@@ -1619,11 +1651,55 @@
                   </div>
                 </div>
               </div>
+
+              <div class="modal-section" section="shortcuts" hidden>
+                <div class="shortcuts-header">
+                  <div class="search">
+                    <div class="form-outline form-white margin-bottom" style="margin-bottom:5px;">
+                      <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                      <input type="text" class="form-control form-icon-trailing" id="shortcutsSearch">
+                      <label class="form-label">
+                        <span mulang="search" capitalize></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="icon-button">
+                    <div class="action btn btn-tertiary reset-shortcuts" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="reset to default shortcuts" capitalize-first data-title>
+                      <ion-icon name="undo"></ion-icon>
+                    </div>
+                  </div>
+                </div>
+                <div class="saved-shortcuts">
+                  <div class="no-results">
+                    <span mulang="no results found" capitalize-first></span>.
+                  </div>
+                </div>
+                <div class="listen-backdrop"></div>
+                <div class="listen-to-shortcut">
+                  <ion-icon name="keyboard"></ion-icon>
+                  <div class="shortcut"></div>
+                  <div class="hint">
+                    <span mulang="press keys to detect shortcut" capitalize-first></span>
+                  </div>
+                  <div class="buttons">
+                    <button type="button" class="btn btn-secondary btn-sm" id="cancelShortcut">
+                      <span mulang="cancel"></span>
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" id="setShortcut" disabled>
+                      <span mulang="set"></span>
+                    </button>
+                  </div>
+                  <div class="shortcut-duplication-warning">
+                    <ion-icon name="warn-circle-outline"></ion-icon> <span mulang="this shortcut is already used by another action" capitalize-first></span>. <span not-fixed mulang="if you continue, that action will lose its shortcut"></span> <span
+                      fixed mulang="this shortcut is locked to that action, so you can’t set it elsewhere"></span>.
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div class="modal-footer">
             <div class="float-right">
-              <button type="button" class="btn btn-primary btn-dark btn-sm" id="saveSettings">
+              <button type="button" class="btn btn-primary btn-sm" id="saveSettings">
                 <span mulang="save settings"></span>
               </button>
             </div>
@@ -1762,12 +1838,12 @@
           </div>
           <div class="modal-footer">
             <div class="float-left">
-              <button type="button" class="btn btn-secondary btn-dark btn-sm" id="ignoreCredentials">
+              <button type="button" class="btn btn-secondary btn-sm" id="ignoreCredentials">
                 <span mulang="ignore credentials"></span>
               </button>
             </div>
             <div class="float-right">
-              <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" id="realtimeCredentialsProceed">
+              <button type="button" class="btn btn-primary btn-sm changed-bg changed-color" id="realtimeCredentialsProceed">
                 <span mulang="proceed"></span>
               </button>
             </div>
@@ -1976,10 +2052,10 @@
               </button>
             </div>
             <div class="float-right">
-              <button type="button" class="btn btn-primary btn-dark btn-sm" id="importWorkspacesFinish" disabled>
+              <button type="button" class="btn btn-primary btn-sm" id="importWorkspacesFinish" disabled>
                 <span mulang="import"></span>
               </button>
-              <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal" onclick="setTimeout(() => $('#importWorkspacesReset').click(), 1000)" hidden>
+              <button type="button" class="btn btn-secondary btn-sm" data-mdb-dismiss="modal" onclick="setTimeout(() => $('#importWorkspacesReset').click(), 1000)" hidden>
                 <span mulang="close"></span>
               </button>
             </div>
@@ -2048,7 +2124,7 @@
           </div>
           <div class="modal-footer" style="justify-content: space-between;">
             <div>
-              <button type="button" class="btn btn-primary btn-dark btn-sm" id="dismissUpdate">
+              <button type="button" class="btn btn-primary btn-sm" id="dismissUpdate">
                 <span mulang="dismiss this update"></span>
               </button>
             </div>
@@ -3059,13 +3135,13 @@
           </div>
           <div class="modal-footer">
             <div class="float-left">
-              <button type="button" class="btn btn-secondary btn-dark btn-sm switch-editor" disabled>
+              <button type="button" class="btn btn-secondary btn-sm switch-editor" disabled>
                 <ion-icon name="switch"></ion-icon>
                 <span mulang="switch CQL editor"></span>
               </button>
             </div>
             <div class="float-right">
-              <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" disabled id="executeActionStatement">
+              <button type="button" class="btn btn-primary btn-sm changed-bg changed-color" disabled id="executeActionStatement">
                 <span mulang="execute statement"></span>
               </button>
             </div>
@@ -3097,12 +3173,12 @@
           </div>
           <div class="modal-footer">
             <div class="float-left">
-              <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal">
+              <button type="button" class="btn btn-secondary btn-sm" data-mdb-dismiss="modal">
                 <span mulang="cancel"></span>
               </button>
             </div>
             <div class="float-right">
-              <button type="button" class="btn btn-primary btn-dark btn-sm" id="executeCQLFilesBtn">
+              <button type="button" class="btn btn-primary btn-sm" id="executeCQLFilesBtn">
                 <span mulang="execute"></span>
               </button>
             </div>
@@ -3127,12 +3203,12 @@
           </div>
           <div class="modal-footer">
             <div class="float-left">
-              <button type="button" class="btn btn-secondary btn-dark btn-sm" id="executeGeneratedInsertStatements">
+              <button type="button" class="btn btn-secondary btn-sm" id="executeGeneratedInsertStatements">
                 <span mulang="execute"></span>
               </button>
             </div>
             <div class="float-right">
-              <button type="button" class="btn btn-primary btn-dark btn-sm" id="copyGeneratedInsertStatements">
+              <button type="button" class="btn btn-primary btn-sm" id="copyGeneratedInsertStatements">
                 <span mulang="copy"></span>
               </button>
             </div>
@@ -3151,10 +3227,10 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal">
+            <button type="button" class="btn btn-secondary btn-sm" data-mdb-dismiss="modal">
               <span mulang="cancel"></span>
             </button>
-            <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color">
+            <button type="button" class="btn btn-primary btn-sm changed-bg changed-color">
               <span mulang="confirm"></span>
             </button>
           </div>
@@ -3319,7 +3395,7 @@
                   </div>
                   <div class="editor-footer">
                     <div class="clear-inputs">
-                      <button type="button" class="btn btn-secondary btn-dark btn-sm" id="clearSnippetFields">
+                      <button type="button" class="btn btn-secondary btn-sm" id="clearSnippetFields">
                         <ion-icon name="close"></ion-icon>
                         <span mulang="clear fields"></span>
                       </button>
@@ -3336,18 +3412,18 @@
           </div>
           <div class="modal-footer" style="justify-content: space-between;">
             <div class="float-right">
-              <button type="button" class="btn btn-secondary btn-dark btn-sm" disabled id="updateSnippet">
+              <button type="button" class="btn btn-secondary btn-sm" disabled id="updateSnippet">
                 <span mulang="update snippet"></span>
               </button>
-              <button type="button" class="btn btn-primary btn-dark btn-sm" disabled id="createSnippet">
+              <button type="button" class="btn btn-primary btn-sm" disabled id="createSnippet">
                 <span mulang="create snippet"></span>
               </button>
-              <button type="button" class="btn btn-primary btn-dark btn-sm" id="executeSnippet" style="display:none;">
+              <button type="button" class="btn btn-primary btn-sm" id="executeSnippet" style="display:none;">
                 <span mulang="execute snippet"></span>
               </button>
             </div>
             <div class="float-left">
-              <button type="button" class="btn btn-secondary btn-dark btn-sm" disabled id="snippetRevertChanges">
+              <button type="button" class="btn btn-secondary btn-sm" disabled id="snippetRevertChanges">
                 <span mulang="revert changes"></span>
               </button>
             </div>
@@ -3368,10 +3444,10 @@
             </label>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-dark btn-sm" data-mdb-dismiss="modal">
+            <button type="button" class="btn btn-secondary btn-sm" data-mdb-dismiss="modal">
               <span mulang="cancel"></span>
             </button>
-            <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color">
+            <button type="button" class="btn btn-primary btn-sm changed-bg changed-color">
               <span mulang="confirm"></span>
             </button>
           </div>

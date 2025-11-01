@@ -1670,17 +1670,6 @@ $(document).on('initialize', () => {
   } catch (e) {}
 })
 
-$(document).on('initialize', () => {
-  try {
-    if (OS.platform() != 'darwin')
-      throw 0
-
-    $('kbd[ctrl]').each(function() {
-      $(this).text('META')
-    })
-  } catch (e) {}
-})
-
 // Send the `loaded` event to the main thread, and show the `About` dialog/modal
 $(document).on('initialize', () => {
   /**

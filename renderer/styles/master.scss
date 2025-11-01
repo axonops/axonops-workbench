@@ -194,8 +194,8 @@ div.body {
             margin-bottom: 50px;
           }
 
-          div.more-connections,
-          div.more-workspaces {
+          div.show-more-connections,
+          div.show-more-workspaces {
             bottom: -35px;
             opacity: 1;
 
@@ -291,6 +291,13 @@ div.body {
                     opacity: 0.9;
                   }
                 }
+              }
+
+              span[for-kbd][kbd-shortcut] {
+                vertical-align: middle;
+                position: relative;
+                bottom: 1px;
+                left: 1px;
               }
             }
 
@@ -2172,10 +2179,10 @@ div.body {
 
               div.path-inaccessible {
                 position: absolute;
-                top: 20px;
-                right: 20px;
+                top: 10px;
+                right: 10px;
                 margin: auto;
-                font-size: 250%;
+                font-size: 225%;
                 transition: opacity 0.2s ease-in-out;
                 opacity: 0;
                 pointer-events: none;
@@ -4664,10 +4671,17 @@ div.dropdown[for-select] {
       animation-duration: 0.55s;
     }
   }
+
+  &.fixed-top {
+    ul.dropdown-menu {
+      transform: translate(5px, -80px) !important;
+      inset: auto auto 0 0 !important;
+    }
+  }
 }
 
-div.more-connections,
-div.more-workspaces {
+div.show-more-connections,
+div.show-more-workspaces {
   background: #17181a;
   @include position(absolute, auto);
   border-radius: 10px;

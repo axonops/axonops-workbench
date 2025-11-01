@@ -92,6 +92,8 @@ const CQLSHRC = `; Licensed to the Apache Software Foundation (ASF) under one
 ;; A version of CQL to use (this should almost never be set)
 ; version = 3.2.1
 
+;; The default page size for query results
+; pagesize = 100
 
 
 [connection]

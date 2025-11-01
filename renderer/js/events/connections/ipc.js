@@ -152,7 +152,7 @@
                   <a href="#_${editorContainerID}">${scope}</a>
                 </span>
                 <div class="close-description">
-                  <button type="button" class="btn btn-sm btn-tertiary close-description" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-mulang="close description" capitalize data-title="Close Description">
+                  <button type="button" class="btn btn-sm btn-tertiary close-description" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-mulang="close description" capitalize data-title>
                     <ion-icon name="close"></ion-icon>
                   </button>
                 </div>
@@ -161,7 +161,7 @@
                 <div class="editor" id="_${editorContainerID}"></div>
               </div>
               <div class="expand-editor">
-                <button type="button" class="btn btn-sm btn-tertiary expand-editor" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="right" data-mulang="expand editor" capitalize data-title="Expand editor">
+                <button type="button" class="btn btn-sm btn-tertiary expand-editor" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="right" data-mulang="expand editor" capitalize data-title>
                   <ion-icon name="arrow-left"></ion-icon>
                 </button>
               </div>
@@ -2153,12 +2153,12 @@
                                     </div>
                                     <div class="row for-duration">
                                       <div class="col-md-4">
-                                        <button type="button" class="btn btn-secondary btn-dark btn-sm" id="${clearBtnID}">
+                                        <button type="button" class="btn btn-secondary btn-sm" id="${clearBtnID}">
                                           <span mulang="clear"></span>
                                         </button>
                                       </div>
                                       <div class="col-md-8">
-                                        <button type="button" class="btn btn-primary btn-dark changed-bg changed-color btn-sm" id="${confirmBtnID}">
+                                        <button type="button" class="btn btn-primary changed-bg changed-color btn-sm" id="${confirmBtnID}">
                                           <span mulang="confirm"></span>
                                         </button>
                                       </div>
@@ -6614,7 +6614,7 @@
                 <label class="form-label">
                   <span mulang="field name" capitalize></span>
                 </label>
-                <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
               </div>
             </div>
             <div class="col-md-6" col="fieldDataType">
@@ -8316,7 +8316,7 @@
                         <label class="form-label">
                           <span mulang="key name" capitalize></span>
                         </label>
-                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                       </div>
                     </div>
                     <div class="col-md-5" col="partitionKeyType">
@@ -8819,7 +8819,7 @@
                         <label class="form-label">
                           <span mulang="key name" capitalize></span>
                         </label>
-                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                       </div>
                     </div>
                     <div class="col-md-4" col="clusteringKeyType">
@@ -9298,7 +9298,7 @@
                       <label class="form-label">
                         <span mulang="counter column name" capitalize></span>
                       </label>
-                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-1">
@@ -9480,7 +9480,7 @@
                       <label class="form-label">
                         <span mulang="option name" capitalize></span>
                       </label>
-                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-6">
@@ -10737,7 +10737,7 @@
                       <label class="form-label">
                         <span mulang="key name" capitalize></span>
                       </label>
-                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-5" col="partitionKeyType">
@@ -11243,7 +11243,7 @@
                         <label class="form-label">
                           <span mulang="key name" capitalize></span>
                         </label>
-                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                       </div>
                     </div>
                     <div class="col-md-4" col="clusteringKeyType">
@@ -11748,7 +11748,7 @@
                         <label class="form-label">
                           <span mulang="column name" capitalize></span>
                         </label>
-                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                       </div>
                     </div>
                     <div class="col-md-4" col="columnType">
@@ -11812,9 +11812,8 @@
                       </div>
                     </div>
                     <div class="col-md-3" col="is-static">
-                    <div class="form-check margin-bottom forIsStaticCheckbox" style="width: fit-content; padding-left: 30px;" data-tippy="tooltip" data-mdb-placement="right" data-mulang="set column to be static is possible when there's at least one clustering key" data-is-hidden="true"
-                      data-tippy-delay="500" capitalize-first data-title="set column to be static is possible when there's at least one clustering key">
-                        <input class="form-check-input isStatic" type="checkbox" id="_${isColumnStaticCheckboxID}" tab-tooltip data-tippy="tooltip" data-mdb-placement="right" data-mulang="static" data-is-hidden="true" capitalize data-title="static" disabled>
+                    <div class="form-check margin-bottom forIsStaticCheckbox" style="width: fit-content; padding-left: 30px;" data-tippy="tooltip" data-mdb-placement="right" data-mulang="set column to be static is possible when there's at least one clustering key" data-is-hidden="true" data-tippy-delay="500" capitalize-first data-title>
+                        <input class="form-check-input isStatic" type="checkbox" id="_${isColumnStaticCheckboxID}" tab-tooltip data-tippy="tooltip" data-mdb-placement="right" data-mulang="static" data-is-hidden="true" capitalize data-title disabled>
                         <label class="form-check-label" for="_${isColumnStaticCheckboxID}">
                           <span mulang="static" capitalize-first></span>
                         </label>
@@ -12323,7 +12322,7 @@
                         <label class="form-label">
                           <span mulang="column name" capitalize></span>
                         </label>
-                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                       </div>
                     </div>
                     <div class="col-md-4" col="columnType">
@@ -12350,8 +12349,8 @@
                       </label>
                     </div>
                     <div class="col-md-2" col="is-static">
-                    <div class="form-check margin-bottom forIsStaticCheckbox" style="width: fit-content; padding-left: 30px;" data-tippy="tooltip" data-mdb-placement="right" data-mulang="set column to be static is possible when there's at least one clustering key" data-is-hidden="true" data-tippy-delay="500" capitalize-first data-title="set column to be static is possible when there's at least one clustering key">
-                        <input class="form-check-input isStatic" type="checkbox" id="_${isColumnStaticCheckboxID}" data-tippy="tooltip" data-mdb-placement="right" data-mulang="static" data-is-hidden="true" capitalize data-title="static" disabled>
+                    <div class="form-check margin-bottom forIsStaticCheckbox" style="width: fit-content; padding-left: 30px;" data-tippy="tooltip" data-mdb-placement="right" data-mulang="set column to be static is possible when there's at least one clustering key" data-is-hidden="true" data-tippy-delay="500" capitalize-first data-title>
+                        <input class="form-check-input isStatic" type="checkbox" id="_${isColumnStaticCheckboxID}" data-tippy="tooltip" data-mdb-placement="right" data-mulang="static" data-is-hidden="true" capitalize data-title disabled>
                         <label class="form-check-label" for="_${isColumnStaticCheckboxID}">
                           <span mulang="static" capitalize-first></span>
                         </label>
@@ -12691,7 +12690,7 @@
                       <label class="form-label">
                         <span mulang="option name" capitalize></span>
                       </label>
-                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-6">

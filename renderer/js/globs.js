@@ -119,3 +119,6 @@ let cqlSnippets = {
   finishedLoadingMetadataNodes: [],
   editor: null
 }
+
+let shortcutDetectorObject = null,
+  shortcutsObjects = []

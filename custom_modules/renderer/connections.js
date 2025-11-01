@@ -839,7 +839,11 @@ let setCQLSHRCContent = (sections, cqlshrc = null, editor = null) => {
          */
         let exceptions = ['hostname', 'port']
 
-        temp = `${temp}`.replace(newRegex, `${(disabled && !(exceptions.includes(option))) ? '; ' : ''}${option} = ${options[option]}`)
+        if (temp.match(newRegex) != null) {
+          temp = `${temp}`.replace(newRegex, `${(disabled && !(exceptions.includes(option))) ? '; ' : ''}${option} = ${options[option]}`)
+        } else {
+          temp = `${temp}` + OS.EOL + `${option} = ${options[option]}` + OS.EOL
+        }
       })
 
       // Replace the entire block of the section with the new one

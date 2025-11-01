@@ -189,32 +189,29 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
           nonSandbox: `
                <div class="footer">
                  <div class="button">
-                   <button type="button" class="btn btn-secondary btn-dark btn-sm test-connection" reference-id="${connectionID}" button-id="${testConnectionBtnID}">
+                   <button type="button" class="btn btn-secondary btn-sm test-connection" reference-id="${connectionID}" button-id="${testConnectionBtnID}">
                      <span mulang="test connection"></span>
                    </button>
-                   <button type="button" class="btn btn-primary btn-dark btn-sm connect changed-bg changed-color" reference-id="${connectionID}" button-id="${connectBtnID}" disabled hidden>
+                   <button type="button" class="btn btn-primary btn-sm connect changed-bg changed-color" reference-id="${connectionID}" button-id="${connectBtnID}" disabled hidden>
                      <span mulang="connect"></span>
                    </button>
-                   <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" reference-id="${connectionID}" button-id="${connectAltBtnID}">
+                   <button type="button" class="btn btn-primary btn-sm changed-bg changed-color" reference-id="${connectionID}" button-id="${connectAltBtnID}">
                      <span mulang="connect"></span>
                    </button>
                  </div>
                  <div class="actions actions-bg ${!isAxonOpsIntegrationEnabled || axonOpsIntegration.length <= 0 ? '' : 'axonops-integration'}">
-                   <div class="action btn btn-tertiary ${!isAxonOpsIntegrationDisabled ? 'enabled' : ''}" data-mdb-ripple-color="#fff" style="overflow: visible !important;" reference-id="${connectionID}" button-id="${axonOpsIntegrationBtnID}" action="axonops-integration" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Toggle the AxonOps integration feature for this connection" data-mulang="toggle the AxonOps integration feature for this connection" capitalize-first ${!isAxonOpsIntegrationEnabled || axonOpsIntegration.length <= 0 ? 'hidden' : ''}>
+                   <div class="action btn btn-tertiary ${!isAxonOpsIntegrationDisabled ? 'enabled' : ''}" data-mdb-ripple-color="#fff" style="overflow: visible !important;" reference-id="${connectionID}" button-id="${axonOpsIntegrationBtnID}" action="axonops-integration" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="toggle the AxonOps integration feature for this connection" capitalize-first ${!isAxonOpsIntegrationEnabled || axonOpsIntegration.length <= 0 ? 'hidden' : ''}>
                    <div class="background actions-bg"></div>
                      <ion-icon name="axonops"></ion-icon>
                      <ion-icon name="${isAxonOpsIntegrationDisabled ? 'close' : 'check'}" class="status"></ion-icon>
                    </div>
-                   <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${connectionID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the connection folder"
-                     data-mulang="open the connection folder" capitalize-first>
+                   <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${connectionID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="open the connection folder" capitalize-first>
                      <ion-icon name="folder-open"></ion-icon>
                    </div>
-                   <div class="action btn btn-tertiary" reference-id="${connectionID}" button-id="${settingsBtnID}" data-mdb-ripple-color="dark" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="connection settings" capitalize-first
-                     data-title="Connection settings">
+                   <div class="action btn btn-tertiary" reference-id="${connectionID}" button-id="${settingsBtnID}" data-mdb-ripple-color="dark" action="settings" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="connection settings" capitalize-first data-title>
                      <ion-icon name="cog"></ion-icon>
                    </div>
-                   <div class="action btn btn-tertiary" reference-id="${connectionID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete connection" data-mulang="delete connection"
-                     capitalize-first>
+                   <div class="action btn btn-tertiary" reference-id="${connectionID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="delete connection" capitalize-first>
                      <ion-icon name="trash"></ion-icon>
                    </div>
                  </div>
@@ -222,18 +219,16 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
           sandbox: `
                <div class="footer">
                  <div class="button">
-                   <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color" reference-id="${connectionID}" button-id="${startProjectBtnID}">
+                   <button type="button" class="btn btn-primary btn-sm changed-bg changed-color" reference-id="${connectionID}" button-id="${startProjectBtnID}">
                      <span mulang="start"></span>
                    </button>
-                   <button type="button" class="btn btn-primary btn-dark btn-sm connect changed-bg changed-color" reference-id="${connectionID}" button-id="${connectBtnID}" hidden></button>
+                   <button type="button" class="btn btn-primary btn-sm connect changed-bg changed-color" reference-id="${connectionID}" button-id="${connectBtnID}" hidden></button>
                  </div>
                  <div class="actions">
-                   <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${connectionID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Open the local cluster folder"
-                     data-mulang="open the local cluster folder" capitalize-first>
+                   <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" reference-id="${connectionID}" button-id="${folderBtnID}" action="folder" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="open the local cluster folder" capitalize-first>
                      <ion-icon name="folder-open"></ion-icon>
                    </div>
-                   <div class="action btn btn-tertiary" reference-id="${connectionID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete local cluster"
-                     data-mulang="delete local cluster" capitalize-first>
+                   <div class="action btn btn-tertiary" reference-id="${connectionID}" button-id="${deleteBtnID}" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="delete local cluster" capitalize-first>
                      <ion-icon name="trash"></ion-icon>
                    </div>
                  </div>
@@ -263,14 +258,14 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                  <div class="_placeholder" hidden></div>
                </div>`
 
-          // isAxonOpsInstalled = `
-          //      <div class="info" info="axonops">
-          //        <div class="title">AxonOps</span>
-          //          <ion-icon name="right-arrow-filled"></ion-icon>
-          //        </div>
-          //        <div class="text"><ion-icon class="axonops-status ${connection.axonops}" name="${connection.axonops == true ? 'check' : 'close'}"></ion-icon></div>
-          //        <div class="_placeholder" hidden></div>
-          //      </div>`
+          isAxonOpsInstalled = `
+               <div class="info" info="axonops">
+                 <div class="title">AxonOps</span>
+                   <ion-icon name="right-arrow-filled"></ion-icon>
+                 </div>
+                 <div class="text"><ion-icon class="axonops-status ${connection.axonops}" name="${connection.axonops == true ? 'check' : 'close'}"></ion-icon></div>
+                 <div class="_placeholder" hidden></div>
+               </div>`
 
           let containersManagementTool = passedData.containersManagementTool || 'none'
 
@@ -331,7 +326,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                        ${managementTool}
                      </div>
                    </div>
-                   <div class="path-inaccessible" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="the main folder for this connection has become inaccessible. Click the icon to copy its path" capitalize-first>
+                   <div class="path-inaccessible" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="the main folder for this $data has become inaccessible. Click the icon to copy its path" lang-data-1="${isSandbox ? 'local cluster' : 'connection'}" capitalize-first>
                      <ion-icon name="danger"></ion-icon>
                    </div>
                    ${!isSandbox ? footerStructure.nonSandbox : footerStructure.sandbox}
@@ -343,8 +338,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                        <l-pinwheel class="ldr change-color" size="36" stroke="4" speed="0.45" color="${getAttributes(workspaceElement, 'data-color')}"></l-pinwheel>
                      </div>
                      <div class="terminate-process">
-                       <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" reference-id="${connectionID}" button-id="${terminateProcessBtnID}" data-tippy="tooltip" data-mdb-placement="right" data-title="Terminate the process" data-mulang="terminate the process"
-                         capitalize-first>
+                       <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" reference-id="${connectionID}" button-id="${terminateProcessBtnID}" data-tippy="tooltip" data-mdb-placement="right" data-title data-mulang="terminate the process" capitalize-first>
                          <ion-icon name="close"></ion-icon>
                        </div>
                      </div>
@@ -723,7 +717,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                     // Define the content of the AxonOps tab to be added
                     if (getAttributes(connectionElement, 'data-axonops-installed') === 'true') {
                       axonopsTab = `
-                             <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title="AxonOps">
+                             <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title>
                                <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${localClustersAxonopsContentID}" role="tab" aria-selected="true">
                                  <span class="icon"><ion-icon name="axonops"></ion-icon></span>
                                  <span class="title">AxonOps</span>
@@ -733,7 +727,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                     // Define the content of the bash session tab to be added
                     bashSessionTab = `
-                           <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="bash session" capitalize data-title="Bash Session">
+                           <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="bash session" capitalize data-title>
                              <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${bashSessionContentID}" role="tab" aria-selected="true">
                                <span class="icon">
                                  <ion-icon name="bash"></ion-icon>
@@ -754,13 +748,13 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                  <div class="connection-info">
                                    <div class="name-ssl ${isSandbox ? 'is-sandbox' : ''}">
                                      <div class="name no-select-reverse">${getAttributes(connectionElement, 'data-name')}</div>
-                                     <div class="status" data-tippy="tooltip" data-mdb-placement="left" data-mulang="analyzing status" capitalize-first data-title="Analyzing status" ${isSCBConnection ? 'hidden' : ''}>
+                                     <div class="status" data-tippy="tooltip" data-mdb-placement="left" data-mulang="analyzing status" capitalize-first data-title ${isSCBConnection ? 'hidden' : ''}>
                                        <ion-icon name="unknown"></ion-icon>
                                      </div>
-                                     <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps in browser" capitalize-first data-title="Open AxonOps in browser" ${getAttributes(connectionElement, 'data-axonops-installed') !== 'true' ? 'hidden' : ''}>
+                                     <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps in browser" capitalize-first data-title ${getAttributes(connectionElement, 'data-axonops-installed') !== 'true' ? 'hidden' : ''}>
                                        <ion-icon name="globe"></ion-icon>
                                      </div>
-                                     <div class="axonops-integration-icon" data-tippy="tooltip" data-mdb-placement="left" data-mulang="launch AxonOps" capitalize-first data-title="Launch AxonOps" ${!isAxonOpsIntegrationActionEnabled ? 'hidden' : ''}>
+                                     <div class="axonops-integration-icon" data-tippy="tooltip" data-mdb-placement="left" data-mulang="launch AxonOps" capitalize-first data-title ${!isAxonOpsIntegrationActionEnabled ? 'hidden' : ''}>
                                        <ion-icon name="axonops"></ion-icon>
                                        <ion-icon name="globe"></ion-icon>
                                      </div>
@@ -834,17 +828,17 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                    </div>
                                    <div class="metadata-actions">
                                      <div class="action" action="copy">
-                                       <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Copy metadata" data-mulang="copy metadata" capitalize-first data-id="${copyMetadataBtnID}">
+                                       <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="copy metadata" capitalize-first data-id="${copyMetadataBtnID}">
                                          <ion-icon name="copy"></ion-icon>
                                        </div>
                                      </div>
                                      <div class="action" action="refresh">
-                                       <div class="btn btn-tertiary disableable" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first data-id="${refreshMetadataBtnID}">
+                                       <div class="btn btn-tertiary disableable" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="refresh metadata" capitalize-first data-id="${refreshMetadataBtnID}">
                                          <ion-icon name="refresh"></ion-icon>
                                        </div>
                                      </div>
                                      <div class="action" action="search">
-                                       <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Search in metadata" data-mulang="search in metadata" capitalize-first data-id="${searchInMetadataBtnID}">
+                                       <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="search in metadata" capitalize-first data-id="${searchInMetadataBtnID}">
                                          <ion-icon name="search" style="font-size: 135%;"></ion-icon>
                                        </div>
                                      </div>
@@ -855,7 +849,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                  <div class="header">
                                    <div class="connection-tabs">
                                      <ul class="nav nav-tabs nav-justified mb-3" id="ex-with-icons" role="tablist">
-                                       <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL console" capitalize data-title="CQL console">
+                                       <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL console" capitalize data-title>
                                          <a tab-content="cqlsh-session" class="nav-link btn btn-tertiary active" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlshSessionContentID}" role="tab" aria-selected="true">
                                            <span class="icon">
                                              <ion-icon name="terminal"></ion-icon>
@@ -866,7 +860,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                          </a>
                                        </li>
                                        ${bashSessionTab}
-                                       <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL description" capitalize data-title="CQL Description">
+                                       <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL description" capitalize data-title>
                                          <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlDescriptionContentID}" role="tab" aria-selected="true">
                                            <span class="icon">
                                              <ion-icon name="cql-description"></ion-icon>
@@ -876,7 +870,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                            </span>
                                          </a>
                                        </li>
-                                       <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="query tracing" capitalize data-title="Query Tracing">
+                                       <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="query tracing" capitalize data-title>
                                          <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${queryTracingContentID}" role="tab" aria-selected="true">
                                            <span class="icon">
                                              <ion-icon name="query-tracing"></ion-icon>
@@ -886,7 +880,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                            </span>
                                          </a>
                                        </li>
-                                       <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="schema diff" capitalize data-title="Schema Diff">
+                                       <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="schema diff" capitalize data-title>
                                          <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${metadataDifferentiationContentID}" role="tab" aria-selected="true">
                                            <span class="icon">
                                              <ion-icon name="differentiation"></ion-icon>
@@ -896,7 +890,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                            </span>
                                          </a>
                                        </li>
-                                       <li class="nav-item axonops-integration-tab axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title="AxonOps">
+                                       <li class="nav-item axonops-integration-tab axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title>
                                          <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${axonopsIntegrationContentID}" role="tab" aria-selected="true">
                                            <span class="icon"><ion-icon name="axonops"></ion-icon></span>
                                            <span class="title">AxonOps</span>
@@ -908,14 +902,14 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                    <div class="connection-actions colored-box-shadow" style="width:40px">
                                      <div class="action" action="restart" hidden>
                                        <div class="btn-container">
-                                         <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Restart the work area" data-mulang="restart the work area" capitalize-first data-id="${restartWorkareaBtnID}">
+                                         <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="restart the work area" capitalize-first data-id="${restartWorkareaBtnID}">
                                            <ion-icon name="restart"></ion-icon>
                                          </div>
                                        </div>
                                      </div>
                                      <div class="action" action="close">
                                        <div class="btn-container">
-                                         <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Close and disconnect" data-mulang="close and disconnect" capitalize-first data-id="${closeWorkareaBtnID}">
+                                         <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="close and disconnect" capitalize-first data-id="${closeWorkareaBtnID}">
                                            <ion-icon name="close"></ion-icon>
                                          </div>
                                        </div>
@@ -925,7 +919,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                  <div class="tab-content">
                                    <div class="tab-pane fade show active loading" tab="cqlsh-session" id="_${cqlshSessionContentID}" role="tabpanel">
                                      <div class="switch-terminal" ${!isBasicCQLSHEnabled ? 'hidden' : ''}>
-                                       <button type="button" class="btn btn-primary btn-dark changed-bg changed-color" disabled>
+                                       <button type="button" class="btn btn-primary changed-bg changed-color" disabled>
                                          <ion-icon name="switch"></ion-icon>
                                          <span mulang="switch terminal"></span>
                                        </button>
@@ -975,8 +969,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                              <span class="button-label"><span mulang="query tracing">query tracing</span>:</span>
                                              <span class="staus" style="margin-left: 7px;"></span>
                                              <div class="tooltip-info" style="transform: translateY(1px) translateX(5px);" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
-                                             data-title="Query tracing captures detailed diagnostic information about query execution across the cluster. Useful for troubleshooting performance issues and understanding query paths.<br><br><b>Note</b>: Tracing adds overhead to your queries and should only be used temporarily for debugging specific queries. Enabling tracing for extended periods or bulk operations may impact cluster performance."
-                                               data-tippy-delay="[300, 0]">
+                                             data-title data-mulang="query tracing captures detailed diagnostic information about query execution across the cluster. Useful for troubleshooting performance issues and understanding query paths.[br][br][b]Note[/b]: Tracing adds overhead to your queries and should only be used temporarily for debugging specific queries. Enabling tracing for extended periods or bulk operations may impact cluster performance" capitalize-first data-tippy-delay="[300, 0]">
                                                <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
                                              </div>
                                            </button>
@@ -994,14 +987,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                              <span class="button-label"><span mulang="consistency">consistency</span>:</span>
                                              <span class="badge rounded-pill badge-dark"><b standard></b></span>
                                              <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
-                                               data-title="Consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.<br><br>However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:<br><code>R + W > RF</code><br>(Read replicas + Write replicas > Replication Factor)<br><br>Example: With <code>RF=3</code>, using <code>QUORUM (2)</code> for both reads and writes ensures strong consistency <code>(2+2>3)</code> while maintaining availability and tolerance to failure."
-                                               data-tippy-delay="[300, 0]">
+                                               data-title data-mulang="consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.[br][br]However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:[br][code]R + W > RF[/code][br](Read replicas + Write replicas > Replication Factor)[br][br]Example: With [code]RF=3[/code], using [code]QUORUM (2)[/code] for both reads and writes ensures strong consistency [code](2+2>3)[/code] while maintaining availability and tolerance to failure" capitalize-first data-tippy-delay="[300, 0]">
                                                <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
                                              </div>
                                              <span class="badge rounded-pill badge-dark"><b serial></b></span>
                                              <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
-                                               data-title="<p style='margin-bottom: 10px;'>This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL</p><ul><li><strong>SERIAL</strong>: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.</li><li><strong>LOCAL_SERIAL</strong>: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments</li></ul><p style=' margin-bottom: 10px;'>Recommended Consistency Level Combinations for LWTs</p><table style='width: 100%;' class='lwtConsistencyLevelTooltipTable'><thead><tr><th>Deployment Scenario</th><th>Write Consistency Level</th><th>Serial Consistency Level</th></tr></thead><tbody><tr><td><strong>Multi-DC Strong Consistency</strong></td><td><code>EACH_QUORUM</code></td><td><code>SERIAL</code></td></tr><tr><td><strong>Multi-DC High Performance</strong></td><td><code>LOCAL_QUORUM</code></td><td><code>LOCAL_SERIAL</code></td></tr><tr><td><strong>Single-DC Clusters</strong></td><td><code>QUORUM</code></td><td><code>SERIAL</code></td></tr></tbody></table>"
-                                               data-tippy-delay="[300, 0]" data-tippy-maxWidth="590">
+                                               data-title data-mulang="[p]This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL[/p][ul][li][strong]SERIAL[/strong]: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.[/li][li][strong]LOCAL_SERIAL[/strong]: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments[/li][/ul][p]Recommended Consistency Level Combinations for LWTs[/p][table tooltiptable][thead][tr][th]Deployment Scenario[/th][th]Write Consistency Level[/th][th]Serial Consistency Level[/th][/tr][/thead][tbody][tr][td][strong]Multi-DC Strong Consistency[/strong][/td][td][code]EACH_QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][tr][td][strong]Multi-DC High Performance[/strong][/td][td][code]LOCAL_QUORUM[/code][/td][td][code]LOCAL_SERIAL[/code][/td][/tr][tr][td][strong]Single-DC Clusters[/strong][/td][td][code]QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][/tbody][/table]" capitalize-first data-tippy-delay="[300, 0]" data-tippy-maxWidth="590">
                                                <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
                                              </div>
                                            </button>
@@ -1052,7 +1043,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                              </div>
                                            </div>
                                            <div class="kill-process">
-                                             <button class="btn btn-primary btn-dark changed-bg changed-color" type="button" data-mdb-ripple-color="var(--mdb-danger)" data-tippy="tooltip" data-mdb-placement="left" data-title="Kill the process" data-mulang="kill the process" capitalize-first>
+                                             <button class="btn btn-primary changed-bg changed-color" type="button" data-mdb-ripple-color="var(--mdb-danger)" data-tippy="tooltip" data-mdb-placement="left" data-title data-mulang="kill the process" capitalize-first>
                                                <ion-icon name="close"></ion-icon>
                                              </button>
                                            </div>
@@ -1091,7 +1082,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                            <span mulang="search for CQL description" capitalize-first></span>
                                          </label>
                                          <div class="close-all-descriptions">
-                                           <button type="button" id="_${cqlDescriptionsCloseAllBtnID}" class="btn btn-sm btn-dark btn-secondary ripple-surface-light" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="close all descriptions" capitalize data-title="Close All Descriptions">
+                                           <button type="button" id="_${cqlDescriptionsCloseAllBtnID}" class="btn btn-sm btn-secondary ripple-surface-light" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="close all descriptions" capitalize data-title>
                                              <ion-icon name="close"></ion-icon>
                                            </button>
                                          </div>
@@ -1134,35 +1125,35 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                        </div>
                                        <span class="badge badge-secondary old"><span mulang="previous" capitalize></span><span class="old-snapshot" data-id="${oldSnapshotNameID}"></span></span>
                                        <div class="centered-badges">
-                                         <span class="badge badge-primary btn btn-secondary btn-dark btn-sm changes" style="cursor:pointer;" data-mdb-ripple-color="dark" data-changes="0" data-id="${showDifferentiationBtnID}"><span mulang="changes" capitalize></span>: <span>0</span></span>
+                                         <span class="badge badge-primary btn btn-secondary btn-sm changes" style="cursor:pointer;" data-mdb-ripple-color="dark" data-changes="0" data-id="${showDifferentiationBtnID}"><span mulang="changes" capitalize></span>: <span>0</span></span>
                                          <div class="diff-navigation">
-                                           <span class="diff-nav-prev btn btn-secondary btn-dark btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Previous change" data-mulang="previous change" capitalize-first
+                                           <span class="diff-nav-prev btn btn-secondary btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="previous change" capitalize-first
                                              data-id="${diffNavigationPrevBtnID}">
                                              <ion-icon name="arrow-up"></ion-icon>
                                            </span>
-                                           <span class="diff-nav-next btn btn-secondary btn-dark btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Next change" data-mulang="next change" capitalize-first
+                                           <span class="diff-nav-next btn btn-secondary btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="next change" capitalize-first
                                              data-id="${diffNavigationNextBtnID}">
                                              <ion-icon name="arrow-up"></ion-icon>
                                            </span>
                                          </div>
                                          <div class="actions">
-                                           <span class="refresh btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh metadata" data-mulang="refresh metadata" capitalize-first
+                                           <span class="refresh btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="refresh metadata" capitalize-first
                                              data-id="${refreshDifferentiationBtnID}">
                                              <ion-icon name="refresh"></ion-icon>
                                            </span>
-                                           <span class="save-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Save a schema snapshot" data-mulang="save a schema snapshot" capitalize-first
+                                           <span class="save-snapshot btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="save a schema snapshot" capitalize-first
                                              data-id="${saveSnapshotBtnID}">
                                              <ion-icon name="save-floppy"></ion-icon>
                                            </span>
-                                           <span class="load-snapshot btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Load a schema snapshot" data-mulang="load a schema snapshot" capitalize-first
+                                           <span class="load-snapshot btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-titl data-mulang="load a schema snapshot" capitalize-first
                                              data-id="${loadSnapshotBtnID}">
                                              <ion-icon name="upload"></ion-icon>
                                            </span>
-                                           <span class="snapshots-folder btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Open the schema snapshot folder" data-mulang="open the schema snapshot folder" capitalize-first
+                                           <span class="snapshots-folder btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="open the schema snapshot folder" capitalize-first
                                              data-id="${openSnapshotsFolderBtnID}">
                                              <ion-icon name="folder-open-outline"></ion-icon>
                                            </span>
-                                           <span class="change-view btn btn-secondary btn-dark btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title="Change the editors view" data-mulang="change the editors view" capitalize-first
+                                           <span class="change-view btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="change the editors view" capitalize-first
                                              data-id="${changeViewBtnID}" hidden>
                                              <ion-icon name="diff-vertical"></ion-icon>
                                            </span>
@@ -1175,7 +1166,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                            <input type="text" class="form-control form-icon-trailing form-control-lg">
                                            <label class="form-label"><span mulang="snapshot suffix" capitalize></span> (<span mulang="optional" capitalize></span>)</label>
                                          </div>
-                                         <button type="button" class="btn btn-primary btn-dark btn-sm changed-bg changed-color"><span mulang="save schema snapshot"></span></button>
+                                         <button type="button" class="btn btn-primary btn-sm changed-bg changed-color"><span mulang="save schema snapshot"></span></button>
                                        </div>
                                        <div class="changes-lines" data-id="${changesLinesContainerID}">
                                        </div>
@@ -1184,16 +1175,16 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                    <div class="tab-pane fade" tab="axonops-integration" id="_${axonopsIntegrationContentID}" role="tabpanel">
                                     <webview nodeIntegrationInSubFrames nodeintegration></webview>
                                     <div class="axonops-webview-actions">
-                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="home" data-tippy="tooltip" data-mdb-placement="top" data-title="Load cluster view" data-mulang="load cluster view" hidden capitalize-first>
+                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="home" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="load cluster view" hidden capitalize-first>
                                         <ion-icon name="home"></ion-icon>
                                       </div>
-                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="refresh" data-tippy="tooltip" data-mdb-placement="top" data-title="Refresh the view" data-mulang="refresh the view" capitalize-first>
+                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="refresh" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="refresh the view" capitalize-first>
                                         <ion-icon name="refresh" style="transform: translateY(2px);"></ion-icon>
                                       </div>
-                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="logout" data-tippy="tooltip" data-mdb-placement="top" data-title="Logout" data-mulang="logout" capitalize-first hidden>
+                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="logout" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="logout" capitalize-first hidden>
                                         <ion-icon name="logout"></ion-icon>
                                       </div>
-                                      <div class="webview-action btn btn-tertiary webview-current-link" data-tippy-maxWidth="1000" data-mdb-ripple-color="light" action="about" data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-mulang="-">
+                                      <div class="webview-action btn btn-tertiary webview-current-link" data-tippy-maxWidth="1000" data-mdb-ripple-color="light" action="about" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="-">
                                         <ion-icon name="about" style="font-size: 190%; transform: translateY(-2px);"></ion-icon>
                                       </div>
                                     </div>
@@ -1526,12 +1517,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                        </span>
                                        <div class="text"><pre>${statementText}</pre></div>
                                        <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
-                                         <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="execute-statement" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Execute the statement" onclick="executeStatement(this)"
-                                           data-mulang="execute the statement" capitalize-first>
+                                         <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="execute-statement" data-tippy="tooltip" data-mdb-placement="bottom" data-title onclick="executeStatement(this)" data-mulang="execute the statement" capitalize-first>
                                            <ion-icon name="execute-solid" style="font-size: 125%;"></ion-icon>
                                          </div>
-                                         <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the statement" onclick="copyStatement(this)"
-                                           data-mulang="copy the statement" capitalize-first>
+                                         <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="bottom" onclick="copyStatement(this)" data-mulang="copy the statement" capitalize-first>
                                            <ion-icon name="copy-solid"></ion-icon>
                                          </div>
                                        </div>
@@ -1545,8 +1534,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                        ${isOnlyInfo ? statement : ''}
                                      </div>
                                      <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
-                                       <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block"
-                                         data-mulang="download the block" capitalize-first hidden>
+                                       <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="download the block" capitalize-first hidden>
                                          <ion-icon name="download"></ion-icon>
                                        </div>
                                        <div class="download-options">
@@ -1557,12 +1545,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                            <ion-icon name="pdf"></ion-icon>
                                          </div>
                                        </div>
-                                       <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Copy the block"
-                                         data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
+                                       <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
                                          <ion-icon name="copy-solid"></ion-icon>
                                        </div>
-                                       <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Delete the block"
-                                         data-mulang="delete the block" capitalize-first>
+                                       <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="delete the block" capitalize-first>
                                          <ion-icon name="trash"></ion-icon>
                                        </div>
                                      </div>
@@ -1734,7 +1720,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                      </div>
                                      <div class="info-right">
                                        <div class="copy-tracing" style="z-index: 1;">
-                                         <div class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-title="Copy the tracing result" data-mulang="copy the tracing result" capitalize-first>
+                                         <div class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-title data-mulang="copy the tracing result" capitalize-first>
                                            <ion-icon name="copy-solid"></ion-icon>
                                          </div>
                                        </div>
@@ -1994,9 +1980,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             if (sourceIP != 'all')
                               activitesTabulatorObject.setFilter(!isFieldSource ? 'source' : 'Source', 'like', sourceIP)
 
-                            $(`div.sources[id="_${sourcesContainerID}"]`).children('button').removeClass('btn-dark active').addClass('btn-secondary')
+                            $(`div.sources[id="_${sourcesContainerID}"]`).children('button').removeClass('active').addClass('btn-secondary')
 
-                            $(this).removeClass('btn-secondary').addClass('btn-dark active')
+                            $(this).removeClass('btn-secondary').addClass('active')
 
                             let chartData = $(this).data('chart-data')
 
@@ -2086,13 +2072,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       })
                     }
 
-                    // Call the inner function - at the very end of this code block -; to create a pty instance for that connection
-                    requestPtyInstanceCreation({
-                      cqlshSessionContentID,
-                      terminalID,
-                      isBasicCQLSHEnabled
-                    })
-
                     // Restricted-scope variable that will hold all output till new line character is detected
                     let allOutput = '',
                       // Timeout object which will be triggerd in 10ms to check if the prompt is duplicated
@@ -2104,7 +2083,22 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       // Flag to tell if an empty line has been found or not
                       isEmptyLineFound = false,
                       isConnectionLost = false,
-                      loggedInUsername = ''
+                      loggedInUsername = '',
+                      pageSize = 100
+
+                    // Call the inner function - at the very end of this code block -; to create a pty instance for that connection
+                    requestPtyInstanceCreation({
+                      cqlshSessionContentID,
+                      terminalID,
+                      isBasicCQLSHEnabled
+                    }, (connectionCqlshObject) => {
+                      try {
+                        let fetchedPageSize = parseInt(connectionCqlshObject.cql.pagesize)
+
+                        if (!isNaN(fetchedPageSize))
+                          pageSize = fetchedPageSize
+                      } catch (e) {}
+                    })
 
                     try {
                       IPCRenderer.removeAllListeners(`pty:data:${connectionID}`)
@@ -2198,7 +2192,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             setTimeout(() => {
                               IPCRenderer.send('pty:command', {
                                 id: connectionID,
-                                cmd: 'PAGING;',
+                                cmd: `PAGING ${pageSize};`,
                                 blockID: getRandom.id(10)
                               })
 
@@ -3576,7 +3570,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                            </div>
                                            <div class="sub-output-content"></div>
                                            <div class="sub-actions" hidden>
-                                             <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Download the block" data-mulang="download the block" capitalize-first>
+                                             <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="download the block" capitalize-first>
                                                <ion-icon name="download"></ion-icon>
                                              </div>
                                              <div class="download-options">
@@ -3587,7 +3581,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                                  <ion-icon name="pdf"></ion-icon>
                                                </div>
                                              </div>
-                                             <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Trace the query" data-mulang="trace the query" capitalize-first>
+                                             <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="trace the query" capitalize-first>
                                                <ion-icon name="query-tracing"></ion-icon>
                                              </div>
                                            </div>
@@ -4359,7 +4353,16 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               if (OS.platform() == 'darwin')
                                 throw 0
 
-                              workareaElement.find('div.terminal.xterm').on('keydown changefont', function(e, keyCode = null) {
+                              // Increase font size
+                              Modules.Shortcuts.setShortcutInSession(workareaElement.find('div.terminal.xterm')[0], 'basic-console-font-increase', () => terminal.options.fontSize += 1)
+
+                              // Decrease font size
+                              Modules.Shortcuts.setShortcutInSession(workareaElement.find('div.terminal.xterm')[0], 'basic-console-font-decrease', () => terminal.options.fontSize -= 1)
+
+                              // Reset font size
+                              Modules.Shortcuts.setShortcutInSession(workareaElement.find('div.terminal.xterm')[0], 'basic-console-font-reset', () => terminal.options.fontSize = 13)
+
+                              workareaElement.find('div.terminal.xterm').on('changefont', function(e, keyCode = null) {
                                 // If the `CTRL` key is not pressed or `CTRL` and `SHIFT` are being pressed together then skip this try-catch block
                                 if ((!e.ctrlKey && e.type != 'changefont') || e.shiftKey)
                                   return true
@@ -5519,12 +5522,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             }])
                           })
 
-                          consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyL, () => $(document).trigger('clearEnhancedConsole'))
+                          consoleEditor.addCommand(Modules.Shortcuts.getShortcutForMonacoEditor('enhanced-console-clear'), () => $(document).trigger('clearEnhancedConsole'))
 
                           consoleEditor.addAction({
                             id: getRandom.id(),
                             label: getRandom.id(),
-                            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.UpArrow],
+                            keybindings: [Modules.Shortcuts.getShortcutForMonacoEditor('history-statements-forward')],
                             run: function(editor) {
                               try {
                                 let workareaElement = $(editor.getDomNode()).closest('div.workarea[workarea-id][connection-id]'),
@@ -5568,7 +5571,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           consoleEditor.addAction({
                             id: getRandom.id(),
                             label: getRandom.id(),
-                            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.DownArrow],
+                            keybindings: [Modules.Shortcuts.getShortcutForMonacoEditor('history-statements-backward')],
                             run: function(editor) {
                               try {
                                 let workareaElement = $(editor.getDomNode()).closest('div.workarea[workarea-id][connection-id]'),
@@ -6810,7 +6813,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                             // Update the adding function's attributes
                             addingFunction = {
-                              element: connectionSwitcher.children('div.more-connections'),
+                              element: connectionSwitcher.children('div.show-more-connections'),
                               method: 'after'
                             }
                           } catch (e) {
@@ -8812,7 +8815,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                     } catch (e) {}
                   }
 
-                  showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.t('the path has been copied to the clipboard. Once it becomes accessible again, click the refresh button to update the connection status')) + '.', 'success')
+                  showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.replaceData('the path has been copied to the clipboard. Once it becomes accessible again, click the refresh button to update the $data status', [isSandbox ? 'local cluster' : 'connection'])) + '.', 'success')
                 } catch (e) {
                   showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to get the inaccessible path')) + '.', 'failure')
                 }
@@ -8913,7 +8916,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
              * @Parameters:
              * {object} `readLine` is the read line object that has been created for the terminal, the terminal object itself can be passed too
              */
-            let requestPtyInstanceCreation = async (info) => {
+            let requestPtyInstanceCreation = async (info, callback) => {
               try {
                 // Get the workspace's folder path
                 let workspaceFolderPath = getWorkspaceFolderPath(workspaceID),
@@ -8961,6 +8964,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                        * Set its status to be enabled by default
                        */
                       connectionElement.attr('ssl-enabled', 'true')
+
+                      callback(result)
 
                       // Check if SSL is disabled
                       try {
@@ -12226,7 +12231,7 @@ const ConnectionTestProcessTerminationTimeout = 250
 
 // Handle the connections' witcher's navigation arrows - up and down -
 {
-  $(`div.body div.left div.content div.switch-connections div.more-connections div.buttons button`).click(function() {
+  $(`div.body div.left div.content div.switch-connections div.show-more-connections div.buttons button`).click(function() {
     // Get the clicked button's navigation
     let navigation = $(this).attr('navigation'),
       // Point at the switchers' container
@@ -12352,6 +12357,11 @@ const ConnectionTestProcessTerminationTimeout = 250
     }
 
   $('button#searchConnectionsButton').click(function() {
+    let isModelOpened = $('div.modal-backdrop.show').length != 0
+
+    if (isModelOpened)
+      return
+
     try {
       searchModalObject.show()
     } catch (e) {}

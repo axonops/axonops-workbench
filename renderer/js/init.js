@@ -101,6 +101,10 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
     // Now call the `pre-initialize` event for `document`
     setTimeout(() => $(document).trigger('pre-initialize'), 100)
   }
+
+  try {
+    IPCRenderer.removeAllListeners('extra-resources-path')
+  } catch (e) {}
 }))
 
 // Load bootstrap JS files
@@ -364,7 +368,7 @@ $(document).on('initialize', () => {
       // buttons.logout.click(() => webviewAIAssistant.attr('src', `${(new URL(Modules.Consts.URLS.AIAssistantServer)).origin}/logout`))
 
       // Check and enable/disable the back/forward buttons based on the status
-      setInterval(() => {
+      globalTrackers.intervals.webviewButtonCheck = setInterval(() => {
         buttons.back.toggleClass('disabled', !webviewAIAssistant[0].canGoBack())
         buttons.forward.toggleClass('disabled', !webviewAIAssistant[0].canGoForward())
       }, 500)
@@ -634,7 +638,7 @@ $(document).on('initialize', () => {
   ReadableTime = require(Path.join(__dirname, '..', 'js', 'external', 's-ago'))
 
   // Every 10 seconds update the associated elements
-  setInterval(() => {
+  globalTrackers.intervals.timestampUpdate = setInterval(() => {
     // Loop through each element
     $('[s-ago-time]').each(function() {
       try {
@@ -815,11 +819,6 @@ $(document).on('initialize', () => {
     })
   }
 
-  // Mutate.js
-  {
-    loadScript(Path.join(__dirname, '..', 'js', 'external', 'mutate.js'))
-  }
-
   // Chart.js
   {
     loadScript(Path.join(__dirname, '..', '..', 'node_modules', 'chart.js', 'dist', 'chart.umd.js'))
@@ -831,16 +830,6 @@ $(document).on('initialize', () => {
         Chart.register(ZoomPlugin)
       } catch (e) {}
     }, 500)
-  }
-
-  // ldrs.js
-  {
-    let ldrsPath = Path.join(__dirname, '..', '..', 'node_modules', 'ldrs', 'dist', 'index.js'),
-      usedLoaders = ['lineWobble', 'pinwheel', 'reuleaux', 'square', 'squircle', 'zoomies', 'momentum', 'ring2', 'wobble', 'hatch', 'chaoticOrbit', 'ripples']
-
-    try {
-      import(ldrsPath).then((loaders) => usedLoaders.forEach((loader) => loaders[loader].register()))
-    } catch (e) {}
   }
 
   // text-extensions
@@ -1420,7 +1409,13 @@ $(document).on('initialize', () => {
 $(document).on('initialize', () => clearTemp())
 
 // Get the view content's ID from the main thread
-$(document).on('initialize', () => IPCRenderer.on('view-content-id', (_, contentID) => viewContentID = contentID))
+$(document).on('initialize', () => IPCRenderer.on('view-content-id', (_, contentID) => {
+  viewContentID = contentID
+
+  try {
+    IPCRenderer.removeAllListeners('view-content-id')
+  } catch (e) {}
+}))
 
 // The app is terminating and there's a need to close all active work areas
 $(document).on('initialize', () => IPCRenderer.on('app-terminating', () => closeAllWorkareas()))
@@ -1701,7 +1696,13 @@ $(document).on('initialize', () => {
       getRSAKey('private', (key) => {
         IPCRenderer.send('pty:cqlsh:initialize')
 
-        IPCRenderer.on('pty:cqlsh:initialize:finished', () => getConfigToLoad())
+        IPCRenderer.on('pty:cqlsh:initialize:finished', () => {
+          getConfigToLoad()
+
+          try {
+            IPCRenderer.removeAllListeners('pty:cqlsh:initialize:finished')
+          } catch (e) {}
+        })
       })
     })
   } catch (e) {}
@@ -1928,7 +1929,13 @@ $(document).on('checkForUpdates', function(e, manualCheck = false) {
 })
 
 // Once the UI is ready, get all workspaces
-$(document).ready(() => IPCRenderer.on('windows-shown', () => $(document).trigger('getWorkspaces')))
+$(document).ready(() => IPCRenderer.on('windows-shown', () => {
+  $(document).trigger('getWorkspaces')
+
+  try {
+    IPCRenderer.removeAllListeners('windows-shown')
+  } catch (e) {}
+}))
 
 $(document).ready(() => {
   let startTime = new Date().getTime(),
@@ -1951,4 +1958,65 @@ $(document).on('initialize', () => {
   try {
     $('div.modal-section[section="notices"]').children('div.notice').html(`${Modules.Consts.LegalNotice}.`)
   } catch (e) {}
+})
+
+// Before unloading/exiting the workbench, cleanup all resources
+$(window).on('beforeunload', () => {
+  try {
+    cleanupResources()
+  } catch (e) {}
+})
+
+// Cleaning performance buffer at random time - 1 to 2 minutes -
+$(document).on('initialize', () => {
+  try {
+    globalTrackers.intervals.performanceBufferCleanup = setInterval(() => {
+      try {
+        if (!window.performance)
+          throw 0
+
+        performance.clearMarks()
+
+        performance.clearMeasures()
+
+        performance.clearResourceTimings()
+      } catch (e) {}
+    }, getRandom.numberInterval(60000, 120000))
+  } catch (e) {}
+})
+
+// Track ResizeObserver and MutationObserver instances and push them to be cleaned later
+$(document).ready(() => {
+  try {
+    // Store original constructors
+    const OriginalResizeObserver = window.ResizeObserver,
+      OriginalMutationObserver = window.MutationObserver
+
+    // Wrap ResizeObserver to be tracked
+    window.ResizeObserver = function(...args) {
+      const instance = new OriginalResizeObserver(...args)
+
+      globalTrackers.observers.push(instance)
+
+      return instance
+    }
+
+    // Wrap MutationObserver to be tracked
+    window.MutationObserver = function(...args) {
+      const instance = new OriginalMutationObserver(...args)
+
+      globalTrackers.observers.push(instance)
+
+      return instance
+    }
+
+    // Preserve prototype chains
+    window.ResizeObserver.prototype = OriginalResizeObserver.prototype
+
+    window.MutationObserver.prototype = OriginalMutationObserver.prototype
+  } catch (e) {
+    try {
+      errorLog(e, 'initialization')
+    } catch (e) {}
+  }
 })

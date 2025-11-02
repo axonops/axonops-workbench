@@ -389,10 +389,23 @@ let ignoredWorkspaces = [],
       return
     }
 
-    setTimeout(() => {
-      if (!pathIsAccessible(workspacePath, false))
-        return callback()
+    // Clear existing watcher timeout for this workspace
+    if (globalTrackers.workspaceWatchers[workspaceID]) {
+      clearTimeout(globalTrackers.workspaceWatchers[workspaceID])
 
+      delete globalTrackers.workspaceWatchers[workspaceID]
+    }
+
+    // Store the new timeout ID to prevent timer accumulation
+    globalTrackers.workspaceWatchers[workspaceID] = setTimeout(() => {
+      if (!pathIsAccessible(workspacePath, false)) {
+        // Path no longer accessible - clear tracker and call callback
+        delete globalTrackers.workspaceWatchers[workspaceID]
+
+        return callback()
+      }
+
+      // Path still accessible - schedule next check
       watchWorkspacePath(workspaceID, workspacePath, callback)
     }, getRandom.numberInterval(1000, 10000))
   }

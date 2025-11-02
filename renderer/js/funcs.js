@@ -2767,7 +2767,13 @@ let decryptTextBG = (text, callback, keychainOSName = null) => getRSAKey('privat
     keychainOSName
   })
 
-  IPCRenderer.on(`background:text:decrypt:result:${requestID}`, (_, text) => callback(text))
+  IPCRenderer.on(`background:text:decrypt:result:${requestID}`, (_, text) => {
+    callback(text)
+
+    try {
+      IPCRenderer.removeAllListeners(`background:text:decrypt:result:${requestID}`)
+    } catch (e) {}
+  })
 })
 
 /**
@@ -3020,6 +3026,90 @@ jQuery.fn.extend({
     )
 
     return isVisible
+  },
+  /**
+   * Modern replacement for `mutate.js` using `MutationObserver` API
+   * Watches for CSS transform property changes
+   *
+   * @Example: $(element).observeTransform(callback)
+   * @Return: {jQuery} Returns `this`
+   */
+  observeTransform: function(callback) {
+    if (typeof callback !== 'function')
+      return this
+
+    return this.each(function() {
+      let element = $(this),
+        previousTransform = element.css('transform')
+
+      // Create `MutationObserver` to watch for `transform` attribute changes
+      let observer = new MutationObserver((mutations) => mutations.forEach((mutation) => {
+        if (!(mutation.type === 'attributes' && mutation.attributeName === 'style'))
+          return
+
+        let currentTransform = element.css('transform')
+
+        // Only fire callback if transform actually changed
+        if (currentTransform === previousTransform)
+          return
+
+        previousTransform = currentTransform
+
+        callback.call(element[0])
+      }))
+
+      // Start observing
+      observer.observe(element[0], {
+        attributes: true,
+        attributeFilter: ['style']
+      })
+
+      // Track for cleanup
+      try {
+        globalTrackers.observers.push(observer)
+      } catch (e) {}
+    })
+  },
+  /**
+   * Another modern replacement for `mutate.js` using `IntersectionObserver` API
+   * Watches for element visibility changes (show/hide)
+   *
+   *
+   * @Example: $(element).observeVisibility(callback)
+   * @Return: {jQuery} Returns `this`
+   */
+  observeVisibility: function(callback) {
+    if (typeof callback !== 'function')
+      return this
+
+    return this.each(function() {
+      let element = $(this),
+        wasVisible = element.is(':visible')
+
+      // Create `IntersectionObserver` to watch for visibility changes
+      let observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+        let isVisible = entry.isIntersecting && element.is(':visible')
+
+        // Only fire callback when visibility state changes
+        if (isVisible && !wasVisible) {
+          wasVisible = true
+
+          callback.call(element[0])
+        } else if (!isVisible && wasVisible) {
+          wasVisible = false
+        }
+      }), {
+        threshold: 0.01 // Fire when at least 1% of element is visible
+      })
+
+      // Start observing
+      observer.observe(element[0])
+
+      // Track for cleanup
+      try {
+        globalTrackers.observers.push(observer)
+      } catch (e) {}
+    })
   }
 })
 
@@ -3335,6 +3425,10 @@ let getRSAKey = async (type, callback, called = false) => {
     // Save the public key in the `publicKey` global variable
     publicKey = result
 
+    try {
+      IPCRenderer.removeAllListeners(`public-key:${requestID}`)
+    } catch (e) {}
+
     // Call the callback function with passing the result
     return callback(result)
   })
@@ -3603,7 +3697,9 @@ let tunnelSSH = {
     // Once a response is received
     IPCRenderer.on(`ssh-tunnel:create:result:${data.requestID}`, (_, receivedData) => {
       // Remove all listeners as a result has been received
-      IPCRenderer.removeAllListeners(`ssh-tunnel:create:result:${data.requestID}`)
+      try {
+        IPCRenderer.removeAllListeners(`ssh-tunnel:create:result:${data.requestID}`)
+      } catch (e) {}
 
       // Call the callback function with passing the result
       callback(receivedData)
@@ -4039,6 +4135,10 @@ let detectDifferentiation = (oldText, newText, callback) => {
   IPCRenderer.on(`detect-differentiation:result:${requestID}`, (_, difference) => {
     // Call the callback function with passing the result
     callback(difference)
+
+    try {
+      IPCRenderer.removeAllListeners(`detect-differentiation:result:${requestID}`)
+    } catch (e) {}
   })
 }
 
@@ -4700,7 +4800,10 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
                   </a>
                 </li>
               </ul>
-              <l-ring-2 size="20" stroke="2" stroke-length="0.25" bg-opacity="0.25" speed="0.45" color="white"></l-ring-2>
+              <svg l-ring-2 viewBox="0 0 40 40" height="20" width="20" style="--uib-size: 20px; --uib-color: #ffffff; --uib-speed: 0.45s; --uib-bg-opacity: 0.25;">
+                <circle class="track" cx="20" cy="20" r="17.5" pathlength="100" stroke-width="2px" fill="none" />
+                <circle class="car" cx="20" cy="20" r="17.5" pathlength="100" stroke-width="2px" fill="none" />
+              </svg>
             </div>`
         } catch (e) {}
 
@@ -5168,4 +5271,156 @@ let fileURLToLocalPath = (uri) => {
   } catch {
     return null
   }
+}
+
+/**
+ * Important function to dispose resources and prevent memory leaks
+ * Should be called on window unload/exiting the workbench to clear all intervals, dispose editors, destroy charts, etc...
+ */
+let cleanupResources = () => {
+  // Clear all old intervals
+  try {
+    Object.keys(globalTrackers.intervals).forEach((interval) => {
+      try {
+        if (globalTrackers.intervals[interval]) {
+          clearInterval(globalTrackers.intervals[interval])
+
+          globalTrackers.intervals[interval] = null
+        }
+      } catch (e) {}
+    })
+  } catch (e) {}
+
+  // Clear all old workspace path watcher timeouts
+  try {
+    Object.keys(globalTrackers.workspaceWatchers).forEach((workspaceID) => {
+      try {
+        clearTimeout(globalTrackers.workspaceWatchers[workspaceID])
+
+        delete globalTrackers.workspaceWatchers[workspaceID]
+      } catch (e) {}
+    })
+  } catch (e) {}
+
+  // Clear all connection path watcher timeouts
+  try {
+    Object.keys(globalTrackers.connectionWatchers).forEach((connectionID) => {
+      try {
+        clearTimeout(globalTrackers.connectionWatchers[connectionID])
+        delete globalTrackers.connectionWatchers[connectionID]
+      } catch (e) {}
+    })
+  } catch (e) {}
+
+  // Destroy all Tippy tooltip instances
+  try {
+    mdbObjects.filter((obj) => obj.type === 'Tooltip').forEach((obj) => {
+      try {
+        if (obj.object && obj.object.destroy)
+          obj.object.destroy()
+      } catch (e) {}
+    })
+
+    // Clear Tippy instances from mdbObjects
+    mdbObjects = mdbObjects.filter((obj) => obj.type !== 'Tooltip')
+  } catch (e) {}
+
+  // Dispose all Monaco editors
+  try {
+    monaco.editor.getEditors().forEach((editor) => {
+      try {
+        editor.dispose()
+      } catch (e) {}
+    })
+
+    // Clear the diff editors array
+    diffEditors.length = 0
+  } catch (e) {}
+
+  // Destroy all Chart.js instances
+  try {
+    Object.keys(queryTracingChartsObjects).forEach((chartKey) => {
+      try {
+        if (queryTracingChartsObjects[chartKey]) {
+          queryTracingChartsObjects[chartKey].destroy()
+
+          delete queryTracingChartsObjects[chartKey]
+        }
+      } catch (e) {}
+    })
+  } catch (e) {}
+
+  // Dispose all terminals
+  try {
+    terminalObjects.forEach((terminal) => {
+      try {
+        terminal.dispose()
+      } catch (e) {}
+    })
+
+    terminalObjects.length = 0
+
+    terminalFitAddonObjects.length = 0
+  } catch (e) {}
+
+  // Remove webview event listeners
+  try {
+    $('webview').each(function() {
+      try {
+        $(this).off('did-start-loading')
+
+        $(this).off('did-stop-loading')
+
+        $(this).off('dom-ready')
+
+        $(this).off('ipc-message')
+      } catch (e) {}
+    })
+  } catch (e) {}
+
+  // Disconnect all tracked observers (`ResizeObserver` and `MutationObserver`)
+  try {
+    globalTrackers.observers.forEach((observer) => {
+      try {
+        observer.disconnect()
+      } catch (e) {}
+    })
+
+    globalTrackers.observers.length = 0
+  } catch (e) {}
+
+  // Remove all jQuery event listeners from document
+  try {
+    $(document).off('initialize')
+
+    $(document).off('clearEnhancedConsole')
+  } catch (e) {}
+
+  // Clear all pending timeouts/intervals (except the tracked ones)
+  try {
+    // Get highest timeout ID by creating and immediately clearing a timeout
+    let highestTimeoutId = setTimeout(() => {}, 0)
+
+    for (let i = 0; i < highestTimeoutId; i++) {
+      // Skip our tracked global intervals
+      if (!Object.values(globalIntervals).includes(i)) {
+        clearTimeout(i)
+
+        clearInterval(i)
+      }
+    }
+  } catch (e) {}
+
+  // Clear performance observer buffers (fixes PerformanceLongAnimationFrameTiming leak)
+  try {
+    if (!window.performance)
+      throw 0
+
+    // Clear all performance entries
+    performance.clearMarks()
+
+    performance.clearMeasures()
+
+    performance.clearResourceTimings()
+  } catch (e) {}
 }

@@ -1849,10 +1849,23 @@ let ignoredConnections = [],
       return
     }
 
-    setTimeout(() => {
-      if (!pathIsAccessible(connectionPath, false))
-        return callback()
+    // Clear existing watcher timeout for this connection
+    if (globalTrackers.connectionWatchers[connectionID]) {
+      clearTimeout(globalTrackers.connectionWatchers[connectionID])
 
+      delete globalTrackers.connectionWatchers[connectionID]
+    }
+
+    // Store the new timeout ID to prevent timer accumulation
+    globalTrackers.connectionWatchers[connectionID] = setTimeout(() => {
+      if (!pathIsAccessible(connectionPath, false)) {
+        // Path no longer accessible - clear tracker and call callback
+        delete globalTrackers.connectionWatchers[connectionID]
+
+        return callback()
+      }
+
+      // Path still accessible - schedule next check
       watchConnectionPath(connectionID, connectionPath, callback)
     }, getRandom.numberInterval(1000, 10000))
   }

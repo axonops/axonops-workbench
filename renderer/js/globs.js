@@ -122,3 +122,40 @@ let cqlSnippets = {
 
 let shortcutDetectorObject = null,
   shortcutsObjects = []
+
+// Global JSON object to hold and track ALL possible objects to prevent memory leak
+let globalTrackers = {
+  /**
+   * Track ResizeObserver and MutationObserver instances
+   * These observers create event listeners that must be disconnected to prevent leaks
+   */
+  observers: [],
+  /**
+   * Track workspace path watcher timeouts
+   * Each workspace creates recursive timeouts that must be cleared to prevent timer accumulation
+   * Format: { workspaceID: timeoutID }
+   */
+  workspaceWatchers: {},
+  /**
+   * Track connection path watcher timeouts
+   * Each connection creates recursive timeouts that must be cleared to prevent timer accumulation
+   * Format: { connectionID: timeoutID }
+   */
+  connectionWatchers: {},
+  /**
+   * Track interval IDs for cleanup
+   * These store references to `setInterval` timers to allow proper cleanup on window unload
+   */
+  intervals: {
+    // Timestamp update interval for s-ago-time elements (10s)
+    timestampUpdate: null,
+    // Performance buffer cleanup interval (every 2 minutes)
+    performanceBufferCleanup: null,
+    // Editor resize interval (every 1 second)
+    editorResize: null,
+    // macOS badge update interval (every 1.5 seconds)
+    badgeUpdate: null,
+    // AI Assistant webview button state check interval (500ms)
+    webviewButtonCheck: null
+  }
+}

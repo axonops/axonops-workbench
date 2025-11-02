@@ -331,11 +331,18 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                    </div>
                    ${!isSandbox ? footerStructure.nonSandbox : footerStructure.sandbox}
                    <div class="status">
-                     <l-ripples size="20" speed="7" color="#ff8000"></l-ripples>
+                     <l-ripples style="--uib-size: 20px; --uib-color: #ff8000; --uib-speed: 7s;"><div class="dot"></div></l-ripples>
                    </div>
                    <div class="test-connection">
                      <div class="sub-content">
-                       <l-pinwheel class="ldr change-color" size="36" stroke="4" speed="0.45" color="${getAttributes(workspaceElement, 'data-color')}"></l-pinwheel>
+                       <l-pinwheel class="ldr change-color" style="--uib-size: 36px; --uib-stroke: 4px; --uib-speed: 0.45s; --uib-color: ${getAttributes(workspaceElement, 'data-color')};">
+                        <div class="line"></div>
+                        <div class="line"></div>
+                        <div class="line"></div>
+                        <div class="line"></div>
+                        <div class="line"></div>
+                        <div class="line"></div>
+                       </l-pinwheel>
                      </div>
                      <div class="terminate-process">
                        <div class="btn btn-tertiary stop-btn" data-mdb-ripple-color="var(--mdb-danger)" reference-id="${connectionID}" button-id="${terminateProcessBtnID}" data-tippy="tooltip" data-mdb-placement="right" data-title data-mulang="terminate the process" capitalize-first>
@@ -759,7 +766,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                        <ion-icon name="globe"></ion-icon>
                                      </div>
                                      <div class="connection-status">
-                                       <l-ripples size="20" speed="7" color="#ff8000"></l-ripples>
+                                       <l-ripples style="--uib-size: 20px; --uib-color: #ff8000; --uib-speed: 7s;"><div class="dot"></div></l-ripples>
                                      </div>
                                    </div>
                                    <div class="additional">
@@ -1057,7 +1064,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                            <div class="execute">
                                              <button id="_${executeStatementBtnID}" class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
                                                <ion-icon name="send"></ion-icon>
-                                               <l-reuleaux size="20" stroke="2" stroke-length="0.25" bg-opacity="0.25" speed="0.8" color="white"></l-reuleaux>
+                                               <svg l-reuleaux x="0px" y="0px" viewBox="0 0 37 37" height="20" width="20" preserveAspectRatio="xMidYMid meet" style="--uib-size: 20px; --uib-color: white; --uib-speed: 0.8s; --uib-bg-opacity: 0.25;">
+                                                 <path class="track" fill="none" stroke-width="2" pathLength="100"
+                                                   d="M36.63 31.746 c0 -13.394 -7.3260000000000005 -25.16 -18.13 -31.375999999999998 C7.696 6.66 0.37 18.352 0.37 31.746 c5.328 3.108 11.544 4.8839999999999995 18.13 4.8839999999999995 S31.301999999999996 34.854 36.63 31.746z"></path>
+                                                 <path class="car" fill="none" stroke-width="2" pathLength="100"
+                                                   d="M36.63 31.746 c0 -13.394 -7.3260000000000005 -25.16 -18.13 -31.375999999999998 C7.696 6.66 0.37 18.352 0.37 31.746 c5.328 3.108 11.544 4.8839999999999995 18.13 4.8839999999999995 S31.301999999999996 34.854 36.63 31.746z"></path>
+                                               </svg>
                                              </button>
                                            </div>
                                          </div>
@@ -3691,7 +3703,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                       paginator.find('button[data-page="last"], button[data-page="next"]').addClass('hidden')
 
-                                      paginator.find('button[data-page="last"]').before($(`<button class="tabulator-page" data-action="next-page" type="button" role="button" aria-label="Next Page" title="Next Page"><span>Next</span><l-chaotic-orbit spinner style="vertical-align: middle; position: relative; bottom: 1px; margin-left: 5px; display:none;" size="17" speed="0.7" color="#000"></l-chaotic-orbit></button>`).show(function() {
+                                      paginator.find('button[data-page="last"]').before($(`<button class="tabulator-page" data-action="next-page" type="button" role="button" aria-label="Next Page" title="Next Page"><span>Next</span><l-chaotic-orbit spinner style="vertical-align: middle; position: relative; bottom: 1px; margin-left: 5px; display:none; --uib-size: 17px; --uib-color: black; --uib-speed: 0.7s;"></l-chaotic-orbit></button>`).show(function() {
                                         blockElement.data('tableObj', tabulatorObject)
 
                                         $(this).data('blockID', data.blockID)
@@ -4724,7 +4736,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               } catch (e) {}
                             }
 
-                            statementTextContainer.prepend($(`<span class="spinner"><l-wobble size="25" speed="0.77" color="#f0f0f0"></l-wobble></span>`).hide(function() {
+                            statementTextContainer.prepend($(`<span class="spinner"><l-wobble style="--uib-size: 25px; --uib-color: #f0f0f0; --uib-speed: 0.77s;"></l-wobble></span>`).hide(function() {
                               let wobbleSpinner = $(this)
 
                               setTimeout(() => wobbleSpinner.fadeIn('fast'), 150)
@@ -6637,11 +6649,60 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             // Flag to tell if the workarea is actually visible
                             let isWorkareaVisible = workarea.is(':visible')
 
+                            // Destroy Tippy tooltips in this workarea as it has been closed/removed
+                            try {
+                              workarea.find('[data-title]').each(function() {
+                                try {
+                                  let tippyInstance = mdbObjects.find((obj) => obj.type === 'Tooltip' && obj.element && $(this).is(obj.element))
+
+                                  if (!(tippyInstance && tippyInstance.object))
+                                    throw 0
+
+                                  tippyInstance.object.destroy()
+
+                                  // Remove from mdbObjects array
+                                  let index = mdbObjects.indexOf(tippyInstance)
+
+                                  if (index !== -1)
+                                    mdbObjects.splice(index, 1)
+                                } catch (e) {}
+                              })
+                            } catch (e) {}
+
+                            // Dispose Monaco editors and remove from global registry
                             for (let editorUI of workarea.find('div.monaco-editor').get()) {
                               try {
-                                (monaco.editor.getEditors().find((editor) => $(editorUI).parent().is(editor._domElement))).dispose()
+                                let editor = monaco.editor.getEditors().find((editor) => $(editorUI).parent().is(editor._domElement))
+
+                                if (!editor)
+                                  throw 0
+
+                                // Remove from diffEditors array if it's a diff editor
+                                let diffEditorIndex = diffEditors.indexOf(editor)
+
+                                if (diffEditorIndex !== -1)
+                                  diffEditors.splice(diffEditorIndex, 1)
+
+                                // Dispose the editor
+                                editor.dispose()
                               } catch (e) {}
                             }
+
+                            // Memory leak fix: Destroy Chart.js instances for this workarea
+                            try {
+                              Object.keys(queryTracingChartsObjects).forEach((chartKey) => {
+                                try {
+                                  if (queryTracingChartsObjects[chartKey] && queryTracingChartsObjects[chartKey].canvas) {
+                                    // Check if this chart belongs to the workarea being closed
+                                    if (workarea.find(queryTracingChartsObjects[chartKey].canvas).length > 0) {
+                                      queryTracingChartsObjects[chartKey].destroy()
+
+                                      delete queryTracingChartsObjects[chartKey]
+                                    }
+                                  }
+                                } catch (e) {}
+                              })
+                            } catch (e) {}
 
                             // Remove the work area element
                             workarea.remove()
@@ -10300,6 +10361,10 @@ const ConnectionTestProcessTerminationTimeout = 250
 
                 // In both cases listen to the response about the connection test
                 IPCRenderer.on(`pty:test-connection:${requestID}`, async (_, result) => {
+                  try {
+                    IPCRenderer.removeAllListeners(`pty:test-connection:${requestID}`)
+                  } catch (e) {}
+
                   setTimeout(async () => {
                     /**
                      * If there's a post-connection script(s) to be executed
@@ -10648,6 +10713,10 @@ const ConnectionTestProcessTerminationTimeout = 250
 
                 // In both cases listen to the response about the connection test
                 IPCRenderer.on(`pty:test-connection:${cqlshrc.name}`, async (_, result) => {
+                  try {
+                    IPCRenderer.removeAllListeners(`pty:test-connection:${cqlshrc.name}`)
+                  } catch (e) {}
+
                   setTimeout(async () => {
                     // Delete the temp file which contains the `cqlsh.rc` config file's content
                     try {

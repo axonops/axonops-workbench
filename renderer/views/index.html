@@ -216,7 +216,10 @@
       And finally, the loading container -->
       <div class="content ai-assistant not-initialized">
         <div class="loading-page">
-          <l-square size="30" stroke="3" stroke-length="0.25" bg-opacity="0.1" speed="0.9" color="#777777"></l-square>
+          <svg l-square viewBox="0 0 35 35" height="30" width="30" style="--uib-size: 30px; --uib-color: #777777; --uib-speed: 0.9s; --uib-bg-opacity: 0.1;">
+            <rect class="track" x="2.5" y="2.5" fill="none" stroke-width="3px" width="32.5" height="32.5" />
+            <rect class="car" x="2.5" y="2.5" fill="none" stroke-width="3px" width="32.5" height="32.5" pathlength="100" />
+          </svg>
         </div>
 
         <!-- Integrate the AxonOps AI using `webview` tag -->
@@ -378,7 +381,9 @@
           <div class="empty">
             <div class="sub-content">
               <div class="create-item" onclick="$('#addWorkspaceProcess').click()">
-                <l-ripples size="300" speed="4" color="#555"></l-ripples>
+                <l-ripples style="--uib-size: 300px; --uib-color: #555; --uib-speed: 4s;">
+                  <div class="dot"></div>
+                </l-ripples>
                 <div class="background">
                   <ion-icon name="plus"></ion-icon>
                 </div>
@@ -457,13 +462,17 @@
           <div class="empty">
             <div class="sub-content">
               <div class="create-item" onclick="$('#addConnectionProcess').click()">
-                <l-ripples size="300" speed="4" color="#555"></l-ripples>
+                <l-ripples style="--uib-size: 300px; --uib-color: #555; --uib-speed: 4s;">
+                  <div class="dot"></div>
+                </l-ripples>
                 <div class="background">
                   <ion-icon name="plus"></ion-icon>
                 </div>
               </div>
               <div class="create-item" onclick="$('#addSandboxProjectProcess').click()" for-sandbox>
-                <l-ripples size="300" speed="4" color="#555"></l-ripples>
+                <l-ripples style="--uib-size: 300px; --uib-color: #555; --uib-speed: 4s;">
+                  <div class="dot"></div>
+                </l-ripples>
                 <div class="background">
                   <ion-icon name="plus"></ion-icon>
                 </div>
@@ -685,7 +694,14 @@
             </div>
             <div class="test-connection">
               <div class="sub-content">
-                <l-pinwheel class="ldr change-color" size="70" stroke="4" speed="0.6" color="#dfdfdf"></l-pinwheel>
+                <l-pinwheel class="ldr change-color" style="--uib-size: 70px; --uib-stroke: 4px; --uib-speed: 0.6s; --uib-color: #dfdfdf;">
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                </l-pinwheel>
               </div>
             </div>
             <div class="terminate-process">
@@ -1073,7 +1089,14 @@
             </div>
             <div class="test-connection">
               <div class="sub-content">
-                <l-pinwheel class="ldr change-color" size="70" stroke="4" speed="0.6" color="#dfdfdf"></l-pinwheel>
+                <l-pinwheel class="ldr change-color" style="--uib-size: 70px; --uib-stroke: 4px; --uib-speed: 0.6s; --uib-color: #dfdfdf;">
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                  <div class="line"></div>
+                </l-pinwheel>
               </div>
             </div>
             <div class="terminate-process">
@@ -1605,7 +1628,7 @@
                   <div class="col-md-3" style="width: fit-content; margin-right: 15px;">
                     <button id="checkNowForUpdates" type="button" class="btn btn-secondary btn-sm" data-mdb-ripple-color="dark" style="transform: scale(0.9);">
                       <span mulang="check now"></span>
-                      <l-momentum size="15" speed="0.7" color="#262626" style="position: relative; bottom: 3px; right: -4px;"></l-momentum>
+                      <l-momentum style="--uib-size: 15px; --uib-color: #262626; --uib-speed: 0.7s; position: relative; bottom: 3px; right: -4px;"></l-momentum>
                     </button>
                     <span class="vertical-seperator"></span>
                   </div>
@@ -2916,7 +2939,7 @@
                 <div class="col-md-8">
                   <button id="countAffectedRows" type="button" class="btn btn-secondary btn-sm" data-mdb-ripple-color="dark" disabled>
                     <span mulang="count"></span>
-                    <l-hatch size="12" stroke="2" speed="2.5" color="#262626"></l-hatch>
+                    <l-hatch style="--uib-size: 12px; --uib-color: #262626; --uib-speed: 2.5s; --uib-stroke: 2px;"><div class="line"></div></l-hatch>
                   </button>
                 </div>
               </div> -->
@@ -3331,7 +3354,7 @@
                           <span mulang="no created snippets detected for that object" capitalize-first></span>
                         </div>
                         <div class="loading">
-                          <l-zoomies size="100" stroke="4" bg-opacity="0.1" speed="0.77" color="#919293"></l-zoomies>
+                          <l-zoomies style="--uib-size: 100px; --uib-color: #919293; --uib-speed: 0.77s; --uib-stroke: 4px; --uib-bg-opacity: 0.1;"></l-zoomies>
                         </div>
                       </div>
                     </div>
@@ -3462,7 +3485,10 @@
             <div class="search-input loading">
               <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
                 <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
-                <l-ring-2 class="loading-spinner" size="18" stroke="2" stroke-length="0.25" bg-opacity="0.25" speed="0.44" color="#ffffff"></l-ring-2>
+                <svg l-ring-2 class="loading-spinner" viewBox="0 0 40 40" height="18" width="18" style="--uib-size: 18px; --uib-color: #ffffff; --uib-speed: 0.44s; --uib-bg-opacity: 0.25;">
+                  <circle class="track" cx="20" cy="20" r="17.5" pathlength="100" stroke-width="2px" fill="none" />
+                  <circle class="car" cx="20" cy="20" r="17.5" pathlength="100" stroke-width="2px" fill="none" />
+                </svg>
                 <input type="text" class="form-control form-icon-trailing form-control-lg" id="searchConnectionsInputField" disabled>
                 <label class="form-label">
                   <span mulang="search" capitalize></span>

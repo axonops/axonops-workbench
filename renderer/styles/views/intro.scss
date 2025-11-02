@@ -102,7 +102,7 @@ center {
     align-items: center;
     justify-content: center;
 
-    l-squircle {
+    svg[l-squircle] {
       opacity: 0;
     }
   }
@@ -149,7 +149,7 @@ center {
   &.show-spinner {
     height: 110px;
 
-    l-squircle {
+    svg[l-squircle] {
       animation: show 1.4s forwards ease-in-out;
       animation-delay: 0.2s;
     }

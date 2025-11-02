@@ -125,7 +125,12 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               <div class="header">
                 <div class="title workspace-name">${isSandbox ? '<span mulang="local clusters" capitalize></span>' : workspace.name}</div>
                 <div class="_connections show" ${connectionsMiniIconsBackgroundColor}>
-                  <l-squircle class="loading-connections" size="14" stroke="2" stroke-length="0.3" bg-opacity="0.3" speed="0.65" color="${TinyColor(workspace.color).isValid() ? workspace.color : 'white'}"></l-squircle>
+                  <svg l-squircle class="loading-connections" x="0px" y="0px" viewBox="0 0 37 37" height="14" width="14" preserveAspectRatio="xMidYMid meet" style="--uib-size: 14px; --uib-color: ${TinyColor(workspace.color).isValid() ? workspace.color : 'white'}; --uib-speed: 0.65s; --uib-bg-opacity: 0.3;">
+                    <path class="track" fill="none" stroke-width="5" pathLength="100" d="M0.37 18.5 C0.37 5.772 5.772 0.37 18.5 0.37 S36.63 5.772 36.63 18.5 S31.228 36.63 18.5 36.63 S0.37 31.228 0.37 18.5">
+                    </path>
+                    <path class="car" fill="none" stroke-width="5" pathLength="100" d="M0.37 18.5 C0.37 5.772 5.772 0.37 18.5 0.37 S36.63 5.772 36.63 18.5 S31.228 36.63 18.5 36.63 S0.37 31.228 0.37 18.5">
+                    </path>
+                  </svg>
                 </div>
               </div>
               <div class="footer">
@@ -160,7 +165,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                 <ion-icon name="danger"></ion-icon>
               </div>
               <div class="loading" style="background: rgb(${color} / 10%)">
-                <l-line-wobble class="ldr" size="50" stroke="5" bg-opacity="0.25" speed="1.3" color="${workspace.color}"></l-line-wobble>
+                <l-line-wobble class="ldr" style="--uib-size: 50px; --uib-stroke: 5px; --uib-bg-opacity: .25; --uib-speed: 1.3s; --uib-color: ${workspace.color};"></l-line-wobble>
               </div>
             </div>`
 
@@ -1150,7 +1155,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
             workspaceElement.find('div._connections').children('div._connection').css('background', `rgb(${colorRGB} / 100%)`)
 
-            workspaceElement.find('l-line-wobble').attr('color', `${color.val()}`)
+            workspaceElement.find('l-line-wobble').css('--uib-color', `${color.val()}`)
 
             // Update the workspace switcher's background color
             try {
@@ -1467,7 +1472,13 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     IPCRenderer.send('dialog:create', data)
 
     // Listen for the response - folders' paths - and call the check workspaces inner function
-    IPCRenderer.on(`dialog:${requestID}`, (_, foldersPaths) => checkWorkspaces(foldersPaths))
+    IPCRenderer.on(`dialog:${requestID}`, (_, foldersPaths) => {
+      checkWorkspaces(foldersPaths)
+
+      try {
+        IPCRenderer.removeAllListeners(`dialog:${requestID}`)
+      } catch (e) {}
+    })
   })
 
   // Handle the drag and drop events
@@ -1627,7 +1638,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             </div>
           </td>
           <td class="checks" data-id="_${workspaceChecksID}">
-            <l-line-wobble size="50" stroke="2" bg-opacity="0.25" speed="1.25" color="#e3e3e3"></l-line-wobble>
+            <l-line-wobble style="--uib-size: 50px; --uib-stroke: 2px; --uib-bg-opacity: .25; --uib-speed: 1.25s; --uib-color: #e3e3e3;"></l-line-wobble>
             <span class="badge rounded-pill badge-warning" check="variables" style="display:none"><span mulang="missing variables" capitalize></span></span>
             <span class="badge rounded-pill badge-danger" check="name" style="display:none"><span mulang="duplicate name" capitalize></span></span>
             <span class="badge rounded-pill badge-success" check="passed" style="display:none"><span mulang="passed" capitalize></span></span>

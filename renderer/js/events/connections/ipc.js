@@ -69,6 +69,10 @@
             path = `${path}`
 
             try {
+              IPCRenderer.removeAllListeners(`dialog:${dialogID}`)
+            } catch (e) {}
+
+            try {
               if (path.length <= 0)
                 throw 0
 
@@ -2354,6 +2358,10 @@
 
                         // Listen for the response
                         IPCRenderer.on(`dialog:${dialogID}`, (_, selected) => {
+                          try {
+                            IPCRenderer.removeAllListeners(`dialog:${dialogID}`)
+                          } catch (e) {}
+
                           if (selected.length <= 0) {
                             inputField.val('').trigger('input')
 
@@ -2387,7 +2395,7 @@
                                 return showToast(I18next.capitalize(I18next.t('upload item')), I18next.capitalizeFirstLetter(I18next.replaceData('the size of the uploaded item is [b]$data[/b], which is greater than the maximum allowed size of [b]$data[/b]. Please consider to change that in the config file or try with smaller item', [Bytes(itemSize), Bytes(maxItemSize)])) + '.', 'failure')
 
                               let requestID = getRandom.id(20),
-                                ringSpinnerElement = $(this).parent().parent().parent().children('l-ring-2'),
+                                ringSpinnerElement = $(this).parent().parent().parent().children('svg[l-ring-2]'),
                                 showRingSpinnerTimeout = null,
                                 showRingSpinner = () => {
                                   try {
@@ -2407,6 +2415,10 @@
 
                               // Wait for the response
                               IPCRenderer.on(`blob:read-convert:result:${requestID}`, (_, data) => {
+                                try {
+                                  IPCRenderer.removeAllListeners(`blob:read-convert:result:${requestID}`)
+                                } catch (e) {}
+
                                 inputField.data('value', data.itemHEXString)
 
                                 data.itemHEXString = data.itemHEXString.length <= 0 ? '' : (data.itemHEXString.length > 100 ? `${data.itemHEXString.slice(0, 100)}...` : data.itemHEXString)
@@ -2449,7 +2461,7 @@
                             } catch (e) {}
 
                             let requestID = getRandom.id(20),
-                              ringSpinnerElement = $(this).parent().parent().parent().children('l-ring-2'),
+                              ringSpinnerElement = $(this).parent().parent().parent().children('svg[l-ring-2]'),
                               showRingSpinnerTimeout = null,
                               showRingSpinner = () => {
                                 try {
@@ -2471,6 +2483,10 @@
 
                             // Wait for the response
                             IPCRenderer.on(`blob:convert-write:result:${requestID}`, (_, data) => {
+                              try {
+                                IPCRenderer.removeAllListeners(`blob:convert-write:result:${requestID}`)
+                              } catch (e) {}
+
                               if (data.error)
                                 throw 0
 
@@ -3905,7 +3921,7 @@
                                   // Once the parent `form-outline` is clicked trigger the `focus` event
                                   // input.parent().click(() => input.trigger('focus'))
 
-                                  $(node).find(`ul.dropdown-menu`).mutate('transform', () => {
+                                  $(node).find(`ul.dropdown-menu`).observeTransform(() => {
                                     let isTransformNegative = `${$(node).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                                     $(node).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -5492,7 +5508,7 @@
                                   // Once the parent `form-outline` is clicked trigger the `focus` event
                                   // input.parent().click(() => input.trigger('focus'))
 
-                                  $(node).find(`ul.dropdown-menu`).mutate('transform', () => {
+                                  $(node).find(`ul.dropdown-menu`).observeTransform( () => {
                                     let isTransformNegative = `${$(node).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                                     $(node).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -6975,7 +6991,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -7189,7 +7205,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -7416,7 +7432,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -7602,7 +7618,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -8437,7 +8453,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -8683,7 +8699,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -8978,7 +8994,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -9215,7 +9231,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -10852,7 +10868,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11107,7 +11123,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11357,7 +11373,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11609,7 +11625,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11871,7 +11887,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'columnType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -12188,7 +12204,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'columnType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -12430,7 +12446,7 @@
                     {
                       // Once one of the items is clicked
                       $(this).find(`div.dropdown[for-select]`).each(function() {
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -12617,7 +12633,7 @@
 
                   // Once one of the items is clicked
                   $(this).find(`div.dropdown[for-select]`).each(function() {
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')

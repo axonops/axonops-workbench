@@ -108,8 +108,6 @@
       })
     } catch (e) {}
   }
-
-  setInterval(() => resizeEditors(), 1000)
 }
 
 // Handle clicking on different sections buttons in the left side
@@ -2740,7 +2738,7 @@
 {
   $("#extraDataActions")[0].addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize'))
 
-  $('div.modal#extraDataActions div.editor-container').mutate('show', () => $(window.visualViewport).trigger('resize'))
+  $('div.modal#extraDataActions div.editor-container').observeVisibility(() => $(window.visualViewport).trigger('resize'))
 }
 
 {
@@ -2755,7 +2753,7 @@
 
     let numOfActiveWorkareas = 0
 
-    setInterval(() => {
+    globalTrackers.intervals.badgeUpdate = setInterval(() => {
       let numUpdate = $('div.body div.right div.content div[content="workarea"] div.workarea').length
 
       if (numUpdate == numOfActiveWorkareas)

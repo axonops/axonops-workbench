@@ -3716,7 +3716,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                             return
                                           }
 
-                                          $(this).find('[spinner]').show()
+                                          $(this).find('[spinner]').css('display', 'inline-block')
                                           $(this).attr('disabled', '')
 
                                           IPCRenderer.send('pty:command', {

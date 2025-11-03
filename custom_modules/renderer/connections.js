@@ -839,7 +839,11 @@ let setCQLSHRCContent = (sections, cqlshrc = null, editor = null) => {
          */
         let exceptions = ['hostname', 'port']
 
-        temp = `${temp}`.replace(newRegex, `${(disabled && !(exceptions.includes(option))) ? '; ' : ''}${option} = ${options[option]}`)
+        if (temp.match(newRegex) != null) {
+          temp = `${temp}`.replace(newRegex, `${(disabled && !(exceptions.includes(option))) ? '; ' : ''}${option} = ${options[option]}`)
+        } else {
+          temp = `${temp}` + OS.EOL + `${option} = ${options[option]}` + OS.EOL
+        }
       })
 
       // Replace the entire block of the section with the new one
@@ -1845,10 +1849,23 @@ let ignoredConnections = [],
       return
     }
 
-    setTimeout(() => {
-      if (!pathIsAccessible(connectionPath, false))
-        return callback()
+    // Clear existing watcher timeout for this connection
+    if (globalTrackers.connectionWatchers[connectionID]) {
+      clearTimeout(globalTrackers.connectionWatchers[connectionID])
 
+      delete globalTrackers.connectionWatchers[connectionID]
+    }
+
+    // Store the new timeout ID to prevent timer accumulation
+    globalTrackers.connectionWatchers[connectionID] = setTimeout(() => {
+      if (!pathIsAccessible(connectionPath, false)) {
+        // Path no longer accessible - clear tracker and call callback
+        delete globalTrackers.connectionWatchers[connectionID]
+
+        return callback()
+      }
+
+      // Path still accessible - schedule next check
       watchConnectionPath(connectionID, connectionPath, callback)
     }, getRandom.numberInterval(1000, 10000))
   }

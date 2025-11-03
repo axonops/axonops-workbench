@@ -69,6 +69,10 @@
             path = `${path}`
 
             try {
+              IPCRenderer.removeAllListeners(`dialog:${dialogID}`)
+            } catch (e) {}
+
+            try {
               if (path.length <= 0)
                 throw 0
 
@@ -152,7 +156,7 @@
                   <a href="#_${editorContainerID}">${scope}</a>
                 </span>
                 <div class="close-description">
-                  <button type="button" class="btn btn-sm btn-tertiary close-description" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-mulang="close description" capitalize data-title="Close Description">
+                  <button type="button" class="btn btn-sm btn-tertiary close-description" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-mulang="close description" capitalize data-title>
                     <ion-icon name="close"></ion-icon>
                   </button>
                 </div>
@@ -161,7 +165,7 @@
                 <div class="editor" id="_${editorContainerID}"></div>
               </div>
               <div class="expand-editor">
-                <button type="button" class="btn btn-sm btn-tertiary expand-editor" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="right" data-mulang="expand editor" capitalize data-title="Expand editor">
+                <button type="button" class="btn btn-sm btn-tertiary expand-editor" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="right" data-mulang="expand editor" capitalize data-title>
                   <ion-icon name="arrow-left"></ion-icon>
                 </button>
               </div>
@@ -2153,12 +2157,12 @@
                                     </div>
                                     <div class="row for-duration">
                                       <div class="col-md-4">
-                                        <button type="button" class="btn btn-secondary btn-dark btn-sm" id="${clearBtnID}">
+                                        <button type="button" class="btn btn-secondary btn-sm" id="${clearBtnID}">
                                           <span mulang="clear"></span>
                                         </button>
                                       </div>
                                       <div class="col-md-8">
-                                        <button type="button" class="btn btn-primary btn-dark changed-bg changed-color btn-sm" id="${confirmBtnID}">
+                                        <button type="button" class="btn btn-primary changed-bg changed-color btn-sm" id="${confirmBtnID}">
                                           <span mulang="confirm"></span>
                                         </button>
                                       </div>
@@ -2354,6 +2358,10 @@
 
                         // Listen for the response
                         IPCRenderer.on(`dialog:${dialogID}`, (_, selected) => {
+                          try {
+                            IPCRenderer.removeAllListeners(`dialog:${dialogID}`)
+                          } catch (e) {}
+
                           if (selected.length <= 0) {
                             inputField.val('').trigger('input')
 
@@ -2387,7 +2395,7 @@
                                 return showToast(I18next.capitalize(I18next.t('upload item')), I18next.capitalizeFirstLetter(I18next.replaceData('the size of the uploaded item is [b]$data[/b], which is greater than the maximum allowed size of [b]$data[/b]. Please consider to change that in the config file or try with smaller item', [Bytes(itemSize), Bytes(maxItemSize)])) + '.', 'failure')
 
                               let requestID = getRandom.id(20),
-                                ringSpinnerElement = $(this).parent().parent().parent().children('l-ring-2'),
+                                ringSpinnerElement = $(this).parent().parent().parent().children('svg[l-ring-2]'),
                                 showRingSpinnerTimeout = null,
                                 showRingSpinner = () => {
                                   try {
@@ -2407,6 +2415,10 @@
 
                               // Wait for the response
                               IPCRenderer.on(`blob:read-convert:result:${requestID}`, (_, data) => {
+                                try {
+                                  IPCRenderer.removeAllListeners(`blob:read-convert:result:${requestID}`)
+                                } catch (e) {}
+
                                 inputField.data('value', data.itemHEXString)
 
                                 data.itemHEXString = data.itemHEXString.length <= 0 ? '' : (data.itemHEXString.length > 100 ? `${data.itemHEXString.slice(0, 100)}...` : data.itemHEXString)
@@ -2449,7 +2461,7 @@
                             } catch (e) {}
 
                             let requestID = getRandom.id(20),
-                              ringSpinnerElement = $(this).parent().parent().parent().children('l-ring-2'),
+                              ringSpinnerElement = $(this).parent().parent().parent().children('svg[l-ring-2]'),
                               showRingSpinnerTimeout = null,
                               showRingSpinner = () => {
                                 try {
@@ -2471,6 +2483,10 @@
 
                             // Wait for the response
                             IPCRenderer.on(`blob:convert-write:result:${requestID}`, (_, data) => {
+                              try {
+                                IPCRenderer.removeAllListeners(`blob:convert-write:result:${requestID}`)
+                              } catch (e) {}
+
                               if (data.error)
                                 throw 0
 
@@ -3905,7 +3921,7 @@
                                   // Once the parent `form-outline` is clicked trigger the `focus` event
                                   // input.parent().click(() => input.trigger('focus'))
 
-                                  $(node).find(`ul.dropdown-menu`).mutate('transform', () => {
+                                  $(node).find(`ul.dropdown-menu`).observeTransform(() => {
                                     let isTransformNegative = `${$(node).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                                     $(node).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -5492,7 +5508,7 @@
                                   // Once the parent `form-outline` is clicked trigger the `focus` event
                                   // input.parent().click(() => input.trigger('focus'))
 
-                                  $(node).find(`ul.dropdown-menu`).mutate('transform', () => {
+                                  $(node).find(`ul.dropdown-menu`).observeTransform( () => {
                                     let isTransformNegative = `${$(node).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                                     $(node).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -6614,7 +6630,7 @@
                 <label class="form-label">
                   <span mulang="field name" capitalize></span>
                 </label>
-                <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
               </div>
             </div>
             <div class="col-md-6" col="fieldDataType">
@@ -6975,7 +6991,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -7189,7 +7205,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -7416,7 +7432,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -7602,7 +7618,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -8316,7 +8332,7 @@
                         <label class="form-label">
                           <span mulang="key name" capitalize></span>
                         </label>
-                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                       </div>
                     </div>
                     <div class="col-md-5" col="partitionKeyType">
@@ -8437,7 +8453,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -8683,7 +8699,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -8819,7 +8835,7 @@
                         <label class="form-label">
                           <span mulang="key name" capitalize></span>
                         </label>
-                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                       </div>
                     </div>
                     <div class="col-md-4" col="clusteringKeyType">
@@ -8978,7 +8994,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -9215,7 +9231,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -9298,7 +9314,7 @@
                       <label class="form-label">
                         <span mulang="counter column name" capitalize></span>
                       </label>
-                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-1">
@@ -9480,7 +9496,7 @@
                       <label class="form-label">
                         <span mulang="option name" capitalize></span>
                       </label>
-                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-6">
@@ -10737,7 +10753,7 @@
                       <label class="form-label">
                         <span mulang="key name" capitalize></span>
                       </label>
-                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-5" col="partitionKeyType">
@@ -10852,7 +10868,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11107,7 +11123,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11243,7 +11259,7 @@
                         <label class="form-label">
                           <span mulang="key name" capitalize></span>
                         </label>
-                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                       </div>
                     </div>
                     <div class="col-md-4" col="clusteringKeyType">
@@ -11357,7 +11373,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11609,7 +11625,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11748,7 +11764,7 @@
                         <label class="form-label">
                           <span mulang="column name" capitalize></span>
                         </label>
-                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                       </div>
                     </div>
                     <div class="col-md-4" col="columnType">
@@ -11812,9 +11828,8 @@
                       </div>
                     </div>
                     <div class="col-md-3" col="is-static">
-                    <div class="form-check margin-bottom forIsStaticCheckbox" style="width: fit-content; padding-left: 30px;" data-tippy="tooltip" data-mdb-placement="right" data-mulang="set column to be static is possible when there's at least one clustering key" data-is-hidden="true"
-                      data-tippy-delay="500" capitalize-first data-title="set column to be static is possible when there's at least one clustering key">
-                        <input class="form-check-input isStatic" type="checkbox" id="_${isColumnStaticCheckboxID}" tab-tooltip data-tippy="tooltip" data-mdb-placement="right" data-mulang="static" data-is-hidden="true" capitalize data-title="static" disabled>
+                    <div class="form-check margin-bottom forIsStaticCheckbox" style="width: fit-content; padding-left: 30px;" data-tippy="tooltip" data-mdb-placement="right" data-mulang="set column to be static is possible when there's at least one clustering key" data-is-hidden="true" data-tippy-delay="500" capitalize-first data-title>
+                        <input class="form-check-input isStatic" type="checkbox" id="_${isColumnStaticCheckboxID}" tab-tooltip data-tippy="tooltip" data-mdb-placement="right" data-mulang="static" data-is-hidden="true" capitalize data-title disabled>
                         <label class="form-check-label" for="_${isColumnStaticCheckboxID}">
                           <span mulang="static" capitalize-first></span>
                         </label>
@@ -11872,7 +11887,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'columnType'
 
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -12189,7 +12204,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'columnType'
 
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -12323,7 +12338,7 @@
                         <label class="form-label">
                           <span mulang="column name" capitalize></span>
                         </label>
-                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                        <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                       </div>
                     </div>
                     <div class="col-md-4" col="columnType">
@@ -12350,8 +12365,8 @@
                       </label>
                     </div>
                     <div class="col-md-2" col="is-static">
-                    <div class="form-check margin-bottom forIsStaticCheckbox" style="width: fit-content; padding-left: 30px;" data-tippy="tooltip" data-mdb-placement="right" data-mulang="set column to be static is possible when there's at least one clustering key" data-is-hidden="true" data-tippy-delay="500" capitalize-first data-title="set column to be static is possible when there's at least one clustering key">
-                        <input class="form-check-input isStatic" type="checkbox" id="_${isColumnStaticCheckboxID}" data-tippy="tooltip" data-mdb-placement="right" data-mulang="static" data-is-hidden="true" capitalize data-title="static" disabled>
+                    <div class="form-check margin-bottom forIsStaticCheckbox" style="width: fit-content; padding-left: 30px;" data-tippy="tooltip" data-mdb-placement="right" data-mulang="set column to be static is possible when there's at least one clustering key" data-is-hidden="true" data-tippy-delay="500" capitalize-first data-title>
+                        <input class="form-check-input isStatic" type="checkbox" id="_${isColumnStaticCheckboxID}" data-tippy="tooltip" data-mdb-placement="right" data-mulang="static" data-is-hidden="true" capitalize data-title disabled>
                         <label class="form-check-label" for="_${isColumnStaticCheckboxID}">
                           <span mulang="static" capitalize-first></span>
                         </label>
@@ -12431,7 +12446,7 @@
                     {
                       // Once one of the items is clicked
                       $(this).find(`div.dropdown[for-select]`).each(function() {
-                        $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -12618,7 +12633,7 @@
 
                   // Once one of the items is clicked
                   $(this).find(`div.dropdown[for-select]`).each(function() {
-                    $(this).find(`ul.dropdown-menu`).mutate('transform', () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -12691,7 +12706,7 @@
                       <label class="form-label">
                         <span mulang="option name" capitalize></span>
                       </label>
-                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title="-" data-tippy-delay="[100, 0]"></ion-icon>
+                      <ion-icon name="info-circle" class="error-warning" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true" data-title data-tippy-delay="[100, 0]"></ion-icon>
                     </div>
                   </div>
                   <div class="col-md-6">

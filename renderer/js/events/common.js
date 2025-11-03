@@ -108,8 +108,6 @@
       })
     } catch (e) {}
   }
-
-  setInterval(() => resizeEditors(), 1000)
 }
 
 // Handle clicking on different sections buttons in the left side
@@ -446,6 +444,11 @@
     maxNumSandboxProjectsObject = getElementMDBObject($('input#maxNumSandboxProjects')),
     cqlSnippetsAuthorNameObject = getElementMDBObject($('input#cqlSnippetsAuthorName'))
 
+  let shortcutsSection = $(`div.modal-section[section="shortcuts"]`),
+    listenBackdrop = shortcutsSection.find('div.listen-backdrop'),
+    listenToShortcut = shortcutsSection.find(`div.listen-to-shortcut`),
+    savedShortcutsContainer = shortcutsSection.find(`div.saved-shortcuts`)
+
   // Clicks the settings button
   $(`${selector}[action="settings"]`).click(() => {
     // Get the app's config/settings
@@ -513,6 +516,9 @@
       $('input#cqlSnippetsAuthorName').val(minifyText(cqlSnippetsAuthorName).length <= 0 ? '' : cqlSnippetsAuthorName)
       setTimeout(() => cqlSnippetsAuthorNameObject.update())
 
+      // Point to the environment variables section
+      $(`div.modal#appSettings div.modal-body div.side-left div.sections div.section div.btn[section="variables"]`).click()
+
       /**
        * Check the chosen display language - whether it's valid or not -
        * Point at the language's option in the UI - if it exists then it means the app has loaded it successfully at the initialization process -
@@ -536,9 +542,239 @@
       // Set the suitable width for the inputs' titles' notch
       setTimeout(() => ([maxNumCQLSHSessionsObject, maxNumSandboxProjectsObject]).forEach((object) => $(object._element).find('div.form-notch-middle').css('width', '111.2px')), 1000)
 
+      // Load and show shortcuts
+      {
+        let shortcuts = Modules.Shortcuts.getShortcuts(),
+          defaultShortcuts = Modules.Shortcuts.getDefaultShortcuts()
+
+        sortItemsAlphabetically(shortcuts, 'description')
+
+        savedShortcutsContainer.children('div.shortcut').remove()
+
+        $(`input#shortcutsSearch`).val('').trigger('input')
+
+        listenToShortcut.add(listenBackdrop).removeClass('show')
+
+        $('button#setShortcut').attr('disabled', '')
+
+        try {
+          shortcutDetectorObject.stop()
+        } catch (e) {}
+
+        for (let shortcut of shortcuts) {
+          let shortcutKeys = shortcut.keys[OS.platform()] || shortcut.keys['linux'],
+            defaultKeys = defaultShortcuts.find((defaultShortcut) => defaultShortcut.id == shortcut.id)
+
+          try {
+            defaultKeys = defaultKeys.keys[OS.platform()] || defaultKeys.keys['linux']
+          } catch (e) {}
+
+          let element = `
+            <div class="shortcut" data-shortcut-id="${shortcut.id}" data-shortcut-value="${shortcutKeys}" data-shortcut-init-value="${shortcutKeys}" data-shortcut-default-value="${defaultKeys}" data-is-uneditable="${shortcut.uneditable ? 'true' : 'false'}">
+              <div class="description">
+                <span mulang="${shortcut.description}" capitalize-first></span>
+              </div>
+              <div class="kbd">
+                ${Modules.Shortcuts.getKbd(shortcutKeys, true)}
+              </div>
+              <div class="buttons">
+                <div class="button set-shortcut">
+                  <div class="btn btn-tertiary btn-sm ${shortcut.uneditable ? 'disabled' : ''}" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="right" data-title data-mulang="set a new shortcut" capitalize-first>
+                    <ion-icon name="keyboard"></ion-icon>
+                  </div>
+                </div>
+                <div class="button reset-shortcut">
+                  <div class="btn btn-tertiary btn-sm disabled" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="right" data-title data-mulang="reset to saved shortcut" capitalize-first>
+                    <ion-icon name="undo"></ion-icon>
+                  </div>
+                </div>
+                <div class="button clear-shortcut">
+                  <div class="btn btn-tertiary btn-sm ${shortcut.uneditable ? 'disabled' : ''}" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="right" data-title data-mulang="clear shortcut" capitalize-first>
+                    <ion-icon name="close"></ion-icon>
+                  </div>
+                </div>
+              </div>
+            </div>`
+
+          savedShortcutsContainer.append($(element).show(function() {
+            let shortcutElement = $(this)
+
+            // Detect when clicking the button to set a shortcut
+            shortcutElement.find('div.set-shortcut').find('div.btn').click(function() {
+              let latestShortcuts = Modules.Shortcuts.getShortcuts()
+
+              listenToShortcut.add(listenBackdrop).addClass('show')
+
+              listenToShortcut.data('data-shortcut-id', shortcutElement.attr('data-shortcut-id'))
+
+              $('button#setShortcut').attr('disabled', '')
+
+              $('#appSettings').find('button.btn-close').add($('#appSettings').find('div.side-left').find('div.btn[section]')).addClass('disabled')
+
+              listenToShortcut.find('div.hint').show()
+
+              listenToShortcut.removeClass('active')
+
+              // Temporary disable all shortcuts
+              for (let shortcutsObject of [...(shortcutsObjects || [])]) {
+                try {
+                  shortcutsObject.tinyKeys()
+                } catch (e) {}
+              }
+
+              shortcutDetectorObject = Modules.Shortcuts.shortcutDetector($(document), (keys) => {
+                let shortcutValue = Modules.Shortcuts.utils.keysArrayToTinyKeys(keys),
+                  shortcutID = shortcutElement.attr('data-shortcut-id'),
+                  // Check if there's any shortcut that has the same keys
+                  duplicatedShortcut = latestShortcuts.find((shortcut) => shortcut.id != shortcutID && (shortcut.keys[OS.platform()] || shortcut.keys['linux']) == shortcutValue),
+                  isShortcutFixed = false
+
+                listenToShortcut.find(`div.shortcut-duplication-warning`).toggle(duplicatedShortcut != undefined)
+
+                try {
+                  if (duplicatedShortcut == undefined)
+                    throw 0
+
+                  let duplicatedShortcutElement = savedShortcutsContainer.find(`div.shortcut[data-shortcut-id="${duplicatedShortcut.id}"]`)
+
+                  isShortcutFixed = duplicatedShortcutElement.attr('data-is-uneditable') == 'true'
+
+                  listenToShortcut.find(`div.shortcut-duplication-warning`).find('span[mulang][fixed]').toggle(isShortcutFixed)
+                  listenToShortcut.find(`div.shortcut-duplication-warning`).find('span[mulang][not-fixed]').toggle(!isShortcutFixed)
+                } catch (e) {}
+
+                listenToShortcut.data('duplicated-shortcut', duplicatedShortcut != undefined ? duplicatedShortcut.id : null)
+
+                listenToShortcut.addClass('active')
+
+                listenToShortcut.find('div.hint').hide()
+
+                listenToShortcut.data('data-shortcut-value', shortcutValue)
+
+                listenToShortcut.find('div.shortcut').html('').append(`${Modules.Shortcuts.getKbd(shortcutValue)}`)
+
+                $('button#setShortcut').attr('disabled', isShortcutFixed ? '' : null)
+              })
+            })
+
+            shortcutElement.find('div.reset-shortcut').find('div.btn').click(function() {
+              let initValue = shortcutElement.attr('data-shortcut-init-value'),
+                currentShortcuts = savedShortcutsContainer.find(`div.shortcut:not([data-shortcut-id="${shortcutElement.attr('data-shortcut-id')}"])`).get(),
+                // Check if there's any shortcut that has the same keys
+                duplicatedShortcut = currentShortcuts.find((shortcut) => $(shortcut).attr('data-shortcut-value') == initValue)
+
+              if (duplicatedShortcut != undefined)
+                $(duplicatedShortcut).find('div.clear-shortcut').find('div.btn').click()
+
+              try {
+                shortcutElement.attr('data-shortcut-value', initValue)
+
+                shortcutElement.find('div.kbd').html(`${Modules.Shortcuts.getKbd(initValue, true)}`)
+              } catch (e) {}
+
+              $(this).addClass('disabled')
+
+              shortcutElement.find('div.clear-shortcut').find('div.btn').removeClass('disabled')
+            })
+
+            shortcutElement.find('div.clear-shortcut').find('div.btn').click(function() {
+              $(this).addClass('disabled')
+
+              shortcutElement.find('div.reset-shortcut').find('div.btn').removeClass('disabled')
+
+              shortcutElement.attr('data-shortcut-value', ``)
+
+              shortcutElement.find('div.kbd').html(`<kbd class="not-set">NOT SET</kbd>`)
+            })
+
+            // Apply the chosen language on the UI element after being fully loaded
+            setTimeout(() => setTimeout(() => Modules.Localization.applyLanguageSpecific(shortcutElement.find('span[mulang], [data-mulang]'))))
+          }))
+        }
+      }
+
       // Show the settings' modal
       settingsModal.show()
     })
+  })
+
+  $(`input#shortcutsSearch`).on('input', function() {
+    let searchValue = minifyText($(this).val()),
+      shortcuts = savedShortcutsContainer.find(`div.shortcut`),
+      isResultFound = false
+
+    shortcuts.each(function(index) {
+      let shortcutContent = minifyText($(this).text()),
+        isRelated = shortcutContent.includes(searchValue)
+
+      if (isRelated)
+        isResultFound = true
+
+      $(this).toggle(isRelated)
+
+      if ((index + 1) >= shortcuts.length)
+        savedShortcutsContainer.find(`div.no-results`).toggle(!isResultFound)
+    })
+  })
+
+  $(`div.action.btn.reset-shortcuts`).click(function() {
+    let shortcuts = savedShortcutsContainer.find(`div.shortcut[data-is-uneditable="false"]`)
+
+    shortcuts.each(function() {
+      let id = $(this).attr('data-shortcut-id'),
+        defaultValue = $(this).attr('data-shortcut-default-value')
+
+      try {
+        $(this).attr('data-shortcut-value', defaultValue)
+
+        $(this).find('div.kbd').html(`${Modules.Shortcuts.getKbd(defaultValue)}`)
+      } catch (e) {}
+
+      $(this).find('div.reset-shortcut').find('div.btn').add($(this).find('div.clear-shortcut').find('div.btn')).removeClass('disabled')
+    })
+  })
+
+  $('button#cancelShortcut').click(function() {
+    listenToShortcut.add(listenBackdrop).removeClass('show')
+
+    $('#appSettings').find('button.btn-close').add($('#appSettings').find('div.side-left').find('div.btn[section]')).removeClass('disabled')
+
+    Modules.Shortcuts.updateShortcutsInSession()
+
+    setTimeout(() => {
+      $('button#setShortcut').attr('disabled', '')
+
+      listenToShortcut.find('div.hint').show()
+
+      listenToShortcut.removeClass('active')
+    }, 200)
+  })
+
+  $('button#setShortcut').click(function() {
+    let targetShortcut = {
+        id: listenToShortcut.data('data-shortcut-id'),
+        value: listenToShortcut.data('data-shortcut-value')
+      },
+      shortcutElement = savedShortcutsContainer.find(`div.shortcut[data-shortcut-id="${targetShortcut.id}"]`),
+      duplicatedShortcut,
+      duplicatedShortcutID = listenToShortcut.data('duplicated-shortcut'),
+      resetShortcutButton = shortcutElement.find('div.reset-shortcut').find('div.btn'),
+      initValue = shortcutElement.attr('data-shortcut-init-value')
+
+    try {
+      shortcutElement.attr('data-shortcut-value', targetShortcut.value)
+
+      shortcutElement.find('div.kbd').html(`${Modules.Shortcuts.getKbd(targetShortcut.value)}`)
+    } catch (e) {}
+
+    try {
+      if (duplicatedShortcut)
+        savedShortcutsContainer.find(`div.shortcut[data-shortcut-id="${duplicatedShortcutID}"]`).find('div.clear-shortcut').find('div.btn').click()
+    } catch (e) {}
+
+    resetShortcutButton.toggleClass('disabled', targetShortcut.value == initValue)
+
+    $('button#cancelShortcut').click()
   })
 
   // Point at the `About` modal
@@ -1616,6 +1852,14 @@
     })
   }
 
+  {
+    $("#appSettings")[0].addEventListener('hidden.mdb.modal', () => {
+      try {
+        shortcutDetectorObject.stop()
+      } catch (e) {}
+    })
+  }
+
   // Handle the click of items in more options/settings menu
   {
     // Point at the items
@@ -1728,57 +1972,48 @@
       }
     })
 
+    setTimeout(() => {
+      try {
+        Modules.Shortcuts.updateKbdElements()
+      } catch (e) {}
+    })
+
     // Listen to key presses in relation to the more options/settings shortcuts
     setTimeout(() => {
       let searchModalObject = getElementMDBObject($("#searchConnections"), 'Modal')
 
       try {
-        tinyKeys.tinykeys(window, {
-          "$mod+Shift+Equal": () => actionButton.filter('[action="zoomIn"]').click(),
-          "$mod+Shift+Minus": () => actionButton.filter('[action="zoomOut"]').click(),
-          "$mod+Shift+Digit0": () => actionButton.filter('[action="zoomReset"]').click(),
-          "$mod+K": () => {
-            try {
-              let searchConnectionsButtonContainer = $('div.body div.right div.content-info div._right div.action[action="search"]')
+        Modules.Shortcuts.setShortcutInSession(window, 'zoom-in', () => actionButton.filter('[action="zoomIn"]').click())
 
-              if (!searchConnectionsButtonContainer.is(':visible') || searchModalObject._isShown)
-                return
+        Modules.Shortcuts.setShortcutInSession(window, 'zoom-out', () => actionButton.filter('[action="zoomOut"]').click())
 
-              searchConnectionsButtonContainer.find('button.btn').trigger('click')
-            } catch (e) {}
-          }
+        Modules.Shortcuts.setShortcutInSession(window, 'zoom-reset', () => actionButton.filter('[action="zoomReset"]').click())
+
+        Modules.Shortcuts.setShortcutInSession(window, 'connections-search', () => {
+          try {
+            let searchConnectionsButtonContainer = $('div.body div.right div.content-info div._right div.action[action="search"]')
+
+            if (!searchConnectionsButtonContainer.is(':visible') || searchModalObject._isShown)
+              return
+
+            searchConnectionsButtonContainer.find('button.btn').trigger('click')
+          } catch (e) {}
         })
-
-        if (OS.platform() == 'darwin')
-          tinyKeys.tinykeys(window, {
-            "$mod+Shift+BracketRight": () => actionButton.filter('[action="zoomIn"]').click(),
-            "$mod+Shift+Slash": () => actionButton.filter('[action="zoomOut"]').click(),
-            "$mod+Shift+Digit9": () => actionButton.filter('[action="zoomReset"]').click()
-          })
-
-        if (OS.platform() == 'win32') {
-          tinyKeys.tinykeys(window, {
-            "$mod+Shift+Digit9": () => actionButton.filter('[action="zoomReset"]').click()
-          })
-          $(`a[action="zoomReset"]`).find('kbd[digit]').text('9')
-        }
       } catch (e) {}
+
+      // CTRL+L to clear the enhanced terminal
+      Modules.Shortcuts.setShortcutInSession(document, 'enhanced-console-clear', () => $(document).trigger('clearEnhancedConsole'))
     }, 5000)
 
     $(document).on('keydown', function(e) {
-      // F11 for toggling fullscreen mode
+      /**
+       * `F11` for toggling fullscreen mode
+       * This shortcut is fixed
+       */
       if (e.keyCode != 122)
         return
 
       actionButton.filter('[action="toggleFullscreen"]').click()
-    })
-
-    $(document).on('keydown', function(e) {
-      // CTRL+L to clear the enhanced terminal
-      if (!e.ctrlKey || e.keyCode != 76)
-        return
-
-      $(document).trigger('clearEnhancedConsole')
     })
 
     $(document).on('clearEnhancedConsole', () => {
@@ -1868,7 +2103,8 @@
         // Get chosen display language and if it's from right to left
         [chosenDisplayLanguage, languageRTL] = getAttributes($('input#languageUI'), ['hidden-value', 'rtl']),
         containersManagementTool = 'none',
-        toolExtraPaths = $('input#toolExtraPaths').val()
+        toolExtraPaths = $('input#toolExtraPaths').val(),
+        savedShortcutsContainer = $(`div.modal-section[section="shortcuts"]`).find(`div.saved-shortcuts`)
 
       // Set RTL class if the language needs that
       if (languageRTL != undefined)
@@ -1925,6 +2161,32 @@
           Modules.Config.setConfig(config)
 
           updateContainersManagementToolUI(containersManagementTool)
+
+          // Set shortcuts
+          try {
+            let shortcuts = savedShortcutsContainer.find(`div.shortcut[data-is-uneditable="false"]`).get()
+
+            shortcuts = shortcuts.map((shortcut) => {
+              return {
+                id: $(shortcut).attr('data-shortcut-id'),
+                value: $(shortcut).attr('data-shortcut-value'),
+                default: $(shortcut).attr('data-shortcut-default-value')
+              }
+            })
+
+            for (let shortcut of shortcuts) {
+              try {
+                Modules.Shortcuts.setShortcut(shortcut.id, shortcut.value, shortcut.default == shortcut.value)
+              } catch (e) {}
+            }
+
+            Modules.Shortcuts.updateKbdElements()
+
+            Modules.Shortcuts.updateShortcutsInSession()
+
+            if ($('div.body div.right div.content div[content="workarea"] div.workarea[connection-id]').length > 0)
+              showToast(I18next.capitalize(I18next.t('update shortcuts')), I18next.capitalizeFirstLetter(I18next.t('some shortcut updates will take effect only for new active connections; existing active ones will continue using the old shortcuts')) + '.', 'warning')
+          } catch (e) {}
 
           // Show feedback to the user
           setTimeout(() => {
@@ -2476,7 +2738,7 @@
 {
   $("#extraDataActions")[0].addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize'))
 
-  $('div.modal#extraDataActions div.editor-container').mutate('show', () => $(window.visualViewport).trigger('resize'))
+  $('div.modal#extraDataActions div.editor-container').observeVisibility(() => $(window.visualViewport).trigger('resize'))
 }
 
 {
@@ -2491,7 +2753,7 @@
 
     let numOfActiveWorkareas = 0
 
-    setInterval(() => {
+    globalTrackers.intervals.badgeUpdate = setInterval(() => {
       let numUpdate = $('div.body div.right div.content div[content="workarea"] div.workarea').length
 
       if (numUpdate == numOfActiveWorkareas)

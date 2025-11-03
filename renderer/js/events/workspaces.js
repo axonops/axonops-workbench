@@ -125,12 +125,17 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
               <div class="header">
                 <div class="title workspace-name">${isSandbox ? '<span mulang="local clusters" capitalize></span>' : workspace.name}</div>
                 <div class="_connections show" ${connectionsMiniIconsBackgroundColor}>
-                  <l-squircle class="loading-connections" size="14" stroke="2" stroke-length="0.3" bg-opacity="0.3" speed="0.65" color="${TinyColor(workspace.color).isValid() ? workspace.color : 'white'}"></l-squircle>
+                  <svg l-squircle class="loading-connections" x="0px" y="0px" viewBox="0 0 37 37" height="14" width="14" preserveAspectRatio="xMidYMid meet" style="--uib-size: 14px; --uib-color: ${TinyColor(workspace.color).isValid() ? workspace.color : 'white'}; --uib-speed: 0.65s; --uib-bg-opacity: 0.3;">
+                    <path class="track" fill="none" stroke-width="5" pathLength="100" d="M0.37 18.5 C0.37 5.772 5.772 0.37 18.5 0.37 S36.63 5.772 36.63 18.5 S31.228 36.63 18.5 36.63 S0.37 31.228 0.37 18.5">
+                    </path>
+                    <path class="car" fill="none" stroke-width="5" pathLength="100" d="M0.37 18.5 C0.37 5.772 5.772 0.37 18.5 0.37 S36.63 5.772 36.63 18.5 S31.228 36.63 18.5 36.63 S0.37 31.228 0.37 18.5">
+                    </path>
+                  </svg>
                 </div>
               </div>
               <div class="footer">
                 <div class="button">
-                  <button type="button" class="btn btn-primary btn-dark btn-sm enter" reference-id="${workspaceID}" button-id="${enterBtnID}" ${backgroundColor}>
+                  <button type="button" class="btn btn-primary btn-sm enter" reference-id="${workspaceID}" button-id="${enterBtnID}" ${backgroundColor}>
                     <span mulang="enter"></span>
                   </button>
                 </div>
@@ -156,11 +161,11 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                   </div>
                 </div>
               </div>
-              <div class="path-inaccessible" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="the main folder for this workspace has become inaccessible. Click the icon to copy its path" capitalize-first>
+              <div class="path-inaccessible" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="the main folder for this $data has become inaccessible. Click the icon to copy its path" capitalize-first lang-data-1="workspace">
                 <ion-icon name="danger"></ion-icon>
               </div>
               <div class="loading" style="background: rgb(${color} / 10%)">
-                <l-line-wobble class="ldr" size="50" stroke="5" bg-opacity="0.25" speed="1.3" color="${workspace.color}"></l-line-wobble>
+                <l-line-wobble class="ldr" style="--uib-size: 50px; --uib-stroke: 5px; --uib-bg-opacity: .25; --uib-speed: 1.3s; --uib-color: ${workspace.color};"></l-line-wobble>
               </div>
             </div>`
 
@@ -241,7 +246,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                       switch (connection) {
                         case 'dots': {
                           element = `
-                            <div class="_connection dots" style="color: ${TinyColor(workspace.color).isValid() ? workspace.color : ''}" data-tippy="tooltip" data-mdb-placement="bottom" data-title="Total ${connections.length} connection(s)" hidden></div>`
+                            <div class="_connection dots" style="color: ${TinyColor(workspace.color).isValid() ? workspace.color : ''}" hidden></div>`
 
                           break
                         }
@@ -883,7 +888,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
                       } catch (e) {}
                     }
 
-                    showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.t('the path has been copied to the clipboard. Once it becomes accessible again, click the refresh button to update the workspace status')) + '.', 'success')
+                    showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.replaceData('the path has been copied to the clipboard. Once it becomes accessible again, click the refresh button to update the $data status', ['workspace'])) + '.', 'success')
                   } catch (e) {
                     showToast(I18next.capitalize(I18next.t('inaccessible path')), I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to get the inaccessible path')) + '.', 'failure')
                   }
@@ -1150,7 +1155,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
             workspaceElement.find('div._connections').children('div._connection').css('background', `rgb(${colorRGB} / 100%)`)
 
-            workspaceElement.find('l-line-wobble').attr('color', `${color.val()}`)
+            workspaceElement.find('l-line-wobble').css('--uib-color', `${color.val()}`)
 
             // Update the workspace switcher's background color
             try {
@@ -1347,7 +1352,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
 // Handle the workspace' witcher's navigation arrows - up and down -
 {
-  $(`div.body div.left div.content div.switch-workspaces div.more-workspaces div.buttons button`).click(function() {
+  $(`div.body div.left div.content div.switch-workspaces div.show-more-workspaces div.buttons button`).click(function() {
     // Get the clicked button's navigation
     let navigation = $(this).attr('navigation'),
       // Point at the switchers' container
@@ -1467,7 +1472,13 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     IPCRenderer.send('dialog:create', data)
 
     // Listen for the response - folders' paths - and call the check workspaces inner function
-    IPCRenderer.on(`dialog:${requestID}`, (_, foldersPaths) => checkWorkspaces(foldersPaths))
+    IPCRenderer.on(`dialog:${requestID}`, (_, foldersPaths) => {
+      checkWorkspaces(foldersPaths)
+
+      try {
+        IPCRenderer.removeAllListeners(`dialog:${requestID}`)
+      } catch (e) {}
+    })
   })
 
   // Handle the drag and drop events
@@ -1627,13 +1638,13 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             </div>
           </td>
           <td class="checks" data-id="_${workspaceChecksID}">
-            <l-line-wobble size="50" stroke="2" bg-opacity="0.25" speed="1.25" color="#e3e3e3"></l-line-wobble>
+            <l-line-wobble style="--uib-size: 50px; --uib-stroke: 2px; --uib-bg-opacity: .25; --uib-speed: 1.25s; --uib-color: #e3e3e3;"></l-line-wobble>
             <span class="badge rounded-pill badge-warning" check="variables" style="display:none"><span mulang="missing variables" capitalize></span></span>
             <span class="badge rounded-pill badge-danger" check="name" style="display:none"><span mulang="duplicate name" capitalize></span></span>
             <span class="badge rounded-pill badge-success" check="passed" style="display:none"><span mulang="passed" capitalize></span></span>
           </td>
           <td style="text-align: center;">
-            <button type="button" id="_${workspaceConnectionsBtnID}" class="btn btn-sm connections-list btn-dark disabled" data-mdb-ripple-init>
+            <button type="button" id="_${workspaceConnectionsBtnID}" class="btn btn-sm connections-list disabled" data-mdb-ripple-init>
               <span class="badge badge-primary connections-count">0</span>
               <ion-icon name="dash"></ion-icon>
             </button>

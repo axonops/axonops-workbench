@@ -25,9 +25,11 @@
       "main/bin",
       "config"
     ],
-    "publish": [{
-      "provider": "github"
-    }],
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ],
     "artifactName": "AxonOps.Workbench-${version}-${os}-${arch}.${ext}",
     "win": {
       "icon": "./renderer/assets/images/axonops-icon-256x256.ico",
@@ -367,7 +369,6 @@
     "jsonfile": "^6.2.0",
     "jsonrepair": "^3.13.0",
     "keytar": "^7.9.0",
-    "ldrs": "^1.1.2",
     "marked": "^13.0.2",
     "material-components-web": "^14.0.0",
     "material-icons": "^1.13.14",

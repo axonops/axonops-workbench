@@ -1519,8 +1519,6 @@
           $(snippet).toggle(isSnippetMatch)
         } catch (e) {}
       }
-
-      // TODO: Show feedback to the user
     })
 
     {
@@ -2742,6 +2740,10 @@
 }
 
 {
+  $("#cqlSnippets")[0].addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize'))
+}
+
+{
   $("#rightClickActionsMetadata")[0].addEventListener('hidden.mdb.modal', () => $("#rightClickActionsMetadata").removeClass('insertion-action'))
 }
 
@@ -2794,4 +2796,41 @@
   })
 
   window.addEventListener('drop', (e) => e.preventDefault())
+}
+
+{
+  $('div.modal button.btn.expand').click(function() {
+    let modalDialog = $(this).closest('div.modal-dialog'),
+      isExpandEnabled = modalDialog.hasClass('modal-fullscreen')
+
+    modalDialog.toggleClass('modal-fullscreen', !isExpandEnabled)
+
+    $(this).find('ion-icon').attr('name', `${isExpandEnabled ? 'expand-2' : 'contract'}`)
+
+    // Save the state of that modal
+    let currentModals = (Store.get(`fullscreen-modals`) || []),
+      modalID = `${modalDialog.closest('div.modal').attr('id')}`
+
+    if (!isExpandEnabled)
+      currentModals.push(modalID)
+
+    currentModals = [...new Set(currentModals)]
+
+    if (isExpandEnabled)
+      currentModals = currentModals.filter((currentModalID) => modalID != currentModalID)
+
+    Store.set(`fullscreen-modals`, currentModals)
+
+    setTimeout(() => $(window.visualViewport).trigger('resize'))
+  })
+}
+
+{
+  $('div.modal.fullscreen-mode').get().forEach((modal) => modal.addEventListener('show.mdb.modal', () => {
+    let modalID = $(modal).attr('id'),
+      isFullscreenModeEnabled = (Store.get(`fullscreen-modals`) || []).find((currentModalID) => currentModalID == modalID) != undefined
+
+    if (isFullscreenModeEnabled && !$(modal).find('div.modal-dialog').hasClass('modal-fullscreen'))
+      $(modal).find('button.btn.expand').click()
+  }))
 }

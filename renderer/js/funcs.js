@@ -4166,7 +4166,7 @@ let setUIColor = (workspaceColor) => {
     $('style#uicolor').remove()
 
     // Change the loaders' color
-    $('.change-color[color]').attr('color', tinyColor.isValid() ? workspaceColor : '#dfdfdf')
+    $('.change-color').css('--uib-color', tinyColor.isValid() ? workspaceColor : '#dfdfdf')
 
     // If the given color is not valid then stop the entire process
     if (!tinyColor.isValid())

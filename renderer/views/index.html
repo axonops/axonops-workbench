@@ -614,15 +614,19 @@
     </div>
 
     <!-- Connection's dialog; used for adding and editing -->
-    <div class="modal top fade" id="addEditConnectionDialog" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true" data-selected-modal-body="apache-cassandra">
+    <div class="modal top fade fullscreen-mode" id="addEditConnectionDialog" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true" data-selected-modal-body="apache-cassandra">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="transition: height 0.2s ease-in-out;">
           <div class="modal-header">
             <h5 class="modal-title">
               <span mulang="add connection" capitalize></span>
             </h5>
-            <span class="badge badge-secondary"></span>
-            <button type="button" class="btn-close" data-mdb-dismiss="modal"></button>
+            <div class="right-side-header">
+              <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn btn-tertiary expand" data-mdb-ripple-color="dark">
+                <ion-icon name="expand-2"></ion-icon>
+              </button>
+            </div>
           </div>
           <div class="modal-body select-type">
             <div class="connection-type btn btn-tertiary btn-lg active" data-mdb-ripple-color="light" data-type="apache-cassandra">
@@ -1229,15 +1233,19 @@
     </div>
 
     <!-- App's settings dialog -->
-    <div class="modal top fade" id="appSettings" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true">
+    <div class="modal top fade fullscreen-mode" id="appSettings" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
               <span mulang="app settings" capitalize></span>
             </h5>
-            <span class="badge badge-secondary"></span>
-            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+            <div class="right-side-header">
+              <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn btn-tertiary expand" data-mdb-ripple-color="dark">
+                <ion-icon name="expand-2"></ion-icon>
+              </button>
+            </div>
           </div>
           <div class="modal-body">
             <div class="side-left">
@@ -1626,9 +1634,9 @@
                 </div>
                 <div class="row flex margin-bottom flex-advanced">
                   <div class="col-md-3" style="width: fit-content; margin-right: 15px;">
-                    <button id="checkNowForUpdates" type="button" class="btn btn-secondary btn-sm" data-mdb-ripple-color="dark" style="transform: scale(0.9);">
+                    <button id="checkNowForUpdates" type="button" class="btn btn-secondary btn-sm" data-mdb-ripple-color="dark">
                       <span mulang="check now"></span>
-                      <l-momentum style="--uib-size: 15px; --uib-color: #262626; --uib-speed: 0.7s; position: relative; bottom: 3px; right: -4px;"></l-momentum>
+                      <l-momentum style="--uib-size: 15px; --uib-color: #262626; --uib-speed: 0.7s;"></l-momentum>
                     </button>
                     <span class="vertical-seperator"></span>
                   </div>
@@ -1877,15 +1885,19 @@
     <button type="button" data-mdb-toggle="modal" data-mdb-target="#connectionCredentials" id="showConnectionCredentialsDialog" hidden></button>
 
     <!-- App's about dialog -->
-    <div class="modal top fade" id="appAbout" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
+    <div class="modal top fade fullscreen-mode" id="appAbout" aria-hidden="true" data-mdb-backdrop="true" data-mdb-keyboard="true">
       <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
               <span mulang="about" capitalize></span>
             </h5>
-            <span class="badge badge-secondary"></span>
-            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+            <div class="right-side-header">
+              <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn btn-tertiary expand" data-mdb-ripple-color="dark">
+                <ion-icon name="expand-2"></ion-icon>
+              </button>
+            </div>
           </div>
           <div class="modal-body">
             <div class="side-left">
@@ -2003,15 +2015,19 @@
       </div>
     </div>
 
-    <div class="modal top fade" id="importWorkspaces" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true">
+    <div class="modal top fade fullscreen-mode" id="importWorkspaces" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true">
       <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
               <span mulang="import workspaces" capitalize></span>
             </h5>
-            <span class="badge badge-secondary"></span>
-            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+            <div class="right-side-header">
+              <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn btn-tertiary expand" data-mdb-ripple-color="dark">
+                <ion-icon name="expand-2"></ion-icon>
+              </button>
+            </div>
           </div>
           <div class="modal-body">
             <div class="side-left" hidden>
@@ -2156,14 +2172,19 @@
       </div>
     </div>
 
-    <div class="modal top fade" id="rightClickActionsMetadata" aria-hidden="true" data-mdb-backdrop="static" data-mdb-focus="false" data-mdb-keyboard="true">
+    <div class="modal top fade fullscreen-mode" id="rightClickActionsMetadata" aria-hidden="true" data-mdb-backdrop="static" data-mdb-focus="false" data-mdb-keyboard="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
               <span mulang="create keyspace" capitalize></span>
             </h5>
-            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+            <div class="right-side-header">
+              <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn btn-tertiary expand" data-mdb-ripple-color="dark">
+                <ion-icon name="expand-2"></ion-icon>
+              </button>
+            </div>
           </div>
           <div class="modal-body">
             <div action="keyspaces">
@@ -3261,15 +3282,22 @@
       </div>
     </div>
 
-    <div class="modal top fade" id="cqlSnippets" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true">
+    <div class="modal top fade fullscreen-mode" id="cqlSnippets" aria-hidden="true" data-mdb-backdrop="static" data-mdb-keyboard="true">
       <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">
-              CQL <span mulang="snippets" capitalize></span>
-            </h5>
-            <span class="badge badge-secondary current-scope"></span>
-            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+            <div class="left-side-header">
+              <h5 class="modal-title">
+                CQL <span mulang="snippets" capitalize></span>
+              </h5>
+              <span class="badge badge-secondary current-scope"></span>
+            </div>
+            <div class="right-side-header">
+              <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn btn-tertiary expand" data-mdb-ripple-color="dark">
+                <ion-icon name="expand-2"></ion-icon>
+              </button>
+            </div>
           </div>
           <div class="modal-body">
             <div class="snippets-container">

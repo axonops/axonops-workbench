@@ -1715,6 +1715,8 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
             // Convert the manifest to a JSON object
             connections = JSON.parse(connections)
 
+            $(`button#_${workspaceConnectionsBtnID}`).find('ion-icon').attr('name', 'dash')
+
             // If no connections have been found then skip this try-catch block
             if (connections.length <= 0)
               throw 0

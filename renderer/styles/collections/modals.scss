@@ -2831,22 +2831,22 @@ a.jstree-anchor {
 
 div#tableFieldsRegularColumnsTreeDeleteAction,
 div#tableFieldsRegularColumnsTreeSelectAction {
-  z-index: 4;
+  z-index: 8;
 }
 
 div#tableFieldsCollectionColumnsTreeDeleteAction,
 div#tableFieldsCollectionColumnsTreeSelectAction {
-  z-index: 3;
+  z-index: 7;
 }
 
 div#tableFieldsUDTColumnsTreeDeleteAction,
 div#tableFieldsUDTColumnsTreeSelectAction {
-  z-index: 2;
+  z-index: 6;
 }
 
 div#tableFieldsPrimaryKeyTreeDeleteAction,
 div#tableFieldsPrimaryKeyTreeSelectAction {
-  z-index: 1;
+  z-index: 5;
 }
 
 a[data-operator-id].disabled {
@@ -3375,6 +3375,7 @@ div.modal#cqlSnippets {
                 transform: translateY(-13px);
                 opacity: 0;
                 pointer-events: none;
+                width: fit-content;
 
                 &.show {
                   opacity: 1;
@@ -3659,9 +3660,8 @@ div#searchConnections {
       position: absolute;
       top: 0;
       bottom: 0;
-      right: 0;
+      right: 9px;
       margin: auto;
-      transform: translateX(-9px);
       opacity: 0;
     }
 
@@ -4100,5 +4100,150 @@ div.page-size {
   div.form-outline {
     width: calc(100% - 8px);
     margin-left: 8px;
+  }
+}
+
+button#checkNowForUpdates {
+  transform: scale(0.9);
+  display: flex;
+  align-content: center;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+
+  l-momentum {
+    position: relative;
+    bottom: 0;
+    right: -5px;
+  }
+}
+
+div.modal {
+  div.right-side-header {
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  div.left-side-header {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  button.btn.expand {
+    width: 36px;
+    height: 31px;
+    margin-right: 5px;
+    position: relative;
+
+    ion-icon {
+      color: white;
+      opacity: 0.5;
+      font-size: 230%;
+      position: absolute;
+      inset: 0;
+      margin: auto;
+    }
+
+    &:hover {
+      ion-icon {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+div.modal#addEditConnectionDialog {
+  div.modal-dialog.modal-fullscreen {
+    div.modal-content {
+      height: 100% !important;
+    }
+
+    div.modal-body:not(.select-type) {
+      height: calc(100% - 230px) !important;
+    }
+
+    div.modal-section {
+      height: 100% !important;
+    }
+  }
+}
+
+div.modal#appSettings {
+  div.modal-dialog.modal-fullscreen {
+    div.side-right {
+      height: 100% !important;
+    }
+
+    div.modal-section {
+      height: 100% !important;
+
+      &[section="variables"] {
+        div.empty {
+          img {
+            height: inherit !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+div.modal#appAbout,
+div.modal#importWorkspaces {
+  div.modal-dialog.modal-fullscreen {
+    div.side-right {
+      height: 100% !important;
+    }
+
+    div.modal-section {
+      height: 100% !important;
+    }
+  }
+}
+
+div.modal#rightClickActionsMetadata {
+  div.modal-dialog.modal-fullscreen {
+    max-width: 98% !important;
+    width: 98% !important;
+    height: 97% !important;
+    position: absolute !important;
+    inset: 0 !important;
+    margin: auto !important;
+
+    div.modal-body {
+      max-height: 100% !important;
+      height: 100% !important;
+    }
+  }
+}
+
+div.modal-dialog.modal-fullscreen {
+  max-width: 98% !important;
+  width: 98% !important;
+  height: 97% !important;
+  position: absolute !important;
+  inset: 0 !important;
+  margin: auto !important;
+
+  div.modal-body {
+    overflow-x: none !important;
+  }
+}
+
+ul.dropdown-menu.for-aggregate-functions {
+  transform: translate(-100px, 30px) !important;
+  height: fit-content;
+}
+
+div.modal#cqlSnippets {
+  div.modal-dialog.modal-fullscreen {
+    div.snippets-container {
+      height: 100% !important;
+    }
   }
 }

@@ -354,7 +354,7 @@ div.body {
             }
 
             &[action="more"] {
-              ion-icon {
+              ion-icon:not([name="command"]) {
                 font-size: 200% !important;
               }
             }
@@ -2100,6 +2100,8 @@ div.body {
                     items: center;
                   }
                   justify-content: space-between;
+                  border-radius: 20px;
+                  height: 29px;
                   opacity: 0.75;
 
                   &.sandbox {
@@ -2305,7 +2307,6 @@ div.body {
                 opacity: 0;
                 pointer-events: none;
                 transition: top 0.4s ease-in-out, opacity 0.2s ease-in-out 0s;
-                display: none;
               }
 
               &.test-connection {
@@ -2323,7 +2324,6 @@ div.body {
 
               &.enable-terminate-process {
                 div.terminate-process {
-                  display: block;
                   top: 55px;
                   opacity: 1;
                   pointer-events: all;
@@ -3372,7 +3372,7 @@ div.tab-content {
             div.sub-actions {
               position: absolute;
               top: auto;
-              bottom: -18px;
+              bottom: -15px;
               right: 10px;
               left: auto;
               margin: auto;
@@ -3474,7 +3474,26 @@ div.tab-content {
             margin-top: 20px;
 
             &:not(:last-of-type) {
-              margin-bottom: 35px;
+              margin-bottom: 27px;
+            }
+
+            &.compact {
+              div.statement {
+                height: 39px;
+                width: fit-content;
+                display: inline-flex;
+                bottom: 0;
+                left: 0;
+                margin: 5px 0 5px 5px;
+              }
+
+              div.output {
+                display: inline-block;
+                padding: 0;
+                vertical-align: middle;
+                transform: translateY(4px);
+                padding-left: 10px;
+              }
             }
           }
         }
@@ -4649,6 +4668,7 @@ div.tab-content {
         div.empty {
           opacity: 1 !important;
           pointer-events: all !important;
+          display: block !important;
         }
       }
     }

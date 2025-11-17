@@ -2518,6 +2518,9 @@ div.modal#rightClickActionsMetadata {
         box-shadow: 0 0 0 5px #262626;
         width: calc(100% - 20px);
         margin: 0 10px 10px;
+        position: sticky;
+        top: -25px;
+        z-index: 100;
 
         div.sections {
           display: flex;
@@ -4244,6 +4247,47 @@ div.modal#cqlSnippets {
   div.modal-dialog.modal-fullscreen {
     div.snippets-container {
       height: 100% !important;
+    }
+  }
+}
+
+div.tippy-content {
+  ul.dropdown-menu.tippy-dropdown {
+    position: relative;
+    left: 0 !important;
+    top: 0 !important;
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+div.input-group-text.for-counter-value {
+  button {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-content: center;
+    align-items: center;
+    transition: opacity 0.15s ease-in-out;
+    opacity: 0.8;
+
+    &[action="apply-increment"] {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    &[action="apply-decrement"] {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      margin-left: -18px;
+    }
+
+    &:hover {
+      opacity: 0.85;
+    }
+
+    &.selected {
+      opacity: 1 !important;
     }
   }
 }

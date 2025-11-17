@@ -1234,3 +1234,9 @@ button.connections-list {
     height: 18px;
   }
 }
+
+ul.top-position {
+  top: auto !important;
+  bottom: 5px !important;
+  transform: scale(0.9) !important;
+}

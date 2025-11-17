@@ -2627,6 +2627,21 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                                 btnID: '_${executeStatementBtnID}'
                                               })`,
                                       visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('increment/decrement counter(s)')),
+                                      action: 'incrementDecrementCounter',
+                                      click: `() => views.main.webContents.send('insert-row', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                      visible: clickedNode.attr('is-counter-table') == 'true'
                                     }
                                   ])
 
@@ -2734,7 +2749,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                                 btnID: '_${executeStatementBtnID}',
                                                 asJSON: 'true'
                                               })`,
-                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                    visible: nodeType == 'table'
                                   }, {
                                     label: I18next.capitalize(I18next.t('select row')),
                                     action: 'selectRow',
@@ -2748,7 +2763,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                                 textareaID: '_${cqlshSessionStatementInputID}',
                                                 btnID: '_${executeStatementBtnID}'
                                               })`,
-                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                    visible: nodeType == 'table'
                                   })
                                 } catch (e) {}
 
@@ -3081,7 +3096,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 let cqlSnippetsButton = workareaElement.find('div.session-action[action="cql-snippets"]').find('button.btn')
 
                                 cqlSnippetsButton.removeClass('disabled')
-                                cqlSnippetsButton.attr('disabled', 'null')
+                                cqlSnippetsButton.attr('disabled', null)
                               }, 150)
                             } catch (e) {
                               try {
@@ -4882,7 +4897,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                   workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_info"]`).attr('hidden', null)
 
-                                  handleFileExecution(++fileIndex)
+                                  setTimeout(() => handleFileExecution(++fileIndex), 1000)
                                 })
                               }
 

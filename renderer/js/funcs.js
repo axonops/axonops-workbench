@@ -3110,6 +3110,20 @@ jQuery.fn.extend({
         globalTrackers.observers.push(observer)
       } catch (e) {}
     })
+  },
+  getAbsolutePosition: function() {
+    if (!$(this) || !$(this).length)
+      return {
+        x: 0,
+        y: 0
+      }
+
+    let offset = $(this).offset()
+
+    return {
+      x: offset.left,
+      y: offset.top
+    }
   }
 })
 

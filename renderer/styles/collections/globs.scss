@@ -1220,4 +1220,23 @@ table._lwt_table {
 
 kbd {
   text-transform: uppercase !important;
+
+  ion-icon[name="command"] {
+    margin-right: 0 !important;
+    vertical-align: middle;
+    font-size: 125% !important;
+  }
+}
+
+button.connections-list {
+  ion-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+ul.top-position {
+  top: auto !important;
+  bottom: 5px !important;
+  transform: scale(0.9) !important;
 }

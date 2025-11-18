@@ -921,7 +921,7 @@ let getKbd = (shortcutTinyKeyFormat, handleUnset = false) => {
         return `<kbd>=\\+</kbd> `
 
       if (keyName == 'ctrl' && OS.platform() == 'darwin')
-        return `<kbd>meta</kbd> `
+        return `<kbd><ion-icon name="command"><ion-icon></kbd> `
 
       return `<kbd>${keyName}</kbd> `
     }).join('')

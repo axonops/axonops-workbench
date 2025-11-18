@@ -1502,7 +1502,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                      *
                      * @Return: {string} the passed object in string format after manipulation
                      */
-                    global.addBlock = (sessionContainer, blockID, statement, callback = null, isOnlyInfo = false, type = '') => {
+                    global.addBlock = (sessionContainer, blockID, statement, callback = null, isOnlyInfo = false, type = '', compact = false) => {
                       // Hide the emptiness class as there's at least one block now
                       sessionContainer.parent().find(`div.empty-statements`).removeClass('show')
 
@@ -1522,7 +1522,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                       // The statement's block UI structure
                       let element = `
-                                   <div class="block show" data-id="${blockID}">
+                                   <div class="block show${compact ? ' compact' : ''}" data-id="${blockID}">
                                      <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
                                        <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
                                          <img src="../assets/lottie/${type || 'neutral'}.gif" background="transparent" style="height: -webkit-fill-available;">
@@ -2627,6 +2627,21 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                                 btnID: '_${executeStatementBtnID}'
                                               })`,
                                       visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('increment/decrement counter(s)')),
+                                      action: 'incrementDecrementCounter',
+                                      click: `() => views.main.webContents.send('insert-row', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                      visible: clickedNode.attr('is-counter-table') == 'true'
                                     }
                                   ])
 
@@ -2734,7 +2749,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                                 btnID: '_${executeStatementBtnID}',
                                                 asJSON: 'true'
                                               })`,
-                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                    visible: nodeType == 'table'
                                   }, {
                                     label: I18next.capitalize(I18next.t('select row')),
                                     action: 'selectRow',
@@ -2748,7 +2763,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                                 textareaID: '_${cqlshSessionStatementInputID}',
                                                 btnID: '_${executeStatementBtnID}'
                                               })`,
-                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                    visible: nodeType == 'table'
                                   })
                                 } catch (e) {}
 
@@ -3081,7 +3096,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 let cqlSnippetsButton = workareaElement.find('div.session-action[action="cql-snippets"]').find('button.btn')
 
                                 cqlSnippetsButton.removeClass('disabled')
-                                cqlSnippetsButton.attr('disabled', 'null')
+                                cqlSnippetsButton.attr('disabled', null)
                               }, 150)
                             } catch (e) {
                               try {
@@ -4648,7 +4663,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             throw 0
 
                           // Show it in the interactive terminal
-                          addBlock(workareaElement.find(`#_${cqlshSessionContentID}_container`), getRandom.id(10), `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral')
+                          addBlock(workareaElement.find(`#_${cqlshSessionContentID}_container`), getRandom.id(10), `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral', true)
 
                           // Pause the print of output from the Pty instance
                           isSessionPaused = true
@@ -4882,7 +4897,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                   workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_info"]`).attr('hidden', null)
 
-                                  handleFileExecution(++fileIndex)
+                                  setTimeout(() => handleFileExecution(++fileIndex), 1000)
                                 })
                               }
 
@@ -8992,9 +9007,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                 // Show it in the interactive terminal
                 if (minifyText(host).length != 0)
-                  addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `Connecting with host ${host}.`, null, true, 'neutral')
+                  addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `Connecting with host ${host}.`, null, true, 'neutral', true)
 
-                addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `Detected Apache Cassandra version is ${version}.`, null, true, 'neutral')
+                addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `Detected Apache Cassandra version is ${version}.`, null, true, 'neutral', true)
 
                 $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${connectionElement.attr('data-id')}"]`).find('div.info[info="cassandra"]').children('div.text').text(`v${version}`)
 
@@ -9035,7 +9050,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           throw 0
 
                         // Show it in the interactive terminal
-                        addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `SSL is not enabled, the connection is not encrypted and is being transmitted in the clear.`, null, true, 'warning')
+                        addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `SSL is not enabled, the connection is not encrypted and is being transmitted in the clear.`, null, true, 'warning', true)
 
                         // Update the SSL attribute
                         connectionElement.attr('ssl-enabled', 'false')
@@ -9054,7 +9069,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 // Show feedback to the user when the connection is established through the SSH tunnel
                 if (sshTunnelsObjects[connectionID] != null) {
                   // Show it in the interactive terminal
-                  addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `The connection is encrypted and transmitted through an SSH tunnel.`, null, true, 'neutral')
+                  addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `The connection is encrypted and transmitted through an SSH tunnel.`, null, true, 'neutral', true)
                 }
 
                 /**
@@ -9098,7 +9113,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                     // If the username is `cassandra` then warn the user about that
                     if (usernameDecrypted == 'cassandra') {
                       // Show it in the interactive terminal
-                      addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), 'This connection is using the default `cassandra` user.', null, true, 'warning')
+                      addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), 'This connection is using the default `cassandra` user.', null, true, 'warning', true)
                     }
                   })
                 } catch (e) {

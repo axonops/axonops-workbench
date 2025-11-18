@@ -3,7 +3,8 @@
   let updateActionStatusForInsertRow,
     updateActionStatusForDeleteRowColumn,
     updateActionStatusForSelectRowColumn,
-    getAllPrimaryKeyColumns
+    getAllPrimaryKeyColumns,
+    changeFooterButtonsStateTimeout
 
   // Handle the request of getting a CQL description of the connection, keyspace in it, or a table
   {
@@ -1103,6 +1104,7 @@
             'data-state': null,
             'data-keyspace-name': `${data.keyspaceName}`,
             'data-table-name': `${data.tableName}`,
+            'data-is-counter-table': data.isCounterTable == 'true' ? 'true' : null,
             'data-as-json': `${!isInsertionAsJSON ? null : 'true'}`
           })
 
@@ -1113,6 +1115,8 @@
           $('input#ttl').val('')
           $('input#ttlMS').prop('checked', true)
           $('input#insertionTimestamp').val('')
+
+          $('input#ttl').closest('div.row.data-ttl-row').toggle(!(data.isCounterTable == 'true'))
 
           $('input#insertNoSelectOption').prop('checked', true)
           $('input#insertNoSelectOption').trigger('change')
@@ -1127,7 +1131,7 @@
             $('div.dropdown[for-select="insertSerialConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeConnectionID].serial}"]`).click()
           } catch (e) {}
 
-          $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'insert row').html(`${I18next.capitalize(I18next.t('insert row'))} ${isInsertionAsJSON ? '(JSON)' : ''} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
+          $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', !(data.isCounterTable == 'true') ? 'insert row' : 'increment/decrement counter').html(`${I18next.capitalize(I18next.t(!(data.isCounterTable == 'true') ? 'insert row' : 'increment/decrement counter'))} ${isInsertionAsJSON ? '(JSON)' : ''} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
 
           $('#rightClickActionsMetadata').attr('data-keyspace-tables', `${data.tables}`)
 
@@ -1319,7 +1323,15 @@
                 groupStructure.primaryKey.core.data = groupStructure.primaryKey.core.data.filter((field) => field != undefined)
               } catch (e) {}
 
-              tableFieldsTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
+              let primaryKeyTreeObject = tableFieldsTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
+
+              try {
+                primaryKeyTreeObject.unbind('loaded.jstree')
+              } catch (e) {}
+
+              try {
+                primaryKeyTreeObject.on('loaded.jstree', () => setTimeout(() => primaryKeyTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${primaryKeyTreeObject.find('a.jstree-anchor').length - index}`))))
+              } catch (e) {}
             } catch (e) {
               primaryKeyTreeElements.hide()
             }
@@ -1338,7 +1350,15 @@
                 groupStructure.regularColumns.core.data = groupStructure.regularColumns.core.data.filter((field) => field != undefined)
               } catch (e) {}
 
-              tableFieldsTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
+              let regularColumnsTreeObject = tableFieldsTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
+
+              try {
+                regularColumnsTreeObject.unbind('loaded.jstree')
+              } catch (e) {}
+
+              try {
+                regularColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => regularColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${regularColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+              } catch (e) {}
             } catch (e) {
               columnsRegularTreeElements.hide()
             }
@@ -1357,7 +1377,15 @@
                 groupStructure.collectionColumns.core.data = groupStructure.collectionColumns.core.data.filter((field) => field != undefined)
               } catch (e) {}
 
-              tableFieldsTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
+              let collectionColumnsTreeObject = tableFieldsTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
+
+              try {
+                collectionColumnsTreeObject.unbind('loaded.jstree')
+              } catch (e) {}
+
+              try {
+                collectionColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => collectionColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${collectionColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+              } catch (e) {}
             } catch (e) {
               columnsCollectionTreeElements.hide()
             }
@@ -1371,7 +1399,15 @@
 
               columnsUDTTreeElements.show()
 
-              tableFieldsTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
+              let udtColumnsTreeObject = tableFieldsTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
+
+              try {
+                udtColumnsTreeObject.unbind('loaded.jstree')
+              } catch (e) {}
+
+              try {
+                udtColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => udtColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${udtColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+              } catch (e) {}
             } catch (e) {
               columnsUDTTreeElements.hide()
             }
@@ -1852,6 +1888,53 @@
                     }
                   }
                 })
+
+                // If it's a counter table then we need to update the counter columns
+                try {
+                  if (data.isCounterTable !== 'true')
+                    throw 0
+
+                  setTimeout(() => {
+                    let allCounterColumns = $(tableFieldsTreeContainer).find('a.jstree-anchor[type="counter"]'),
+                      incrementDecrementButtons = `
+                      <div class="input-group-text for-insertion for-counter-value ignored-applied">
+                    <button type="button" class="btn btn-light btn-rounded btn-sm ripple-surface-dark selected" data-mdb-ripple-color="dark" action="apply-increment" style="">
+                      <ion-icon name="plus-circle-outline"></ion-icon>
+                      <span>Increment</span>
+                    </button>
+                    <button type="button" class="btn btn-light btn-rounded btn-sm ripple-surface-dark" data-mdb-ripple-color="dark" action="apply-decrement" style="">
+                      <ion-icon name="minus-circle-outline"></ion-icon>
+                      <span>Decrement</span>
+                    </button>
+                  </div>`
+
+                    for (let counterColumn of allCounterColumns.get()) {
+                      let typeContainer = $(counterColumn).find('div.input-group-text.for-insertion.for-type')
+
+                      typeContainer.before($(incrementDecrementButtons).show(function() {
+                        let container = $(this)
+
+                        $(counterColumn).find('input[data-field-type="counter"]').attr('type', 'number')
+
+                        setTimeout(() => $(counterColumn).find('div.input-group-text.for-insertion.for-null-value').remove())
+
+                        let buttons = container.find('button[action]')
+
+                        buttons.click(function() {
+                          buttons.removeClass('selected')
+
+                          $(this).addClass('selected')
+
+                          setTimeout(() => {
+                            try {
+                              updateActionStatusForInsertRow()
+                            } catch (e) {}
+                          })
+                        })
+                      }))
+                    }
+                  })
+                } catch (e) {}
 
                 setTimeout(() => {
                   try {
@@ -2878,7 +2961,15 @@
                   groupStructure.primaryKey.core.data = groupStructure.primaryKey.core.data.filter((field) => field != undefined)
                 } catch (e) {}
 
-                tableFieldsDeleteTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
+                let primaryKeyTreeObject = tableFieldsDeleteTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
+
+                try {
+                  primaryKeyTreeObject.unbind('loaded.jstree')
+                } catch (e) {}
+
+                try {
+                  primaryKeyTreeObject.on('loaded.jstree', () => setTimeout(() => primaryKeyTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${primaryKeyTreeObject.find('a.jstree-anchor').length - index}`))))
+                } catch (e) {}
               } catch (e) {
                 primaryKeyTreeElements.hide()
               }
@@ -2901,7 +2992,15 @@
                   groupStructure.regularColumns.core.data = groupStructure.regularColumns.core.data.filter((field) => field != undefined)
                 } catch (e) {}
 
-                tableFieldsDeleteTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
+                let regularColumnsTreeObject = tableFieldsDeleteTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
+
+                try {
+                  regularColumnsTreeObject.unbind('loaded.jstree')
+                } catch (e) {}
+
+                try {
+                  regularColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => regularColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${regularColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                } catch (e) {}
               } catch (e) {
                 columnsRegularTreeElements.hide()
               }
@@ -2922,7 +3021,15 @@
                   groupStructure.collectionColumns.core.data = groupStructure.collectionColumns.core.data.filter((field) => field != undefined)
                 } catch (e) {}
 
-                tableFieldsDeleteTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
+                let collectionColumnsTreeObject = tableFieldsDeleteTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
+
+                try {
+                  collectionColumnsTreeObject.unbind('loaded.jstree')
+                } catch (e) {}
+
+                try {
+                  collectionColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => collectionColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${collectionColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                } catch (e) {}
               } catch (e) {
                 columnsCollectionTreeElements.hide()
               }
@@ -2942,7 +3049,15 @@
                   groupStructure.udtColumns.core.data = groupStructure.udtColumns.core.data.filter((field) => field != undefined)
                 } catch (e) {}
 
-                tableFieldsDeleteTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
+                let udtColumnsTreeObject = tableFieldsDeleteTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
+
+                try {
+                  udtColumnsTreeObject.unbind('loaded.jstree')
+                } catch (e) {}
+
+                try {
+                  udtColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => udtColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${udtColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                } catch (e) {}
               } catch (e) {
                 columnsUDTTreeElements.hide()
               }
@@ -3787,16 +3902,8 @@
                           </div>
                           <div class="form-outline form-white operators-dropdown" style="z-index: 2; width: 70px;">
                             <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                            <input type="text" class="form-control form-icon-trailing form-control-sm operators-dropdown" style="background-color: inherit; cursor: default; pointer-events:none; font-family: 'Terminal'; font-weight: bold;" id="${operatorsDropDownID}" value="=" readonly noopacity>
+                            <input type="text" data-mdb-placement="bottom" data-mdb-html="true" class="form-control form-icon-trailing form-control-sm operators-dropdown" style="background-color: inherit; cursor: default; pointer-events:none; font-family: 'Terminal'; font-weight: bold;" id="${operatorsDropDownID}" value="=" readonly noopacity>
                             <div class="operators-dropdown-focusarea"></div>
-                          </div>
-                          <div class="dropdown" style="position: absolute;" for-select="${operatorsDropDownID}">
-                            <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
-                            <ul class="dropdown-menu top-margin operators-dropdown">
-                              <li><a class="dropdown-item" href="#" value="=" data-operator-id="_operator_equal">=</a></li>
-                              <li><a class="dropdown-item" href="#" value="IN" data-operator-id="_operator_in">IN</a></li>
-                              ${!isPartition && !isCollectionType && isTypeAllowed ? rangeOperatorsDropDown : ''}
-                            </ul>
                           </div>
                         </div>`
 
@@ -3815,11 +3922,55 @@
                       actionsContainer.css('width', '100%')
 
                       actionsContainer.before($(operatorsContainer).show(function() {
-                        let operatorsContainerElement = $(this)
+                        let operatorsContainerElement = $(this),
+                          tippyInputObject
 
                         setTimeout(() => $(this).find('label.btn').click(function() {
                           $(this).parent().find(`input[id="${$(this).attr('for')}"]`).trigger('click')
                         }))
+
+                        // Add tippy
+                        {
+                          setTimeout(() => {
+                            let tippyInput = $(node).find(`input[id="${operatorsDropDownID}"]`)
+
+                            tippyInputObject = tippy(tippyInput[0], {
+                              trigger: 'manual',
+                              allowHTML: true,
+                              arrow: false,
+                              theme: 'material',
+                              interactive: true,
+                              onShown(instance) {
+                                $(instance.popper).find(`ul.dropdown-menu`).find('a').click(function() {
+                                  // Point at the input field related to the list
+                                  let selectElement = $(`input#${$(instance.popper).find(`ul.dropdown-menu`).attr('for-select')}`),
+                                    selectedValue = $(this).attr('value'),
+                                    selectedValueID = $(this).attr('data-operator-id'),
+                                    isTypeCollection = $(this).attr('data-is-collection') != undefined,
+                                    isCollectionMap = $(this).attr('data-is-map') != undefined
+
+                                  // Update the input's value
+                                  selectElement.val(selectedValue).trigger('input')
+
+                                  $(instance.reference).closest('div.input-group').find(`input[type="radio"][id="${selectedValueID}"]`).prop('checked', true).trigger('change')
+
+                                  try {
+                                    updateActionStatusForDeleteRowColumn()
+                                  } catch (e) {}
+                                })
+                              }
+                            })
+
+                            try {
+                              tippyInputObject.setContent(`
+                                <ul class="dropdown-menu operators-dropdown show tippy-dropdown" for-select="${operatorsDropDownID}">
+                                  <li><a class="dropdown-item" href="#" value="=" data-operator-id="_operator_equal">=</a></li>
+                                  <li><a class="dropdown-item" href="#" value="IN" data-operator-id="_operator_in">IN</a></li>
+                                  ${!isPartition && !isCollectionType && isTypeAllowed ? rangeOperatorsDropDown : ''}
+                                </ul>`)
+                            } catch (e) {}
+                          })
+                        }
 
                         setTimeout(() => {
                           try {
@@ -3888,15 +4039,6 @@
                               })
 
                               setTimeout(() => {
-                                let dropDownElement = $(node).find(`div.dropdown[for-select="${operatorsDropDownID}"]`),
-                                  selectDropdown = getElementMDBObject(dropDownElement, 'Dropdown')
-
-                                setTimeout(() => {
-                                  try {
-                                    selectDropdown.update()
-                                  } catch (e) {}
-                                }, 500)
-
                                 {
                                   // Point at the associated input field
                                   let input = $(node).find(`input[id="${operatorsDropDownID}"]`)
@@ -3909,45 +4051,24 @@
                                       input.parent().find('div.invalid-feedback').addClass('transparent-color')
                                     } catch (e) {}
 
-                                    selectDropdown.show()
+                                    tippyInputObject.show()
+
+                                    $('div#rightClickActionsMetadata div.modal-body').css({
+                                      'overflow': 'hidden',
+                                      'padding-right': '24px'
+                                    })
                                   }).on('focusout', () => setTimeout(() => {
                                     try {
                                       input.parent().find('div.invalid-feedback').removeClass('transparent-color')
                                     } catch (e) {}
 
-                                    selectDropdown.hide()
+                                    tippyInputObject.hide()
+
+                                    $('div#rightClickActionsMetadata div.modal-body').css({
+                                      'overflow-y': 'scroll',
+                                      'padding-right': '16px'
+                                    })
                                   }, 100))
-
-                                  // Once the parent `form-outline` is clicked trigger the `focus` event
-                                  // input.parent().click(() => input.trigger('focus'))
-
-                                  $(node).find(`ul.dropdown-menu`).observeTransform(() => {
-                                    let isTransformNegative = `${$(node).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
-
-                                    $(node).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
-
-                                    try {
-                                      updateRowsZIndexDeleteAction(isTransformNegative)
-                                    } catch (e) {}
-                                  })
-
-                                  $(node).find(`ul.dropdown-menu`).find('a').click(function() {
-                                    // Point at the input field related to the list
-                                    let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
-                                      selectedValue = $(this).attr('value'),
-                                      selectedValueID = $(this).attr('data-operator-id'),
-                                      isTypeCollection = $(this).attr('data-is-collection') != undefined,
-                                      isCollectionMap = $(this).attr('data-is-map') != undefined
-
-                                    // Update the input's value
-                                    selectElement.val(selectedValue).trigger('input')
-
-                                    $(node).find(`input[type="radio"][id="${selectedValueID}"]`).prop('checked', true).trigger('change')
-
-                                    try {
-                                      updateActionStatusForDeleteRowColumn()
-                                    } catch (e) {}
-                                  })
                                 }
                               })
 
@@ -4463,7 +4584,15 @@
                   groupStructure.primaryKey.core.data = groupStructure.primaryKey.core.data.filter((field) => field != undefined)
                 } catch (e) {}
 
-                tableFieldsSelectTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
+                let primaryKeyTreeObject = tableFieldsSelectTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
+
+                try {
+                  primaryKeyTreeObject.unbind('loaded.jstree')
+                } catch (e) {}
+
+                try {
+                  primaryKeyTreeObject.on('loaded.jstree', () => setTimeout(() => primaryKeyTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${primaryKeyTreeObject.find('a.jstree-anchor').length - index}`))))
+                } catch (e) {}
               } catch (e) {
                 primaryKeyTreeElements.hide()
               }
@@ -4486,7 +4615,15 @@
                   groupStructure.regularColumns.core.data = groupStructure.regularColumns.core.data.filter((field) => field != undefined)
                 } catch (e) {}
 
-                tableFieldsSelectTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
+                let regularColumnsTreeObject = tableFieldsSelectTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
+
+                try {
+                  regularColumnsTreeObject.unbind('loaded.jstree')
+                } catch (e) {}
+
+                try {
+                  regularColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => regularColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${regularColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                } catch (e) {}
               } catch (e) {
                 columnsRegularTreeElements.hide()
               }
@@ -4507,7 +4644,15 @@
                   groupStructure.collectionColumns.core.data = groupStructure.collectionColumns.core.data.filter((field) => field != undefined)
                 } catch (e) {}
 
-                tableFieldsSelectTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
+                let collectionColumnsTreeObject = tableFieldsSelectTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
+
+                try {
+                  collectionColumnsTreeObject.unbind('loaded.jstree')
+                } catch (e) {}
+
+                try {
+                  collectionColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => collectionColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${collectionColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                } catch (e) {}
               } catch (e) {
                 columnsCollectionTreeElements.hide()
               }
@@ -4527,7 +4672,15 @@
                   groupStructure.udtColumns.core.data = groupStructure.udtColumns.core.data.filter((field) => field != undefined)
                 } catch (e) {}
 
-                tableFieldsSelectTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
+                let udtColumnsTreeObject = tableFieldsSelectTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
+
+                try {
+                  udtColumnsTreeObject.unbind('loaded.jstree')
+                } catch (e) {}
+
+                try {
+                  udtColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => udtColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${udtColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                } catch (e) {}
               } catch (e) {
                 columnsUDTTreeElements.hide()
               }
@@ -5374,16 +5527,8 @@
                           </div>
                           <div class="form-outline form-white operators-dropdown" style="z-index: 2; width: 70px;">
                             <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                            <input type="text" class="form-control form-icon-trailing form-control-sm operators-dropdown" style="background-color: inherit; cursor: default; pointer-events:none; font-family: 'Terminal'; font-weight: bold;" id="${operatorsDropDownID}" value="=" readonly noopacity>
+                            <input type="text" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true" class="form-control form-icon-trailing form-control-sm operators-dropdown" style="background-color: inherit; cursor: default; pointer-events:none; font-family: 'Terminal'; font-weight: bold;" id="${operatorsDropDownID}" value="=" readonly noopacity>
                             <div class="operators-dropdown-focusarea"></div>
-                          </div>
-                          <div class="dropdown" style="position: absolute;" for-select="${operatorsDropDownID}">
-                            <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
-                            <ul class="dropdown-menu top-margin operators-dropdown">
-                              <li><a class="dropdown-item" href="#" value="=" data-operator-id="_operator_equal">=</a></li>
-                              <li><a class="dropdown-item" href="#" value="IN" data-operator-id="_operator_in">IN</a></li>
-                              ${!isPartition && !isCollectionType && isTypeAllowed ? rangeOperatorsDropDown : ''}
-                            </ul>
                           </div>
                         </div>`
 
@@ -5402,7 +5547,51 @@
                       actionsContainer.css('width', '100%')
 
                       actionsContainer.before($(operatorsContainer).show(function() {
-                        let operatorsContainerElement = $(this)
+                        let operatorsContainerElement = $(this),
+                          tippyInputObject
+
+                        // Add tippy
+                        {
+                          setTimeout(() => {
+                            let tippyInput = $(node).find(`input[id="${operatorsDropDownID}"]`)
+
+                            tippyInputObject = tippy(tippyInput[0], {
+                              trigger: 'manual',
+                              allowHTML: true,
+                              arrow: false,
+                              theme: 'material',
+                              interactive: true,
+                              onShown(instance) {
+                                $(instance.popper).find(`ul.dropdown-menu`).find('a').click(function() {
+                                  // Point at the input field related to the list
+                                  let selectElement = $(`input#${$(instance.popper).find(`ul.dropdown-menu`).attr('for-select')}`),
+                                    selectedValue = $(this).attr('value'),
+                                    selectedValueID = $(this).attr('data-operator-id'),
+                                    isTypeCollection = $(this).attr('data-is-collection') != undefined,
+                                    isCollectionMap = $(this).attr('data-is-map') != undefined
+
+                                  // Update the input's value
+                                  selectElement.val(selectedValue).trigger('input')
+
+                                  $(instance.reference).closest('div.input-group').find(`input[type="radio"][id="${selectedValueID}"]`).prop('checked', true).trigger('change')
+
+                                  try {
+                                    updateActionStatusForSelectRowColumn()
+                                  } catch (e) {}
+                                })
+                              }
+                            })
+
+                            try {
+                              tippyInputObject.setContent(`
+                              <ul class="dropdown-menu operators-dropdown show tippy-dropdown" for-select="${operatorsDropDownID}">
+                              <li><a class="dropdown-item" href="#" value="=" data-operator-id="_operator_equal">=</a></li>
+                              <li><a class="dropdown-item" href="#" value="IN" data-operator-id="_operator_in">IN</a></li>
+                              ${!isPartition && !isCollectionType && isTypeAllowed ? rangeOperatorsDropDown : ''}
+                              </ul>`)
+                            } catch (e) {}
+                          })
+                        }
 
                         setTimeout(() => $(this).find('label.btn').click(function() {
                           $(this).parent().find(`input[id="${$(this).attr('for')}"]`).trigger('click')
@@ -5496,45 +5685,14 @@
                                       input.parent().find('div.invalid-feedback').addClass('transparent-color')
                                     } catch (e) {}
 
-                                    selectDropdown.show()
+                                    tippyInputObject.show()
                                   }).on('focusout', () => setTimeout(() => {
                                     try {
                                       input.parent().find('div.invalid-feedback').removeClass('transparent-color')
                                     } catch (e) {}
 
-                                    selectDropdown.hide()
+                                    tippyInputObject.hide()
                                   }, 100))
-
-                                  // Once the parent `form-outline` is clicked trigger the `focus` event
-                                  // input.parent().click(() => input.trigger('focus'))
-
-                                  $(node).find(`ul.dropdown-menu`).observeTransform( () => {
-                                    let isTransformNegative = `${$(node).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
-
-                                    $(node).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
-
-                                    try {
-                                      updateRowsZIndexSelectAction(isTransformNegative)
-                                    } catch (e) {}
-                                  })
-
-                                  $(node).find(`ul.dropdown-menu`).find('a').click(function() {
-                                    // Point at the input field related to the list
-                                    let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
-                                      selectedValue = $(this).attr('value'),
-                                      selectedValueID = $(this).attr('data-operator-id'),
-                                      isTypeCollection = $(this).attr('data-is-collection') != undefined,
-                                      isCollectionMap = $(this).attr('data-is-map') != undefined
-
-                                    // Update the input's value
-                                    selectElement.val(selectedValue).trigger('input')
-
-                                    $(node).find(`input[type="radio"][id="${selectedValueID}"]`).prop('checked', true).trigger('change')
-
-                                    try {
-                                      updateActionStatusForSelectRowColumn()
-                                    } catch (e) {}
-                                  })
                                 }
                               })
 
@@ -5679,6 +5837,16 @@
                             }
                           }))
                         } catch (e) {}
+
+                        setTimeout(() => {
+                          try {
+                            if ($(node).attr('type') !== 'counter')
+                              throw 0
+
+                            $(node).find('div.input-group-text.for-type').nextAll('div.input-group-text').hide()
+                            $(node).find('div.input-group-text.for-type').nextAll('div.form-outline').hide()
+                          } catch (e) {}
+                        }, 50)
                       }, 50)
 
                       setTimeout(() => $(node).find('div.not-ignore-checkbox').addClass('mandatory'))
@@ -6118,7 +6286,11 @@
                 if (dialogElement.find('div[action="keyspaces"]').find('.is-invalid:not(.ignore-invalid)').length <= 0)
                   throw 0
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', ''), 50)
 
                 return
               } catch (e) {}
@@ -6162,7 +6334,11 @@
 
                 let invalidState = !isAlterState && (!isRFAcceptable || ($('input#keyspaceName').hasClass('is-invalid') || `${$('input#keyspaceName').val()}`.length <= 0))
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', invalidState ? '' : null)
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', invalidState ? '' : null), 50)
 
                 if (invalidState)
                   return
@@ -6196,7 +6372,11 @@
                 if (!isAlterState)
                   throw 0
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [replicationStrategyFinal, durableWritesFinal].every((str) => `${str}`.length <= 0) ? '' : null)
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [replicationStrategyFinal, durableWritesFinal].every((str) => `${str}`.length <= 0) ? '' : null), 50)
               } catch (e) {}
 
               let statement = `${isAlterState ? 'ALTER' : 'CREATE'} KEYSPACE${!isAlterState ? ' IF NOT EXISTS' : ''} ${keyspaceName}${replicationStrategyFinal}${durableWritesFinal};`
@@ -6228,7 +6408,11 @@
 
             invalidFeedback.find('span').attr('mulang', 'the keyspace name can\'t be altered').text(I18next.capitalizeFirstLetter(I18next.t('the keyspace name can\'t be altered')))
 
-            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null), 50)
 
             return
           } catch (e) {}
@@ -6263,7 +6447,11 @@
 
           $(this).toggleClass('is-invalid', isNameDuplicated || isNameInvalid)
 
-          dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 ? '' : null)
+          try {
+            clearTimeout(changeFooterButtonsStateTimeout)
+          } catch (e) {}
+
+          changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 ? '' : null), 50)
 
           try {
             updateActionStatusForKeyspaces()
@@ -6368,7 +6556,11 @@
                         if (minifyText($('input#keyspaceName').val()).length <= 0)
                           return
 
-                        dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+                        try {
+                          clearTimeout(changeFooterButtonsStateTimeout)
+                        } catch (e) {}
+
+                        changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null), 50)
 
                         try {
                           updateActionStatusForKeyspaces()
@@ -6428,7 +6620,11 @@
           if (minifyText($('input#keyspaceName').val()).length <= 0)
             return
 
-          dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+          try {
+            clearTimeout(changeFooterButtonsStateTimeout)
+          } catch (e) {}
+
+          changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null), 50)
 
           try {
             updateActionStatusForKeyspaces()
@@ -6730,7 +6926,11 @@
                   minifyText(udtName).length > 0)
                   throw 0
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', ''), 50)
 
                 return
               } catch (e) {}
@@ -6860,7 +7060,11 @@
                   }
                 }
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', statements.length <= 0 ? '' : null)
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', statements.length <= 0 ? '' : null), 50)
 
                 try {
                   actionEditor.setValue(statements.join(OS.EOL))
@@ -6918,7 +7122,11 @@
 
               let statement = `CREATE TYPE IF NOT EXISTS ${keyspaceName}.${udtName} (${dataFieldsText});`
 
-              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+              try {
+                clearTimeout(changeFooterButtonsStateTimeout)
+              } catch (e) {}
+
+              changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null), 50)
 
               try {
                 actionEditor.setValue(statement)
@@ -6991,7 +7199,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
-                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -7093,7 +7301,11 @@
                         tooltip.enable()
                       } catch (e) {}
 
-                      dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                      try {
+                        clearTimeout(changeFooterButtonsStateTimeout)
+                      } catch (e) {}
+
+                      changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                       try {
                         updateActionStatusForUDTs()
@@ -7205,7 +7417,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
-                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -7312,7 +7524,11 @@
                     tooltip.enable()
                   } catch (e) {}
 
-                  dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                  try {
+                    clearTimeout(changeFooterButtonsStateTimeout)
+                  } catch (e) {}
+
+                  changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                   try {
                     updateActionStatusForUDTs()
@@ -7432,7 +7648,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
-                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -7534,7 +7750,11 @@
                         tooltip.enable()
                       } catch (e) {}
 
-                      dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                      try {
+                        clearTimeout(changeFooterButtonsStateTimeout)
+                      } catch (e) {}
+
+                      changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                       try {
                         updateActionStatusForUDTs()
@@ -7618,7 +7838,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'fieldDataType'
 
-                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -7725,7 +7945,11 @@
                     tooltip.enable()
                   } catch (e) {}
 
-                  dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                  try {
+                    clearTimeout(changeFooterButtonsStateTimeout)
+                  } catch (e) {}
+
+                  changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                   try {
                     updateActionStatusForUDTs()
@@ -7771,7 +7995,11 @@
 
               invalidFeedback.find('span').attr('mulang', 'the UDT name can\'t be altered').text(I18next.capitalizeFirstLetter(I18next.t('the UDT name can\'t be altered')))
 
-              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+              try {
+                clearTimeout(changeFooterButtonsStateTimeout)
+              } catch (e) {}
+
+              changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null), 50)
 
               return
             } catch (e) {}
@@ -7808,7 +8036,11 @@
             let allDataFields = dialogElement.find('div[action="udts"]').find('div.data-field.row'),
               invalidInputFields = allDataFields.find('input.is-invalid')
 
-            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 || allDataFields.length <= 0 || invalidInputFields.length > 0 ? '' : null)
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 || allDataFields.length <= 0 || invalidInputFields.length > 0 ? '' : null), 50)
 
             try {
               updateActionStatusForUDTs()
@@ -7850,7 +8082,11 @@
                   minifyText(counterTableName).length > 0)
                   throw 0
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', ''), 50)
 
                 return
               } catch (e) {}
@@ -7931,7 +8167,11 @@
                     alteredOptions.push(`${alteredOptions.length <= 0 ? 'WITH' : 'AND'} comment = '${commentTextarea.val().replace(/(^|[^'])'(?!')/g, "$1''")}'`)
                 } catch (e) {}
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...alteringStatements, ...alteredOptions, ...droppedColumns].length <= 0 ? '' : null)
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...alteringStatements, ...alteredOptions, ...droppedColumns].length <= 0 ? '' : null), 50)
 
                 let statement = [...alteringStatements, ...droppedColumns].map((statement) => `ALTER TABLE ${keyspaceName}.${counterTableName} ${statement}`).join(';' + OS.EOL) + ';'
 
@@ -8092,7 +8332,11 @@
                 })
               } catch (e) {}
 
-              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+              try {
+                clearTimeout(changeFooterButtonsStateTimeout)
+              } catch (e) {}
+
+              changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null), 50)
 
               let manipulatedKeysAndColumns = ([...partitionKeys, ...clusteringKeys, ...counterColumns].map((key) => {
                 let isTypeCollection = ['map', 'set', 'list'].some((collectionType) => collectionType == key.type),
@@ -8222,7 +8466,11 @@
 
               invalidFeedback.find('span').attr('mulang', 'the table name can\'t be altered').text(I18next.capitalizeFirstLetter(I18next.t('the table name can\'t be altered')))
 
-              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+              try {
+                clearTimeout(changeFooterButtonsStateTimeout)
+              } catch (e) {}
+
+              changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null), 50)
 
               return
             } catch (e) {}
@@ -8259,7 +8507,11 @@
             let allDataFields = dialogElement.find('div[action="counter-tables"]').find('div.counter-table-partition-key-field, div.counter-table-clustering-key-field, div.counter-table-column-field, div.counter-table-option-field'),
               invalidInputFields = allDataFields.find('input.is-invalid')
 
-            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 || allDataFields.length <= 0 || invalidInputFields.length > 0 ? '' : null)
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 || allDataFields.length <= 0 || invalidInputFields.length > 0 ? '' : null), 50)
 
             try {
               updateActionStatusForCounterTables()
@@ -8387,13 +8639,13 @@
                         </ul>
                       </div>
                     </div>
-                    <div class="col-md-2" style="text-align: center; display: none;">
-                      <div class="btn ripple-surface-light field-sort-type badge rounded-pill" data-mdb-ripple-color="light" style="height: 26px; vertical-align: middle; width: calc(100% - 25px); text-align: left;" data-current-sort="asc">
+                    <div class="col-md-1" style="text-align: center; display: none;">
+                      <div class="btn ripple-surface-light field-sort-type badge rounded-pill" data-mdb-ripple-color="light" style="height: 26px; vertical-align: middle; width: fit-content; text-align: left; margin-left: 4px;" data-current-sort="asc">
                         <ion-icon name="sort-asc" style="font-size: 160%; margin-right: 1px;"></ion-icon> <span style="position: relative; top: 1px; text-transform: uppercase;">ASC</span>
                       </div>
                     </div>
                     <div class="col-md-1">
-                      <a action="delete-counter-table-partition-key" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                      <a action="delete-counter-table-partition-key" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" style="transform: translateX(12px);">
                         <ion-icon name="trash"></ion-icon>
                       </a>
                     </div>
@@ -8453,7 +8705,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
-                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -8651,7 +8903,11 @@
                     tooltip.enable()
                   } catch (e) {}
 
-                  dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                  try {
+                    clearTimeout(changeFooterButtonsStateTimeout)
+                  } catch (e) {}
+
+                  changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                   try {
                     updateActionStatusForCounterTables()
@@ -8699,7 +8955,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
-                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -8829,7 +9085,7 @@
                         <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
                       </div>
                     </div>
-                    <div class="col-md-4" col="clusteringKeyName">
+                    <div class="col-md-5" col="clusteringKeyName">
                       <div class="form-outline form-white" style="margin-right: 4px; width: calc(100% - 4px);">
                         <input type="text" class="form-control form-icon-trailing clusteringKeyName is-invalid" style="margin-bottom: 0;">
                         <label class="form-label">
@@ -8890,13 +9146,13 @@
                         </ul>
                       </div>
                     </div>
-                    <div class="col-md-2" style="text-align: center;">
-                    <div class="btn ripple-surface-light field-sort-type badge rounded-pill" data-mdb-ripple-color="light" style="height: 26px; vertical-align: middle; width: calc(100% - 25px); text-align: left;" data-current-sort="asc">
+                    <div class="col-md-1" style="text-align: center;">
+                    <div class="btn ripple-surface-light field-sort-type badge rounded-pill" data-mdb-ripple-color="light" style="height: 26px; vertical-align: middle; width: fit-content; text-align: left; margin-left: 4px;" data-current-sort="asc">
                     <ion-icon name="sort-asc" style="font-size: 160%; margin-right: 1px;"></ion-icon> <span style="position: relative; top: 1px; text-transform: uppercase;">ASC</span>
                       </div>
                     </div>
                     <div class="col-md-1">
-                      <a action="delete-counter-table-clustering-key" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                      <a action="delete-counter-table-clustering-key" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" style="transform: translateX(12px);">
                         <ion-icon name="trash"></ion-icon>
                       </a>
                     </div>
@@ -8994,7 +9250,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
-                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -9183,7 +9439,11 @@
                     tooltip.enable()
                   } catch (e) {}
 
-                  dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                  try {
+                    clearTimeout(changeFooterButtonsStateTimeout)
+                  } catch (e) {}
+
+                  changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                   try {
                     updateActionStatusForCounterTables()
@@ -9231,7 +9491,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
-                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -9254,7 +9514,7 @@
 
                         row.find(`div[col="clusteringKeyName"]`).removeClass(function(index, className) {
                           return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
-                        }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 4}`)
+                        }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 3 : 4) : 5}`)
 
                         row.find(`div[col="clusteringKeyType"]`).removeClass(function(index, className) {
                           return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
@@ -9456,7 +9716,11 @@
                   tooltip.enable()
                 } catch (e) {}
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                 try {
                   updateActionStatusForCounterTables()
@@ -9634,7 +9898,11 @@
                       tooltip.enable()
                     } catch (e) {}
 
-                    dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                    try {
+                      clearTimeout(changeFooterButtonsStateTimeout)
+                    } catch (e) {}
+
+                    changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                     try {
                       updateActionStatusForCounterTables()
@@ -9657,7 +9925,11 @@
                       row.find(`a[action="undo-change"]`).toggleClass('disabled', !(defaultName != row.find('input.tableOptionName').val() || defaultValue != row.find('input.tableOptionValue').val()))
                     } catch (e) {}
 
-                    dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null)
+                    try {
+                      clearTimeout(changeFooterButtonsStateTimeout)
+                    } catch (e) {}
+
+                    changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null), 50)
 
                     try {
                       updateActionStatusForCounterTables()
@@ -9812,7 +10084,11 @@
                       tooltip.enable()
                     } catch (e) {}
 
-                    dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                    try {
+                      clearTimeout(changeFooterButtonsStateTimeout)
+                    } catch (e) {}
+
+                    changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                     try {
                       updateActionStatusForCounterTables()
@@ -9835,7 +10111,11 @@
                       row.find(`a[action="undo-change"]`).toggleClass('disabled', !(defaultName != row.find('input.tableOptionName').val() || defaultValue != row.find('input.tableOptionValue').val()))
                     } catch (e) {}
 
-                    dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null)
+                    try {
+                      clearTimeout(changeFooterButtonsStateTimeout)
+                    } catch (e) {}
+
+                    changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null), 50)
 
                     try {
                       updateActionStatusForCounterTables()
@@ -9950,7 +10230,11 @@
                   tooltip.enable()
                 } catch (e) {}
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                 try {
                   updateActionStatusForCounterTables()
@@ -9966,7 +10250,11 @@
 
                 $(this).toggleClass('is-invalid', minifyText(tableOptionValue).length <= 0)
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null)
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null), 50)
 
                 try {
                   updateActionStatusForCounterTables()
@@ -10127,7 +10415,11 @@
                   minifyText(standardTableName).length > 0)
                   throw 0
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', ''), 50)
 
                 return
               } catch (e) {}
@@ -10224,7 +10516,11 @@
                     alteredOptions.push(`${alteredOptions.length <= 0 ? 'WITH' : 'AND'} comment = '${commentTextarea.val().replace(/(^|[^'])'(?!')/g, "$1''")}'`)
                 } catch (e) {}
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...droppedColumns, ...addedColumns, ...alteredOptions].length <= 0 ? '' : null)
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...droppedColumns, ...addedColumns, ...alteredOptions].length <= 0 ? '' : null), 50)
 
                 try {
                   droppedColumns = droppedColumns.map((column) => `DROP ${addDoubleQuotes(column)}`)
@@ -10470,7 +10766,11 @@
                 })
               } catch (e) {}
 
-              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+              try {
+                clearTimeout(changeFooterButtonsStateTimeout)
+              } catch (e) {}
+
+              changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null), 50)
 
               let manipulatedKeys = ([...partitionKeys, ...clusteringKeys].map((key) => {
                 let isTypeCollection = ['map', 'set', 'list'].some((collectionType) => collectionType == key.type),
@@ -10643,7 +10943,11 @@
 
               invalidFeedback.find('span').attr('mulang', 'the table name can\'t be altered').text(I18next.capitalizeFirstLetter(I18next.t('the table name can\'t be altered')))
 
-              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+              try {
+                clearTimeout(changeFooterButtonsStateTimeout)
+              } catch (e) {}
+
+              changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null), 50)
 
               return
             } catch (e) {}
@@ -10680,7 +10984,11 @@
             let allDataFields = dialogElement.find('div[action="standard-tables"]').find('div.standard-table-partition-key-field, div.standard-table-clustering-key-field, div.standard-table-column-field, div.standard-table-udt-column-field, div.standard-table-option-field'),
               invalidInputFields = allDataFields.find('input.is-invalid')
 
-            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 || allDataFields.length <= 0 || invalidInputFields.length > 0 ? '' : null)
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', $(this).hasClass('is-invalid') || `${keyspaceName}`.length <= 0 || allDataFields.length <= 0 || invalidInputFields.length > 0 ? '' : null), 50)
 
             try {
               updateActionStatusForStandardTables()
@@ -10808,13 +11116,13 @@
                       </ul>
                     </div>
                   </div>
-                  <div class="col-md-2" style="text-align: center; display: none;">
-                    <div class="btn ripple-surface-light field-sort-type badge rounded-pill" data-mdb-ripple-color="light" style="height: 26px; vertical-align: middle; width: calc(100% - 25px); text-align: left;" data-current-sort="asc">
+                  <div class="col-md-1" style="text-align: center; display: none;">
+                    <div class="btn ripple-surface-light field-sort-type badge rounded-pill" data-mdb-ripple-color="light" style="height: 26px; vertical-align: middle; width: fit-content; text-align: left; margin-left: 4px;" data-current-sort="asc">
                       <ion-icon name="sort-asc" style="font-size: 160%; margin-right: 1px;"></ion-icon> <span style="position: relative; top: 1px; text-transform: uppercase;">ASC</span>
                     </div>
                   </div>
                   <div class="col-md-1">
-                    <a action="delete-standard-table-partition-key" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                    <a action="delete-standard-table-partition-key" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" style="transform: translateX(12px);">
                       <ion-icon name="trash"></ion-icon>
                     </a>
                   </div>
@@ -10868,7 +11176,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
-                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11075,7 +11383,11 @@
                     tooltip.enable()
                   } catch (e) {}
 
-                  dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                  try {
+                    clearTimeout(changeFooterButtonsStateTimeout)
+                  } catch (e) {}
+
+                  changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                   try {
                     updateActionStatusForStandardTables()
@@ -11123,7 +11435,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'partitionKeyType'
 
-                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11253,7 +11565,7 @@
                         <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
                       </div>
                     </div>
-                    <div class="col-md-4" col="clusteringKeyName">
+                    <div class="col-md-5" col="clusteringKeyName">
                       <div class="form-outline form-white" style="margin-right: 4px; width: calc(100% - 4px);">
                         <input type="text" class="form-control form-icon-trailing clusteringKeyName is-invalid" style="margin-bottom: 0;">
                         <label class="form-label">
@@ -11314,13 +11626,13 @@
                         </ul>
                       </div>
                     </div>
-                    <div class="col-md-2" style="text-align: center;">
-                    <div class="btn ripple-surface-light field-sort-type badge rounded-pill" data-mdb-ripple-color="light" style="height: 26px; vertical-align: middle; width: calc(100% - 25px); text-align: left;" data-current-sort="asc">
+                    <div class="col-md-1" style="text-align: center;">
+                    <div class="btn ripple-surface-light field-sort-type badge rounded-pill" data-mdb-ripple-color="light" style="height: 26px; vertical-align: middle; width: fit-content; text-align: left; margin-left: 4px;" data-current-sort="asc">
                     <ion-icon name="sort-asc" style="font-size: 160%; margin-right: 1px;"></ion-icon> <span style="position: relative; top: 1px; text-transform: uppercase;">ASC</span>
                       </div>
                     </div>
                     <div class="col-md-1">
-                      <a action="delete-standard-table-clustering-key" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                      <a action="delete-standard-table-clustering-key" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" style="transform: translateX(12px);">
                         <ion-icon name="trash"></ion-icon>
                       </a>
                     </div>
@@ -11373,7 +11685,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
-                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11577,7 +11889,11 @@
                     tooltip.enable()
                   } catch (e) {}
 
-                  dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                  try {
+                    clearTimeout(changeFooterButtonsStateTimeout)
+                  } catch (e) {}
+
+                  changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                   try {
                     updateActionStatusForStandardTables()
@@ -11625,7 +11941,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'clusteringKeyType'
 
-                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11648,7 +11964,7 @@
 
                         row.find(`div[col="clusteringKeyName"]`).removeClass(function(index, className) {
                           return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
-                        }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 4}`)
+                        }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 3 : 4) : 5}`)
 
                         row.find(`div[col="clusteringKeyType"]`).removeClass(function(index, className) {
                           return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
@@ -11758,7 +12074,7 @@
                         <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
                       </div>
                     </div>
-                    <div class="col-md-4" col="columnName">
+                    <div class="col-md-5" col="columnName">
                       <div class="form-outline form-white" style="margin-right: 4px; width: calc(100% - 4px);">
                         <input type="text" class="form-control form-icon-trailing columnName is-invalid" style="margin-bottom: 0;">
                         <label class="form-label">
@@ -11887,7 +12203,7 @@
                       $(this).find(`div.dropdown[for-select]`).each(function() {
                         let mainDropDown = $(this).attr('for-data-type') == 'columnType'
 
-                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -11919,7 +12235,7 @@
 
                             row.find(`div[col="columnName"]`).removeClass(function(index, className) {
                               return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
-                            }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 4}`)
+                            }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 3 : 4) : 5}`)
 
                             row.find(`div[col="columnType"]`).removeClass(function(index, className) {
                               return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
@@ -12151,7 +12467,11 @@
                   tooltip.enable()
                 } catch (e) {}
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                 try {
                   updateActionStatusForStandardTables()
@@ -12204,7 +12524,7 @@
                   $(this).find(`div.dropdown[for-select]`).each(function() {
                     let mainDropDown = $(this).attr('for-data-type') == 'columnType'
 
-                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -12236,7 +12556,7 @@
 
                         row.find(`div[col="columnName"]`).removeClass(function(index, className) {
                           return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
-                        }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 2 : 3) : 4}`)
+                        }).addClass(`col-md-${isTypeCollection ? (isCollectionMap ? 3 : 4) : 5}`)
 
                         row.find(`div[col="columnType"]`).removeClass(function(index, className) {
                           return (className.match(/(^|\s)col-md-\S+/g) || []).join(' ')
@@ -12446,7 +12766,7 @@
                     {
                       // Once one of the items is clicked
                       $(this).find(`div.dropdown[for-select]`).each(function() {
-                        $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                        $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                           let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                           $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -12586,7 +12906,11 @@
                   tooltip.enable()
                 } catch (e) {}
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                 try {
                   updateActionStatusForStandardTables()
@@ -12633,7 +12957,7 @@
 
                   // Once one of the items is clicked
                   $(this).find(`div.dropdown[for-select]`).each(function() {
-                    $(this).find(`ul.dropdown-menu`).observeTransform( () => {
+                    $(this).find(`ul.dropdown-menu`).observeTransform(() => {
                       let isTransformNegative = `${$(this).find(`ul.dropdown-menu`).css('transform')}`.includes('-')
 
                       $(this).find(`ul.dropdown-menu`).find('li').last().css('margin-bottom', isTransformNegative ? '20px' : '')
@@ -12844,7 +13168,11 @@
                       tooltip.enable()
                     } catch (e) {}
 
-                    dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                    try {
+                      clearTimeout(changeFooterButtonsStateTimeout)
+                    } catch (e) {}
+
+                    changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                     try {
                       updateActionStatusForStandardTables()
@@ -12867,7 +13195,11 @@
                       row.find(`a[action="undo-change"]`).toggleClass('disabled', !(defaultName != row.find('input.tableOptionName').val() || defaultValue != row.find('input.tableOptionValue').val()))
                     } catch (e) {}
 
-                    dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null)
+                    try {
+                      clearTimeout(changeFooterButtonsStateTimeout)
+                    } catch (e) {}
+
+                    changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null), 50)
 
                     try {
                       updateActionStatusForStandardTables()
@@ -13014,7 +13346,11 @@
                       tooltip.enable()
                     } catch (e) {}
 
-                    dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                    try {
+                      clearTimeout(changeFooterButtonsStateTimeout)
+                    } catch (e) {}
+
+                    changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                     try {
                       updateActionStatusForStandardTables()
@@ -13037,7 +13373,11 @@
                       row.find(`a[action="undo-change"]`).toggleClass('disabled', !(defaultName != row.find('input.tableOptionName').val() || defaultValue != row.find('input.tableOptionValue').val()))
                     } catch (e) {}
 
-                    dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null)
+                    try {
+                      clearTimeout(changeFooterButtonsStateTimeout)
+                    } catch (e) {}
+
+                    changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null), 50)
 
                     try {
                       updateActionStatusForStandardTables()
@@ -13144,7 +13484,11 @@
                   tooltip.enable()
                 } catch (e) {}
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null)
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isNameDuplicated || isNameInvalid ? '' : null), 50)
 
                 try {
                   updateActionStatusForStandardTables()
@@ -13160,7 +13504,11 @@
 
                 $(this).toggleClass('is-invalid', minifyText(tableOptionValue).length <= 0)
 
-                dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null)
+                try {
+                  clearTimeout(changeFooterButtonsStateTimeout)
+                } catch (e) {}
+
+                changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', minifyText(tableOptionValue).length <= 0 ? '' : null), 50)
 
                 try {
                   updateActionStatusForStandardTables()
@@ -13619,7 +13967,8 @@
                 udt: $('div#tableFieldsUDTColumnsTree').jstree()
               }
             },
-            lwtOption = getCheckedValue('lwtInsertOptions')
+            lwtOption = getCheckedValue('lwtInsertOptions'),
+            isCounterTable = $('div.modal#rightClickActionsMetadata').attr('data-is-counter-table') == 'true'
 
           let keyspaceUDTs = []
 
@@ -13671,7 +14020,11 @@
             if (allNodes.filter(`:not(.ignored)`).find('.is-invalid:not(.ignore-invalid)').length <= 0 && !isPrimaryKeyMissingFields && !$('#insertionTimestamp').hasClass('is-invalid'))
               throw 0
 
-            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', ''), 50)
 
             $(`div[action="insert-row"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
 
@@ -13720,6 +14073,19 @@
 
               try {
                 fieldValue = fieldValue.attr('type') == 'checkbox' ? fieldValue.prop('checked') : fieldValue.val()
+              } catch (e) {}
+
+              // If it's counter column
+              try {
+                if (fieldType != 'counter')
+                  throw 0
+
+                if (isNaN(parseInt(fieldValue)))
+                  continue
+
+                let isIncrementProcess = currentNode.find('div.input-group-text.for-counter-value').find('button[action="apply-increment"]').hasClass('selected')
+
+                fieldValue = `${fieldName} ${isIncrementProcess ? '+' : '-'} ${fieldValue}`
               } catch (e) {}
 
               try {
@@ -13935,7 +14301,7 @@
                   value = `${field.value}`
 
                   try {
-                    if (isInsertionAsJSON) {
+                    if (isInsertionAsJSON && !isCounterTable) {
                       isSingleQuotesNeeded = true
                       throw 0
                     }
@@ -13988,7 +14354,7 @@
 
                     value = `${value}`.replace(/(^|[^'])'(?!')/g, "$1''")
 
-                    value = isInsertionAsJSON ? `"${value}"` : `'${value}'`
+                    value = isInsertionAsJSON && !isCounterTable ? `"${value}"` : `'${value}'`
                   } catch (e) {}
 
                   if (field.isNULL)
@@ -14008,6 +14374,9 @@
             }
           }
 
+          if (isCounterTable)
+            isInsertionAsJSON = true
+
           let manipulatedFields = {
             primaryKey: handleFieldsPost(primaryKeyFields),
             columnsRegular: handleFieldsPost(columnsRegularFields),
@@ -14015,19 +14384,53 @@
             columnsUDT: handleFieldsPost(columnsUDTFields)
           }
 
+          if (isCounterTable)
+            isInsertionAsJSON = false
+
+          try {
+            clearTimeout(changeFooterButtonsStateTimeout)
+          } catch (e) {}
+
+          changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...fieldsNames, ...fieldsValues].length <= 0 || isPrimaryKeyMissingFields ? '' : null), 50)
+
+          // Handle counter tables - increment and decrement -
+          try {
+            if (!isCounterTable)
+              throw 0
+
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', manipulatedFields.columnsRegular.names.length <= 0 || isPrimaryKeyMissingFields ? '' : null), 50)
+
+            fieldsNames = {
+              primaryKey: [],
+              columns: []
+            }
+
+            fieldsValues = {
+              primaryKey: [],
+              columns: []
+            }
+          } catch (e) {}
+
           for (let fieldsClass of Object.keys(manipulatedFields)) {
             let fields = manipulatedFields[fieldsClass]
 
-            fieldsNames = fieldsNames.concat(fields.names)
-            fieldsValues = fieldsValues.concat(fields.values)
+            if (!isCounterTable) {
+              fieldsNames = fieldsNames.concat(fields.names)
+              fieldsValues = fieldsValues.concat(fields.values)
+            } else {
+              fieldsNames[fieldsClass == 'primaryKey' ? 'primaryKey' : 'columns'] = fieldsNames[fieldsClass == 'primaryKey' ? 'primaryKey' : 'columns'].concat(fields.names)
+              fieldsValues[fieldsClass == 'primaryKey' ? 'primaryKey' : 'columns'] = fieldsValues[fieldsClass == 'primaryKey' ? 'primaryKey' : 'columns'].concat(fields.values)
+            }
           }
-
-          dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', [...fieldsNames, ...fieldsValues].length <= 0 || isPrimaryKeyMissingFields ? '' : null)
 
           let fields = []
 
           try {
-            if (isInsertionAsJSON) {
+            if (!isCounterTable && isInsertionAsJSON) {
               fieldsNames = fieldsNames.map((name) => {
                 name = addDoubleQuotes(name)
 
@@ -14052,24 +14455,44 @@
             }
 
             try {
+              if (isCounterTable)
+                throw 0
+
               let lastFieldName = fieldsNames.at(-1)
 
               fieldsNames[fieldsNames.length - 1] = `${lastFieldName.substring(0, lastFieldName.lastIndexOf(', --'))} --${lastFieldName.substring(lastFieldName.lastIndexOf(', --') + 4)}`
             } catch (e) {}
 
             try {
+              if (isCounterTable)
+                throw 0
+
               let lastFieldValue = fieldsValues.at(-1)
 
               fieldsValues[fieldsValues.length - 1] = `${lastFieldValue.substring(0, lastFieldValue.lastIndexOf(', --'))} --${lastFieldValue.substring(lastFieldValue.lastIndexOf(', --') + 4)}`
             } catch (e) {}
 
             try {
-              fieldsNames = fieldsNames.map((name) => `    ${name}`).join(OS.EOL)
+              if (!isCounterTable)
+                fieldsNames = fieldsNames.map((name) => `    ${name}`).join(OS.EOL)
             } catch (e) {}
 
             try {
-              fieldsValues = fieldsValues.map((value) => `    ${value}`).join(OS.EOL)
+              if (!isCounterTable)
+                fieldsValues = fieldsValues.map((value) => `    ${value}`).join(OS.EOL)
             } catch (e) {}
+          } catch (e) {}
+
+          let columns = [],
+            primaryKey = []
+
+          try {
+            if (!isCounterTable)
+              throw 0
+
+            columns = fieldsNames.columns.map((column, index) => `${column} = ${fieldsValues.columns[index]}`).join(', ')
+
+            primaryKey = fieldsNames.primaryKey.map((key, index) => `${key} = ${fieldsValues.primaryKey[index]}`).join(' AND ')
           } catch (e) {}
 
           // Extra options
@@ -14155,7 +14578,7 @@
             `${fieldsNames}` + OS.EOL + `) VALUES (` + OS.EOL +
             `${fieldsValues}` + OS.EOL + `)${extraOptions};`
 
-          if (isInsertionAsJSON) {
+          if (isInsertionAsJSON && !isCounterTable) {
             try {
               extraOptions = ` DEFAULT ${$('input#defaultOmittedColumnsValue').val()}${extraOptions}`
             } catch (e) {}
@@ -14165,6 +14588,10 @@
               `${fields}` + OS.EOL +
               `}'${extraOptions};`
           }
+
+          if (isCounterTable)
+            statement = `${writeConsistencyLevel}${serialConsistencyLevel}` +
+            `UPDATE ${keyspaceName}.${tableName}` + OS.EOL + `SET ${columns}` + OS.EOL + `WHERE ${primaryKey}${extraOptions};`
 
           try {
             actionEditor.setValue(statement)
@@ -14480,7 +14907,11 @@
             if (allInvalidNodes.length <= 0 && !$('#deleteTimestamp').hasClass('is-invalid'))
               throw 0
 
-            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', ''), 50)
 
             for (let invalidNode of allInvalidNodes) {
               try {
@@ -14675,7 +15106,11 @@
 
             $(`div[action="delete-row-column"]`).find('div.in-operator-error').show()
 
-            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', ''), 50)
 
             return
           } catch (e) {}
@@ -15029,7 +15464,11 @@
             serialConsistencyLevel = `${serialConsistencyLevel}` + OS.EOL
           } catch (e) {}
 
-          dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+          try {
+            clearTimeout(changeFooterButtonsStateTimeout)
+          } catch (e) {}
+
+          changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null), 50)
 
           let statement = `${writeConsistencyLevel}${serialConsistencyLevel}DELETE${deletedColumns} FROM ${keyspaceName}.${tableName}` + OS.EOL + `${usingTimestamp}WHERE ${primaryKey}${otherFields};`
 
@@ -15437,7 +15876,11 @@
               if (allInvalidNodes.length <= 0)
                 throw 0
 
-              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+              try {
+                clearTimeout(changeFooterButtonsStateTimeout)
+              } catch (e) {}
+
+              changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', ''), 50)
 
               for (let invalidNode of allInvalidNodes) {
                 try {
@@ -15632,7 +16075,11 @@
 
               $(`div[action="select-row"]`).find('div.in-operator-error').show()
 
-              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', '')
+              try {
+                clearTimeout(changeFooterButtonsStateTimeout)
+              } catch (e) {}
+
+              changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', ''), 50)
 
               return
             } catch (e) {}
@@ -16023,7 +16470,11 @@
                 limit = `${limit} `
             } catch (e) {}
 
-            dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null)
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', null), 50)
 
             let selectionPart = `${selectedColumns}${countAggregateFunction}${columnsAggregateFunctions}`
 

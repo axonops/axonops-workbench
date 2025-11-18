@@ -337,6 +337,10 @@ svg[l-ring-2] {
     transition: stroke 0.5s ease;
   }
   @keyframes ring-rotate {
+    0% {
+      transform: rotate(0deg);
+    }
+
     100% {
       transform: rotate(360deg);
     }

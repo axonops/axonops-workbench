@@ -3110,6 +3110,20 @@ jQuery.fn.extend({
         globalTrackers.observers.push(observer)
       } catch (e) {}
     })
+  },
+  getAbsolutePosition: function() {
+    if (!$(this) || !$(this).length)
+      return {
+        x: 0,
+        y: 0
+      }
+
+    let offset = $(this).offset()
+
+    return {
+      x: offset.left,
+      y: offset.top
+    }
   }
 })
 
@@ -4166,7 +4180,7 @@ let setUIColor = (workspaceColor) => {
     $('style#uicolor').remove()
 
     // Change the loaders' color
-    $('.change-color[color]').attr('color', tinyColor.isValid() ? workspaceColor : '#dfdfdf')
+    $('.change-color').css('--uib-color', tinyColor.isValid() ? workspaceColor : '#dfdfdf')
 
     // If the given color is not valid then stop the entire process
     if (!tinyColor.isValid())

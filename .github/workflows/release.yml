@@ -457,7 +457,7 @@ jobs:
           for arch in ${{ env.DEBIAN_ARCHS }}; do
             curl -sLO "https://github.com/axonops/axonops-workbench/releases/download/v$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.deb"
             gcloud config set project axonops-public
-            gcloud artifacts apt upload axonops-apt-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$VERSION-linux-${arch}.deb
+            gcloud artifacts apt upload axonops-apt${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$VERSION-linux-${arch}.deb
           done
 
       - name: Push RedHat package
@@ -469,5 +469,5 @@ jobs:
           for arch in ${{ env.REDHAT_ARCHS }}; do
             curl -sLO "https://github.com/axonops/axonops-workbench/releases/download/v$VERSION/AxonOps.Workbench-$VERSION-linux-${arch}.rpm"
             gcloud config set project axonops-public
-            gcloud artifacts yum upload axonops-yum-${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$VERSION-linux-${arch}.rpm
+            gcloud artifacts yum upload axonops-yum${env.REPO_SUFFIX} --location=europe --source=AxonOps.Workbench-$VERSION-linux-${arch}.rpm
           done

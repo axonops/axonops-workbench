@@ -2734,13 +2734,11 @@
 }
 
 {
-  $("#extraDataActions")[0].addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize'))
-
   $('div.modal#extraDataActions div.editor-container').observeVisibility(() => $(window.visualViewport).trigger('resize'))
 }
 
 {
-  $("#cqlSnippets")[0].addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize'))
+  $('div.modal[id]').get().forEach((modal) => modal.addEventListener('shown.mdb.modal', () => $(window.visualViewport).trigger('resize')))
 }
 
 {

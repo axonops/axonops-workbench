@@ -1367,7 +1367,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         }
                       },
                       diffEditor,
-                      diffEditorNavigator,
                       // Hold the object of the metadata's tree view
                       jsTreeObject = null,
                       // Save the latest executed command
@@ -2263,11 +2262,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           })
 
                           diffEditors.push(diffEditor)
-
-                          diffEditorNavigator = monaco.editor.createDiffNavigator(diffEditor, {
-                            followsCaret: true, // Optional
-                            ignoreCharChanges: true // Optional: Treat each word/line as a diff, rather than individual characters
-                          })
                         } catch (e) {}
                       } catch (e) {}
 
@@ -6110,9 +6104,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           workareaElement.find(`div.changes-lines[data-id="${changesLinesContainerID}"]`).toggleClass('show')
                         })
 
-                        workareaElement.find(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).click(() => diffEditorNavigator.previous())
+                        workareaElement.find(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).click(() => diffEditor.goToDiff('previous'))
 
-                        workareaElement.find(`span.btn[data-id="${diffNavigationNextBtnID}"]`).click(() => diffEditorNavigator.next())
+                        workareaElement.find(`span.btn[data-id="${diffNavigationNextBtnID}"]`).click(() => diffEditor.goToDiff('next'))
 
                         // Refresh the new metadata and do a differentiation check
                         workareaElement.find(`span.btn[data-id="${refreshDifferentiationBtnID}"]`).click(function() {

@@ -1118,6 +1118,8 @@
 
           $('input#ttl').closest('div.row.data-ttl-row').toggle(!(data.isCounterTable == 'true'))
 
+          $(`div[action="insert-row"] div.types-of-transactions`).toggle(!(data.isCounterTable == 'true'))
+
           $('input#insertNoSelectOption').prop('checked', true)
           $('input#insertNoSelectOption').trigger('change')
 
@@ -16770,7 +16772,7 @@
       editorObject.setValue(statement)
     } catch (e) {}
 
-    $(window.visualViewport).trigger('resize')
+    setTimeout(() => $(window.visualViewport).trigger('resize'))
 
     generateInsertStatementsModal.show()
 

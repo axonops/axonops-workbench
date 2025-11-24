@@ -424,6 +424,7 @@ let buildTreeView = async (specificScope = null) => {
             'responsive': true,
             'name': 'default-dark'
           },
+          'multiple': false,
           'data': [{
               'id': workspacesParentID,
               'parent': '#',

@@ -1052,6 +1052,17 @@ $(document).on('initialize', () => {
                   // Update the input's object
                   inputObject.update()
                   inputObject._deactivate()
+
+                  try {
+                    if (!(_section == 'connection' && _key == 'timestamp_generator'))
+                      throw 0
+
+                    let newValue = optionValue.length <= 0 ? '' : (optionValue == 'None' ? 'Server-Side Time' : 'Client-Side Time')
+
+                    input.attr('cqlsh-value', optionValue)
+
+                    input.val(newValue)
+                  } catch (e) {}
                 }
               }
             } catch (e) {} finally {

@@ -327,6 +327,7 @@
   },
   "dependencies": {
     "@axonops/node-pty": "^1.0.2",
+    "@mhmdkrmabd/node-rsa-keys-generator": "^1.1.0",
     "@ramumb/strip-tags": "^0.1.3",
     "@xterm/addon-canvas": "^0.7.0",
     "@xterm/addon-fit": "^0.10.0",

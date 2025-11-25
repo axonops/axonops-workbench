@@ -1,5 +1,6 @@
 onlyBuiltDependencies:
   - '@axonops/node-pty'
+  - '@mhmdkrmabd/node-rsa-keys-generator'
   - better-sqlite3
   - cpu-features
   - electron

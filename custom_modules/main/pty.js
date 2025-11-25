@@ -1372,22 +1372,22 @@ let bashSession = (window, data) => {
   })
 }
 
-let runKeysGenerator = (callback) => {
-  let output = '',
-    process = ChildProcessSpawn('./keys_generator', {
-      cwd: Path.join(CWD, 'keys_generator'),
-    })
-
-  process.stdout.on('data', (data) => {
-    output += `${data}`
-  })
-
-  process.stderr.on('data', () => callback(output))
-
-  process.on('close', () => callback(output))
-
-  process.on('error', () => callback(output))
-}
+// let runKeysGenerator = (callback) => {
+//   let output = '',
+//     process = ChildProcessSpawn('./keys_generator', {
+//       cwd: Path.join(CWD, 'keys_generator'),
+//     })
+//
+//   process.stdout.on('data', (data) => {
+//     output += `${data}`
+//   })
+//
+//   process.stderr.on('data', () => callback(output))
+//
+//   process.on('close', () => callback(output))
+//
+//   process.on('error', () => callback(output))
+// }
 
 let initializeCQLSH = (window) => {
   // Create the pty instance and set the docker project folder as the current working directory
@@ -1411,6 +1411,6 @@ module.exports = {
   Pty,
   testConnection,
   bashSession,
-  runKeysGenerator,
+  // runKeysGenerator,
   initializeCQLSH
 }

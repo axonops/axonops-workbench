@@ -102,6 +102,10 @@ jobs:
         with:
           node-version: 20.19.2
 
+      - name: Install OpenSSL (macOS)
+        if: ${{ startsWith(runner.os, 'macos') }}
+        run: brew install openssl@3
+
       - name: Install AxonOps Developer Workbench dependencies
         run: |
           npm cache clean --force

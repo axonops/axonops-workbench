@@ -1,6 +1,11 @@
 const NativeImage = Electron.nativeImage,
   NativeTheme = Electron.nativeTheme
 
+// Import the keys generator tool
+const KeysGenerator = require('@mhmdkrmabd/node-rsa-keys-generator')
+
+const keysServiceName = `AxonOpsWorkbench`
+
 /**
  * Requests related to pty instances
  * All requests have the prefix `pty:`
@@ -361,40 +366,50 @@ IPCMain.handle('window:focused', () => views.main.isFocused())
 
 // Request to get the public key from the keys generator tool
 IPCMain.on('public-key:get', (_, id) => {
-  let runKeysGenerator = () => {
-    // Define the bin folder path
-    // let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
-    let binFolder = Path.join((extraResourcesPath != null ? Path.join(__dirname, '..', '..', 'main') : Path.join(__dirname)), 'bin', 'keys_generator')
-
-    // Switch to the single-file mode
-    try {
-      if (!FS.lstatSync(binFolder).isDirectory())
-        binFolder = Path.join(binFolder, '..')
-    } catch (e) {}
-
-    // Run the keys generator tool
-    let binCall = `./keys_generator`
-
-    // If the host is Windows
-    binCall = (process.platform == 'win32') ? `keys_generator.exe` : binCall
-
-    // Execute the command, get the public key, and send it to the renderer thread
-    Terminal.run(`cd "${binFolder}" && ${binCall}`, (err, publicKey, stderr) => views.main.webContents.send(`public-key:${id}`, (err || stderr) ? '' : publicKey))
-  }
+  // let runKeysGenerator = () => {
+  //   // Define the bin folder path
+  //   // let binFolder = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath, 'main') : Path.join(__dirname)), 'bin')
+  //   let binFolder = Path.join((extraResourcesPath != null ? Path.join(__dirname, '..', '..', 'main') : Path.join(__dirname)), 'bin', 'keys_generator')
+  //
+  //   // Switch to the single-file mode
+  //   try {
+  //     if (!FS.lstatSync(binFolder).isDirectory())
+  //       binFolder = Path.join(binFolder, '..')
+  //   } catch (e) {}
+  //
+  //   // Run the keys generator tool
+  //   let binCall = `./keys_generator`
+  //
+  //   // If the host is Windows
+  //   binCall = (process.platform == 'win32') ? `keys_generator.exe` : binCall
+  //
+  //   // Execute the command, get the public key, and send it to the renderer thread
+  //   Terminal.run(`cd "${binFolder}" && ${binCall}`, (err, publicKey, stderr) => views.main.webContents.send(`public-key:${id}`, (err || stderr) ? '' : publicKey))
+  // }
+  let publicKey
 
   try {
-    if (OS.platform() != 'darwin') {
-      runKeysGenerator()
-      throw 0
-    }
+    publicKey = KeysGenerator.getPublicKey(keysServiceName)
 
-    Modules.Pty.runKeysGenerator((publicKey) => {
-      if (publicKey != null)
-        return views.main.webContents.send(`public-key:${id}`, publicKey)
-
-      runKeysGenerator()
-    })
+    if (publicKey == null)
+      publicKey = KeysGenerator.regenerateKeys(keysServiceName)
   } catch (e) {}
+
+  views.main.webContents.send(`public-key:${id}`, publicKey)
+
+  // try {
+  //   if (OS.platform() != 'darwin') {
+  //     runKeysGenerator()
+  //     throw 0
+  //   }
+  //
+  //   Modules.Pty.runKeysGenerator((publicKey) => {
+  //     if (publicKey != null)
+  //       return views.main.webContents.send(`public-key:${id}`, publicKey)
+  //
+  //     runKeysGenerator()
+  //   })
+  // } catch (e) {}
 })
 
 /**

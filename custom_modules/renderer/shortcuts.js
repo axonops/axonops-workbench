@@ -146,7 +146,7 @@ let defaultShortcuts = [{
     uneditable: true
   },
   {
-    id: 'deselect row',
+    id: 'deselect-row',
     description: 'Deselect a row',
     keys: {
       win32: 'ctrl+lMouse',
@@ -155,6 +155,44 @@ let defaultShortcuts = [{
     },
     uneditable: true
   },
+  {
+    id: 'next-cell-right',
+    description: 'Move the next cell from the right',
+    keys: {
+      win32: 'ArrowRight',
+      darwin: 'ArrowRight',
+      linux: 'ArrowRight'
+    },
+    uneditable: true
+  },
+  {
+    id: 'next-cell-left',
+    description: 'Move the next cell from the left',
+    keys: {
+      win32: 'ArrowLeft',
+      darwin: 'ArrowLeft',
+      linux: 'ArrowLeft'
+    }
+  },
+  {
+    id: 'next-cell-up',
+    description: 'Move the next cell from the above',
+    keys: {
+      win32: 'ArrowUp',
+      darwin: 'ArrowUp',
+      linux: 'ArrowUp'
+    }
+  },
+  {
+    id: 'next-cell-down',
+    description: 'Move the next cell from the below',
+    keys: {
+      win32: 'ArrowDown',
+      darwin: 'ArrowDown',
+      linux: 'ArrowDown'
+    },
+    uneditable: true
+  }
 ]
 
 let utils = {

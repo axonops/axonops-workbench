@@ -1240,3 +1240,7 @@ ul.top-position {
   bottom: 5px !important;
   transform: scale(0.9) !important;
 }
+
+.tabulator-row .tabulator-cell.tabulator-editing.copied {
+  transition: box-shadow 0.1s ease-in-out;
+}

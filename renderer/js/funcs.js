@@ -1046,6 +1046,7 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
           'responsive': true,
           'name': 'default-dark'
         },
+        'multiple': false,
         'data': [{
             'id': connectionID,
             'parent': '#',
@@ -3124,6 +3125,120 @@ jQuery.fn.extend({
       x: offset.left,
       y: offset.top
     }
+  },
+  getNextElement: function(selector, direction) {
+    // Navigate Left
+    if (direction === 'left') {
+      // Find all previous siblings matching the selector and get the closest one
+      let prevElements = $(this).prevAll(selector)
+
+      return prevElements.length > 0 ? prevElements.first() : $()
+    }
+
+    // Navigate Right
+    if (direction === 'right') {
+      // Find all next siblings matching the selector and get the closest one
+      let nextElements = $(this).nextAll(selector)
+
+      return nextElements.length > 0 ? nextElements.first() : $()
+    }
+
+    // Navigate Up or Down
+    if (direction === 'up' || direction === 'down') {
+      // 1. Get the parent row
+      let row = $(this).parent(),
+        // 2. Get all matching elements in the current row
+        cellsInRow = row.children(selector),
+        // 3. Find the index of the current element among matching siblings
+        index = cellsInRow.index($(this))
+
+      // If element not found in current row, return empty
+      if (index === -1)
+        return $()
+
+      // 4. Find the target row based on direction
+      let targetRow = (direction === 'up') ? row.prev() : row.next()
+
+      // If no target row exists, return empty
+      if (targetRow.length === 0)
+        return $()
+
+      // 5. Get the element at the same index in the target row
+      let targetCell = targetRow.children(selector).eq(index)
+
+      return targetCell.length > 0 ? targetCell : $()
+    }
+
+    // Return an empty jQuery object if direction is invalid
+    return $()
+  },
+  scrollToElement: function() {
+    if ($(this).length === 0)
+      return
+
+    // Find all scrollable parents
+    let scrollableParents = $(this).findScrollableParents()
+
+    if (scrollableParents.length > 0) {
+      let scrollableParent = $(scrollableParents[0]),
+        containerOffset = scrollableParent.offset(),
+        elementOffset = $(this).offset(),
+        containerScrollTop = scrollableParent.scrollTop(),
+        containerScrollLeft = scrollableParent.scrollLeft()
+
+      // Calculate the position of the element relative to the scrollable container
+      let relativeTop = elementOffset.top - containerOffset.top,
+        relativeLeft = elementOffset.left - containerOffset.left,
+        scrollConfig = {},
+        // Check if vertical scrolling is needed
+        containerHeight = scrollableParent.innerHeight()
+
+      if (relativeTop < 0 || relativeTop > containerHeight)
+        scrollConfig.scrollTop = containerScrollTop + relativeTop - (containerHeight / 2)
+
+      // Check if horizontal scrolling is needed
+      let containerWidth = scrollableParent.innerWidth()
+
+      if (relativeLeft < 0 || relativeLeft > containerWidth)
+        scrollConfig.scrollLeft = containerScrollLeft + relativeLeft - (containerWidth / 2)
+
+      // Animate scroll if needed
+      if (Object.keys(scrollConfig).length > 0)
+        scrollableParent.animate(scrollConfig, 20)
+    } else {
+      // No scrollable parent found, scroll the window
+      $('html, body').animate({
+        scrollTop: $(this).offset().top - 100,
+        scrollLeft: $(this).offset().left - 100
+      }, 20)
+    }
+  },
+  findScrollableParents: function() {
+    let scrollableParents = [],
+      parent = $(this).parent()
+
+    // Traverse up the DOM tree to find all scrollable parents
+    while (parent.length > 0 && !parent.is('html')) {
+      let overflowY = parent.css('overflow-y'),
+        overflowX = parent.css('overflow-x'),
+        overflow = parent.css('overflow')
+
+      // Check if this parent is scrollable
+      let isScrollableY = (overflowY === 'auto' || overflowY === 'scroll' || overflow === 'auto' || overflow === 'scroll'),
+        isScrollableX = (overflowX === 'auto' || overflowX === 'scroll' || overflow === 'auto' || overflow === 'scroll')
+
+      // Check if it actually has scrollable content
+      let hasVerticalScroll = parent[0].scrollHeight > parent[0].clientHeight,
+        hasHorizontalScroll = parent[0].scrollWidth > parent[0].clientWidth
+
+      // Add to array if it's scrollable in any direction
+      if ((isScrollableY && hasVerticalScroll) || (isScrollableX && hasHorizontalScroll))
+        scrollableParents.push(parent)
+
+      parent = parent.parent()
+    }
+
+    return scrollableParents
   }
 })
 
@@ -4230,6 +4345,8 @@ let setUIColor = (workspaceColor) => {
           .jstree-default-dark .jstree-search {background: ${backgroundColor.hover.replace('70%', '15%')} !important;}
           div.sub-output-content div.select-page-rows-container:after {background: ${backgroundColor.default} !important;}
           .tabulator .tabulator-header{border-bottom-color:${backgroundColor.default} !important;}
+          .tabulator-row .tabulator-cell.tabulator-editing{border: 1px solid ${backgroundColor.default};}
+          .tabulator-row .tabulator-cell.tabulator-editing.copied {box-shadow: inset 0px 0px 20px 5px ${backgroundColor.default};}
           .tabulator .tabulator-footer{border-top-color:${backgroundColor.default} !important;}
           .tabulator .tabulator-header .tabulator-col input:focus, .tabulator .tabulator-header .tabulator-col select:focus{border-color: ${backgroundColor.default} !important}
           .tabulator .tabulator-header .tabulator-col.tabulator-sortable .tabulator-col-content .tabulator-col-sorter .tabulator-arrow {border-top-color: ${backgroundColor.default} !important; color: ${backgroundColor.default} !important;}
@@ -4653,6 +4770,7 @@ let buildTableFieldsTreeview = (keys = [], columns = [], udts = [], keyspaceUDTs
         'check_while_dragging': false
       },
       'core': {
+        'multiple': false,
         'strings': {
           'Loading ...': ' '
         },

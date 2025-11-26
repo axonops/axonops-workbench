@@ -3802,6 +3802,30 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       tabulatorObject.on('rowSelected', () => handleRowClick())
 
                                       tabulatorObject.on('rowDeselected', () => handleRowClick())
+
+                                      let clickOutsideEvent,
+                                        tabulatorTableContainer = outputElement.find('div.tabulator[id]')
+
+                                      setTimeout(() => tabulatorObject.on('cellClick', function(e, cell) {
+                                        try {
+                                          tabulatorTableContainer.oneClickOutside('off')
+                                        } catch (e) {}
+
+                                        tabulatorTableContainer.addClass('arrows-nav')
+
+                                        tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
+
+                                        clickOutsideEvent = tabulatorTableContainer.oneClickOutside({
+                                          callback: function() {
+                                            tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
+
+                                            tabulatorTableContainer.removeClass('arrows-nav')
+                                          },
+                                          calledFromClickInsideHandler: true
+                                        })
+
+                                        $(cell._cell.element).addClass('tabulator-editing')
+                                      }))
                                     })
 
                                     try {
@@ -3907,7 +3931,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       // Handle the download options
                                       {
                                         // Download the table as CSV
-                                        outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), 'statement_block.csv')))
+                                        outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', 'statement_block.csv'))
 
                                         // Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), descriptionFileName)
 
@@ -3970,6 +3994,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                           // Remove the block from the session
                                           blockElement.remove()
+
+                                          setTimeout(() => $(window.visualViewport).trigger('resize'))
 
                                           try {
                                             // Point at the session's statements' container
@@ -10042,9 +10068,10 @@ const ConnectionTestProcessTerminationTimeout = 250
             isUpdatingEditor = true // Change the value to `true`; to prevent collisions
 
             try {
-              let timestampGenerator = cqlshValues.connection.timestamp_generator
+              let timestampGenerator = cqlshValues.connection.timestamp_generator,
+                currentValue = $('input[info-section="connection"][info-key="timestamp_generator"]').attr('cqlsh-value')
 
-              cqlshValues.connection.timestamp_generator = timestampGenerator == 'Not Set' ? 'DISABLED' : timestampGenerator
+              cqlshValues.connection.timestamp_generator = (timestampGenerator == 'Not Set' || currentValue == 'Not Set') ? 'DISABLED' : currentValue
             } catch (e) {}
 
             // Get final values - from the input fields - as JSON object

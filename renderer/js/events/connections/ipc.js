@@ -13793,10 +13793,17 @@
       setTimeout(() => {
         $(`div.dropdown[for-select="timestampGenerator"] ul.dropdown-menu`).find('a').click(function() {
           // Point at the input field related to the list
-          let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)
+          let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`),
+            selectedValue = $(this).attr('value')
 
-          // Update the input's value
-          selectElement.val($(this).attr('value')).trigger('input')
+          try {
+            let newValue = (selectedValue == 'Not Set' || selectedValue.length <= 0) ? '' : (selectedValue == 'None' ? 'Server-Side Time' : 'Client-Side Time')
+
+            selectElement.attr('cqlsh-value', selectedValue)
+
+            // Update the input's value
+            selectElement.val(newValue).trigger('input')
+          } catch (e) {}
         })
       })
     }

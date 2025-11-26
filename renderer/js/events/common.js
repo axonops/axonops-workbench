@@ -2008,10 +2008,194 @@
        * `F11` for toggling fullscreen mode
        * This shortcut is fixed
        */
-      if (e.keyCode != 122)
-        return
+      if (e.keyCode == 122)
+        actionButton.filter('[action="toggleFullscreen"]').click()
 
-      actionButton.filter('[action="toggleFullscreen"]').click()
+      try {
+        let tabulatorTableArrowsActive = $('div.tabulator[id].arrows-nav').filter(':visible')
+
+        if (tabulatorTableArrowsActive.length <= 0)
+          throw 0
+
+        // Handle Shift+Arrow for multi-select
+        if (e.shiftKey && [37, 38, 39, 40].includes(e.keyCode)) {
+          e.preventDefault()
+
+          let allSelectedCells = tabulatorTableArrowsActive.find('div.tabulator-cell.tabulator-editing')
+
+          if (allSelectedCells.length === 0)
+            throw 0
+
+          let direction = {
+            37: 'left',
+            38: 'up',
+            39: 'right',
+            40: 'down'
+          } [e.keyCode]
+
+          let rows = tabulatorTableArrowsActive.find('div.tabulator-row'),
+            // The pivot depends on direction
+            pivotCell
+
+          if (direction === 'up') {
+            // For up, find the last cell in the top selected row
+            let minRowIndex = Infinity
+
+            allSelectedCells.each(function() {
+              let rowIndex = rows.index($(this).parent())
+
+              if (rowIndex < minRowIndex)
+                minRowIndex = rowIndex
+            })
+
+            // Get the last selected cell in that top row
+            let topRowCells = allSelectedCells.filter(function() {
+              return rows.index($(this).parent()) === minRowIndex
+            })
+
+            pivotCell = topRowCells.last()
+          } else if (direction === 'left') {
+            // For left, find the first cell in the bottom selected row
+            let maxRowIndex = -1
+
+            allSelectedCells.each(function() {
+              let rowIndex = rows.index($(this).parent())
+
+              if (rowIndex > maxRowIndex)
+                maxRowIndex = rowIndex
+            })
+
+            // Get the first selected cell in that bottom row
+            let bottomRowCells = allSelectedCells.filter(function() {
+              return rows.index($(this).parent()) === maxRowIndex
+            })
+
+            pivotCell = bottomRowCells.first()
+          } else {
+            pivotCell = allSelectedCells.last()
+          }
+
+          let nextElement = pivotCell.getNextElement('div.tabulator-cell', direction)
+
+          if (nextElement.length != 0) {
+            // Add class to the next element
+            nextElement.addClass('tabulator-editing')
+
+            // If moving up/down, select all cells from the first column to this cell's column
+            if (direction === 'up' || direction === 'down') {
+              // Get the first selected cell's column index (anchor column)
+              let firstSelectedCell = allSelectedCells.first(),
+                anchorColIndex = firstSelectedCell.index(),
+                // Walk through and select cells in the range
+                cell = nextElement
+
+              while (cell.length != 0 && cell.index() > anchorColIndex) {
+                cell = cell.getNextElement('div.tabulator-cell', 'left')
+
+                if (cell.length != 0 && cell.index() >= anchorColIndex)
+                  cell.addClass('tabulator-editing')
+              }
+            }
+
+            // If moving left/right, select all cells above the new cell
+            if (direction === 'left' || direction === 'right') {
+              let cell = nextElement,
+                aboveCell = cell.getNextElement('div.tabulator-cell', 'up')
+
+              while (aboveCell.length != 0 && aboveCell.hasClass('tabulator-editing') === false) {
+                // Check if this row has any selected cells
+                let row = aboveCell.parent()
+
+                if (row.find('div.tabulator-cell.tabulator-editing').length > 0) {
+                  aboveCell.addClass('tabulator-editing')
+                } else {
+                  break
+                }
+
+                aboveCell = aboveCell.getNextElement('div.tabulator-cell', 'up')
+              }
+            }
+
+            nextElement.scrollToElement()
+          }
+        }
+        // Handle regular Arrow keys (single selection)
+        else if (!e.shiftKey && [37, 38, 39, 40].includes(e.keyCode)) {
+          let currentActiveCell = tabulatorTableArrowsActive.find('div.tabulator-cell.tabulator-editing').last()
+
+          if (currentActiveCell.length === 0)
+            throw 0
+
+          let direction = {
+            37: 'left',
+            38: 'up',
+            39: 'right',
+            40: 'down'
+          } [e.keyCode]
+
+          let nextElement = currentActiveCell.getNextElement('div.tabulator-cell', direction)
+
+          if (nextElement.length != 0) {
+            tabulatorTableArrowsActive.find('div.tabulator-cell').removeClass('tabulator-editing')
+
+            nextElement.addClass('tabulator-editing')
+
+            nextElement.scrollToElement()
+          }
+        }
+
+        // Copy the content of selected cells with Ctrl+C
+        try {
+          if (!(e.ctrlKey && e.keyCode == 67))
+            throw 0
+
+          let selectedCells = tabulatorTableArrowsActive.find('div.tabulator-cell.tabulator-editing')
+
+          if (selectedCells.length === 0)
+            throw 0
+
+          // Group cells by row to preserve structure
+          let rowsMap = new Map(),
+            rows = tabulatorTableArrowsActive.find('div.tabulator-row')
+
+          selectedCells.each(function() {
+            let cell = $(this),
+              row = cell.parent(),
+              rowIndex = rows.index(row),
+              cellIndex = cell.index()
+
+            if (!rowsMap.has(rowIndex))
+              rowsMap.set(rowIndex, [])
+
+            rowsMap.get(rowIndex).push({
+              index: cellIndex,
+              content: cell.text()
+            })
+          })
+
+          // Sort rows by index and build the clipboard content
+          let sortedRowIndices = Array.from(rowsMap.keys()).sort((a, b) => a - b),
+            clipboardLines = []
+
+          sortedRowIndices.forEach(function(rowIndex) {
+            let cells = rowsMap.get(rowIndex)
+
+            cells.sort((a, b) => a.index - b.index)
+
+            let rowContent = cells.map(c => c.content).join(',')
+
+            clipboardLines.push(rowContent)
+          })
+
+          let clipboardContent = clipboardLines.join('\n')
+
+          Clipboard.writeText(clipboardContent)
+
+          selectedCells.addClass('copied')
+
+          setTimeout(() => selectedCells.removeClass('copied'), 150)
+        } catch (e) {}
+      } catch (e) {}
     })
 
     $(document).on('clearEnhancedConsole', () => {

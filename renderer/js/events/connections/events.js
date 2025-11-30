@@ -1572,6 +1572,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           getElementMDBObject($(this), 'Tooltip')
                         }))
 
+                        // Apply the chosen language on the UI element after being fully loaded
+                        setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
                         // Call the callback function with the created block
                         if (callback != null)
                           callback($(this))
@@ -1610,9 +1613,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             } catch (e) {}
                           })
                         })
-
-                        // Apply the chosen language on the UI element after being fully loaded
-                        setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
                       }))
                     }
 
@@ -4647,7 +4647,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       let blockID
 
                       // Clicks the statement's execution button
-                      executeBtn.click(function() {
+                      executeBtn.on('click', function(e, oldStatement = '') {
                         // If the button is disabled then skip the upcoming code and end the process
                         if ($(this).attr('disabled') != undefined || $(this).parent().hasClass('busy'))
                           return
@@ -4659,10 +4659,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         blockID = getRandom.id(10)
 
                         // Clear the statement's input field and make sure it's focused on it
-                        setTimeout(() => statementInputField.val('').trigger('input').attr('style', null))
+                        setTimeout(() => statementInputField.val(oldStatement).trigger('input').attr('style', null))
 
                         setTimeout(() => {
-                          consoleEditor.setValue('')
+                          consoleEditor.setValue(oldStatement)
                           consoleEditor.focus()
                         })
 
@@ -5742,7 +5742,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 closestWord = closestWord.slice(closestWord.indexOf('.') + 1)
                               } catch (e) {}
 
-                              let finalSuggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray, isSuggestKeyspaces || isKeyspace)
+                              let finalSuggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray, isSuggestKeyspaces || isKeyspace),
+                                isONKeyword = false
 
                               // Handle suggesting columns from table
                               try {
@@ -5751,10 +5752,16 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                 let keyspaceAndTable = null
 
-                                try {
-                                  keyspaceAndTable = statement.match(/.*\bfrom\s+(.*?)\s+where\b/is)[1]
-                                } catch (e) {
-                                  keyspaceAndTable = statement.match(/.*\bupdate\s+(.*?)\s+\b/is)[1]
+                                // Try any of these
+                                for (let regex of [/.*\bfrom\s+(.*?)\s+where\b/is, /.*\bupdate\s+(.*?)\s+\b/is, /.*\ON\s+(.*?)\s+/is]) {
+                                  try {
+                                    keyspaceAndTable = statement.match(regex)[1]
+
+                                    if (`${regex}`.includes('ON') && statement.match(/ON.+\(/is) == null)
+                                      isONKeyword = true
+
+                                    break
+                                  } catch (e) {}
                                 }
 
                                 if (keyspaceAndTable == null)
@@ -5779,6 +5786,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   suggestion = suggestionItem.name
 
                                 insertText = (isSuggestKeyspaces || isKeyspace) ? addDoubleQuotes(`${suggestion}`) : suggestion
+
+                                if (isONKeyword)
+                                  insertText = `(${insertText})`
 
                                 return {
                                   label: !isItemObject ? suggestion : `${suggestionItem.name}: ${suggestionItem.type}`,
@@ -7540,15 +7550,17 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           if (statement.length <= 0)
                             throw 0
 
+                          let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
+                            oldStatement = `${statementInputField.val()}`
+
                           try {
-                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`)
                             statementInputField.val(statement)
                             statementInputField.trigger('input').focus()
                             AutoSize.update(statementInputField[0])
                           } catch (e) {}
 
                           try {
-                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).click(), 100)
+                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).trigger('click', oldStatement))
                           } catch (e) {}
                         } catch (e) {}
                       })
@@ -7590,18 +7602,19 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         $(`div.backdrop:last`).click()
 
                         try {
-                          let pagingSize = parseInt(paginationSizeInput.val()),
-                            statement = `PAGING ${pagingSize}`
+                          let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
+                            pagingSize = parseInt(paginationSizeInput.val()),
+                            statement = `PAGING ${pagingSize}`,
+                            oldStatement = `${statementInputField.val()}`
 
                           try {
-                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`)
                             statementInputField.val(statement)
                             statementInputField.trigger('input').focus()
                             AutoSize.update(statementInputField[0])
                           } catch (e) {}
 
                           try {
-                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).click(), 100)
+                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).trigger('click', oldStatement))
                           } catch (e) {}
                         } catch (e) {}
                       })
@@ -7628,18 +7641,19 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                       queryTracingActionContainer.find('button.btn').click(function() {
                         try {
-                          let isTracingEnabled = queryTracingActionContainer.data('tracingStatus') == true,
-                            statement = `TRACING ${isTracingEnabled ? 'OFF' : 'ON'}`
+                          let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
+                            isTracingEnabled = queryTracingActionContainer.data('tracingStatus') == true,
+                            statement = `TRACING ${isTracingEnabled ? 'OFF' : 'ON'}`,
+                            oldStatement = `${statementInputField.val()}`
 
                           try {
-                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`)
                             statementInputField.val(statement)
                             statementInputField.trigger('input').focus()
                             AutoSize.update(statementInputField[0])
                           } catch (e) {}
 
                           try {
-                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).click(), 100)
+                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).trigger('click', oldStatement))
                           } catch (e) {}
                         } catch (e) {}
                       })

@@ -2691,13 +2691,14 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
       throw 0
 
     // Get a random ID for the `Virtual Keyspaces` node
-    let virtualKeyspacesParentID = await getMD5IDForNode()
+    let virtualKeyspacesParentID = await getMD5IDForNode(),
+      virtualKeyspacesCount = metadata.keyspaces.filter((keyspace) => keyspace.virtual).length
 
     // Define the node structure
     let structure = {
       id: virtualKeyspacesParentID,
       parent: keyspacesID,
-      text: `Virtual Keyspaces (<span>${virtualNodes.length}</span>)`,
+      text: `Virtual Keyspaces (<span>${virtualKeyspacesCount}</span>)`,
       type: 'default',
       state: {
         opened: true,

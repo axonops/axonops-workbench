@@ -682,7 +682,7 @@ $(document).on('initialize', () => {
   {
     let materialPath = Path.join(__dirname, '..', 'js', 'external', 'mdb5')
 
-    loadStyleSheet(Path.join(materialPath, 'style-dark.css'))
+    setTimeout(() => loadStyleSheet(Path.join(materialPath, 'style-dark.css')))
 
     loadScript(Path.join(materialPath, 'mdb.js'))
 

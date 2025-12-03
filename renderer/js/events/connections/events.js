@@ -3739,13 +3739,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       // Add `Select rows in the page` option
                                       let selectPageRowsCheckboxID = `_${getRandom.id()}`
 
-                                      outputElement.find('div.sub-output-content').find('div.tabulator').before($(`
+                                      outputElement.find('div.sub-output-content').find('div.tabulator').find('div.tabulator-headers').children('div.tabulator-col[tabulator-field="checkbox"]').first().append($(`
                                       <div class="select-page-rows-container">
                                         <div class="form-check">
-                                          <input class="form-check-input" type="checkbox" role="switch" id="${selectPageRowsCheckboxID}">
-                                          <label class="form-check-label" for="${selectPageRowsCheckboxID}">
-                                            <span mulang="select all rows in the current page" capitalize-first></span>.
-                                          </label>
+                                          <input class="form-check-input no-tabulator-style" type="checkbox" role="switch" id="${selectPageRowsCheckboxID}">
                                         </div>
                                       </div>
                                       `).show(function() {
@@ -3792,9 +3789,21 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                         }]))
                                       })
 
+                                      let isRowSelectionEnabled = false
+
                                       let handleRowClick = () => {
                                         let selectedRows = tabulatorObject.getSelectedRows(),
                                           hintElement = outputElement.find('div.general-hint.select-rows')
+
+                                        isRowSelectionEnabled = selectedRows.length > 0
+
+                                        if (isRowSelectionEnabled) {
+                                          selectedRows.forEach((row) => $(row._row.element).find('input.select-row[type="checkbox"]').prop('checked', true))
+                                        } else {
+                                          tabulatorTableContainer.find('input.select-row[type="checkbox"]').prop('checked', false)
+
+                                          $(`input#${selectPageRowsCheckboxID}`).prop('checked', false)
+                                        }
 
                                         hintElement.toggle(selectedRows.length > 0)
                                       }
@@ -3807,6 +3816,46 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                         tabulatorTableContainer = outputElement.find('div.tabulator[id]')
 
                                       setTimeout(() => tabulatorObject.on('cellClick', function(e, cell) {
+                                        let cellElement = $(cell._cell.element),
+                                          rowSelectCheckbox = cellElement.find('input.select-row[type="checkbox"]')
+
+                                        try {
+                                          if (rowSelectCheckbox.length <= 0 && !isRowSelectionEnabled)
+                                            throw 0
+
+                                          tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
+
+                                          rowSelectCheckbox = $(cell._cell.row.element).find('input.select-row[type="checkbox"]')
+
+                                          let currentCheckboxState = rowSelectCheckbox.prop('checked')
+
+                                          // Always deselect
+                                          if (e.ctrlKey && !e.shiftKey)
+                                            currentCheckboxState = true
+
+                                          cell._cell.row.component[!currentCheckboxState ? 'select' : 'deselect']()
+
+                                          rowSelectCheckbox.prop('checked', !currentCheckboxState)
+
+                                          /**
+                                           * Check if SHIFT is being held
+                                           * If so then select all previous rows
+                                           */
+                                          if (e.shiftKey && !e.ctrlKey)
+                                            $(cell._cell.row.element).prevUntil('div.tabulator-row.tabulator-selected').each(function() {
+                                              let checkbox = $(this).find('input.select-row[type="checkbox"]')
+
+                                              if (!checkbox.prop('checked'))
+                                                checkbox.closest('div.tabulator-cell[tabulator-field="checkbox"]').click()
+                                            })
+
+                                          return
+                                        } catch (e) {}
+
+                                        // Disable cell selection when row selection is enabled
+                                        if (isRowSelectionEnabled)
+                                          return
+
                                         try {
                                           tabulatorTableContainer.oneClickOutside('off')
                                         } catch (e) {}

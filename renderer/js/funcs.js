@@ -888,6 +888,16 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
       // The variable which is going to hold the Tabulator object
       tabulatorTable
 
+    try {
+      if (paginationSizeSelectorEnabled)
+        throw 0
+
+      convertedJSON.table[0].unshift('select-checkbox')
+
+      for (let jsonData of convertedJSON.json)
+        jsonData.checkbox = ''
+    } catch (e) {}
+
     // Append the HTML table to the passed container
     container.append($(`<div id="_${tableID}"></div>`).show(function() {
       try {
@@ -896,11 +906,23 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
           tabulatorTable = new Tabulator(`div#_${tableID}`, {
             layout: 'fitDataStretch',
             columns: convertedJSON.table[0].map((column) => {
-              return {
-                title: column,
-                field: column,
-                headerFilter: 'input'
-              }
+              let isCheckbox = column == 'select-checkbox',
+                finalFormat = {}
+
+              try {
+                finalFormat = {
+                  title: !isCheckbox ? column : 'select',
+                  field: !isCheckbox ? column : 'checkbox',
+                  headerFilter: !isCheckbox ? 'input' : ''
+                }
+
+                if (isCheckbox)
+                  finalFormat.formatter = () => `<div class="form-check">
+                                                    <input class="form-check-input select-row" type="checkbox">
+                                                  </div>`
+              } catch (e) {}
+
+              return finalFormat
             }),
             data: convertedJSON.json,
             resizableColumnFit: true,
@@ -908,8 +930,8 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
             movableColumns: true,
             pagination: 'local',
             paginationSize,
-            selectableRows: !paginationSizeSelectorEnabled,
-            selectableRowsRangeMode: 'click',
+            // selectableRows: !paginationSizeSelectorEnabled,
+            // selectableRowsRangeMode: 'click',
             virtualDom: true,
             paginationSizeSelector: paginationSizeSelectorEnabled ? [5, 10, 20, 40, 60, 80, 100] : false,
             paginationCounter: 'rows',
@@ -2691,13 +2713,14 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
       throw 0
 
     // Get a random ID for the `Virtual Keyspaces` node
-    let virtualKeyspacesParentID = await getMD5IDForNode()
+    let virtualKeyspacesParentID = await getMD5IDForNode(),
+      virtualKeyspacesCount = metadata.keyspaces.filter((keyspace) => keyspace.virtual).length
 
     // Define the node structure
     let structure = {
       id: virtualKeyspacesParentID,
       parent: keyspacesID,
-      text: `Virtual Keyspaces (<span>${virtualNodes.length}</span>)`,
+      text: `Virtual Keyspaces (<span>${virtualKeyspacesCount}</span>)`,
       type: 'default',
       state: {
         opened: true,

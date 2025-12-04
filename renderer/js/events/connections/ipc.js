@@ -1118,7 +1118,11 @@
 
           $('input#ttl').closest('div.row.data-ttl-row').toggle(!(data.isCounterTable == 'true'))
 
+          $('input#insertionTimestamp').closest('div.data-insertion-timestamp-row').toggle(!(data.isCounterTable == 'true'))
+
           $(`div[action="insert-row"] div.types-of-transactions`).toggle(!(data.isCounterTable == 'true'))
+
+          $(`div#extraOptionsBadge`).toggle(!(data.isCounterTable == 'true'))
 
           $('input#insertNoSelectOption').prop('checked', true)
           $('input#insertNoSelectOption').trigger('change')

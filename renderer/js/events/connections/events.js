@@ -1572,6 +1572,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           getElementMDBObject($(this), 'Tooltip')
                         }))
 
+                        // Apply the chosen language on the UI element after being fully loaded
+                        setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
                         // Call the callback function with the created block
                         if (callback != null)
                           callback($(this))
@@ -1610,9 +1613,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             } catch (e) {}
                           })
                         })
-
-                        // Apply the chosen language on the UI element after being fully loaded
-                        setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
                       }))
                     }
 
@@ -3739,13 +3739,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       // Add `Select rows in the page` option
                                       let selectPageRowsCheckboxID = `_${getRandom.id()}`
 
-                                      outputElement.find('div.sub-output-content').find('div.tabulator').before($(`
+                                      outputElement.find('div.sub-output-content').find('div.tabulator').find('div.tabulator-headers').children('div.tabulator-col[tabulator-field="checkbox"]').first().append($(`
                                       <div class="select-page-rows-container">
                                         <div class="form-check">
-                                          <input class="form-check-input" type="checkbox" role="switch" id="${selectPageRowsCheckboxID}">
-                                          <label class="form-check-label" for="${selectPageRowsCheckboxID}">
-                                            <span mulang="select all rows in the current page" capitalize-first></span>.
-                                          </label>
+                                          <input class="form-check-input no-tabulator-style" type="checkbox" role="switch" id="${selectPageRowsCheckboxID}">
                                         </div>
                                       </div>
                                       `).show(function() {
@@ -3792,9 +3789,21 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                         }]))
                                       })
 
+                                      let isRowSelectionEnabled = false
+
                                       let handleRowClick = () => {
                                         let selectedRows = tabulatorObject.getSelectedRows(),
                                           hintElement = outputElement.find('div.general-hint.select-rows')
+
+                                        isRowSelectionEnabled = selectedRows.length > 0
+
+                                        if (isRowSelectionEnabled) {
+                                          selectedRows.forEach((row) => $(row._row.element).find('input.select-row[type="checkbox"]').prop('checked', true))
+                                        } else {
+                                          tabulatorTableContainer.find('input.select-row[type="checkbox"]').prop('checked', false)
+
+                                          $(`input#${selectPageRowsCheckboxID}`).prop('checked', false)
+                                        }
 
                                         hintElement.toggle(selectedRows.length > 0)
                                       }
@@ -3807,6 +3816,46 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                         tabulatorTableContainer = outputElement.find('div.tabulator[id]')
 
                                       setTimeout(() => tabulatorObject.on('cellClick', function(e, cell) {
+                                        let cellElement = $(cell._cell.element),
+                                          rowSelectCheckbox = cellElement.find('input.select-row[type="checkbox"]')
+
+                                        try {
+                                          if (rowSelectCheckbox.length <= 0 && !isRowSelectionEnabled)
+                                            throw 0
+
+                                          tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
+
+                                          rowSelectCheckbox = $(cell._cell.row.element).find('input.select-row[type="checkbox"]')
+
+                                          let currentCheckboxState = rowSelectCheckbox.prop('checked')
+
+                                          // Always deselect
+                                          if (e.ctrlKey && !e.shiftKey)
+                                            currentCheckboxState = true
+
+                                          cell._cell.row.component[!currentCheckboxState ? 'select' : 'deselect']()
+
+                                          rowSelectCheckbox.prop('checked', !currentCheckboxState)
+
+                                          /**
+                                           * Check if SHIFT is being held
+                                           * If so then select all previous rows
+                                           */
+                                          if (e.shiftKey && !e.ctrlKey)
+                                            $(cell._cell.row.element).prevUntil('div.tabulator-row.tabulator-selected').each(function() {
+                                              let checkbox = $(this).find('input.select-row[type="checkbox"]')
+
+                                              if (!checkbox.prop('checked'))
+                                                checkbox.closest('div.tabulator-cell[tabulator-field="checkbox"]').click()
+                                            })
+
+                                          return
+                                        } catch (e) {}
+
+                                        // Disable cell selection when row selection is enabled
+                                        if (isRowSelectionEnabled)
+                                          return
+
                                         try {
                                           tabulatorTableContainer.oneClickOutside('off')
                                         } catch (e) {}
@@ -4647,7 +4696,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       let blockID
 
                       // Clicks the statement's execution button
-                      executeBtn.click(function() {
+                      executeBtn.on('click', function(e, oldStatement = '') {
                         // If the button is disabled then skip the upcoming code and end the process
                         if ($(this).attr('disabled') != undefined || $(this).parent().hasClass('busy'))
                           return
@@ -4659,10 +4708,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         blockID = getRandom.id(10)
 
                         // Clear the statement's input field and make sure it's focused on it
-                        setTimeout(() => statementInputField.val('').trigger('input').attr('style', null))
+                        setTimeout(() => statementInputField.val(oldStatement).trigger('input').attr('style', null))
 
                         setTimeout(() => {
-                          consoleEditor.setValue('')
+                          consoleEditor.setValue(oldStatement)
                           consoleEditor.focus()
                         })
 
@@ -5742,7 +5791,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 closestWord = closestWord.slice(closestWord.indexOf('.') + 1)
                               } catch (e) {}
 
-                              let finalSuggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray, isSuggestKeyspaces || isKeyspace)
+                              let finalSuggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray, isSuggestKeyspaces || isKeyspace),
+                                isONKeyword = false
 
                               // Handle suggesting columns from table
                               try {
@@ -5751,10 +5801,16 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                 let keyspaceAndTable = null
 
-                                try {
-                                  keyspaceAndTable = statement.match(/.*\bfrom\s+(.*?)\s+where\b/is)[1]
-                                } catch (e) {
-                                  keyspaceAndTable = statement.match(/.*\bupdate\s+(.*?)\s+\b/is)[1]
+                                // Try any of these
+                                for (let regex of [/.*\bfrom\s+(.*?)\s+where\b/is, /.*\bupdate\s+(.*?)\s+\b/is, /.*\ON\s+(.*?)\s+/is]) {
+                                  try {
+                                    keyspaceAndTable = statement.match(regex)[1]
+
+                                    if (`${regex}`.includes('ON') && statement.match(/ON.+\(/is) == null)
+                                      isONKeyword = true
+
+                                    break
+                                  } catch (e) {}
                                 }
 
                                 if (keyspaceAndTable == null)
@@ -5779,6 +5835,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   suggestion = suggestionItem.name
 
                                 insertText = (isSuggestKeyspaces || isKeyspace) ? addDoubleQuotes(`${suggestion}`) : suggestion
+
+                                if (isONKeyword)
+                                  insertText = `(${insertText})`
 
                                 return {
                                   label: !isItemObject ? suggestion : `${suggestionItem.name}: ${suggestionItem.type}`,
@@ -7540,15 +7599,17 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           if (statement.length <= 0)
                             throw 0
 
+                          let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
+                            oldStatement = `${statementInputField.val()}`
+
                           try {
-                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`)
                             statementInputField.val(statement)
                             statementInputField.trigger('input').focus()
                             AutoSize.update(statementInputField[0])
                           } catch (e) {}
 
                           try {
-                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).click(), 100)
+                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).trigger('click', oldStatement))
                           } catch (e) {}
                         } catch (e) {}
                       })
@@ -7590,18 +7651,19 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         $(`div.backdrop:last`).click()
 
                         try {
-                          let pagingSize = parseInt(paginationSizeInput.val()),
-                            statement = `PAGING ${pagingSize}`
+                          let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
+                            pagingSize = parseInt(paginationSizeInput.val()),
+                            statement = `PAGING ${pagingSize}`,
+                            oldStatement = `${statementInputField.val()}`
 
                           try {
-                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`)
                             statementInputField.val(statement)
                             statementInputField.trigger('input').focus()
                             AutoSize.update(statementInputField[0])
                           } catch (e) {}
 
                           try {
-                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).click(), 100)
+                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).trigger('click', oldStatement))
                           } catch (e) {}
                         } catch (e) {}
                       })
@@ -7628,18 +7690,19 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                       queryTracingActionContainer.find('button.btn').click(function() {
                         try {
-                          let isTracingEnabled = queryTracingActionContainer.data('tracingStatus') == true,
-                            statement = `TRACING ${isTracingEnabled ? 'OFF' : 'ON'}`
+                          let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
+                            isTracingEnabled = queryTracingActionContainer.data('tracingStatus') == true,
+                            statement = `TRACING ${isTracingEnabled ? 'OFF' : 'ON'}`,
+                            oldStatement = `${statementInputField.val()}`
 
                           try {
-                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`)
                             statementInputField.val(statement)
                             statementInputField.trigger('input').focus()
                             AutoSize.update(statementInputField[0])
                           } catch (e) {}
 
                           try {
-                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).click(), 100)
+                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).trigger('click', oldStatement))
                           } catch (e) {}
                         } catch (e) {}
                       })

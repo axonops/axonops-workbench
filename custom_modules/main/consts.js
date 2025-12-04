@@ -55,7 +55,7 @@ const Constants = {
    * From:
    * https://github.com/apache/cassandra/blob/trunk/src/resources/org/apache/cassandra/cql3/reserved_keywords.txt
    */
-  CQLKeywords: ['ADD', 'ALLOW', 'ALTER', 'AND', 'APPLY', 'ASC', 'AUTHORIZE', 'BATCH', 'BEGIN', 'BY', 'COLUMNFAMILY', 'CREATE', 'DELETE', 'DESC', 'DROP', 'ENTRIES', 'EXECUTE', 'FROM', 'FULL', 'GRANT', 'IF', 'IN', 'INDEX', 'INFINITY', 'INSERT', 'INTO', 'IS', 'KEYSPACE', 'LIMIT', 'MATERIALIZED', 'MODIFY', 'NAN', 'NORECURSIVE', 'NOT', 'NULL', 'OF', 'ON', 'OR', 'ORDER', 'PRIMARY', 'RENAME', 'REVOKE', 'SCHEMA', 'SELECT', 'SET', 'TABLE', 'TO', 'TOKEN', 'TRUNCATE', 'UNLOGGED', 'UPDATE', 'USE', 'USING', 'VIEW', 'WHERE', 'WITH', 'FILTERING'],
+  CQLKeywords: ['ADD', 'ALLOW', 'ALTER', 'AND', 'APPLY', 'ASC', 'AUTHORIZE', 'BATCH', 'BEGIN', 'BY', 'COLUMNFAMILY', 'CREATE', 'DELETE', 'DESC', 'DROP', 'ENTRIES', 'EXECUTE', 'FROM', 'FULL', 'GRANT', 'IF', 'IN', 'INDEX', 'INFINITY', 'INSERT', 'INTO', 'IS', 'KEYSPACE', 'LIMIT', 'MATERIALIZED', 'MODIFY', 'NAN', 'NORECURSIVE', 'NOT', 'NULL', 'OF', 'ON', 'OR', 'ORDER', 'PRIMARY', 'RENAME', 'REVOKE', 'SCHEMA', 'SELECT', 'SET', 'TABLE', 'TO', 'TOKEN', 'TRUNCATE', 'UNLOGGED', 'UPDATE', 'USE', 'USING', 'VIEW', 'WHERE', 'WITH', 'FILTERING', 'TRIGGER', 'TYPE'],
   TableDefaultMetadata: {
     '5.0': [{
         name: 'additional_write_policy',
@@ -259,12 +259,12 @@ const Constants = {
       Basic: /^\s*CREATE/i,
       Patterns: [
         /^\s*CREATE(\s+OR\s+REPLACE)?\s+AGGREGATE(\s+IF\s+NOT\s+EXISTS)?\s+(\w+)\S*(?!.)/i,
-        /^\s*CREATE\s+(CUSTOM\s+)?INDEX(\s+IF\s+NOT\s+EXISTS)?\s*(\w+)?\s+ON\s+(\w+)?\S*(?!.)/i,
+        /^\s*CREATE\s+(CUSTOM\s+)?INDEX(\s+IF\s+NOT\s+EXISTS)?\s*(\w+)\s+ON\s+(\w+)?\S*(?!.)/i,
         /^\s*CREATE(\s+OR\s+REPLACE)?\s+FUNCTION(\s+IF\s+NOT\s+EXISTS)?\s+\S*(?!.)/i,
         /^\s*CREATE\s+MATERIALIZED\s+VIEW(\s+IF\s+NOT\s+EXISTS)?\s+\S*(?!.)/i,
         /^\s*CREATE\s+TABLE(\s+IF\s+NOT\s+EXISTS)?\s+(\w+)?\S*(?!.)/i,
         /^\s*CREATE\s+TRIGGER\s+(\w+)\s+ON\s+\S*(?!.)/i,
-        /^\s*CREATE\s+TYPE(\s+IF\s+NOT\s+EXISTS)?\s+\S*(?!.)/i
+        /^\s*CREATE\s+TYPE(\s+IF\s+NOT\s+EXISTS)?\s+\S*(?!.)/i,
       ]
     },
     Delete: {
@@ -327,7 +327,8 @@ const Constants = {
       Basic: /^\s*WHERE/i,
       Patterns: [
         /(?:\bWHERE\s+$)|(?:\b(?:AND|OR)\s+$)/i,
-        /(?:\SET\s+$)|(?:\b(?:,)\s+$)/i
+        /(?:\SET\s+$)|(?:\b(?:,)\s+$)/i,
+        /(?:\ON\s+.+\s+\w*$)/i
       ]
     }
   },

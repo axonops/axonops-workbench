@@ -2075,7 +2075,7 @@
             pivotCell = allSelectedCells.last()
           }
 
-          let nextElement = pivotCell.getNextElement('div.tabulator-cell', direction)
+          let nextElement = pivotCell.getNextElement('div.tabulator-cell:not([tabulator-field="checkbox"])', direction)
 
           if (nextElement.length != 0) {
             // Add class to the next element
@@ -2090,7 +2090,7 @@
                 cell = nextElement
 
               while (cell.length != 0 && cell.index() > anchorColIndex) {
-                cell = cell.getNextElement('div.tabulator-cell', 'left')
+                cell = cell.getNextElement('div.tabulator-cell:not([tabulator-field="checkbox"])', 'left')
 
                 if (cell.length != 0 && cell.index() >= anchorColIndex)
                   cell.addClass('tabulator-editing')
@@ -2100,7 +2100,7 @@
             // If moving left/right, select all cells above the new cell
             if (direction === 'left' || direction === 'right') {
               let cell = nextElement,
-                aboveCell = cell.getNextElement('div.tabulator-cell', 'up')
+                aboveCell = cell.getNextElement('div.tabulator-cell:not([tabulator-field="checkbox"])', 'up')
 
               while (aboveCell.length != 0 && aboveCell.hasClass('tabulator-editing') === false) {
                 // Check if this row has any selected cells
@@ -2112,13 +2112,14 @@
                   break
                 }
 
-                aboveCell = aboveCell.getNextElement('div.tabulator-cell', 'up')
+                aboveCell = aboveCell.getNextElement('div.tabulator-cell:not([tabulator-field="checkbox"])', 'up')
               }
             }
 
             nextElement.scrollToElement()
           }
         }
+
         // Handle regular Arrow keys (single selection)
         else if (!e.shiftKey && [37, 38, 39, 40].includes(e.keyCode)) {
           let currentActiveCell = tabulatorTableArrowsActive.find('div.tabulator-cell.tabulator-editing').last()
@@ -2133,7 +2134,7 @@
             40: 'down'
           } [e.keyCode]
 
-          let nextElement = currentActiveCell.getNextElement('div.tabulator-cell', direction)
+          let nextElement = currentActiveCell.getNextElement('div.tabulator-cell:not([tabulator-field="checkbox"])', direction)
 
           if (nextElement.length != 0) {
             tabulatorTableArrowsActive.find('div.tabulator-cell').removeClass('tabulator-editing')
@@ -2143,60 +2144,68 @@
             nextElement.scrollToElement()
           }
         }
-
-        // Copy the content of selected cells with Ctrl+C
-        try {
-          if (!(e.ctrlKey && e.keyCode == 67))
-            throw 0
-
-          let selectedCells = tabulatorTableArrowsActive.find('div.tabulator-cell.tabulator-editing')
-
-          if (selectedCells.length === 0)
-            throw 0
-
-          // Group cells by row to preserve structure
-          let rowsMap = new Map(),
-            rows = tabulatorTableArrowsActive.find('div.tabulator-row')
-
-          selectedCells.each(function() {
-            let cell = $(this),
-              row = cell.parent(),
-              rowIndex = rows.index(row),
-              cellIndex = cell.index()
-
-            if (!rowsMap.has(rowIndex))
-              rowsMap.set(rowIndex, [])
-
-            rowsMap.get(rowIndex).push({
-              index: cellIndex,
-              content: cell.text()
-            })
-          })
-
-          // Sort rows by index and build the clipboard content
-          let sortedRowIndices = Array.from(rowsMap.keys()).sort((a, b) => a - b),
-            clipboardLines = []
-
-          sortedRowIndices.forEach(function(rowIndex) {
-            let cells = rowsMap.get(rowIndex)
-
-            cells.sort((a, b) => a.index - b.index)
-
-            let rowContent = cells.map(c => c.content).join(',')
-
-            clipboardLines.push(rowContent)
-          })
-
-          let clipboardContent = clipboardLines.join('\n')
-
-          Clipboard.writeText(clipboardContent)
-
-          selectedCells.addClass('copied')
-
-          setTimeout(() => selectedCells.removeClass('copied'), 150)
-        } catch (e) {}
       } catch (e) {}
     })
+
+    setTimeout(() => {
+      tinyKeys.tinykeys($(document)[0], {
+        '$mod+c': () => {
+          let tabulatorTableArrowsActive = $('div.tabulator[id].arrows-nav').filter(':visible')
+
+          if (tabulatorTableArrowsActive.length <= 0)
+            return
+
+          // Copy the content of selected cells with Ctrl+C
+          try {
+            let selectedCells = tabulatorTableArrowsActive.find('div.tabulator-cell.tabulator-editing')
+
+            if (selectedCells.length === 0)
+              throw 0
+
+            // Group cells by row to preserve structure
+            let rowsMap = new Map(),
+              rows = tabulatorTableArrowsActive.find('div.tabulator-row')
+
+            selectedCells.each(function() {
+              let cell = $(this),
+                row = cell.parent(),
+                rowIndex = rows.index(row),
+                cellIndex = cell.index()
+
+              if (!rowsMap.has(rowIndex))
+                rowsMap.set(rowIndex, [])
+
+              rowsMap.get(rowIndex).push({
+                index: cellIndex,
+                content: cell.text()
+              })
+            })
+
+            // Sort rows by index and build the clipboard content
+            let sortedRowIndices = Array.from(rowsMap.keys()).sort((a, b) => a - b),
+              clipboardLines = []
+
+            sortedRowIndices.forEach(function(rowIndex) {
+              let cells = rowsMap.get(rowIndex)
+
+              cells.sort((a, b) => a.index - b.index)
+
+              let rowContent = cells.map(c => c.content).join(',')
+
+              clipboardLines.push(rowContent)
+            })
+
+            let clipboardContent = clipboardLines.join('\n')
+
+            Clipboard.writeText(clipboardContent)
+
+            selectedCells.addClass('copied')
+
+            setTimeout(() => selectedCells.removeClass('copied'), 150)
+          } catch (e) {}
+        }
+      })
+    }, 5000)
 
     $(document).on('clearEnhancedConsole', () => {
       let interactiveTerminal = $(`div[content="workarea"] div.workarea[connection-id="${activeConnectionID}"] div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-content`)

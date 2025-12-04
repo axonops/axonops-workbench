@@ -1244,3 +1244,12 @@ ul.top-position {
 .tabulator-row .tabulator-cell.tabulator-editing.copied {
   transition: box-shadow 0.1s ease-in-out;
 }
+
+div.tabulator-cell[tabulator-field="checkbox"] {
+  text-align: -webkit-center;
+
+  div.form-check {
+    width: fit-content;
+    pointer-events: none !important;
+  }
+}

@@ -682,7 +682,7 @@ $(document).on('initialize', () => {
   {
     let materialPath = Path.join(__dirname, '..', 'js', 'external', 'mdb5')
 
-    loadStyleSheet(Path.join(materialPath, 'style-dark.css'))
+    setTimeout(() => loadStyleSheet(Path.join(materialPath, 'style-dark.css')))
 
     loadScript(Path.join(materialPath, 'mdb.js'))
 
@@ -1461,7 +1461,8 @@ $(document).on('initialize', () => {
         // Define the path to all binaries
         let binariesPath = Path.join((extraResourcesPath != null ? Path.join(appPath) : Path.join(__dirname, '..', '..')), 'main', 'bin'),
           // Define binaries to be checked
-          binaries = ['cqlsh', 'keys_generator']
+          // binaries = ['cqlsh', 'keys_generator']
+          binaries = ['cqlsh']
 
         // Check their existence
         Terminal.run(`cd "${binariesPath}" && ${OS.platform() == 'win32' ? 'dir' : 'ls'}`, (err, data, stderr) => {

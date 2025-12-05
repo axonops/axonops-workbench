@@ -257,6 +257,7 @@ jobs:
             dist/*.nsis
             dist/*.msi
             dist/*.sha256sum
+          include-hidden-files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -2,7 +2,7 @@ const NativeImage = Electron.nativeImage,
   NativeTheme = Electron.nativeTheme
 
 // Import the keys generator tool
-const KeysGenerator = require('@mhmdkrmabd/node-rsa-keys-generator')
+const KeysGenerator = require('@mhmdkrmabd/rsa-keys-generator-node')
 
 const keysServiceName = `AxonOpsWorkbench`
 

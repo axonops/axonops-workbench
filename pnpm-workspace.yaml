@@ -6,4 +6,5 @@ onlyBuiltDependencies:
   - electron
   - electron-winstaller
   - keytar
+  - koffi
   - ssh2

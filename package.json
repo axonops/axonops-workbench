@@ -327,6 +327,7 @@
   },
   "dependencies": {
     "@axonops/node-pty": "^1.0.2",
+    "@cqlai/node": "file:cqlai-node-0.1.0.tgz",
     "@mhmdkrmabd/rsa-keys-generator-node": "^1.1.0",
     "@ramumb/strip-tags": "^0.1.3",
     "@xterm/addon-canvas": "^0.7.0",

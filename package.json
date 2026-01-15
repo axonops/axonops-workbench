@@ -348,7 +348,7 @@
     "configparser": "^0.3.10",
     "convert-hex": "^0.1.0",
     "detect-file-type": "^0.2.8",
-    "diff": "^5.2.0",
+    "diff": "^8.0.3",
     "dotenv": "^16.5.0",
     "electron-context-menu": "^3.6.1",
     "electron-positioner": "^4.1.0",

@@ -5758,6 +5758,12 @@ div.sub-output-content {
   margin: 0;
   transform: translateX(-8px) translateY(-3px);
 }
+
+div.sources.active-custom {
+  button.active {
+    background: #5a5b5e !important;
+  }
+}
 /**
 * Import right-to-left style
 */

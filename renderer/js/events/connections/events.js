@@ -2102,3798 +2102,2114 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       cqlshSessionContentID,
                       terminalID,
                       isBasicCQLSHEnabled
-                    }, (connectionCqlshObject) => {
+                    }, (connectionAttemptResult) => {
+                      console.log(connectionAttemptResult);
                       try {
-                        let fetchedPageSize = parseInt(connectionCqlshObject.cql.pagesize)
+                        let fetchedPageSize = parseInt(connectionAttemptResult.cql.pagesize)
 
                         if (!isNaN(fetchedPageSize))
                           pageSize = fetchedPageSize
                       } catch (e) {}
-                    })
-
-                    try {
-                      IPCRenderer.removeAllListeners(`pty:data:${connectionID}`)
-                    } catch (e) {}
-
-                    // Listen to data sent from the pty instance which are fetched from the cqlsh tool
-                    IPCRenderer.on(`pty:data:${connectionID}`, (_, data) => {
-                      // If the session is paused then nothing would be printed
-                      if (isSessionPaused || ['print metadata', 'print cql_desc', 'check connection'].some((command) => `${data.output}`.includes(command)))
-                        return
-
-                      // Make sure the given output is string
-                      data.output = data.output || ''
-
-                      // Store all received data
-                      allOutput += data.output
-
-                      if (isConnectionLost)
-                        return
 
                       try {
-                        if (!((['connectionerror:', ',last_host']).some((keyword) => minifyText(allOutput).includes(keyword))))
-                          throw 0
-
-                        isConnectionLost = true
-
-                        workareaElement.css({
-                          'transition': 'filter 0.5s ease-in-out',
-                          'filter': 'grayscale(1)'
-                        })
-
-                        showToast(I18next.t('activate connection'), I18next.capitalizeFirstLetter(I18next.replaceData(`failed to finalize the creation of the work area as the connection [b]$data[/b] has been lost. Consider to close this workarea and test the connection before trying again`, [getAttributes(connectionElement, 'data-name')]) + '.'), 'failure')
-
-                        return
+                        IPCRenderer.removeAllListeners(`pty:data:${connectionID}`)
                       } catch (e) {}
 
-                      // Check if the received data contains the `tracing session` keyword
-                      try {
-                        // Match the regular expression and get the session's ID
-                        sessionID = (new RegExp('tracing\\s*session\\s*:\\s*(.+)', 'gm')).exec(data.output.toLowerCase())[1]
+                      // Listen to data sent from the pty instance which are fetched from the cqlsh tool
+                      IPCRenderer.on(`pty:data:${connectionID}`, (_, data) => {
+                        // If the session is paused then nothing would be printed
+                        if (isSessionPaused || ['print metadata', 'print cql_desc', 'check connection'].some((command) => `${data.output}`.includes(command)))
+                          return
 
-                        // Push the detected session ID
-                        detectedSessionsID.push(manipulateOutput(sessionID))
+                        // Make sure the given output is string
+                        data.output = data.output || ''
 
-                        // Remove any duplication
-                        detectedSessionsID = [...new Set(detectedSessionsID)]
-                      } catch (e) {}
+                        // Store all received data
+                        allOutput += data.output
 
-                      // Check if `CQLSH-STARTED` has been received
-                      try {
-                        // If the keywords haven't been received yet or cqlsh has already been loaded then skip this try-catch block
-                        if (!minifyText(data.output).search(minifyText('KEYWORD:CQLSH:STARTED')) || isCQLSHLoaded)
-                          throw 0
+                        if (isConnectionLost)
+                          return
 
-                        // The CQLSH tool has been loaded
-                        isCQLSHLoaded = true
+                        try {
+                          if (!((['connectionerror:', ',last_host']).some((keyword) => minifyText(allOutput).includes(keyword))))
+                            throw 0
 
-                        // Handle the initialization of the basic terminal and the activation of the switching button
-                        setTimeout(function() {
-                          // Point at the switching button
-                          let switchTerminalBtn = workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find(`div.switch-terminal button`)
+                          isConnectionLost = true
 
-                          // Click it to initialize the terminal
-                          switchTerminalBtn.trigger('click', true)
-
-                          // Enable the terminal switch button
-                          setTimeout(() => switchTerminalBtn.attr('disabled', null), 1000)
-                        }, 1000)
-
-                        // Send an `EOL` character to the pty instance
-                        IPCRenderer.send('pty:command', {
-                          id: connectionID,
-                          cmd: ''
-                        })
-
-                        // Disable paging for the interactive terminal
-                        setTimeout(() => {
-                          IPCRenderer.send('pty:command', {
-                            id: connectionID,
-                            // cmd: 'PAGING OFF;EXPAND OFF;'
-                            cmd: 'EXPAND OFF;'
+                          workareaElement.css({
+                            'transition': 'filter 0.5s ease-in-out',
+                            'filter': 'grayscale(1)'
                           })
 
+                          showToast(I18next.t('activate connection'), I18next.capitalizeFirstLetter(I18next.replaceData(`failed to finalize the creation of the work area as the connection [b]$data[/b] has been lost. Consider to close this workarea and test the connection before trying again`, [getAttributes(connectionElement, 'data-name')]) + '.'), 'failure')
+
+                          return
+                        } catch (e) {}
+
+                        // Check if the received data contains the `tracing session` keyword
+                        try {
+                          // Match the regular expression and get the session's ID
+                          sessionID = (new RegExp('tracing\\s*session\\s*:\\s*(.+)', 'gm')).exec(data.output.toLowerCase())[1]
+
+                          // Push the detected session ID
+                          detectedSessionsID.push(manipulateOutput(sessionID))
+
+                          // Remove any duplication
+                          detectedSessionsID = [...new Set(detectedSessionsID)]
+                        } catch (e) {}
+
+                        // Check if `CQLSH-STARTED` has been received
+                        try {
+                          // If the keywords haven't been received yet or cqlsh has already been loaded then skip this try-catch block
+                          if (!minifyText(data.output).search(minifyText('KEYWORD:CQLSH:STARTED')) || isCQLSHLoaded)
+                            throw 0
+
+                          // The CQLSH tool has been loaded
+                          isCQLSHLoaded = true
+
+                          // Handle the initialization of the basic terminal and the activation of the switching button
+                          setTimeout(function() {
+                            // Point at the switching button
+                            let switchTerminalBtn = workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find(`div.switch-terminal button`)
+
+                            // Click it to initialize the terminal
+                            switchTerminalBtn.trigger('click', true)
+
+                            // Enable the terminal switch button
+                            setTimeout(() => switchTerminalBtn.attr('disabled', null), 1000)
+                          }, 1000)
+
+                          // Send an `EOL` character to the pty instance
+                          IPCRenderer.send('pty:command', {
+                            id: connectionID,
+                            cmd: ''
+                          })
+
+                          // Disable paging for the interactive terminal
                           setTimeout(() => {
                             IPCRenderer.send('pty:command', {
                               id: connectionID,
-                              cmd: 'CONSISTENCY;SERIAL CONSISTENCY;',
-                              blockID: getRandom.id(10)
+                              // cmd: 'PAGING OFF;EXPAND OFF;'
+                              cmd: 'EXPAND OFF;'
                             })
 
                             setTimeout(() => {
                               IPCRenderer.send('pty:command', {
                                 id: connectionID,
-                                cmd: `PAGING ${pageSize};`,
+                                cmd: 'CONSISTENCY;SERIAL CONSISTENCY;',
                                 blockID: getRandom.id(10)
                               })
 
                               setTimeout(() => {
                                 IPCRenderer.send('pty:command', {
                                   id: connectionID,
-                                  cmd: 'TRACING;',
+                                  cmd: `PAGING ${pageSize};`,
                                   blockID: getRandom.id(10)
                                 })
+
+                                setTimeout(() => {
+                                  IPCRenderer.send('pty:command', {
+                                    id: connectionID,
+                                    cmd: 'TRACING;',
+                                    blockID: getRandom.id(10)
+                                  })
+                                }, 1000)
                               }, 1000)
                             }, 1000)
                           }, 1000)
-                        }, 1000)
-
-                        try {
-                          loggedInUsername = allOutput.match(/KEYWORD\:USERNAME\:\[(.*?)\]/i)[1]
-                        } catch (e) {}
-
-                        {
-                          let cassandraUsernameInfoElement = workareaElement.find('div.connection-info').find('div.info[info="cassandra-username"]')
 
                           try {
-                            if (loggedInUsername == undefined || `${loggedInUsername}`.length <= 0)
-                              throw 0
-
-                            cassandraUsernameInfoElement.children('div._placeholder').hide()
-
-                            cassandraUsernameInfoElement.children('div.text').text(`${loggedInUsername}`)
+                            loggedInUsername = allOutput.match(/KEYWORD\:USERNAME\:\[(.*?)\]/i)[1]
                           } catch (e) {}
-                        }
 
-                        // Remove the loading class
-                        workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).removeClass('loading')
+                          {
+                            let cassandraUsernameInfoElement = workareaElement.find('div.connection-info').find('div.info[info="cassandra-username"]')
 
-                        // Enable all tabs and their associated sections
-                        workareaElement.find('div.connection-tabs').find('li a').removeClass('disabled')
+                            try {
+                              if (loggedInUsername == undefined || `${loggedInUsername}`.length <= 0)
+                                throw 0
 
-                        try {
-                          let metadataDiffContainer = workareaElement.find(`div.tab-pane[tab="metadata-differentiation"]#_${metadataDifferentiationContentID}`)
+                              cassandraUsernameInfoElement.children('div._placeholder').hide()
 
-                          diffEditor = monaco.editor.createDiffEditor(metadataDiffContainer.find(`div.editor-container-all`)[0], {
-                            language: 'json', // Set the content's language
-                            minimap: {
-                              enabled: true
-                            },
-                            readOnly: true,
-                            glyphMargin: true, // This option allows to render an object in the line numbering side
-                            suggest: {
-                              showFields: false,
-                              showFunctions: false
-                            },
-                            theme: 'vs-dark',
-                            scrollBeyondLastLine: true,
-                            mouseWheelZoom: true,
-                            fontSize: 11
-                          })
-
-                          diffEditors.push(diffEditor)
-                        } catch (e) {}
-                      } catch (e) {}
-
-                      /**
-                       * Inner function to check if the metadata has been fetched or not
-                       * The declaration was at the very beginning of this code block
-                       */
-                      checkMetadata = (refresh = false) => {
-                        try {
-                          // Update `isMetadataFetched` to `true`; so no need to get it again till the user asks to
-                          isMetadataFetched = true
-
-                          // Inner function to create either the old or new editor
-                          let createEditor = (type, metadata) => {
-                            let editor = monaco.editor.createModel(beautifyJSON(metadata, true), 'json')
-
-                            workareaElement.find(`span[data-id="${oldSnapshotNameID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
-                            workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
-                            workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
-
-                            // Return the editor's object
-                            return editor
+                              cassandraUsernameInfoElement.children('div.text').text(`${loggedInUsername}`)
+                            } catch (e) {}
                           }
 
-                          // Get the cluster's metadata
-                          Modules.Connections.getMetadata(connectionID, async (metadata) => {
-                            try {
-                              // Convert the metadata from JSON string to an object
+                          // Remove the loading class
+                          workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).removeClass('loading')
+
+                          // Enable all tabs and their associated sections
+                          workareaElement.find('div.connection-tabs').find('li a').removeClass('disabled')
+
+                          try {
+                            let metadataDiffContainer = workareaElement.find(`div.tab-pane[tab="metadata-differentiation"]#_${metadataDifferentiationContentID}`)
+
+                            diffEditor = monaco.editor.createDiffEditor(metadataDiffContainer.find(`div.editor-container-all`)[0], {
+                              language: 'json', // Set the content's language
+                              minimap: {
+                                enabled: true
+                              },
+                              readOnly: true,
+                              glyphMargin: true, // This option allows to render an object in the line numbering side
+                              suggest: {
+                                showFields: false,
+                                showFunctions: false
+                              },
+                              theme: 'vs-dark',
+                              scrollBeyondLastLine: true,
+                              mouseWheelZoom: true,
+                              fontSize: 11
+                            })
+
+                            diffEditors.push(diffEditor)
+                          } catch (e) {}
+                        } catch (e) {}
+
+                        /**
+                         * Inner function to check if the metadata has been fetched or not
+                         * The declaration was at the very beginning of this code block
+                         */
+                        checkMetadata = (refresh = false) => {
+                          try {
+                            // Update `isMetadataFetched` to `true`; so no need to get it again till the user asks to
+                            isMetadataFetched = true
+
+                            // Inner function to create either the old or new editor
+                            let createEditor = (type, metadata) => {
+                              let editor = monaco.editor.createModel(beautifyJSON(metadata, true), 'json')
+
+                              workareaElement.find(`span[data-id="${oldSnapshotNameID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+                              workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+                              workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
+
+                              // Return the editor's object
+                              return editor
+                            }
+
+                            // Get the cluster's metadata
+                            Modules.Connections.getMetadata(connectionID, async (metadata) => {
                               try {
-                                metadata = JSON.parse(metadata)
-                              } catch (e) {
+                                // Convert the metadata from JSON string to an object
                                 try {
-                                  if (OS.platform() != 'win32')
-                                    throw 0
-
-                                  metadata = metadata.replace(/\\"/g, `\"`)
-
                                   metadata = JSON.parse(metadata)
-                                } catch (e) {}
-                              }
-
-                              // Update latest metadata
-                              latestMetadata = metadata
-
-                              // Save the latest metadata in the OS keychain
-                              try {
-                                let snippetsMetadata = latestMetadata.keyspaces.map((keyspace) => {
-                                  return {
-                                    name: keyspace.name,
-                                    tables: [...keyspace.tables, ...keyspace.indexes, ...keyspace.views].map((_object) => _object.name)
-                                  }
-                                })
-
-                                encryptTextBG(JSON.stringify(snippetsMetadata), `metadata_${connectionID}`)
-                              } catch (e) {}
-
-                              {
-                                let clusterNameInfoElement = workareaElement.find('div.connection-info').find('div.info[info="cluster-name"]')
-
-                                try {
-                                  clusterNameInfoElement.children('div._placeholder').hide()
-                                  clusterNameInfoElement.children('div.text').text(`${metadata.cluster_name == undefined || metadata.cluster_name.length <= 0 ? 'Unknown' : metadata.cluster_name}`)
-                                } catch (e) {}
-                              }
-
-                              // Build the tree view
-                              let treeview = await buildTreeview(JSON.parse(JSON.stringify(metadata)), true, getActiveWorkspaceID(), connectionID),
-                                // Point at the metadata content's container
-                                metadataContent = workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`)
-
-                              // Create the tree view of the metadata and hold the returned object
-                              jsTreeObject = metadataContent.jstree(treeview)
-
-                              // Disable the selection feature of a tree node
-                              jsTreeObject.disableSelection()
-
-                              try {
-                                jsTreeObject.unbind('contextmenu')
-                                jsTreeObject.unbind('loaded.jstree')
-                                jsTreeObject.unbind('search.jstree')
-                                jsTreeObject.unbind('after_open.jstree')
-                                jsTreeObject.unbind('select_node.jstree')
-                                workareaElement.find('div.right-elements div.arrows div.btn').unbind('click')
-                              } catch (e) {}
-
-                              try {
-                                jsTreeObject.on('loaded.jstree', () => {
-                                  setTimeout(() => {
-                                    if (metadataContent.data('jstreeLastOpenedNodeID') != undefined && metadataContent.data('jstreeLastOpenedNodeID').length == 32)
-                                      jsTreeObject.jstree()._open_to(metadataContent.data('jstreeLastOpenedNodeID'))
-
-                                    if (metadataContent.data('jstreeLastSelectedNodeID') != undefined && metadataContent.data('jstreeLastSelectedNodeID').length == 32)
-                                      jsTreeObject.jstree().select_node(metadataContent.data('jstreeLastSelectedNodeID'))
-                                  })
-                                })
-                              } catch (e) {}
-
-                              /**
-                               * Create a listener to the event `contextmenu`
-                               * This event `contextmenu` is customized for the JSTree plugin
-                               */
-                              jsTreeObject.on('contextmenu', async function(event) {
-                                // Remove the default contextmenu created by the plugin
-                                $('.vakata-context').remove()
-
-                                // If connection is lost with the connection then no context-menu would be shown
-                                if (isConnectionLost)
-                                  return
-
-                                // Point at the right-clicked node
-                                let clickedNode = $(event.target)
-
-                                // If the node is not one of the specified types then skip this process
-                                if (['a', 'i', 'span'].every((type) => !clickedNode.is(clickedNode)))
-                                  return
-
-                                /**
-                                 * The main element in the node is the anchor `a`
-                                 * If the clicked element is not `a` but `i` or `span` then the `a` is actually their parent
-                                 */
-                                try {
-                                  // If the right-clicked node is an anchor already then skip this try-catch block
-                                  if (clickedNode.is('a'))
-                                    throw 0
-
-                                  // Point at the clicked element's parent `a`
-                                  clickedNode = clickedNode.parent()
-                                } catch (e) {}
-
-                                // If after the manipulation the final element is not an anchor or doesn't have a required attribute then skip the process
-                                if (!clickedNode.is('a') || clickedNode.attr('allow-right-context') != 'true')
-                                  return
-
-                                // If there's no processing element in the anchor then append one
-                                if (clickedNode.find('div.processing').length <= 0)
-                                  clickedNode.append($(`<div class="processing"></div>`))
-
-                                let [
-                                  // Get the target's node name in Cassandra
-                                  targetName,
-                                  // Get the target's keyspace's name - if it's a table -
-                                  keyspaceName,
-                                  tableName,
-                                  // Get the target's type - cluster, keyspace or table -
-                                  nodeType
-                                ] = getAttributes(clickedNode, ['name', 'keyspace', 'table', 'type'])
-
-                                // Define the scope to be passed with the request
-                                scope = `keyspace>${nodeType == 'keyspace' ? targetName : keyspaceName}${nodeType != 'keyspace' ? 'table>' + targetName : ''}`
-
-                                // If the node type is cluster then only `cluster` is needed as a scope
-                                if (nodeType == 'cluster' || nodeType == 'keyspaces')
-                                  scope = 'cluster'
-
-                                // If the node type is an index
-                                try {
-                                  if (nodeType != 'index')
-                                    throw 0
-
-                                  // Add the keyspace
-                                  scope = `keyspace>${keyspaceName}`
-
-                                  // Add the index's table
-                                  scope += `table>${tableName}`
-
-                                  // And finally add the index itself
-                                  scope += `index>${targetName}`
-                                } catch (e) {}
-
-                                let contextMenu = [{
-                                  label: I18next.capitalize(I18next.t('get CQL description')),
-                                  submenu: [{
-                                      label: I18next.capitalize(I18next.t('display in the work area')),
-                                      click: `() => views.main.webContents.send('cql-desc:get', {
-                                                    connectionID: '${getAttributes(connectionElement, 'data-id')}',
-                                                    scope: '${scope}',
-                                                    tabID: '${cqlDescriptionContentID}',
-                                                    nodeID: '${getAttributes(clickedNode, 'id')}'
-                                                  })`
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('save it as a text file')),
-                                      click: `() => views.main.webContents.send('cql-desc:get', {
-                                                    connectionID: '${getAttributes(connectionElement, 'data-id')}',
-                                                    scope: '${scope}',
-                                                    tabID: '${cqlDescriptionContentID}',
-                                                    nodeID: '${getAttributes(clickedNode, 'id')}',
-                                                    saveAsFile: true
-                                                  })`
-                                    },
-                                  ]
-                                }]
-
-                                let commands = {
-                                    ddl: [],
-                                    dql: [],
-                                    dml: [],
-                                    dcl: []
-                                  },
-                                  isSystemKeyspace = false,
-                                  replicationStrategy = {},
-                                  keyspaceJSONObj = {},
-                                  keyspaceUDTs = [],
-                                  keyspaceTables = []
-
-                                try {
-                                  if (['cluster'].every((type) => nodeType != type))
-                                    throw 0
-
-                                  commands.ddl.push({
-                                    label: I18next.capitalize(I18next.t('create keyspace')),
-                                    action: 'createKeyspace',
-                                    click: `() => views.main.webContents.send('create-keyspace', {
-                                                datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
-                                                keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`
-                                  })
-                                } catch (e) {}
-
-                                try {
-                                  if (['keyspace', 'udts-parent', 'udt', 'tables-parent', 'counter-tables-parent', 'table'].every((type) => nodeType != type) || (clickedNode.attr('data-is-virtual') != null && ['keyspace', 'table'].every((type) => nodeType != type)))
-                                    throw 0
-
+                                } catch (e) {
                                   try {
-                                    if (['udt', 'counter-tables-parent', 'tables-parent', 'table'].every((type) => !nodeType.includes(type)))
+                                    if (OS.platform() != 'win32')
                                       throw 0
 
-                                    if (nodeType != 'table')
-                                      contextMenu = []
+                                    metadata = metadata.replace(/\\"/g, `\"`)
 
-                                    targetName = keyspaceName
+                                    metadata = JSON.parse(metadata)
                                   } catch (e) {}
+                                }
 
-                                  let keyspaceInfo = metadata.keyspaces.find((keyspace) => keyspace.name == targetName)
+                                // Update latest metadata
+                                latestMetadata = metadata
 
-                                  isSystemKeyspace = Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == keyspaceInfo.name)
+                                // Save the latest metadata in the OS keychain
+                                try {
+                                  let snippetsMetadata = latestMetadata.keyspaces.map((keyspace) => {
+                                    return {
+                                      name: keyspace.name,
+                                      tables: [...keyspace.tables, ...keyspace.indexes, ...keyspace.views].map((_object) => _object.name)
+                                    }
+                                  })
+
+                                  encryptTextBG(JSON.stringify(snippetsMetadata), `metadata_${connectionID}`)
+                                } catch (e) {}
+
+                                {
+                                  let clusterNameInfoElement = workareaElement.find('div.connection-info').find('div.info[info="cluster-name"]')
 
                                   try {
-                                    $('#rightClickActionsMetadata').attr('data-keyspace-info', `${JSON.stringify(keyspaceInfo)}`)
+                                    clusterNameInfoElement.children('div._placeholder').hide()
+                                    clusterNameInfoElement.children('div.text').text(`${metadata.cluster_name == undefined || metadata.cluster_name.length <= 0 ? 'Unknown' : metadata.cluster_name}`)
+                                  } catch (e) {}
+                                }
+
+                                // Build the tree view
+                                let treeview = await buildTreeview(JSON.parse(JSON.stringify(metadata)), true, getActiveWorkspaceID(), connectionID),
+                                  // Point at the metadata content's container
+                                  metadataContent = workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`)
+
+                                // Create the tree view of the metadata and hold the returned object
+                                jsTreeObject = metadataContent.jstree(treeview)
+
+                                // Disable the selection feature of a tree node
+                                jsTreeObject.disableSelection()
+
+                                try {
+                                  jsTreeObject.unbind('contextmenu')
+                                  jsTreeObject.unbind('loaded.jstree')
+                                  jsTreeObject.unbind('search.jstree')
+                                  jsTreeObject.unbind('after_open.jstree')
+                                  jsTreeObject.unbind('select_node.jstree')
+                                  workareaElement.find('div.right-elements div.arrows div.btn').unbind('click')
+                                } catch (e) {}
+
+                                try {
+                                  jsTreeObject.on('loaded.jstree', () => {
+                                    setTimeout(() => {
+                                      if (metadataContent.data('jstreeLastOpenedNodeID') != undefined && metadataContent.data('jstreeLastOpenedNodeID').length == 32)
+                                        jsTreeObject.jstree()._open_to(metadataContent.data('jstreeLastOpenedNodeID'))
+
+                                      if (metadataContent.data('jstreeLastSelectedNodeID') != undefined && metadataContent.data('jstreeLastSelectedNodeID').length == 32)
+                                        jsTreeObject.jstree().select_node(metadataContent.data('jstreeLastSelectedNodeID'))
+                                    })
+                                  })
+                                } catch (e) {}
+
+                                /**
+                                 * Create a listener to the event `contextmenu`
+                                 * This event `contextmenu` is customized for the JSTree plugin
+                                 */
+                                jsTreeObject.on('contextmenu', async function(event) {
+                                  // Remove the default contextmenu created by the plugin
+                                  $('.vakata-context').remove()
+
+                                  // If connection is lost with the connection then no context-menu would be shown
+                                  if (isConnectionLost)
+                                    return
+
+                                  // Point at the right-clicked node
+                                  let clickedNode = $(event.target)
+
+                                  // If the node is not one of the specified types then skip this process
+                                  if (['a', 'i', 'span'].every((type) => !clickedNode.is(clickedNode)))
+                                    return
+
+                                  /**
+                                   * The main element in the node is the anchor `a`
+                                   * If the clicked element is not `a` but `i` or `span` then the `a` is actually their parent
+                                   */
+                                  try {
+                                    // If the right-clicked node is an anchor already then skip this try-catch block
+                                    if (clickedNode.is('a'))
+                                      throw 0
+
+                                    // Point at the clicked element's parent `a`
+                                    clickedNode = clickedNode.parent()
                                   } catch (e) {}
 
-                                  replicationStrategy = JSON.parse(repairJSONString(`${keyspaceInfo.replication_strategy}`) || `{}`)
+                                  // If after the manipulation the final element is not an anchor or doesn't have a required attribute then skip the process
+                                  if (!clickedNode.is('a') || clickedNode.attr('allow-right-context') != 'true')
+                                    return
 
-                                  keyspaceJSONObj = metadata.keyspaces.find((keyspace) => keyspace.name == targetName)
+                                  // If there's no processing element in the anchor then append one
+                                  if (clickedNode.find('div.processing').length <= 0)
+                                    clickedNode.append($(`<div class="processing"></div>`))
 
-                                  keyspaceUDTs = keyspaceJSONObj.user_types
+                                  let [
+                                    // Get the target's node name in Cassandra
+                                    targetName,
+                                    // Get the target's keyspace's name - if it's a table -
+                                    keyspaceName,
+                                    tableName,
+                                    // Get the target's type - cluster, keyspace or table -
+                                    nodeType
+                                  ] = getAttributes(clickedNode, ['name', 'keyspace', 'table', 'type'])
 
-                                  keyspaceTables = (keyspaceJSONObj.tables || []).map((table) => table.name)
+                                  // Define the scope to be passed with the request
+                                  scope = `keyspace>${nodeType == 'keyspace' ? targetName : keyspaceName}${nodeType != 'keyspace' ? 'table>' + targetName : ''}`
 
-                                  if ((replicationStrategy || {}).class == 'LocalStrategy')
-                                    throw 0
+                                  // If the node type is cluster then only `cluster` is needed as a scope
+                                  if (nodeType == 'cluster' || nodeType == 'keyspaces')
+                                    scope = 'cluster'
 
-                                  if (contextMenu.length != 0)
+                                  // If the node type is an index
+                                  try {
+                                    if (nodeType != 'index')
+                                      throw 0
+
+                                    // Add the keyspace
+                                    scope = `keyspace>${keyspaceName}`
+
+                                    // Add the index's table
+                                    scope += `table>${tableName}`
+
+                                    // And finally add the index itself
+                                    scope += `index>${targetName}`
+                                  } catch (e) {}
+
+                                  let contextMenu = [{
+                                    label: I18next.capitalize(I18next.t('get CQL description')),
+                                    submenu: [{
+                                        label: I18next.capitalize(I18next.t('display in the work area')),
+                                        click: `() => views.main.webContents.send('cql-desc:get', {
+                                                      connectionID: '${getAttributes(connectionElement, 'data-id')}',
+                                                      scope: '${scope}',
+                                                      tabID: '${cqlDescriptionContentID}',
+                                                      nodeID: '${getAttributes(clickedNode, 'id')}'
+                                                    })`
+                                      },
+                                      {
+                                        label: I18next.capitalize(I18next.t('save it as a text file')),
+                                        click: `() => views.main.webContents.send('cql-desc:get', {
+                                                      connectionID: '${getAttributes(connectionElement, 'data-id')}',
+                                                      scope: '${scope}',
+                                                      tabID: '${cqlDescriptionContentID}',
+                                                      nodeID: '${getAttributes(clickedNode, 'id')}',
+                                                      saveAsFile: true
+                                                    })`
+                                      },
+                                    ]
+                                  }]
+
+                                  let commands = {
+                                      ddl: [],
+                                      dql: [],
+                                      dml: [],
+                                      dcl: []
+                                    },
+                                    isSystemKeyspace = false,
+                                    replicationStrategy = {},
+                                    keyspaceJSONObj = {},
+                                    keyspaceUDTs = [],
+                                    keyspaceTables = []
+
+                                  try {
+                                    if (['cluster'].every((type) => nodeType != type))
+                                      throw 0
+
+                                    commands.ddl.push({
+                                      label: I18next.capitalize(I18next.t('create keyspace')),
+                                      action: 'createKeyspace',
+                                      click: `() => views.main.webContents.send('create-keyspace', {
+                                                  datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                  keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`
+                                    })
+                                  } catch (e) {}
+
+                                  try {
+                                    if (['keyspace', 'udts-parent', 'udt', 'tables-parent', 'counter-tables-parent', 'table'].every((type) => nodeType != type) || (clickedNode.attr('data-is-virtual') != null && ['keyspace', 'table'].every((type) => nodeType != type)))
+                                      throw 0
+
+                                    try {
+                                      if (['udt', 'counter-tables-parent', 'tables-parent', 'table'].every((type) => !nodeType.includes(type)))
+                                        throw 0
+
+                                      if (nodeType != 'table')
+                                        contextMenu = []
+
+                                      targetName = keyspaceName
+                                    } catch (e) {}
+
+                                    let keyspaceInfo = metadata.keyspaces.find((keyspace) => keyspace.name == targetName)
+
+                                    isSystemKeyspace = Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == keyspaceInfo.name)
+
+                                    try {
+                                      $('#rightClickActionsMetadata').attr('data-keyspace-info', `${JSON.stringify(keyspaceInfo)}`)
+                                    } catch (e) {}
+
+                                    replicationStrategy = JSON.parse(repairJSONString(`${keyspaceInfo.replication_strategy}`) || `{}`)
+
+                                    keyspaceJSONObj = metadata.keyspaces.find((keyspace) => keyspace.name == targetName)
+
+                                    keyspaceUDTs = keyspaceJSONObj.user_types
+
+                                    keyspaceTables = (keyspaceJSONObj.tables || []).map((table) => table.name)
+
+                                    if ((replicationStrategy || {}).class == 'LocalStrategy')
+                                      throw 0
+
+                                    if (contextMenu.length != 0)
+                                      contextMenu = contextMenu.concat([{
+                                        type: 'separator',
+                                      }])
+
+                                    commands.ddl = commands.ddl.concat([{
+                                        label: I18next.capitalize(I18next.t('create UDT')),
+                                        action: 'createUDT',
+                                        click: `() => views.main.webContents.send('create-udt', {
+                                                  keyspaceName: '${targetName}',
+                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                  numOfUDTs: ${keyspaceUDTs.length},
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                        visible: !isSystemKeyspace && ['keyspace', 'udts-parent'].some((type) => nodeType == type),
+                                      },
+                                      {
+                                        label: I18next.capitalize(I18next.t('create table')),
+                                        action: 'createStandardTable',
+                                        click: `() => views.main.webContents.send('create-table', {
+                                                  keyspaceName: '${targetName}',
+                                                  tables: '${JSON.stringify(keyspaceTables) || []}',
+                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                  numOfUDTs: ${keyspaceUDTs.length},
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                  })`,
+                                        visible: !isSystemKeyspace && ['keyspace', 'tables-parent'].some((type) => nodeType == type)
+                                      },
+                                      {
+                                        label: I18next.capitalize(I18next.t('create counter table')),
+                                        action: 'createCounterTable',
+                                        click: `() => views.main.webContents.send('create-counter-table', {
+                                                  keyspaceName: '${targetName}',
+                                                  tables: '${JSON.stringify(keyspaceTables) || []}',
+                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                  numOfUDTs: ${keyspaceUDTs.length},
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                        visible: !isSystemKeyspace && ['keyspace', 'tables-parent', 'counter-tables-parent'].some((type) => nodeType == type)
+                                      },
+                                      {
+                                        label: I18next.capitalize(I18next.t('alter UDT')),
+                                        action: 'alterUDT',
+                                        click: `() => views.main.webContents.send('alter-udt', {
+                                                  keyspaceName: '${targetName}',
+                                                  udtName: '${clickedNode.attr('name')}',
+                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                  numOfUDTs: ${keyspaceUDTs.length},
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                        visible: nodeType == 'udt'
+                                      },
+                                      {
+                                        label: I18next.capitalize(I18next.t('drop UDT')),
+                                        action: 'dropUDT',
+                                        click: `() => views.main.webContents.send('drop-udt', {
+                                                  udtName: '${clickedNode.attr('name')}',
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  keyspaceName: '${targetName}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                        visible: nodeType == 'udt'
+                                      }
+                                    ])
+
+                                    commands.dml = commands.dml.concat([{
+                                        label: I18next.capitalize(I18next.t('insert row as JSON')),
+                                        action: 'insertRow',
+                                        click: `() => views.main.webContents.send('insert-row', {
+                                                  tableName: '${clickedNode.attr('name')}',
+                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  keyspaceName: '${keyspaceName}',
+                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}',
+                                                  asJSON: 'true'
+                                                })`,
+                                        visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                      },
+                                      {
+                                        label: I18next.capitalize(I18next.t('insert row')),
+                                        action: 'insertRow',
+                                        click: `() => views.main.webContents.send('insert-row', {
+                                                  tableName: '${clickedNode.attr('name')}',
+                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  keyspaceName: '${keyspaceName}',
+                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                        visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                      },
+                                      {
+                                        label: I18next.capitalize(I18next.t('increment/decrement counter(s)')),
+                                        action: 'incrementDecrementCounter',
+                                        click: `() => views.main.webContents.send('insert-row', {
+                                                  tableName: '${clickedNode.attr('name')}',
+                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  keyspaceName: '${keyspaceName}',
+                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                        visible: clickedNode.attr('is-counter-table') == 'true'
+                                      }
+                                    ])
+
+                                    commands.ddl.push({
+                                      label: I18next.capitalize(I18next.t('alter table')),
+                                      action: 'alterTable',
+                                      click: `() => views.main.webContents.send('alter-table', {
+                                                  tableName: '${clickedNode.attr('name')}',
+                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                  numOfUDTs: ${keyspaceUDTs.length},
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  keyspaceName: '${keyspaceName}',
+                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                      visible: nodeType == 'table'
+                                    })
+
+                                    commands.dml.push({
+                                      label: I18next.capitalize(I18next.t('delete row/colum')),
+                                      action: 'insertRow',
+                                      click: `() => views.main.webContents.send('delete-row-column', {
+                                                  tableName: '${clickedNode.attr('name')}',
+                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  keyspaceName: '${keyspaceName}',
+                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                      visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                    })
+
+                                    commands.ddl = commands.ddl.concat([{
+                                        label: I18next.capitalize(I18next.t('drop table')),
+                                        action: 'dropTable',
+                                        click: `() => views.main.webContents.send('drop-table', {
+                                                  tableName: '${clickedNode.attr('name')}',
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  keyspaceName: '${keyspaceName}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                        visible: nodeType == 'table'
+                                      }, {
+                                        label: I18next.capitalize(I18next.t('truncate table')),
+                                        action: 'truncateTable',
+                                        click: `() => views.main.webContents.send('truncate-table', {
+                                                  tableName: '${clickedNode.attr('name')}',
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  keyspaceName: '${keyspaceName}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                        visible: nodeType == 'table'
+                                      },
+                                      {
+                                        label: I18next.capitalize(I18next.t('alter keyspace')),
+                                        action: 'alterKeyspace',
+                                        click: `() => views.main.webContents.send('alter-keyspace', {
+                                                  datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                  keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                                  keyspaceName: '${targetName}',
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                        visible: nodeType == 'keyspace'
+                                      },
+                                      {
+                                        label: I18next.capitalize(I18next.t('drop keyspace')),
+                                        action: 'dropKeyspace',
+                                        click: `() => views.main.webContents.send('drop-keyspace', {
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  keyspaceName: '${targetName}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                        visible: nodeType == 'keyspace'
+                                      }
+                                    ])
+
+                                    if (isSystemKeyspace)
+                                      contextMenu = contextMenu.filter((item) => item.action != 'dropKeyspace')
+                                  } catch (e) {}
+
+                                  try {
+                                    if ((replicationStrategy || {}).class == 'LocalStrategy' && !isSystemKeyspace)
+                                      throw 0
+
+                                    commands.dql.push({
+                                      label: I18next.capitalize(I18next.t('select row as JSON')),
+                                      action: 'selectRow',
+                                      click: `() => views.main.webContents.send('select-row', {
+                                                  tableName: '${clickedNode.attr('name')}',
+                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  keyspaceName: '${keyspaceName}',
+                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}',
+                                                  asJSON: 'true'
+                                                })`,
+                                      visible: nodeType == 'table'
+                                    }, {
+                                      label: I18next.capitalize(I18next.t('select row')),
+                                      action: 'selectRow',
+                                      click: `() => views.main.webContents.send('select-row', {
+                                                  tableName: '${clickedNode.attr('name')}',
+                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  keyspaceName: '${keyspaceName}',
+                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                      visible: nodeType == 'table'
+                                    })
+                                  } catch (e) {}
+
+                                  try {
+                                    if (nodeType != 'keyspaces')
+                                      throw 0
+
+                                    commands.ddl.push({
+                                      label: I18next.capitalize(I18next.t('create keyspace')),
+                                      action: 'createKeyspace',
+                                      click: `() => views.main.webContents.send('create-keyspace', {
+                                                  datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                  keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                                  tabID: '_${cqlshSessionContentID}',
+                                                  textareaID: '_${cqlshSessionStatementInputID}',
+                                                  btnID: '_${executeStatementBtnID}'
+                                                })`
+                                    })
+                                  } catch (e) {}
+
+                                  if (contextMenu.length > 0 && contextMenu.find((item) => item.type == 'separator') == undefined)
                                     contextMenu = contextMenu.concat([{
                                       type: 'separator',
                                     }])
 
-                                  commands.ddl = commands.ddl.concat([{
-                                      label: I18next.capitalize(I18next.t('create UDT')),
-                                      action: 'createUDT',
-                                      click: `() => views.main.webContents.send('create-udt', {
-                                                keyspaceName: '${targetName}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                numOfUDTs: ${keyspaceUDTs.length},
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                      visible: !isSystemKeyspace && ['keyspace', 'udts-parent'].some((type) => nodeType == type),
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('create table')),
-                                      action: 'createStandardTable',
-                                      click: `() => views.main.webContents.send('create-table', {
-                                                keyspaceName: '${targetName}',
-                                                tables: '${JSON.stringify(keyspaceTables) || []}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                numOfUDTs: ${keyspaceUDTs.length},
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                      visible: !isSystemKeyspace && ['keyspace', 'tables-parent'].some((type) => nodeType == type)
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('create counter table')),
-                                      action: 'createCounterTable',
-                                      click: `() => views.main.webContents.send('create-counter-table', {
-                                                keyspaceName: '${targetName}',
-                                                tables: '${JSON.stringify(keyspaceTables) || []}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                numOfUDTs: ${keyspaceUDTs.length},
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                      visible: !isSystemKeyspace && ['keyspace', 'tables-parent', 'counter-tables-parent'].some((type) => nodeType == type)
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('alter UDT')),
-                                      action: 'alterUDT',
-                                      click: `() => views.main.webContents.send('alter-udt', {
-                                                keyspaceName: '${targetName}',
-                                                udtName: '${clickedNode.attr('name')}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                numOfUDTs: ${keyspaceUDTs.length},
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                      visible: nodeType == 'udt'
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('drop UDT')),
-                                      action: 'dropUDT',
-                                      click: `() => views.main.webContents.send('drop-udt', {
-                                                udtName: '${clickedNode.attr('name')}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${targetName}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                      visible: nodeType == 'udt'
-                                    }
-                                  ])
-
-                                  commands.dml = commands.dml.concat([{
-                                      label: I18next.capitalize(I18next.t('insert row as JSON')),
-                                      action: 'insertRow',
-                                      click: `() => views.main.webContents.send('insert-row', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}',
-                                                asJSON: 'true'
-                                              })`,
-                                      visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('insert row')),
-                                      action: 'insertRow',
-                                      click: `() => views.main.webContents.send('insert-row', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                      visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('increment/decrement counter(s)')),
-                                      action: 'incrementDecrementCounter',
-                                      click: `() => views.main.webContents.send('insert-row', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                      visible: clickedNode.attr('is-counter-table') == 'true'
-                                    }
-                                  ])
-
-                                  commands.ddl.push({
-                                    label: I18next.capitalize(I18next.t('alter table')),
-                                    action: 'alterTable',
-                                    click: `() => views.main.webContents.send('alter-table', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                numOfUDTs: ${keyspaceUDTs.length},
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                    visible: nodeType == 'table'
-                                  })
-
-                                  commands.dml.push({
-                                    label: I18next.capitalize(I18next.t('delete row/colum')),
-                                    action: 'insertRow',
-                                    click: `() => views.main.webContents.send('delete-row-column', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
-                                  })
-
-                                  commands.ddl = commands.ddl.concat([{
-                                      label: I18next.capitalize(I18next.t('drop table')),
-                                      action: 'dropTable',
-                                      click: `() => views.main.webContents.send('drop-table', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                      visible: nodeType == 'table'
-                                    }, {
-                                      label: I18next.capitalize(I18next.t('truncate table')),
-                                      action: 'truncateTable',
-                                      click: `() => views.main.webContents.send('truncate-table', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                      visible: nodeType == 'table'
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('alter keyspace')),
-                                      action: 'alterKeyspace',
-                                      click: `() => views.main.webContents.send('alter-keyspace', {
-                                                datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
-                                                keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                                keyspaceName: '${targetName}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                      visible: nodeType == 'keyspace'
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('drop keyspace')),
-                                      action: 'dropKeyspace',
-                                      click: `() => views.main.webContents.send('drop-keyspace', {
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${targetName}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                      visible: nodeType == 'keyspace'
-                                    }
-                                  ])
-
-                                  if (isSystemKeyspace)
-                                    contextMenu = contextMenu.filter((item) => item.action != 'dropKeyspace')
-                                } catch (e) {}
-
-                                try {
-                                  if ((replicationStrategy || {}).class == 'LocalStrategy' && !isSystemKeyspace)
-                                    throw 0
-
-                                  commands.dql.push({
-                                    label: I18next.capitalize(I18next.t('select row as JSON')),
-                                    action: 'selectRow',
-                                    click: `() => views.main.webContents.send('select-row', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}',
-                                                asJSON: 'true'
-                                              })`,
-                                    visible: nodeType == 'table'
-                                  }, {
-                                    label: I18next.capitalize(I18next.t('select row')),
-                                    action: 'selectRow',
-                                    click: `() => views.main.webContents.send('select-row', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
-                                    visible: nodeType == 'table'
-                                  })
-                                } catch (e) {}
-
-                                try {
-                                  if (nodeType != 'keyspaces')
-                                    throw 0
-
-                                  commands.ddl.push({
-                                    label: I18next.capitalize(I18next.t('create keyspace')),
-                                    action: 'createKeyspace',
-                                    click: `() => views.main.webContents.send('create-keyspace', {
-                                                datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
-                                                keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`
-                                  })
-                                } catch (e) {}
-
-                                if (contextMenu.length > 0 && contextMenu.find((item) => item.type == 'separator') == undefined)
-                                  contextMenu = contextMenu.concat([{
-                                    type: 'separator',
-                                  }])
-
-                                if (clickedNode.attr('data-is-virtual') == 'true') {
-                                  commands.ddl = []
-                                  commands.dml = []
-                                  commands.dcl = []
-                                }
-
-                                contextMenu = contextMenu.concat([{
-                                    label: I18next.capitalize(I18next.t('commands')),
-                                    enabled: false
-                                  },
-                                  {
-                                    label: I18next.capitalize(I18next.t('DDL (Data Definition Language)')),
-                                    enabled: commands.ddl.length > 0 && commands.ddl.some((command) => command.visible != false),
-                                    submenu: commands.ddl
-                                  },
-                                  {
-                                    label: I18next.capitalize(I18next.t('DQL (Data Query Language)')),
-                                    enabled: commands.dql.length > 0 && commands.dql.some((command) => command.visible != false),
-                                    submenu: commands.dql
-                                  },
-                                  {
-                                    label: I18next.capitalize(I18next.t('DML (Data Manipulation Language)')),
-                                    enabled: commands.dml.length > 0 && commands.dml.some((command) => command.visible != false),
-                                    submenu: commands.dml
-                                  },
-                                  {
-                                    label: I18next.capitalize(I18next.t('DCL (Data Control Language)')),
-                                    enabled: commands.dcl.length > 0 && commands.dcl.some((command) => command.visible != false),
-                                    submenu: commands.dcl
+                                  if (clickedNode.attr('data-is-virtual') == 'true') {
+                                    commands.ddl = []
+                                    commands.dml = []
+                                    commands.dcl = []
                                   }
-                                ])
-
-                                try {
-                                  if (!['cluster', 'keyspace', 'table'].some((type) => nodeType == type))
-                                    throw 0
 
                                   contextMenu = contextMenu.concat([{
-                                      type: 'separator',
+                                      label: I18next.capitalize(I18next.t('commands')),
+                                      enabled: false
                                     },
                                     {
-                                      label: I18next.capitalize(I18next.t('features')),
-                                      enabled: false
+                                      label: I18next.capitalize(I18next.t('DDL (Data Definition Language)')),
+                                      enabled: commands.ddl.length > 0 && commands.ddl.some((command) => command.visible != false),
+                                      submenu: commands.ddl
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('DQL (Data Query Language)')),
+                                      enabled: commands.dql.length > 0 && commands.dql.some((command) => command.visible != false),
+                                      submenu: commands.dql
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('DML (Data Manipulation Language)')),
+                                      enabled: commands.dml.length > 0 && commands.dml.some((command) => command.visible != false),
+                                      submenu: commands.dml
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('DCL (Data Control Language)')),
+                                      enabled: commands.dcl.length > 0 && commands.dcl.some((command) => command.visible != false),
+                                      submenu: commands.dcl
                                     }
                                   ])
 
-                                  let click = ''
+                                  try {
+                                    if (!['cluster', 'keyspace', 'table'].some((type) => nodeType == type))
+                                      throw 0
 
-                                  if (nodeType == 'cluster')
-                                    click = `() => views.main.webContents.send('axonops-integration', {
-                                        workareaID: '${workareaElement.attr('workarea-id')}',
-                                        connectionID: '${connectionID}',
-                                        clusterName: 'cluster'
-                                      })`
+                                    contextMenu = contextMenu.concat([{
+                                        type: 'separator',
+                                      },
+                                      {
+                                        label: I18next.capitalize(I18next.t('features')),
+                                        enabled: false
+                                      }
+                                    ])
 
-                                  if (nodeType == 'keyspace')
-                                    click = `() => views.main.webContents.send('axonops-integration', {
-                                        workareaID: '${workareaElement.attr('workarea-id')}',
-                                        connectionID: '${connectionID}',
-                                        keyspaceName: '${targetName}'
-                                      })`
+                                    let click = ''
 
-                                  if (nodeType == 'table')
-                                    click = `() => views.main.webContents.send('axonops-integration', {
-                                        workareaID: '${workareaElement.attr('workarea-id')}',
-                                        connectionID: '${connectionID}',
-                                        tableName: '${clickedNode.attr('name')}',
-                                        keyspaceName: '${keyspaceName}'
-                                      })`
+                                    if (nodeType == 'cluster')
+                                      click = `() => views.main.webContents.send('axonops-integration', {
+                                          workareaID: '${workareaElement.attr('workarea-id')}',
+                                          connectionID: '${connectionID}',
+                                          clusterName: 'cluster'
+                                        })`
 
-                                  contextMenu = contextMenu.concat([{
-                                    label: I18next.capitalize(I18next.replaceData(`view $data dashboard`, [I18next.t(`${nodeType}`)])),
-                                    action: 'axonops-integration',
-                                    click,
-                                    enabled: isAxonOpsIntegrationActionEnabled,
-                                    icon: Path.join(__dirname, '..', '..', '..', 'assets', 'images', `axonops-icon-transparent-16x16${!isHostThemeDark ? '-dark' : ''}.png`)
-                                  }])
+                                    if (nodeType == 'keyspace')
+                                      click = `() => views.main.webContents.send('axonops-integration', {
+                                          workareaID: '${workareaElement.attr('workarea-id')}',
+                                          connectionID: '${connectionID}',
+                                          keyspaceName: '${targetName}'
+                                        })`
 
-                                  // The snippets feature
-                                  contextMenu = contextMenu.concat([{
-                                    label: I18next.capitalize(I18next.t(`view related snippets`)),
-                                    action: 'cql-snippets',
-                                    click: nodeType == 'keyspace' ? `() => views.main.webContents.send('cql-snippets:view', {
-                                        workareaID: '${workareaElement.attr('workarea-id')}',
-                                        connectionID: '${connectionID}',
-                                        keyspaceName: '${targetName}',
-                                        workareaID: '${workareaElement.attr('workarea-id')}'
-                                        })` : `() => views.main.webContents.send('cql-snippets:view', {
+                                    if (nodeType == 'table')
+                                      click = `() => views.main.webContents.send('axonops-integration', {
                                           workareaID: '${workareaElement.attr('workarea-id')}',
                                           connectionID: '${connectionID}',
                                           tableName: '${clickedNode.attr('name')}',
-                                          keyspaceName: '${keyspaceName}',
+                                          keyspaceName: '${keyspaceName}'
+                                        })`
+
+                                    contextMenu = contextMenu.concat([{
+                                      label: I18next.capitalize(I18next.replaceData(`view $data dashboard`, [I18next.t(`${nodeType}`)])),
+                                      action: 'axonops-integration',
+                                      click,
+                                      enabled: isAxonOpsIntegrationActionEnabled,
+                                      icon: Path.join(__dirname, '..', '..', '..', 'assets', 'images', `axonops-icon-transparent-16x16${!isHostThemeDark ? '-dark' : ''}.png`)
+                                    }])
+
+                                    // The snippets feature
+                                    contextMenu = contextMenu.concat([{
+                                      label: I18next.capitalize(I18next.t(`view related snippets`)),
+                                      action: 'cql-snippets',
+                                      click: nodeType == 'keyspace' ? `() => views.main.webContents.send('cql-snippets:view', {
+                                          workareaID: '${workareaElement.attr('workarea-id')}',
+                                          connectionID: '${connectionID}',
+                                          keyspaceName: '${targetName}',
                                           workareaID: '${workareaElement.attr('workarea-id')}'
-                                        })`,
-                                    enabled: nodeType != 'cluster'
-                                  }])
-                                } catch (e) {}
-
-                                // Send a request to the main thread regards pop-up a menu
-                                IPCRenderer.send('show-context-menu', JSON.stringify(contextMenu))
-                              })
-
-                              // Handle the search feature in the metadata tree view
-                              {
-                                // Define the current index of the search results
-                                let currentIndex = 0,
-                                  // Hold the last search results in an array
-                                  lastSearchResults = []
-
-                                // Once a search process is completed
-                                jsTreeObject.on('search.jstree', function(event, data) {
-                                  try {
-                                    // Reset the current index to be the first result
-                                    currentIndex = 0
-
-                                    // Hold the search results
-                                    lastSearchResults = metadataContent.find('a.jstree-search')
-
-                                    // Remove the click animation class from all results; to be able to execute the animation again
-                                    lastSearchResults.removeClass('animate-click')
-
-                                    // Whether or not the search container should be shown
-                                    workareaElement.find('div.right-elements').toggleClass('show', data.nodes.length > 0)
-
-                                    // Reset the current result where the pointer has reached
-                                    workareaElement.find('div.result-count span.current').text(`1`)
-
-                                    // Set the new number of results
-                                    workareaElement.find('div.result-count span.total').text(`${lastSearchResults.length}`)
-
-                                    // If there's at least one result for this search then attempt to click the first result
-                                    try {
-                                      lastSearchResults[0].click()
-                                    } catch (e) {}
+                                          })` : `() => views.main.webContents.send('cql-snippets:view', {
+                                            workareaID: '${workareaElement.attr('workarea-id')}',
+                                            connectionID: '${connectionID}',
+                                            tableName: '${clickedNode.attr('name')}',
+                                            keyspaceName: '${keyspaceName}',
+                                            workareaID: '${workareaElement.attr('workarea-id')}'
+                                          })`,
+                                      enabled: nodeType != 'cluster'
+                                    }])
                                   } catch (e) {}
+
+                                  // Send a request to the main thread regards pop-up a menu
+                                  IPCRenderer.send('show-context-menu', JSON.stringify(contextMenu))
                                 })
 
-                                jsTreeObject.on('after_open.jstree', function(event, data) {
-                                  metadataContent.data('jstreeLastOpenedNodeID', `${data.node.id}`)
-                                })
+                                // Handle the search feature in the metadata tree view
+                                {
+                                  // Define the current index of the search results
+                                  let currentIndex = 0,
+                                    // Hold the last search results in an array
+                                    lastSearchResults = []
 
-                                jsTreeObject.on('select_node.jstree', function(event, data) {
-                                  metadataContent.data('jstreeLastSelectedNodeID', `${data.node.id}`)
-                                })
-
-                                // Clicks either the previous or the next buttons/arrows
-                                workareaElement.find('div.right-elements div.arrows div.btn').click(function() {
-                                  try {
-                                    // Increase the index if the clicked button is `next`, otherwise decrease it
-                                    currentIndex += $(this).hasClass('next') ? 1 : -1
-
-                                    // If the pointer has reached the first result already then move to the last one
-                                    if (currentIndex < 0)
-                                      currentIndex = lastSearchResults.length - 1
-
-                                    // If the pointer has reached the last result then move to the first one
-                                    if (currentIndex > lastSearchResults.length - 1)
+                                  // Once a search process is completed
+                                  jsTreeObject.on('search.jstree', function(event, data) {
+                                    try {
+                                      // Reset the current index to be the first result
                                       currentIndex = 0
 
-                                    // Update the current index text
-                                    workareaElement.find('div.result-count span.current').text(`${currentIndex + 1}`)
+                                      // Hold the search results
+                                      lastSearchResults = metadataContent.find('a.jstree-search')
 
-                                    // Attempt to click the reached result
-                                    lastSearchResults[currentIndex].click()
+                                      // Remove the click animation class from all results; to be able to execute the animation again
+                                      lastSearchResults.removeClass('animate-click')
 
-                                    // Remove the click animation class from the reached result
-                                    $(lastSearchResults[currentIndex]).removeClass('animate-click')
+                                      // Whether or not the search container should be shown
+                                      workareaElement.find('div.right-elements').toggleClass('show', data.nodes.length > 0)
 
-                                    // Add the click animation class to the reached result
-                                    setTimeout(() => $(lastSearchResults[currentIndex]).addClass('animate-click'), 50)
-                                  } catch (e) {}
-                                })
-                              }
+                                      // Reset the current result where the pointer has reached
+                                      workareaElement.find('div.result-count span.current').text(`1`)
 
-                              // This try-catch block is for initializing the metadata differentiation after getting the metadata
-                              try {
-                                // If this is a refresh then skip this try-catch block
-                                if (refresh)
-                                  throw 0
+                                      // Set the new number of results
+                                      workareaElement.find('div.result-count span.total').text(`${lastSearchResults.length}`)
 
-                                setTimeout(() => {
-                                  // Get the newest/latest saved snapshot for the connection
-                                  Modules.Connections.getNewestSnapshot(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(connectionElement, 'data-folder')), (snapshot) => {
-                                    // The metadata to be loaded is by default the recently fetched one
-                                    let toBeLoadedMetadata = metadata
-
-                                    try {
-                                      // If there's a saved snapshot then get its content
-                                      if (snapshot.content != undefined)
-                                        toBeLoadedMetadata = snapshot.content
-
-                                      // Parse the content from JSON string to object
-                                      toBeLoadedMetadata = JSON.parse(toBeLoadedMetadata)
-
-                                      let snapshotTakenTime = ''
-
+                                      // If there's at least one result for this search then attempt to click the first result
                                       try {
-                                        snapshotTakenTime = toBeLoadedMetadata.time
-
-                                        delete toBeLoadedMetadata.time
+                                        lastSearchResults[0].click()
                                       } catch (e) {}
-
-                                      try {
-                                        if (snapshotTakenTime.length <= 0)
-                                          throw 0
-
-                                        snapshotTakenTime = ` (${formatTimestamp(snapshotTakenTime)})`
-                                      } catch (e) {}
-
-                                      // The old side's badge will be updated with the snapshot name
-                                      setTimeout(() => {
-                                        workareaElement.find(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: 11${snapshot.name}${snapshotTakenTime}`)
-                                      }, 1000);
-
-                                      // The new side's badge will be updated with fetched time of the latest metadata
-                                      workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
-
-                                      workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
                                     } catch (e) {}
-
-                                    // Create an editor for the old metadata content
-                                    metadataDiffEditors.old.object = createEditor('old', toBeLoadedMetadata)
-
-                                    // Create an editor for the new metadata content
-                                    metadataDiffEditors.new.object = createEditor('new', metadata)
-
-                                    diffEditor.setModel({
-                                      original: metadataDiffEditors.old.object,
-                                      modified: metadataDiffEditors.new.object
-                                    })
-
-                                    diffEditor.onDidUpdateDiff(function() {
-                                      // Point at the results
-                                      let result = diffEditor.getLineChanges(),
-                                        // Point at the differentiation show button000
-                                        differentiationBtn = workareaElement.find(`span.btn[data-id="${showDifferentiationBtnID}"]`),
-                                        // Point at the changes/differences container
-                                        changesContainer = workareaElement.find(`div.changes-lines[data-id="${changesLinesContainerID}"]`)
-
-                                      // Update the number of detected changes
-                                      differentiationBtn.attr('data-changes', result.length)
-
-                                      // Update the button's text by showing the number of detected changes
-                                      differentiationBtn.children('span').filter(':last').text(result.length); // This semicolon is critical here
-
-                                      workareaElement.find(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).add(workareaElement.find(`span.btn[data-id="${diffNavigationNextBtnID}"]`)).toggleClass('disabled', result.length <= 0)
-
-                                      // If there's no detected change then end the process
-                                      if (result.length <= 0)
-                                        return
-
-                                      // Remove all previous changed lines from the changes' container
-                                      changesContainer.children('div.line').remove()
-
-                                      // Loop through each change in the content
-                                      result.forEach((change) => {
-                                        // Line UI element structure
-                                        let element = `
-                                                     <div class="line" data-number="${change.originalStartLineNumber}">
-                                                       <span class="number">${change.originalStartLineNumber}</span>
-                                                       <span class="content">${metadataDiffEditors.old.object.getLineContent(change.originalStartLineNumber)}</span>
-                                                     </div>`
-
-                                        // Append the line element to the container
-                                        changesContainer.append($(element).click(function() {
-                                          // Get the line's number
-                                          let lineNumber = parseInt($(this).attr('data-number')); // This semicolon is critical here
-
-                                          try {
-                                            diffEditor.revealLineInCenter(lineNumber)
-                                          } catch (e) {}
-                                        }))
-                                      }) // This semicolon is critical here
-                                    })
-
-                                    // Update its layout
-                                    setTimeout(() => diffEditor.layout(), 200)
-
-                                    /**
-                                     * Create a resize observer for the work area body element
-                                     * By doing this the editor's dimensions will always fit with the dialog's dimensions
-                                     */
-                                    setTimeout(() => {
-                                      (new ResizeObserver(() => {
-                                        try {
-                                          diffEditor.layout()
-                                        } catch (e) {}
-                                      })).observe(workareaElement[0])
-                                    })
-
-                                    // // Detect differentiation between old and new content
-                                    // detectDifferentiationShow(toBeLoadedMetadata, metadata)
                                   })
 
-                                })
-                              } catch (e) {
+                                  jsTreeObject.on('after_open.jstree', function(event, data) {
+                                    metadataContent.data('jstreeLastOpenedNodeID', `${data.node.id}`)
+                                  })
+
+                                  jsTreeObject.on('select_node.jstree', function(event, data) {
+                                    metadataContent.data('jstreeLastSelectedNodeID', `${data.node.id}`)
+                                  })
+
+                                  // Clicks either the previous or the next buttons/arrows
+                                  workareaElement.find('div.right-elements div.arrows div.btn').click(function() {
+                                    try {
+                                      // Increase the index if the clicked button is `next`, otherwise decrease it
+                                      currentIndex += $(this).hasClass('next') ? 1 : -1
+
+                                      // If the pointer has reached the first result already then move to the last one
+                                      if (currentIndex < 0)
+                                        currentIndex = lastSearchResults.length - 1
+
+                                      // If the pointer has reached the last result then move to the first one
+                                      if (currentIndex > lastSearchResults.length - 1)
+                                        currentIndex = 0
+
+                                      // Update the current index text
+                                      workareaElement.find('div.result-count span.current').text(`${currentIndex + 1}`)
+
+                                      // Attempt to click the reached result
+                                      lastSearchResults[currentIndex].click()
+
+                                      // Remove the click animation class from the reached result
+                                      $(lastSearchResults[currentIndex]).removeClass('animate-click')
+
+                                      // Add the click animation class to the reached result
+                                      setTimeout(() => $(lastSearchResults[currentIndex]).addClass('animate-click'), 50)
+                                    } catch (e) {}
+                                  })
+                                }
+
+                                // This try-catch block is for initializing the metadata differentiation after getting the metadata
                                 try {
-                                  errorLog(e, 'connections')
-                                } catch (e) {}
-                              }
+                                  // If this is a refresh then skip this try-catch block
+                                  if (refresh)
+                                    throw 0
 
-                              // Hide the loading indicator in the tree view section
-                              setTimeout(() => {
-                                metadataContent.parent().removeClass('loading')
+                                  setTimeout(() => {
+                                    // Get the newest/latest saved snapshot for the connection
+                                    Modules.Connections.getNewestSnapshot(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(connectionElement, 'data-folder')), (snapshot) => {
+                                      // The metadata to be loaded is by default the recently fetched one
+                                      let toBeLoadedMetadata = metadata
 
-                                let cqlSnippetsButton = workareaElement.find('div.session-action[action="cql-snippets"]').find('button.btn')
+                                      try {
+                                        // If there's a saved snapshot then get its content
+                                        if (snapshot.content != undefined)
+                                          toBeLoadedMetadata = snapshot.content
 
-                                cqlSnippetsButton.removeClass('disabled')
-                                cqlSnippetsButton.attr('disabled', null)
-                              }, 150)
-                            } catch (e) {
-                              try {
-                                errorLog(e, 'connections')
-                              } catch (e) {}
-                            }
-                          })
-                        } catch (e) {
-                          try {
-                            errorLog(e, 'connections')
-                          } catch (e) {}
-                        }
-                      }
-                      // End of the check metadata function
+                                        // Parse the content from JSON string to object
+                                        toBeLoadedMetadata = JSON.parse(toBeLoadedMetadata)
 
-                      // Determine whether or not the metadata function will be called
-                      try {
-                        // If the cqlsh prompt hasn't been found in the received data or cqlsh is not loaded yet then the work area isn't ready to get metadata
-                        if ((new RegExp('cqlsh\s*(\:|\s*)(.+|\s*)\>')).exec(data.output) == null || !isCQLSHLoaded)
-                          throw 0
+                                        let snapshotTakenTime = ''
 
-                        // If metadata hasn't been got yet
-                        if (!isMetadataFetched) {
-                          // Call the metadata function
-                          checkMetadata()
+                                        try {
+                                          snapshotTakenTime = toBeLoadedMetadata.time
 
-                          // Skip the upcoming code in this try-catch block
-                          throw 0
-                        }
-                      } catch (e) {}
+                                          delete toBeLoadedMetadata.time
+                                        } catch (e) {}
 
-                      /**
-                       * For the app's terminal
-                       *
-                       * Get cqlsh current prompt - for instance; `cqlsh>` -
-                       */
-                      let prompt = data.output.match(/^(.*?cqlsh.*?>)/gm),
-                        // Update the active prefix to be used
-                        activePrefix = prefix
+                                        try {
+                                          if (snapshotTakenTime.length <= 0)
+                                            throw 0
 
-                      /**
-                       * The upcoming block is about the interactive terminal
-                       *
-                       * Whether or not the output is related to paging process
-                       */
-                      let isOutputWithPaging = data.output.indexOf('KEYWORD:PAGING:CONTINUE') != -1,
-                        // Whether or not the output has been completed
-                        isOutputCompleted = data.output.indexOf('KEYWORD:OUTPUT:COMPLETED:ALL') != -1,
-                        // Whether or not this output is incomplete
-                        isOutputIncomplete = allOutput.endsWith('KEYWORD:STATEMENT:INCOMPLETE'),
-                        // Whether or not this output is ignored
-                        isOutputIgnored = data.output.indexOf('KEYWORD:STATEMENT:IGNORE') != -1,
-                        // Define the variable that will hold a timeout to refresh the metadata content
-                        refreshMetadataTimeout
+                                          snapshotTakenTime = ` (${formatTimestamp(snapshotTakenTime)})`
+                                        } catch (e) {}
 
-                      try {
-                        // If the given `blockID` is empty - the execution has not been called from the interactive terminal - then skip this try-catch block
-                        if (minifyText(`${data.blockID}`).length <= 0)
-                          throw 0
+                                        // The old side's badge will be updated with the snapshot name
+                                        setTimeout(() => {
+                                          workareaElement.find(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: 11${snapshot.name}${snapshotTakenTime}`)
+                                        }, 1000);
 
-                        // Point at the associated block element in the interactive terminal
-                        let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${data.blockID}"]`),
-                          // Get the block's statement/command
-                          blockStatement = blockElement.find('div.statement div.text').text(),
-                          // Define the content of the `no-output` element
-                          noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span>.</no-output>',
-                          isSourceCommand = blockElement.attr('data-is-source-command') != undefined
+                                        // The new side's badge will be updated with fetched time of the latest metadata
+                                        workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
 
-                        if (isOutputWithPaging && !isOutputCompleted)
-                          blockElement.attr('data-is-paging', 'true')
+                                        workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
+                                      } catch (e) {}
 
-                        isOutputWithPaging = isOutputWithPaging || blockElement.attr('data-is-paging') != undefined
+                                      // Create an editor for the old metadata content
+                                      metadataDiffEditors.old.object = createEditor('old', toBeLoadedMetadata)
 
-                        try {
-                          isOutputIncomplete = (isSourceCommand ? !(allOutput.includes('KEYWORD:OUTPUT:SOURCE:COMPLETED')) : isOutputIncomplete) || isOutputWithPaging
-                        } catch (e) {}
+                                      // Create an editor for the new metadata content
+                                      metadataDiffEditors.new.object = createEditor('new', metadata)
 
-                        // Update the block's output
-                        blocksOutput[data.blockID] = `${blocksOutput[data.blockID] || ''}${data.output}`
+                                      diffEditor.setModel({
+                                        original: metadataDiffEditors.old.object,
+                                        modified: metadataDiffEditors.new.object
+                                      })
 
-                        // Define the final content to be manipulated and rendered
-                        finalContent = blocksOutput[data.blockID]
+                                      diffEditor.onDidUpdateDiff(function() {
+                                        // Point at the results
+                                        let result = diffEditor.getLineChanges(),
+                                          // Point at the differentiation show button000
+                                          differentiationBtn = workareaElement.find(`span.btn[data-id="${showDifferentiationBtnID}"]`),
+                                          // Point at the changes/differences container
+                                          changesContainer = workareaElement.find(`div.changes-lines[data-id="${changesLinesContainerID}"]`)
 
-                        // Get the identifiers detected in the statements
-                        let statementsIdentifiers = [],
-                          statementsStNextIdentifiers = [],
-                          statementsNdNextIdentifiers = []
+                                        // Update the number of detected changes
+                                        differentiationBtn.attr('data-changes', result.length)
 
-                        try {
-                          // Get the detected identifiers
-                          statementsIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[(.*?)\]/i)[1].split(',')
-                          // Manipulate them
-                          statementsIdentifiers = statementsIdentifiers.map((identifier) => identifier.trim())
-                        } catch (e) {}
+                                        // Update the button's text by showing the number of detected changes
+                                        differentiationBtn.children('span').filter(':last').text(result.length); // This semicolon is critical here
 
-                        try {
-                          statementsStNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[(.*?)\]/i)[1].split(',')
-                          statementsStNextIdentifiers = statementsStNextIdentifiers.map((identifier) => identifier.trim())
-                        } catch (e) {}
+                                        workareaElement.find(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).add(workareaElement.find(`span.btn[data-id="${diffNavigationNextBtnID}"]`)).toggleClass('disabled', result.length <= 0)
 
-                        try {
-                          statementsNdNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[.*?\]\[(.*?)\]/i)[1].split(',')
-                          statementsNdNextIdentifiers = statementsNdNextIdentifiers.map((identifier) => identifier.trim())
-                        } catch (e) {}
+                                        // If there's no detected change then end the process
+                                        if (result.length <= 0)
+                                          return
 
-                        // Handle if the statement's execution process has stopped
-                        try {
-                          // Toggle the `busy` state of the execution button
-                          workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+                                        // Remove all previous changed lines from the changes' container
+                                        changesContainer.children('div.line').remove()
 
-                          // Attempt to clear the killing process button showing state
-                          try {
-                            clearTimeout(killProcessTimeout)
-                          } catch (e) {}
+                                        // Loop through each change in the content
+                                        result.forEach((change) => {
+                                          // Line UI element structure
+                                          let element = `
+                                                       <div class="line" data-number="${change.originalStartLineNumber}">
+                                                         <span class="number">${change.originalStartLineNumber}</span>
+                                                         <span class="content">${metadataDiffEditors.old.object.getLineContent(change.originalStartLineNumber)}</span>
+                                                       </div>`
 
-                          // Hide the button if there's no incomplete output
-                          if (!isOutputIncomplete)
-                            hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+                                          // Append the line element to the container
+                                          changesContainer.append($(element).click(function() {
+                                            // Get the line's number
+                                            let lineNumber = parseInt($(this).attr('data-number')); // This semicolon is critical here
 
-                          // There's an incomplete output
-                          if (isOutputIncomplete)
-                            killProcessTimeout = setTimeout(() => {
-                              killProcessBtn.parent().addClass('show')
+                                            try {
+                                              diffEditor.revealLineInCenter(lineNumber)
+                                            } catch (e) {}
+                                          }))
+                                        }) // This semicolon is critical here
+                                      })
 
-                              workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
-                              workareaElement.find('.disableable').addClass('disabled')
-                              workareaElement.addClass('busy-cqlsh')
+                                      // Update its layout
+                                      setTimeout(() => diffEditor.layout(), 200)
 
-                              if (!isOutputWithPaging)
-                                setTimeout(() => hintsContainer.addClass('show'), 1000)
-                            }, 1500)
-                        } catch (e) {}
+                                      /**
+                                       * Create a resize observer for the work area body element
+                                       * By doing this the editor's dimensions will always fit with the dialog's dimensions
+                                       */
+                                      setTimeout(() => {
+                                        (new ResizeObserver(() => {
+                                          try {
+                                            diffEditor.layout()
+                                          } catch (e) {}
+                                        })).observe(workareaElement[0])
+                                      })
 
-                        try {
-                          if (!isOutputIgnored || blockElement.children('div.output').find('div.incomplete-statement').length != 0)
-                            throw 0
+                                      // // Detect differentiation between old and new content
+                                      // detectDifferentiationShow(toBeLoadedMetadata, metadata)
+                                    })
 
-                          // The sub output structure UI
-                          let element = `
-                                         <div class="sub-output info incomplete-statement">
-                                           <div class="sub-output-content"><span mulang="incomplete statement has been detected and stopped the execution flow" capitalize-first></span>.</div>
-                                         </div>`
-
-                          blockElement.children('div.output').children('div.executing').hide()
-
-                          // Append a `sub-output` element in the output's container
-                          blockElement.children('div.output').append($(element).show(function() {
-                            workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').addClass('busy')
-
-                            // Apply the chosen language on the UI element after being fully loaded
-                            setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
-
-                            // Execute this code whatever the case is
-                            setTimeout(() => {
-                              // Unbind all events regards the actions' buttons of the block
-                              blockElement.find('div.btn[action], div.btn[sub-action]').unbind()
-
-                              // Clicks the copy button; to copy content in JSON string format
-                              blockElement.find('div.btn[action="copy"]').click(function() {
-                                // Get all sub output elements
-                                let allOutputElements = blockElement.find('div.output').find('div.sub-output').find('div.sub-output-content'),
-                                  // Initial group of all output inside the block
-                                  outputGroup = []
-
-                                // Loop through each sub output
-                                allOutputElements.each(function() {
-                                  try {
-                                    // If the output is not a table then skip this try-catch block
-                                    if ($(this).find('div.tabulator').length <= 0)
-                                      throw 0
-
-                                    // Push the table's data as JSON
-                                    outputGroup.push(Tabulator.findTable($(this).find('div.tabulator')[0])[0].getData())
-
-                                    // Skip the upcoming code
-                                    return
-                                  } catch (e) {}
-
-                                  // Just get the output's text
-                                  outputGroup.push($(this).text())
-                                })
-
-                                // Get the beautified version of the block's content
-                                let contentBeautified = beautifyJSON({
-                                    statement: blockElement.find('div.statement div.text').text() || 'No statement',
-                                    output: outputGroup
-                                  }),
-                                  // Get the content's size
-                                  contentSize = Bytes(ValueSize(contentBeautified))
-
-                                // Copy content to the clipboard
-                                try {
-                                  Clipboard.writeText(contentBeautified)
+                                  })
                                 } catch (e) {
                                   try {
                                     errorLog(e, 'connections')
                                   } catch (e) {}
                                 }
 
-                                // Give feedback to the user
-                                showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
-                              })
+                                // Hide the loading indicator in the tree view section
+                                setTimeout(() => {
+                                  metadataContent.parent().removeClass('loading')
 
-                              // Clicks the deletion button
-                              blockElement.find('div.btn[action="delete"]').click(() => {
-                                let queriesContainer = workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
+                                  let cqlSnippetsButton = workareaElement.find('div.session-action[action="cql-snippets"]').find('button.btn')
 
-                                setTimeout(function() {
-                                  // Remove related query tracing element if exists
-                                  blockElement.find('div.btn[sub-action="tracing"]').each(function() {
-                                    workareaElement.find(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
+                                  cqlSnippetsButton.removeClass('disabled')
+                                  cqlSnippetsButton.attr('disabled', null)
+                                }, 150)
+                              } catch (e) {
+                                try {
+                                  errorLog(e, 'connections')
+                                } catch (e) {}
+                              }
+                            })
+                          } catch (e) {
+                            try {
+                              errorLog(e, 'connections')
+                            } catch (e) {}
+                          }
+                        }
+                        // End of the check metadata function
+
+                        // Determine whether or not the metadata function will be called
+                        try {
+                          // If the cqlsh prompt hasn't been found in the received data or cqlsh is not loaded yet then the work area isn't ready to get metadata
+                          if ((new RegExp('cqlsh\s*(\:|\s*)(.+|\s*)\>')).exec(data.output) == null || !isCQLSHLoaded)
+                            throw 0
+
+                          // If metadata hasn't been got yet
+                          if (!isMetadataFetched) {
+                            // Call the metadata function
+                            checkMetadata()
+
+                            // Skip the upcoming code in this try-catch block
+                            throw 0
+                          }
+                        } catch (e) {}
+
+                        /**
+                         * For the app's terminal
+                         *
+                         * Get cqlsh current prompt - for instance; `cqlsh>` -
+                         */
+                        let prompt = data.output.match(/^(.*?cqlsh.*?>)/gm),
+                          // Update the active prefix to be used
+                          activePrefix = prefix
+
+                        /**
+                         * The upcoming block is about the interactive terminal
+                         *
+                         * Whether or not the output is related to paging process
+                         */
+                        let isOutputWithPaging = data.output.indexOf('KEYWORD:PAGING:CONTINUE') != -1,
+                          // Whether or not the output has been completed
+                          isOutputCompleted = data.output.indexOf('KEYWORD:OUTPUT:COMPLETED:ALL') != -1,
+                          // Whether or not this output is incomplete
+                          isOutputIncomplete = allOutput.endsWith('KEYWORD:STATEMENT:INCOMPLETE'),
+                          // Whether or not this output is ignored
+                          isOutputIgnored = data.output.indexOf('KEYWORD:STATEMENT:IGNORE') != -1,
+                          // Define the variable that will hold a timeout to refresh the metadata content
+                          refreshMetadataTimeout
+
+                        try {
+                          // If the given `blockID` is empty - the execution has not been called from the interactive terminal - then skip this try-catch block
+                          if (minifyText(`${data.blockID}`).length <= 0)
+                            throw 0
+
+                          // Point at the associated block element in the interactive terminal
+                          let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${data.blockID}"]`),
+                            // Get the block's statement/command
+                            blockStatement = blockElement.find('div.statement div.text').text(),
+                            // Define the content of the `no-output` element
+                            noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span>.</no-output>',
+                            isSourceCommand = blockElement.attr('data-is-source-command') != undefined
+
+                          if (isOutputWithPaging && !isOutputCompleted)
+                            blockElement.attr('data-is-paging', 'true')
+
+                          isOutputWithPaging = isOutputWithPaging || blockElement.attr('data-is-paging') != undefined
+
+                          try {
+                            isOutputIncomplete = (isSourceCommand ? !(allOutput.includes('KEYWORD:OUTPUT:SOURCE:COMPLETED')) : isOutputIncomplete) || isOutputWithPaging
+                          } catch (e) {}
+
+                          // Update the block's output
+                          blocksOutput[data.blockID] = `${blocksOutput[data.blockID] || ''}${data.output}`
+
+                          // Define the final content to be manipulated and rendered
+                          finalContent = blocksOutput[data.blockID]
+
+                          // Get the identifiers detected in the statements
+                          let statementsIdentifiers = [],
+                            statementsStNextIdentifiers = [],
+                            statementsNdNextIdentifiers = []
+
+                          try {
+                            // Get the detected identifiers
+                            statementsIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[(.*?)\]/i)[1].split(',')
+                            // Manipulate them
+                            statementsIdentifiers = statementsIdentifiers.map((identifier) => identifier.trim())
+                          } catch (e) {}
+
+                          try {
+                            statementsStNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[(.*?)\]/i)[1].split(',')
+                            statementsStNextIdentifiers = statementsStNextIdentifiers.map((identifier) => identifier.trim())
+                          } catch (e) {}
+
+                          try {
+                            statementsNdNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[.*?\]\[(.*?)\]/i)[1].split(',')
+                            statementsNdNextIdentifiers = statementsNdNextIdentifiers.map((identifier) => identifier.trim())
+                          } catch (e) {}
+
+                          // Handle if the statement's execution process has stopped
+                          try {
+                            // Toggle the `busy` state of the execution button
+                            workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+
+                            // Attempt to clear the killing process button showing state
+                            try {
+                              clearTimeout(killProcessTimeout)
+                            } catch (e) {}
+
+                            // Hide the button if there's no incomplete output
+                            if (!isOutputIncomplete)
+                              hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+
+                            // There's an incomplete output
+                            if (isOutputIncomplete)
+                              killProcessTimeout = setTimeout(() => {
+                                killProcessBtn.parent().addClass('show')
+
+                                workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
+                                workareaElement.find('.disableable').addClass('disabled')
+                                workareaElement.addClass('busy-cqlsh')
+
+                                if (!isOutputWithPaging)
+                                  setTimeout(() => hintsContainer.addClass('show'), 1000)
+                              }, 1500)
+                          } catch (e) {}
+
+                          try {
+                            if (!isOutputIgnored || blockElement.children('div.output').find('div.incomplete-statement').length != 0)
+                              throw 0
+
+                            // The sub output structure UI
+                            let element = `
+                                           <div class="sub-output info incomplete-statement">
+                                             <div class="sub-output-content"><span mulang="incomplete statement has been detected and stopped the execution flow" capitalize-first></span>.</div>
+                                           </div>`
+
+                            blockElement.children('div.output').children('div.executing').hide()
+
+                            // Append a `sub-output` element in the output's container
+                            blockElement.children('div.output').append($(element).show(function() {
+                              workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').addClass('busy')
+
+                              // Apply the chosen language on the UI element after being fully loaded
+                              setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
+                              // Execute this code whatever the case is
+                              setTimeout(() => {
+                                // Unbind all events regards the actions' buttons of the block
+                                blockElement.find('div.btn[action], div.btn[sub-action]').unbind()
+
+                                // Clicks the copy button; to copy content in JSON string format
+                                blockElement.find('div.btn[action="copy"]').click(function() {
+                                  // Get all sub output elements
+                                  let allOutputElements = blockElement.find('div.output').find('div.sub-output').find('div.sub-output-content'),
+                                    // Initial group of all output inside the block
+                                    outputGroup = []
+
+                                  // Loop through each sub output
+                                  allOutputElements.each(function() {
+                                    try {
+                                      // If the output is not a table then skip this try-catch block
+                                      if ($(this).find('div.tabulator').length <= 0)
+                                        throw 0
+
+                                      // Push the table's data as JSON
+                                      outputGroup.push(Tabulator.findTable($(this).find('div.tabulator')[0])[0].getData())
+
+                                      // Skip the upcoming code
+                                      return
+                                    } catch (e) {}
+
+                                    // Just get the output's text
+                                    outputGroup.push($(this).text())
                                   })
 
-                                  // If there's still one query tracing result then skip this try-catch block
+                                  // Get the beautified version of the block's content
+                                  let contentBeautified = beautifyJSON({
+                                      statement: blockElement.find('div.statement div.text').text() || 'No statement',
+                                      output: outputGroup
+                                    }),
+                                    // Get the content's size
+                                    contentSize = Bytes(ValueSize(contentBeautified))
+
+                                  // Copy content to the clipboard
                                   try {
-                                    if (queriesContainer.find('div.query').length > 0)
+                                    Clipboard.writeText(contentBeautified)
+                                  } catch (e) {
+                                    try {
+                                      errorLog(e, 'connections')
+                                    } catch (e) {}
+                                  }
+
+                                  // Give feedback to the user
+                                  showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
+                                })
+
+                                // Clicks the deletion button
+                                blockElement.find('div.btn[action="delete"]').click(() => {
+                                  let queriesContainer = workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
+
+                                  setTimeout(function() {
+                                    // Remove related query tracing element if exists
+                                    blockElement.find('div.btn[sub-action="tracing"]').each(function() {
+                                      workareaElement.find(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
+                                    })
+
+                                    // If there's still one query tracing result then skip this try-catch block
+                                    try {
+                                      if (queriesContainer.find('div.query').length > 0)
+                                        throw 0
+
+                                      // Show the emptiness class
+                                      queriesContainer.addClass('_empty')
+                                    } catch (e) {}
+                                  }, 500)
+
+                                  // Remove the block from the session
+                                  blockElement.remove()
+
+                                  try {
+                                    // Point at the session's statements' container
+                                    let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
+
+                                    // If there's still one block then skip this try-catch block
+                                    if (sessionContainer.find('div.block').length > 0)
                                       throw 0
 
                                     // Show the emptiness class
-                                    queriesContainer.addClass('_empty')
+                                    sessionContainer.parent().find(`div.empty-statements`).addClass('show')
                                   } catch (e) {}
-                                }, 500)
-
-                                // Remove the block from the session
-                                blockElement.remove()
-
-                                try {
-                                  // Point at the session's statements' container
-                                  let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
-
-                                  // If there's still one block then skip this try-catch block
-                                  if (sessionContainer.find('div.block').length > 0)
-                                    throw 0
-
-                                  // Show the emptiness class
-                                  sessionContainer.parent().find(`div.empty-statements`).addClass('show')
-                                } catch (e) {}
+                                })
                               })
-                            })
 
-                            setTimeout(() => {
-                              try {
-                                blockElement.parent().animate({
-                                  scrollTop: blockElement.parent().get(0).scrollHeight
-                                }, 100)
-                              } catch (e) {}
-                            }, 500)
-                          }))
+                              setTimeout(() => {
+                                try {
+                                  blockElement.parent().animate({
+                                    scrollTop: blockElement.parent().get(0).scrollHeight
+                                  }, 100)
+                                } catch (e) {}
+                              }, 500)
+                            }))
 
-                          return
-                        } catch (e) {}
-
-                        // If no output has been detected then skip this try-catch block
-                        if (['KEYWORD:OUTPUT:COMPLETED:ALL', 'KEYWORD:PAGING:CONTINUE'].every((keyword) => !finalContent.includes(keyword)))
-                          throw 0
-
-                        // Get the detected output of each statement
-                        let detectedOutput
-
-                        if (finalContent.includes('KEYWORD:OUTPUT:COMPLETED:ALL')) {
-                          detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:OUTPUT:COMPLETED:ALL/gm)
-
-                          blockElement.attr('data-is-paging-completed', 'true')
-
-                          let nextPageBtn = blockElement.find('button[data-action="next-page"]')
-
-                          nextPageBtn.find('[spinner]').hide()
-                          nextPageBtn.attr('disabled', null)
-
-                          nextPageBtn.parent().find('button[data-page="last"]').removeClass('hidden')
-
-                          try {
-                            clearTimeout(killProcessTimeout)
+                            return
                           } catch (e) {}
 
-                          setTimeout(() => {
-                            workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute button').parent().removeClass('busy')
+                          // If no output has been detected then skip this try-catch block
+                          if (['KEYWORD:OUTPUT:COMPLETED:ALL', 'KEYWORD:PAGING:CONTINUE'].every((keyword) => !finalContent.includes(keyword)))
+                            throw 0
 
-                            workareaElement.find('div.session-actions').find(`div.session-action${(Store.get(connectionID) || []).length <= 0 ? ':not([action="history"])' : ''}`).find('button').attr('disabled', null)
-                            workareaElement.find('.disableable').removeClass('disabled')
-                            workareaElement.removeClass('busy-cqlsh')
+                          // Get the detected output of each statement
+                          let detectedOutput
 
-                            killProcessBtn.parent().removeClass('show')
-                          }, 2000)
-                        } else {
-                          detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:PAGING:CONTINUE/gm)
-                        }
+                          if (finalContent.includes('KEYWORD:OUTPUT:COMPLETED:ALL')) {
+                            detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:OUTPUT:COMPLETED:ALL/gm)
 
-                        // Handle all statements and their output
-                        try {
-                          // Loop through each detected output
-                          for (let output of detectedOutput) {
-                            // Make sure to remove the current handled output
-                            blocksOutput[data.blockID] = blocksOutput[data.blockID].replace(output, '')
+                            blockElement.attr('data-is-paging-completed', 'true')
 
-                            // Point at the output's container
-                            let outputContainer = blockElement.children('div.output'),
-                              // Define a regex to match each output of each statement
-                              statementOutputRegex = /KEYWORD:OUTPUT:STARTED([\s\S]*?)(KEYWORD:OUTPUT:COMPLETED|KEYWORD:PAGING:CONTINUE)/gm,
-                              // Define variable to initially hold the regex's match
-                              matches,
-                              // The index of loop's pointer
-                              loopIndex = -1
+                            let nextPageBtn = blockElement.find('button[data-action="next-page"]')
+
+                            nextPageBtn.find('[spinner]').hide()
+                            nextPageBtn.attr('disabled', null)
+
+                            nextPageBtn.parent().find('button[data-page="last"]').removeClass('hidden')
 
                             try {
-                              let tableObj = blockElement.data('tableObj')
-
-                              if (`${output}`.indexOf('KEYWORD:JSON:STARTED') <= -1 || tableObj == undefined)
-                                throw 0
-
-                              jsonString = `${output}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
-
-                              jsonString = jsonString.replace(/KEYWORD:TABLEMETA:INFO:\[.+\]/, '')
-
-                              if (tableObj != undefined) {
-                                convertJSONToTable(jsonString, (newPage) => {
-                                  tableObj.blockRedraw()
-                                  tableObj.addData(newPage.json, false).then(() => {
-                                    tableObj.restoreRedraw()
-
-                                    tableObj.setPage(tableObj.getPageMax())
-
-                                    let nextPageBtn = blockElement.find('button[data-action="next-page"]')
-
-                                    nextPageBtn.find('[spinner]').hide()
-                                    nextPageBtn.attr('disabled', null)
-                                  })
-                                })
-
-                                return
-                              }
+                              clearTimeout(killProcessTimeout)
                             } catch (e) {}
 
-                            // Loop through the final content and match output
-                            while ((matches = statementOutputRegex.exec(output)) !== null) {
-                              // Increase the loop; to match the identifier of the current output's statement
-                              loopIndex = loopIndex + 1
+                            setTimeout(() => {
+                              workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute button').parent().removeClass('busy')
 
-                              // Point at the current identifier
-                              let statementIdentifier = statementsIdentifiers[loopIndex],
-                                statementsStNextIdentifier = statementsStNextIdentifiers[loopIndex],
-                                statementsNdNextIdentifier = statementsNdNextIdentifiers[loopIndex]
+                              workareaElement.find('div.session-actions').find(`div.session-action${(Store.get(connectionID) || []).length <= 0 ? ':not([action="history"])' : ''}`).find('button').attr('disabled', null)
+                              workareaElement.find('.disableable').removeClass('disabled')
+                              workareaElement.removeClass('busy-cqlsh')
 
-                              // Avoid infinite loops with zero-width matches
-                              if (matches.index === statementOutputRegex.lastIndex)
-                                statementOutputRegex.lastIndex++
+                              killProcessBtn.parent().removeClass('show')
+                            }, 2000)
+                          } else {
+                            detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:PAGING:CONTINUE/gm)
+                          }
 
-                              // Loop through each matched part of the output
-                              matches.forEach((match, groupIndex) => {
-                                // Ignore specific group
-                                if (groupIndex != 1)
+                          // Handle all statements and their output
+                          try {
+                            // Loop through each detected output
+                            for (let output of detectedOutput) {
+                              // Make sure to remove the current handled output
+                              blocksOutput[data.blockID] = blocksOutput[data.blockID].replace(output, '')
+
+                              // Point at the output's container
+                              let outputContainer = blockElement.children('div.output'),
+                                // Define a regex to match each output of each statement
+                                statementOutputRegex = /KEYWORD:OUTPUT:STARTED([\s\S]*?)(KEYWORD:OUTPUT:COMPLETED|KEYWORD:PAGING:CONTINUE)/gm,
+                                // Define variable to initially hold the regex's match
+                                matches,
+                                // The index of loop's pointer
+                                loopIndex = -1
+
+                              try {
+                                let tableObj = blockElement.data('tableObj')
+
+                                if (`${output}`.indexOf('KEYWORD:JSON:STARTED') <= -1 || tableObj == undefined)
+                                  throw 0
+
+                                jsonString = `${output}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
+
+                                jsonString = jsonString.replace(/KEYWORD:TABLEMETA:INFO:\[.+\]/, '')
+
+                                if (tableObj != undefined) {
+                                  convertJSONToTable(jsonString, (newPage) => {
+                                    tableObj.blockRedraw()
+                                    tableObj.addData(newPage.json, false).then(() => {
+                                      tableObj.restoreRedraw()
+
+                                      tableObj.setPage(tableObj.getPageMax())
+
+                                      let nextPageBtn = blockElement.find('button[data-action="next-page"]')
+
+                                      nextPageBtn.find('[spinner]').hide()
+                                      nextPageBtn.attr('disabled', null)
+                                    })
+                                  })
+
                                   return
+                                }
+                              } catch (e) {}
 
-                                // Whether or not an error has been found in the output
-                                let isErrorFound = `${match}`.indexOf('KEYWORD:ERROR:STARTED') != -1,
-                                  isOutputInfo = `${match}`.indexOf('[OUTPUT:INFO]') != -1
+                              // Loop through the final content and match output
+                              while ((matches = statementOutputRegex.exec(output)) !== null) {
+                                // Increase the loop; to match the identifier of the current output's statement
+                                loopIndex = loopIndex + 1
 
-                                // Refresh the latest metadata based on specific actions and only if no erorr has occurred
-                                try {
-                                  if (['alter', 'create', 'drop'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound)) {
-                                    // Make sure the statement is not about specific actions
-                                    if (['role', 'user'].some((identifier) => statementsStNextIdentifier.toLowerCase().indexOf(identifier) != -1))
-                                      throw 0
+                                // Point at the current identifier
+                                let statementIdentifier = statementsIdentifiers[loopIndex],
+                                  statementsStNextIdentifier = statementsStNextIdentifiers[loopIndex],
+                                  statementsNdNextIdentifier = statementsNdNextIdentifiers[loopIndex]
 
-                                    // Make sure to clear the previous timeout
-                                    try {
-                                      clearTimeout(refreshMetadataTimeout)
-                                    } catch (e) {}
+                                // Avoid infinite loops with zero-width matches
+                                if (matches.index === statementOutputRegex.lastIndex)
+                                  statementOutputRegex.lastIndex++
 
-                                    // Set the timeout to be triggerd and refresh the metadata
-                                    refreshMetadataTimeout = setTimeout(() => workareaElement.find(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(), 1000)
-                                  }
-                                } catch (e) {}
+                                // Loop through each matched part of the output
+                                matches.forEach((match, groupIndex) => {
+                                  // Ignore specific group
+                                  if (groupIndex != 1)
+                                    return
 
-                                try {
-                                  if (!(['select'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1)))
-                                    throw 0
+                                  // Whether or not an error has been found in the output
+                                  let isErrorFound = `${match}`.indexOf('KEYWORD:ERROR:STARTED') != -1,
+                                    isOutputInfo = `${match}`.indexOf('[OUTPUT:INFO]') != -1
 
-                                  noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span> - <span mulang="no data found" capitalize-first></span>.</no-output>'
-                                } catch (e) {}
-
-                                try {
-                                  if (`${statementIdentifier}`.toLowerCase() != 'begin' || !([statementsStNextIdentifier, statementsNdNextIdentifier].some((identifier) => `${identifier}`.toLowerCase() == 'batch')))
-                                    throw 0
-
-                                  noOutputElement = '<no-output>Batch <span mulang="CQL statement executed" capitalize-first></span>.</no-output>'
-                                } catch (e) {}
-
-                                let isOutputHighlighted = false
-
-                                try {
-                                  isOutputHighlighted = (['desc', 'describe'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound))
-                                } catch (e) {}
-
-                                try {
-                                  if (!isOutputHighlighted)
-                                    throw 0
-
-                                  match = Highlight.highlight(match, {
-                                    language: 'cql'
-                                  }).value
-                                } catch (e) {}
-
-                                let isConsistencyCommand = false
-
-                                // For consistency
-                                try {
-                                  if (!((['consistency', 'serial']).some((command) => minifyText(statementIdentifier) == command)))
-                                    throw 0
-
-                                  let consistencyType = minifyText(statementIdentifier),
-                                    setConsistency = `${match}`.trim()
-
+                                  // Refresh the latest metadata based on specific actions and only if no erorr has occurred
                                   try {
-                                    setConsistency = setConsistency.match(/\s+([A-Z_]+)\.$/g)[0].trim().replace(/\./g, '')
-                                  } catch (e) {}
-
-                                  try {
-                                    let consistencyLevels = Modules.Consts.ConsistencyLevels[consistencyType == 'consistency' ? 'Regular' : 'Serial']
-
-                                    if (!(consistencyLevels.some((level) => level == setConsistency)))
-                                      throw 0
-
-                                    let consistencyAction = workareaElement.find('div.session-action.consistency-level[action="consistency-level"]')
-
-                                    if (consistencyAction.css('display') == 'none')
-                                      consistencyAction.fadeIn('fast')
-
-                                    consistencyAction.children('button').find(`b[${consistencyType == 'consistency' ? 'standard' : 'serial'}]`).text(setConsistency)
-
-                                    if (activeSessionsConsistencyLevels[activeConnectionID] == undefined)
-                                      activeSessionsConsistencyLevels[activeConnectionID] = {
-                                        standard: '',
-                                        serial: ''
-                                      }
-
-                                    activeSessionsConsistencyLevels[activeConnectionID][consistencyType == 'consistency' ? 'standard' : 'serial'] = setConsistency
-
-                                    isConsistencyCommand = true
-                                  } catch (e) {}
-                                } catch (e) {}
-
-                                // For paging
-                                try {
-                                  if (minifyText(statementIdentifier) != 'paging')
-                                    throw 0
-
-                                  let paginationAction = workareaElement.find('div.session-action.pagination-size[action="pagination-size"]')
-
-                                  if (`${match}`.includes('OFF')) {
-                                    paginationAction.fadeOut('fast')
-                                    throw 0
-                                  }
-
-                                  // Make sure paging is ON
-                                  if (!(`${match}`.includes('ON')) && isNaN(parseInt(statementsStNextIdentifier)))
-                                    throw 0
-
-                                  let detectedPagingSize = parseInt(`${match}`.match(/size\:\s*(\d+)/)[1])
-
-                                  if (isNaN(detectedPagingSize))
-                                    throw 0
-
-                                  activeSessionsPaginationSize = detectedPagingSize
-
-                                  if (paginationAction.css('display') == 'none')
-                                    paginationAction.fadeIn('fast')
-
-                                  try {
-                                    detectedPagingSize = detectedPagingSize.format()
-                                  } catch (e) {}
-
-                                  paginationAction.find(`span.size`).text(`${detectedPagingSize}`)
-                                } catch (e) {}
-
-                                // For paging
-                                try {
-                                  if (minifyText(statementIdentifier) != 'tracing')
-                                    throw 0
-
-                                  let queryTracingAction = workareaElement.find('div.session-action.query-tracing[action="query-tracing"]')
-
-                                  if (queryTracingAction.css('display') == 'none')
-                                    queryTracingAction.fadeIn('fast')
-
-                                  let isTracingEnabled = `${match}`.includes('ON')
-
-                                  queryTracingAction.data('tracingStatus', isTracingEnabled)
-
-                                  queryTracingAction.find(`span.staus`).text(`${isTracingEnabled ? 'ON' : 'OFF'}`)
-                                } catch (e) {}
-
-                                // The sub output structure UI
-                                let element = `
-                                         <div class="sub-output ${isErrorFound ? 'error' : ''} ${isOutputInfo ? 'info': ''}">
-                                           <div class="general-hint select-rows">
-                                            <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> To perform a range selection hold <kbd>SHIFT</kbd> key and click on the end row, also, hold <kbd>CTRL</kbd> key and click on a row to deselect it.
-                                           </div>
-                                           <div class="sub-output-content"></div>
-                                           <div class="sub-actions" hidden>
-                                             <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="download the block" capitalize-first>
-                                               <ion-icon name="download"></ion-icon>
-                                             </div>
-                                             <div class="download-options">
-                                               <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
-                                                 <ion-icon name="csv"></ion-icon>
-                                               </div>
-                                               <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
-                                                 <ion-icon name="pdf"></ion-icon>
-                                               </div>
-                                             </div>
-                                             <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="trace the query" capitalize-first>
-                                               <ion-icon name="query-tracing"></ion-icon>
-                                             </div>
-                                           </div>
-                                         </div>`
-
-                                outputContainer.children('div.executing').hide()
-
-                                // Append a `sub-output` element in the output's container
-                                outputContainer.append($(element).show(function() {
-                                  // Point at the appended element
-                                  let outputElement = $(this)
-
-                                  // Apply the chosen language on the UI element after being fully loaded
-                                  setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
-
-                                  // If the number of executed statements are more than `1` then show a badge indicates that
-                                  setTimeout(() => {
-                                    try {
-                                      // Get the number of statements in the current block based on how many sub output elements exist
-                                      let numberOfStatements = outputContainer.find('div.sub-output').length
-
-                                      // If it's less than `2` then hide the badge
-                                      if (numberOfStatements < 2)
+                                    if (['alter', 'create', 'drop'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound)) {
+                                      // Make sure the statement is not about specific actions
+                                      if (['role', 'user'].some((identifier) => statementsStNextIdentifier.toLowerCase().indexOf(identifier) != -1))
                                         throw 0
 
-                                      // Show the badge with the number of statements
-                                      blockElement.find('div.statements-count').text(`${numberOfStatements} statements`).hide().fadeIn('fast')
-                                    } catch (e) {
-                                      // Hide the badge
-                                      blockElement.find('div.statements-count').hide()
+                                      // Make sure to clear the previous timeout
+                                      try {
+                                        clearTimeout(refreshMetadataTimeout)
+                                      } catch (e) {}
+
+                                      // Set the timeout to be triggerd and refresh the metadata
+                                      refreshMetadataTimeout = setTimeout(() => workareaElement.find(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(), 1000)
                                     }
-                                  }, 500)
-
-                                  /**
-                                   * Reaching here with `match` means this is an output to be rendered
-                                   *
-                                   * Manipulate the content
-                                   * Remove any given prompts within the output
-                                   */
-                                  match = match.replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
-                                    // Remove the statement from the output
-                                    .replace(new RegExp(quoteForRegex(blockElement.children('div.statement').text()), 'g'), '')
-                                    // Get rid of tracing results
-                                    .replace(/Tracing\s*session\:[\S\s]+/gi, '')
-                                    // Trim the output
-                                    .trim()
-
-                                  // Make sure to show the emptiness message if the output is empty
-                                  if (minifyText(match).replace(/nooutputreceived\./g, '').length <= 0)
-                                    match = noOutputElement
-
-                                  // Define the JSON string which will be updated if the output has valid JSON block
-                                  let jsonString = '',
-                                    // Define the tabulator object if one is created
-                                    tabulatorObject = null,
-                                    connectionLost = `${match}`.indexOf('NoHostAvailable:') != -1,
-                                    isJSONKeywordFound = `${statementsStNextIdentifier}`.toLowerCase().indexOf('json') != -1
-
-                                  try {
-                                    if (!isJSONKeywordFound)
-                                      throw 0
-
-                                    outputElement.find('div.sub-actions').attr('hidden', null)
-
-                                    outputElement.find('div.sub-actions').css('width', '30px')
-
-                                    outputElement.find('div.sub-actions').children('div.sub-action[sub-action="download"]').hide()
-
-                                    outputElement.addClass('actions-shown')
                                   } catch (e) {}
 
-                                  // Handle if the content has JSON string
                                   try {
-                                    // If the statement is not `SELECT` or 'DELETE' then don't attempt to render a table
-                                    // if (['select', 'delete', 'create', 'insert'].every((command) => statementIdentifier.toLowerCase().indexOf(command) <= -1) || isJSONKeywordFound || connectionLost)
-                                    if (isJSONKeywordFound || connectionLost)
+                                    if (!(['select'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1)))
                                       throw 0
 
-                                    if (`${match}`.indexOf('KEYWORD:JSON:STARTED') <= -1)
+                                    noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span> - <span mulang="no data found" capitalize-first></span>.</no-output>'
+                                  } catch (e) {}
+
+                                  try {
+                                    if (`${statementIdentifier}`.toLowerCase() != 'begin' || !([statementsStNextIdentifier, statementsNdNextIdentifier].some((identifier) => `${identifier}`.toLowerCase() == 'batch')))
                                       throw 0
 
-                                    jsonString = `${match}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
+                                    noOutputElement = '<no-output>Batch <span mulang="CQL statement executed" capitalize-first></span>.</no-output>'
+                                  } catch (e) {}
 
-                                    let selectorTableInfo = ''
+                                  let isOutputHighlighted = false
+
+                                  try {
+                                    isOutputHighlighted = (['desc', 'describe'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound))
+                                  } catch (e) {}
+
+                                  try {
+                                    if (!isOutputHighlighted)
+                                      throw 0
+
+                                    match = Highlight.highlight(match, {
+                                      language: 'cql'
+                                    }).value
+                                  } catch (e) {}
+
+                                  let isConsistencyCommand = false
+
+                                  // For consistency
+                                  try {
+                                    if (!((['consistency', 'serial']).some((command) => minifyText(statementIdentifier) == command)))
+                                      throw 0
+
+                                    let consistencyType = minifyText(statementIdentifier),
+                                      setConsistency = `${match}`.trim()
+
                                     try {
-                                      if (!jsonString.includes('KEYWORD:TABLEMETA:INFO'))
-                                        throw 0
-
-                                      selectorTableInfo = jsonString.match(/KEYWORD:TABLEMETA:INFO:\[(.+)\]/)[1]
-
-                                      jsonString = jsonString.replace(/KEYWORD:TABLEMETA:INFO:\[.+\]/, '')
+                                      setConsistency = setConsistency.match(/\s+([A-Z_]+)\.$/g)[0].trim().replace(/\./g, '')
                                     } catch (e) {}
 
-                                    // Convert the JSON string to HTML table related to a Tabulator object
-                                    convertTableToTabulator(jsonString, outputElement.find('div.sub-output-content'), activeSessionsPaginationSize || 50, false, (_tabulatorObject) => {
-                                      // As a tabulator object has been created add the associated class
-                                      outputElement.find('div.sub-actions').attr('hidden', null)
+                                    try {
+                                      let consistencyLevels = Modules.Consts.ConsistencyLevels[consistencyType == 'consistency' ? 'Regular' : 'Serial']
 
-                                      outputElement.addClass('actions-shown')
+                                      if (!(consistencyLevels.some((level) => level == setConsistency)))
+                                        throw 0
 
-                                      // Hold the created object
-                                      tabulatorObject = _tabulatorObject
+                                      let consistencyAction = workareaElement.find('div.session-action.consistency-level[action="consistency-level"]')
 
-                                      tabulatorObject.selectorTableInfo = selectorTableInfo
+                                      if (consistencyAction.css('display') == 'none')
+                                        consistencyAction.fadeIn('fast')
 
-                                      let paginator = outputElement.find('div.sub-output-content').find('span.tabulator-paginator')
+                                      consistencyAction.children('button').find(`b[${consistencyType == 'consistency' ? 'standard' : 'serial'}]`).text(setConsistency)
 
-                                      paginator.find('button[data-page="last"], button[data-page="next"]').addClass('hidden')
-
-                                      paginator.find('button[data-page="last"]').before($(`<button class="tabulator-page" data-action="next-page" type="button" role="button" aria-label="Next Page" title="Next Page"><span>Next</span><l-chaotic-orbit spinner style="vertical-align: middle; position: relative; bottom: 1px; margin-left: 5px; display:none; --uib-size: 17px; --uib-color: black; --uib-speed: 0.7s;"></l-chaotic-orbit></button>`).show(function() {
-                                        blockElement.data('tableObj', tabulatorObject)
-
-                                        $(this).data('blockID', data.blockID)
-
-                                        $(this).click(function() {
-                                          let originalNextBtn = $(this).parent().find('button[data-page="next"]')
-
-                                          if (originalNextBtn.attr('disabled') == undefined || isOutputCompleted || blockElement.attr('data-is-paging-completed') == 'true') {
-                                            originalNextBtn.click()
-                                            return
-                                          }
-
-                                          $(this).find('[spinner]').css('display', 'inline-block')
-                                          $(this).attr('disabled', '')
-
-                                          IPCRenderer.send('pty:command', {
-                                            id: connectionID,
-                                            cmd: '',
-                                            blockID: $(this).data('blockID')
-                                          })
-                                        })
-                                      }))
-
-                                      // Add `Select rows in the page` option
-                                      let selectPageRowsCheckboxID = `_${getRandom.id()}`
-
-                                      outputElement.find('div.sub-output-content').find('div.tabulator').find('div.tabulator-headers').children('div.tabulator-col[tabulator-field="checkbox"]').first().append($(`
-                                      <div class="select-page-rows-container">
-                                        <div class="form-check">
-                                          <input class="form-check-input no-tabulator-style" type="checkbox" role="switch" id="${selectPageRowsCheckboxID}">
-                                        </div>
-                                      </div>
-                                      `).show(function() {
-                                        getElementMDBObject($(this))
-
-                                        setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
-
-                                        $(this).find('input').change(function() {
-                                          let isChecked = $(this).prop('checked')
-
-                                          tabulatorObject[isChecked ? 'selectRow' : 'deselectRow'](isChecked ? 'visible' : '')
-                                        })
-                                      }))
-
-                                      tabulatorObject.on('rowContext', function(e, row) {
-                                        e.preventDefault()
-
-                                        let selectedRows = tabulatorObject.getSelectedRows()
-
-                                        if (selectedRows.length <= 0)
-                                          selectedRows.push(row)
-
-                                        let [keyspaceName, tableName] = tabulatorObject.selectorTableInfo.split('.'),
-                                          keyspaceObject = latestMetadata.keyspaces.find((keyspace) => keyspace.name == keyspaceName),
-                                          tableObject = keyspaceObject.tables.find((table) => table.name == tableName)
-
-                                        selectedRows = selectedRows.map((selectedRow) => selectedRow._row.data)
-
-                                        let generationInfo = {
-                                            keyspaceName,
-                                            tableName,
-                                            tableObject,
-                                            selectedRows
-                                          },
-                                          tempObjectID = `_${getRandom.id(10)}`
-
-                                        tempObjects[tempObjectID] = generationInfo
-
-                                        IPCRenderer.send('show-context-menu', JSON.stringify([{
-                                          label: I18next.capitalizeFirstLetter(`${I18next.t('generate insert statement(s)')}`),
-                                          click: `() => views.main.webContents.send('insert-statements:generate', {
-                                                    tempObjectID: '${tempObjectID}'
-                                                  })`
-                                        }]))
-                                      })
-
-                                      let isRowSelectionEnabled = false
-
-                                      let handleRowClick = () => {
-                                        let selectedRows = tabulatorObject.getSelectedRows(),
-                                          hintElement = outputElement.find('div.general-hint.select-rows')
-
-                                        isRowSelectionEnabled = selectedRows.length > 0
-
-                                        if (isRowSelectionEnabled) {
-                                          selectedRows.forEach((row) => $(row._row.element).find('input.select-row[type="checkbox"]').prop('checked', true))
-                                        } else {
-                                          tabulatorTableContainer.find('input.select-row[type="checkbox"]').prop('checked', false)
-
-                                          $(`input#${selectPageRowsCheckboxID}`).prop('checked', false)
+                                      if (activeSessionsConsistencyLevels[activeConnectionID] == undefined)
+                                        activeSessionsConsistencyLevels[activeConnectionID] = {
+                                          standard: '',
+                                          serial: ''
                                         }
 
-                                        hintElement.toggle(selectedRows.length > 0)
+                                      activeSessionsConsistencyLevels[activeConnectionID][consistencyType == 'consistency' ? 'standard' : 'serial'] = setConsistency
+
+                                      isConsistencyCommand = true
+                                    } catch (e) {}
+                                  } catch (e) {}
+
+                                  // For paging
+                                  try {
+                                    if (minifyText(statementIdentifier) != 'paging')
+                                      throw 0
+
+                                    let paginationAction = workareaElement.find('div.session-action.pagination-size[action="pagination-size"]')
+
+                                    if (`${match}`.includes('OFF')) {
+                                      paginationAction.fadeOut('fast')
+                                      throw 0
+                                    }
+
+                                    // Make sure paging is ON
+                                    if (!(`${match}`.includes('ON')) && isNaN(parseInt(statementsStNextIdentifier)))
+                                      throw 0
+
+                                    let detectedPagingSize = parseInt(`${match}`.match(/size\:\s*(\d+)/)[1])
+
+                                    if (isNaN(detectedPagingSize))
+                                      throw 0
+
+                                    activeSessionsPaginationSize = detectedPagingSize
+
+                                    if (paginationAction.css('display') == 'none')
+                                      paginationAction.fadeIn('fast')
+
+                                    try {
+                                      detectedPagingSize = detectedPagingSize.format()
+                                    } catch (e) {}
+
+                                    paginationAction.find(`span.size`).text(`${detectedPagingSize}`)
+                                  } catch (e) {}
+
+                                  // For paging
+                                  try {
+                                    if (minifyText(statementIdentifier) != 'tracing')
+                                      throw 0
+
+                                    let queryTracingAction = workareaElement.find('div.session-action.query-tracing[action="query-tracing"]')
+
+                                    if (queryTracingAction.css('display') == 'none')
+                                      queryTracingAction.fadeIn('fast')
+
+                                    let isTracingEnabled = `${match}`.includes('ON')
+
+                                    queryTracingAction.data('tracingStatus', isTracingEnabled)
+
+                                    queryTracingAction.find(`span.staus`).text(`${isTracingEnabled ? 'ON' : 'OFF'}`)
+                                  } catch (e) {}
+
+                                  // The sub output structure UI
+                                  let element = `
+                                           <div class="sub-output ${isErrorFound ? 'error' : ''} ${isOutputInfo ? 'info': ''}">
+                                             <div class="general-hint select-rows">
+                                              <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> To perform a range selection hold <kbd>SHIFT</kbd> key and click on the end row, also, hold <kbd>CTRL</kbd> key and click on a row to deselect it.
+                                             </div>
+                                             <div class="sub-output-content"></div>
+                                             <div class="sub-actions" hidden>
+                                               <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="download the block" capitalize-first>
+                                                 <ion-icon name="download"></ion-icon>
+                                               </div>
+                                               <div class="download-options">
+                                                 <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                                   <ion-icon name="csv"></ion-icon>
+                                                 </div>
+                                                 <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                                   <ion-icon name="pdf"></ion-icon>
+                                                 </div>
+                                               </div>
+                                               <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="trace the query" capitalize-first>
+                                                 <ion-icon name="query-tracing"></ion-icon>
+                                               </div>
+                                             </div>
+                                           </div>`
+
+                                  outputContainer.children('div.executing').hide()
+
+                                  // Append a `sub-output` element in the output's container
+                                  outputContainer.append($(element).show(function() {
+                                    // Point at the appended element
+                                    let outputElement = $(this)
+
+                                    // Apply the chosen language on the UI element after being fully loaded
+                                    setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
+                                    // If the number of executed statements are more than `1` then show a badge indicates that
+                                    setTimeout(() => {
+                                      try {
+                                        // Get the number of statements in the current block based on how many sub output elements exist
+                                        let numberOfStatements = outputContainer.find('div.sub-output').length
+
+                                        // If it's less than `2` then hide the badge
+                                        if (numberOfStatements < 2)
+                                          throw 0
+
+                                        // Show the badge with the number of statements
+                                        blockElement.find('div.statements-count').text(`${numberOfStatements} statements`).hide().fadeIn('fast')
+                                      } catch (e) {
+                                        // Hide the badge
+                                        blockElement.find('div.statements-count').hide()
                                       }
+                                    }, 500)
 
-                                      tabulatorObject.on('rowSelected', () => handleRowClick())
+                                    /**
+                                     * Reaching here with `match` means this is an output to be rendered
+                                     *
+                                     * Manipulate the content
+                                     * Remove any given prompts within the output
+                                     */
+                                    match = match.replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
+                                      // Remove the statement from the output
+                                      .replace(new RegExp(quoteForRegex(blockElement.children('div.statement').text()), 'g'), '')
+                                      // Get rid of tracing results
+                                      .replace(/Tracing\s*session\:[\S\s]+/gi, '')
+                                      // Trim the output
+                                      .trim()
 
-                                      tabulatorObject.on('rowDeselected', () => handleRowClick())
+                                    // Make sure to show the emptiness message if the output is empty
+                                    if (minifyText(match).replace(/nooutputreceived\./g, '').length <= 0)
+                                      match = noOutputElement
 
-                                      let clickOutsideEvent,
-                                        tabulatorTableContainer = outputElement.find('div.tabulator[id]')
+                                    // Define the JSON string which will be updated if the output has valid JSON block
+                                    let jsonString = '',
+                                      // Define the tabulator object if one is created
+                                      tabulatorObject = null,
+                                      connectionLost = `${match}`.indexOf('NoHostAvailable:') != -1,
+                                      isJSONKeywordFound = `${statementsStNextIdentifier}`.toLowerCase().indexOf('json') != -1
 
-                                      setTimeout(() => tabulatorObject.on('cellClick', function(e, cell) {
-                                        let cellElement = $(cell._cell.element),
-                                          rowSelectCheckbox = cellElement.find('input.select-row[type="checkbox"]')
+                                    try {
+                                      if (!isJSONKeywordFound)
+                                        throw 0
 
-                                        try {
-                                          if (rowSelectCheckbox.length <= 0 && !isRowSelectionEnabled)
-                                            throw 0
+                                      outputElement.find('div.sub-actions').attr('hidden', null)
+
+                                      outputElement.find('div.sub-actions').css('width', '30px')
+
+                                      outputElement.find('div.sub-actions').children('div.sub-action[sub-action="download"]').hide()
+
+                                      outputElement.addClass('actions-shown')
+                                    } catch (e) {}
+
+                                    // Handle if the content has JSON string
+                                    try {
+                                      // If the statement is not `SELECT` or 'DELETE' then don't attempt to render a table
+                                      // if (['select', 'delete', 'create', 'insert'].every((command) => statementIdentifier.toLowerCase().indexOf(command) <= -1) || isJSONKeywordFound || connectionLost)
+                                      if (isJSONKeywordFound || connectionLost)
+                                        throw 0
+
+                                      if (`${match}`.indexOf('KEYWORD:JSON:STARTED') <= -1)
+                                        throw 0
+
+                                      jsonString = `${match}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
+
+                                      let selectorTableInfo = ''
+                                      try {
+                                        if (!jsonString.includes('KEYWORD:TABLEMETA:INFO'))
+                                          throw 0
+
+                                        selectorTableInfo = jsonString.match(/KEYWORD:TABLEMETA:INFO:\[(.+)\]/)[1]
+
+                                        jsonString = jsonString.replace(/KEYWORD:TABLEMETA:INFO:\[.+\]/, '')
+                                      } catch (e) {}
+
+                                      // Convert the JSON string to HTML table related to a Tabulator object
+                                      convertTableToTabulator(jsonString, outputElement.find('div.sub-output-content'), activeSessionsPaginationSize || 50, false, (_tabulatorObject) => {
+                                        // As a tabulator object has been created add the associated class
+                                        outputElement.find('div.sub-actions').attr('hidden', null)
+
+                                        outputElement.addClass('actions-shown')
+
+                                        // Hold the created object
+                                        tabulatorObject = _tabulatorObject
+
+                                        tabulatorObject.selectorTableInfo = selectorTableInfo
+
+                                        let paginator = outputElement.find('div.sub-output-content').find('span.tabulator-paginator')
+
+                                        paginator.find('button[data-page="last"], button[data-page="next"]').addClass('hidden')
+
+                                        paginator.find('button[data-page="last"]').before($(`<button class="tabulator-page" data-action="next-page" type="button" role="button" aria-label="Next Page" title="Next Page"><span>Next</span><l-chaotic-orbit spinner style="vertical-align: middle; position: relative; bottom: 1px; margin-left: 5px; display:none; --uib-size: 17px; --uib-color: black; --uib-speed: 0.7s;"></l-chaotic-orbit></button>`).show(function() {
+                                          blockElement.data('tableObj', tabulatorObject)
+
+                                          $(this).data('blockID', data.blockID)
+
+                                          $(this).click(function() {
+                                            let originalNextBtn = $(this).parent().find('button[data-page="next"]')
+
+                                            if (originalNextBtn.attr('disabled') == undefined || isOutputCompleted || blockElement.attr('data-is-paging-completed') == 'true') {
+                                              originalNextBtn.click()
+                                              return
+                                            }
+
+                                            $(this).find('[spinner]').css('display', 'inline-block')
+                                            $(this).attr('disabled', '')
+
+                                            IPCRenderer.send('pty:command', {
+                                              id: connectionID,
+                                              cmd: '',
+                                              blockID: $(this).data('blockID')
+                                            })
+                                          })
+                                        }))
+
+                                        // Add `Select rows in the page` option
+                                        let selectPageRowsCheckboxID = `_${getRandom.id()}`
+
+                                        outputElement.find('div.sub-output-content').find('div.tabulator').find('div.tabulator-headers').children('div.tabulator-col[tabulator-field="checkbox"]').first().append($(`
+                                        <div class="select-page-rows-container">
+                                          <div class="form-check">
+                                            <input class="form-check-input no-tabulator-style" type="checkbox" role="switch" id="${selectPageRowsCheckboxID}">
+                                          </div>
+                                        </div>
+                                        `).show(function() {
+                                          getElementMDBObject($(this))
+
+                                          setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
+                                          $(this).find('input').change(function() {
+                                            let isChecked = $(this).prop('checked')
+
+                                            tabulatorObject[isChecked ? 'selectRow' : 'deselectRow'](isChecked ? 'visible' : '')
+                                          })
+                                        }))
+
+                                        tabulatorObject.on('rowContext', function(e, row) {
+                                          e.preventDefault()
+
+                                          let selectedRows = tabulatorObject.getSelectedRows()
+
+                                          if (selectedRows.length <= 0)
+                                            selectedRows.push(row)
+
+                                          let [keyspaceName, tableName] = tabulatorObject.selectorTableInfo.split('.'),
+                                            keyspaceObject = latestMetadata.keyspaces.find((keyspace) => keyspace.name == keyspaceName),
+                                            tableObject = keyspaceObject.tables.find((table) => table.name == tableName)
+
+                                          selectedRows = selectedRows.map((selectedRow) => selectedRow._row.data)
+
+                                          let generationInfo = {
+                                              keyspaceName,
+                                              tableName,
+                                              tableObject,
+                                              selectedRows
+                                            },
+                                            tempObjectID = `_${getRandom.id(10)}`
+
+                                          tempObjects[tempObjectID] = generationInfo
+
+                                          IPCRenderer.send('show-context-menu', JSON.stringify([{
+                                            label: I18next.capitalizeFirstLetter(`${I18next.t('generate insert statement(s)')}`),
+                                            click: `() => views.main.webContents.send('insert-statements:generate', {
+                                                      tempObjectID: '${tempObjectID}'
+                                                    })`
+                                          }]))
+                                        })
+
+                                        let isRowSelectionEnabled = false
+
+                                        let handleRowClick = () => {
+                                          let selectedRows = tabulatorObject.getSelectedRows(),
+                                            hintElement = outputElement.find('div.general-hint.select-rows')
+
+                                          isRowSelectionEnabled = selectedRows.length > 0
+
+                                          if (isRowSelectionEnabled) {
+                                            selectedRows.forEach((row) => $(row._row.element).find('input.select-row[type="checkbox"]').prop('checked', true))
+                                          } else {
+                                            tabulatorTableContainer.find('input.select-row[type="checkbox"]').prop('checked', false)
+
+                                            $(`input#${selectPageRowsCheckboxID}`).prop('checked', false)
+                                          }
+
+                                          hintElement.toggle(selectedRows.length > 0)
+                                        }
+
+                                        tabulatorObject.on('rowSelected', () => handleRowClick())
+
+                                        tabulatorObject.on('rowDeselected', () => handleRowClick())
+
+                                        let clickOutsideEvent,
+                                          tabulatorTableContainer = outputElement.find('div.tabulator[id]')
+
+                                        setTimeout(() => tabulatorObject.on('cellClick', function(e, cell) {
+                                          let cellElement = $(cell._cell.element),
+                                            rowSelectCheckbox = cellElement.find('input.select-row[type="checkbox"]')
+
+                                          try {
+                                            if (rowSelectCheckbox.length <= 0 && !isRowSelectionEnabled)
+                                              throw 0
+
+                                            tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
+
+                                            rowSelectCheckbox = $(cell._cell.row.element).find('input.select-row[type="checkbox"]')
+
+                                            let currentCheckboxState = rowSelectCheckbox.prop('checked')
+
+                                            // Always deselect
+                                            if (e.ctrlKey && !e.shiftKey)
+                                              currentCheckboxState = true
+
+                                            cell._cell.row.component[!currentCheckboxState ? 'select' : 'deselect']()
+
+                                            rowSelectCheckbox.prop('checked', !currentCheckboxState)
+
+                                            /**
+                                             * Check if SHIFT is being held
+                                             * If so then select all previous rows
+                                             */
+                                            if (e.shiftKey && !e.ctrlKey)
+                                              $(cell._cell.row.element).prevUntil('div.tabulator-row.tabulator-selected').each(function() {
+                                                let checkbox = $(this).find('input.select-row[type="checkbox"]')
+
+                                                if (!checkbox.prop('checked'))
+                                                  checkbox.closest('div.tabulator-cell[tabulator-field="checkbox"]').click()
+                                              })
+
+                                            return
+                                          } catch (e) {}
+
+                                          // Disable cell selection when row selection is enabled
+                                          if (isRowSelectionEnabled)
+                                            return
+
+                                          try {
+                                            tabulatorTableContainer.oneClickOutside('off')
+                                          } catch (e) {}
+
+                                          tabulatorTableContainer.addClass('arrows-nav')
 
                                           tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
 
-                                          rowSelectCheckbox = $(cell._cell.row.element).find('input.select-row[type="checkbox"]')
+                                          clickOutsideEvent = tabulatorTableContainer.oneClickOutside({
+                                            callback: function() {
+                                              tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
 
-                                          let currentCheckboxState = rowSelectCheckbox.prop('checked')
+                                              tabulatorTableContainer.removeClass('arrows-nav')
+                                            },
+                                            calledFromClickInsideHandler: true
+                                          })
 
-                                          // Always deselect
-                                          if (e.ctrlKey && !e.shiftKey)
-                                            currentCheckboxState = true
-
-                                          cell._cell.row.component[!currentCheckboxState ? 'select' : 'deselect']()
-
-                                          rowSelectCheckbox.prop('checked', !currentCheckboxState)
-
-                                          /**
-                                           * Check if SHIFT is being held
-                                           * If so then select all previous rows
-                                           */
-                                          if (e.shiftKey && !e.ctrlKey)
-                                            $(cell._cell.row.element).prevUntil('div.tabulator-row.tabulator-selected').each(function() {
-                                              let checkbox = $(this).find('input.select-row[type="checkbox"]')
-
-                                              if (!checkbox.prop('checked'))
-                                                checkbox.closest('div.tabulator-cell[tabulator-field="checkbox"]').click()
-                                            })
-
-                                          return
-                                        } catch (e) {}
-
-                                        // Disable cell selection when row selection is enabled
-                                        if (isRowSelectionEnabled)
-                                          return
-
-                                        try {
-                                          tabulatorTableContainer.oneClickOutside('off')
-                                        } catch (e) {}
-
-                                        tabulatorTableContainer.addClass('arrows-nav')
-
-                                        tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
-
-                                        clickOutsideEvent = tabulatorTableContainer.oneClickOutside({
-                                          callback: function() {
-                                            tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
-
-                                            tabulatorTableContainer.removeClass('arrows-nav')
-                                          },
-                                          calledFromClickInsideHandler: true
-                                        })
-
-                                        $(cell._cell.element).addClass('tabulator-editing')
-                                      }))
-                                    })
-
-                                    try {
-                                      workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+                                          $(cell._cell.element).addClass('tabulator-editing')
+                                        }))
+                                      })
 
                                       try {
-                                        clearTimeout(killProcessTimeout)
+                                        workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+
+                                        try {
+                                          clearTimeout(killProcessTimeout)
+                                        } catch (e) {}
+
+                                        if (!isOutputIncomplete)
+                                          hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+
+                                        if (isOutputIncomplete)
+                                          killProcessTimeout = setTimeout(() => {
+                                            killProcessBtn.parent().addClass('show')
+
+                                            workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
+                                            workareaElement.find('.disableable').addClass('disabled')
+                                            workareaElement.addClass('busy-cqlsh')
+
+                                            if (!isOutputWithPaging)
+                                              setTimeout(() => hintsContainer.addClass('show'), 1000)
+                                          }, 1500)
                                       } catch (e) {}
 
-                                      if (!isOutputIncomplete)
-                                        hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+                                      // Show the block
+                                      blockElement.show().addClass('show')
 
-                                      if (isOutputIncomplete)
-                                        killProcessTimeout = setTimeout(() => {
-                                          killProcessBtn.parent().addClass('show')
+                                      // Scroll at the bottom of the blocks' container after each new block
+                                      setTimeout(() => {
+                                        try {
+                                          blockElement.parent().animate({
+                                            scrollTop: blockElement.parent().get(0).scrollHeight
+                                          }, 100)
+                                        } catch (e) {}
+                                      }, 100)
 
-                                          workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
-                                          workareaElement.find('.disableable').addClass('disabled')
-                                          workareaElement.addClass('busy-cqlsh')
+                                      // Skip the upcoming code
+                                      return
+                                    } catch (e) {} finally {
+                                      // Execute this code whatever the case is
+                                      setTimeout(() => {
+                                        // Unbind all events regards the actions' buttons of the block
+                                        blockElement.find('div.btn[action], div.btn[sub-action]').unbind()
 
-                                          if (!isOutputWithPaging)
-                                            setTimeout(() => hintsContainer.addClass('show'), 1000)
-                                        }, 1500)
-                                    } catch (e) {}
+                                        // Clicks the copy button; to copy content in JSON string format
+                                        blockElement.find('div.btn[action="copy"]').click(function() {
+                                          // Get all sub output elements
+                                          let allOutputElements = blockElement.find('div.output').find('div.sub-output').find('div.sub-output-content'),
+                                            // Initial group of all output inside the block
+                                            outputGroup = []
 
-                                    // Show the block
-                                    blockElement.show().addClass('show')
+                                          // Loop through each sub output
+                                          allOutputElements.each(function() {
+                                            try {
+                                              // If the output is not a table then skip this try-catch block
+                                              if ($(this).find('div.tabulator').length <= 0)
+                                                throw 0
 
-                                    // Scroll at the bottom of the blocks' container after each new block
-                                    setTimeout(() => {
-                                      try {
-                                        blockElement.parent().animate({
-                                          scrollTop: blockElement.parent().get(0).scrollHeight
-                                        }, 100)
-                                      } catch (e) {}
-                                    }, 100)
+                                              // Push the table's data as JSON
+                                              outputGroup.push(Tabulator.findTable($(this).find('div.tabulator')[0])[0].getData())
 
-                                    // Skip the upcoming code
-                                    return
-                                  } catch (e) {} finally {
-                                    // Execute this code whatever the case is
-                                    setTimeout(() => {
-                                      // Unbind all events regards the actions' buttons of the block
-                                      blockElement.find('div.btn[action], div.btn[sub-action]').unbind()
+                                              // Skip the upcoming code
+                                              return
+                                            } catch (e) {}
 
-                                      // Clicks the copy button; to copy content in JSON string format
-                                      blockElement.find('div.btn[action="copy"]').click(function() {
-                                        // Get all sub output elements
-                                        let allOutputElements = blockElement.find('div.output').find('div.sub-output').find('div.sub-output-content'),
-                                          // Initial group of all output inside the block
-                                          outputGroup = []
+                                            // Just get the output's text
+                                            outputGroup.push($(this).text())
+                                          })
 
-                                        // Loop through each sub output
-                                        allOutputElements.each(function() {
+                                          // Get the beautified version of the block's content
+                                          let contentBeautified = beautifyJSON({
+                                              statement: blockElement.find('div.statement div.text').text() || 'No statement',
+                                              output: outputGroup
+                                            }),
+                                            // Get the content's size
+                                            contentSize = Bytes(ValueSize(contentBeautified))
+
+                                          // Copy content to the clipboard
                                           try {
-                                            // If the output is not a table then skip this try-catch block
-                                            if ($(this).find('div.tabulator').length <= 0)
-                                              throw 0
+                                            Clipboard.writeText(contentBeautified)
+                                          } catch (e) {
+                                            try {
+                                              errorLog(e, 'connections')
+                                            } catch (e) {}
+                                          }
 
-                                            // Push the table's data as JSON
-                                            outputGroup.push(Tabulator.findTable($(this).find('div.tabulator')[0])[0].getData())
-
-                                            // Skip the upcoming code
-                                            return
-                                          } catch (e) {}
-
-                                          // Just get the output's text
-                                          outputGroup.push($(this).text())
+                                          // Give feedback to the user
+                                          showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
                                         })
 
-                                        // Get the beautified version of the block's content
-                                        let contentBeautified = beautifyJSON({
-                                            statement: blockElement.find('div.statement div.text').text() || 'No statement',
-                                            output: outputGroup
-                                          }),
-                                          // Get the content's size
-                                          contentSize = Bytes(ValueSize(contentBeautified))
+                                        // Clicks the download button; to download the tabulator object either as PDF or CSV
+                                        outputElement.find('div.btn[sub-action="download"]').click(function() {
+                                          // Point at the download options' container
+                                          let downloadOptionsElement = outputElement.find('div.download-options'),
+                                            // Whether or not the optionss' container is hidden
+                                            isOptionsHidden = downloadOptionsElement.css('display') == 'none'
 
-                                        // Copy content to the clipboard
-                                        try {
-                                          Clipboard.writeText(contentBeautified)
-                                        } catch (e) {
-                                          try {
-                                            errorLog(e, 'connections')
-                                          } catch (e) {}
+                                          // Show/hide the container
+                                          downloadOptionsElement.css('display', isOptionsHidden ? 'flex' : 'none')
+                                        })
+
+                                        // Handle the download options
+                                        {
+                                          // Download the table as CSV
+                                          outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', 'statement_block.csv'))
+
+                                          // Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), descriptionFileName)
+
+                                          // Download the table as PDF
+                                          outputElement.find('div.option[option="pdf"]').click(() => tabulatorObject.download('pdf', 'statement_block.pdf', {
+                                            orientation: 'portrait',
+                                            title: `${blockStatement}`,
+                                          }))
                                         }
 
-                                        // Give feedback to the user
-                                        showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
-                                      })
+                                        // Handle the clicks of the tracing button
+                                        {
+                                          // Point at the tracing button
+                                          let tracingButton = outputElement.find('div.btn[sub-action="tracing"]')
 
-                                      // Clicks the download button; to download the tabulator object either as PDF or CSV
-                                      outputElement.find('div.btn[sub-action="download"]').click(function() {
-                                        // Point at the download options' container
-                                        let downloadOptionsElement = outputElement.find('div.download-options'),
-                                          // Whether or not the optionss' container is hidden
-                                          isOptionsHidden = downloadOptionsElement.css('display') == 'none'
+                                          setTimeout(() => {
+                                            // Get the session's tracing ID
+                                            let sessionID
 
-                                        // Show/hide the container
-                                        downloadOptionsElement.css('display', isOptionsHidden ? 'flex' : 'none')
-                                      })
-
-                                      // Handle the download options
-                                      {
-                                        // Download the table as CSV
-                                        outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', 'statement_block.csv'))
-
-                                        // Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), descriptionFileName)
-
-                                        // Download the table as PDF
-                                        outputElement.find('div.option[option="pdf"]').click(() => tabulatorObject.download('pdf', 'statement_block.pdf', {
-                                          orientation: 'portrait',
-                                          title: `${blockStatement}`,
-                                        }))
-                                      }
-
-                                      // Handle the clicks of the tracing button
-                                      {
-                                        // Point at the tracing button
-                                        let tracingButton = outputElement.find('div.btn[sub-action="tracing"]')
-
-                                        setTimeout(() => {
-                                          // Get the session's tracing ID
-                                          let sessionID
-
-                                          try {
-                                            sessionID = detectedSessionsID.filter((sessionID) => sessionID != null)[0]
-                                          } catch (e) {}
-
-                                          try {
-                                            // If there's no session ID exists then skip this try-catch block
-                                            if (sessionID == undefined)
-                                              throw 0
-
-                                            tracingButton.attr('data-session-id', sessionID)
-
-                                            detectedSessionsID = detectedSessionsID.map((_sessionID) => _sessionID == sessionID ? null : _sessionID)
-
-                                            // Enable the tracing button
-                                            tracingButton.removeClass('disabled')
-
-                                            // Add listener to the `click` event
-                                            tracingButton.click(() => clickEvent(true, sessionID))
-                                          } catch (e) {}
-                                        }, 2000)
-
-                                        // Clicks the deletion button
-                                        blockElement.find('div.btn[action="delete"]').click(() => {
-                                          let queriesContainer = workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
-
-                                          setTimeout(function() {
-                                            // Remove related query tracing element if exists
-                                            blockElement.find('div.btn[sub-action="tracing"]').each(function() {
-                                              workareaElement.find(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
-                                            })
-
-                                            // If there's still one query tracing result then skip this try-catch block
                                             try {
-                                              if (queriesContainer.find('div.query').length > 0)
+                                              sessionID = detectedSessionsID.filter((sessionID) => sessionID != null)[0]
+                                            } catch (e) {}
+
+                                            try {
+                                              // If there's no session ID exists then skip this try-catch block
+                                              if (sessionID == undefined)
+                                                throw 0
+
+                                              tracingButton.attr('data-session-id', sessionID)
+
+                                              detectedSessionsID = detectedSessionsID.map((_sessionID) => _sessionID == sessionID ? null : _sessionID)
+
+                                              // Enable the tracing button
+                                              tracingButton.removeClass('disabled')
+
+                                              // Add listener to the `click` event
+                                              tracingButton.click(() => clickEvent(true, sessionID))
+                                            } catch (e) {}
+                                          }, 2000)
+
+                                          // Clicks the deletion button
+                                          blockElement.find('div.btn[action="delete"]').click(() => {
+                                            let queriesContainer = workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
+
+                                            setTimeout(function() {
+                                              // Remove related query tracing element if exists
+                                              blockElement.find('div.btn[sub-action="tracing"]').each(function() {
+                                                workareaElement.find(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
+                                              })
+
+                                              // If there's still one query tracing result then skip this try-catch block
+                                              try {
+                                                if (queriesContainer.find('div.query').length > 0)
+                                                  throw 0
+
+                                                // Show the emptiness class
+                                                queriesContainer.addClass('_empty')
+                                              } catch (e) {}
+                                            }, 500)
+
+                                            // Remove the block from the session
+                                            blockElement.remove()
+
+                                            setTimeout(() => $(window.visualViewport).trigger('resize'))
+
+                                            try {
+                                              // Point at the session's statements' container
+                                              let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
+
+                                              // If there's still one block then skip this try-catch block
+                                              if (sessionContainer.find('div.block').length > 0)
                                                 throw 0
 
                                               // Show the emptiness class
-                                              queriesContainer.addClass('_empty')
+                                              sessionContainer.parent().find(`div.empty-statements`).addClass('show')
                                             } catch (e) {}
-                                          }, 500)
+                                          })
+                                        }
+                                      })
+                                    }
 
-                                          // Remove the block from the session
-                                          blockElement.remove()
-
-                                          setTimeout(() => $(window.visualViewport).trigger('resize'))
-
-                                          try {
-                                            // Point at the session's statements' container
-                                            let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
-
-                                            // If there's still one block then skip this try-catch block
-                                            if (sessionContainer.find('div.block').length > 0)
-                                              throw 0
-
-                                            // Show the emptiness class
-                                            sessionContainer.parent().find(`div.empty-statements`).addClass('show')
-                                          } catch (e) {}
-                                        })
-                                      }
-                                    })
-                                  }
-
-                                  // Reaching here with JSON keyword means there's a content needs to be handled
-                                  try {
-                                    if (`${match}`.indexOf('KEYWORD:JSON:STARTED') <= -1)
-                                      throw 0
-
-                                    jsonString = `${match}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
-
-                                    jsonString = jsonString.replace(/KEYWORD:TABLEMETA:INFO:\[.+\]/, '')
-
-                                    if (!pathIsAccessible(`${jsonString.trim()}`))
-                                      throw 0
-
-                                    let tempFilePath = `${jsonString.trim()}`
-
-                                    FS.readFile(tempFilePath, 'utf8', (err, data) => {
-                                      if (err)
+                                    // Reaching here with JSON keyword means there's a content needs to be handled
+                                    try {
+                                      if (`${match}`.indexOf('KEYWORD:JSON:STARTED') <= -1)
                                         throw 0
 
-                                      match = `${data}`
-                                    })
-                                  } catch (e) {}
+                                      jsonString = `${match}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
 
-                                  try {
-                                    if (OS.platform() != 'win32')
-                                      throw 0
+                                      jsonString = jsonString.replace(/KEYWORD:TABLEMETA:INFO:\[.+\]/, '')
 
-                                    match = match.replace(/\n(?![^<]*<\/span>)/gim, '')
-                                  } catch (e) {}
+                                      if (!pathIsAccessible(`${jsonString.trim()}`))
+                                        throw 0
 
-                                  // Manipulate the content
-                                  match = match.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
-                                    .replace(createRegex(OS.EOL, 'g'), '<br>')
-                                    .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>')
-                                    .replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
-                                    .replace('[OUTPUT:INFO]', '')
-                                    .replace(/\r?\n?KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\r?\n?/gmi, '')
+                                      let tempFilePath = `${jsonString.trim()}`
 
-                                  // Convert any ANSI characters to HTML characters - especially colors -
-                                  match = (new ANSIToHTML()).toHtml(match)
-
-                                  // Reaching here and has a `json` keyword in the output means there's no record/row to be shown
-                                  if (StripTags(match).length <= 0)
-                                    match = noOutputElement
-
-                                  match = `<pre>${match}</pre>`
-
-                                  // For consistency level
-                                  if (isConsistencyCommand)
-                                    match = `${match}<div class="consistency-level-enhanced-console-info"><ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> This consistency will be used for all subsequent queries in this session.</div>`
-
-                                  // Set the final content and make sure the localization process is updated
-                                  outputElement.find('div.sub-output-content').html(match).show(function() {
-                                    $(this).children('pre').find('br').remove()
-
-                                    // Apply the localization process on elements that support it
-                                    setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
-                                  })
-                                }))
-                              })
-                            }
-                          }
-                        } catch (e) {}
-
-                        // Show the current active prefix/prompt
-                        setTimeout(() => blockElement.find('div.prompt').text(minifyText(prefix).slice(0, -1)).hide().fadeIn('fast'), 1000)
-
-                        try {
-                          workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
-
-                          try {
-                            clearTimeout(killProcessTimeout)
-                          } catch (e) {}
-
-                          if (!isOutputIncomplete)
-                            hintsContainer.add(killProcessBtn.parent()).removeClass('show')
-
-                          if (isOutputIncomplete)
-                            killProcessTimeout = setTimeout(() => {
-                              killProcessBtn.parent().addClass('show')
-
-                              workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
-                              workareaElement.find('.disableable').addClass('disabled')
-                              workareaElement.addClass('busy-cqlsh')
-
-                              if (!isOutputWithPaging)
-                                setTimeout(() => hintsContainer.addClass('show'), 1000)
-                            }, 1500)
-                        } catch (e) {}
-
-                        // Show the block
-                        blockElement.show().addClass('show')
-
-                        // Make sure to scroll at the end of the blocks' container
-                        setTimeout(() => {
-                          try {
-                            blockElement.parent().animate({
-                              scrollTop: blockElement.parent().get(0).scrollHeight
-                            }, 100)
-                          } catch (e) {}
-                        }, 100)
-                      } catch (e) {}
-
-                      try {
-                        // Check if the query tracing feature has been enabled/disabled
-                        {
-                          // Point at the hint UI element in the query tracing's tab
-                          let queryTracingHint = workareaElement.find(`div.tab-pane#_${queryTracingContentID}`).find('hint')
-
-                          // If it has been enabled
-                          if (data.output.toLowerCase().indexOf('tracing is enabled') != -1)
-                            queryTracingHint.hide()
-
-                          // If it has been disabled
-                          if (data.output.toLowerCase().indexOf('disabled tracing') != -1)
-                            queryTracingHint.show()
-                        }
-                      } catch (e) {}
-
-                      // Set the prompt which has been got from cqlsh tool
-                      activePrefix = ''
-
-                      try {
-                        // If it is `null` then skip this try-catch block
-                        if (prompt == null && prompt.search('cqlsh>'))
-                          throw 0
-
-                        // Got a prompt, adopt it
-                        activePrefix = `${prompt[0]} `
-                        prefix = activePrefix
-                      } catch (e) {}
-                    })
-                    // The listener to data sent from the pty instance has been finished
-
-                    try {
-                      if (!isBasicCQLSHEnabled)
-                        throw 0
-
-                      // Create the terminal instance from the XtermJS constructor
-                      terminalObjects[terminalID] = new XTerm({
-                        theme: XTermThemes.Atom
-                      })
-
-                      // Set the `terminal` variable to be as a reference to the object
-                      terminal = terminalObjects[terminalID]
-
-                      // Add log
-                      try {
-                        addLog(`CQL console created for the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`)
-                      } catch (e) {}
-
-                      /**
-                       * Custom terminal options
-                       *
-                       * Change font family to `JetBrains Mono` and set its size and line height
-                       * https://www.jetbrains.com/lp/mono/
-                       */
-                      terminal.options.fontFamily = `'Terminal', monospace`
-                      terminal.options.fontSize = 13
-                      terminal.options.lineHeight = 1.35
-
-                      // Enable the cursor blink when the terminal is being focused on
-                      terminal._publicOptions.cursorBlink = true
-
-                      try {
-                        setTimeout(() => {
-                          /**
-                           * Define XtermJS addons
-                           *
-                           * Fit addon; to resize the terminal without distortion
-                           */
-                          fitAddon = new FitAddon.FitAddon()
-
-                          /**
-                           * Load XtermJS addons
-                           *
-                           * Load the `Fit` addon
-                           */
-                          terminal.loadAddon(fitAddon)
-
-                          // The terminal now will be shown in the UI
-                          terminal.open(workareaElement.find(`div.terminal-container[data-id="${terminalContainerID}"]`)[0])
-
-                          // Load the `Canvas` addon
-                          terminal.loadAddon(new CanvasAddon())
-
-                          // Load the `Webfont` addon
-                          terminal.loadAddon(new XtermWebFonts())
-
-                          // Fit the terminal with its container
-                          setTimeout(() => fitAddon.fit())
-
-                          // Push the fit addon object to the related array
-                          terminalFitAddonObjects.push(fitAddon)
-
-                          // Call the fit addon for the terminal
-                          setTimeout(() => fitAddon.fit(), 1200)
-
-                          try {
-                            IPCRenderer.removeAllListeners(`pty:data-basic:${connectionID}`)
-                          } catch (e) {}
-
-                          // Listen to data sent from the pty instance regards the basic terminal
-                          IPCRenderer.on(`pty:data-basic:${connectionID}`, (_, data) => {
-                            try {
-                              // If the session is paused then nothing would be printed
-                              if (isSessionPaused)
-                                throw 0
-
-                              // Print/write the data to the terminal
-                              terminal.write(data.output)
-                            } catch (e) {}
-                          })
-
-                          /**
-                           * Listen to the user's input to the terminal's buffer
-                           * This listener will send the character to the pty instance to be handled in realtime
-                           *
-                           * Point at the terminal's viewport in the UI
-                           */
-                          let terminalViewport = workareaElement.find(`div.terminal-container[data-id="${terminalContainerID}"]`).find('div.xterm-viewport')[0],
-                            // Get the terminal's active buffer; to get the entire written statement if needed
-                            terminalBuffer = terminal.buffer.active
-
-                          // Listen to data from the user - input to the terminal -
-                          terminal.onData((char) => {
-                            // Get the entire written statement
-                            let statement = terminalBuffer.getLine(terminalBuffer.baseY + terminalBuffer.cursorY).translateToString(true)
-
-                            // Remove any prefixes
-                            statement = statement.replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
-
-                            // Check if the command is terminating the cqlsh session
-                            let isQuitFound = (['quit', 'exit']).some((command) => statement.toLowerCase().startsWith(command)),
-                              // Get the key code
-                              keyCode = char.charCodeAt(0)
-
-                            try {
-                              /**
-                               * `quit` or `exit` command will close the connection
-                               * If none of them were found then skip this try-catch block
-                               */
-                              if (!isQuitFound)
-                                throw 0
-
-                              // Show feedback to the user
-                              printMessageInBasicTerminal(terminal, 'info', `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`)
-
-                              // Pause the print of output from the Pty instance
-                              isSessionPaused = true
-
-                              // Dispose the readline addon
-                              prefix = ''
-
-                              // Click the close connection button after a while
-                              setTimeout(() => workareaElement.find('div.connection-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
-                            } catch (e) {}
-
-                            // Send the character in realtime to the pty instance
-                            IPCRenderer.send('pty:data', {
-                              id: connectionID,
-                              char
-                            })
-
-                            // Make sure both the app's UI terminal and the associated pty instance are syned in their size
-                            IPCRenderer.send('pty:resize', {
-                              id: connectionID,
-                              cols: terminal.cols,
-                              rows: terminal.rows
-                            })
-
-                            // Switch between the key code's values
-                            switch (keyCode) {
-                              // `ENTER`
-                              case 13: {
-                                // Scroll to the very bottom of the terminal
-                                terminalViewport.scrollTop = terminalViewport.scrollHeight
-
-                                // Resize the terminal
-                                fitAddon.fit()
-                                break
-                              }
-                            }
-                          })
-
-                          // Listen to custom key event
-                          terminal.attachCustomKeyEventHandler((event) => {
-                            // Get different values from the event
-                            let {
-                              key, // The pressed key
-                              ctrlKey, // Whether or not the `CTRL` is being pressed
-                              shiftKey, // Whether or not the `SHIFT` is being pressed
-                              metaKey // Whether or not the `META/WINDOWS/SUPER` key is being pressed
-                            } = event
-
-                            // Inner function to prevent the event from performing its defined handler
-                            let preventEvent = () => {
-                              /**
-                               * Prevent the default behavior of pressing the combination
-                               * https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault
-                               */
-                              event.preventDefault()
-
-                              /**
-                               * Prevent further propagation of the event in the capturing and bubbling phases
-                               * https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation
-                               */
-                              event.stopPropagation()
-                            }
-
-                            // Hande `CTRL+R`
-                            try {
-                              if (!(ctrlKey && key.toLowerCase() == 'r'))
-                                throw 0
-
-                              // Call the inner function
-                              preventEvent()
-
-                              // Return `false` to make sure the handler of xtermjs won't be executed
-                              return false
-                            } catch (e) {}
-
-                            /**
-                             * Handle the terminal's buffer clearing process on Windows
-                             * `CTRL+L`
-                             */
-                            try {
-                              if (!(ctrlKey && (key.toLowerCase() == 'l')) || OS.platform() != 'win32')
-                                throw 0
-
-                              // Call the inner function
-                              preventEvent()
-
-                              // Clear the buffer
-                              terminal.clear()
-
-                              // Return `false` to make sure the handler of xtermjs won't be executed
-                              return false
-                            } catch (e) {}
-
-                            /**
-                             * Handle the termination of the terminal's session
-                             * `CTRL+D`
-                             */
-                            try {
-                              if (!(ctrlKey && key.toLowerCase() == 'd' && !shiftKey))
-                                throw 0
-
-                              // Call the inner function
-                              preventEvent()
-
-                              // Return `false` to make sure the handler of xtermjs won't be executed
-                              return false
-                            } catch (e) {}
-
-                            /**
-                             * Handle the copying process of selected text in the terminal
-                             *
-                             * `CTRL+SHIFT+C` for Linux and Windows
-                             * `CMD+C` for macOS
-                             */
-                            try {
-                              if (!((ctrlKey && shiftKey && `${key}`.toLowerCase() === 'c') || (metaKey && `${key}`.toLowerCase() === 'c')))
-                                throw 0
-
-                              // Call the inner function
-                              preventEvent()
-
-                              // Attempt to write the selected text in the terminal
-                              try {
-                                Clipboard.writeText(terminal.getSelection())
-                              } catch (e) {}
-
-                              // Return `false` to make sure the handler of xtermjs won't be executed
-                              return false
-                            } catch (e) {}
-                          })
-
-                          /**
-                           * Listen to `keydown` event in the terminal's container
-                           * The main reason is to provide the ability to increase/decrease and reset the terminal's font size
-                           * Custom event `changefont` has been added, it will be triggered when the app's zooming level is changing
-                           */
-                          setTimeout(() => {
-                            try {
-                              if (OS.platform() == 'darwin')
-                                throw 0
-
-                              // Increase font size
-                              Modules.Shortcuts.setShortcutInSession(workareaElement.find('div.terminal.xterm')[0], 'basic-console-font-increase', () => terminal.options.fontSize += 1)
-
-                              // Decrease font size
-                              Modules.Shortcuts.setShortcutInSession(workareaElement.find('div.terminal.xterm')[0], 'basic-console-font-decrease', () => terminal.options.fontSize -= 1)
-
-                              // Reset font size
-                              Modules.Shortcuts.setShortcutInSession(workareaElement.find('div.terminal.xterm')[0], 'basic-console-font-reset', () => terminal.options.fontSize = 13)
-
-                              workareaElement.find('div.terminal.xterm').on('changefont', function(e, keyCode = null) {
-                                // If the `CTRL` key is not pressed or `CTRL` and `SHIFT` are being pressed together then skip this try-catch block
-                                if ((!e.ctrlKey && e.type != 'changefont') || e.shiftKey)
-                                  return true
-
-                                // If the event type is `changefont` then the keycode is provided in variable `keyCode`
-                                if (e.type == 'changefont')
-                                  e.keyCode = keyCode
-
-                                // Switch between the `keyCode` values
-                                switch (e.keyCode) {
-                                  // `+` Increase the font size
-                                  case 187: {
-                                    terminal.options.fontSize += 1
-                                    break
-                                  }
-                                  // `-` Decrease the font size
-                                  case 189: {
-                                    terminal.options.fontSize -= 1
-                                    break
-                                  }
-                                  // `0` reset the font size
-                                  case 48: {
-                                    terminal.options.fontSize = 13
-                                    break
-                                  }
-                                }
-
-                                // Prevent any default behavior
-                                e.preventDefault()
-                              })
-                            } catch (e) {}
-                          }, 1000)
-                        })
-                      } catch (e) {
-                        try {
-                          errorLog(e, 'connections')
-                        } catch (e) {}
-                      }
-                      // End of handling the app's basic terminal
-                    } catch (e) {}
-
-                    /*
-                     * Point at killing the current process
-                     * Point at the CQLSH session's overall container
-                     */
-                    let cqlshSessionTabContainer = workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`),
-                      killProcessBtn = cqlshSessionTabContainer.find('div.kill-process button'),
-                      hintsContainer = cqlshSessionTabContainer.find('div.hints-container'),
-                      killProcessTimeout
-
-                    // This block of code for the interactive terminal
-                    {
-                      /**
-                       * Define variables and inner functions to be used in the current scope
-                       *
-                       * Point at the CQLSH interactive terminal's session's main container
-                       */
-                      let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`),
-                        // Point at the statement's input field
-                        statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
-                        // Point at the interactive terminal's container
-                        interactiveTerminal = workareaElement.find(`div[data-id="${terminalContainerID}_interactive"]`),
-                        // Point at the basic terminal's container
-                        basicTerminal = workareaElement.find(`div[data-id="${terminalContainerID}"]`),
-                        // Point at the suggestions' list - at the very bottom of the statement's input field -
-                        suggestionsList = cqlshSessionTabContainer.find('div.bottom div.suggestions-list'),
-                        // Point at the realtime suggestion's element
-                        realtimeSuggestion = statementInputField.parent().find('div.suggestion'),
-                        /**
-                         * Point at different buttons related to the current scope
-                         *
-                         * Point at the terminal's switching button - at the top-right of the cqlsh session -
-                         */
-                        switchTerminalBtn = cqlshSessionTabContainer.find(`div.switch-terminal button`),
-                        // Point at the statement's execution button
-                        executeBtn = cqlshSessionTabContainer.find('div.execute button')
-
-                      // Hold the last saved important data
-                      workareaElement.data('lastData', {
-                        cursorPosition: -1,
-                        closestWord: '',
-                        suggestion: '',
-                        history: -1
-                      })
-
-                      /**
-                       * Inner function to get the closest word to the cursor
-                       * Used while the user is updating the statement's input field
-                       *
-                       * @Parameters:
-                       * {object} `textarea` the textarea HTML element
-                       *
-                       * @Return: {string} the matched content, or an empty value if there's no string close to the cursor
-                       */
-                      let getClosestWord = (textarea) => {
-                        // Get the cursor's current position
-                        let cursorPosition = textarea.selectionStart
-
-                        /**
-                         * If the user is currently selecting something then return an empty value
-                         * The reason is by selecting something while the function is executing will lead to get incorrect values about the cursor's position
-                         */
-                        if (textarea.selectionEnd !== cursorPosition)
-                          return ''
-
-                        // Get the content of the textarea up to the cursor position
-                        let textBeforeCursor = textarea.value.slice(0, cursorPosition),
-                          // Do a matching process; which is getting the last string in the line that has a space right before it
-                          match = /\S+$/.exec(textBeforeCursor)
-
-                        // If there's a value from the matching process then return it, otherwise return an empty value
-                        return match ? match[0] : ''
-                      }
-
-                      /**
-                       * Inner function to get important info from the latest metadata
-                       *
-                       * @Return: {object} the fetched info from the latest metadata as JSON object
-                       */
-                      let getMetadataInfo = () => {
-                        // Define the final result to be returned
-                        let result = {}
-
-                        try {
-                          // Get the keyspaces names and their tables' names
-                          let temp = {},
-                            keyspaces = latestMetadata.keyspaces.map((keyspace) => {
-                              return {
-                                name: keyspace.name,
-                                tables: keyspace.tables
-                              }
-                            })
-
-                          // Loop through each keyspace and set its tables' names in array
-                          for (let keyspace of keyspaces)
-                            temp[keyspace.name] = keyspace.tables
-
-                          for (let keyspaceName of Object.keys(temp)) {
-                            result[keyspaceName] = {}
-
-                            for (let table of temp[keyspaceName]) {
-                              result[keyspaceName][table.name] = table.columns.map((column) => {
-                                return {
-                                  name: column.name,
-                                  type: column.cql_type
-                                }
-                              })
-                            }
-                          }
-                        } catch (e) {}
-
-                        // Return the final result
-                        return result
-                      }
-
-                      /**
-                       * Apply the auto size feature for the statement's input field
-                       * This will simply increase and decrease the height based on the input's value
-                       */
-                      AutoSize(statementInputField[0])
-
-                      // Clicks the terminal's switching button
-                      switchTerminalBtn.click(function(event, onlyInit = false) {
-                        try {
-                          // If the basic terminal is already shown then skip this try-catch block
-                          if (basicTerminal.css('display') != 'none')
-                            throw 0
-
-                          if (!onlyInit)
-                            switchTerminalBtn.parent().css('z-index', '5')
-
-                          try {
-                            // If the terminal has already been initialized then skip this try-catch block
-                            if (basicTerminal.attr('data-initialized') == 'true')
-                              throw 0
-
-                            // Reset the terminal's buffer - will clear it with the prompt -
-                            terminal.reset()
-
-                            // Send multiple `EOL` chars at the same time; to make sure the messy buffer is completely cleared
-                            setTimeout(() => {
-                              // Define the variable which will hold all the `EOL` chars
-                              let charEOL = ''; // This semicolon is critical here
-
-                              // Get 20x of `EOL` char
-                              (new Array(20).fill('')).forEach((_) => {
-                                charEOL += OS.EOL
-                              })
-
-                              // Send it at once to the basic terminal
-                              IPCRenderer.send('pty:data', {
-                                id: connectionID,
-                                char: charEOL
-                              })
-
-                              // Clear the screen again but with the prompt this time
-                              setTimeout(() => {
-                                try {
-                                  terminal.clear()
-                                } catch (e) {}
-                              }, 1000)
-                            })
-
-                            // Update the attribute; to not perform this process again
-                            basicTerminal.attr('data-initialized', 'true')
-                          } catch (e) {}
-
-                          // If the process is only initialization then skip the upcoming code
-                          if (onlyInit)
-                            return
-
-                          // Show the basic terminal
-                          basicTerminal.show()
-
-                          // Hide the interactive terminal
-                          interactiveTerminal.hide()
-                        } catch (e) {
-                          /**
-                           * Reaching here means the basic terminal is already shown
-                           *
-                           * Show the interactive terminal
-                           */
-                          interactiveTerminal.show()
-
-                          switchTerminalBtn.parent().css('z-index', '3')
-
-                          // Hide the basic terminal
-                          basicTerminal.hide()
-                        } finally {
-                          // Trigger the `resize` event regardless the shown and hidden terminal
-                          setTimeout(() => $(window.visualViewport).trigger('resize'), 50)
-                        }
-                      })
-
-                      let blockID
-
-                      // Clicks the statement's execution button
-                      executeBtn.on('click', function(e, oldStatement = '') {
-                        // If the button is disabled then skip the upcoming code and end the process
-                        if ($(this).attr('disabled') != undefined || $(this).parent().hasClass('busy'))
-                          return
-
-                        // Get the statement
-                        let statement = statementInputField.val()
-
-                        // Get a random ID for the block which will be created
-                        blockID = getRandom.id(10)
-
-                        // Clear the statement's input field and make sure it's focused on it
-                        setTimeout(() => statementInputField.val(oldStatement).trigger('input').attr('style', null))
-
-                        setTimeout(() => {
-                          consoleEditor.setValue(oldStatement)
-                          consoleEditor.focus()
-                        })
-
-                        try {
-                          let isClearCommand = (['clear', 'cls']).some((command) => statement.startsWith(minifyText(command)))
-
-                          if (!isClearCommand)
-                            throw 0
-
-
-                          sessionContainer.children('div.block').find('div.actions div.btn[action="delete"]').click()
-
-                          return
-                        } catch (e) {}
-
-                        try {
-                          if (!((['quit', 'exit']).some((command) => minifyText(statement).startsWith(minifyText(command)))))
-                            throw 0
-
-                          // Show it in the interactive terminal
-                          addBlock(workareaElement.find(`#_${cqlshSessionContentID}_container`), getRandom.id(10), `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral', true)
-
-                          // Pause the print of output from the Pty instance
-                          isSessionPaused = true
-
-                          // Dispose the readline addon
-                          prefix = ''
-
-                          // Click the close connection button after a while
-                          setTimeout(() => workareaElement.find('div.connection-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
-
-                          // Skip the upcoming code in the execution button
-                          return
-                        } catch (e) {}
-
-                        try {
-                          if (!(minifyText(statement).startsWith('source_')))
-                            throw 0
-
-                          // Add the statement to the connection's history space
-                          {
-                            // Get current saved statements
-                            let history = Store.get(connectionID) || []
-
-                            /**
-                             * Maximum allowed statements to be saved are 30 for each connection
-                             * When this value is exceeded the oldest statement should be removed
-                             */
-                            if (history.length > 50)
-                              history.pop()
-
-                            statement = removeComments(statement, true)
-
-                            // Add the statement at the very beginning of the array
-                            history.unshift(statement)
-
-                            // Remove any duplication
-                            Store.set(connectionID, [...new Set(history)])
-
-                            // Enable the history button
-                            workareaElement.find('div.session-action[action="history"]').find('button.btn').attr('disabled', null)
-
-                            // Reset the history current index
-                            workareaElement.data('lastData').history = -1
-                          }
-
-                          {
-                            workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
-                              'opacity': '0.3',
-                              'pointer-events': 'none'
-                            })
-
-                            workareaElement.find('div.metadata-content').css({
-                              'opacity': '0.75',
-                              'pointer-events': 'none',
-                              'transition': 'all 0.2s ease-in-out'
-                            })
-
-                            workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', '')
-
-                            workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').addClass('disabled')
-                          }
-
-                          let isExecutionTerminatedOnError = statement.slice(`${statement}`.indexOf(' |')).includes('true')
-
-                          statement = JSON.parse(`${statement}`.slice(8, `${statement}`.indexOf(' |')))
-
-                          addBlock(sessionContainer, blockID, `Executing ${statement.length} CQL file(s).`, (element) => {
-                            let statementTextContainer = element.find('div.statement').children('div.text')
-
-                            element.attr('data-is-source-command', 'true')
-
-                            statementTextContainer.addClass('executing')
-
-                            executeBtn.parent().addClass('busy')
-
-                            element.find('div.actions.for-statement').hide()
-
-                            {
-                              try {
-                                clearTimeout(killProcessTimeout)
-                              } catch (e) {}
-
-                              try {
-                                killProcessBtn.parent().addClass('show')
-                              } catch (e) {}
-                            }
-
-                            statementTextContainer.prepend($(`<span class="spinner"><l-wobble style="--uib-size: 25px; --uib-color: #f0f0f0; --uib-speed: 0.77s;"></l-wobble></span>`).hide(function() {
-                              let wobbleSpinner = $(this)
-
-                              setTimeout(() => wobbleSpinner.fadeIn('fast'), 150)
-
-                              // The sub output structure UI
-                              let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`)
-
-                              let handleFileExecution = (fileIndex = 0) => {
-                                if (fileIndex >= statement.length) {
-                                  if (statement.length > 1)
-                                    blockElement.children('div.output').append($(`
-                                          <div class="sub-output info">
-                                            <div class="sub-output-content">All files have been executed.</div>
-                                          </div>`))
-
-                                  statementTextContainer.removeClass('executing')
-
-                                  executeBtn.parent().removeClass('busy')
-
-                                  killProcessBtn.parent().removeClass('show')
-
-                                  workareaElement.find('div.session-actions').find('button').attr('disabled', null)
-                                  workareaElement.find('.disableable').removeClass('disabled')
-                                  workareaElement.removeClass('busy-cqlsh')
-
-                                  wobbleSpinner.hide()
-
-                                  {
-                                    workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
-                                      'opacity': '',
-                                      'pointer-events': ''
-                                    })
-
-                                    workareaElement.find('div.metadata-content').css({
-                                      'opacity': '',
-                                      'pointer-events': '',
-                                      'transition': ''
-                                    })
-
-                                    workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', null)
-
-                                    workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').removeClass('disabled')
-                                  }
-
-                                  return
-                                }
-
-                                let filePath = statement[fileIndex],
-                                  showErrorsBtnID = getRandom.id(10),
-                                  fileExecutionInfoID = getRandom.id(10),
-                                  element = `
-                                          <div class="sub-output info incomplete-statement">
-                                            <div class="sub-output-content">${fileIndex + 1}: Executing file '${filePath}'</div>
-                                          </div>
-                                          <div class="sub-output" data-id="${fileExecutionInfoID}_executed" data-count="0" hidden>
-                                            <div class="sub-output-content">-</div>
-                                          </div>
-                                          <div class="sub-output error" data-id="${fileExecutionInfoID}_error" data-count="0" hidden>
-                                            <span class="arrow"><ion-icon name="arrow-down"></ion-icon></span>
-                                            <div class="sub-output-content" onclick="$(this).parent().children('div.sub-output-content.all-errors').slideToggle('fast');$(this).parent().children('span.arrow').toggleClass('show');" style="display: inline;"><span>-</span></div>
-                                            <div class="sub-output-content all-errors" style="display: none;"></div>
-                                          </div>
-                                          <div class="sub-output info" data-id="${fileExecutionInfoID}_info" hidden>
-                                            <div class="sub-output-content">The file has been fully executed.</div>
-                                          </div>`
-
-                                blockElement.children('div.output').children('div.executing').hide()
-
-                                setTimeout(() => {
-                                  IPCRenderer.send('pty:command', {
-                                    id: connectionID,
-                                    cmd: `SOURCE '${filePath}${isExecutionTerminatedOnError ? '{KEYWORD:STOPONERROR:TRUE}' : ''}'`,
-                                    blockID,
-                                    isSourceCommand: true
-                                  })
-                                })
-
-                                blockElement.children('div.output').append($(element).show(function() {
-                                  setTimeout(() => {
-                                    try {
-                                      blockElement.parent().animate({
-                                        scrollTop: blockElement.parent().get(0).scrollHeight
-                                      }, 100)
-                                    } catch (e) {}
-                                  }, 500)
-                                }))
-
-                                try {
-                                  IPCRenderer.removeAllListeners(`cql:file:execute:data:${connectionID}`)
-                                } catch (e) {}
-
-                                let ansiToHTML = new ANSIToHTML(),
-                                  errorsCount = 0
-
-                                IPCRenderer.on(`cql:file:execute:data:${connectionID}`, (_, data) => {
-                                  let errors = []
-
-                                  try {
-                                    errors = JSON.parse(data.errors)
-                                  } catch (e) {}
-
-                                  errorsCount += errors.length
-
-                                  try {
-                                    errors = errors.map((error) => {
-                                      try {
-                                        if (OS.platform() != 'win32')
+                                      FS.readFile(tempFilePath, 'utf8', (err, data) => {
+                                        if (err)
                                           throw 0
 
-                                        error = error.replace(/\n(?![^<]*<\/span>)/gim, '')
-                                      } catch (e) {}
+                                        match = `${data}`
+                                      })
+                                    } catch (e) {}
 
-                                      // Manipulate the content
-                                      error = error.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
-                                        .replace(createRegex(OS.EOL, 'g'), '<br>')
-                                        .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>')
-                                        .replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
-                                        .replace('[OUTPUT:INFO]', '')
-                                        .replace(/\r?\n?KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\r?\n?/gmi, '')
+                                    try {
+                                      if (OS.platform() != 'win32')
+                                        throw 0
 
-                                      error = ansiToHTML.toHtml(error)
+                                      match = match.replace(/\n(?![^<]*<\/span>)/gim, '')
+                                    } catch (e) {}
 
-                                      error = StripTags(error)
+                                    // Manipulate the content
+                                    match = match.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
+                                      .replace(createRegex(OS.EOL, 'g'), '<br>')
+                                      .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>')
+                                      .replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
+                                      .replace('[OUTPUT:INFO]', '')
+                                      .replace(/\r?\n?KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\r?\n?/gmi, '')
 
-                                      return error
+                                    // Convert any ANSI characters to HTML characters - especially colors -
+                                    match = (new ANSIToHTML()).toHtml(match)
+
+                                    // Reaching here and has a `json` keyword in the output means there's no record/row to be shown
+                                    if (StripTags(match).length <= 0)
+                                      match = noOutputElement
+
+                                    match = `<pre>${match}</pre>`
+
+                                    // For consistency level
+                                    if (isConsistencyCommand)
+                                      match = `${match}<div class="consistency-level-enhanced-console-info"><ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> This consistency will be used for all subsequent queries in this session.</div>`
+
+                                    // Set the final content and make sure the localization process is updated
+                                    outputElement.find('div.sub-output-content').html(match).show(function() {
+                                      $(this).children('pre').find('br').remove()
+
+                                      // Apply the localization process on elements that support it
+                                      setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
                                     })
-                                  } catch (e) {}
-
-                                  {
-                                    let errorsContainer = workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).find('div.sub-output-content.all-errors')
-
-                                    for (let error of errors)
-                                      errorsContainer.html(`${errorsContainer.html()}<pre>${error}</pre>`)
-                                  }
-
-                                  if (errors.length != 0)
-                                    workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).attr('hidden', null).find('div.sub-output-content:not(.all-errors)').find('span').text(`${errorsCount} error(s) occured in this execution cycle.`)
-
-                                  workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_executed"]`).attr('hidden', null).text(`${data.totalExecutions} statement(s) executed in this execution cycle.`)
-
-                                  if (!data.isFinished)
-                                    return
-
-                                  workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_info"]`).attr('hidden', null)
-
-                                  setTimeout(() => handleFileExecution(++fileIndex), 1000)
+                                  }))
                                 })
                               }
-
-                              handleFileExecution()
-                            }))
-
-                            setTimeout(() => {
-                              element.find('div.btn[action="copy"]').parent().css('width', '30px')
-
-                              element.find('div.btn[action="copy"]').hide()
-
-                              element.find('div.btn[action="delete"]').unbind('click')
-
-                              element.find('div.btn[action="delete"]').click(() => {
-                                // Remove the block from the session
-                                element.remove()
-
-                                try {
-                                  // Point at the session's statements' container
-                                  let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
-
-                                  // If there's still one block then skip this try-catch block
-                                  if (sessionContainer.find('div.block').length > 0)
-                                    throw 0
-
-                                  // Show the emptiness class
-                                  sessionContainer.parent().find(`div.empty-statements`).addClass('show')
-                                } catch (e) {}
-                              })
-                            })
-                          })
-
-                          return
-                        } catch (e) {}
-
-                        executeBtn.parent().addClass('busy')
-
-                        {
-                          try {
-                            clearTimeout(killProcessTimeout)
-                          } catch (e) {}
-
-                          hintsContainer.add(killProcessBtn.parent()).removeClass('show')
-
-                          killProcessTimeout = setTimeout(() => {
-                            killProcessBtn.parent().addClass('show')
-
-                            workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
-                            workareaElement.find('.disableable').addClass('disabled')
-                            workareaElement.addClass('busy-cqlsh')
-
-                            if (!isOutputWithPaging)
-                              setTimeout(() => hintsContainer.addClass('show'), 1000)
-                          }, 1500)
-                        }
-
-                        // Add the block
-                        addBlock(sessionContainer, blockID, statement, (element) => {
-                          // Add the statement to the connection's history space
-                          {
-                            // Get current saved statements
-                            let history = Store.get(connectionID) || []
-
-                            /**
-                             * Maximum allowed statements to be saved are 30 for each connection
-                             * When this value is exceeded the oldest statement should be removed
-                             */
-                            if (history.length > 50)
-                              history.pop()
-
-                            statement = removeComments(statement, true)
-
-                            // Add the statement at the very beginning of the array
-                            history.unshift(statement)
-
-                            // Remove any duplication
-                            Store.set(connectionID, [...new Set(history)])
-
-                            // Enable the history button
-                            workareaElement.find('div.session-action[action="history"]').find('button.btn').attr('disabled', null)
-
-                            // Reset the history current index
-                            workareaElement.data('lastData').history = -1
-                          }
-
-                          // Handle when the statement is `SELECT` but there's no `JSON` after it
-                          // try {
-                          //   // Regex pattern to match 'SELECT' not followed by 'JSON'
-                          //   let pattern = /((?:^|\;\s*)\bselect\b(?!\s+json\b))/gi
-                          //
-                          //   // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
-                          //   statement = statement.replace(pattern, '$1 JSON')
-                          // } catch (e) {}
-
-                          try {
-                            statement = statement.trim()
-                          } catch (e) {}
-
-                          try {
-                            if (OS.platform() == 'win32')
-                              statement = `${statement.replace(new RegExp('\n|\r', 'g'), ' \n\n')}`
-                          } catch (e) {}
-
-                          // Send the command to the main thread to be executed
-                          IPCRenderer.send('pty:command', {
-                            id: connectionID,
-                            cmd: statement,
-                            blockID
-                          })
-                        })
-                      })
-
-                      killProcessBtn.click(function() {
-                        let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`),
-                          isSourceCommand = blockElement.attr('data-is-source-command') != undefined,
-                          isPagingProcess = blockElement.attr('data-is-paging') != undefined
-
-                        if (isPagingProcess) {
-                          blockElement.attr({
-                            'data-is-paging': null,
-                            'data-is-paging-completed': 'true'
-                          })
-
-                          let nextPageBtn = blockElement.find('button[data-action="next-page"]')
-
-                          nextPageBtn.find('[spinner]').hide()
-                          nextPageBtn.attr('disabled', null)
-
-                          nextPageBtn.parent().find('button[data-page="last"]').removeClass('hidden')
-
-                          IPCRenderer.send('pty:command', {
-                            id: connectionID,
-                            cmd: '\x03',
-                            blockID
-                          })
-                        } else {
-                          if (isSourceCommand)
-                            IPCRenderer.send('pty:command', {
-                              id: connectionID,
-                              cmd: `\r\r`,
-                              blockID
-                            })
-
-                          IPCRenderer.send('pty:command', {
-                            id: connectionID,
-                            cmd: `KEYWORD:STATEMENT:IGNORE-${Math.floor(Math.random() * 999) + 1}`,
-                            blockID
-                          })
-                        }
-
-                        try {
-                          if (!isSourceCommand)
-                            throw 0
-
-                          blockElement.children('div.output').append($(`
-                                  <div class="sub-output info">
-                                    <div class="sub-output-content">The execution process has been terminated.</div>
-                                  </div>`))
-
-                          blockElement.find('div.statement').children('div.text').removeClass('executing')
-
-                          executeBtn.parent().removeClass('busy')
-
-                          killProcessBtn.parent().removeClass('show')
-
-                          workareaElement.find('div.session-actions').find('button').attr('disabled', null)
-                          workareaElement.find('.disableable').removeClass('disabled')
-                          workareaElement.removeClass('busy-cqlsh')
-
-                          blockElement.find('div.statement').find('span.spinner').hide()
-
-                          {
-                            workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
-                              'opacity': '',
-                              'pointer-events': ''
-                            })
-
-                            workareaElement.find('div.metadata-content').css({
-                              'opacity': '',
-                              'pointer-events': '',
-                              'transition': ''
-                            })
-
-                            workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', null)
-
-                            workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').removeClass('disabled')
-                          }
-                        } catch (e) {}
-                      }).hover(() => hintsContainer.hide(), () => hintsContainer.show())
-
-                      // The statement's input field's value has been updated
-                      statementInputField.on('input', function() {
-                        // Get the statement's content
-                        let statement = $(this).val(),
-                          // Get the closest word to the cursor in the input field
-                          closestWord = getClosestWord($(this)[0]),
-                          /**
-                           * Whether or not the content has multiple lines
-                           * In case it has, the suggestions and autocomplete feature will be temporary disabled
-                           */
-                          isMultipleLines = $(this).val().match(new RegExp(OS.EOL, 'g')) != null
-
-                        // Enable and disable the execution button based set conditions
-                        {
-                          // Minify the statement
-                          let minifiedStatement = minifyText(removeComments(statement, true)),
-                            /**
-                             * Whether or not the statement is a CQLSH command
-                             * In this case, the statement doesn't need semi colon `;` at the end
-                             */
-                            isCQLSHCommand = Modules.Consts.CQLSHCommands.some((command) => minifiedStatement.startsWith(minifyText(command))),
-                            // Whether or not the statement is quitting the cqlsh session
-                            isQuitCommand = (['quit', 'exit']).some((command) => minifiedStatement.startsWith(minifyText(command))),
-                            isClearCommand = (['clear', 'cls']).some((command) => minifiedStatement.startsWith(minifyText(command))),
-                            isConsistencyCommand = (['consistency', 'serial']).some((command) => minifiedStatement.startsWith(minifyText(command))),
-                            // Decide whether or not the execution button should be disabled
-                            isExecutionButtonDisabled = minifiedStatement.length <= 0 || ((!isCQLSHCommand && !isQuitCommand && !isClearCommand && !isConsistencyCommand) && !minifiedStatement.endsWith(';'))
-
-                          // Disable/enable the execution button
-                          executeBtn.attr('disabled', isExecutionButtonDisabled ? '' : null)
-                        }
-
-                        /**
-                         * Update some of the saved data
-                         *
-                         * Update the latest saved cursor's position
-                         */
-                        workareaElement.data('lastData').cursorPosition = $(this)[0].selectionEnd
-
-                        // The default array for suggestions is the CQL keywords with the commands
-                        let suggestionsArray = Modules.Consts.CQLKeywords.concat(Modules.Consts.CQLSHCommands),
-                          // Get the keyspaces and their tables from the last metadata
-                          metadataInfo = getMetadataInfo(),
-                          // Get keyspaces' names
-                          keyspaces = Object.keys(metadataInfo),
-                          // Flag to tell if keyspace has been found and it's time to suggest its tables
-                          isKeyspace = false,
-                          // Flag to tell if suggestions should be the keyspaces only
-                          isSuggestKeyspaces = false
-
-                        try {
-                          /**
-                           * Determine whether or not keyspaces and their tables should be shown as suggestions
-                           *
-                           * Get the content before the cursor's position
-                           */
-                          let contentBeforeCursor = statement.slice(0, workareaElement.data('lastData').cursorPosition)
-
-                          // Check the content against defined regex patterns
-                          isSuggestKeyspaces = Object.keys(Modules.Consts.CQLRegexPatterns).some((type) => Modules.Consts.CQLRegexPatterns[type].Patterns.some((regex) => $(this).val().slice(0, workareaElement.data('lastData').cursorPosition).match(regex) != null))
-
-                          // If the closest word to the cursor doesn't have `.` then skip this try-catch block
-                          if (!isSuggestKeyspaces || !closestWord.includes('.'))
-                            throw 0
-
-                          // Get the recognized keyspace name
-                          let keyspace = closestWord.slice(0, closestWord.indexOf('.')).replace(/^\"*(.*?)\"*$/g, '$1'),
-                            // Attempt to get its tables
-                            tables = Object.keys(metadataInfo[keyspace])
-
-                          // If the attempt failed then skip this try-catch block
-                          if (tables == undefined)
-                            throw 0
-
-                          /**
-                           * Update associated variables
-                           *
-                           * Update the flag to be `true`
-                           */
-                          isKeyspace = true
-
-                          // Update the suggestions' array
-                          suggestionsArray = tables
-
-                          // Update the closest word to be what after `.`
-                          closestWord = closestWord.slice(closestWord.indexOf('.') + 1)
-                        } catch (e) {}
-
-                        // Update the latest saved closest word to the cursor
-                        workareaElement.data('lastData').closestWord = closestWord
-
-                        // Get the suggestions based on the closest word
-                        let suggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray, isSuggestKeyspaces || isKeyspace)
-
-                        // Keep related suggestions and remove the rest
-                        try {
-                          // If there's no such a suggestion then skip this try-catch block
-                          if (typeof suggestions == 'string' || suggestions.length <= 0)
-                            throw 0
-
-                          // Remove all current suggestions
-                          suggestionsList.children('span.suggestion').each(function() {
-                            // Reset the selection attribute
-                            $(this).attr('data-selected', 'false')
-
-                            // If the suggestion is related then skip the upcoming code and move to the next suggestion
-                            if (suggestions.includes($(this).attr('data-suggestion')) || suggestions == $(this).attr('data-suggestion'))
-                              return
-
-                            // Suggestion is not related, remove it
-                            $(this).remove()
-                          })
-                        } catch (e) {
-                          suggestionsList.children('span.suggestion').remove()
-                        }
-
-                        // Reset the realtime suggestion's text
-                        realtimeSuggestion.text('')
-
-                        // If the statement has multiple lines, or there's no close word to the cursor and there's no keyspace name recognized then remove all related suggestions and stop this feature
-                        if (isMultipleLines || (minifyText(closestWord).length <= 0 && !isKeyspace && !isSuggestKeyspaces))
-                          return suggestionsList.children('span.suggestion').remove()
-
-                        // Manipulate the received suggestions
-                        {
-                          // Define index to be used with the appended suggestions
-                          let index = 0
-
-                          // Loop through each received suggestion
-                          for (let suggestion of suggestions) {
-                            // Whether or not the `suggestions` is actually one `string` suggestion not an array
-                            let isSuggestionString = typeof suggestions == 'string'
-
-                            // If there's only one suggestion then handle it
-                            if (isSuggestionString)
-                              suggestion = suggestions
-
-                            // If the suggestion already exist in the UI then skip the appending process and move to the next suggestion
-                            if (suggestionsList.children(`span.suggestion[data-suggestion="${suggestion}"]`).length != 0)
-                              continue
-
-                            // The suggestion UI structure
-                            let element = `
-                                     <span ${isSuggestKeyspaces || isKeyspace ? 'data-double-quote-check="true"' : ''} class="btn suggestion badge rounded-pill ripple-surface-light" data-index="${index}" data-suggestion="${suggestion}" data-selected="false" data-mdb-ripple-color="light" style="display:none">${suggestion}</span>`
-
-                            // Append the suggestion and handle the `click` event
-                            suggestionsList.append($(element).delay(50 * index).fadeIn(100 * (index + 1)).click(function() {
-                              // Reset the selection state of all suggestions
-                              suggestionsList.children('span.suggestion').attr('data-selected', 'false')
-
-                              /**
-                               * If the clicked suggestion has a sibling before it then select it
-                               * As `TAB` key will autocomplete the subling right after the selected one
-                               */
-                              if ($(this).prev().length > 0)
-                                $(this).prev().attr('data-selected', 'true')
-
-                              // Trigger the `keydown` event with `isVirtual` set to `true`
-                              statementInputField.trigger('keydown', true)
-                            }))
-
-                            // If there's only one suggestion then end this loop
-                            if (isSuggestionString)
-                              break
-
-                            // Increment the index
-                            index += 1
-                          }
-                        }
-
-                        // If there's no suggestion received then skip the upcoming code and end the process
-                        if (suggestions.length <= 0)
-                          return
-
-                        // Define the final suggestion text which will be rendered in the realtime suggestion's UI element
-                        let suggestionText = '',
-                          // Get the textarea/statement value and split it to characters
-                          textareaValue = $(this).val().split('')
-
-                        // Loop through the characters, add them to the suggestion's text
-                        for (let i = 0; i < $(this)[0].selectionEnd; i++)
-                          suggestionText += `<span style="color:transparent;">${textareaValue[i]}</span>`
-
-                        // Define the selected suggestion to be adopted
-                        let selectedSuggestion = typeof suggestions == 'string' ? suggestions : suggestions[0]
-
-                        // Set the suggestion's text to be lower case if needed
-                        if (`${closestWord.at(-1)}` != `${closestWord.at(-1)}`.toUpperCase())
-                          selectedSuggestion = selectedSuggestion.toLowerCase()
-
-                        // Update the realtime suggestion's text
-                        realtimeSuggestion.html(`${suggestionText}${selectedSuggestion.slice(closestWord.length)}`)
-
-                        // Reset the suggestion's index
-                        currentSuggestionIndex = -1
-
-                        // Key is pressed while the textarea is focused
-                      }).keydown(function(event, isVirtual = false) {
-                        // Get the pressed key's code
-                        let keyCode = event.keyCode
-
-                        // If the pressed key is not `TAB` then trigger the `input` event for the textarea
-                        if (keyCode != 9)
-                          setTimeout(() => $(this).trigger('input', false))
-
-                        // `UP Arrow` and `DOWN Arrow` key press/down
-                        try {
-                          if (!(keyCode == 38 && event.ctrlKey) && !(keyCode == 40 && event.ctrlKey))
-                            throw 0
-
-                          // Flag to tell if the pressed key is the `UP Arrow` key
-                          let isUpArrow = keyCode == 38
-
-                          // Prevent the default behavior for this key pressing event
-                          event.preventDefault()
-
-                          // Get the saved statements
-                          let history = Store.get(connectionID) || []
-
-                          // If there's no saved history then simply skip this try-catch block
-                          if (history.length <= 0)
-                            throw 0
-
-                          // Increment/decrement the current history's index based on the pressed key
-                          workareaElement.data('lastData').history += isUpArrow ? 1 : -1
-
-                          // Get the selected statement
-                          let statement = history[workareaElement.data('lastData').history]
-
-                          // If the statement is `undefined` then the index is out of range
-                          if (statement == undefined) {
-                            // Normalize the index
-                            workareaElement.data('lastData').history = isUpArrow ? 0 : history.length - 1
-
-                            // Update the selected statement
-                            statement = history[workareaElement.data('lastData').history]
-                          }
-
-                          // Remove any realtime suggestions
-                          realtimeSuggestion.text('')
-
-                          // Update the textarea's content and focus
-                          $(this).val(statement).trigger('input').focus()
-
-                          // Update the size of the textarea
-                          AutoSize.update($(this)[0])
-                        } catch (e) {}
-
-                        // `ENTER` key press/down
-                        try {
-                          if (keyCode != 13 || event.shiftKey)
-                            throw 0
-
-                          // Prevent the default behavior for this key pressing event
-                          event.preventDefault()
-
-                          // Click the statement's execution button
-                          executeBtn.trigger('click')
-                        } catch (e) {}
-
-                        // `TAB` key press/down
-                        try {
-                          if (keyCode != 9 && !isVirtual)
-                            throw 0
-
-                          // Prevent the default behavior for this key pressing event
-                          event.preventDefault()
-
-                          // Reset the realtime suggestion's text
-                          realtimeSuggestion.text('')
-
-                          // Get the current selected suggestion's index
-                          let currentSelectedSuggestionIndex = suggestionsList.children('span.suggestion[data-selected="true"]').index()
-
-                          /**
-                           * Manipulate the selected suggestion's index
-                           * If the current selected suggestion's index is `-1` - no suggestion is selected -, or the current selected one is acutally the last one then adopt the first suggestion
-                           * Otherwise increase the current index by 1
-                           */
-                          currentSelectedSuggestionIndex = (currentSelectedSuggestionIndex <= -1 || (currentSelectedSuggestionIndex + 1) >= suggestionsList.children('span.suggestion').length) ? 0 : (currentSelectedSuggestionIndex + 1)
-
-                          // Get the final selected suggestion's UI element
-                          let selectedSuggestion = suggestionsList.children('span.suggestion').eq(currentSelectedSuggestionIndex)
-
-                          // Reset the selection state of all suggestions
-                          suggestionsList.children('span.suggestion').attr('data-selected', 'false')
-
-                          // The selected suggestion's attribute would be set to be `true`
-                          selectedSuggestion.attr('data-selected', 'true')
-
-                          // Get the selected suggestion's content/text
-                          let selectedSuggestionContent = selectedSuggestion.attr('data-suggestion'),
-                            isDoubleQuotesCheckNeeded = selectedSuggestion.attr('data-double-quote-check') == 'true',
-                            // Get the statement/textarea's content/text
-                            currentStatementContent = $(this).val(),
-                            areDoubleQuotesAdded = false
-
-                          if (isDoubleQuotesCheckNeeded) {
-                            selectedSuggestionContent = addDoubleQuotes(selectedSuggestionContent)
-
-                            areDoubleQuotesAdded = selectedSuggestionContent.startsWith('"')
-                          } else {
-                            // Set the suggestion's text to be lower case if needed
-                            if (workareaElement.data('lastData').closestWord.at(-1) != `${workareaElement.data('lastData').closestWord.at(-1) || ''}`.toUpperCase())
-                              selectedSuggestionContent = selectedSuggestionContent.toLowerCase()
-
-                            // Update the selected suggestion's content by slicing what already has been typed by the user
-                            selectedSuggestionContent = selectedSuggestionContent.slice(workareaElement.data('lastData').closestWord.length)
-                          }
-
-                          // Define initially the suggestion's prefix content
-                          let suggestionPrefixContent = currentStatementContent.slice(workareaElement.data('lastData').cursorPosition)
-
-                          if (isDoubleQuotesCheckNeeded) {
-                            // Update the prefix content by remove the previous suggestion if it already has been added
-                            if (workareaElement.data('lastData').suggestion.indexOf(suggestionPrefixContent) != -1 && suggestionPrefixContent.length != 0) {
-                              try {
-                                if (suggestionPrefixContent == workareaElement.data('lastData').suggestion || `${workareaElement.data('lastData').closestWord}${suggestionPrefixContent}` == workareaElement.data('lastData').suggestion) {
-                                  suggestionPrefixContent = ''
-
-                                  throw 0
-                                }
-
-                                let tempTxt = ''
-                                for (let i = 0; i < suggestionPrefixContent.length; ++i) {
-                                  tempTxt += `${suggestionPrefixContent[i]}`
-
-                                  if (workareaElement.data('lastData').suggestion.endsWith(`${workareaElement.data('lastData').closestWord}${tempTxt}`)) {
-                                    let newPrefix = suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(tempTxt) + tempTxt.length)
-
-                                    suggestionPrefixContent = newPrefix
-                                    break
-                                  }
-                                }
-                              } catch (e) {}
                             }
-                          } else {
-                            // Update the prefix content by remove the previous suggestion if it already has been added
-                            if (suggestionPrefixContent.indexOf(workareaElement.data('lastData').suggestion) != -1)
-                              suggestionPrefixContent = `${suggestionPrefixContent.slice(0, suggestionPrefixContent.indexOf(workareaElement.data('lastData').suggestion))}${suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(workareaElement.data('lastData').suggestion) + workareaElement.data('lastData').suggestion.length)}`
-                          }
+                          } catch (e) {}
 
-                          if (isDoubleQuotesCheckNeeded && suggestionPrefixContent.startsWith(workareaElement.data('lastData').suggestion))
-                            suggestionPrefixContent = suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(workareaElement.data('lastData').suggestion) + workareaElement.data('lastData').suggestion.length)
+                          // Show the current active prefix/prompt
+                          setTimeout(() => blockElement.find('div.prompt').text(minifyText(prefix).slice(0, -1)).hide().fadeIn('fast'), 1000)
 
-                          // Update the statement's text/content
-                          currentStatementContent = currentStatementContent.slice(0, workareaElement.data('lastData').cursorPosition - (isDoubleQuotesCheckNeeded ? workareaElement.data('lastData').closestWord.length : 0)) + `${selectedSuggestionContent}${suggestionPrefixContent}`
+                          try {
+                            workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
 
-                          // Update the last saved suggestion
-                          workareaElement.data('lastData').suggestion = `${selectedSuggestionContent}`
+                            try {
+                              clearTimeout(killProcessTimeout)
+                            } catch (e) {}
 
-                          if (isDoubleQuotesCheckNeeded)
-                            workareaElement.data('lastData').suggestion = workareaElement.data('lastData').suggestion.slice(workareaElement.data('lastData').suggestion.indexOf(workareaElement.data('lastData').closestWord) + workareaElement.data('lastData').closestWord.length)
+                            if (!isOutputIncomplete)
+                              hintsContainer.add(killProcessBtn.parent()).removeClass('show')
 
-                          // Set the final statement's text/content
-                          $(this).val(currentStatementContent).focus()
+                            if (isOutputIncomplete)
+                              killProcessTimeout = setTimeout(() => {
+                                killProcessBtn.parent().addClass('show')
 
-                          // Update the cursor's position inside the textarea
+                                workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
+                                workareaElement.find('.disableable').addClass('disabled')
+                                workareaElement.addClass('busy-cqlsh')
+
+                                if (!isOutputWithPaging)
+                                  setTimeout(() => hintsContainer.addClass('show'), 1000)
+                              }, 1500)
+                          } catch (e) {}
+
+                          // Show the block
+                          blockElement.show().addClass('show')
+
+                          // Make sure to scroll at the end of the blocks' container
+                          setTimeout(() => {
+                            try {
+                              blockElement.parent().animate({
+                                scrollTop: blockElement.parent().get(0).scrollHeight
+                              }, 100)
+                            } catch (e) {}
+                          }, 100)
+                        } catch (e) {}
+
+                        try {
+                          // Check if the query tracing feature has been enabled/disabled
                           {
-                            // Define the updated cursor's position
-                            let cursorPosition = workareaElement.data('lastData').cursorPosition + selectedSuggestionContent.length + (isDoubleQuotesCheckNeeded && suggestionPrefixContent.length > 0 ? 1 : 0)
+                            // Point at the hint UI element in the query tracing's tab
+                            let queryTracingHint = workareaElement.find(`div.tab-pane#_${queryTracingContentID}`).find('hint')
 
-                            // Set it inside the textarea
-                            $(this)[0].setSelectionRange(cursorPosition, cursorPosition)
+                            // If it has been enabled
+                            if (data.output.toLowerCase().indexOf('tracing is enabled') != -1)
+                              queryTracingHint.hide()
+
+                            // If it has been disabled
+                            if (data.output.toLowerCase().indexOf('disabled tracing') != -1)
+                              queryTracingHint.show()
                           }
+                        } catch (e) {}
+
+                        // Set the prompt which has been got from cqlsh tool
+                        activePrefix = ''
+
+                        try {
+                          // If it is `null` then skip this try-catch block
+                          if (prompt == null && prompt.search('cqlsh>'))
+                            throw 0
+
+                          // Got a prompt, adopt it
+                          activePrefix = `${prompt[0]} `
+                          prefix = activePrefix
                         } catch (e) {}
                       })
-
-                      {
-                        setTimeout(() => {
-                          let enhancedConsoleFooter = workareaElement.find(`div#_${containerFooterID}`),
-                            emptyStatements = workareaElement.find(`div#_${containerEmptyStatementsID}`),
-                            cqlshSessionContent = workareaElement.find(`div#_${cqlshSessionContentID}_container`),
-                            historyItemsContainer = workareaElement.find('div.history-items'),
-                            clearHistoryItemsBtn = workareaElement.find('div.history-items-clear-all'),
-                            baseHeightFooter = enhancedConsoleFooter.outerHeight(),
-                            updateLayoutTimeout
-
-                          // Make the left side resizable
-                          enhancedConsoleFooter.resizable({
-                            handles: 'n', // [N]orth
-                            minHeight: baseHeightFooter,
-                            maxHeight: baseHeightFooter * 2
-                          }).bind({
-                            resize: function(_, __) {
-                              enhancedConsoleFooter.css('top', '0px')
-
-                              emptyStatements.add(cqlshSessionContent).css('height', `calc(100% - ${240 + (enhancedConsoleFooter.outerHeight() - baseHeightFooter)}px)`)
-
-                              historyItemsContainer.add(clearHistoryItemsBtn).css('bottom', `${165 + (enhancedConsoleFooter.outerHeight() - baseHeightFooter)}px`)
-
-                              try {
-                                clearTimeout(updateLayoutTimeout)
-                              } catch (e) {}
-
-                              updateLayoutTimeout = setTimeout(() => {
-                                try {
-                                  consoleEditor.layout()
-                                } catch (e) {}
-                              }, 200)
-
-                            }
-                          })
-                        }, 3000)
-                      }
-
-                      {
-                        try {
-                          consoleEditor = monaco.editor.create(workareaElement.find('div.console-editor')[0], {
-                            value: '', // This is the default content of the `cqlsh.rc` file
-                            language: 'sql', // This language is the perfect one that supports the `cqlsh.rc` file content's syntax highlighting
-                            minimap: {
-                              enabled: false
-                            },
-                            glyphMargin: true, // This option allows to render an object in the line numbering side
-                            suggest: {
-                              showFields: false,
-                              showFunctions: false,
-                              showWords: false
-                            },
-                            padding: {
-                              top: 7,
-                              bottom: 7
-                            },
-                            wordBasedSuggestions: 'off',
-                            padding: {
-                              top: 10,
-                              bottom: 10
-                            },
-                            theme: 'vs-dark',
-                            scrollBeyondLastLine: true,
-                            mouseWheelZoom: true,
-                            fontSize: 14,
-                            fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
-                            fontLigatures: true
-                          })
-
-                          consoleEditor.getModel().onDidChangeContent(() => statementInputField.val(consoleEditor.getValue()).trigger('input'))
-
-                          consoleEditor.addAction({
-                            id: getRandom.id(),
-                            label: getRandom.id(),
-                            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-                            run: function(editor) {
-                              try {
-                                $(editor.getDomNode()).closest('div.interactive-terminal-container').find('div.execute button').trigger('click')
-                              } catch (e) {}
-                            }
-                          })
-
-                          consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
-                            let text = Clipboard.readText(),
-                              selection = consoleEditor.getSelection()
-
-                            consoleEditor.executeEdits('paste', [{
-                              range: selection,
-                              text: text,
-                              forceMoveMarkers: true
-                            }])
-                          })
-
-                          consoleEditor.addCommand(Modules.Shortcuts.getShortcutForMonacoEditor('enhanced-console-clear'), () => $(document).trigger('clearEnhancedConsole'))
-
-                          consoleEditor.addAction({
-                            id: getRandom.id(),
-                            label: getRandom.id(),
-                            keybindings: [Modules.Shortcuts.getShortcutForMonacoEditor('history-statements-forward')],
-                            run: function(editor) {
-                              try {
-                                let workareaElement = $(editor.getDomNode()).closest('div.workarea[workarea-id][connection-id]'),
-                                  connectionID = workareaElement.attr('connection-id'),
-                                  // Get the saved statements
-                                  history = Store.get(connectionID) || []
-
-                                // If there's no saved history then simply skip this try-catch block
-                                if (history.length <= 0)
-                                  throw 0
-
-                                // Increment/decrement the current history's index based on the pressed key
-                                workareaElement.data('lastData').history += 1
-
-                                // Get the selected statement
-                                let statement = history[workareaElement.data('lastData').history]
-
-                                // If the statement is `undefined` then the index is out of range
-                                if (statement == undefined) {
-                                  // Normalize the index
-                                  workareaElement.data('lastData').history = 0
-
-                                  // Update the selected statement
-                                  statement = history[workareaElement.data('lastData').history]
-                                }
-
-                                consoleEditor.setValue(statement)
-                                consoleEditor.focus()
-
-                                let lastLine = consoleEditor.getModel().getLineCount(),
-                                  lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
-
-                                consoleEditor.setPosition({
-                                  lineNumber: lastLine,
-                                  column: lastColumn
-                                })
-                              } catch (e) {}
-                            }
-                          })
-
-                          consoleEditor.addAction({
-                            id: getRandom.id(),
-                            label: getRandom.id(),
-                            keybindings: [Modules.Shortcuts.getShortcutForMonacoEditor('history-statements-backward')],
-                            run: function(editor) {
-                              try {
-                                let workareaElement = $(editor.getDomNode()).closest('div.workarea[workarea-id][connection-id]'),
-                                  connectionID = workareaElement.attr('connection-id'),
-                                  // Get the saved statements
-                                  history = Store.get(connectionID) || []
-
-                                // If there's no saved history then simply skip this try-catch block
-                                if (history.length <= 0)
-                                  throw 0
-
-                                // Increment/decrement the current history's index based on the pressed key
-                                workareaElement.data('lastData').history += -1
-
-                                // Get the selected statement
-                                let statement = history[workareaElement.data('lastData').history]
-
-                                // If the statement is `undefined` then the index is out of range
-                                if (statement == undefined) {
-                                  // Normalize the index
-                                  workareaElement.data('lastData').history = history.length - 1
-
-                                  // Update the selected statement
-                                  statement = history[workareaElement.data('lastData').history]
-                                }
-
-                                consoleEditor.setValue(statement)
-                                consoleEditor.focus()
-
-                                let lastLine = consoleEditor.getModel().getLineCount(),
-                                  lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
-
-                                consoleEditor.setPosition({
-                                  lineNumber: lastLine,
-                                  column: lastColumn
-                                })
-                              } catch (e) {}
-                            }
-                          })
-
-                          monaco.languages.registerCompletionItemProvider('sql', {
-                            triggerCharacters: [' ', '.', '"', '*', ';'],
-                            provideCompletionItems: function(model, position) {
-                              if (model != consoleEditor.getModel())
-                                return {
-                                  suggestions: []
-                                }
-
-                              let statement = model.getValueInRange(new monaco.Range(position.lineNumber, 1, position.lineNumber, position.column)),
-                                closestWord = '',
-                                WordAtPosition = model.getWordAtPosition(position),
-                                range = WordAtPosition ?
-                                new monaco.Range(position.lineNumber, WordAtPosition.startColumn, position.lineNumber, position.column) :
-                                new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-                                suggestions = []
-
-                              // Get the closest word to the cursor in the input field
-                              try {
-                                closestWord = WordAtPosition.word
-                              } catch (e) {}
-
-                              try {
-                                if (closestWord.length <= 0)
-                                  closestWord = /\S+$/.exec(statement)[0]
-                              } catch (e) {}
-
-                              // The default array for suggestions is the CQL keywords with the commands
-                              let suggestionsArray = Modules.Consts.CQLKeywords.concat(Modules.Consts.CQLSHCommands),
-                                // Get the keyspaces and their tables from the last metadata
-                                metadataInfo = getMetadataInfo(),
-                                // Get keyspaces' names
-                                keyspaces = Object.keys(metadataInfo),
-                                // Flag to tell if keyspace has been found and it's time to suggest its tables
-                                isKeyspace = false,
-                                // Flag to tell if suggestions should be the keyspaces only
-                                isSuggestKeyspaces = false,
-                                matchedPattern = ''
-
-                              try {
-                                /**
-                                 * Determine whether or not keyspaces and their tables should be shown as suggestions
-                                 *
-                                 * Get the content before the cursor's position
-                                 */
-                                let contentBeforeCursor = statement
-
-                                // Check the content against defined regex patterns
-                                isSuggestKeyspaces = Object.keys(Modules.Consts.CQLRegexPatterns).some((type) => {
-                                  let isMatched = Modules.Consts.CQLRegexPatterns[type].Patterns.some((regex) => contentBeforeCursor.match(regex) != null)
-
-                                  if (isMatched)
-                                    matchedPattern = type
-
-                                  return isMatched
-                                })
-
-                                // If the closest word to the cursor doesn't have `.` then skip this try-catch block
-                                if (!isSuggestKeyspaces || !closestWord.includes('.'))
-                                  throw 0
-
-                                // Get the recognized keyspace name
-                                let keyspace = closestWord.slice(0, closestWord.indexOf('.')).replace(/^\"*(.*?)\"*$/g, '$1'),
-                                  // Attempt to get its tables
-                                  tables = Object.keys(metadataInfo[keyspace])
-
-                                // If the attempt failed then skip this try-catch block
-                                if (tables == undefined)
-                                  throw 0
-
-                                /**
-                                 * Update associated variables
-                                 *
-                                 * Update the flag to be `true`
-                                 */
-                                isKeyspace = true
-
-                                // Update the suggestions' array
-                                suggestionsArray = tables
-
-                                // Update the closest word to be what after `.`
-                                closestWord = closestWord.slice(closestWord.indexOf('.') + 1)
-                              } catch (e) {}
-
-                              let finalSuggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray, isSuggestKeyspaces || isKeyspace),
-                                isONKeyword = false
-
-                              // Handle suggesting columns from table
-                              try {
-                                if (!isSuggestKeyspaces || matchedPattern != 'Where')
-                                  throw 0
-
-                                let keyspaceAndTable = null
-
-                                // Try any of these
-                                for (let regex of [/.*\bfrom\s+(.*?)\s+where\b/is, /.*\bupdate\s+(.*?)\s+\b/is, /.*\ON\s+(.*?)\s+/is]) {
-                                  try {
-                                    keyspaceAndTable = statement.match(regex)[1]
-
-                                    if (`${regex}`.includes('ON') && statement.match(/ON.+\(/is) == null)
-                                      isONKeyword = true
-
-                                    break
-                                  } catch (e) {}
-                                }
-
-                                if (keyspaceAndTable == null)
-                                  throw 0
-
-                                let [keyspace, table] = keyspaceAndTable.split('.').map((name) => `${name}`.replace(/^\"*(.*?)\"*$/g, '$1')),
-                                  columns = metadataInfo[keyspace][table]
-
-                                finalSuggestions = columns
-                              } catch (e) {}
-
-                              if ((JSON.stringify(finalSuggestions) == JSON.stringify(suggestionsArray)) && !(isSuggestKeyspaces || isKeyspace))
-                                return {
-                                  suggestions: []
-                                }
-
-                              suggestions = finalSuggestions.map((suggestionItem) => {
-                                let suggestion = suggestionItem,
-                                  isItemObject = typeof suggestionItem == 'object'
-
-                                if (isItemObject)
-                                  suggestion = suggestionItem.name
-
-                                insertText = (isSuggestKeyspaces || isKeyspace) ? addDoubleQuotes(`${suggestion}`) : suggestion
-
-                                if (isONKeyword)
-                                  insertText = `(${insertText})`
-
-                                return {
-                                  label: !isItemObject ? suggestion : `${suggestionItem.name}: ${suggestionItem.type}`,
-                                  kind: monaco.languages.CompletionItemKind.Keyword,
-                                  insertText,
-                                  range
-                                }
-                              })
-
-                              try {
-                                suggestions = removeArrayDuplicates(suggestions, 'label')
-                              } catch (e) {}
-
-                              // Handle if the keyword is DESC/DESCRIBE
-                              try {
-                                if (Modules.Consts.CQLRegexPatterns.Desc.Patterns.some((regex) => statement.match(regex) != null) && (isSuggestKeyspaces || isKeyspace))
-                                  suggestions.unshift({
-                                    label: 'SCHEMA',
-                                    kind: monaco.languages.CompletionItemKind.Keyword,
-                                    insertText: 'SCHEMA',
-                                    range
-                                  })
-                              } catch (e) {}
-
-                              return {
-                                suggestions
-                              }
-                            }
-                          })
-                        } catch (e) {}
-                      }
-                    }
-                    // End of hanlding the interactive terminal
-
-                    // Handle the bash session only if the connection is a sandbox project
-                    try {
-                      if (!isSandbox)
-                        throw 0
-
-                      // Put the code inside curly brackets to reduce its scope and make sure to not affect the rest of the code
-                      {
-                        // Define global variables to be used in this code block
-                        let terminalBash, // The XTermJS object for Bash
-                          fitAddonBash, // Used for resizing the terminal and making it responsive
-                          printData = false, // Whether or not the data coming from the pty instances should be printed or not
-                          latestCommand = '', // Store the user's input to create a command
-                          sessionID = getRandom.id(5) // Get a random ID as a suffix to the sandbox project's ID
+                      // The listener to data sent from the pty instance has been finished
+
+                      try {
+                        if (!isBasicCQLSHEnabled)
+                          throw 0
 
                         // Create the terminal instance from the XtermJS constructor
-                        terminalBash = new XTerm({
+                        terminalObjects[terminalID] = new XTerm({
                           theme: XTermThemes.Atom
                         })
 
+                        // Set the `terminal` variable to be as a reference to the object
+                        terminal = terminalObjects[terminalID]
+
                         // Add log
                         try {
-                          addLog(`Created a bash session for local cluster ${getAttributes(connectionElement, ['data-id'])}`)
+                          addLog(`CQL console created for the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`)
                         } catch (e) {}
 
                         /**
@@ -5902,345 +4218,3274 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                          * Change font family to `JetBrains Mono` and set its size and line height
                          * https://www.jetbrains.com/lp/mono/
                          */
-                        terminalBash.options.fontFamily = 'Terminal, monospace'
-                        terminalBash.options.fontSize = 13
-                        terminalBash.options.lineHeight = 1.35
+                        terminal.options.fontFamily = `'Terminal', monospace`
+                        terminal.options.fontSize = 13
+                        terminal.options.lineHeight = 1.35
 
                         // Enable the cursor blink when the terminal is being focused on
-                        terminalBash._publicOptions.cursorBlink = true
+                        terminal._publicOptions.cursorBlink = true
 
-                        setTimeout(() => {
-                          /**
-                           * Define XtermJS addons
-                           *
-                           * Fit addon; to resize the terminal without distortion
-                           */
-                          fitAddonBash = new FitAddon.FitAddon()
-
-                          /**
-                           * Load XtermJS addons
-                           *
-                           * Load the `Fit` addon
-                           */
-                          terminalBash.loadAddon(fitAddonBash)
-
-                          // The terminal now will be shown in the UI
-                          terminalBash.open(workareaElement.find(`div.terminal-container[data-id="${terminalBashContainerID}"]`)[0])
-
-                          // Load the `Canvas` addon
-                          terminalBash.loadAddon(new CanvasAddon())
-
-                          // Load the `Webfont` addon
-                          terminalBash.loadAddon(new XtermWebFonts())
-
-                          // Fit the terminal with its container
-                          setTimeout(() => fitAddonBash.fit(), 1500)
-
-                          // Push the fit addon object to the related array
-                          terminalFitAddonObjects.push(fitAddonBash)
-
-                          // Send a request to create a pty instance
-                          setTimeout(() => IPCRenderer.send('pty:create:bash-session', {
-                            id: `${connectionID}-bash-${sessionID}`,
-                            projectID: `cassandra_${connectionID}`,
-                            path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..', '..', '..')), 'data', 'localclusters', connectionID),
-                            dockerComposeBinary: Modules.Docker.getDockerComposeBinary()
-                          }), 500)
-
-                          /**
-                           * Decide what to print to the user after initializing the pty instance
-                           *
-                           * Define the regex syntax in which the terminal is ready to be used once it's matched
-                           */
-                          let regex = new RegExp('root.+\:\/\#', 'gm')
-
-                          // Remove all previous listeners to the channel between the main and renderer threads
-                          IPCRenderer.removeAllListeners(`pty:${connectionID}-bash-${sessionID}:data:bash-session`)
-
-                          /**
-                           * Get the terminal's active buffer
-                           * This process detects any attempt to execute the `exit` command
-                           */
-                          let activeBuffer = terminalBash.buffer.active
-
-                          // Listen to data sent from the pty instance
-                          IPCRenderer.on(`pty:${connectionID}-bash-${sessionID}:data:bash-session`, (_, data) => {
-                            // Update the printing status if the regex execution has returned a positive result
-                            if (regex.exec(minifyText(data)) != null && !printData)
-                              printData = true
-
-                            // If the printing status is `false` then don't print the current received data
-                            if (!printData)
-                              return
-
-                            // Write data to the terminal
-                            terminalBash.write(data)
-
-                            // Detect any attempt to execute the `exit` command
-                            setTimeout(() => {
-                              // Get the active's line content
-                              let activeLine = activeBuffer.getLine(activeBuffer.cursorY).translateToString(),
-                                // Manipulate the entire line, get only the command, and get rid of the prompt
-                                minifiedActiveLine = minifyText(activeLine).slice(activeLine.indexOf(':/#') + 3),
-                                // Whether or not the `exit` is in the line
-                                isExitFound = ['exit', 'exit&', 'exit;'].some((exit) => minifiedActiveLine.endsWith(exit) || minifiedActiveLine.startsWith(exit))
-
-                              // If there's an `exit` command then suffix the entire line with `!` symbol
-                              if (isExitFound && !minifiedActiveLine.endsWith('!'))
-                                IPCRenderer.send(`pty:${connectionID}-bash-${sessionID}:command:bash-session`, '!')
-                            })
-                          })
-
-                          // As the user typing and providing data to the terminal
-                          terminalBash.onData((data) => {
-                            // Add the data to the `latestCommand` variable
-                            latestCommand += data
-
-                            // If the command has an `exit` character then remove it
-                            {
-                              // Define the exit character
-                              let exitChar = '\x04',
-                                // Create a regular expression to match the character everywhere in the data
-                                regex = new RegExp(exitChar, 'gm')
-
-                              // Remove the character
-                              data = data.replace(regex, '')
-                            }
-
-                            // Send the data to the pty instance
-                            IPCRenderer.send(`pty:${connectionID}-bash-${sessionID}:command:bash-session`, data)
-                          })
-
-                          // Point at the terminal viewport - main container -
-                          let terminalViewport = workareaElement.find(`div.terminal-container[data-id="${terminalBashContainerID}"]`).find('div.xterm-viewport')[0]
-
-                          /**
-                           * Listen to data - characters - from the user - input to the terminal -
-                           * What is being listened to is mainly the keypresses like `ENTER`
-                           */
-                          terminalBash.onData((char) => {
-                            // Get the key code
-                            let keyCode = char.charCodeAt(0)
-
-                            // Switch between the key code's values
-                            switch (keyCode) {
-                              // `ENTER`
-                              case 13: {
-                                // Empty the latest command
-                                latestCommand = ''
-
-                                // Scroll to the very bottom of the terminal
-                                terminalViewport.scrollTop = terminalViewport.scrollHeight
-
-                                // Resize the terminal
-                                fitAddonBash.fit()
-
-                                break
-                              }
-                            }
-                          })
-                        })
-                        // End of handling the app's terminal
-                      }
-                    } catch (e) {
-                      try {
-                        errorLog(e, 'connections')
-                      } catch (e) {}
-                    }
-                    // End of handling the bash session's terminal
-
-                    // Handle different events for many elements in the work area
-                    {
-                      // Metadata tree view side
-                      setTimeout(() => {
-                        // Clicks the copy button; to copy metadata in JSON string format
-                        workareaElement.find(`div.btn[data-id="${copyMetadataBtnID}"]`).click(function() {
-                          // Get the beautified version of the metadata
-                          let metadataBeautified = beautifyJSON(latestMetadata, true),
-                            // Get the metadata size
-                            metadataSize = Bytes(ValueSize(metadataBeautified))
-
-                          // Copy metadata to the clipboard
-                          try {
-                            Clipboard.writeText(metadataBeautified)
-                          } catch (e) {
-                            try {
-                              errorLog(e, 'connections')
-                            } catch (e) {}
-                          }
-
-                          // Give feedback to the user
-                          showToast(I18next.capitalize(I18next.t('copy metadata')), I18next.capitalizeFirstLetter(I18next.replaceData('metadata for the cluster connected to by [b]$data[/b] has been copied to the clipboard, the size is $data', [getAttributes(connectionElement, 'data-name'), metadataSize])) + '.', 'success')
-                        })
-
-                        // Refresh the tree view
-                        workareaElement.find(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(function() {
-                          // If the `checkMetadata` function is not yet implemented then skip the upcoming code
-                          if (checkMetadata == null)
-                            return
-
-                          // If there's a tree object already then attempt to destroy it
-                          if (jsTreeObject != null)
-                            try {
-                              workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`).jstree('destroy')
-                            } catch (e) {}
-
-                          // Trigger the `click` event for the search in metadata tree view button; to make sure it's reset
-                          workareaElement.find(`div.btn[data-id="${searchInMetadataBtnID}"]`).trigger('click', true)
-
-                          // Add log about this refreshing process
-                          try {
-                            addLog(`Request to refresh the metadata of the cluster connected to by '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
-                          } catch (e) {}
-
-                          // Reset the metadata trigger
-                          isMetadataFetched = false
-
-                          // Show the loading of the tree view
-                          $(this).parent().parent().parent().addClass('loading')
-
-                          // Check metadata with `refresh` = `true`
-                          checkMetadata(true)
-                        })
-
-                        // Handle the search feature inside the metadata tree view
-                        {
-                          // Point at the search container
-                          let searchContainer = workareaElement.find('div.search-in-metadata'),
-                            // Point at the metadata tree view container
-                            metadataContent = workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`),
-                            // Flag to tell if the search container is shown already
-                            isSearchShown = false,
-                            // The timeout function to be defined for the starting the search process
-                            searchTimeout
-
-                          // Clicks the search button/icon
-                          workareaElement.find(`div.btn[data-id="${searchInMetadataBtnID}"]`).on('click', function(e, overrideFlag = null) {
-                            // If an override flag has been passed - true/false for showing the search container - then adopt this flag
-                            if (overrideFlag != null)
-                              isSearchShown = overrideFlag
-
-                            // Apply a special effect for the tree view based on the current showing status
-                            metadataContent.toggleClass('show-search-input', !isSearchShown)
-
-                            setTimeout(() => {
-                              // Show or hide the search input based on the current showing status
-                              searchContainer.toggleClass('show', !isSearchShown)
-
-                              // Toggle the flag
-                              isSearchShown = !isSearchShown
-
-                              // If the new status is to show the search input then skip the upcoming code
-                              if (isSearchShown)
-                                return
-
-                              // Empty the search value - if there's one -
-                              searchContainer.find('input').val('').trigger('input')
-
-                              // Hide the navigation arrows
-                              workareaElement.find('div.right-elements').removeClass('show')
-                            })
-                          })
-
-                          // When the user types in the search input
-                          searchContainer.find('input').on('input', function() {
-                            // Make sure to clear any ongoing timeout processes
-                            if (searchTimeout != null)
-                              clearTimeout(searchTimeout)
+                        try {
+                          setTimeout(() => {
+                            /**
+                             * Define XtermJS addons
+                             *
+                             * Fit addon; to resize the terminal without distortion
+                             */
+                            fitAddon = new FitAddon.FitAddon()
 
                             /**
-                             * Perform a search process after a set time of finish typing
-                             * This delay will avoid any potential performance issues
+                             * Load XtermJS addons
+                             *
+                             * Load the `Fit` addon
                              */
-                            searchTimeout = setTimeout(() => {
+                            terminal.loadAddon(fitAddon)
+
+                            // The terminal now will be shown in the UI
+                            terminal.open(workareaElement.find(`div.terminal-container[data-id="${terminalContainerID}"]`)[0])
+
+                            // Load the `Canvas` addon
+                            terminal.loadAddon(new CanvasAddon())
+
+                            // Load the `Webfont` addon
+                            terminal.loadAddon(new XtermWebFonts())
+
+                            // Fit the terminal with its container
+                            setTimeout(() => fitAddon.fit())
+
+                            // Push the fit addon object to the related array
+                            terminalFitAddonObjects.push(fitAddon)
+
+                            // Call the fit addon for the terminal
+                            setTimeout(() => fitAddon.fit(), 1200)
+
+                            try {
+                              IPCRenderer.removeAllListeners(`pty:data-basic:${connectionID}`)
+                            } catch (e) {}
+
+                            // Listen to data sent from the pty instance regards the basic terminal
+                            IPCRenderer.on(`pty:data-basic:${connectionID}`, (_, data) => {
                               try {
-                                $(metadataContent).jstree(true).search($(this).val(), true, false)
+                                // If the session is paused then nothing would be printed
+                                if (isSessionPaused)
+                                  throw 0
+
+                                // Print/write the data to the terminal
+                                terminal.write(data.output)
                               } catch (e) {}
-                            }, 500)
+                            })
+
+                            /**
+                             * Listen to the user's input to the terminal's buffer
+                             * This listener will send the character to the pty instance to be handled in realtime
+                             *
+                             * Point at the terminal's viewport in the UI
+                             */
+                            let terminalViewport = workareaElement.find(`div.terminal-container[data-id="${terminalContainerID}"]`).find('div.xterm-viewport')[0],
+                              // Get the terminal's active buffer; to get the entire written statement if needed
+                              terminalBuffer = terminal.buffer.active
+
+                            // Listen to data from the user - input to the terminal -
+                            terminal.onData((char) => {
+                              // Get the entire written statement
+                              let statement = terminalBuffer.getLine(terminalBuffer.baseY + terminalBuffer.cursorY).translateToString(true)
+
+                              // Remove any prefixes
+                              statement = statement.replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
+
+                              // Check if the command is terminating the cqlsh session
+                              let isQuitFound = (['quit', 'exit']).some((command) => statement.toLowerCase().startsWith(command)),
+                                // Get the key code
+                                keyCode = char.charCodeAt(0)
+
+                              try {
+                                /**
+                                 * `quit` or `exit` command will close the connection
+                                 * If none of them were found then skip this try-catch block
+                                 */
+                                if (!isQuitFound)
+                                  throw 0
+
+                                // Show feedback to the user
+                                printMessageInBasicTerminal(terminal, 'info', `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`)
+
+                                // Pause the print of output from the Pty instance
+                                isSessionPaused = true
+
+                                // Dispose the readline addon
+                                prefix = ''
+
+                                // Click the close connection button after a while
+                                setTimeout(() => workareaElement.find('div.connection-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
+                              } catch (e) {}
+
+                              // Send the character in realtime to the pty instance
+                              IPCRenderer.send('pty:data', {
+                                id: connectionID,
+                                char
+                              })
+
+                              // Make sure both the app's UI terminal and the associated pty instance are syned in their size
+                              IPCRenderer.send('pty:resize', {
+                                id: connectionID,
+                                cols: terminal.cols,
+                                rows: terminal.rows
+                              })
+
+                              // Switch between the key code's values
+                              switch (keyCode) {
+                                // `ENTER`
+                                case 13: {
+                                  // Scroll to the very bottom of the terminal
+                                  terminalViewport.scrollTop = terminalViewport.scrollHeight
+
+                                  // Resize the terminal
+                                  fitAddon.fit()
+                                  break
+                                }
+                              }
+                            })
+
+                            // Listen to custom key event
+                            terminal.attachCustomKeyEventHandler((event) => {
+                              // Get different values from the event
+                              let {
+                                key, // The pressed key
+                                ctrlKey, // Whether or not the `CTRL` is being pressed
+                                shiftKey, // Whether or not the `SHIFT` is being pressed
+                                metaKey // Whether or not the `META/WINDOWS/SUPER` key is being pressed
+                              } = event
+
+                              // Inner function to prevent the event from performing its defined handler
+                              let preventEvent = () => {
+                                /**
+                                 * Prevent the default behavior of pressing the combination
+                                 * https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault
+                                 */
+                                event.preventDefault()
+
+                                /**
+                                 * Prevent further propagation of the event in the capturing and bubbling phases
+                                 * https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation
+                                 */
+                                event.stopPropagation()
+                              }
+
+                              // Hande `CTRL+R`
+                              try {
+                                if (!(ctrlKey && key.toLowerCase() == 'r'))
+                                  throw 0
+
+                                // Call the inner function
+                                preventEvent()
+
+                                // Return `false` to make sure the handler of xtermjs won't be executed
+                                return false
+                              } catch (e) {}
+
+                              /**
+                               * Handle the terminal's buffer clearing process on Windows
+                               * `CTRL+L`
+                               */
+                              try {
+                                if (!(ctrlKey && (key.toLowerCase() == 'l')) || OS.platform() != 'win32')
+                                  throw 0
+
+                                // Call the inner function
+                                preventEvent()
+
+                                // Clear the buffer
+                                terminal.clear()
+
+                                // Return `false` to make sure the handler of xtermjs won't be executed
+                                return false
+                              } catch (e) {}
+
+                              /**
+                               * Handle the termination of the terminal's session
+                               * `CTRL+D`
+                               */
+                              try {
+                                if (!(ctrlKey && key.toLowerCase() == 'd' && !shiftKey))
+                                  throw 0
+
+                                // Call the inner function
+                                preventEvent()
+
+                                // Return `false` to make sure the handler of xtermjs won't be executed
+                                return false
+                              } catch (e) {}
+
+                              /**
+                               * Handle the copying process of selected text in the terminal
+                               *
+                               * `CTRL+SHIFT+C` for Linux and Windows
+                               * `CMD+C` for macOS
+                               */
+                              try {
+                                if (!((ctrlKey && shiftKey && `${key}`.toLowerCase() === 'c') || (metaKey && `${key}`.toLowerCase() === 'c')))
+                                  throw 0
+
+                                // Call the inner function
+                                preventEvent()
+
+                                // Attempt to write the selected text in the terminal
+                                try {
+                                  Clipboard.writeText(terminal.getSelection())
+                                } catch (e) {}
+
+                                // Return `false` to make sure the handler of xtermjs won't be executed
+                                return false
+                              } catch (e) {}
+                            })
+
+                            /**
+                             * Listen to `keydown` event in the terminal's container
+                             * The main reason is to provide the ability to increase/decrease and reset the terminal's font size
+                             * Custom event `changefont` has been added, it will be triggered when the app's zooming level is changing
+                             */
+                            setTimeout(() => {
+                              try {
+                                if (OS.platform() == 'darwin')
+                                  throw 0
+
+                                // Increase font size
+                                Modules.Shortcuts.setShortcutInSession(workareaElement.find('div.terminal.xterm')[0], 'basic-console-font-increase', () => terminal.options.fontSize += 1)
+
+                                // Decrease font size
+                                Modules.Shortcuts.setShortcutInSession(workareaElement.find('div.terminal.xterm')[0], 'basic-console-font-decrease', () => terminal.options.fontSize -= 1)
+
+                                // Reset font size
+                                Modules.Shortcuts.setShortcutInSession(workareaElement.find('div.terminal.xterm')[0], 'basic-console-font-reset', () => terminal.options.fontSize = 13)
+
+                                workareaElement.find('div.terminal.xterm').on('changefont', function(e, keyCode = null) {
+                                  // If the `CTRL` key is not pressed or `CTRL` and `SHIFT` are being pressed together then skip this try-catch block
+                                  if ((!e.ctrlKey && e.type != 'changefont') || e.shiftKey)
+                                    return true
+
+                                  // If the event type is `changefont` then the keycode is provided in variable `keyCode`
+                                  if (e.type == 'changefont')
+                                    e.keyCode = keyCode
+
+                                  // Switch between the `keyCode` values
+                                  switch (e.keyCode) {
+                                    // `+` Increase the font size
+                                    case 187: {
+                                      terminal.options.fontSize += 1
+                                      break
+                                    }
+                                    // `-` Decrease the font size
+                                    case 189: {
+                                      terminal.options.fontSize -= 1
+                                      break
+                                    }
+                                    // `0` reset the font size
+                                    case 48: {
+                                      terminal.options.fontSize = 13
+                                      break
+                                    }
+                                  }
+
+                                  // Prevent any default behavior
+                                  e.preventDefault()
+                                })
+                              } catch (e) {}
+                            }, 1000)
                           })
+                        } catch (e) {
+                          try {
+                            errorLog(e, 'connections')
+                          } catch (e) {}
                         }
-                      })
+                        // End of handling the app's basic terminal
+                      } catch (e) {}
 
-                      // Metadata differentiation section
-                      setTimeout(() => {
-                        // Point at the snapshot's suffix name container
-                        let suffixContainer = workareaElement.find(`div.save-snapshot-suffix[data-id="${saveSnapshotSuffixContainerID}"]`),
-                          // Point at the time element; where the snapshot's time will be printed to the user
-                          timeElement = suffixContainer.children('div.time'),
-                          // Point at the save schema snapshot button
-                          saveSnapshotBtn = suffixContainer.children('button'),
-                          // Point at the suffix's input field
-                          suffixInput = suffixContainer.find('input'),
-                          // Get the object of the input field
-                          suffixInputObject = getElementMDBObject(suffixInput),
-                          // Variable which will hold the formatted version of the snapshot's time
-                          timeFormatted
+                      /*
+                       * Point at killing the current process
+                       * Point at the CQLSH session's overall container
+                       */
+                      let cqlshSessionTabContainer = workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`),
+                        killProcessBtn = cqlshSessionTabContainer.find('div.kill-process button'),
+                        hintsContainer = cqlshSessionTabContainer.find('div.hints-container'),
+                        killProcessTimeout
 
-                        // Show the differentiation list - line's number and content -
-                        workareaElement.find(`span.btn[data-id="${showDifferentiationBtnID}"]`).click(function() {
-                          // Get how many detected changes
-                          let changes = parseInt($(this).attr('data-changes'))
+                      // This block of code for the interactive terminal
+                      {
+                        /**
+                         * Define variables and inner functions to be used in the current scope
+                         *
+                         * Point at the CQLSH interactive terminal's session's main container
+                         */
+                        let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`),
+                          // Point at the statement's input field
+                          statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
+                          // Point at the interactive terminal's container
+                          interactiveTerminal = workareaElement.find(`div[data-id="${terminalContainerID}_interactive"]`),
+                          // Point at the basic terminal's container
+                          basicTerminal = workareaElement.find(`div[data-id="${terminalContainerID}"]`),
+                          // Point at the suggestions' list - at the very bottom of the statement's input field -
+                          suggestionsList = cqlshSessionTabContainer.find('div.bottom div.suggestions-list'),
+                          // Point at the realtime suggestion's element
+                          realtimeSuggestion = statementInputField.parent().find('div.suggestion'),
+                          /**
+                           * Point at different buttons related to the current scope
+                           *
+                           * Point at the terminal's switching button - at the top-right of the cqlsh session -
+                           */
+                          switchTerminalBtn = cqlshSessionTabContainer.find(`div.switch-terminal button`),
+                          // Point at the statement's execution button
+                          executeBtn = cqlshSessionTabContainer.find('div.execute button')
 
-                          // If none, then skip the upcoming code and show feedback to the user
-                          if (changes <= 0)
-                            return showToast(I18next.capitalize(I18next.t('show differentiation')), I18next.capitalizeFirstLetter(I18next.t('there is no difference between the previous and new metadata')) + '.', 'warning')
-
-                          // Show/hide the changes container
-                          workareaElement.find(`div.changes-lines[data-id="${changesLinesContainerID}"]`).toggleClass('show')
+                        // Hold the last saved important data
+                        workareaElement.data('lastData', {
+                          cursorPosition: -1,
+                          closestWord: '',
+                          suggestion: '',
+                          history: -1
                         })
 
-                        workareaElement.find(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).click(() => diffEditor.goToDiff('previous'))
+                        /**
+                         * Inner function to get the closest word to the cursor
+                         * Used while the user is updating the statement's input field
+                         *
+                         * @Parameters:
+                         * {object} `textarea` the textarea HTML element
+                         *
+                         * @Return: {string} the matched content, or an empty value if there's no string close to the cursor
+                         */
+                        let getClosestWord = (textarea) => {
+                          // Get the cursor's current position
+                          let cursorPosition = textarea.selectionStart
 
-                        workareaElement.find(`span.btn[data-id="${diffNavigationNextBtnID}"]`).click(() => diffEditor.goToDiff('next'))
+                          /**
+                           * If the user is currently selecting something then return an empty value
+                           * The reason is by selecting something while the function is executing will lead to get incorrect values about the cursor's position
+                           */
+                          if (textarea.selectionEnd !== cursorPosition)
+                            return ''
 
-                        // Refresh the new metadata and do a differentiation check
-                        workareaElement.find(`span.btn[data-id="${refreshDifferentiationBtnID}"]`).click(function() {
-                          // Disable the button
-                          $(this).attr('disabled', '').addClass('disabled refreshing')
+                          // Get the content of the textarea up to the cursor position
+                          let textBeforeCursor = textarea.value.slice(0, cursorPosition),
+                            // Do a matching process; which is getting the last string in the line that has a space right before it
+                            match = /\S+$/.exec(textBeforeCursor)
 
-                          // Get the latest metadata
-                          Modules.Connections.getMetadata(connectionID, (metadata) => {
+                          // If there's a value from the matching process then return it, otherwise return an empty value
+                          return match ? match[0] : ''
+                        }
+
+                        /**
+                         * Inner function to get important info from the latest metadata
+                         *
+                         * @Return: {object} the fetched info from the latest metadata as JSON object
+                         */
+                        let getMetadataInfo = () => {
+                          // Define the final result to be returned
+                          let result = {}
+
+                          try {
+                            // Get the keyspaces names and their tables' names
+                            let temp = {},
+                              keyspaces = latestMetadata.keyspaces.map((keyspace) => {
+                                return {
+                                  name: keyspace.name,
+                                  tables: keyspace.tables
+                                }
+                              })
+
+                            // Loop through each keyspace and set its tables' names in array
+                            for (let keyspace of keyspaces)
+                              temp[keyspace.name] = keyspace.tables
+
+                            for (let keyspaceName of Object.keys(temp)) {
+                              result[keyspaceName] = {}
+
+                              for (let table of temp[keyspaceName]) {
+                                result[keyspaceName][table.name] = table.columns.map((column) => {
+                                  return {
+                                    name: column.name,
+                                    type: column.cql_type
+                                  }
+                                })
+                              }
+                            }
+                          } catch (e) {}
+
+                          // Return the final result
+                          return result
+                        }
+
+                        /**
+                         * Apply the auto size feature for the statement's input field
+                         * This will simply increase and decrease the height based on the input's value
+                         */
+                        AutoSize(statementInputField[0])
+
+                        // Clicks the terminal's switching button
+                        switchTerminalBtn.click(function(event, onlyInit = false) {
+                          try {
+                            // If the basic terminal is already shown then skip this try-catch block
+                            if (basicTerminal.css('display') != 'none')
+                              throw 0
+
+                            if (!onlyInit)
+                              switchTerminalBtn.parent().css('z-index', '5')
+
                             try {
-                              // Convert the metadata from JSON string to an object
-                              metadata = JSON.parse(metadata)
+                              // If the terminal has already been initialized then skip this try-catch block
+                              if (basicTerminal.attr('data-initialized') == 'true')
+                                throw 0
 
-                              // Detect differences
-                              // detectDifferentiationShow(JSON.parse(metadataDiffEditors.old.object.getValue()), metadata)
+                              // Reset the terminal's buffer - will clear it with the prompt -
+                              terminal.reset()
 
-                              // Beautify the received metadata
-                              metadata = beautifyJSON(metadata, true)
+                              // Send multiple `EOL` chars at the same time; to make sure the messy buffer is completely cleared
+                              setTimeout(() => {
+                                // Define the variable which will hold all the `EOL` chars
+                                let charEOL = ''; // This semicolon is critical here
 
-                              // Update the fetch date and time of the new metadata
-                              workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
-                              workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
+                                // Get 20x of `EOL` char
+                                (new Array(20).fill('')).forEach((_) => {
+                                  charEOL += OS.EOL
+                                })
 
-                              // Update the new editor's value
-                              metadataDiffEditors.new.object.setValue(metadata)
+                                // Send it at once to the basic terminal
+                                IPCRenderer.send('pty:data', {
+                                  id: connectionID,
+                                  char: charEOL
+                                })
 
-                              // Enable the button again
-                              $(this).removeAttr('disabled').removeClass('disabled refreshing')
+                                // Clear the screen again but with the prompt this time
+                                setTimeout(() => {
+                                  try {
+                                    terminal.clear()
+                                  } catch (e) {}
+                                }, 1000)
+                              })
+
+                              // Update the attribute; to not perform this process again
+                              basicTerminal.attr('data-initialized', 'true')
+                            } catch (e) {}
+
+                            // If the process is only initialization then skip the upcoming code
+                            if (onlyInit)
+                              return
+
+                            // Show the basic terminal
+                            basicTerminal.show()
+
+                            // Hide the interactive terminal
+                            interactiveTerminal.hide()
+                          } catch (e) {
+                            /**
+                             * Reaching here means the basic terminal is already shown
+                             *
+                             * Show the interactive terminal
+                             */
+                            interactiveTerminal.show()
+
+                            switchTerminalBtn.parent().css('z-index', '3')
+
+                            // Hide the basic terminal
+                            basicTerminal.hide()
+                          } finally {
+                            // Trigger the `resize` event regardless the shown and hidden terminal
+                            setTimeout(() => $(window.visualViewport).trigger('resize'), 50)
+                          }
+                        })
+
+                        let blockID
+
+                        // Clicks the statement's execution button
+                        executeBtn.on('click', function(e, oldStatement = '') {
+                          // If the button is disabled then skip the upcoming code and end the process
+                          if ($(this).attr('disabled') != undefined || $(this).parent().hasClass('busy'))
+                            return
+
+                          // Get the statement
+                          let statement = statementInputField.val()
+
+                          // Get a random ID for the block which will be created
+                          blockID = getRandom.id(10)
+
+                          // Clear the statement's input field and make sure it's focused on it
+                          setTimeout(() => statementInputField.val(oldStatement).trigger('input').attr('style', null))
+
+                          setTimeout(() => {
+                            consoleEditor.setValue(oldStatement)
+                            consoleEditor.focus()
+                          })
+
+                          try {
+                            let isClearCommand = (['clear', 'cls']).some((command) => statement.startsWith(minifyText(command)))
+
+                            if (!isClearCommand)
+                              throw 0
+
+
+                            sessionContainer.children('div.block').find('div.actions div.btn[action="delete"]').click()
+
+                            return
+                          } catch (e) {}
+
+                          try {
+                            if (!((['quit', 'exit']).some((command) => minifyText(statement).startsWith(minifyText(command)))))
+                              throw 0
+
+                            // Show it in the interactive terminal
+                            addBlock(workareaElement.find(`#_${cqlshSessionContentID}_container`), getRandom.id(10), `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`, null, true, 'neutral', true)
+
+                            // Pause the print of output from the Pty instance
+                            isSessionPaused = true
+
+                            // Dispose the readline addon
+                            prefix = ''
+
+                            // Click the close connection button after a while
+                            setTimeout(() => workareaElement.find('div.connection-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
+
+                            // Skip the upcoming code in the execution button
+                            return
+                          } catch (e) {}
+
+                          try {
+                            if (!(minifyText(statement).startsWith('source_')))
+                              throw 0
+
+                            // Add the statement to the connection's history space
+                            {
+                              // Get current saved statements
+                              let history = Store.get(connectionID) || []
+
+                              /**
+                               * Maximum allowed statements to be saved are 30 for each connection
+                               * When this value is exceeded the oldest statement should be removed
+                               */
+                              if (history.length > 50)
+                                history.pop()
+
+                              statement = removeComments(statement, true)
+
+                              // Add the statement at the very beginning of the array
+                              history.unshift(statement)
+
+                              // Remove any duplication
+                              Store.set(connectionID, [...new Set(history)])
+
+                              // Enable the history button
+                              workareaElement.find('div.session-action[action="history"]').find('button.btn').attr('disabled', null)
+
+                              // Reset the history current index
+                              workareaElement.data('lastData').history = -1
+                            }
+
+                            {
+                              workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
+                                'opacity': '0.3',
+                                'pointer-events': 'none'
+                              })
+
+                              workareaElement.find('div.metadata-content').css({
+                                'opacity': '0.75',
+                                'pointer-events': 'none',
+                                'transition': 'all 0.2s ease-in-out'
+                              })
+
+                              workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', '')
+
+                              workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').addClass('disabled')
+                            }
+
+                            let isExecutionTerminatedOnError = statement.slice(`${statement}`.indexOf(' |')).includes('true')
+
+                            statement = JSON.parse(`${statement}`.slice(8, `${statement}`.indexOf(' |')))
+
+                            addBlock(sessionContainer, blockID, `Executing ${statement.length} CQL file(s).`, (element) => {
+                              let statementTextContainer = element.find('div.statement').children('div.text')
+
+                              element.attr('data-is-source-command', 'true')
+
+                              statementTextContainer.addClass('executing')
+
+                              executeBtn.parent().addClass('busy')
+
+                              element.find('div.actions.for-statement').hide()
+
+                              {
+                                try {
+                                  clearTimeout(killProcessTimeout)
+                                } catch (e) {}
+
+                                try {
+                                  killProcessBtn.parent().addClass('show')
+                                } catch (e) {}
+                              }
+
+                              statementTextContainer.prepend($(`<span class="spinner"><l-wobble style="--uib-size: 25px; --uib-color: #f0f0f0; --uib-speed: 0.77s;"></l-wobble></span>`).hide(function() {
+                                let wobbleSpinner = $(this)
+
+                                setTimeout(() => wobbleSpinner.fadeIn('fast'), 150)
+
+                                // The sub output structure UI
+                                let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`)
+
+                                let handleFileExecution = (fileIndex = 0) => {
+                                  if (fileIndex >= statement.length) {
+                                    if (statement.length > 1)
+                                      blockElement.children('div.output').append($(`
+                                            <div class="sub-output info">
+                                              <div class="sub-output-content">All files have been executed.</div>
+                                            </div>`))
+
+                                    statementTextContainer.removeClass('executing')
+
+                                    executeBtn.parent().removeClass('busy')
+
+                                    killProcessBtn.parent().removeClass('show')
+
+                                    workareaElement.find('div.session-actions').find('button').attr('disabled', null)
+                                    workareaElement.find('.disableable').removeClass('disabled')
+                                    workareaElement.removeClass('busy-cqlsh')
+
+                                    wobbleSpinner.hide()
+
+                                    {
+                                      workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
+                                        'opacity': '',
+                                        'pointer-events': ''
+                                      })
+
+                                      workareaElement.find('div.metadata-content').css({
+                                        'opacity': '',
+                                        'pointer-events': '',
+                                        'transition': ''
+                                      })
+
+                                      workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', null)
+
+                                      workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').removeClass('disabled')
+                                    }
+
+                                    return
+                                  }
+
+                                  let filePath = statement[fileIndex],
+                                    showErrorsBtnID = getRandom.id(10),
+                                    fileExecutionInfoID = getRandom.id(10),
+                                    element = `
+                                            <div class="sub-output info incomplete-statement">
+                                              <div class="sub-output-content">${fileIndex + 1}: Executing file '${filePath}'</div>
+                                            </div>
+                                            <div class="sub-output" data-id="${fileExecutionInfoID}_executed" data-count="0" hidden>
+                                              <div class="sub-output-content">-</div>
+                                            </div>
+                                            <div class="sub-output error" data-id="${fileExecutionInfoID}_error" data-count="0" hidden>
+                                              <span class="arrow"><ion-icon name="arrow-down"></ion-icon></span>
+                                              <div class="sub-output-content" onclick="$(this).parent().children('div.sub-output-content.all-errors').slideToggle('fast');$(this).parent().children('span.arrow').toggleClass('show');" style="display: inline;"><span>-</span></div>
+                                              <div class="sub-output-content all-errors" style="display: none;"></div>
+                                            </div>
+                                            <div class="sub-output info" data-id="${fileExecutionInfoID}_info" hidden>
+                                              <div class="sub-output-content">The file has been fully executed.</div>
+                                            </div>`
+
+                                  blockElement.children('div.output').children('div.executing').hide()
+
+                                  setTimeout(() => {
+                                    IPCRenderer.send('pty:command', {
+                                      id: connectionID,
+                                      cmd: `SOURCE '${filePath}${isExecutionTerminatedOnError ? '{KEYWORD:STOPONERROR:TRUE}' : ''}'`,
+                                      blockID,
+                                      isSourceCommand: true
+                                    })
+                                  })
+
+                                  blockElement.children('div.output').append($(element).show(function() {
+                                    setTimeout(() => {
+                                      try {
+                                        blockElement.parent().animate({
+                                          scrollTop: blockElement.parent().get(0).scrollHeight
+                                        }, 100)
+                                      } catch (e) {}
+                                    }, 500)
+                                  }))
+
+                                  try {
+                                    IPCRenderer.removeAllListeners(`cql:file:execute:data:${connectionID}`)
+                                  } catch (e) {}
+
+                                  let ansiToHTML = new ANSIToHTML(),
+                                    errorsCount = 0
+
+                                  IPCRenderer.on(`cql:file:execute:data:${connectionID}`, (_, data) => {
+                                    let errors = []
+
+                                    try {
+                                      errors = JSON.parse(data.errors)
+                                    } catch (e) {}
+
+                                    errorsCount += errors.length
+
+                                    try {
+                                      errors = errors.map((error) => {
+                                        try {
+                                          if (OS.platform() != 'win32')
+                                            throw 0
+
+                                          error = error.replace(/\n(?![^<]*<\/span>)/gim, '')
+                                        } catch (e) {}
+
+                                        // Manipulate the content
+                                        error = error.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
+                                          .replace(createRegex(OS.EOL, 'g'), '<br>')
+                                          .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>')
+                                          .replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
+                                          .replace('[OUTPUT:INFO]', '')
+                                          .replace(/\r?\n?KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\r?\n?/gmi, '')
+
+                                        error = ansiToHTML.toHtml(error)
+
+                                        error = StripTags(error)
+
+                                        return error
+                                      })
+                                    } catch (e) {}
+
+                                    {
+                                      let errorsContainer = workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).find('div.sub-output-content.all-errors')
+
+                                      for (let error of errors)
+                                        errorsContainer.html(`${errorsContainer.html()}<pre>${error}</pre>`)
+                                    }
+
+                                    if (errors.length != 0)
+                                      workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).attr('hidden', null).find('div.sub-output-content:not(.all-errors)').find('span').text(`${errorsCount} error(s) occured in this execution cycle.`)
+
+                                    workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_executed"]`).attr('hidden', null).text(`${data.totalExecutions} statement(s) executed in this execution cycle.`)
+
+                                    if (!data.isFinished)
+                                      return
+
+                                    workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_info"]`).attr('hidden', null)
+
+                                    setTimeout(() => handleFileExecution(++fileIndex), 1000)
+                                  })
+                                }
+
+                                handleFileExecution()
+                              }))
+
+                              setTimeout(() => {
+                                element.find('div.btn[action="copy"]').parent().css('width', '30px')
+
+                                element.find('div.btn[action="copy"]').hide()
+
+                                element.find('div.btn[action="delete"]').unbind('click')
+
+                                element.find('div.btn[action="delete"]').click(() => {
+                                  // Remove the block from the session
+                                  element.remove()
+
+                                  try {
+                                    // Point at the session's statements' container
+                                    let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
+
+                                    // If there's still one block then skip this try-catch block
+                                    if (sessionContainer.find('div.block').length > 0)
+                                      throw 0
+
+                                    // Show the emptiness class
+                                    sessionContainer.parent().find(`div.empty-statements`).addClass('show')
+                                  } catch (e) {}
+                                })
+                              })
+                            })
+
+                            return
+                          } catch (e) {}
+
+                          executeBtn.parent().addClass('busy')
+
+                          {
+                            try {
+                              clearTimeout(killProcessTimeout)
+                            } catch (e) {}
+
+                            hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+
+                            killProcessTimeout = setTimeout(() => {
+                              killProcessBtn.parent().addClass('show')
+
+                              workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
+                              workareaElement.find('.disableable').addClass('disabled')
+                              workareaElement.addClass('busy-cqlsh')
+
+                              if (!isOutputWithPaging)
+                                setTimeout(() => hintsContainer.addClass('show'), 1000)
+                            }, 1500)
+                          }
+
+                          // Add the block
+                          addBlock(sessionContainer, blockID, statement, (element) => {
+                            // Add the statement to the connection's history space
+                            {
+                              // Get current saved statements
+                              let history = Store.get(connectionID) || []
+
+                              /**
+                               * Maximum allowed statements to be saved are 30 for each connection
+                               * When this value is exceeded the oldest statement should be removed
+                               */
+                              if (history.length > 50)
+                                history.pop()
+
+                              statement = removeComments(statement, true)
+
+                              // Add the statement at the very beginning of the array
+                              history.unshift(statement)
+
+                              // Remove any duplication
+                              Store.set(connectionID, [...new Set(history)])
+
+                              // Enable the history button
+                              workareaElement.find('div.session-action[action="history"]').find('button.btn').attr('disabled', null)
+
+                              // Reset the history current index
+                              workareaElement.data('lastData').history = -1
+                            }
+
+                            // Handle when the statement is `SELECT` but there's no `JSON` after it
+                            // try {
+                            //   // Regex pattern to match 'SELECT' not followed by 'JSON'
+                            //   let pattern = /((?:^|\;\s*)\bselect\b(?!\s+json\b))/gi
+                            //
+                            //   // Replace 'SELECT' with 'SELECT JSON' if 'JSON' is not already present
+                            //   statement = statement.replace(pattern, '$1 JSON')
+                            // } catch (e) {}
+
+                            try {
+                              statement = statement.trim()
+                            } catch (e) {}
+
+                            try {
+                              if (OS.platform() == 'win32')
+                                statement = `${statement.replace(new RegExp('\n|\r', 'g'), ' \n\n')}`
+                            } catch (e) {}
+
+                            // Send the command to the main thread to be executed
+                            IPCRenderer.send('pty:command', {
+                              id: connectionID,
+                              cmd: statement,
+                              blockID
+                            })
+                          })
+                        })
+
+                        killProcessBtn.click(function() {
+                          let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`),
+                            isSourceCommand = blockElement.attr('data-is-source-command') != undefined,
+                            isPagingProcess = blockElement.attr('data-is-paging') != undefined
+
+                          if (isPagingProcess) {
+                            blockElement.attr({
+                              'data-is-paging': null,
+                              'data-is-paging-completed': 'true'
+                            })
+
+                            let nextPageBtn = blockElement.find('button[data-action="next-page"]')
+
+                            nextPageBtn.find('[spinner]').hide()
+                            nextPageBtn.attr('disabled', null)
+
+                            nextPageBtn.parent().find('button[data-page="last"]').removeClass('hidden')
+
+                            IPCRenderer.send('pty:command', {
+                              id: connectionID,
+                              cmd: '\x03',
+                              blockID
+                            })
+                          } else {
+                            if (isSourceCommand)
+                              IPCRenderer.send('pty:command', {
+                                id: connectionID,
+                                cmd: `\r\r`,
+                                blockID
+                              })
+
+                            IPCRenderer.send('pty:command', {
+                              id: connectionID,
+                              cmd: `KEYWORD:STATEMENT:IGNORE-${Math.floor(Math.random() * 999) + 1}`,
+                              blockID
+                            })
+                          }
+
+                          try {
+                            if (!isSourceCommand)
+                              throw 0
+
+                            blockElement.children('div.output').append($(`
+                                    <div class="sub-output info">
+                                      <div class="sub-output-content">The execution process has been terminated.</div>
+                                    </div>`))
+
+                            blockElement.find('div.statement').children('div.text').removeClass('executing')
+
+                            executeBtn.parent().removeClass('busy')
+
+                            killProcessBtn.parent().removeClass('show')
+
+                            workareaElement.find('div.session-actions').find('button').attr('disabled', null)
+                            workareaElement.find('.disableable').removeClass('disabled')
+                            workareaElement.removeClass('busy-cqlsh')
+
+                            blockElement.find('div.statement').find('span.spinner').hide()
+
+                            {
+                              workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
+                                'opacity': '',
+                                'pointer-events': ''
+                              })
+
+                              workareaElement.find('div.metadata-content').css({
+                                'opacity': '',
+                                'pointer-events': '',
+                                'transition': ''
+                              })
+
+                              workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', null)
+
+                              workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').removeClass('disabled')
+                            }
+                          } catch (e) {}
+                        }).hover(() => hintsContainer.hide(), () => hintsContainer.show())
+
+                        // The statement's input field's value has been updated
+                        statementInputField.on('input', function() {
+                          // Get the statement's content
+                          let statement = $(this).val(),
+                            // Get the closest word to the cursor in the input field
+                            closestWord = getClosestWord($(this)[0]),
+                            /**
+                             * Whether or not the content has multiple lines
+                             * In case it has, the suggestions and autocomplete feature will be temporary disabled
+                             */
+                            isMultipleLines = $(this).val().match(new RegExp(OS.EOL, 'g')) != null
+
+                          // Enable and disable the execution button based set conditions
+                          {
+                            // Minify the statement
+                            let minifiedStatement = minifyText(removeComments(statement, true)),
+                              /**
+                               * Whether or not the statement is a CQLSH command
+                               * In this case, the statement doesn't need semi colon `;` at the end
+                               */
+                              isCQLSHCommand = Modules.Consts.CQLSHCommands.some((command) => minifiedStatement.startsWith(minifyText(command))),
+                              // Whether or not the statement is quitting the cqlsh session
+                              isQuitCommand = (['quit', 'exit']).some((command) => minifiedStatement.startsWith(minifyText(command))),
+                              isClearCommand = (['clear', 'cls']).some((command) => minifiedStatement.startsWith(minifyText(command))),
+                              isConsistencyCommand = (['consistency', 'serial']).some((command) => minifiedStatement.startsWith(minifyText(command))),
+                              // Decide whether or not the execution button should be disabled
+                              isExecutionButtonDisabled = minifiedStatement.length <= 0 || ((!isCQLSHCommand && !isQuitCommand && !isClearCommand && !isConsistencyCommand) && !minifiedStatement.endsWith(';'))
+
+                            // Disable/enable the execution button
+                            executeBtn.attr('disabled', isExecutionButtonDisabled ? '' : null)
+                          }
+
+                          /**
+                           * Update some of the saved data
+                           *
+                           * Update the latest saved cursor's position
+                           */
+                          workareaElement.data('lastData').cursorPosition = $(this)[0].selectionEnd
+
+                          // The default array for suggestions is the CQL keywords with the commands
+                          let suggestionsArray = Modules.Consts.CQLKeywords.concat(Modules.Consts.CQLSHCommands),
+                            // Get the keyspaces and their tables from the last metadata
+                            metadataInfo = getMetadataInfo(),
+                            // Get keyspaces' names
+                            keyspaces = Object.keys(metadataInfo),
+                            // Flag to tell if keyspace has been found and it's time to suggest its tables
+                            isKeyspace = false,
+                            // Flag to tell if suggestions should be the keyspaces only
+                            isSuggestKeyspaces = false
+
+                          try {
+                            /**
+                             * Determine whether or not keyspaces and their tables should be shown as suggestions
+                             *
+                             * Get the content before the cursor's position
+                             */
+                            let contentBeforeCursor = statement.slice(0, workareaElement.data('lastData').cursorPosition)
+
+                            // Check the content against defined regex patterns
+                            isSuggestKeyspaces = Object.keys(Modules.Consts.CQLRegexPatterns).some((type) => Modules.Consts.CQLRegexPatterns[type].Patterns.some((regex) => $(this).val().slice(0, workareaElement.data('lastData').cursorPosition).match(regex) != null))
+
+                            // If the closest word to the cursor doesn't have `.` then skip this try-catch block
+                            if (!isSuggestKeyspaces || !closestWord.includes('.'))
+                              throw 0
+
+                            // Get the recognized keyspace name
+                            let keyspace = closestWord.slice(0, closestWord.indexOf('.')).replace(/^\"*(.*?)\"*$/g, '$1'),
+                              // Attempt to get its tables
+                              tables = Object.keys(metadataInfo[keyspace])
+
+                            // If the attempt failed then skip this try-catch block
+                            if (tables == undefined)
+                              throw 0
+
+                            /**
+                             * Update associated variables
+                             *
+                             * Update the flag to be `true`
+                             */
+                            isKeyspace = true
+
+                            // Update the suggestions' array
+                            suggestionsArray = tables
+
+                            // Update the closest word to be what after `.`
+                            closestWord = closestWord.slice(closestWord.indexOf('.') + 1)
+                          } catch (e) {}
+
+                          // Update the latest saved closest word to the cursor
+                          workareaElement.data('lastData').closestWord = closestWord
+
+                          // Get the suggestions based on the closest word
+                          let suggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray, isSuggestKeyspaces || isKeyspace)
+
+                          // Keep related suggestions and remove the rest
+                          try {
+                            // If there's no such a suggestion then skip this try-catch block
+                            if (typeof suggestions == 'string' || suggestions.length <= 0)
+                              throw 0
+
+                            // Remove all current suggestions
+                            suggestionsList.children('span.suggestion').each(function() {
+                              // Reset the selection attribute
+                              $(this).attr('data-selected', 'false')
+
+                              // If the suggestion is related then skip the upcoming code and move to the next suggestion
+                              if (suggestions.includes($(this).attr('data-suggestion')) || suggestions == $(this).attr('data-suggestion'))
+                                return
+
+                              // Suggestion is not related, remove it
+                              $(this).remove()
+                            })
+                          } catch (e) {
+                            suggestionsList.children('span.suggestion').remove()
+                          }
+
+                          // Reset the realtime suggestion's text
+                          realtimeSuggestion.text('')
+
+                          // If the statement has multiple lines, or there's no close word to the cursor and there's no keyspace name recognized then remove all related suggestions and stop this feature
+                          if (isMultipleLines || (minifyText(closestWord).length <= 0 && !isKeyspace && !isSuggestKeyspaces))
+                            return suggestionsList.children('span.suggestion').remove()
+
+                          // Manipulate the received suggestions
+                          {
+                            // Define index to be used with the appended suggestions
+                            let index = 0
+
+                            // Loop through each received suggestion
+                            for (let suggestion of suggestions) {
+                              // Whether or not the `suggestions` is actually one `string` suggestion not an array
+                              let isSuggestionString = typeof suggestions == 'string'
+
+                              // If there's only one suggestion then handle it
+                              if (isSuggestionString)
+                                suggestion = suggestions
+
+                              // If the suggestion already exist in the UI then skip the appending process and move to the next suggestion
+                              if (suggestionsList.children(`span.suggestion[data-suggestion="${suggestion}"]`).length != 0)
+                                continue
+
+                              // The suggestion UI structure
+                              let element = `
+                                       <span ${isSuggestKeyspaces || isKeyspace ? 'data-double-quote-check="true"' : ''} class="btn suggestion badge rounded-pill ripple-surface-light" data-index="${index}" data-suggestion="${suggestion}" data-selected="false" data-mdb-ripple-color="light" style="display:none">${suggestion}</span>`
+
+                              // Append the suggestion and handle the `click` event
+                              suggestionsList.append($(element).delay(50 * index).fadeIn(100 * (index + 1)).click(function() {
+                                // Reset the selection state of all suggestions
+                                suggestionsList.children('span.suggestion').attr('data-selected', 'false')
+
+                                /**
+                                 * If the clicked suggestion has a sibling before it then select it
+                                 * As `TAB` key will autocomplete the subling right after the selected one
+                                 */
+                                if ($(this).prev().length > 0)
+                                  $(this).prev().attr('data-selected', 'true')
+
+                                // Trigger the `keydown` event with `isVirtual` set to `true`
+                                statementInputField.trigger('keydown', true)
+                              }))
+
+                              // If there's only one suggestion then end this loop
+                              if (isSuggestionString)
+                                break
+
+                              // Increment the index
+                              index += 1
+                            }
+                          }
+
+                          // If there's no suggestion received then skip the upcoming code and end the process
+                          if (suggestions.length <= 0)
+                            return
+
+                          // Define the final suggestion text which will be rendered in the realtime suggestion's UI element
+                          let suggestionText = '',
+                            // Get the textarea/statement value and split it to characters
+                            textareaValue = $(this).val().split('')
+
+                          // Loop through the characters, add them to the suggestion's text
+                          for (let i = 0; i < $(this)[0].selectionEnd; i++)
+                            suggestionText += `<span style="color:transparent;">${textareaValue[i]}</span>`
+
+                          // Define the selected suggestion to be adopted
+                          let selectedSuggestion = typeof suggestions == 'string' ? suggestions : suggestions[0]
+
+                          // Set the suggestion's text to be lower case if needed
+                          if (`${closestWord.at(-1)}` != `${closestWord.at(-1)}`.toUpperCase())
+                            selectedSuggestion = selectedSuggestion.toLowerCase()
+
+                          // Update the realtime suggestion's text
+                          realtimeSuggestion.html(`${suggestionText}${selectedSuggestion.slice(closestWord.length)}`)
+
+                          // Reset the suggestion's index
+                          currentSuggestionIndex = -1
+
+                          // Key is pressed while the textarea is focused
+                        }).keydown(function(event, isVirtual = false) {
+                          // Get the pressed key's code
+                          let keyCode = event.keyCode
+
+                          // If the pressed key is not `TAB` then trigger the `input` event for the textarea
+                          if (keyCode != 9)
+                            setTimeout(() => $(this).trigger('input', false))
+
+                          // `UP Arrow` and `DOWN Arrow` key press/down
+                          try {
+                            if (!(keyCode == 38 && event.ctrlKey) && !(keyCode == 40 && event.ctrlKey))
+                              throw 0
+
+                            // Flag to tell if the pressed key is the `UP Arrow` key
+                            let isUpArrow = keyCode == 38
+
+                            // Prevent the default behavior for this key pressing event
+                            event.preventDefault()
+
+                            // Get the saved statements
+                            let history = Store.get(connectionID) || []
+
+                            // If there's no saved history then simply skip this try-catch block
+                            if (history.length <= 0)
+                              throw 0
+
+                            // Increment/decrement the current history's index based on the pressed key
+                            workareaElement.data('lastData').history += isUpArrow ? 1 : -1
+
+                            // Get the selected statement
+                            let statement = history[workareaElement.data('lastData').history]
+
+                            // If the statement is `undefined` then the index is out of range
+                            if (statement == undefined) {
+                              // Normalize the index
+                              workareaElement.data('lastData').history = isUpArrow ? 0 : history.length - 1
+
+                              // Update the selected statement
+                              statement = history[workareaElement.data('lastData').history]
+                            }
+
+                            // Remove any realtime suggestions
+                            realtimeSuggestion.text('')
+
+                            // Update the textarea's content and focus
+                            $(this).val(statement).trigger('input').focus()
+
+                            // Update the size of the textarea
+                            AutoSize.update($(this)[0])
+                          } catch (e) {}
+
+                          // `ENTER` key press/down
+                          try {
+                            if (keyCode != 13 || event.shiftKey)
+                              throw 0
+
+                            // Prevent the default behavior for this key pressing event
+                            event.preventDefault()
+
+                            // Click the statement's execution button
+                            executeBtn.trigger('click')
+                          } catch (e) {}
+
+                          // `TAB` key press/down
+                          try {
+                            if (keyCode != 9 && !isVirtual)
+                              throw 0
+
+                            // Prevent the default behavior for this key pressing event
+                            event.preventDefault()
+
+                            // Reset the realtime suggestion's text
+                            realtimeSuggestion.text('')
+
+                            // Get the current selected suggestion's index
+                            let currentSelectedSuggestionIndex = suggestionsList.children('span.suggestion[data-selected="true"]').index()
+
+                            /**
+                             * Manipulate the selected suggestion's index
+                             * If the current selected suggestion's index is `-1` - no suggestion is selected -, or the current selected one is acutally the last one then adopt the first suggestion
+                             * Otherwise increase the current index by 1
+                             */
+                            currentSelectedSuggestionIndex = (currentSelectedSuggestionIndex <= -1 || (currentSelectedSuggestionIndex + 1) >= suggestionsList.children('span.suggestion').length) ? 0 : (currentSelectedSuggestionIndex + 1)
+
+                            // Get the final selected suggestion's UI element
+                            let selectedSuggestion = suggestionsList.children('span.suggestion').eq(currentSelectedSuggestionIndex)
+
+                            // Reset the selection state of all suggestions
+                            suggestionsList.children('span.suggestion').attr('data-selected', 'false')
+
+                            // The selected suggestion's attribute would be set to be `true`
+                            selectedSuggestion.attr('data-selected', 'true')
+
+                            // Get the selected suggestion's content/text
+                            let selectedSuggestionContent = selectedSuggestion.attr('data-suggestion'),
+                              isDoubleQuotesCheckNeeded = selectedSuggestion.attr('data-double-quote-check') == 'true',
+                              // Get the statement/textarea's content/text
+                              currentStatementContent = $(this).val(),
+                              areDoubleQuotesAdded = false
+
+                            if (isDoubleQuotesCheckNeeded) {
+                              selectedSuggestionContent = addDoubleQuotes(selectedSuggestionContent)
+
+                              areDoubleQuotesAdded = selectedSuggestionContent.startsWith('"')
+                            } else {
+                              // Set the suggestion's text to be lower case if needed
+                              if (workareaElement.data('lastData').closestWord.at(-1) != `${workareaElement.data('lastData').closestWord.at(-1) || ''}`.toUpperCase())
+                                selectedSuggestionContent = selectedSuggestionContent.toLowerCase()
+
+                              // Update the selected suggestion's content by slicing what already has been typed by the user
+                              selectedSuggestionContent = selectedSuggestionContent.slice(workareaElement.data('lastData').closestWord.length)
+                            }
+
+                            // Define initially the suggestion's prefix content
+                            let suggestionPrefixContent = currentStatementContent.slice(workareaElement.data('lastData').cursorPosition)
+
+                            if (isDoubleQuotesCheckNeeded) {
+                              // Update the prefix content by remove the previous suggestion if it already has been added
+                              if (workareaElement.data('lastData').suggestion.indexOf(suggestionPrefixContent) != -1 && suggestionPrefixContent.length != 0) {
+                                try {
+                                  if (suggestionPrefixContent == workareaElement.data('lastData').suggestion || `${workareaElement.data('lastData').closestWord}${suggestionPrefixContent}` == workareaElement.data('lastData').suggestion) {
+                                    suggestionPrefixContent = ''
+
+                                    throw 0
+                                  }
+
+                                  let tempTxt = ''
+                                  for (let i = 0; i < suggestionPrefixContent.length; ++i) {
+                                    tempTxt += `${suggestionPrefixContent[i]}`
+
+                                    if (workareaElement.data('lastData').suggestion.endsWith(`${workareaElement.data('lastData').closestWord}${tempTxt}`)) {
+                                      let newPrefix = suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(tempTxt) + tempTxt.length)
+
+                                      suggestionPrefixContent = newPrefix
+                                      break
+                                    }
+                                  }
+                                } catch (e) {}
+                              }
+                            } else {
+                              // Update the prefix content by remove the previous suggestion if it already has been added
+                              if (suggestionPrefixContent.indexOf(workareaElement.data('lastData').suggestion) != -1)
+                                suggestionPrefixContent = `${suggestionPrefixContent.slice(0, suggestionPrefixContent.indexOf(workareaElement.data('lastData').suggestion))}${suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(workareaElement.data('lastData').suggestion) + workareaElement.data('lastData').suggestion.length)}`
+                            }
+
+                            if (isDoubleQuotesCheckNeeded && suggestionPrefixContent.startsWith(workareaElement.data('lastData').suggestion))
+                              suggestionPrefixContent = suggestionPrefixContent.slice(suggestionPrefixContent.indexOf(workareaElement.data('lastData').suggestion) + workareaElement.data('lastData').suggestion.length)
+
+                            // Update the statement's text/content
+                            currentStatementContent = currentStatementContent.slice(0, workareaElement.data('lastData').cursorPosition - (isDoubleQuotesCheckNeeded ? workareaElement.data('lastData').closestWord.length : 0)) + `${selectedSuggestionContent}${suggestionPrefixContent}`
+
+                            // Update the last saved suggestion
+                            workareaElement.data('lastData').suggestion = `${selectedSuggestionContent}`
+
+                            if (isDoubleQuotesCheckNeeded)
+                              workareaElement.data('lastData').suggestion = workareaElement.data('lastData').suggestion.slice(workareaElement.data('lastData').suggestion.indexOf(workareaElement.data('lastData').closestWord) + workareaElement.data('lastData').closestWord.length)
+
+                            // Set the final statement's text/content
+                            $(this).val(currentStatementContent).focus()
+
+                            // Update the cursor's position inside the textarea
+                            {
+                              // Define the updated cursor's position
+                              let cursorPosition = workareaElement.data('lastData').cursorPosition + selectedSuggestionContent.length + (isDoubleQuotesCheckNeeded && suggestionPrefixContent.length > 0 ? 1 : 0)
+
+                              // Set it inside the textarea
+                              $(this)[0].setSelectionRange(cursorPosition, cursorPosition)
+                            }
+                          } catch (e) {}
+                        })
+
+                        {
+                          setTimeout(() => {
+                            let enhancedConsoleFooter = workareaElement.find(`div#_${containerFooterID}`),
+                              emptyStatements = workareaElement.find(`div#_${containerEmptyStatementsID}`),
+                              cqlshSessionContent = workareaElement.find(`div#_${cqlshSessionContentID}_container`),
+                              historyItemsContainer = workareaElement.find('div.history-items'),
+                              clearHistoryItemsBtn = workareaElement.find('div.history-items-clear-all'),
+                              baseHeightFooter = enhancedConsoleFooter.outerHeight(),
+                              updateLayoutTimeout
+
+                            // Make the left side resizable
+                            enhancedConsoleFooter.resizable({
+                              handles: 'n', // [N]orth
+                              minHeight: baseHeightFooter,
+                              maxHeight: baseHeightFooter * 2
+                            }).bind({
+                              resize: function(_, __) {
+                                enhancedConsoleFooter.css('top', '0px')
+
+                                emptyStatements.add(cqlshSessionContent).css('height', `calc(100% - ${240 + (enhancedConsoleFooter.outerHeight() - baseHeightFooter)}px)`)
+
+                                historyItemsContainer.add(clearHistoryItemsBtn).css('bottom', `${165 + (enhancedConsoleFooter.outerHeight() - baseHeightFooter)}px`)
+
+                                try {
+                                  clearTimeout(updateLayoutTimeout)
+                                } catch (e) {}
+
+                                updateLayoutTimeout = setTimeout(() => {
+                                  try {
+                                    consoleEditor.layout()
+                                  } catch (e) {}
+                                }, 200)
+
+                              }
+                            })
+                          }, 3000)
+                        }
+
+                        {
+                          try {
+                            consoleEditor = monaco.editor.create(workareaElement.find('div.console-editor')[0], {
+                              value: '', // This is the default content of the `cqlsh.rc` file
+                              language: 'sql', // This language is the perfect one that supports the `cqlsh.rc` file content's syntax highlighting
+                              minimap: {
+                                enabled: false
+                              },
+                              glyphMargin: true, // This option allows to render an object in the line numbering side
+                              suggest: {
+                                showFields: false,
+                                showFunctions: false,
+                                showWords: false
+                              },
+                              padding: {
+                                top: 7,
+                                bottom: 7
+                              },
+                              wordBasedSuggestions: 'off',
+                              padding: {
+                                top: 10,
+                                bottom: 10
+                              },
+                              theme: 'vs-dark',
+                              scrollBeyondLastLine: true,
+                              mouseWheelZoom: true,
+                              fontSize: 14,
+                              fontFamily: "'Terminal', 'Minor', 'SimplifiedChinese', monospace",
+                              fontLigatures: true
+                            })
+
+                            consoleEditor.getModel().onDidChangeContent(() => statementInputField.val(consoleEditor.getValue()).trigger('input'))
+
+                            consoleEditor.addAction({
+                              id: getRandom.id(),
+                              label: getRandom.id(),
+                              keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+                              run: function(editor) {
+                                try {
+                                  $(editor.getDomNode()).closest('div.interactive-terminal-container').find('div.execute button').trigger('click')
+                                } catch (e) {}
+                              }
+                            })
+
+                            consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
+                              let text = Clipboard.readText(),
+                                selection = consoleEditor.getSelection()
+
+                              consoleEditor.executeEdits('paste', [{
+                                range: selection,
+                                text: text,
+                                forceMoveMarkers: true
+                              }])
+                            })
+
+                            consoleEditor.addCommand(Modules.Shortcuts.getShortcutForMonacoEditor('enhanced-console-clear'), () => $(document).trigger('clearEnhancedConsole'))
+
+                            consoleEditor.addAction({
+                              id: getRandom.id(),
+                              label: getRandom.id(),
+                              keybindings: [Modules.Shortcuts.getShortcutForMonacoEditor('history-statements-forward')],
+                              run: function(editor) {
+                                try {
+                                  let workareaElement = $(editor.getDomNode()).closest('div.workarea[workarea-id][connection-id]'),
+                                    connectionID = workareaElement.attr('connection-id'),
+                                    // Get the saved statements
+                                    history = Store.get(connectionID) || []
+
+                                  // If there's no saved history then simply skip this try-catch block
+                                  if (history.length <= 0)
+                                    throw 0
+
+                                  // Increment/decrement the current history's index based on the pressed key
+                                  workareaElement.data('lastData').history += 1
+
+                                  // Get the selected statement
+                                  let statement = history[workareaElement.data('lastData').history]
+
+                                  // If the statement is `undefined` then the index is out of range
+                                  if (statement == undefined) {
+                                    // Normalize the index
+                                    workareaElement.data('lastData').history = 0
+
+                                    // Update the selected statement
+                                    statement = history[workareaElement.data('lastData').history]
+                                  }
+
+                                  consoleEditor.setValue(statement)
+                                  consoleEditor.focus()
+
+                                  let lastLine = consoleEditor.getModel().getLineCount(),
+                                    lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
+
+                                  consoleEditor.setPosition({
+                                    lineNumber: lastLine,
+                                    column: lastColumn
+                                  })
+                                } catch (e) {}
+                              }
+                            })
+
+                            consoleEditor.addAction({
+                              id: getRandom.id(),
+                              label: getRandom.id(),
+                              keybindings: [Modules.Shortcuts.getShortcutForMonacoEditor('history-statements-backward')],
+                              run: function(editor) {
+                                try {
+                                  let workareaElement = $(editor.getDomNode()).closest('div.workarea[workarea-id][connection-id]'),
+                                    connectionID = workareaElement.attr('connection-id'),
+                                    // Get the saved statements
+                                    history = Store.get(connectionID) || []
+
+                                  // If there's no saved history then simply skip this try-catch block
+                                  if (history.length <= 0)
+                                    throw 0
+
+                                  // Increment/decrement the current history's index based on the pressed key
+                                  workareaElement.data('lastData').history += -1
+
+                                  // Get the selected statement
+                                  let statement = history[workareaElement.data('lastData').history]
+
+                                  // If the statement is `undefined` then the index is out of range
+                                  if (statement == undefined) {
+                                    // Normalize the index
+                                    workareaElement.data('lastData').history = history.length - 1
+
+                                    // Update the selected statement
+                                    statement = history[workareaElement.data('lastData').history]
+                                  }
+
+                                  consoleEditor.setValue(statement)
+                                  consoleEditor.focus()
+
+                                  let lastLine = consoleEditor.getModel().getLineCount(),
+                                    lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
+
+                                  consoleEditor.setPosition({
+                                    lineNumber: lastLine,
+                                    column: lastColumn
+                                  })
+                                } catch (e) {}
+                              }
+                            })
+
+                            monaco.languages.registerCompletionItemProvider('sql', {
+                              triggerCharacters: [' ', '.', '"', '*', ';'],
+                              provideCompletionItems: function(model, position) {
+                                if (model != consoleEditor.getModel())
+                                  return {
+                                    suggestions: []
+                                  }
+
+                                let statement = model.getValueInRange(new monaco.Range(position.lineNumber, 1, position.lineNumber, position.column)),
+                                  closestWord = '',
+                                  WordAtPosition = model.getWordAtPosition(position),
+                                  range = WordAtPosition ?
+                                  new monaco.Range(position.lineNumber, WordAtPosition.startColumn, position.lineNumber, position.column) :
+                                  new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+                                  suggestions = []
+
+                                // Get the closest word to the cursor in the input field
+                                try {
+                                  closestWord = WordAtPosition.word
+                                } catch (e) {}
+
+                                try {
+                                  if (closestWord.length <= 0)
+                                    closestWord = /\S+$/.exec(statement)[0]
+                                } catch (e) {}
+
+                                // The default array for suggestions is the CQL keywords with the commands
+                                let suggestionsArray = Modules.Consts.CQLKeywords.concat(Modules.Consts.CQLSHCommands),
+                                  // Get the keyspaces and their tables from the last metadata
+                                  metadataInfo = getMetadataInfo(),
+                                  // Get keyspaces' names
+                                  keyspaces = Object.keys(metadataInfo),
+                                  // Flag to tell if keyspace has been found and it's time to suggest its tables
+                                  isKeyspace = false,
+                                  // Flag to tell if suggestions should be the keyspaces only
+                                  isSuggestKeyspaces = false,
+                                  matchedPattern = ''
+
+                                try {
+                                  /**
+                                   * Determine whether or not keyspaces and their tables should be shown as suggestions
+                                   *
+                                   * Get the content before the cursor's position
+                                   */
+                                  let contentBeforeCursor = statement
+
+                                  // Check the content against defined regex patterns
+                                  isSuggestKeyspaces = Object.keys(Modules.Consts.CQLRegexPatterns).some((type) => {
+                                    let isMatched = Modules.Consts.CQLRegexPatterns[type].Patterns.some((regex) => contentBeforeCursor.match(regex) != null)
+
+                                    if (isMatched)
+                                      matchedPattern = type
+
+                                    return isMatched
+                                  })
+
+                                  // If the closest word to the cursor doesn't have `.` then skip this try-catch block
+                                  if (!isSuggestKeyspaces || !closestWord.includes('.'))
+                                    throw 0
+
+                                  // Get the recognized keyspace name
+                                  let keyspace = closestWord.slice(0, closestWord.indexOf('.')).replace(/^\"*(.*?)\"*$/g, '$1'),
+                                    // Attempt to get its tables
+                                    tables = Object.keys(metadataInfo[keyspace])
+
+                                  // If the attempt failed then skip this try-catch block
+                                  if (tables == undefined)
+                                    throw 0
+
+                                  /**
+                                   * Update associated variables
+                                   *
+                                   * Update the flag to be `true`
+                                   */
+                                  isKeyspace = true
+
+                                  // Update the suggestions' array
+                                  suggestionsArray = tables
+
+                                  // Update the closest word to be what after `.`
+                                  closestWord = closestWord.slice(closestWord.indexOf('.') + 1)
+                                } catch (e) {}
+
+                                let finalSuggestions = suggestionSearch(closestWord, (isSuggestKeyspaces && !isKeyspace) ? keyspaces : suggestionsArray, isSuggestKeyspaces || isKeyspace),
+                                  isONKeyword = false
+
+                                // Handle suggesting columns from table
+                                try {
+                                  if (!isSuggestKeyspaces || matchedPattern != 'Where')
+                                    throw 0
+
+                                  let keyspaceAndTable = null
+
+                                  // Try any of these
+                                  for (let regex of [/.*\bfrom\s+(.*?)\s+where\b/is, /.*\bupdate\s+(.*?)\s+\b/is, /.*\ON\s+(.*?)\s+/is]) {
+                                    try {
+                                      keyspaceAndTable = statement.match(regex)[1]
+
+                                      if (`${regex}`.includes('ON') && statement.match(/ON.+\(/is) == null)
+                                        isONKeyword = true
+
+                                      break
+                                    } catch (e) {}
+                                  }
+
+                                  if (keyspaceAndTable == null)
+                                    throw 0
+
+                                  let [keyspace, table] = keyspaceAndTable.split('.').map((name) => `${name}`.replace(/^\"*(.*?)\"*$/g, '$1')),
+                                    columns = metadataInfo[keyspace][table]
+
+                                  finalSuggestions = columns
+                                } catch (e) {}
+
+                                if ((JSON.stringify(finalSuggestions) == JSON.stringify(suggestionsArray)) && !(isSuggestKeyspaces || isKeyspace))
+                                  return {
+                                    suggestions: []
+                                  }
+
+                                suggestions = finalSuggestions.map((suggestionItem) => {
+                                  let suggestion = suggestionItem,
+                                    isItemObject = typeof suggestionItem == 'object'
+
+                                  if (isItemObject)
+                                    suggestion = suggestionItem.name
+
+                                  insertText = (isSuggestKeyspaces || isKeyspace) ? addDoubleQuotes(`${suggestion}`) : suggestion
+
+                                  if (isONKeyword)
+                                    insertText = `(${insertText})`
+
+                                  return {
+                                    label: !isItemObject ? suggestion : `${suggestionItem.name}: ${suggestionItem.type}`,
+                                    kind: monaco.languages.CompletionItemKind.Keyword,
+                                    insertText,
+                                    range
+                                  }
+                                })
+
+                                try {
+                                  suggestions = removeArrayDuplicates(suggestions, 'label')
+                                } catch (e) {}
+
+                                // Handle if the keyword is DESC/DESCRIBE
+                                try {
+                                  if (Modules.Consts.CQLRegexPatterns.Desc.Patterns.some((regex) => statement.match(regex) != null) && (isSuggestKeyspaces || isKeyspace))
+                                    suggestions.unshift({
+                                      label: 'SCHEMA',
+                                      kind: monaco.languages.CompletionItemKind.Keyword,
+                                      insertText: 'SCHEMA',
+                                      range
+                                    })
+                                } catch (e) {}
+
+                                return {
+                                  suggestions
+                                }
+                              }
+                            })
+                          } catch (e) {}
+                        }
+                      }
+                      // End of hanlding the interactive terminal
+
+                      // Handle the bash session only if the connection is a sandbox project
+                      try {
+                        if (!isSandbox)
+                          throw 0
+
+                        // Put the code inside curly brackets to reduce its scope and make sure to not affect the rest of the code
+                        {
+                          // Define global variables to be used in this code block
+                          let terminalBash, // The XTermJS object for Bash
+                            fitAddonBash, // Used for resizing the terminal and making it responsive
+                            printData = false, // Whether or not the data coming from the pty instances should be printed or not
+                            latestCommand = '', // Store the user's input to create a command
+                            sessionID = getRandom.id(5) // Get a random ID as a suffix to the sandbox project's ID
+
+                          // Create the terminal instance from the XtermJS constructor
+                          terminalBash = new XTerm({
+                            theme: XTermThemes.Atom
+                          })
+
+                          // Add log
+                          try {
+                            addLog(`Created a bash session for local cluster ${getAttributes(connectionElement, ['data-id'])}`)
+                          } catch (e) {}
+
+                          /**
+                           * Custom terminal options
+                           *
+                           * Change font family to `JetBrains Mono` and set its size and line height
+                           * https://www.jetbrains.com/lp/mono/
+                           */
+                          terminalBash.options.fontFamily = 'Terminal, monospace'
+                          terminalBash.options.fontSize = 13
+                          terminalBash.options.lineHeight = 1.35
+
+                          // Enable the cursor blink when the terminal is being focused on
+                          terminalBash._publicOptions.cursorBlink = true
+
+                          setTimeout(() => {
+                            /**
+                             * Define XtermJS addons
+                             *
+                             * Fit addon; to resize the terminal without distortion
+                             */
+                            fitAddonBash = new FitAddon.FitAddon()
+
+                            /**
+                             * Load XtermJS addons
+                             *
+                             * Load the `Fit` addon
+                             */
+                            terminalBash.loadAddon(fitAddonBash)
+
+                            // The terminal now will be shown in the UI
+                            terminalBash.open(workareaElement.find(`div.terminal-container[data-id="${terminalBashContainerID}"]`)[0])
+
+                            // Load the `Canvas` addon
+                            terminalBash.loadAddon(new CanvasAddon())
+
+                            // Load the `Webfont` addon
+                            terminalBash.loadAddon(new XtermWebFonts())
+
+                            // Fit the terminal with its container
+                            setTimeout(() => fitAddonBash.fit(), 1500)
+
+                            // Push the fit addon object to the related array
+                            terminalFitAddonObjects.push(fitAddonBash)
+
+                            // Send a request to create a pty instance
+                            // setTimeout(() => IPCRenderer.send('pty:create:bash-session', {
+                            //   id: `${connectionID}-bash-${sessionID}`,
+                            //   projectID: `cassandra_${connectionID}`,
+                            //   path: Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..', '..', '..')), 'data', 'localclusters', connectionID),
+                            //   dockerComposeBinary: Modules.Docker.getDockerComposeBinary()
+                            // }), 500)
+
+                            /**
+                             * Decide what to print to the user after initializing the pty instance
+                             *
+                             * Define the regex syntax in which the terminal is ready to be used once it's matched
+                             */
+                            let regex = new RegExp('root.+\:\/\#', 'gm')
+
+                            // Remove all previous listeners to the channel between the main and renderer threads
+                            IPCRenderer.removeAllListeners(`pty:${connectionID}-bash-${sessionID}:data:bash-session`)
+
+                            /**
+                             * Get the terminal's active buffer
+                             * This process detects any attempt to execute the `exit` command
+                             */
+                            let activeBuffer = terminalBash.buffer.active
+
+                            // Listen to data sent from the pty instance
+                            IPCRenderer.on(`pty:${connectionID}-bash-${sessionID}:data:bash-session`, (_, data) => {
+                              // Update the printing status if the regex execution has returned a positive result
+                              if (regex.exec(minifyText(data)) != null && !printData)
+                                printData = true
+
+                              // If the printing status is `false` then don't print the current received data
+                              if (!printData)
+                                return
+
+                              // Write data to the terminal
+                              terminalBash.write(data)
+
+                              // Detect any attempt to execute the `exit` command
+                              setTimeout(() => {
+                                // Get the active's line content
+                                let activeLine = activeBuffer.getLine(activeBuffer.cursorY).translateToString(),
+                                  // Manipulate the entire line, get only the command, and get rid of the prompt
+                                  minifiedActiveLine = minifyText(activeLine).slice(activeLine.indexOf(':/#') + 3),
+                                  // Whether or not the `exit` is in the line
+                                  isExitFound = ['exit', 'exit&', 'exit;'].some((exit) => minifiedActiveLine.endsWith(exit) || minifiedActiveLine.startsWith(exit))
+
+                                // If there's an `exit` command then suffix the entire line with `!` symbol
+                                if (isExitFound && !minifiedActiveLine.endsWith('!'))
+                                  IPCRenderer.send(`pty:${connectionID}-bash-${sessionID}:command:bash-session`, '!')
+                              })
+                            })
+
+                            // As the user typing and providing data to the terminal
+                            terminalBash.onData((data) => {
+                              // Add the data to the `latestCommand` variable
+                              latestCommand += data
+
+                              // If the command has an `exit` character then remove it
+                              {
+                                // Define the exit character
+                                let exitChar = '\x04',
+                                  // Create a regular expression to match the character everywhere in the data
+                                  regex = new RegExp(exitChar, 'gm')
+
+                                // Remove the character
+                                data = data.replace(regex, '')
+                              }
+
+                              // Send the data to the pty instance
+                              IPCRenderer.send(`pty:${connectionID}-bash-${sessionID}:command:bash-session`, data)
+                            })
+
+                            // Point at the terminal viewport - main container -
+                            let terminalViewport = workareaElement.find(`div.terminal-container[data-id="${terminalBashContainerID}"]`).find('div.xterm-viewport')[0]
+
+                            /**
+                             * Listen to data - characters - from the user - input to the terminal -
+                             * What is being listened to is mainly the keypresses like `ENTER`
+                             */
+                            terminalBash.onData((char) => {
+                              // Get the key code
+                              let keyCode = char.charCodeAt(0)
+
+                              // Switch between the key code's values
+                              switch (keyCode) {
+                                // `ENTER`
+                                case 13: {
+                                  // Empty the latest command
+                                  latestCommand = ''
+
+                                  // Scroll to the very bottom of the terminal
+                                  terminalViewport.scrollTop = terminalViewport.scrollHeight
+
+                                  // Resize the terminal
+                                  fitAddonBash.fit()
+
+                                  break
+                                }
+                              }
+                            })
+                          })
+                          // End of handling the app's terminal
+                        }
+                      } catch (e) {
+                        try {
+                          errorLog(e, 'connections')
+                        } catch (e) {}
+                      }
+                      // End of handling the bash session's terminal
+
+                      // Handle different events for many elements in the work area
+                      {
+                        // Metadata tree view side
+                        setTimeout(() => {
+                          // Clicks the copy button; to copy metadata in JSON string format
+                          workareaElement.find(`div.btn[data-id="${copyMetadataBtnID}"]`).click(function() {
+                            // Get the beautified version of the metadata
+                            let metadataBeautified = beautifyJSON(latestMetadata, true),
+                              // Get the metadata size
+                              metadataSize = Bytes(ValueSize(metadataBeautified))
+
+                            // Copy metadata to the clipboard
+                            try {
+                              Clipboard.writeText(metadataBeautified)
                             } catch (e) {
                               try {
                                 errorLog(e, 'connections')
                               } catch (e) {}
                             }
+
+                            // Give feedback to the user
+                            showToast(I18next.capitalize(I18next.t('copy metadata')), I18next.capitalizeFirstLetter(I18next.replaceData('metadata for the cluster connected to by [b]$data[/b] has been copied to the clipboard, the size is $data', [getAttributes(connectionElement, 'data-name'), metadataSize])) + '.', 'success')
+                          })
+
+                          // Refresh the tree view
+                          workareaElement.find(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(function() {
+                            // If the `checkMetadata` function is not yet implemented then skip the upcoming code
+                            if (checkMetadata == null)
+                              return
+
+                            // If there's a tree object already then attempt to destroy it
+                            if (jsTreeObject != null)
+                              try {
+                                workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`).jstree('destroy')
+                              } catch (e) {}
+
+                            // Trigger the `click` event for the search in metadata tree view button; to make sure it's reset
+                            workareaElement.find(`div.btn[data-id="${searchInMetadataBtnID}"]`).trigger('click', true)
+
+                            // Add log about this refreshing process
+                            try {
+                              addLog(`Request to refresh the metadata of the cluster connected to by '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
+                            } catch (e) {}
+
+                            // Reset the metadata trigger
+                            isMetadataFetched = false
+
+                            // Show the loading of the tree view
+                            $(this).parent().parent().parent().addClass('loading')
+
+                            // Check metadata with `refresh` = `true`
+                            checkMetadata(true)
+                          })
+
+                          // Handle the search feature inside the metadata tree view
+                          {
+                            // Point at the search container
+                            let searchContainer = workareaElement.find('div.search-in-metadata'),
+                              // Point at the metadata tree view container
+                              metadataContent = workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`),
+                              // Flag to tell if the search container is shown already
+                              isSearchShown = false,
+                              // The timeout function to be defined for the starting the search process
+                              searchTimeout
+
+                            // Clicks the search button/icon
+                            workareaElement.find(`div.btn[data-id="${searchInMetadataBtnID}"]`).on('click', function(e, overrideFlag = null) {
+                              // If an override flag has been passed - true/false for showing the search container - then adopt this flag
+                              if (overrideFlag != null)
+                                isSearchShown = overrideFlag
+
+                              // Apply a special effect for the tree view based on the current showing status
+                              metadataContent.toggleClass('show-search-input', !isSearchShown)
+
+                              setTimeout(() => {
+                                // Show or hide the search input based on the current showing status
+                                searchContainer.toggleClass('show', !isSearchShown)
+
+                                // Toggle the flag
+                                isSearchShown = !isSearchShown
+
+                                // If the new status is to show the search input then skip the upcoming code
+                                if (isSearchShown)
+                                  return
+
+                                // Empty the search value - if there's one -
+                                searchContainer.find('input').val('').trigger('input')
+
+                                // Hide the navigation arrows
+                                workareaElement.find('div.right-elements').removeClass('show')
+                              })
+                            })
+
+                            // When the user types in the search input
+                            searchContainer.find('input').on('input', function() {
+                              // Make sure to clear any ongoing timeout processes
+                              if (searchTimeout != null)
+                                clearTimeout(searchTimeout)
+
+                              /**
+                               * Perform a search process after a set time of finish typing
+                               * This delay will avoid any potential performance issues
+                               */
+                              searchTimeout = setTimeout(() => {
+                                try {
+                                  $(metadataContent).jstree(true).search($(this).val(), true, false)
+                                } catch (e) {}
+                              }, 500)
+                            })
+                          }
+                        })
+
+                        // Metadata differentiation section
+                        setTimeout(() => {
+                          // Point at the snapshot's suffix name container
+                          let suffixContainer = workareaElement.find(`div.save-snapshot-suffix[data-id="${saveSnapshotSuffixContainerID}"]`),
+                            // Point at the time element; where the snapshot's time will be printed to the user
+                            timeElement = suffixContainer.children('div.time'),
+                            // Point at the save schema snapshot button
+                            saveSnapshotBtn = suffixContainer.children('button'),
+                            // Point at the suffix's input field
+                            suffixInput = suffixContainer.find('input'),
+                            // Get the object of the input field
+                            suffixInputObject = getElementMDBObject(suffixInput),
+                            // Variable which will hold the formatted version of the snapshot's time
+                            timeFormatted
+
+                          // Show the differentiation list - line's number and content -
+                          workareaElement.find(`span.btn[data-id="${showDifferentiationBtnID}"]`).click(function() {
+                            // Get how many detected changes
+                            let changes = parseInt($(this).attr('data-changes'))
+
+                            // If none, then skip the upcoming code and show feedback to the user
+                            if (changes <= 0)
+                              return showToast(I18next.capitalize(I18next.t('show differentiation')), I18next.capitalizeFirstLetter(I18next.t('there is no difference between the previous and new metadata')) + '.', 'warning')
+
+                            // Show/hide the changes container
+                            workareaElement.find(`div.changes-lines[data-id="${changesLinesContainerID}"]`).toggleClass('show')
+                          })
+
+                          workareaElement.find(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).click(() => diffEditor.goToDiff('previous'))
+
+                          workareaElement.find(`span.btn[data-id="${diffNavigationNextBtnID}"]`).click(() => diffEditor.goToDiff('next'))
+
+                          // Refresh the new metadata and do a differentiation check
+                          workareaElement.find(`span.btn[data-id="${refreshDifferentiationBtnID}"]`).click(function() {
+                            // Disable the button
+                            $(this).attr('disabled', '').addClass('disabled refreshing')
+
+                            // Get the latest metadata
+                            Modules.Connections.getMetadata(connectionID, (metadata) => {
+                              try {
+                                // Convert the metadata from JSON string to an object
+                                metadata = JSON.parse(metadata)
+
+                                // Detect differences
+                                // detectDifferentiationShow(JSON.parse(metadataDiffEditors.old.object.getValue()), metadata)
+
+                                // Beautify the received metadata
+                                metadata = beautifyJSON(metadata, true)
+
+                                // Update the fetch date and time of the new metadata
+                                workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+                                workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
+
+                                // Update the new editor's value
+                                metadataDiffEditors.new.object.setValue(metadata)
+
+                                // Enable the button again
+                                $(this).removeAttr('disabled').removeClass('disabled refreshing')
+                              } catch (e) {
+                                try {
+                                  errorLog(e, 'connections')
+                                } catch (e) {}
+                              }
+                            })
+                          })
+
+                          // Clicks the button to open the save schema snapshot pop-up container
+                          workareaElement.find(`span.btn[data-id="${saveSnapshotBtnID}"]`).click(function() {
+                            // Reset the suffix value
+                            suffixInput.val('')
+                            suffixInputObject.update()
+                            setTimeout(() => suffixInputObject._deactivate())
+
+                            // Get the current date and time, format it, and show it to the user
+                            let time = parseInt(workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).attr('data-time')) || new Date().getTime()
+                            timeFormatted = formatTimestamp(time, true).replace(/\:/gm, '_')
+                            timeElement.text(`${timeFormatted}`)
+
+                            // Show the save schema snapshot container
+                            suffixContainer.addClass('show')
+
+                            // Add a backdrop element
+                            $('body').append($(`<div class="backdrop"></div>`).show(function() {
+                              // Show it with animation
+                              setTimeout(() => $(this).addClass('show'), 50)
+
+                              // Once it's clicked
+                              $(this).click(function() {
+                                // Remove it
+                                $(this).remove()
+
+                                // Hide the snapshot container
+                                suffixContainer.removeClass('show')
+                              })
+                            }))
+                          })
+
+                          // Clicks the `SAVE SCHEMA SNAPSHOT` button
+                          saveSnapshotBtn.click(function() {
+                            // Get the suffix's value
+                            let suffix = suffixInput.val(),
+                              // Get the new metadata content
+                              metadata = metadataDiffEditors.new.object.getValue(),
+                              // Get the workspace's folder path
+                              workspaceFolderPath = getWorkspaceFolderPath(workspaceID, true),
+                              // The snapshot's initial name is the fetched time of the new metadata
+                              snapshotName = `${timeFormatted}`
+
+                            try {
+                              metadata = JSON.parse(metadata)
+
+                              metadata.time = parseInt(workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).attr('data-time')) || new Date().getTime()
+
+                              metadata = JSON.stringify(metadata)
+                            } catch (e) {}
+
+                            // Add log a about the request
+                            try {
+                              addLog(`Request to save a schema snapshot of the metadata of the cluster connected to by '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
+                            } catch (e) {}
+
+                            // Minimize the size of the metadata by compression
+                            try {
+                              metadata = JSON.stringify(JSON.parse(metadata))
+                            } catch (e) {}
+
+                            try {
+                              suffix = Sanitize(suffix)
+                            } catch (e) {}
+
+                            // If there's a suffix then add it to the name
+                            if (suffix.trim().length != 0)
+                              snapshotName = `${snapshotName}_${suffix}`
+
+                            // Finally add the `.json` extension
+                            snapshotName = `${snapshotName}.json`
+
+                            let workspacePath = getWorkspaceFolderPath(workspaceID),
+                              filePath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(connectionElement, 'data-folder'), 'snapshots', snapshotName)
+
+                            // Write the snapshot file in the default snapshots folder of the connection
+                            FS.writeFile(filePath, metadata, (err) => {
+                              // Click the backdrop element; to hide the snapshot's container
+                              $('div.backdrop').click()
+
+                              // Show failure feedback to the user and skip the upcoming code
+                              if (err)
+                                return showToast(I18next.capitalize(I18next.t('save schema snapshot')), I18next.capitalizeFirstLetter(I18next.t('failed to save snapshot, please make sure the app has write permissions and try again')) + '.', 'failure')
+
+                              // Show success feedback to the user
+                              showToast(I18next.capitalize(I18next.t('save schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot has been successfully saved with name [b]$data[/b]', [snapshotName])) + '.', 'success')
+                            })
+                          })
+
+                          // Load a saved snapshot
+                          workareaElement.find(`span.btn[data-id="${loadSnapshotBtnID}"]`).click(function() {
+                            let workspacePath = getWorkspaceFolderPath(workspaceID),
+                              folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(connectionElement, 'data-folder'))
+
+                            // Get all saved snapshots of the connection
+                            Modules.Connections.getSnapshots(folderPath, (snapshots) => {
+                              // If there are no saved snapshots then show feedback to the user and skip the upcoming code
+                              if (snapshots.length <= 0)
+                                return showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('there are no saved schema snapshots related to the connection [b]$data[/b], attempt first to save one', [getAttributes(connectionElement, 'data-name')])) + '.', 'warning')
+
+                              // Reset some elements' state in the dialog
+                              try {
+                                // Point at the actions' container
+                                let actionsMultiple = $('#loadSnapshot').find('div.actions-multiple')
+
+                                // Hide the actions for multiple snapshots' container
+                                actionsMultiple.removeClass('show')
+
+                                // Reset the `check` attribute; so the next time it clicks the snapshots will be checked
+                                actionsMultiple.find('a[action="select"]').attr('check', 'true')
+                              } catch (e) {}
+
+                              // Point at the snapshot's dialog/modal then get the snapshots' container
+                              let snapshotsContainer = $('#loadSnapshot').find('div.snapshots')
+
+                              // Remove all previous snapshots
+                              snapshotsContainer.children('div.snapshot').remove()
+
+                              // Loop through each saved snapshot - ordered descending by creation date -
+                              snapshots.forEach((snapshot) => {
+                                // Snapshot UI element structure
+                                let element = `
+                                           <div class="snapshot" data-path="${snapshot.path}" data-name="${snapshot.name}">
+                                             <div class="_left">
+                                               <div class="name">${snapshot.name}</div>
+                                               <div class="badges">
+                                                 <span class="badge badge-primary">${formatTimestamp(snapshot.time)}</span>
+                                                 <span class="badge badge-secondary">${Bytes(snapshot.size)}</span>
+                                               </div>
+                                             </div>
+                                             <div class="_right">
+                                               <a action="load" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                                 <ion-icon name="upload"></ion-icon>
+                                               </a>
+                                               <a action="delete" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false">
+                                                 <ion-icon name="trash"></ion-icon>
+                                               </a>
+                                               <a action="multiple" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="#1d1d1e">
+                                                 <input class="form-check-input" type="checkbox">
+                                               </a>
+                                             </div>
+                                           </div>`
+
+                                // Append the snapshot to the container
+                                snapshotsContainer.append($(element).show(function() {
+                                  // Point at the snapshot element
+                                  let snapshot = $(this),
+                                    // Get the snapshot's path and name
+                                    [snapshotPath, snapshotName] = getAttributes($(this), ['data-path', 'data-name'])
+
+                                  // Apply the chosen language on the UI element after being fully loaded
+                                  setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+
+                                  // Clicks the loading button - to load schema snapshot in the old side -
+                                  $(this).find('a[action="load"]').click(async function() {
+                                    try {
+                                      // Add log about this loading process
+                                      try {
+                                        addLog(`Request to load a schema snapshot in path '${snapshotPath}' related to the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
+                                      } catch (e) {}
+
+                                      // Read the snapshot's content
+                                      let snapshotContent = await FS.readFileSync(snapshotPath, 'utf8')
+
+                                      // Convert it from JSON string to object
+                                      snapshotContent = JSON.parse(snapshotContent)
+
+                                      let snapshotTakenTime = ''
+
+                                      try {
+                                        snapshotTakenTime = snapshotContent.time
+
+                                        delete snapshotContent.time
+                                      } catch (e) {}
+
+                                      // Update the old editor's value
+                                      metadataDiffEditors.old.object.setValue(beautifyJSON(snapshotContent, true))
+
+                                      try {
+                                        if (snapshotTakenTime.length <= 0)
+                                          throw 0
+
+                                        snapshotTakenTime = ` (${formatTimestamp(snapshotTakenTime)})`
+                                      } catch (e) {}
+
+                                      // Update the old side's badge
+                                      workareaElement.find(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: ${snapshot.attr('data-name')}${snapshotTakenTime}`)
+
+                                      // Detect differentiation between the metadata content's after loading the snapshot
+                                      // detectDifferentiationShow(snapshotContent, JSON.parse(metadataDiffEditors.new.object.getValue()))
+
+                                      // Show success feedback to the user
+                                      showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the schema snapshot [b]$data[/b] has been successfully loaded', [snapshot.attr('data-name')])) + '.', 'success')
+
+                                      // Close the modal/dialog
+                                      $('div.modal#loadSnapshot').find('button.btn-close').click()
+                                    } catch (e) {
+                                      try {
+                                        errorLog(e, 'connections')
+                                      } catch (e) {}
+
+                                      // If any error has occurred then show feedback to the user about the failure
+                                      showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]', [snapshot.attr('data-name')])) + '.', 'failure')
+                                    }
+                                  })
+
+                                  // Delete a snapshot
+                                  $(this).find('a[action="delete"]').on('click', function(e, info) {
+                                    // Inner function to delete a snapshot
+                                    let deleteSnapshot = (keepFiles = false) => {
+                                      let callbackFunction = (err) => {
+                                        // If any error has occurred then show feedback to the user and skip the upcoming code
+                                        if (err) {
+                                          // Add error log
+                                          try {
+                                            errorLog(e, 'connections')
+                                          } catch (e) {}
+
+                                          // Show feedback to the user
+                                          showToast(I18next.capitalize(I18next.t('delete schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it', [snapshotName])) + '.', 'failure')
+
+                                          // Skip the upcoming code
+                                          return
+                                        }
+
+                                        // Show success feedback to the user
+                                        showToast(I18next.capitalize(I18next.t('delete schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot [b]$data[/b] has been successfully deleted', [snapshotName])) + '.', 'success')
+
+                                        // Remove the snapshot UI element in the container
+                                        snapshot.remove()
+
+                                        // If no saved snapshots left then close the modal/dialog
+                                        if (snapshotsContainer.children('div.snapshot').length <= 0)
+                                          $('#showLoadSnapshotDialog').click()
+                                      }
+
+                                      // Remove the snapshot file
+                                      if (!keepFiles)
+                                        FS.remove(snapshotPath, callbackFunction)
+
+                                      // Keep the snapshot file, however, adding a prefix to the extension will cause to be ignored by the app
+                                      if (keepFiles) {
+                                        FS.move(snapshotPath, `${snapshotPath}_DEL_${getRandom.id(5)}`, callbackFunction)
+                                      }
+                                    }
+
+                                    // Add log about this deletion process
+                                    try {
+                                      addLog(`Request to delete a snapshot in path '${snapshotPath}' related to the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
+                                    } catch (e) {}
+
+                                    // If no need for confirmation then call the deletion function and skip the upcoming code
+                                    try {
+                                      if (info.noConfirm)
+                                        return deleteSnapshot(info.checked)
+                                    } catch (e) {}
+
+                                    // Open the confirmation dialog and wait for the response
+                                    openDialog(I18next.capitalizeFirstLetter(I18next.replaceData('do you want to delete the snapshot [b]$data[/b]? once you confirm, there is no undo', [snapshotName])), (response) => {
+                                      // If canceled, or not confirmed then skip the upcoming code
+                                      if (!response.confirmed)
+                                        return
+
+                                      // Call the deletion function
+                                      deleteSnapshot(response.checked)
+                                    }, true, 'keep the associated files in the system')
+                                  })
+
+                                  // Select the snapshot to be deleted
+                                  $(this).find('a[action="multiple"] input').change(function() {
+                                    // Get the number of selected snapshots
+                                    let checkedSnapshots = snapshotsContainer.find('div.snapshot').find('a[action="multiple"] input').filter(':checked'),
+                                      unCheckedSnapshots = snapshotsContainer.find('div.snapshot').find('a[action="multiple"] input').filter(':not(:checked)')
+
+                                    // Show/hide the actions for multiple snapshots based on the number of selected ones
+                                    $('#loadSnapshot div.actions-multiple').toggleClass('show', checkedSnapshots.length != 0)
+
+                                    $('#loadSnapshot').find('div.actions-multiple').find('a[action="select"]').attr('check', unCheckedSnapshots.length > 0 ? 'true' : 'false')
+                                  })
+                                }))
+                              })
+
+                              // Show the modal/dialog once all processes completed
+                              $('#showLoadSnapshotDialog').click()
+                            })
+                          })
+
+                          // Open the snapshots' folder
+                          workareaElement.find(`span.btn[data-id="${openSnapshotsFolderBtnID}"]`).click(() => {
+                            let workspacePath = getWorkspaceFolderPath(workspaceID),
+                              folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(connectionElement, 'data-folder'), 'snapshots')
+
+                            try {
+                              Open(folderPath)
+                            } catch (e) {}
+                          })
+
+                          // Change the editors view - vertical and horizontal -
+                          workareaElement.find(`span.btn[data-id="${changeViewBtnID}"]`).click(function() {
+                            // Point at the cluster's metadata differentiation content's container
+                            let metadataContentContainer = workareaElement.find(`div#_${metadataDifferentiationContentID} div.metadata-content-container`),
+                              // Whether or not a horizontal view is already applied
+                              isViewHorizontal = metadataContentContainer.hasClass('view-horizontal')
+
+                            // Toggle the horizontal class based on the checking result
+                            metadataContentContainer.toggleClass('view-horizontal', !isViewHorizontal)
+
+                            // Change the button's icon based on the checking result as well
+                            $(this).children('ion-icon').attr('name', `diff-${isViewHorizontal ? 'vertical' : 'horizontal'}`)
+
+                            // Trigger the `resize` event to adjust editors' dimensions
+                            $(window.visualViewport).trigger('resize')
                           })
                         })
 
-                        // Clicks the button to open the save schema snapshot pop-up container
-                        workareaElement.find(`span.btn[data-id="${saveSnapshotBtnID}"]`).click(function() {
-                          // Reset the suffix value
-                          suffixInput.val('')
-                          suffixInputObject.update()
-                          setTimeout(() => suffixInputObject._deactivate())
+                        // The `click` event for all tabs in the work area
+                        setTimeout(() => {
+                          // With every `click` event of one of the tabs
+                          workareaElement.find('a[href*="#_"]').click(() => {
+                            /**
+                             * Trigger the `resize` event for the entire window
+                             * This will resize editors and terminals
+                             */
+                            setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
+                          })
+                        })
 
-                          // Get the current date and time, format it, and show it to the user
-                          let time = parseInt(workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).attr('data-time')) || new Date().getTime()
-                          timeFormatted = formatTimestamp(time, true).replace(/\:/gm, '_')
-                          timeElement.text(`${timeFormatted}`)
+                        // Clicks either the restart or the close buttons for the connection's work area
+                        setTimeout(() => {
+                          workareaElement.find(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).on('click', (event, moveToWorkspace = true) => {
+                            // Add log for this action
+                            try {
+                              addLog(`Request to close/refresh the work area of the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
+                            } catch (e) {}
 
-                          // Show the save schema snapshot container
-                          suffixContainer.addClass('show')
+                            // Ask the user for credentials again if they're required
+                            try {
+                              // Get the related attributes
+                              let [credentialsAuth, credentialsSSH] = getAttributes(connectionElement, ['data-credentials-auth', 'data-credentials-ssh'])
+
+                              try {
+                                // If there's no need to ask for the DB authentication credentials then skip this try-catch block
+                                if (credentialsAuth == undefined)
+                                  throw 0
+
+                                connectionElement.removeAttr('data-username data-password data-got-credentials')
+                              } catch (e) {}
+
+                              try {
+                                // If there's no need to ask for the SSH credentials then skip this try-catch block
+                                if (credentialsSSH == undefined)
+                                  throw 0
+
+                                connectionElement.removeAttr('data-ssh-username data-ssh-password data-got-credentials')
+                              } catch (e) {}
+                            } catch (e) {}
+
+                            try {
+                              // If the current workspace is not the sandbox or it's not a `close` event then skip this try-catch block
+                              if (!isSandbox || !$(event.currentTarget).is(workareaElement.find(`div.btn[data-id="${closeWorkareaBtnID}"]`)))
+                                throw 0
+
+                              // Show the test connection state - it's used here to indicate the closing process of a sandbox project -
+                              connectionElement.addClass('test-connection')
+
+                              // Show the termination process' button
+                              setTimeout(() => connectionElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+
+                              // Disable all buttons inside the sandbox project's element in the connections/sandbox projects container
+                              connectionElement.find('button').attr('disabled', '')
+
+                              /**
+                               * Create a pinned toast to show the output of the process
+                               *
+                               * Get a random ID for the toast
+                               */
+                              let pinnedToastID = getRandom.id(10)
+
+                              // Show/create that toast
+                              pinnedToast.show(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
+
+                              // Attempt to close/stop the docker project
+                              Modules.Docker.getDockerInstance(connectionElement).stopDockerCompose(pinnedToastID, (feedback) => {
+                                /**
+                                 * Failed to close/stop the project
+                                 * Show feedback to the user and skip the upcoming code
+                                 */
+                                if (!feedback.status)
+                                  return showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] were not successfully stopped', [getAttributes(connectionElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
+
+                                /**
+                                 * Successfully closed/stopped
+                                 * Show feedback to the user
+                                 */
+                                showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] have been successfully stopped', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
+
+                                // Reset the sandbox project's element in the clusters/sandbox projects container
+                                connectionElement.removeClass('test-connection enable-terminate-process')
+                                connectionElement.find('button').removeAttr('disabled')
+                                connectionElement.children('div.status').removeClass('show success')
+
+                                // Hide the termination process' button after a set time out
+                                setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
+                              })
+
+                              // Show the initial feedback to the user which
+                              showToast(I18next.capitalize(I18next.t('close local cluster work area')), I18next.capitalizeFirstLetter(I18next.replaceData('the work area of the local cluster [b]$data[/b] has been successfully closed, attempting to stop the local cluster containers', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
+
+                              // Reset the button's text
+                              setTimeout(() => $(`button[button-id="${startProjectBtnID}"]`).children('span').attr('mulang', 'start').text(I18next.t('start')))
+                            } catch (e) {
+                              try {
+                                errorLog(e, 'connections')
+                              } catch (e) {}
+                            }
+
+                            // Point at the current active work aree
+                            let workarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${connectionID}"]`)
+
+                            // Send the `quit` command to the CQLSH instance
+                            IPCRenderer.send('pty:command', {
+                              id: connectionID,
+                              cmd: 'quit'
+                            })
+
+                            // Send a `close` request for the pty instance
+                            IPCRenderer.send('pty:close', connectionID)
+
+                            /**
+                             * Remove all listeners to the data coming from the pty instance
+                             * This will prevent having multiple listeners in the background
+                             */
+                            try {
+                              IPCRenderer.removeAllListeners(`pty:data:${connectionID}`)
+                            } catch (e) {}
+
+                            setTimeout(() => {
+                              // Remove both editors in the metadata differentiation section
+                              (['old', 'new']).forEach((type) => {
+                                try {
+                                  metadataDiffEditors[type].object.getModel().dispose()
+                                } catch (e) {}
+                              })
+
+                              // Remove the terminal and all its components
+                              try {
+                                terminal.dispose()
+                                terminal._core.dispose()
+                                terminal._addonManager.dispose()
+                                terminal = null
+                              } catch (e) {}
+
+                              try {
+                                // If the clicked button is not for restarting the work area then skip this try-catch block
+                                if (!$(event.currentTarget).is(workareaElement.find(`div.btn[data-id="${restartWorkareaBtnID}"]`)))
+                                  throw 0
+
+                                // Remove the work area element
+                                workarea.remove()
+
+                                // Click the button to connect with the connection again
+                                $(`button[button-id="${connectBtnID}"]`).trigger('click', true)
+
+                                // Add an AxonOps webview if needed
+                                setTimeout(() => {
+                                  try {
+                                    // Get the chosen port and the final URL
+                                    let axonopsPort = getAttributes(connectionElement, 'data-port-axonops'),
+                                      axonopsURL = `http://localhost:${axonopsPort}`
+
+                                    // If the provided port is not actually a number then skip this try-catch block
+                                    if (isNaN(axonopsPort))
+                                      throw 0
+
+                                    // Append the `webview` ElectronJS custom element
+                                    workareaElement.find(`div.tab-pane#_${localClustersAxonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', '..', '..', 'js', 'axonops_agent_webview.js')}"></webview>`).show(function() {
+                                      // Point at the webview element
+                                      let webView = $(this)[0]
+
+                                      // Reload it after 1s of creation
+                                      try {
+                                        setTimeout(() => webView.reloadIgnoringCache(), 1000)
+                                      } catch (e) {}
+
+                                      // Once the content inside the webview is ready/loaded
+                                      webView.addEventListener('dom-ready', () => {
+                                        // Once a message from the IPC is received
+                                        webView.addEventListener(`ipc-message`, (event) => {
+                                          // If it's a request to reload the webview then reload it
+                                          if (event.channel == 'reload-webview')
+                                            webView.reloadIgnoringCache()
+                                        })
+                                      })
+                                    }))
+
+                                    // Clicks the globe icon in the connection's info
+                                    workareaElement.find(`div[content="workarea"] div.workarea[connection-id="${connectionID}"]`).find('div.axonops-agent').click(() => {
+                                      try {
+                                        Open(axonopsURL)
+                                      } catch (e) {}
+                                    })
+                                  } catch (e) {}
+                                }, 1000)
+
+                                // Skip the upcoming code - as it's for closing the work area
+                                return
+                              } catch (e) {}
+
+                              // Update the work-area attribute
+                              connectionElement.attr('data-workarea', 'false')
+
+                              // Update the status of the connection in the mini connection's list
+                              updateMiniConnection(workspaceID, connectionID, true)
+
+                              // Flag to tell if the workarea is actually visible
+                              let isWorkareaVisible = workarea.is(':visible')
+
+                              // Destroy Tippy tooltips in this workarea as it has been closed/removed
+                              try {
+                                workarea.find('[data-title]').each(function() {
+                                  try {
+                                    let tippyInstance = mdbObjects.find((obj) => obj.type === 'Tooltip' && obj.element && $(this).is(obj.element))
+
+                                    if (!(tippyInstance && tippyInstance.object))
+                                      throw 0
+
+                                    tippyInstance.object.destroy()
+
+                                    // Remove from mdbObjects array
+                                    let index = mdbObjects.indexOf(tippyInstance)
+
+                                    if (index !== -1)
+                                      mdbObjects.splice(index, 1)
+                                  } catch (e) {}
+                                })
+                              } catch (e) {}
+
+                              // Dispose Monaco editors and remove from global registry
+                              for (let editorUI of workarea.find('div.monaco-editor').get()) {
+                                try {
+                                  let editor = monaco.editor.getEditors().find((editor) => $(editorUI).parent().is(editor._domElement))
+
+                                  if (!editor)
+                                    throw 0
+
+                                  // Remove from diffEditors array if it's a diff editor
+                                  let diffEditorIndex = diffEditors.indexOf(editor)
+
+                                  if (diffEditorIndex !== -1)
+                                    diffEditors.splice(diffEditorIndex, 1)
+
+                                  // Dispose the editor
+                                  editor.dispose()
+                                } catch (e) {}
+                              }
+
+                              // Memory leak fix: Destroy Chart.js instances for this workarea
+                              try {
+                                Object.keys(queryTracingChartsObjects).forEach((chartKey) => {
+                                  try {
+                                    if (queryTracingChartsObjects[chartKey] && queryTracingChartsObjects[chartKey].canvas) {
+                                      // Check if this chart belongs to the workarea being closed
+                                      if (workarea.find(queryTracingChartsObjects[chartKey].canvas).length > 0) {
+                                        queryTracingChartsObjects[chartKey].destroy()
+
+                                        delete queryTracingChartsObjects[chartKey]
+                                      }
+                                    }
+                                  } catch (e) {}
+                                })
+                              } catch (e) {}
+
+                              // Remove the work area element
+                              workarea.remove()
+
+                              /**
+                               * Get all scripts to be executed associated with the connection
+                               * Here only the post-connection scripts will be considered
+                               */
+                              Modules.Connections.getPrePostScripts(workspaceID, connectionID).then((scripts) => {
+                                // Define a variable to save the scripts' execution feedback
+                                let executionFeedback = ''
+
+                                try {
+                                  // If there's no post-connection script to execute then skip this try-catch block
+                                  if (scripts.post.length <= 0)
+                                    throw 0
+
+                                  // Show feedback to the user about starting the execution process
+                                  setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
+
+                                  // Execute the post-connection scripts in order
+                                  Modules.Connections.executeScript(0, scripts.post, (executionResult) => {
+                                    try {
+                                      // If we've got `0` - as a final result - then it means all scripts have been executed with success and returned `0`; so skip this try-catch block and show a success feedback to the user
+                                      if (executionResult.status == 0)
+                                        throw 0
+
+                                      // Show feedback to the user about the script which failed
+                                      let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
+
+                                      if (status == -1000)
+                                        info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
+
+                                      // Set final feedback
+                                      executionFeedback = `. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`
+
+                                      // Show feedback to the user
+                                      setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('post'), getAttributes(connectionElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
+                                    } catch (e) {
+                                      // Show success feedback to the user if the error is `0` code
+                                      if (e == 0)
+                                        setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(connectionElement, 'data-name')])) + '.', 'success'), 50)
+                                    }
+                                  })
+                                } catch (e) {}
+                              })
+
+                              // Clicks the `ENTER` button for the connection's workspace
+                              if (moveToWorkspace || isWorkareaVisible)
+                                $(`div.workspaces-container div.workspace[data-id="${getAttributes(connectionElement, 'data-workspace-id')}"]`).find('div.button button').click()
+
+                              setTimeout(() => {
+                                try {
+                                  // Handle the reset of the UI if the process is not restarting the work area
+                                  if ($(event.currentTarget).is(workareaElement.find(`div.btn[data-id="${restartWorkareaBtnID}"]`)))
+                                    throw 0
+
+                                  // Point at both buttons; the `CONNECT` and `TEST CONNECTION`
+                                  let connectBtn = $(`button[button-id="${connectBtnID}"]`),
+                                    testConnectionBtn = $(`button[button-id="${testConnectionBtnID}"]`); // This semicolon is critical here
+
+                                  // Reset the text of each button
+                                  ([connectBtn, testConnectionBtn]).forEach((button) => button.children('span').attr('mulang', button.is(connectBtn) ? 'connect' : 'test connection').text(I18next.t(button.is(connectBtn) ? 'connect' : 'test connection')))
+
+                                  // Disable the `CONNECT` button
+                                  connectBtn.attr('disabled', '')
+
+                                  $(`button[button-id="${connectAltBtnID}"]`).attr('hidden', null)
+                                  $(`button[button-id="${connectBtnID}"]`).attr('hidden', '')
+
+                                  // Reset the connection's connection status
+                                  connectionElement.find('div.status').removeClass('show success failure')
+                                } catch (e) {}
+                              })
+
+                              setTimeout(() => {
+                                /**
+                                 * Remove the connection from the switcher
+                                 *
+                                 * Point at the connections' switchers container
+                                 */
+                                let connectionSwitcher = $(`div.body div.left div.content div.switch-connections`)
+
+                                // Remove the connection's switcher
+                                $(`div.body div.left div.content div.switch-connections div.connection[_connection-id="${connectionID}"]`).remove()
+
+                                // Update the switchers' container's view
+                                updateSwitcherView('connections')
+
+                                // Handle the first switcher's margin
+                                handleConnectionSwitcherMargin()
+
+                                // If there are no more active connections then hide the switcher's container
+                                if (connectionSwitcher.children('div.connection').length <= 0)
+                                  connectionSwitcher.removeClass('show')
+                              }, 10)
+                            })
+                          })
+                        })
+                      }
+
+                      // Add the connection's switcher to the container
+                      try {
+                        // If the switcher already exists or this is a restarting process then skip this try-catch block
+                        if ($(`div.body div.left div.content div.switch-connections div.connection[_connection-id="${workspaceID}"]`).length != 0 || restart)
+                          throw 0
+
+                        // Point at the connections' switchers container
+                        let connectionSwitcher = $(`div.body div.left div.content div.switch-connections`),
+                          // Get the container's height
+                          switcherCurrentHeight = connectionSwitcher.outerHeight()
+
+                        // Set the container's height; to guarantee a smooth height update animation
+                        connectionSwitcher.css('height', `${switcherCurrentHeight}px`)
+
+                        // If there's no active connections yet then make set the container's height to `0`
+                        if (connectionSwitcher.children('div.connection').length <= 0)
+                          switcherCurrentHeight = 0
+
+                        // Check if the upcoming switcher will cause an overflow
+                        setTimeout(() => {
+                          // Define the new height
+                          let newHeight = switcherCurrentHeight + 35,
+                            // Define the new maximum allowed height
+                            newHeightAllowed = calcSwitchersAllowedHeight()
+
+                          // Divide the new height by two - as there are two switchers' containers
+                          newHeightAllowed = newHeightAllowed / 2
+
+                          // Determine if there's a need to handle an overflow
+                          let hideSwitcher = newHeight >= newHeightAllowed
+
+                          // Toggle the shown/hide of the navigation arrows
+                          connectionSwitcher.toggleClass('show-more', hideSwitcher)
+
+                          // Update the container's height
+                          if (!hideSwitcher)
+                            connectionSwitcher.css('height', `${switcherCurrentHeight + 35}px`)
+
+                          setTimeout(() => {
+                            // Show the container
+                            connectionSwitcher.addClass('show')
+
+                            // Define the connection's host
+                            let connectionHost = getAttributes(connectionElement, 'data-host'),
+                              // Define the connection's color
+                              workspaceColor = getAttributes(workspaceElement, 'data-color')
+
+                            // Slice it if needed
+                            connectionHost = connectionHost.length > 20 ? `${connectionHost.slice(0, 20)}...` : connectionHost
+
+                            // Connection's switcher UI element structure
+                            let element = `
+                                       <div class="connection" _connection-id="${connectionID}" style="box-shadow: inset 0px 0px 0 1px ${workspaceColor || '#7c7c7c'};" active ${hideSwitcher ? "hidden" : "" }>
+                                         <button type="button" style="color: ${workspaceColor};" class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="right" data-mdb-html="true"
+                                           data-title="<span class='tooltip-left'>${getAttributes(connectionElement, 'data-name')}<br>${connectionHost}</span>" data-mdb-html="true" data-mdb-customClass="tooltip-left">${extractTwoCharsConnectionName(getAttributes(connectionElement, 'data-name'))}</button>
+                                       </div>`
+
+                            // Define the suitable adding function based on whether or not there's an overflow
+                            let addingFunction = {
+                              element: connectionSwitcher,
+                              method: 'append'
+                            }
+
+                            try {
+                              // If there's no need to handle an overflow then skip this try-catch block
+                              if (!hideSwitcher)
+                                throw 0
+
+                              // Update the adding function's attributes
+                              addingFunction = {
+                                element: connectionSwitcher.children('div.show-more-connections'),
+                                method: 'after'
+                              }
+                            } catch (e) {
+                              try {
+                                errorLog(e, 'connections')
+                              } catch (e) {}
+                            }
+
+                            // Append the switcher to the container
+                            addingFunction.element[addingFunction.method]($(element).show(function() {
+                              // Variable which will hold the tooltip's MDB object
+                              let tooltip
+
+                              try {
+                                // If there's no need to handle an overflow then skip this try-catch block
+                                if (!hideSwitcher)
+                                  throw 0
+
+                                // Show the current swticher
+                                $(this).removeAttr('hidden')
+
+                                // And hide the last visible switcher
+                                connectionSwitcher.children('div.connection').filter(':visible').last().hide()
+                              } catch (e) {}
+
+                              setTimeout(() => {
+                                // Show the switcher
+                                $(this).addClass('show')
+
+                                // Get the switcher's tooltip's MDB object
+                                tooltip = getElementMDBObject($(this).children('button'), 'Tooltip')
+
+                                // Deactivate all switchers
+                                $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
+
+                                // Activate the connection's switcher
+                                $(this).attr('active', '')
+                              }, 150)
+
+                              // Handle the `click` event of the switcher
+                              setTimeout(() => {
+                                $(this).children('button').click(function() {
+                                  // Point at the connection's workspace's UI element
+                                  let workspaceElement = $(`div.workspaces-container div.workspace[data-id="${workspaceID}"]`),
+                                    // Point at the connection's UI element
+                                    connectionElement = $(`div[content="connections"] div.connections-container div.connections[workspace-id="${workspaceID}"] div.connection[data-id="${connectionID}"]`)
+
+                                  // Add log about this action
+                                  try {
+                                    addLog(`Switch to the work area of the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
+                                  } catch (e) {}
+
+                                  // Set the workspace's color on the UI
+                                  setUIColor(getAttributes(workspaceElement, 'data-color'))
+
+                                  // Deactivate all switchers
+                                  $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
+
+                                  // Activate the connection's switcher
+                                  $(this).parent().attr('active', '')
+
+                                  // Hide the switcher's tooltip once it's clicked
+                                  tooltip.hide()
+
+                                  // Click the `CONNECT` button of the connection
+                                  connectionElement.find('div.button button.connect').click()
+
+                                  /**
+                                   * Trigger the `resize` function of the window
+                                   * This will fit and resize related elements in the work area - especially the terminal -
+                                   */
+                                  setTimeout(() => $(window.visualViewport).trigger('resize'), 500)
+                                })
+                              })
+
+                              // Handle the `right button` click event of the switcher
+                              setTimeout(() => {
+                                $(this).mousedown(function(event) {
+                                  // Make sure the `right button` is one which clicked
+                                  if (event.which != 3)
+                                    return
+
+                                  // Send a request to the main thread regards pop-up a menu
+                                  IPCRenderer.send('show-context-menu', JSON.stringify([{
+                                    label: I18next.capitalizeFirstLetter(`${I18next.t('close connection')} (${I18next.capitalizeFirstLetter(I18next.t('disconnect'))})`),
+                                    click: `() => views.main.webContents.send('workarea:close', {
+                                              btnID: '${closeWorkareaBtnID}'
+                                            })`
+                                  }]))
+                                })
+                              })
+
+                              // Handle the first switcher's margin
+                              setTimeout(() => handleConnectionSwitcherMargin())
+                            }))
+                          }, 200)
+                        })
+                      } catch (e) {
+                        try {
+                          errorLog(e, 'connections')
+                        } catch (e) {}
+                      }
+
+                      // Allow for resizing the left side of the work area taking into account all affected elements
+                      {
+                        setTimeout(() => {
+                          // Point at both sides - left and right -
+                          let rightSide = workareaElement.children('div.sub-sides.right'),
+                            leftSide = workareaElement.children('div.sub-sides.left'),
+                            // The minimum width allowed for resizing is the default left side's width
+                            leftSideMinWidth = leftSide.outerWidth(),
+                            // Get the right side's transition value
+                            rightSideTransition = rightSide.css('transition')
+
+                          // Make the left side resizable
+                          leftSide.resizable({
+                            handles: 'e', // [E]ast
+                            minWidth: leftSideMinWidth, // Minimum width allowed to be reached
+                            maxWidth: !isSandbox ? 1333 : 1170 // Maximum width allowed to be reached
+                          }).bind({
+                            // While the resizing process is active
+                            resize: function(_, __) {
+                              // Update the right side's width based on the new left side's width
+                              rightSide.css({
+                                'width': `calc(100% - ${leftSide.outerWidth()}px)`,
+                                'transition': `all 0s`
+                              })
+
+                              /**
+                               * Trigger the `resize` event for the entire window
+                               * This will resize editors and terminals
+                               */
+                              {
+                                // Attempt to clear the timeout if it has already been created
+                                try {
+                                  clearTimeout(global.resizeTriggerOnResize)
+                                } catch (e) {}
+
+                                // Set a global timeout object
+                                global.resizeTriggerOnResize = setTimeout(() => $(window.visualViewport).trigger('resize', {
+                                  ignoreLabels: true
+                                }))
+                              }
+
+                              // Get the minimum width allowed to be reached for the right side before hiding the tabs' titles
+                              let minimumAllowedWidth = !isSandbox ? 867 : 1215,
+                                // Decide whether or not the tabs' titles should be shown
+                                showTabsTitles = rightSide.outerWidth() > minimumAllowedWidth,
+                                // Get all tabs' tooltips in the work area
+                                workareaTooltipElements = [...workareaElement.find('[tab-tooltip]')],
+                                // Get tooltips' objects of the tabs' tooltips
+                                workareaTooltipObjects = mdbObjects.filter((mdbObject) => workareaTooltipElements.some((elem) => mdbObject.element.is(elem)))
+
+                              // Inside the workareas, find all tabs' titles and toggle their display based on the window width
+                              workareaElement
+                                .find('div.connection-tabs ul a.nav-link span.title')
+                                .toggleClass('ignore-resize', !showTabsTitles)
+                                .toggle(showTabsTitles)
+
+                              let hideRightSideButtonsLabels = rightSide.outerWidth() <= 1145,
+                                hideButtonsLabels = rightSide.outerWidth() <= 920
+
+                              $('div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-actions').toggleClass('hide-labels-right-side', hideRightSideButtonsLabels)
+
+                              $('div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-actions').toggleClass('hide-labels', hideButtonsLabels)
+
+                              // Enable/disable the work area's tabs' tooltips
+                              workareaTooltipObjects.forEach((mdbObject) => mdbObject.object[!showTabsTitles ? 'enable' : 'disable']())
+                            },
+                            // Once the resizing process stopped/finished
+                            stop: function(_, __) {
+                              // Return the original transition's value
+                              rightSide.css('transition', rightSideTransition)
+
+                              /**
+                               * Trigger the `resize` function of the window
+                               * This will fit and resize related elements in the work area - especially the terminal -
+                               */
+                              $(window.visualViewport).trigger('resize', {
+                                ignoreLabels: true
+                              })
+                            }
+                          })
+                        })
+                      }
+
+                      // Update the button's text to be `ENTER`
+                      setTimeout(() => $(`button[button-id="${connectBtnID}"]`).children('span').attr('mulang', 'enter').text(I18next.t('enter')), 1000)
+
+                      setTimeout(() => {
+                        $(`button[button-id="${connectAltBtnID}"]`).attr('hidden', '')
+                        $(`button[button-id="${connectBtnID}"]`).attr('hidden', null)
+                      }, 1000)
+
+                      // Update the test connection's button's text to be `DISCONNECT`
+                      setTimeout(() => $(`button[button-id="${testConnectionBtnID}"]`).children('span').attr('mulang', 'disconnect').text(I18next.t('disconnect')), 1000)
+
+                      /*
+                       * Check the connectivity with the current connection
+                       * Define a flag to be used in wider scope - especially for the right-click context-menu of the tree view items -
+                       */
+                      isConnectionLost = false
+
+                      {
+                        // By default, the flag to show a toast regards lost connection is set to `false`
+                        let isLostConnectionToastShown = false
+
+                        setTimeout(() => {
+                          // Inner function to check the connectivity status
+                          let checkConnectivity = () => {
+                            return
+
+                            /**
+                             * Handle if the basic terminal is currently active
+                             * In this case, the app won't perform a connectivity check
+                             */
+                            try {
+                              // If the basic terminal is not active then skip this try-catch block
+                              if (workareaElement.find(`div[data-id="${terminalContainerID}"]`).css('display') == 'none')
+                                throw 0
+
+                              // Perform a new check process after 1 minute
+                              setTimeout(() => checkConnectivity(), 60000)
+
+                              // Skip the upcoming code
+                              return
+                            } catch (e) {}
+
+                            // Point at the connection status element in the UI
+                            let connectionStatusElement = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${getAttributes(connectionElement, 'data-id')}"][workarea-id="${workareaID}"]`).find('div.connection-status')
+
+                            // If the connection status UI element is not exists then the work area has been closed and the check process should be terminated
+                            if (connectionStatusElement.length <= 0 || connectionStatusElement == null)
+                              return
+
+                            // Call the connectivity check function from the connections' module
+                            Modules.Connections.checkConnectivity(getAttributes(connectionElement, 'data-id'), (connected) => {
+                              // Show a `not-connected` class if the app is not connected with the connection
+                              connectionStatusElement.removeClass('show connected not-connected').toggleClass('show not-connected', !connected)
+
+                              // Perform a check process every 1 minute
+                              setTimeout(() => checkConnectivity(), 60000)
+
+                              // Update the associated flag
+                              isConnectionLost = !connected
+
+                              /**
+                               * Apply different effects on the work area UI
+                               * Update the connection's element in the connections' list
+                               */
+                              // connectionElement.attr('data-connected', connected ? 'true' : 'false')
+                              //   .children('div.status').addClass(connected ? 'success' : 'failure').removeClass(connected ? 'failure' : 'success')
+
+                              // Disable selected buttons
+                              workareaElement.find('.disableable').toggleClass('disabled', !connected)
+
+                              try {
+                                /**
+                                 * In case the app is not connected with the connection
+                                 * If the app is connected then skip this try-catch block
+                                 */
+                                if (connected)
+                                  throw 0
+
+                                // If the toast/feedback regards lost connection has been shown then skip the upcoming code
+                                if (isLostConnectionToastShown)
+                                  return
+
+                                // Show feedback to the user
+                                showToast(I18next.capitalize(I18next.replaceData(`connection $data lost`, [getAttributes(connectionElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional`, [getAttributes(connectionElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'warning')
+
+                                // Update the associated flag in order to not show that feedback in this checking cycle
+                                isLostConnectionToastShown = true
+
+                                // Skip the upcoming code
+                                return
+                              } catch (e) {}
+
+                              try {
+                                /**
+                                 * Reaching here means the app is connected with the connection
+                                 * If the toast/feedback regards lost connection hasn't been shown already then there's no need to show the restore connection feedback, skip this try-catch block
+                                 */
+                                if (!isLostConnectionToastShown)
+                                  throw 0
+
+                                // Update the associated flag
+                                isLostConnectionToastShown = false
+
+                                // Show feedback to the user
+                                showToast(I18next.capitalize(I18next.replaceData(`connection $data restored`, [getAttributes(connectionElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional`, [getAttributes(connectionElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
+                              } catch (e) {}
+                            })
+                          }
+
+                          // Start the checking process after 30 seoncds of creating the work area
+                          setTimeout(() => checkConnectivity(), 30000)
+                        })
+                      }
+
+                      // Handle the history feature
+                      {
+                        // Point at the history items' container
+                        let historyItemsContainer = $(this).find('div.history-items'),
+                          historyItemsClearAllButton = $(this).find('div.history-items-clear-all'),
+                          // Point at the history show button
+                          historyBtn = $(this).find('div.session-action[action="history"]').find('button.btn'),
+                          // Get the current saved items
+                          savedHistoryItems = Store.get(connectionID) || []
+
+                        // Determine to disable/enable the history button based on the number of saved items
+                        historyBtn.attr('disabled', savedHistoryItems.length > 0 ? null : 'disabled')
+
+                        // Clicks the history button
+                        historyBtn.click(function() {
+                          // Remove all rendered items
+                          historyItemsContainer.html('')
+
+                          // Get the saved history items
+                          savedHistoryItems = Store.get(connectionID) || []
+
+                          // Reverse the array; to make the last saved item the first one in the list
+                          // savedHistoryItems.reverse()
+
+                          // Define index to be set for each history item
+                          let index = 0
+
+                          // Loop through each saved history item
+                          for (let historyItem of savedHistoryItems) {
+                            // Decrement the index
+                            index += 1
+
+                            let isSourceCommand = historyItem.startsWith('SOURCE_'),
+                              filesPaths = [],
+                              isExecutionTerminatedOnError = true
+
+                            try {
+                              if (!isSourceCommand)
+                                throw 0
+
+                              isExecutionTerminatedOnError = historyItem.slice(`${historyItem}`.indexOf(' |')).includes('true')
+
+                              filesPaths = JSON.parse(`${historyItem}`.slice(8, `${historyItem}`.indexOf(' |')))
+
+                              let numOfFiles = filesPaths.length
+
+                              historyItem = `Execute ${numOfFiles} CQL file(s).`
+                            } catch (e) {}
+
+                            // The history item structure UI
+                            let element = `
+                                       <div class="history-item" data-index="${index}" data-is-source-command="${isSourceCommand}">
+                                         <div class="index">${index < 10 ? '0' : ''}${index}</div>
+                                         <div class="inner-content">
+                                           <pre>${historyItem}</pre>
+                                         </div>
+                                         <div class="click-area"></div>
+                                         <div class="action-execute">
+                                           <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                             <ion-icon name="execute-solid"></ion-icon>
+                                           </span>
+                                         </div>
+                                         <div class="action-copy">
+                                           <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                             <ion-icon name="copy-solid"></ion-icon>
+                                           </span>
+                                         </div>
+                                         <div class="action-delete">
+                                           <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                             <ion-icon name="trash"></ion-icon>
+                                           </span>
+                                         </div>
+                                       </div>`
+
+                            // Append the history item
+                            historyItemsContainer.append($(element).show(function() {
+                              // Point at the statement input field
+                              let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`)
+
+                              try {
+                                if ($(this).attr('data-is-source-command') != 'true')
+                                  throw 0
+
+                                $(this).find('div.action-copy, div.action-execute').css({
+                                  'opacity': '0.2',
+                                  'cursor': 'default',
+                                  'pointer-events': 'none'
+                                })
+                              } catch (e) {}
+
+                              // Clicks the item to be typed in the input field
+                              $(this).find('div.click-area').click(function() {
+                                // Click the backdrop element to close the history items' container
+                                $(`div.backdrop:last`).click()
+
+                                // Get the index of the saved item in the array
+                                let statementIndex = parseInt($(this).parent().attr('data-index')) - 1,
+                                  // Get the statement's content
+                                  statement = savedHistoryItems[statementIndex]
+
+                                try {
+                                  if ($(this).parent().attr('data-is-source-command') != 'true')
+                                    throw 0
+
+                                  let executionBtn = $(this).closest('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"]').find('button.btn')
+
+                                  executionBtn.data('filesPaths', filesPaths)
+                                  executionBtn.data('isExecutionTerminatedOnError', isExecutionTerminatedOnError)
+
+                                  executionBtn.trigger('click')
+
+                                  $(`div.backdrop:last`).click()
+
+                                  return
+                                } catch (e) {}
+
+                                // Set the statement
+                                consoleEditor.setValue(statement)
+                                consoleEditor.focus()
+
+                                let lastLine = consoleEditor.getModel().getLineCount(),
+                                  lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
+
+                                consoleEditor.setPosition({
+                                  lineNumber: lastLine,
+                                  column: lastColumn
+                                })
+
+                                // Update the MDB object
+                                try {
+                                  getElementMDBObject(statementInputField).update()
+                                } catch (e) {}
+                              })
+
+                              $(this).find('div.action-execute').find('span.btn').click(() => {
+                                try {
+                                  // Click the backdrop element to close the history items' container
+                                  $(`div.backdrop:last`).click()
+
+                                  // Get the index of the saved item in the array
+                                  let statementIndex = parseInt($(this).attr('data-index')) - 1,
+                                    // Get the statement's content
+                                    statement = savedHistoryItems[statementIndex]
+
+                                  // Set the statement
+                                  statementInputField.val(statement).trigger('input')
+
+                                  // Update the MDB object
+                                  try {
+                                    getElementMDBObject(statementInputField).update()
+                                  } catch (e) {}
+
+                                  workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').find('button').click()
+                                } catch (e) {}
+                              })
+
+                              $(this).find('div.action-copy').find('span.btn').click(() => {
+                                let statement = $(this).find('div.inner-content').children('pre').text(),
+                                  icon = $(this).find('div.action-copy').find('span.btn').children('ion-icon')
+
+                                // Copy the result to the clipboard
+                                try {
+                                  Clipboard.writeText(statement)
+
+                                  icon.attr('name', 'copy')
+
+                                  setTimeout(() => icon.attr('name', 'copy-solid'), 150);
+                                } catch (e) {
+                                  try {
+                                    errorLog(e, 'connections')
+                                  } catch (e) {}
+                                }
+                              })
+
+                              // Delete a history item
+                              $(this).find('div.action-delete').find('span.btn').click(function() {
+                                // Get the index of the saved item in the array
+                                let statementIndex = parseInt($(this).parent().parent().attr('data-index')) - 1
+
+                                // Remove the history item from the array
+                                savedHistoryItems.splice(statementIndex, 1)
+
+                                // Reverse the array before save it
+                                // savedHistoryItems.reverse()
+
+                                // Set the manipulated array
+                                Store.set(connectionID, [...new Set(savedHistoryItems)])
+
+                                try {
+                                  if (savedHistoryItems.length > 0)
+                                    throw 0
+
+                                  // Click the backdrop element to close the history items' container
+                                  $(`div.backdrop:last`).click()
+
+                                  // Disable the history button
+                                  historyBtn.attr('disabled', 'disabled')
+
+                                  // Skip the upcoming code
+                                  return
+                                } catch (e) {}
+
+                                // Click the history button to update the items' list
+                                historyBtn.click()
+                              })
+
+                              // Apply the chosen language on the UI element after being fully loaded
+                              setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+                            }))
+                          }
+
+                          // Show the history items' container
+                          historyItemsContainer.add(historyItemsClearAllButton).addClass('show')
+
+                          // If a backdrop element already rendered then skip the upcoming code
+                          if ($('body').find('div.backdrop').length > 0)
+                            return
 
                           // Add a backdrop element
                           $('body').append($(`<div class="backdrop"></div>`).show(function() {
@@ -6252,1704 +7497,460 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               // Remove it
                               $(this).remove()
 
-                              // Hide the snapshot container
-                              suffixContainer.removeClass('show')
+                              // Hide the history items' container
+                              historyItemsContainer.add(historyItemsClearAllButton).removeClass('show')
                             })
                           }))
                         })
 
-                        // Clicks the `SAVE SCHEMA SNAPSHOT` button
-                        saveSnapshotBtn.click(function() {
-                          // Get the suffix's value
-                          let suffix = suffixInput.val(),
-                            // Get the new metadata content
-                            metadata = metadataDiffEditors.new.object.getValue(),
-                            // Get the workspace's folder path
-                            workspaceFolderPath = getWorkspaceFolderPath(workspaceID, true),
-                            // The snapshot's initial name is the fetched time of the new metadata
-                            snapshotName = `${timeFormatted}`
-
+                        historyItemsClearAllButton.find('button').click(function() {
                           try {
-                            metadata = JSON.parse(metadata)
+                            Store.set(connectionID, [])
 
-                            metadata.time = parseInt(workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).attr('data-time')) || new Date().getTime()
+                            // Click the backdrop element to close the history items' container
+                            $(`div.backdrop:last`).click()
 
-                            metadata = JSON.stringify(metadata)
-                          } catch (e) {}
+                            // Disable the history button
+                            historyBtn.attr('disabled', 'disabled')
 
-                          // Add log a about the request
-                          try {
-                            addLog(`Request to save a schema snapshot of the metadata of the cluster connected to by '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
-                          } catch (e) {}
-
-                          // Minimize the size of the metadata by compression
-                          try {
-                            metadata = JSON.stringify(JSON.parse(metadata))
-                          } catch (e) {}
-
-                          try {
-                            suffix = Sanitize(suffix)
-                          } catch (e) {}
-
-                          // If there's a suffix then add it to the name
-                          if (suffix.trim().length != 0)
-                            snapshotName = `${snapshotName}_${suffix}`
-
-                          // Finally add the `.json` extension
-                          snapshotName = `${snapshotName}.json`
-
-                          let workspacePath = getWorkspaceFolderPath(workspaceID),
-                            filePath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(connectionElement, 'data-folder'), 'snapshots', snapshotName)
-
-                          // Write the snapshot file in the default snapshots folder of the connection
-                          FS.writeFile(filePath, metadata, (err) => {
-                            // Click the backdrop element; to hide the snapshot's container
-                            $('div.backdrop').click()
-
-                            // Show failure feedback to the user and skip the upcoming code
-                            if (err)
-                              return showToast(I18next.capitalize(I18next.t('save schema snapshot')), I18next.capitalizeFirstLetter(I18next.t('failed to save snapshot, please make sure the app has write permissions and try again')) + '.', 'failure')
-
-                            // Show success feedback to the user
-                            showToast(I18next.capitalize(I18next.t('save schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot has been successfully saved with name [b]$data[/b]', [snapshotName])) + '.', 'success')
-                          })
-                        })
-
-                        // Load a saved snapshot
-                        workareaElement.find(`span.btn[data-id="${loadSnapshotBtnID}"]`).click(function() {
-                          let workspacePath = getWorkspaceFolderPath(workspaceID),
-                            folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(connectionElement, 'data-folder'))
-
-                          // Get all saved snapshots of the connection
-                          Modules.Connections.getSnapshots(folderPath, (snapshots) => {
-                            // If there are no saved snapshots then show feedback to the user and skip the upcoming code
-                            if (snapshots.length <= 0)
-                              return showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('there are no saved schema snapshots related to the connection [b]$data[/b], attempt first to save one', [getAttributes(connectionElement, 'data-name')])) + '.', 'warning')
-
-                            // Reset some elements' state in the dialog
-                            try {
-                              // Point at the actions' container
-                              let actionsMultiple = $('#loadSnapshot').find('div.actions-multiple')
-
-                              // Hide the actions for multiple snapshots' container
-                              actionsMultiple.removeClass('show')
-
-                              // Reset the `check` attribute; so the next time it clicks the snapshots will be checked
-                              actionsMultiple.find('a[action="select"]').attr('check', 'true')
-                            } catch (e) {}
-
-                            // Point at the snapshot's dialog/modal then get the snapshots' container
-                            let snapshotsContainer = $('#loadSnapshot').find('div.snapshots')
-
-                            // Remove all previous snapshots
-                            snapshotsContainer.children('div.snapshot').remove()
-
-                            // Loop through each saved snapshot - ordered descending by creation date -
-                            snapshots.forEach((snapshot) => {
-                              // Snapshot UI element structure
-                              let element = `
-                                         <div class="snapshot" data-path="${snapshot.path}" data-name="${snapshot.name}">
-                                           <div class="_left">
-                                             <div class="name">${snapshot.name}</div>
-                                             <div class="badges">
-                                               <span class="badge badge-primary">${formatTimestamp(snapshot.time)}</span>
-                                               <span class="badge badge-secondary">${Bytes(snapshot.size)}</span>
-                                             </div>
-                                           </div>
-                                           <div class="_right">
-                                             <a action="load" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
-                                               <ion-icon name="upload"></ion-icon>
-                                             </a>
-                                             <a action="delete" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false">
-                                               <ion-icon name="trash"></ion-icon>
-                                             </a>
-                                             <a action="multiple" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="#1d1d1e">
-                                               <input class="form-check-input" type="checkbox">
-                                             </a>
-                                           </div>
-                                         </div>`
-
-                              // Append the snapshot to the container
-                              snapshotsContainer.append($(element).show(function() {
-                                // Point at the snapshot element
-                                let snapshot = $(this),
-                                  // Get the snapshot's path and name
-                                  [snapshotPath, snapshotName] = getAttributes($(this), ['data-path', 'data-name'])
-
-                                // Apply the chosen language on the UI element after being fully loaded
-                                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
-
-                                // Clicks the loading button - to load schema snapshot in the old side -
-                                $(this).find('a[action="load"]').click(async function() {
-                                  try {
-                                    // Add log about this loading process
-                                    try {
-                                      addLog(`Request to load a schema snapshot in path '${snapshotPath}' related to the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
-                                    } catch (e) {}
-
-                                    // Read the snapshot's content
-                                    let snapshotContent = await FS.readFileSync(snapshotPath, 'utf8')
-
-                                    // Convert it from JSON string to object
-                                    snapshotContent = JSON.parse(snapshotContent)
-
-                                    let snapshotTakenTime = ''
-
-                                    try {
-                                      snapshotTakenTime = snapshotContent.time
-
-                                      delete snapshotContent.time
-                                    } catch (e) {}
-
-                                    // Update the old editor's value
-                                    metadataDiffEditors.old.object.setValue(beautifyJSON(snapshotContent, true))
-
-                                    try {
-                                      if (snapshotTakenTime.length <= 0)
-                                        throw 0
-
-                                      snapshotTakenTime = ` (${formatTimestamp(snapshotTakenTime)})`
-                                    } catch (e) {}
-
-                                    // Update the old side's badge
-                                    workareaElement.find(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: ${snapshot.attr('data-name')}${snapshotTakenTime}`)
-
-                                    // Detect differentiation between the metadata content's after loading the snapshot
-                                    // detectDifferentiationShow(snapshotContent, JSON.parse(metadataDiffEditors.new.object.getValue()))
-
-                                    // Show success feedback to the user
-                                    showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the schema snapshot [b]$data[/b] has been successfully loaded', [snapshot.attr('data-name')])) + '.', 'success')
-
-                                    // Close the modal/dialog
-                                    $('div.modal#loadSnapshot').find('button.btn-close').click()
-                                  } catch (e) {
-                                    try {
-                                      errorLog(e, 'connections')
-                                    } catch (e) {}
-
-                                    // If any error has occurred then show feedback to the user about the failure
-                                    showToast(I18next.capitalize(I18next.t('load schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to load the snapshot [b]$data[/b], make sure the file exists and it is a valid [code]JSON[/code]', [snapshot.attr('data-name')])) + '.', 'failure')
-                                  }
-                                })
-
-                                // Delete a snapshot
-                                $(this).find('a[action="delete"]').on('click', function(e, info) {
-                                  // Inner function to delete a snapshot
-                                  let deleteSnapshot = (keepFiles = false) => {
-                                    let callbackFunction = (err) => {
-                                      // If any error has occurred then show feedback to the user and skip the upcoming code
-                                      if (err) {
-                                        // Add error log
-                                        try {
-                                          errorLog(e, 'connections')
-                                        } catch (e) {}
-
-                                        // Show feedback to the user
-                                        showToast(I18next.capitalize(I18next.t('delete schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('failed to delete the snapshot [b]$data[/b], it may be already deleted or there is no permission granted to delete it', [snapshotName])) + '.', 'failure')
-
-                                        // Skip the upcoming code
-                                        return
-                                      }
-
-                                      // Show success feedback to the user
-                                      showToast(I18next.capitalize(I18next.t('delete schema snapshot')), I18next.capitalizeFirstLetter(I18next.replaceData('the snapshot [b]$data[/b] has been successfully deleted', [snapshotName])) + '.', 'success')
-
-                                      // Remove the snapshot UI element in the container
-                                      snapshot.remove()
-
-                                      // If no saved snapshots left then close the modal/dialog
-                                      if (snapshotsContainer.children('div.snapshot').length <= 0)
-                                        $('#showLoadSnapshotDialog').click()
-                                    }
-
-                                    // Remove the snapshot file
-                                    if (!keepFiles)
-                                      FS.remove(snapshotPath, callbackFunction)
-
-                                    // Keep the snapshot file, however, adding a prefix to the extension will cause to be ignored by the app
-                                    if (keepFiles) {
-                                      FS.move(snapshotPath, `${snapshotPath}_DEL_${getRandom.id(5)}`, callbackFunction)
-                                    }
-                                  }
-
-                                  // Add log about this deletion process
-                                  try {
-                                    addLog(`Request to delete a snapshot in path '${snapshotPath}' related to the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
-                                  } catch (e) {}
-
-                                  // If no need for confirmation then call the deletion function and skip the upcoming code
-                                  try {
-                                    if (info.noConfirm)
-                                      return deleteSnapshot(info.checked)
-                                  } catch (e) {}
-
-                                  // Open the confirmation dialog and wait for the response
-                                  openDialog(I18next.capitalizeFirstLetter(I18next.replaceData('do you want to delete the snapshot [b]$data[/b]? once you confirm, there is no undo', [snapshotName])), (response) => {
-                                    // If canceled, or not confirmed then skip the upcoming code
-                                    if (!response.confirmed)
-                                      return
-
-                                    // Call the deletion function
-                                    deleteSnapshot(response.checked)
-                                  }, true, 'keep the associated files in the system')
-                                })
-
-                                // Select the snapshot to be deleted
-                                $(this).find('a[action="multiple"] input').change(function() {
-                                  // Get the number of selected snapshots
-                                  let checkedSnapshots = snapshotsContainer.find('div.snapshot').find('a[action="multiple"] input').filter(':checked'),
-                                    unCheckedSnapshots = snapshotsContainer.find('div.snapshot').find('a[action="multiple"] input').filter(':not(:checked)')
-
-                                  // Show/hide the actions for multiple snapshots based on the number of selected ones
-                                  $('#loadSnapshot div.actions-multiple').toggleClass('show', checkedSnapshots.length != 0)
-
-                                  $('#loadSnapshot').find('div.actions-multiple').find('a[action="select"]').attr('check', unCheckedSnapshots.length > 0 ? 'true' : 'false')
-                                })
-                              }))
-                            })
-
-                            // Show the modal/dialog once all processes completed
-                            $('#showLoadSnapshotDialog').click()
-                          })
-                        })
-
-                        // Open the snapshots' folder
-                        workareaElement.find(`span.btn[data-id="${openSnapshotsFolderBtnID}"]`).click(() => {
-                          let workspacePath = getWorkspaceFolderPath(workspaceID),
-                            folderPath = Path.join(isSandbox ? Path.join(workspacePath, '..', '..', 'localclusters') : workspacePath, getAttributes(connectionElement, 'data-folder'), 'snapshots')
-
-                          try {
-                            Open(folderPath)
+                            showToast(I18next.capitalize(I18next.t('clear all statements')), I18next.capitalizeFirstLetter(I18next.replaceData('all history statements for connection [b]$data[/b] have been successfully cleared', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
                           } catch (e) {}
                         })
+                      }
 
-                        // Change the editors view - vertical and horizontal -
-                        workareaElement.find(`span.btn[data-id="${changeViewBtnID}"]`).click(function() {
-                          // Point at the cluster's metadata differentiation content's container
-                          let metadataContentContainer = workareaElement.find(`div#_${metadataDifferentiationContentID} div.metadata-content-container`),
-                            // Whether or not a horizontal view is already applied
-                            isViewHorizontal = metadataContentContainer.hasClass('view-horizontal')
+                      {
+                        let consistencyLevelsContainer = $(this).find('div.consistency-levels'),
+                          changeLevelsButton = $(this).find('div.change-consistency-levels'),
+                          levelsTableParent
 
-                          // Toggle the horizontal class based on the checking result
-                          metadataContentContainer.toggleClass('view-horizontal', !isViewHorizontal)
+                        $(this).find('div.session-action[action="consistency-level"]').find('button.btn').click(function() {
+                          consistencyLevelsContainer.add(changeLevelsButton).addClass('show')
 
-                          // Change the button's icon based on the checking result as well
-                          $(this).children('ion-icon').attr('name', `diff-${isViewHorizontal ? 'vertical' : 'horizontal'}`)
+                          let allLevels = [],
+                            levelsTable = $(`<table><tr><th><ion-icon name="arrow-up-circle"></ion-icon>Standard</th><th><ion-icon name="arrow-up-circle"></ion-icon>Serial</th></tr></table>`)
 
-                          // Trigger the `resize` event to adjust editors' dimensions
-                          $(window.visualViewport).trigger('resize')
-                        })
-                      })
+                          for (let i = 0; i < Modules.Consts.ConsistencyLevels.Regular.length; ++i)
+                            allLevels.push([Modules.Consts.ConsistencyLevels.Regular[i], Modules.Consts.ConsistencyLevels.Serial[i]])
 
-                      // The `click` event for all tabs in the work area
-                      setTimeout(() => {
-                        // With every `click` event of one of the tabs
-                        workareaElement.find('a[href*="#_"]').click(() => {
-                          /**
-                           * Trigger the `resize` event for the entire window
-                           * This will resize editors and terminals
-                           */
-                          setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
-                        })
-                      })
+                          for (let levels of allLevels) {
+                            let serialElement = levels[1] == undefined ? '' : `<div class="level ${activeSessionsConsistencyLevels[activeConnectionID].serial == levels[1] ? 'selected' : ''}" data-type="serial" data-level-name="${levels[1]}">${levels[1]}</div>`
 
-                      // Clicks either the restart or the close buttons for the connection's work area
-                      setTimeout(() => {
-                        workareaElement.find(`div.btn[data-id="${restartWorkareaBtnID}"]`).add(`div.btn[data-id="${closeWorkareaBtnID}"]`).on('click', (event, moveToWorkspace = true) => {
-                          // Add log for this action
-                          try {
-                            addLog(`Request to close/refresh the work area of the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
-                          } catch (e) {}
-
-                          // Ask the user for credentials again if they're required
-                          try {
-                            // Get the related attributes
-                            let [credentialsAuth, credentialsSSH] = getAttributes(connectionElement, ['data-credentials-auth', 'data-credentials-ssh'])
-
-                            try {
-                              // If there's no need to ask for the DB authentication credentials then skip this try-catch block
-                              if (credentialsAuth == undefined)
-                                throw 0
-
-                              connectionElement.removeAttr('data-username data-password data-got-credentials')
-                            } catch (e) {}
-
-                            try {
-                              // If there's no need to ask for the SSH credentials then skip this try-catch block
-                              if (credentialsSSH == undefined)
-                                throw 0
-
-                              connectionElement.removeAttr('data-ssh-username data-ssh-password data-got-credentials')
-                            } catch (e) {}
-                          } catch (e) {}
-
-                          try {
-                            // If the current workspace is not the sandbox or it's not a `close` event then skip this try-catch block
-                            if (!isSandbox || !$(event.currentTarget).is(workareaElement.find(`div.btn[data-id="${closeWorkareaBtnID}"]`)))
-                              throw 0
-
-                            // Show the test connection state - it's used here to indicate the closing process of a sandbox project -
-                            connectionElement.addClass('test-connection')
-
-                            // Show the termination process' button
-                            setTimeout(() => connectionElement.addClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-                            // Disable all buttons inside the sandbox project's element in the connections/sandbox projects container
-                            connectionElement.find('button').attr('disabled', '')
-
-                            /**
-                             * Create a pinned toast to show the output of the process
-                             *
-                             * Get a random ID for the toast
-                             */
-                            let pinnedToastID = getRandom.id(10)
-
-                            // Show/create that toast
-                            pinnedToast.show(pinnedToastID, I18next.capitalize(I18next.t('stop local cluster')) + ' ' + getAttributes(connectionElement, 'data-name'), '')
-
-                            // Attempt to close/stop the docker project
-                            Modules.Docker.getDockerInstance(connectionElement).stopDockerCompose(pinnedToastID, (feedback) => {
-                              /**
-                               * Failed to close/stop the project
-                               * Show feedback to the user and skip the upcoming code
-                               */
-                              if (!feedback.status)
-                                return showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] were not successfully stopped', [getAttributes(connectionElement, 'data-name')])) + `. ` + (feedback.error != undefined ? I18next.capitalizeFirstLetter(I18next.t('error details')) + `: ${feedback.error}` + '.' : ''), 'failure')
-
-                              /**
-                               * Successfully closed/stopped
-                               * Show feedback to the user
-                               */
-                              showToast(I18next.capitalize(I18next.t('stop local cluster')), I18next.capitalizeFirstLetter(I18next.replaceData('containers of the local cluster [b]$data[/b] have been successfully stopped', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
-
-                              // Reset the sandbox project's element in the clusters/sandbox projects container
-                              connectionElement.removeClass('test-connection enable-terminate-process')
-                              connectionElement.find('button').removeAttr('disabled')
-                              connectionElement.children('div.status').removeClass('show success')
-
-                              // Hide the termination process' button after a set time out
-                              setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-                            })
-
-                            // Show the initial feedback to the user which
-                            showToast(I18next.capitalize(I18next.t('close local cluster work area')), I18next.capitalizeFirstLetter(I18next.replaceData('the work area of the local cluster [b]$data[/b] has been successfully closed, attempting to stop the local cluster containers', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
-
-                            // Reset the button's text
-                            setTimeout(() => $(`button[button-id="${startProjectBtnID}"]`).children('span').attr('mulang', 'start').text(I18next.t('start')))
-                          } catch (e) {
-                            try {
-                              errorLog(e, 'connections')
-                            } catch (e) {}
+                            levelsTable.append(`
+                                    <tr>
+                                      <td type="standard">
+                                        <div class="level ${activeSessionsConsistencyLevels[activeConnectionID].standard == levels[0] ? 'selected' : ''}" data-type="standard" data-level-name="${levels[0]}">${levels[0]}</div>
+                                      </td>
+                                      <td type="serial">
+                                        ${serialElement}
+                                      </td>
+                                    </tr>`)
                           }
 
-                          // Point at the current active work aree
-                          let workarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${connectionID}"]`)
+                          consistencyLevelsContainer.html('')
 
-                          // Send the `quit` command to the CQLSH instance
-                          IPCRenderer.send('pty:command', {
-                            id: connectionID,
-                            cmd: 'quit'
-                          })
+                          consistencyLevelsContainer.append($(levelsTable).show(function() {
+                            levelsTableParent = $(this)
 
-                          // Send a `close` request for the pty instance
-                          IPCRenderer.send('pty:close', connectionID)
+                            levelsTableParent.find('div.level').click(function() {
+                              if ($(this).hasClass('selected'))
+                                return
 
-                          /**
-                           * Remove all listeners to the data coming from the pty instance
-                           * This will prevent having multiple listeners in the background
-                           */
-                          try {
-                            IPCRenderer.removeAllListeners(`pty:data:${connectionID}`)
-                          } catch (e) {}
+                              levelsTableParent.find(`div.level[data-type="${$(this).attr('data-type')}"]`).removeClass('selected')
 
-                          setTimeout(() => {
-                            // Remove both editors in the metadata differentiation section
-                            (['old', 'new']).forEach((type) => {
-                              try {
-                                metadataDiffEditors[type].object.getModel().dispose()
-                              } catch (e) {}
+                              $(this).addClass('selected')
                             })
-
-                            // Remove the terminal and all its components
-                            try {
-                              terminal.dispose()
-                              terminal._core.dispose()
-                              terminal._addonManager.dispose()
-                              terminal = null
-                            } catch (e) {}
-
-                            try {
-                              // If the clicked button is not for restarting the work area then skip this try-catch block
-                              if (!$(event.currentTarget).is(workareaElement.find(`div.btn[data-id="${restartWorkareaBtnID}"]`)))
-                                throw 0
-
-                              // Remove the work area element
-                              workarea.remove()
-
-                              // Click the button to connect with the connection again
-                              $(`button[button-id="${connectBtnID}"]`).trigger('click', true)
-
-                              // Add an AxonOps webview if needed
-                              setTimeout(() => {
-                                try {
-                                  // Get the chosen port and the final URL
-                                  let axonopsPort = getAttributes(connectionElement, 'data-port-axonops'),
-                                    axonopsURL = `http://localhost:${axonopsPort}`
-
-                                  // If the provided port is not actually a number then skip this try-catch block
-                                  if (isNaN(axonopsPort))
-                                    throw 0
-
-                                  // Append the `webview` ElectronJS custom element
-                                  workareaElement.find(`div.tab-pane#_${localClustersAxonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', '..', '..', 'js', 'axonops_agent_webview.js')}"></webview>`).show(function() {
-                                    // Point at the webview element
-                                    let webView = $(this)[0]
-
-                                    // Reload it after 1s of creation
-                                    try {
-                                      setTimeout(() => webView.reloadIgnoringCache(), 1000)
-                                    } catch (e) {}
-
-                                    // Once the content inside the webview is ready/loaded
-                                    webView.addEventListener('dom-ready', () => {
-                                      // Once a message from the IPC is received
-                                      webView.addEventListener(`ipc-message`, (event) => {
-                                        // If it's a request to reload the webview then reload it
-                                        if (event.channel == 'reload-webview')
-                                          webView.reloadIgnoringCache()
-                                      })
-                                    })
-                                  }))
-
-                                  // Clicks the globe icon in the connection's info
-                                  workareaElement.find(`div[content="workarea"] div.workarea[connection-id="${connectionID}"]`).find('div.axonops-agent').click(() => {
-                                    try {
-                                      Open(axonopsURL)
-                                    } catch (e) {}
-                                  })
-                                } catch (e) {}
-                              }, 1000)
-
-                              // Skip the upcoming code - as it's for closing the work area
-                              return
-                            } catch (e) {}
-
-                            // Update the work-area attribute
-                            connectionElement.attr('data-workarea', 'false')
-
-                            // Update the status of the connection in the mini connection's list
-                            updateMiniConnection(workspaceID, connectionID, true)
-
-                            // Flag to tell if the workarea is actually visible
-                            let isWorkareaVisible = workarea.is(':visible')
-
-                            // Destroy Tippy tooltips in this workarea as it has been closed/removed
-                            try {
-                              workarea.find('[data-title]').each(function() {
-                                try {
-                                  let tippyInstance = mdbObjects.find((obj) => obj.type === 'Tooltip' && obj.element && $(this).is(obj.element))
-
-                                  if (!(tippyInstance && tippyInstance.object))
-                                    throw 0
-
-                                  tippyInstance.object.destroy()
-
-                                  // Remove from mdbObjects array
-                                  let index = mdbObjects.indexOf(tippyInstance)
-
-                                  if (index !== -1)
-                                    mdbObjects.splice(index, 1)
-                                } catch (e) {}
-                              })
-                            } catch (e) {}
-
-                            // Dispose Monaco editors and remove from global registry
-                            for (let editorUI of workarea.find('div.monaco-editor').get()) {
-                              try {
-                                let editor = monaco.editor.getEditors().find((editor) => $(editorUI).parent().is(editor._domElement))
-
-                                if (!editor)
-                                  throw 0
-
-                                // Remove from diffEditors array if it's a diff editor
-                                let diffEditorIndex = diffEditors.indexOf(editor)
-
-                                if (diffEditorIndex !== -1)
-                                  diffEditors.splice(diffEditorIndex, 1)
-
-                                // Dispose the editor
-                                editor.dispose()
-                              } catch (e) {}
-                            }
-
-                            // Memory leak fix: Destroy Chart.js instances for this workarea
-                            try {
-                              Object.keys(queryTracingChartsObjects).forEach((chartKey) => {
-                                try {
-                                  if (queryTracingChartsObjects[chartKey] && queryTracingChartsObjects[chartKey].canvas) {
-                                    // Check if this chart belongs to the workarea being closed
-                                    if (workarea.find(queryTracingChartsObjects[chartKey].canvas).length > 0) {
-                                      queryTracingChartsObjects[chartKey].destroy()
-
-                                      delete queryTracingChartsObjects[chartKey]
-                                    }
-                                  }
-                                } catch (e) {}
-                              })
-                            } catch (e) {}
-
-                            // Remove the work area element
-                            workarea.remove()
-
-                            /**
-                             * Get all scripts to be executed associated with the connection
-                             * Here only the post-connection scripts will be considered
-                             */
-                            Modules.Connections.getPrePostScripts(workspaceID, connectionID).then((scripts) => {
-                              // Define a variable to save the scripts' execution feedback
-                              let executionFeedback = ''
-
-                              try {
-                                // If there's no post-connection script to execute then skip this try-catch block
-                                if (scripts.post.length <= 0)
-                                  throw 0
-
-                                // Show feedback to the user about starting the execution process
-                                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('post-connection scripts are being executed after closing the connection [b]$data[/b], you\'ll be notified once the process is finished', [getAttributes(connectionElement, 'data-name')])) + '.'), 50)
-
-                                // Execute the post-connection scripts in order
-                                Modules.Connections.executeScript(0, scripts.post, (executionResult) => {
-                                  try {
-                                    // If we've got `0` - as a final result - then it means all scripts have been executed with success and returned `0`; so skip this try-catch block and show a success feedback to the user
-                                    if (executionResult.status == 0)
-                                      throw 0
-
-                                    // Show feedback to the user about the script which failed
-                                    let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
-
-                                    if (status == -1000)
-                                      info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
-
-                                    // Set final feedback
-                                    executionFeedback = `. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}.`
-
-                                    // Show feedback to the user
-                                    setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of connection [b]$data[/b]', [I18next.t('post'), getAttributes(connectionElement, 'data-name')]))}${executionFeedback}`, 'failure'), 50)
-                                  } catch (e) {
-                                    // Show success feedback to the user if the error is `0` code
-                                    if (e == 0)
-                                      setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of connection [b]$data[/b] have been successfully executed', [I18next.t('post'), getAttributes(connectionElement, 'data-name')])) + '.', 'success'), 50)
-                                  }
-                                })
-                              } catch (e) {}
-                            })
-
-                            // Clicks the `ENTER` button for the connection's workspace
-                            if (moveToWorkspace || isWorkareaVisible)
-                              $(`div.workspaces-container div.workspace[data-id="${getAttributes(connectionElement, 'data-workspace-id')}"]`).find('div.button button').click()
-
-                            setTimeout(() => {
-                              try {
-                                // Handle the reset of the UI if the process is not restarting the work area
-                                if ($(event.currentTarget).is(workareaElement.find(`div.btn[data-id="${restartWorkareaBtnID}"]`)))
-                                  throw 0
-
-                                // Point at both buttons; the `CONNECT` and `TEST CONNECTION`
-                                let connectBtn = $(`button[button-id="${connectBtnID}"]`),
-                                  testConnectionBtn = $(`button[button-id="${testConnectionBtnID}"]`); // This semicolon is critical here
-
-                                // Reset the text of each button
-                                ([connectBtn, testConnectionBtn]).forEach((button) => button.children('span').attr('mulang', button.is(connectBtn) ? 'connect' : 'test connection').text(I18next.t(button.is(connectBtn) ? 'connect' : 'test connection')))
-
-                                // Disable the `CONNECT` button
-                                connectBtn.attr('disabled', '')
-
-                                $(`button[button-id="${connectAltBtnID}"]`).attr('hidden', null)
-                                $(`button[button-id="${connectBtnID}"]`).attr('hidden', '')
-
-                                // Reset the connection's connection status
-                                connectionElement.find('div.status').removeClass('show success failure')
-                              } catch (e) {}
-                            })
-
-                            setTimeout(() => {
-                              /**
-                               * Remove the connection from the switcher
-                               *
-                               * Point at the connections' switchers container
-                               */
-                              let connectionSwitcher = $(`div.body div.left div.content div.switch-connections`)
-
-                              // Remove the connection's switcher
-                              $(`div.body div.left div.content div.switch-connections div.connection[_connection-id="${connectionID}"]`).remove()
-
-                              // Update the switchers' container's view
-                              updateSwitcherView('connections')
-
-                              // Handle the first switcher's margin
-                              handleConnectionSwitcherMargin()
-
-                              // If there are no more active connections then hide the switcher's container
-                              if (connectionSwitcher.children('div.connection').length <= 0)
-                                connectionSwitcher.removeClass('show')
-                            }, 10)
-                          })
-                        })
-                      })
-                    }
-
-                    // Add the connection's switcher to the container
-                    try {
-                      // If the switcher already exists or this is a restarting process then skip this try-catch block
-                      if ($(`div.body div.left div.content div.switch-connections div.connection[_connection-id="${workspaceID}"]`).length != 0 || restart)
-                        throw 0
-
-                      // Point at the connections' switchers container
-                      let connectionSwitcher = $(`div.body div.left div.content div.switch-connections`),
-                        // Get the container's height
-                        switcherCurrentHeight = connectionSwitcher.outerHeight()
-
-                      // Set the container's height; to guarantee a smooth height update animation
-                      connectionSwitcher.css('height', `${switcherCurrentHeight}px`)
-
-                      // If there's no active connections yet then make set the container's height to `0`
-                      if (connectionSwitcher.children('div.connection').length <= 0)
-                        switcherCurrentHeight = 0
-
-                      // Check if the upcoming switcher will cause an overflow
-                      setTimeout(() => {
-                        // Define the new height
-                        let newHeight = switcherCurrentHeight + 35,
-                          // Define the new maximum allowed height
-                          newHeightAllowed = calcSwitchersAllowedHeight()
-
-                        // Divide the new height by two - as there are two switchers' containers
-                        newHeightAllowed = newHeightAllowed / 2
-
-                        // Determine if there's a need to handle an overflow
-                        let hideSwitcher = newHeight >= newHeightAllowed
-
-                        // Toggle the shown/hide of the navigation arrows
-                        connectionSwitcher.toggleClass('show-more', hideSwitcher)
-
-                        // Update the container's height
-                        if (!hideSwitcher)
-                          connectionSwitcher.css('height', `${switcherCurrentHeight + 35}px`)
-
-                        setTimeout(() => {
-                          // Show the container
-                          connectionSwitcher.addClass('show')
-
-                          // Define the connection's host
-                          let connectionHost = getAttributes(connectionElement, 'data-host'),
-                            // Define the connection's color
-                            workspaceColor = getAttributes(workspaceElement, 'data-color')
-
-                          // Slice it if needed
-                          connectionHost = connectionHost.length > 20 ? `${connectionHost.slice(0, 20)}...` : connectionHost
-
-                          // Connection's switcher UI element structure
-                          let element = `
-                                     <div class="connection" _connection-id="${connectionID}" style="box-shadow: inset 0px 0px 0 1px ${workspaceColor || '#7c7c7c'};" active ${hideSwitcher ? "hidden" : "" }>
-                                       <button type="button" style="color: ${workspaceColor};" class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="right" data-mdb-html="true"
-                                         data-title="<span class='tooltip-left'>${getAttributes(connectionElement, 'data-name')}<br>${connectionHost}</span>" data-mdb-html="true" data-mdb-customClass="tooltip-left">${extractTwoCharsConnectionName(getAttributes(connectionElement, 'data-name'))}</button>
-                                     </div>`
-
-                          // Define the suitable adding function based on whether or not there's an overflow
-                          let addingFunction = {
-                            element: connectionSwitcher,
-                            method: 'append'
-                          }
-
-                          try {
-                            // If there's no need to handle an overflow then skip this try-catch block
-                            if (!hideSwitcher)
-                              throw 0
-
-                            // Update the adding function's attributes
-                            addingFunction = {
-                              element: connectionSwitcher.children('div.show-more-connections'),
-                              method: 'after'
-                            }
-                          } catch (e) {
-                            try {
-                              errorLog(e, 'connections')
-                            } catch (e) {}
-                          }
-
-                          // Append the switcher to the container
-                          addingFunction.element[addingFunction.method]($(element).show(function() {
-                            // Variable which will hold the tooltip's MDB object
-                            let tooltip
-
-                            try {
-                              // If there's no need to handle an overflow then skip this try-catch block
-                              if (!hideSwitcher)
-                                throw 0
-
-                              // Show the current swticher
-                              $(this).removeAttr('hidden')
-
-                              // And hide the last visible switcher
-                              connectionSwitcher.children('div.connection').filter(':visible').last().hide()
-                            } catch (e) {}
-
-                            setTimeout(() => {
-                              // Show the switcher
-                              $(this).addClass('show')
-
-                              // Get the switcher's tooltip's MDB object
-                              tooltip = getElementMDBObject($(this).children('button'), 'Tooltip')
-
-                              // Deactivate all switchers
-                              $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
-
-                              // Activate the connection's switcher
-                              $(this).attr('active', '')
-                            }, 150)
-
-                            // Handle the `click` event of the switcher
-                            setTimeout(() => {
-                              $(this).children('button').click(function() {
-                                // Point at the connection's workspace's UI element
-                                let workspaceElement = $(`div.workspaces-container div.workspace[data-id="${workspaceID}"]`),
-                                  // Point at the connection's UI element
-                                  connectionElement = $(`div[content="connections"] div.connections-container div.connections[workspace-id="${workspaceID}"] div.connection[data-id="${connectionID}"]`)
-
-                                // Add log about this action
-                                try {
-                                  addLog(`Switch to the work area of the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`, 'action')
-                                } catch (e) {}
-
-                                // Set the workspace's color on the UI
-                                setUIColor(getAttributes(workspaceElement, 'data-color'))
-
-                                // Deactivate all switchers
-                                $(`div.body div.left div.content div[class*=switch-] div`).removeAttr('active')
-
-                                // Activate the connection's switcher
-                                $(this).parent().attr('active', '')
-
-                                // Hide the switcher's tooltip once it's clicked
-                                tooltip.hide()
-
-                                // Click the `CONNECT` button of the connection
-                                connectionElement.find('div.button button.connect').click()
-
-                                /**
-                                 * Trigger the `resize` function of the window
-                                 * This will fit and resize related elements in the work area - especially the terminal -
-                                 */
-                                setTimeout(() => $(window.visualViewport).trigger('resize'), 500)
-                              })
-                            })
-
-                            // Handle the `right button` click event of the switcher
-                            setTimeout(() => {
-                              $(this).mousedown(function(event) {
-                                // Make sure the `right button` is one which clicked
-                                if (event.which != 3)
-                                  return
-
-                                // Send a request to the main thread regards pop-up a menu
-                                IPCRenderer.send('show-context-menu', JSON.stringify([{
-                                  label: I18next.capitalizeFirstLetter(`${I18next.t('close connection')} (${I18next.capitalizeFirstLetter(I18next.t('disconnect'))})`),
-                                  click: `() => views.main.webContents.send('workarea:close', {
-                                            btnID: '${closeWorkareaBtnID}'
-                                          })`
-                                }]))
-                              })
-                            })
-
-                            // Handle the first switcher's margin
-                            setTimeout(() => handleConnectionSwitcherMargin())
                           }))
-                        }, 200)
-                      })
-                    } catch (e) {
-                      try {
-                        errorLog(e, 'connections')
-                      } catch (e) {}
-                    }
 
-                    // Allow for resizing the left side of the work area taking into account all affected elements
-                    {
-                      setTimeout(() => {
-                        // Point at both sides - left and right -
-                        let rightSide = workareaElement.children('div.sub-sides.right'),
-                          leftSide = workareaElement.children('div.sub-sides.left'),
-                          // The minimum width allowed for resizing is the default left side's width
-                          leftSideMinWidth = leftSide.outerWidth(),
-                          // Get the right side's transition value
-                          rightSideTransition = rightSide.css('transition')
+                          // Add a backdrop element
+                          $('body').append($(`<div class="backdrop"></div>`).show(function() {
+                            // Show it with animation
+                            setTimeout(() => $(this).addClass('show'), 50)
 
-                        // Make the left side resizable
-                        leftSide.resizable({
-                          handles: 'e', // [E]ast
-                          minWidth: leftSideMinWidth, // Minimum width allowed to be reached
-                          maxWidth: !isSandbox ? 1333 : 1170 // Maximum width allowed to be reached
-                        }).bind({
-                          // While the resizing process is active
-                          resize: function(_, __) {
-                            // Update the right side's width based on the new left side's width
-                            rightSide.css({
-                              'width': `calc(100% - ${leftSide.outerWidth()}px)`,
-                              'transition': `all 0s`
+                            // Once it's clicked
+                            $(this).click(function() {
+                              // Remove it
+                              $(this).remove()
+
+                              // Hide the history items' container
+                              consistencyLevelsContainer.add(changeLevelsButton).removeClass('show')
                             })
-
-                            /**
-                             * Trigger the `resize` event for the entire window
-                             * This will resize editors and terminals
-                             */
-                            {
-                              // Attempt to clear the timeout if it has already been created
-                              try {
-                                clearTimeout(global.resizeTriggerOnResize)
-                              } catch (e) {}
-
-                              // Set a global timeout object
-                              global.resizeTriggerOnResize = setTimeout(() => $(window.visualViewport).trigger('resize', {
-                                ignoreLabels: true
-                              }))
-                            }
-
-                            // Get the minimum width allowed to be reached for the right side before hiding the tabs' titles
-                            let minimumAllowedWidth = !isSandbox ? 867 : 1215,
-                              // Decide whether or not the tabs' titles should be shown
-                              showTabsTitles = rightSide.outerWidth() > minimumAllowedWidth,
-                              // Get all tabs' tooltips in the work area
-                              workareaTooltipElements = [...workareaElement.find('[tab-tooltip]')],
-                              // Get tooltips' objects of the tabs' tooltips
-                              workareaTooltipObjects = mdbObjects.filter((mdbObject) => workareaTooltipElements.some((elem) => mdbObject.element.is(elem)))
-
-                            // Inside the workareas, find all tabs' titles and toggle their display based on the window width
-                            workareaElement
-                              .find('div.connection-tabs ul a.nav-link span.title')
-                              .toggleClass('ignore-resize', !showTabsTitles)
-                              .toggle(showTabsTitles)
-
-                            let hideRightSideButtonsLabels = rightSide.outerWidth() <= 1145,
-                              hideButtonsLabels = rightSide.outerWidth() <= 920
-
-                            $('div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-actions').toggleClass('hide-labels-right-side', hideRightSideButtonsLabels)
-
-                            $('div.tab-content div.tab-pane[tab="cqlsh-session"] div.interactive-terminal-container div.session-actions').toggleClass('hide-labels', hideButtonsLabels)
-
-                            // Enable/disable the work area's tabs' tooltips
-                            workareaTooltipObjects.forEach((mdbObject) => mdbObject.object[!showTabsTitles ? 'enable' : 'disable']())
-                          },
-                          // Once the resizing process stopped/finished
-                          stop: function(_, __) {
-                            // Return the original transition's value
-                            rightSide.css('transition', rightSideTransition)
-
-                            /**
-                             * Trigger the `resize` function of the window
-                             * This will fit and resize related elements in the work area - especially the terminal -
-                             */
-                            $(window.visualViewport).trigger('resize', {
-                              ignoreLabels: true
-                            })
-                          }
-                        })
-                      })
-                    }
-
-                    // Update the button's text to be `ENTER`
-                    setTimeout(() => $(`button[button-id="${connectBtnID}"]`).children('span').attr('mulang', 'enter').text(I18next.t('enter')), 1000)
-
-                    setTimeout(() => {
-                      $(`button[button-id="${connectAltBtnID}"]`).attr('hidden', '')
-                      $(`button[button-id="${connectBtnID}"]`).attr('hidden', null)
-                    }, 1000)
-
-                    // Update the test connection's button's text to be `DISCONNECT`
-                    setTimeout(() => $(`button[button-id="${testConnectionBtnID}"]`).children('span').attr('mulang', 'disconnect').text(I18next.t('disconnect')), 1000)
-
-                    /*
-                     * Check the connectivity with the current connection
-                     * Define a flag to be used in wider scope - especially for the right-click context-menu of the tree view items -
-                     */
-                    isConnectionLost = false
-
-                    {
-                      // By default, the flag to show a toast regards lost connection is set to `false`
-                      let isLostConnectionToastShown = false
-
-                      setTimeout(() => {
-                        // Inner function to check the connectivity status
-                        let checkConnectivity = () => {
-                          return
-
-                          /**
-                           * Handle if the basic terminal is currently active
-                           * In this case, the app won't perform a connectivity check
-                           */
-                          try {
-                            // If the basic terminal is not active then skip this try-catch block
-                            if (workareaElement.find(`div[data-id="${terminalContainerID}"]`).css('display') == 'none')
-                              throw 0
-
-                            // Perform a new check process after 1 minute
-                            setTimeout(() => checkConnectivity(), 60000)
-
-                            // Skip the upcoming code
-                            return
-                          } catch (e) {}
-
-                          // Point at the connection status element in the UI
-                          let connectionStatusElement = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${getAttributes(connectionElement, 'data-id')}"][workarea-id="${workareaID}"]`).find('div.connection-status')
-
-                          // If the connection status UI element is not exists then the work area has been closed and the check process should be terminated
-                          if (connectionStatusElement.length <= 0 || connectionStatusElement == null)
-                            return
-
-                          // Call the connectivity check function from the connections' module
-                          Modules.Connections.checkConnectivity(getAttributes(connectionElement, 'data-id'), (connected) => {
-                            // Show a `not-connected` class if the app is not connected with the connection
-                            connectionStatusElement.removeClass('show connected not-connected').toggleClass('show not-connected', !connected)
-
-                            // Perform a check process every 1 minute
-                            setTimeout(() => checkConnectivity(), 60000)
-
-                            // Update the associated flag
-                            isConnectionLost = !connected
-
-                            /**
-                             * Apply different effects on the work area UI
-                             * Update the connection's element in the connections' list
-                             */
-                            // connectionElement.attr('data-connected', connected ? 'true' : 'false')
-                            //   .children('div.status').addClass(connected ? 'success' : 'failure').removeClass(connected ? 'failure' : 'success')
-
-                            // Disable selected buttons
-                            workareaElement.find('.disableable').toggleClass('disabled', !connected)
-
-                            try {
-                              /**
-                               * In case the app is not connected with the connection
-                               * If the app is connected then skip this try-catch block
-                               */
-                              if (connected)
-                                throw 0
-
-                              // If the toast/feedback regards lost connection has been shown then skip the upcoming code
-                              if (isLostConnectionToastShown)
-                                return
-
-                              // Show feedback to the user
-                              showToast(I18next.capitalize(I18next.replaceData(`connection $data lost`, [getAttributes(connectionElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection [b]$data[/b] in workspace [b]$data[/b] is lost. A toast will be shown when the connection is restored. Most of the work area processes are now non-functional`, [getAttributes(connectionElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'warning')
-
-                              // Update the associated flag in order to not show that feedback in this checking cycle
-                              isLostConnectionToastShown = true
-
-                              // Skip the upcoming code
-                              return
-                            } catch (e) {}
-
-                            try {
-                              /**
-                               * Reaching here means the app is connected with the connection
-                               * If the toast/feedback regards lost connection hasn't been shown already then there's no need to show the restore connection feedback, skip this try-catch block
-                               */
-                              if (!isLostConnectionToastShown)
-                                throw 0
-
-                              // Update the associated flag
-                              isLostConnectionToastShown = false
-
-                              // Show feedback to the user
-                              showToast(I18next.capitalize(I18next.replaceData(`connection $data restored`, [getAttributes(connectionElement, 'data-name')])), I18next.capitalizeFirstLetter(I18next.replaceData(`connection [b]$data[/b] in workspace [b]$data[/b] has been restored. All work area processes are now functional`, [getAttributes(connectionElement, 'data-name'), getAttributes(workspaceElement, 'data-name')])) + '.', 'success')
-                            } catch (e) {}
-                          })
-                        }
-
-                        // Start the checking process after 30 seoncds of creating the work area
-                        setTimeout(() => checkConnectivity(), 30000)
-                      })
-                    }
-
-                    // Handle the history feature
-                    {
-                      // Point at the history items' container
-                      let historyItemsContainer = $(this).find('div.history-items'),
-                        historyItemsClearAllButton = $(this).find('div.history-items-clear-all'),
-                        // Point at the history show button
-                        historyBtn = $(this).find('div.session-action[action="history"]').find('button.btn'),
-                        // Get the current saved items
-                        savedHistoryItems = Store.get(connectionID) || []
-
-                      // Determine to disable/enable the history button based on the number of saved items
-                      historyBtn.attr('disabled', savedHistoryItems.length > 0 ? null : 'disabled')
-
-                      // Clicks the history button
-                      historyBtn.click(function() {
-                        // Remove all rendered items
-                        historyItemsContainer.html('')
-
-                        // Get the saved history items
-                        savedHistoryItems = Store.get(connectionID) || []
-
-                        // Reverse the array; to make the last saved item the first one in the list
-                        // savedHistoryItems.reverse()
-
-                        // Define index to be set for each history item
-                        let index = 0
-
-                        // Loop through each saved history item
-                        for (let historyItem of savedHistoryItems) {
-                          // Decrement the index
-                          index += 1
-
-                          let isSourceCommand = historyItem.startsWith('SOURCE_'),
-                            filesPaths = [],
-                            isExecutionTerminatedOnError = true
-
-                          try {
-                            if (!isSourceCommand)
-                              throw 0
-
-                            isExecutionTerminatedOnError = historyItem.slice(`${historyItem}`.indexOf(' |')).includes('true')
-
-                            filesPaths = JSON.parse(`${historyItem}`.slice(8, `${historyItem}`.indexOf(' |')))
-
-                            let numOfFiles = filesPaths.length
-
-                            historyItem = `Execute ${numOfFiles} CQL file(s).`
-                          } catch (e) {}
-
-                          // The history item structure UI
-                          let element = `
-                                     <div class="history-item" data-index="${index}" data-is-source-command="${isSourceCommand}">
-                                       <div class="index">${index < 10 ? '0' : ''}${index}</div>
-                                       <div class="inner-content">
-                                         <pre>${historyItem}</pre>
-                                       </div>
-                                       <div class="click-area"></div>
-                                       <div class="action-execute">
-                                         <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
-                                           <ion-icon name="execute-solid"></ion-icon>
-                                         </span>
-                                       </div>
-                                       <div class="action-copy">
-                                         <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
-                                           <ion-icon name="copy-solid"></ion-icon>
-                                         </span>
-                                       </div>
-                                       <div class="action-delete">
-                                         <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
-                                           <ion-icon name="trash"></ion-icon>
-                                         </span>
-                                       </div>
-                                     </div>`
-
-                          // Append the history item
-                          historyItemsContainer.append($(element).show(function() {
-                            // Point at the statement input field
-                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`)
-
-                            try {
-                              if ($(this).attr('data-is-source-command') != 'true')
-                                throw 0
-
-                              $(this).find('div.action-copy, div.action-execute').css({
-                                'opacity': '0.2',
-                                'cursor': 'default',
-                                'pointer-events': 'none'
-                              })
-                            } catch (e) {}
-
-                            // Clicks the item to be typed in the input field
-                            $(this).find('div.click-area').click(function() {
-                              // Click the backdrop element to close the history items' container
-                              $(`div.backdrop:last`).click()
-
-                              // Get the index of the saved item in the array
-                              let statementIndex = parseInt($(this).parent().attr('data-index')) - 1,
-                                // Get the statement's content
-                                statement = savedHistoryItems[statementIndex]
-
-                              try {
-                                if ($(this).parent().attr('data-is-source-command') != 'true')
-                                  throw 0
-
-                                let executionBtn = $(this).closest('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"]').find('button.btn')
-
-                                executionBtn.data('filesPaths', filesPaths)
-                                executionBtn.data('isExecutionTerminatedOnError', isExecutionTerminatedOnError)
-
-                                executionBtn.trigger('click')
-
-                                $(`div.backdrop:last`).click()
-
-                                return
-                              } catch (e) {}
-
-                              // Set the statement
-                              consoleEditor.setValue(statement)
-                              consoleEditor.focus()
-
-                              let lastLine = consoleEditor.getModel().getLineCount(),
-                                lastColumn = consoleEditor.getModel().getLineMaxColumn(lastLine);
-
-                              consoleEditor.setPosition({
-                                lineNumber: lastLine,
-                                column: lastColumn
-                              })
-
-                              // Update the MDB object
-                              try {
-                                getElementMDBObject(statementInputField).update()
-                              } catch (e) {}
-                            })
-
-                            $(this).find('div.action-execute').find('span.btn').click(() => {
-                              try {
-                                // Click the backdrop element to close the history items' container
-                                $(`div.backdrop:last`).click()
-
-                                // Get the index of the saved item in the array
-                                let statementIndex = parseInt($(this).attr('data-index')) - 1,
-                                  // Get the statement's content
-                                  statement = savedHistoryItems[statementIndex]
-
-                                // Set the statement
-                                statementInputField.val(statement).trigger('input')
-
-                                // Update the MDB object
-                                try {
-                                  getElementMDBObject(statementInputField).update()
-                                } catch (e) {}
-
-                                workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').find('button').click()
-                              } catch (e) {}
-                            })
-
-                            $(this).find('div.action-copy').find('span.btn').click(() => {
-                              let statement = $(this).find('div.inner-content').children('pre').text(),
-                                icon = $(this).find('div.action-copy').find('span.btn').children('ion-icon')
-
-                              // Copy the result to the clipboard
-                              try {
-                                Clipboard.writeText(statement)
-
-                                icon.attr('name', 'copy')
-
-                                setTimeout(() => icon.attr('name', 'copy-solid'), 150);
-                              } catch (e) {
-                                try {
-                                  errorLog(e, 'connections')
-                                } catch (e) {}
-                              }
-                            })
-
-                            // Delete a history item
-                            $(this).find('div.action-delete').find('span.btn').click(function() {
-                              // Get the index of the saved item in the array
-                              let statementIndex = parseInt($(this).parent().parent().attr('data-index')) - 1
-
-                              // Remove the history item from the array
-                              savedHistoryItems.splice(statementIndex, 1)
-
-                              // Reverse the array before save it
-                              // savedHistoryItems.reverse()
-
-                              // Set the manipulated array
-                              Store.set(connectionID, [...new Set(savedHistoryItems)])
-
-                              try {
-                                if (savedHistoryItems.length > 0)
-                                  throw 0
-
-                                // Click the backdrop element to close the history items' container
-                                $(`div.backdrop:last`).click()
-
-                                // Disable the history button
-                                historyBtn.attr('disabled', 'disabled')
-
-                                // Skip the upcoming code
-                                return
-                              } catch (e) {}
-
-                              // Click the history button to update the items' list
-                              historyBtn.click()
-                            })
-
-                            // Apply the chosen language on the UI element after being fully loaded
-                            setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
                           }))
-                        }
+                        })
 
-                        // Show the history items' container
-                        historyItemsContainer.add(historyItemsClearAllButton).addClass('show')
-
-                        // If a backdrop element already rendered then skip the upcoming code
-                        if ($('body').find('div.backdrop').length > 0)
-                          return
-
-                        // Add a backdrop element
-                        $('body').append($(`<div class="backdrop"></div>`).show(function() {
-                          // Show it with animation
-                          setTimeout(() => $(this).addClass('show'), 50)
-
-                          // Once it's clicked
-                          $(this).click(function() {
-                            // Remove it
-                            $(this).remove()
-
-                            // Hide the history items' container
-                            historyItemsContainer.add(historyItemsClearAllButton).removeClass('show')
-                          })
-                        }))
-                      })
-
-                      historyItemsClearAllButton.find('button').click(function() {
-                        try {
-                          Store.set(connectionID, [])
-
+                        changeLevelsButton.find('button').click(function() {
                           // Click the backdrop element to close the history items' container
                           $(`div.backdrop:last`).click()
 
-                          // Disable the history button
-                          historyBtn.attr('disabled', 'disabled')
-
-                          showToast(I18next.capitalize(I18next.t('clear all statements')), I18next.capitalizeFirstLetter(I18next.replaceData('all history statements for connection [b]$data[/b] have been successfully cleared', [getAttributes(connectionElement, 'data-name')])) + '.', 'success')
-                        } catch (e) {}
-                      })
-                    }
-
-                    {
-                      let consistencyLevelsContainer = $(this).find('div.consistency-levels'),
-                        changeLevelsButton = $(this).find('div.change-consistency-levels'),
-                        levelsTableParent
-
-                      $(this).find('div.session-action[action="consistency-level"]').find('button.btn').click(function() {
-                        consistencyLevelsContainer.add(changeLevelsButton).addClass('show')
-
-                        let allLevels = [],
-                          levelsTable = $(`<table><tr><th><ion-icon name="arrow-up-circle"></ion-icon>Standard</th><th><ion-icon name="arrow-up-circle"></ion-icon>Serial</th></tr></table>`)
-
-                        for (let i = 0; i < Modules.Consts.ConsistencyLevels.Regular.length; ++i)
-                          allLevels.push([Modules.Consts.ConsistencyLevels.Regular[i], Modules.Consts.ConsistencyLevels.Serial[i]])
-
-                        for (let levels of allLevels) {
-                          let serialElement = levels[1] == undefined ? '' : `<div class="level ${activeSessionsConsistencyLevels[activeConnectionID].serial == levels[1] ? 'selected' : ''}" data-type="serial" data-level-name="${levels[1]}">${levels[1]}</div>`
-
-                          levelsTable.append(`
-                                  <tr>
-                                    <td type="standard">
-                                      <div class="level ${activeSessionsConsistencyLevels[activeConnectionID].standard == levels[0] ? 'selected' : ''}" data-type="standard" data-level-name="${levels[0]}">${levels[0]}</div>
-                                    </td>
-                                    <td type="serial">
-                                      ${serialElement}
-                                    </td>
-                                  </tr>`)
-                        }
-
-                        consistencyLevelsContainer.html('')
-
-                        consistencyLevelsContainer.append($(levelsTable).show(function() {
-                          levelsTableParent = $(this)
-
-                          levelsTableParent.find('div.level').click(function() {
-                            if ($(this).hasClass('selected'))
-                              return
-
-                            levelsTableParent.find(`div.level[data-type="${$(this).attr('data-type')}"]`).removeClass('selected')
-
-                            $(this).addClass('selected')
-                          })
-                        }))
-
-                        // Add a backdrop element
-                        $('body').append($(`<div class="backdrop"></div>`).show(function() {
-                          // Show it with animation
-                          setTimeout(() => $(this).addClass('show'), 50)
-
-                          // Once it's clicked
-                          $(this).click(function() {
-                            // Remove it
-                            $(this).remove()
-
-                            // Hide the history items' container
-                            consistencyLevelsContainer.add(changeLevelsButton).removeClass('show')
-                          })
-                        }))
-                      })
-
-                      changeLevelsButton.find('button').click(function() {
-                        // Click the backdrop element to close the history items' container
-                        $(`div.backdrop:last`).click()
-
-                        try {
-                          // Get set levels
-                          let setLevels = {
-                              standard: levelsTableParent.find(`div.level[data-type="standard"].selected`).attr('data-level-name'),
-                              serial: levelsTableParent.find(`div.level[data-type="serial"].selected`).attr('data-level-name')
-                            },
-                            currentLevels = activeSessionsConsistencyLevels[activeConnectionID],
-                            statement = ``
-
-                          if (currentLevels.standard != setLevels.standard)
-                            statement = `CONSISTENCY ${setLevels.standard};`
-
-                          if (currentLevels.serial != setLevels.serial)
-                            statement = `${statement}${statement.length > 0 ? OS.EOL : ''}SERIAL CONSISTENCY ${setLevels.serial};`
-
-                          if (statement.length <= 0)
-                            throw 0
-
-                          let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
-                            oldStatement = `${statementInputField.val()}`
-
                           try {
-                            statementInputField.val(statement)
-                            statementInputField.trigger('input').focus()
-                            AutoSize.update(statementInputField[0])
-                          } catch (e) {}
-
-                          try {
-                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).trigger('click', oldStatement))
-                          } catch (e) {}
-                        } catch (e) {}
-                      })
-                    }
-
-                    {
-                      let PaginationSizeContainer = $(this).find('div.current-pagination-size'),
-                        paginationSizeInput = PaginationSizeContainer.find('input[type="number"]'),
-                        changePaginationSize = $(this).find('div.change-pagination-size')
-
-                      $(this).find('div.session-action[action="pagination-size"]').find('button.btn').click(function() {
-                        try {
-                          paginationSizeInput.val(activeSessionsPaginationSize)
-
-                          getElementMDBObject(paginationSizeInput).update()
-                        } catch (e) {}
-
-                        changePaginationSize.find('button').removeClass('disabled')
-
-                        PaginationSizeContainer.add(changePaginationSize).addClass('show')
-
-                        // Add a backdrop element
-                        $('body').append($(`<div class="backdrop"></div>`).show(function() {
-                          // Show it with animation
-                          setTimeout(() => $(this).addClass('show'), 50)
-
-                          // Once it's clicked
-                          $(this).click(function() {
-                            // Remove it
-                            $(this).remove()
-
-                            PaginationSizeContainer.add(changePaginationSize).removeClass('show')
-                          })
-                        }))
-                      })
-
-                      changePaginationSize.find('button').click(function() {
-                        // Click the backdrop element to close the history items' container
-                        $(`div.backdrop:last`).click()
-
-                        try {
-                          let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
-                            pagingSize = parseInt(paginationSizeInput.val()),
-                            statement = `PAGING ${pagingSize}`,
-                            oldStatement = `${statementInputField.val()}`
-
-                          try {
-                            statementInputField.val(statement)
-                            statementInputField.trigger('input').focus()
-                            AutoSize.update(statementInputField[0])
-                          } catch (e) {}
-
-                          try {
-                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).trigger('click', oldStatement))
-                          } catch (e) {}
-                        } catch (e) {}
-                      })
-
-                      paginationSizeInput.on('input', function() {
-                        try {
-                          if ($(this).val().length <= 0)
-                            throw 0
-
-                          let size = parseInt($(this).val())
-
-                          if (size <= 0)
-                            throw 0
-
-                          changePaginationSize.find('button').removeClass('disabled')
-                        } catch (e) {
-                          changePaginationSize.find('button').addClass('disabled')
-                        }
-                      })
-                    }
-
-                    {
-                      let queryTracingActionContainer = $(this).find('div.session-action[action="query-tracing"]')
-
-                      queryTracingActionContainer.find('button.btn').click(function() {
-                        try {
-                          let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
-                            isTracingEnabled = queryTracingActionContainer.data('tracingStatus') == true,
-                            statement = `TRACING ${isTracingEnabled ? 'OFF' : 'ON'}`,
-                            oldStatement = `${statementInputField.val()}`
-
-                          try {
-                            statementInputField.val(statement)
-                            statementInputField.trigger('input').focus()
-                            AutoSize.update(statementInputField[0])
-                          } catch (e) {}
-
-                          try {
-                            setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).trigger('click', oldStatement))
-                          } catch (e) {}
-                        } catch (e) {}
-                      })
-                    }
-
-                    {
-                      let executeFilesModal = $('div.modal#executeCQLFiles'),
-                        filesContainer = executeFilesModal.find('div.cql-files-container'),
-                        filesExecutionBtn = workareaElement.find('div.session-action[action="execute-file"]').find('button.btn')
-
-                      try {
-                        filesExecutionBtn.unbind('click')
-                      } catch (e) {}
-
-                      filesExecutionBtn.click(function() {
-                        // Get a random ID for the dialog request
-                        let requestID = getRandom.id(10),
-                          // Set other attributes to be used to create the dialog
-                          data = {
-                            id: requestID,
-                            title: I18next.capitalizeFirstLetter(I18next.t('select file(s) to be executed')),
-                            properties: ['openFile', 'multiSelections', 'showHiddenFiles'],
-                            filters: [{
-                                name: I18next.capitalize(I18next.t('supported text files')),
-                                extensions: Modules.Consts.SupportedTextFilesExtenstions
+                            // Get set levels
+                            let setLevels = {
+                                standard: levelsTableParent.find(`div.level[data-type="standard"].selected`).attr('data-level-name'),
+                                serial: levelsTableParent.find(`div.level[data-type="serial"].selected`).attr('data-level-name')
                               },
-                              {
-                                name: I18next.capitalize(I18next.t('all files')),
-                                extensions: ['*']
-                              }
-                            ]
-                          }
+                              currentLevels = activeSessionsConsistencyLevels[activeConnectionID],
+                              statement = ``
 
-                        // Listen for the response - folders' paths - and call the check workspaces inner function
-                        let handleFilesPaths = (filesPaths, isExecutionTerminatedOnError = true, noSort = false) => {
-                          if (filesPaths.length <= 0)
-                            return
+                            if (currentLevels.standard != setLevels.standard)
+                              statement = `CONSISTENCY ${setLevels.standard};`
 
-                          filesContainer.children('div.cql-file').remove()
+                            if (currentLevels.serial != setLevels.serial)
+                              statement = `${statement}${statement.length > 0 ? OS.EOL : ''}SERIAL CONSISTENCY ${setLevels.serial};`
 
-                          $('input#terminateFileExecutionOnError').prop('checked', isExecutionTerminatedOnError)
-
-                          try {
-                            if (noSort)
+                            if (statement.length <= 0)
                               throw 0
 
-                            filesPaths = filesPaths.sort((a, b) => {
-                              let baseNameA = Path.basename(minifyText(a)),
-                                baseNameB = Path.basename(minifyText(b))
-
-                              if (baseNameA < baseNameB)
-                                return -1
-
-                              if (baseNameA > baseNameB)
-                                return 1
-
-                              return 0
-                            })
-                          } catch (e) {}
-
-                          for (let filePath of filesPaths) {
-                            filePath = `${filePath}`
+                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
+                              oldStatement = `${statementInputField.val()}`
 
                             try {
-                              let fileStats = {
-                                size: 0
-                              }
-
-                              try {
-                                fileStats = FS.statSync(filePath)
-                              } catch (e) {}
-
-                              let element = `
-                                          <div class="cql-file ${fileStats.size <= 0 ? 'invalid' : ''}">
-                                            <div class="sort-handler" style="cursor:grab;">
-                                              <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
-                                            </div>
-                                            <div class="file-info">
-                                              <div class="path">${filePath.slice(1)}</div>
-                                              <div class="metadata">
-                                                <span class="badge rounded-pill badge-secondary" ${fileStats.size <= 0 ? 'hidden' : ''}><span mulang="size" capitalize></span>: ${Bytes(fileStats.size)}</span>
-                                                <span class="badge rounded-pill badge-secondary" ${fileStats.size > 0 ? 'hidden' : ''}>The file is either missing or inaccessible</span>
-                                              </div>
-                                            </div>
-                                            <a class="btn btn-link btn-rounded btn-sm remove-cql-file" data-mdb-ripple-color="light" href="#" role="button">
-                                              <ion-icon name="trash"></ion-icon>
-                                            </a>
-                                          </div>`
-
-                              filesContainer.append($(element).show(function() {
-                                let cqlFileElement = $(this)
-
-                                cqlFileElement.data('path', filePath)
-
-                                cqlFileElement.find('a.btn.remove-cql-file').click(function() {
-                                  cqlFileElement.remove()
-
-                                  try {
-                                    if (filesContainer.children('div.cql-file').length <= 0)
-                                      getElementMDBObject(executeFilesModal, 'Modal').hide()
-                                  } catch (e) {}
-                                })
-
-                                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
-                              }))
+                              statementInputField.val(statement)
+                              statementInputField.trigger('input').focus()
+                              AutoSize.update(statementInputField[0])
                             } catch (e) {}
-                          }
+
+                            try {
+                              setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).trigger('click', oldStatement))
+                            } catch (e) {}
+                          } catch (e) {}
+                        })
+                      }
+
+                      {
+                        let PaginationSizeContainer = $(this).find('div.current-pagination-size'),
+                          paginationSizeInput = PaginationSizeContainer.find('input[type="number"]'),
+                          changePaginationSize = $(this).find('div.change-pagination-size')
+
+                        $(this).find('div.session-action[action="pagination-size"]').find('button.btn').click(function() {
+                          try {
+                            paginationSizeInput.val(activeSessionsPaginationSize)
+
+                            getElementMDBObject(paginationSizeInput).update()
+                          } catch (e) {}
+
+                          changePaginationSize.find('button').removeClass('disabled')
+
+                          PaginationSizeContainer.add(changePaginationSize).addClass('show')
+
+                          // Add a backdrop element
+                          $('body').append($(`<div class="backdrop"></div>`).show(function() {
+                            // Show it with animation
+                            setTimeout(() => $(this).addClass('show'), 50)
+
+                            // Once it's clicked
+                            $(this).click(function() {
+                              // Remove it
+                              $(this).remove()
+
+                              PaginationSizeContainer.add(changePaginationSize).removeClass('show')
+                            })
+                          }))
+                        })
+
+                        changePaginationSize.find('button').click(function() {
+                          // Click the backdrop element to close the history items' container
+                          $(`div.backdrop:last`).click()
 
                           try {
-                            getElementMDBObject(executeFilesModal, 'Modal').show()
+                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
+                              pagingSize = parseInt(paginationSizeInput.val()),
+                              statement = `PAGING ${pagingSize}`,
+                              oldStatement = `${statementInputField.val()}`
+
+                            try {
+                              statementInputField.val(statement)
+                              statementInputField.trigger('input').focus()
+                              AutoSize.update(statementInputField[0])
+                            } catch (e) {}
+
+                            try {
+                              setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).trigger('click', oldStatement))
+                            } catch (e) {}
                           } catch (e) {}
-                        }
+                        })
 
-                        if ($(this).data('filesPaths') != null) {
-                          handleFilesPaths([...$(this).data('filesPaths')], $(this).data('isExecutionTerminatedOnError'), true)
+                        paginationSizeInput.on('input', function() {
+                          try {
+                            if ($(this).val().length <= 0)
+                              throw 0
 
-                          $(this).data('filesPaths', null)
-                          $(this).data('isExecutionTerminatedOnError', null)
+                            let size = parseInt($(this).val())
 
-                          return
-                        }
+                            if (size <= 0)
+                              throw 0
 
-                        // Send a request to the main thread to create a dialog
-                        IPCRenderer.send('dialog:create', data)
+                            changePaginationSize.find('button').removeClass('disabled')
+                          } catch (e) {
+                            changePaginationSize.find('button').addClass('disabled')
+                          }
+                        })
+                      }
 
-                        IPCRenderer.on(`dialog:${requestID}`, (_, filesPaths) => handleFilesPaths(filesPaths))
-                      })
+                      {
+                        let queryTracingActionContainer = $(this).find('div.session-action[action="query-tracing"]')
 
-                      setTimeout(() => {
+                        queryTracingActionContainer.find('button.btn').click(function() {
+                          try {
+                            let statementInputField = workareaElement.find(`textarea#_${cqlshSessionStatementInputID}`),
+                              isTracingEnabled = queryTracingActionContainer.data('tracingStatus') == true,
+                              statement = `TRACING ${isTracingEnabled ? 'OFF' : 'ON'}`,
+                              oldStatement = `${statementInputField.val()}`
+
+                            try {
+                              statementInputField.val(statement)
+                              statementInputField.trigger('input').focus()
+                              AutoSize.update(statementInputField[0])
+                            } catch (e) {}
+
+                            try {
+                              setTimeout(() => workareaElement.find(`button#_${executeStatementBtnID}`).trigger('click', oldStatement))
+                            } catch (e) {}
+                          } catch (e) {}
+                        })
+                      }
+
+                      {
+                        let executeFilesModal = $('div.modal#executeCQLFiles'),
+                          filesContainer = executeFilesModal.find('div.cql-files-container'),
+                          filesExecutionBtn = workareaElement.find('div.session-action[action="execute-file"]').find('button.btn')
+
                         try {
-                          filesContainer.sortable({
-                            handle: '.sort-handler',
-                            animation: 150,
-                            ghostClass: 'ghost-field'
+                          filesExecutionBtn.unbind('click')
+                        } catch (e) {}
+
+                        filesExecutionBtn.click(function() {
+                          // Get a random ID for the dialog request
+                          let requestID = getRandom.id(10),
+                            // Set other attributes to be used to create the dialog
+                            data = {
+                              id: requestID,
+                              title: I18next.capitalizeFirstLetter(I18next.t('select file(s) to be executed')),
+                              properties: ['openFile', 'multiSelections', 'showHiddenFiles'],
+                              filters: [{
+                                  name: I18next.capitalize(I18next.t('supported text files')),
+                                  extensions: Modules.Consts.SupportedTextFilesExtenstions
+                                },
+                                {
+                                  name: I18next.capitalize(I18next.t('all files')),
+                                  extensions: ['*']
+                                }
+                              ]
+                            }
+
+                          // Listen for the response - folders' paths - and call the check workspaces inner function
+                          let handleFilesPaths = (filesPaths, isExecutionTerminatedOnError = true, noSort = false) => {
+                            if (filesPaths.length <= 0)
+                              return
+
+                            filesContainer.children('div.cql-file').remove()
+
+                            $('input#terminateFileExecutionOnError').prop('checked', isExecutionTerminatedOnError)
+
+                            try {
+                              if (noSort)
+                                throw 0
+
+                              filesPaths = filesPaths.sort((a, b) => {
+                                let baseNameA = Path.basename(minifyText(a)),
+                                  baseNameB = Path.basename(minifyText(b))
+
+                                if (baseNameA < baseNameB)
+                                  return -1
+
+                                if (baseNameA > baseNameB)
+                                  return 1
+
+                                return 0
+                              })
+                            } catch (e) {}
+
+                            for (let filePath of filesPaths) {
+                              filePath = `${filePath}`
+
+                              try {
+                                let fileStats = {
+                                  size: 0
+                                }
+
+                                try {
+                                  fileStats = FS.statSync(filePath)
+                                } catch (e) {}
+
+                                let element = `
+                                            <div class="cql-file ${fileStats.size <= 0 ? 'invalid' : ''}">
+                                              <div class="sort-handler" style="cursor:grab;">
+                                                <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
+                                              </div>
+                                              <div class="file-info">
+                                                <div class="path">${filePath.slice(1)}</div>
+                                                <div class="metadata">
+                                                  <span class="badge rounded-pill badge-secondary" ${fileStats.size <= 0 ? 'hidden' : ''}><span mulang="size" capitalize></span>: ${Bytes(fileStats.size)}</span>
+                                                  <span class="badge rounded-pill badge-secondary" ${fileStats.size > 0 ? 'hidden' : ''}>The file is either missing or inaccessible</span>
+                                                </div>
+                                              </div>
+                                              <a class="btn btn-link btn-rounded btn-sm remove-cql-file" data-mdb-ripple-color="light" href="#" role="button">
+                                                <ion-icon name="trash"></ion-icon>
+                                              </a>
+                                            </div>`
+
+                                filesContainer.append($(element).show(function() {
+                                  let cqlFileElement = $(this)
+
+                                  cqlFileElement.data('path', filePath)
+
+                                  cqlFileElement.find('a.btn.remove-cql-file').click(function() {
+                                    cqlFileElement.remove()
+
+                                    try {
+                                      if (filesContainer.children('div.cql-file').length <= 0)
+                                        getElementMDBObject(executeFilesModal, 'Modal').hide()
+                                    } catch (e) {}
+                                  })
+
+                                  setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+                                }))
+                              } catch (e) {}
+                            }
+
+                            try {
+                              getElementMDBObject(executeFilesModal, 'Modal').show()
+                            } catch (e) {}
+                          }
+
+                          if ($(this).data('filesPaths') != null) {
+                            handleFilesPaths([...$(this).data('filesPaths')], $(this).data('isExecutionTerminatedOnError'), true)
+
+                            $(this).data('filesPaths', null)
+                            $(this).data('isExecutionTerminatedOnError', null)
+
+                            return
+                          }
+
+                          // Send a request to the main thread to create a dialog
+                          IPCRenderer.send('dialog:create', data)
+
+                          IPCRenderer.on(`dialog:${requestID}`, (_, filesPaths) => handleFilesPaths(filesPaths))
+                        })
+
+                        setTimeout(() => {
+                          try {
+                            filesContainer.sortable({
+                              handle: '.sort-handler',
+                              animation: 150,
+                              ghostClass: 'ghost-field'
+                            })
+                          } catch (e) {}
+                        }, 1000)
+
+                        $('button#executeCQLFilesBtn').click(function() {
+                          let pathsArray = [],
+                            PathsElements = filesContainer.children('div.cql-file').get(),
+                            isExecutionTerminatedOnError = $('input#terminateFileExecutionOnError').prop('checked')
+
+                          try {
+                            pathsArray = PathsElements.map((path) => $(path).data('path'))
+                          } catch (e) {}
+
+                          try {
+                            let statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`)
+
+                            statementInputField.val(`SOURCE_ ${JSON.stringify(pathsArray)} |${isExecutionTerminatedOnError}|`).trigger('input')
+                          } catch (e) {}
+
+                          try {
+                            getElementMDBObject(executeFilesModal, 'Modal').hide()
+                          } catch (e) {}
+
+                          try {
+                            setTimeout(() => $(`button#_${executeStatementBtnID}`).click())
+                          } catch (e) {}
+                        })
+                      }
+
+                      {
+                        let cqlSnippetsBtn = workareaElement.find('div.session-action[action="cql-snippets"]').find('button.btn')
+
+                        try {
+                          cqlSnippetsBtn.unbind('click')
+                        } catch (e) {}
+
+                        cqlSnippetsBtn.click(function(_, targetNode = null) {
+                          let connectionMetadata = latestMetadata.keyspaces.map((keyspace) => {
+                            return {
+                              name: keyspace.name,
+                              tables: [...keyspace.tables, ...keyspace.indexes, ...keyspace.views].map((_object) => _object.name)
+                            }
                           })
-                        } catch (e) {}
-                      }, 1000)
 
-                      $('button#executeCQLFilesBtn').click(function() {
-                        let pathsArray = [],
-                          PathsElements = filesContainer.children('div.cql-file').get(),
-                          isExecutionTerminatedOnError = $('input#terminateFileExecutionOnError').prop('checked')
+                          $(`div.body div.left div.content div.navigation div.group div.item[action="cql-snippets"]`).trigger('click', {
+                            connectionMetadata,
+                            targetNode: targetNode,
+                            workareaID: workareaElement.attr('workarea-id')
+                          })
+                        })
+                      }
 
-                        try {
-                          pathsArray = PathsElements.map((path) => $(path).data('path'))
-                        } catch (e) {}
+                      setTimeout(() => setUIColor(getAttributes(workspaceElement, 'data-color')))
 
-                        try {
-                          let statementInputField = $(`textarea#_${cqlshSessionStatementInputID}`)
+                      {
+                        let axonOpsIntegrationWebviewActionsBtns = workareaElement.find('div.axonops-webview-actions').children('div.webview-action.btn')
 
-                          statementInputField.val(`SOURCE_ ${JSON.stringify(pathsArray)} |${isExecutionTerminatedOnError}|`).trigger('input')
-                        } catch (e) {}
+                        axonOpsIntegrationWebviewActionsBtns.click(function() {
+                          let action = $(this).attr('action'),
+                            axonOpsIntegrationWebview = workareaElement.find('div.tab-pane[tab="axonops-integration"]').find('webview')
 
-                        try {
-                          getElementMDBObject(executeFilesModal, 'Modal').hide()
-                        } catch (e) {}
+                          switch (action) {
+                            case 'home': {
+                              try {
+                                axonOpsIntegrationWebview.attr('src', $(this).attr('home-url'))
+                              } catch (e) {}
 
-                        try {
-                          setTimeout(() => $(`button#_${executeStatementBtnID}`).click())
-                        } catch (e) {}
-                      })
-                    }
+                              try {
+                                let tooltip = getElementMDBObject(workareaElement.find('div.webview-action.btn.webview-current-link'), 'Tooltip')
 
-                    {
-                      let cqlSnippetsBtn = workareaElement.find('div.session-action[action="cql-snippets"]').find('button.btn')
+                                tooltip.setContent($(this).attr('home-url-params'))
+                              } catch (e) {}
 
-                      try {
-                        cqlSnippetsBtn.unbind('click')
-                      } catch (e) {}
-
-                      cqlSnippetsBtn.click(function(_, targetNode = null) {
-                        let connectionMetadata = latestMetadata.keyspaces.map((keyspace) => {
-                          return {
-                            name: keyspace.name,
-                            tables: [...keyspace.tables, ...keyspace.indexes, ...keyspace.views].map((_object) => _object.name)
+                              break
+                            }
+                            case 'refresh': {
+                              try {
+                                axonOpsIntegrationWebview[0].reloadIgnoringCache()
+                              } catch (e) {}
+                              break
+                            }
                           }
                         })
 
-                        $(`div.body div.left div.content div.navigation div.group div.item[action="cql-snippets"]`).trigger('click', {
-                          connectionMetadata,
-                          targetNode: targetNode,
-                          workareaID: workareaElement.attr('workarea-id')
+                        workareaElement.find('div.axonops-integration-icon').click(() => {
+                          let isAxonOpsSaaS = connectionElement.attr('data-axonops-integration-url') == 'axonops-saas',
+                            url = isAxonOpsSaaS ? Modules.Consts.AxonOpsIntegration.DefaultURL : `${connectionElement.attr('data-axonops-integration-url')}`,
+                            isValidURL = false
+
+                          try {
+                            let testURL = new URL(url)
+
+                            if (testURL.protocol.length != 0 && testURL.host.length != 0)
+                              isValidURL = true
+                          } catch (e) {}
+
+                          if (!isValidURL)
+                            return showToast(I18next.capitalize(I18next.t('axonOps integration feature')), I18next.capitalizeFirstLetter(I18next.replaceData('the provided URL for this connection [code]$data[/code] seems invalid, consider to update the connection and try again', [urlHost])) + '.', 'failure')
+
+                          try {
+                            if (!isAxonOpsSaaS)
+                              throw 0
+
+                            let [organization, clustername] = getAttributes(connectionElement, ['data-axonops-integration-organization', 'data-axonops-integration-clustername'])
+
+                            url = new URL(`${organization}/cassandra/${clustername}`, url).href
+                          } catch (e) {}
+
+                          try {
+                            Open(url)
+                          } catch (e) {}
                         })
-                      })
-                    }
-
-                    setTimeout(() => setUIColor(getAttributes(workspaceElement, 'data-color')))
-
-                    {
-                      let axonOpsIntegrationWebviewActionsBtns = workareaElement.find('div.axonops-webview-actions').children('div.webview-action.btn')
-
-                      axonOpsIntegrationWebviewActionsBtns.click(function() {
-                        let action = $(this).attr('action'),
-                          axonOpsIntegrationWebview = workareaElement.find('div.tab-pane[tab="axonops-integration"]').find('webview')
-
-                        switch (action) {
-                          case 'home': {
-                            try {
-                              axonOpsIntegrationWebview.attr('src', $(this).attr('home-url'))
-                            } catch (e) {}
-
-                            try {
-                              let tooltip = getElementMDBObject(workareaElement.find('div.webview-action.btn.webview-current-link'), 'Tooltip')
-
-                              tooltip.setContent($(this).attr('home-url-params'))
-                            } catch (e) {}
-
-                            break
-                          }
-                          case 'refresh': {
-                            try {
-                              axonOpsIntegrationWebview[0].reloadIgnoringCache()
-                            } catch (e) {}
-                            break
-                          }
-                        }
-                      })
-
-                      workareaElement.find('div.axonops-integration-icon').click(() => {
-                        let isAxonOpsSaaS = connectionElement.attr('data-axonops-integration-url') == 'axonops-saas',
-                          url = isAxonOpsSaaS ? Modules.Consts.AxonOpsIntegration.DefaultURL : `${connectionElement.attr('data-axonops-integration-url')}`,
-                          isValidURL = false
-
-                        try {
-                          let testURL = new URL(url)
-
-                          if (testURL.protocol.length != 0 && testURL.host.length != 0)
-                            isValidURL = true
-                        } catch (e) {}
-
-                        if (!isValidURL)
-                          return showToast(I18next.capitalize(I18next.t('axonOps integration feature')), I18next.capitalizeFirstLetter(I18next.replaceData('the provided URL for this connection [code]$data[/code] seems invalid, consider to update the connection and try again', [urlHost])) + '.', 'failure')
-
-                        try {
-                          if (!isAxonOpsSaaS)
-                            throw 0
-
-                          let [organization, clustername] = getAttributes(connectionElement, ['data-axonops-integration-organization', 'data-axonops-integration-clustername'])
-
-                          url = new URL(`${organization}/cassandra/${clustername}`, url).href
-                        } catch (e) {}
-
-                        try {
-                          Open(url)
-                        } catch (e) {}
-                      })
-                    }
+                      }
+                    })
                   }))
                 })
               })
@@ -9096,53 +9097,44 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                 $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${connectionElement.attr('data-id')}"]`).find('div.info[info="cassandra"]').children('div.text').text(`v${version}`)
 
+                let cqlshContent
+
                 /**
                  * Check some options in the `cqlsh.rc` file
                  * If we aren't able to do this the code flow will continue and no need to notify the user about that
                  */
                 try {
                   // Read the `cqlsh.rc` file
-                  FS.readFile(cqlshrcPath, 'utf8', (err, content) => {
-                    // With an error occurs stop the checking process
-                    if (err) {
-                      try {
-                        errorLog(err, 'connections')
-                      } catch (e) {}
+                  let content = await FS.readFile(cqlshrcPath, 'utf8')
 
-                      return
-                    }
+                  // Convert content to UTF-8 string
+                  content = content.toString()
 
-                    // Convert content to UTF-8 string
-                    content = content.toString()
+                  // Convert the `cqlsh.rc` file's content to an array of sections and options
+                  cqlshContent = await Modules.Connections.getCQLSHRCContent(workspaceID, content, addEditConnectionEditor)
 
-                    // Convert the `cqlsh.rc` file's content to an array of sections and options
-                    Modules.Connections.getCQLSHRCContent(workspaceID, content, addEditConnectionEditor).then((result) => {
-                      /**
-                       * Check SSL
-                       *
-                       * Set its status to be enabled by default
-                       */
-                      connectionElement.attr('ssl-enabled', 'true')
+                  /**
+                   * Check SSL
+                   *
+                   * Set its status to be enabled by default
+                   */
+                  connectionElement.attr('ssl-enabled', 'true')
 
-                      callback(result)
+                  // Check if SSL is disabled
+                  try {
+                    // If SSL is enabled then skip this try-catch block
+                    if (!([undefined, 'false'].includes(cqlshContent.connection.ssl)))
+                      throw 0
 
-                      // Check if SSL is disabled
-                      try {
-                        // If SSL is enabled then skip this try-catch block
-                        if (!([undefined, 'false'].includes(result.connection.ssl)))
-                          throw 0
+                    // Show it in the interactive terminal
+                    addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `SSL is not enabled, the connection is not encrypted and is being transmitted in the clear.`, null, true, 'warning', true)
 
-                        // Show it in the interactive terminal
-                        addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `SSL is not enabled, the connection is not encrypted and is being transmitted in the clear.`, null, true, 'warning', true)
+                    // Update the SSL attribute
+                    connectionElement.attr('ssl-enabled', 'false')
+                  } catch (e) {}
 
-                        // Update the SSL attribute
-                        connectionElement.attr('ssl-enabled', 'false')
-                      } catch (e) {}
-
-                      // Update the lockpad status
-                      updateSSLLockpadStatus(connectionElement)
-                    })
-                  })
+                  // Update the lockpad status
+                  updateSSLLockpadStatus(connectionElement)
                 } catch (e) {
                   try {
                     errorLog(e, 'connections')
@@ -9275,6 +9267,15 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                   terminalID: info.terminalID,
                   workspaceID: getActiveWorkspaceID()
                 })
+
+                try {
+                  IPCRenderer.removeAllListeners(`pty:connection-status:${connectionID}`)
+                } catch (e) {}
+
+                IPCRenderer.on(`pty:connection-status:${connectionID}`, (_, result) => callback({
+                  ...result,
+                  cqlshContent
+                }))
               } catch (e) {
                 try {
                   errorLog(e, 'connections')

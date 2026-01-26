@@ -45,6 +45,12 @@ const keysServiceName = `AxonOpsWorkbench`
     } catch (e) {}
   })
 
+  IPCMain.on('pty:fetch-next-query', (_, data) => {
+    try {
+      CQLSHInstances[data.id].fetchNextPage(data.queryID, data.blockID)
+    } catch (e) {}
+  })
+
   // Get the metadata of a connection
   IPCMain.on('pty:metadata', (_, data) => {
     try {
@@ -95,6 +101,23 @@ const keysServiceName = `AxonOpsWorkbench`
       terminated: true,
       requestID
     })
+  })
+
+  IPCMain.handle(`pty:get-info`, async (_, connectionID) => {
+    let info = {}
+
+    try {
+      info = await CQLSHInstances[connectionID].sessionInstance.getInfo()
+    } catch (e) {}
+
+    return info
+  })
+
+  IPCMain.on(`pty:set-paging`, async (_, data) => {
+    try {
+      if (!(isNaN(data.value) || data.value <= 0))
+        CQLSHInstances[data.id].sessionInstance.setPaging(data.value)
+    } catch (e) {}
   })
 }
 

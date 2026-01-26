@@ -925,7 +925,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                  </div>
                                  <div class="tab-content">
                                    <div class="tab-pane fade show active loading" tab="cqlsh-session" id="_${cqlshSessionContentID}" role="tabpanel">
-                                     <div class="switch-terminal" ${!isBasicCQLSHEnabled ? 'hidden' : ''}>
+                                     <div class="switch-terminal" hidden>
                                        <button type="button" class="btn btn-primary changed-bg changed-color" disabled>
                                          <ion-icon name="switch"></ion-icon>
                                          <span mulang="switch terminal"></span>
@@ -1049,7 +1049,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                                </label>
                                              </div>
                                            </div>
-                                           <div class="kill-process">
+                                           <div class="kill-process" hidden>
                                              <button class="btn btn-primary changed-bg changed-color" type="button" data-mdb-ripple-color="var(--mdb-danger)" data-tippy="tooltip" data-mdb-placement="left" data-title data-mulang="kill the process" capitalize-first>
                                                <ion-icon name="close"></ion-icon>
                                              </button>
@@ -2103,35 +2103,853 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       terminalID,
                       isBasicCQLSHEnabled
                     }, (connectionAttemptResult) => {
-                      console.log(connectionAttemptResult);
+                      // Set the paging size if the user has set it
                       try {
-                        let fetchedPageSize = parseInt(connectionAttemptResult.cql.pagesize)
+                        let fetchedPageSize = parseInt(connectionAttemptResult.cqlshContent.cql.pagesize)
 
                         if (!isNaN(fetchedPageSize))
                           pageSize = fetchedPageSize
                       } catch (e) {}
 
-                      try {
-                        IPCRenderer.removeAllListeners(`pty:data:${connectionID}`)
-                      } catch (e) {}
+                      /*
+                       * Point at killing the current process
+                       * Point at the CQLSH session's overall container
+                       */
+                      let cqlshSessionTabContainer = workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`),
+                        killProcessBtn = cqlshSessionTabContainer.find('div.kill-process button'),
+                        hintsContainer = cqlshSessionTabContainer.find('div.hints-container'),
+                        killProcessTimeout
 
-                      // Listen to data sent from the pty instance which are fetched from the cqlsh tool
-                      IPCRenderer.on(`pty:data:${connectionID}`, (_, data) => {
-                        // If the session is paused then nothing would be printed
-                        if (isSessionPaused || ['print metadata', 'print cql_desc', 'check connection'].some((command) => `${data.output}`.includes(command)))
-                          return
-
-                        // Make sure the given output is string
-                        data.output = data.output || ''
-
-                        // Store all received data
-                        allOutput += data.output
-
-                        if (isConnectionLost)
-                          return
-
+                      /**
+                       * Inner function to check if the metadata has been fetched or not
+                       * The declaration was at the very beginning of this code block
+                       */
+                      checkMetadata = (refresh = false) => {
                         try {
-                          if (!((['connectionerror:', ',last_host']).some((keyword) => minifyText(allOutput).includes(keyword))))
+                          // Update `isMetadataFetched` to `true`; so no need to get it again till the user asks to
+                          isMetadataFetched = true
+
+                          // Inner function to create either the old or new editor
+                          let createEditor = (type, metadata) => {
+                            let editor = monaco.editor.createModel(beautifyJSON(metadata, true), 'json')
+
+                            workareaElement.find(`span[data-id="${oldSnapshotNameID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+                            workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+                            workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
+
+                            // Return the editor's object
+                            return editor
+                          }
+
+                          // Get the cluster's metadata
+                          Modules.Connections.getMetadata(connectionID, async (metadata) => {
+                            try {
+                              // Update latest metadata
+                              latestMetadata = metadata
+
+                              // Save the latest metadata in the OS keychain
+                              try {
+                                let snippetsMetadata = latestMetadata.keyspaces.map((keyspace) => {
+                                  return {
+                                    name: keyspace.name,
+                                    tables: [...keyspace.tables, ...keyspace.indexes, ...keyspace.views].map((_object) => _object.name)
+                                  }
+                                })
+
+                                encryptTextBG(JSON.stringify(snippetsMetadata), `metadata_${connectionID}`)
+                              } catch (e) {}
+
+                              {
+                                let clusterNameInfoElement = workareaElement.find('div.connection-info').find('div.info[info="cluster-name"]')
+
+                                try {
+                                  clusterNameInfoElement.children('div._placeholder').hide()
+                                  clusterNameInfoElement.children('div.text').text(`${metadata.cluster_name == undefined || metadata.cluster_name.length <= 0 ? 'Unknown' : metadata.cluster_name}`)
+                                } catch (e) {}
+                              }
+
+                              // Build the tree view
+                              let treeview = await buildTreeview(JSON.parse(JSON.stringify(metadata)), true, getActiveWorkspaceID(), connectionID),
+                                // Point at the metadata content's container
+                                metadataContent = workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`)
+
+                              // Create the tree view of the metadata and hold the returned object
+                              jsTreeObject = metadataContent.jstree(treeview)
+
+                              // Disable the selection feature of a tree node
+                              jsTreeObject.disableSelection()
+
+                              try {
+                                jsTreeObject.unbind('contextmenu')
+                                jsTreeObject.unbind('loaded.jstree')
+                                jsTreeObject.unbind('search.jstree')
+                                jsTreeObject.unbind('after_open.jstree')
+                                jsTreeObject.unbind('select_node.jstree')
+                                workareaElement.find('div.right-elements div.arrows div.btn').unbind('click')
+                              } catch (e) {}
+
+                              try {
+                                jsTreeObject.on('loaded.jstree', () => {
+                                  setTimeout(() => {
+                                    if (metadataContent.data('jstreeLastOpenedNodeID') != undefined && metadataContent.data('jstreeLastOpenedNodeID').length == 32)
+                                      jsTreeObject.jstree()._open_to(metadataContent.data('jstreeLastOpenedNodeID'))
+
+                                    if (metadataContent.data('jstreeLastSelectedNodeID') != undefined && metadataContent.data('jstreeLastSelectedNodeID').length == 32)
+                                      jsTreeObject.jstree().select_node(metadataContent.data('jstreeLastSelectedNodeID'))
+                                  })
+                                })
+                              } catch (e) {}
+
+                              /**
+                               * Create a listener to the event `contextmenu`
+                               * This event `contextmenu` is customized for the JSTree plugin
+                               */
+                              jsTreeObject.on('contextmenu', async function(event) {
+                                // Remove the default contextmenu created by the plugin
+                                $('.vakata-context').remove()
+
+                                // If connection is lost with the connection then no context-menu would be shown
+                                if (isConnectionLost)
+                                  return
+
+                                // Point at the right-clicked node
+                                let clickedNode = $(event.target)
+
+                                // If the node is not one of the specified types then skip this process
+                                if (['a', 'i', 'span'].every((type) => !clickedNode.is(clickedNode)))
+                                  return
+
+                                /**
+                                 * The main element in the node is the anchor `a`
+                                 * If the clicked element is not `a` but `i` or `span` then the `a` is actually their parent
+                                 */
+                                try {
+                                  // If the right-clicked node is an anchor already then skip this try-catch block
+                                  if (clickedNode.is('a'))
+                                    throw 0
+
+                                  // Point at the clicked element's parent `a`
+                                  clickedNode = clickedNode.parent()
+                                } catch (e) {}
+
+                                // If after the manipulation the final element is not an anchor or doesn't have a required attribute then skip the process
+                                if (!clickedNode.is('a') || clickedNode.attr('allow-right-context') != 'true')
+                                  return
+
+                                // If there's no processing element in the anchor then append one
+                                if (clickedNode.find('div.processing').length <= 0)
+                                  clickedNode.append($(`<div class="processing"></div>`))
+
+                                let [
+                                  // Get the target's node name in Cassandra
+                                  targetName,
+                                  // Get the target's keyspace's name - if it's a table -
+                                  keyspaceName,
+                                  tableName,
+                                  // Get the target's type - cluster, keyspace or table -
+                                  nodeType
+                                ] = getAttributes(clickedNode, ['name', 'keyspace', 'table', 'type'])
+
+                                // Define the scope to be passed with the request
+                                scope = `keyspace>${nodeType == 'keyspace' ? targetName : keyspaceName}${nodeType != 'keyspace' ? 'table>' + targetName : ''}`
+
+                                // If the node type is cluster then only `cluster` is needed as a scope
+                                if (nodeType == 'cluster' || nodeType == 'keyspaces')
+                                  scope = 'cluster'
+
+                                // If the node type is an index
+                                try {
+                                  if (nodeType != 'index')
+                                    throw 0
+
+                                  // Add the keyspace
+                                  scope = `keyspace>${keyspaceName}`
+
+                                  // Add the index's table
+                                  scope += `table>${tableName}`
+
+                                  // And finally add the index itself
+                                  scope += `index>${targetName}`
+                                } catch (e) {}
+
+                                let contextMenu = [{
+                                  label: I18next.capitalize(I18next.t('get CQL description')),
+                                  submenu: [{
+                                      label: I18next.capitalize(I18next.t('display in the work area')),
+                                      click: `() => views.main.webContents.send('cql-desc:get', {
+                                                    connectionID: '${getAttributes(connectionElement, 'data-id')}',
+                                                    scope: '${scope}',
+                                                    tabID: '${cqlDescriptionContentID}',
+                                                    nodeID: '${getAttributes(clickedNode, 'id')}'
+                                                  })`
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('save it as a text file')),
+                                      click: `() => views.main.webContents.send('cql-desc:get', {
+                                                    connectionID: '${getAttributes(connectionElement, 'data-id')}',
+                                                    scope: '${scope}',
+                                                    tabID: '${cqlDescriptionContentID}',
+                                                    nodeID: '${getAttributes(clickedNode, 'id')}',
+                                                    saveAsFile: true
+                                                  })`
+                                    },
+                                  ]
+                                }]
+
+                                let commands = {
+                                    ddl: [],
+                                    dql: [],
+                                    dml: [],
+                                    dcl: []
+                                  },
+                                  isSystemKeyspace = false,
+                                  replicationStrategy = {},
+                                  keyspaceJSONObj = {},
+                                  keyspaceUDTs = [],
+                                  keyspaceTables = []
+
+                                try {
+                                  if (['cluster'].every((type) => nodeType != type))
+                                    throw 0
+
+                                  commands.ddl.push({
+                                    label: I18next.capitalize(I18next.t('create keyspace')),
+                                    action: 'createKeyspace',
+                                    click: `() => views.main.webContents.send('create-keyspace', {
+                                                datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`
+                                  })
+                                } catch (e) {}
+
+                                try {
+                                  if (['keyspace', 'udts-parent', 'udt', 'tables-parent', 'counter-tables-parent', 'table'].every((type) => nodeType != type) || (clickedNode.attr('data-is-virtual') != null && ['keyspace', 'table'].every((type) => nodeType != type)))
+                                    throw 0
+
+                                  try {
+                                    if (['udt', 'counter-tables-parent', 'tables-parent', 'table'].every((type) => !nodeType.includes(type)))
+                                      throw 0
+
+                                    if (nodeType != 'table')
+                                      contextMenu = []
+
+                                    targetName = keyspaceName
+                                  } catch (e) {}
+
+                                  let keyspaceInfo = metadata.keyspaces.find((keyspace) => keyspace.name == targetName)
+
+                                  isSystemKeyspace = Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == keyspaceInfo.name)
+
+                                  try {
+                                    $('#rightClickActionsMetadata').attr('data-keyspace-info', `${JSON.stringify(keyspaceInfo)}`)
+                                  } catch (e) {}
+
+                                  replicationStrategy = JSON.parse(repairJSONString(`${keyspaceInfo.replication_strategy}`) || `{}`)
+
+                                  keyspaceJSONObj = metadata.keyspaces.find((keyspace) => keyspace.name == targetName)
+
+                                  keyspaceUDTs = keyspaceJSONObj.user_types
+
+                                  keyspaceTables = (keyspaceJSONObj.tables || []).map((table) => table.name)
+
+                                  if ((replicationStrategy || {}).class == 'LocalStrategy')
+                                    throw 0
+
+                                  if (contextMenu.length != 0)
+                                    contextMenu = contextMenu.concat([{
+                                      type: 'separator',
+                                    }])
+
+                                  commands.ddl = commands.ddl.concat([{
+                                      label: I18next.capitalize(I18next.t('create UDT')),
+                                      action: 'createUDT',
+                                      click: `() => views.main.webContents.send('create-udt', {
+                                                keyspaceName: '${targetName}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                numOfUDTs: ${keyspaceUDTs.length},
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                      visible: !isSystemKeyspace && ['keyspace', 'udts-parent'].some((type) => nodeType == type),
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('create table')),
+                                      action: 'createStandardTable',
+                                      click: `() => views.main.webContents.send('create-table', {
+                                                keyspaceName: '${targetName}',
+                                                tables: '${JSON.stringify(keyspaceTables) || []}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                numOfUDTs: ${keyspaceUDTs.length},
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                                })`,
+                                      visible: !isSystemKeyspace && ['keyspace', 'tables-parent'].some((type) => nodeType == type)
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('create counter table')),
+                                      action: 'createCounterTable',
+                                      click: `() => views.main.webContents.send('create-counter-table', {
+                                                keyspaceName: '${targetName}',
+                                                tables: '${JSON.stringify(keyspaceTables) || []}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                numOfUDTs: ${keyspaceUDTs.length},
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                      visible: !isSystemKeyspace && ['keyspace', 'tables-parent', 'counter-tables-parent'].some((type) => nodeType == type)
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('alter UDT')),
+                                      action: 'alterUDT',
+                                      click: `() => views.main.webContents.send('alter-udt', {
+                                                keyspaceName: '${targetName}',
+                                                udtName: '${clickedNode.attr('name')}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                numOfUDTs: ${keyspaceUDTs.length},
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                      visible: nodeType == 'udt'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('drop UDT')),
+                                      action: 'dropUDT',
+                                      click: `() => views.main.webContents.send('drop-udt', {
+                                                udtName: '${clickedNode.attr('name')}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${targetName}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                      visible: nodeType == 'udt'
+                                    }
+                                  ])
+
+                                  commands.dml = commands.dml.concat([{
+                                      label: I18next.capitalize(I18next.t('insert row as JSON')),
+                                      action: 'insertRow',
+                                      click: `() => views.main.webContents.send('insert-row', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}',
+                                                asJSON: 'true'
+                                              })`,
+                                      visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('insert row')),
+                                      action: 'insertRow',
+                                      click: `() => views.main.webContents.send('insert-row', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                      visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('increment/decrement counter(s)')),
+                                      action: 'incrementDecrementCounter',
+                                      click: `() => views.main.webContents.send('insert-row', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                      visible: clickedNode.attr('is-counter-table') == 'true'
+                                    }
+                                  ])
+
+                                  commands.ddl.push({
+                                    label: I18next.capitalize(I18next.t('alter table')),
+                                    action: 'alterTable',
+                                    click: `() => views.main.webContents.send('alter-table', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                numOfUDTs: ${keyspaceUDTs.length},
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                    visible: nodeType == 'table'
+                                  })
+
+                                  commands.dml.push({
+                                    label: I18next.capitalize(I18next.t('delete row/colum')),
+                                    action: 'insertRow',
+                                    click: `() => views.main.webContents.send('delete-row-column', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                  })
+
+                                  commands.ddl = commands.ddl.concat([{
+                                      label: I18next.capitalize(I18next.t('drop table')),
+                                      action: 'dropTable',
+                                      click: `() => views.main.webContents.send('drop-table', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                      visible: nodeType == 'table'
+                                    }, {
+                                      label: I18next.capitalize(I18next.t('truncate table')),
+                                      action: 'truncateTable',
+                                      click: `() => views.main.webContents.send('truncate-table', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                      visible: nodeType == 'table'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('alter keyspace')),
+                                      action: 'alterKeyspace',
+                                      click: `() => views.main.webContents.send('alter-keyspace', {
+                                                datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                                keyspaceName: '${targetName}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                      visible: nodeType == 'keyspace'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('drop keyspace')),
+                                      action: 'dropKeyspace',
+                                      click: `() => views.main.webContents.send('drop-keyspace', {
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${targetName}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                      visible: nodeType == 'keyspace'
+                                    }
+                                  ])
+
+                                  if (isSystemKeyspace)
+                                    contextMenu = contextMenu.filter((item) => item.action != 'dropKeyspace')
+                                } catch (e) {}
+
+                                try {
+                                  if ((replicationStrategy || {}).class == 'LocalStrategy' && !isSystemKeyspace)
+                                    throw 0
+
+                                  commands.dql.push({
+                                    label: I18next.capitalize(I18next.t('select row as JSON')),
+                                    action: 'selectRow',
+                                    click: `() => views.main.webContents.send('select-row', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}',
+                                                asJSON: 'true'
+                                              })`,
+                                    visible: nodeType == 'table'
+                                  }, {
+                                    label: I18next.capitalize(I18next.t('select row')),
+                                    action: 'selectRow',
+                                    click: `() => views.main.webContents.send('select-row', {
+                                                tableName: '${clickedNode.attr('name')}',
+                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                keyspaceName: '${keyspaceName}',
+                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`,
+                                    visible: nodeType == 'table'
+                                  })
+                                } catch (e) {}
+
+                                try {
+                                  if (nodeType != 'keyspaces')
+                                    throw 0
+
+                                  commands.ddl.push({
+                                    label: I18next.capitalize(I18next.t('create keyspace')),
+                                    action: 'createKeyspace',
+                                    click: `() => views.main.webContents.send('create-keyspace', {
+                                                datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                                tabID: '_${cqlshSessionContentID}',
+                                                textareaID: '_${cqlshSessionStatementInputID}',
+                                                btnID: '_${executeStatementBtnID}'
+                                              })`
+                                  })
+                                } catch (e) {}
+
+                                if (contextMenu.length > 0 && contextMenu.find((item) => item.type == 'separator') == undefined)
+                                  contextMenu = contextMenu.concat([{
+                                    type: 'separator',
+                                  }])
+
+                                if (clickedNode.attr('data-is-virtual') == 'true') {
+                                  commands.ddl = []
+                                  commands.dml = []
+                                  commands.dcl = []
+                                }
+
+                                contextMenu = contextMenu.concat([{
+                                    label: I18next.capitalize(I18next.t('commands')),
+                                    enabled: false
+                                  },
+                                  {
+                                    label: I18next.capitalize(I18next.t('DDL (Data Definition Language)')),
+                                    enabled: commands.ddl.length > 0 && commands.ddl.some((command) => command.visible != false),
+                                    submenu: commands.ddl
+                                  },
+                                  {
+                                    label: I18next.capitalize(I18next.t('DQL (Data Query Language)')),
+                                    enabled: commands.dql.length > 0 && commands.dql.some((command) => command.visible != false),
+                                    submenu: commands.dql
+                                  },
+                                  {
+                                    label: I18next.capitalize(I18next.t('DML (Data Manipulation Language)')),
+                                    enabled: commands.dml.length > 0 && commands.dml.some((command) => command.visible != false),
+                                    submenu: commands.dml
+                                  },
+                                  {
+                                    label: I18next.capitalize(I18next.t('DCL (Data Control Language)')),
+                                    enabled: commands.dcl.length > 0 && commands.dcl.some((command) => command.visible != false),
+                                    submenu: commands.dcl
+                                  }
+                                ])
+
+                                try {
+                                  if (!['cluster', 'keyspace', 'table'].some((type) => nodeType == type))
+                                    throw 0
+
+                                  contextMenu = contextMenu.concat([{
+                                      type: 'separator',
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('features')),
+                                      enabled: false
+                                    }
+                                  ])
+
+                                  let click = ''
+
+                                  if (nodeType == 'cluster')
+                                    click = `() => views.main.webContents.send('axonops-integration', {
+                                        workareaID: '${workareaElement.attr('workarea-id')}',
+                                        connectionID: '${connectionID}',
+                                        clusterName: 'cluster'
+                                      })`
+
+                                  if (nodeType == 'keyspace')
+                                    click = `() => views.main.webContents.send('axonops-integration', {
+                                        workareaID: '${workareaElement.attr('workarea-id')}',
+                                        connectionID: '${connectionID}',
+                                        keyspaceName: '${targetName}'
+                                      })`
+
+                                  if (nodeType == 'table')
+                                    click = `() => views.main.webContents.send('axonops-integration', {
+                                        workareaID: '${workareaElement.attr('workarea-id')}',
+                                        connectionID: '${connectionID}',
+                                        tableName: '${clickedNode.attr('name')}',
+                                        keyspaceName: '${keyspaceName}'
+                                      })`
+
+                                  contextMenu = contextMenu.concat([{
+                                    label: I18next.capitalize(I18next.replaceData(`view $data dashboard`, [I18next.t(`${nodeType}`)])),
+                                    action: 'axonops-integration',
+                                    click,
+                                    enabled: isAxonOpsIntegrationActionEnabled,
+                                    icon: Path.join(__dirname, '..', '..', '..', 'assets', 'images', `axonops-icon-transparent-16x16${!isHostThemeDark ? '-dark' : ''}.png`)
+                                  }])
+
+                                  // The snippets feature
+                                  contextMenu = contextMenu.concat([{
+                                    label: I18next.capitalize(I18next.t(`view related snippets`)),
+                                    action: 'cql-snippets',
+                                    click: nodeType == 'keyspace' ? `() => views.main.webContents.send('cql-snippets:view', {
+                                        workareaID: '${workareaElement.attr('workarea-id')}',
+                                        connectionID: '${connectionID}',
+                                        keyspaceName: '${targetName}',
+                                        workareaID: '${workareaElement.attr('workarea-id')}'
+                                        })` : `() => views.main.webContents.send('cql-snippets:view', {
+                                          workareaID: '${workareaElement.attr('workarea-id')}',
+                                          connectionID: '${connectionID}',
+                                          tableName: '${clickedNode.attr('name')}',
+                                          keyspaceName: '${keyspaceName}',
+                                          workareaID: '${workareaElement.attr('workarea-id')}'
+                                        })`,
+                                    enabled: nodeType != 'cluster'
+                                  }])
+                                } catch (e) {}
+
+                                // Send a request to the main thread regards pop-up a menu
+                                IPCRenderer.send('show-context-menu', JSON.stringify(contextMenu))
+                              })
+
+                              // Handle the search feature in the metadata tree view
+                              {
+                                // Define the current index of the search results
+                                let currentIndex = 0,
+                                  // Hold the last search results in an array
+                                  lastSearchResults = []
+
+                                // Once a search process is completed
+                                jsTreeObject.on('search.jstree', function(event, data) {
+                                  try {
+                                    // Reset the current index to be the first result
+                                    currentIndex = 0
+
+                                    // Hold the search results
+                                    lastSearchResults = metadataContent.find('a.jstree-search')
+
+                                    // Remove the click animation class from all results; to be able to execute the animation again
+                                    lastSearchResults.removeClass('animate-click')
+
+                                    // Whether or not the search container should be shown
+                                    workareaElement.find('div.right-elements').toggleClass('show', data.nodes.length > 0)
+
+                                    // Reset the current result where the pointer has reached
+                                    workareaElement.find('div.result-count span.current').text(`1`)
+
+                                    // Set the new number of results
+                                    workareaElement.find('div.result-count span.total').text(`${lastSearchResults.length}`)
+
+                                    // If there's at least one result for this search then attempt to click the first result
+                                    try {
+                                      lastSearchResults[0].click()
+                                    } catch (e) {}
+                                  } catch (e) {}
+                                })
+
+                                jsTreeObject.on('after_open.jstree', function(event, data) {
+                                  metadataContent.data('jstreeLastOpenedNodeID', `${data.node.id}`)
+                                })
+
+                                jsTreeObject.on('select_node.jstree', function(event, data) {
+                                  metadataContent.data('jstreeLastSelectedNodeID', `${data.node.id}`)
+                                })
+
+                                // Clicks either the previous or the next buttons/arrows
+                                workareaElement.find('div.right-elements div.arrows div.btn').click(function() {
+                                  try {
+                                    // Increase the index if the clicked button is `next`, otherwise decrease it
+                                    currentIndex += $(this).hasClass('next') ? 1 : -1
+
+                                    // If the pointer has reached the first result already then move to the last one
+                                    if (currentIndex < 0)
+                                      currentIndex = lastSearchResults.length - 1
+
+                                    // If the pointer has reached the last result then move to the first one
+                                    if (currentIndex > lastSearchResults.length - 1)
+                                      currentIndex = 0
+
+                                    // Update the current index text
+                                    workareaElement.find('div.result-count span.current').text(`${currentIndex + 1}`)
+
+                                    // Attempt to click the reached result
+                                    lastSearchResults[currentIndex].click()
+
+                                    // Remove the click animation class from the reached result
+                                    $(lastSearchResults[currentIndex]).removeClass('animate-click')
+
+                                    // Add the click animation class to the reached result
+                                    setTimeout(() => $(lastSearchResults[currentIndex]).addClass('animate-click'), 50)
+                                  } catch (e) {}
+                                })
+                              }
+
+                              // This try-catch block is for initializing the metadata differentiation after getting the metadata
+                              try {
+                                // If this is a refresh then skip this try-catch block
+                                if (refresh)
+                                  throw 0
+
+                                setTimeout(() => {
+                                  // Get the newest/latest saved snapshot for the connection
+                                  Modules.Connections.getNewestSnapshot(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(connectionElement, 'data-folder')), (snapshot) => {
+                                    // The metadata to be loaded is by default the recently fetched one
+                                    let toBeLoadedMetadata = metadata
+
+                                    try {
+                                      // If there's a saved snapshot then get its content
+                                      if (snapshot.content != undefined)
+                                        toBeLoadedMetadata = snapshot.content
+
+                                      // Parse the content from JSON string to object
+                                      toBeLoadedMetadata = JSON.parse(toBeLoadedMetadata)
+
+                                      let snapshotTakenTime = ''
+
+                                      try {
+                                        snapshotTakenTime = toBeLoadedMetadata.time
+
+                                        delete toBeLoadedMetadata.time
+                                      } catch (e) {}
+
+                                      try {
+                                        if (snapshotTakenTime.length <= 0)
+                                          throw 0
+
+                                        snapshotTakenTime = ` (${formatTimestamp(snapshotTakenTime)})`
+                                      } catch (e) {}
+
+                                      // The old side's badge will be updated with the snapshot name
+                                      setTimeout(() => {
+                                        workareaElement.find(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: 11${snapshot.name}${snapshotTakenTime}`)
+                                      }, 1000);
+
+                                      // The new side's badge will be updated with fetched time of the latest metadata
+                                      workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
+
+                                      workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
+                                    } catch (e) {}
+
+                                    // Create an editor for the old metadata content
+                                    metadataDiffEditors.old.object = createEditor('old', toBeLoadedMetadata)
+
+                                    // Create an editor for the new metadata content
+                                    metadataDiffEditors.new.object = createEditor('new', metadata)
+
+                                    diffEditor.setModel({
+                                      original: metadataDiffEditors.old.object,
+                                      modified: metadataDiffEditors.new.object
+                                    })
+
+                                    diffEditor.onDidUpdateDiff(function() {
+                                      // Point at the results
+                                      let result = diffEditor.getLineChanges(),
+                                        // Point at the differentiation show button000
+                                        differentiationBtn = workareaElement.find(`span.btn[data-id="${showDifferentiationBtnID}"]`),
+                                        // Point at the changes/differences container
+                                        changesContainer = workareaElement.find(`div.changes-lines[data-id="${changesLinesContainerID}"]`)
+
+                                      // Update the number of detected changes
+                                      differentiationBtn.attr('data-changes', result.length)
+
+                                      // Update the button's text by showing the number of detected changes
+                                      differentiationBtn.children('span').filter(':last').text(result.length); // This semicolon is critical here
+
+                                      workareaElement.find(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).add(workareaElement.find(`span.btn[data-id="${diffNavigationNextBtnID}"]`)).toggleClass('disabled', result.length <= 0)
+
+                                      // If there's no detected change then end the process
+                                      if (result.length <= 0)
+                                        return
+
+                                      // Remove all previous changed lines from the changes' container
+                                      changesContainer.children('div.line').remove()
+
+                                      // Loop through each change in the content
+                                      result.forEach((change) => {
+                                        // Line UI element structure
+                                        let element = `
+                                                     <div class="line" data-number="${change.originalStartLineNumber}">
+                                                       <span class="number">${change.originalStartLineNumber}</span>
+                                                       <span class="content">${metadataDiffEditors.old.object.getLineContent(change.originalStartLineNumber)}</span>
+                                                     </div>`
+
+                                        // Append the line element to the container
+                                        changesContainer.append($(element).click(function() {
+                                          // Get the line's number
+                                          let lineNumber = parseInt($(this).attr('data-number')); // This semicolon is critical here
+
+                                          try {
+                                            diffEditor.revealLineInCenter(lineNumber)
+                                          } catch (e) {}
+                                        }))
+                                      }) // This semicolon is critical here
+                                    })
+
+                                    // Update its layout
+                                    setTimeout(() => diffEditor.layout(), 200)
+
+                                    /**
+                                     * Create a resize observer for the work area body element
+                                     * By doing this the editor's dimensions will always fit with the dialog's dimensions
+                                     */
+                                    setTimeout(() => {
+                                      (new ResizeObserver(() => {
+                                        try {
+                                          diffEditor.layout()
+                                        } catch (e) {}
+                                      })).observe(workareaElement[0])
+                                    })
+
+                                    // // Detect differentiation between old and new content
+                                    // detectDifferentiationShow(toBeLoadedMetadata, metadata)
+                                  })
+
+                                })
+                              } catch (e) {
+                                try {
+                                  errorLog(e, 'connections')
+                                } catch (e) {}
+                              }
+
+                              // Hide the loading indicator in the tree view section
+                              setTimeout(() => {
+                                metadataContent.parent().removeClass('loading')
+
+                                let cqlSnippetsButton = workareaElement.find('div.session-action[action="cql-snippets"]').find('button.btn')
+
+                                cqlSnippetsButton.removeClass('disabled')
+                                cqlSnippetsButton.attr('disabled', null)
+                              }, 150)
+                            } catch (e) {
+                              try {
+                                errorLog(e, 'connections')
+                              } catch (e) {}
+                            }
+                          })
+                        } catch (e) {
+                          try {
+                            errorLog(e, 'connections')
+                          } catch (e) {}
+                        }
+                      }
+                      // End of the check metadata function
+
+                      IPCRenderer.invoke(`pty:get-info`, connectionID).then((info) => {
+                        try {
+                          if (info.success)
                             throw 0
 
                           isConnectionLost = true
@@ -2146,24 +2964,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           return
                         } catch (e) {}
 
-                        // Check if the received data contains the `tracing session` keyword
-                        try {
-                          // Match the regular expression and get the session's ID
-                          sessionID = (new RegExp('tracing\\s*session\\s*:\\s*(.+)', 'gm')).exec(data.output.toLowerCase())[1]
-
-                          // Push the detected session ID
-                          detectedSessionsID.push(manipulateOutput(sessionID))
-
-                          // Remove any duplication
-                          detectedSessionsID = [...new Set(detectedSessionsID)]
-                        } catch (e) {}
-
                         // Check if `CQLSH-STARTED` has been received
                         try {
-                          // If the keywords haven't been received yet or cqlsh has already been loaded then skip this try-catch block
-                          if (!minifyText(data.output).search(minifyText('KEYWORD:CQLSH:STARTED')) || isCQLSHLoaded)
-                            throw 0
-
                           // The CQLSH tool has been loaded
                           isCQLSHLoaded = true
 
@@ -2179,47 +2981,13 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             setTimeout(() => switchTerminalBtn.attr('disabled', null), 1000)
                           }, 1000)
 
-                          // Send an `EOL` character to the pty instance
-                          IPCRenderer.send('pty:command', {
+                          IPCRenderer.send('pty:set-paging', {
                             id: connectionID,
-                            cmd: ''
+                            value: pageSize
                           })
 
-                          // Disable paging for the interactive terminal
-                          setTimeout(() => {
-                            IPCRenderer.send('pty:command', {
-                              id: connectionID,
-                              // cmd: 'PAGING OFF;EXPAND OFF;'
-                              cmd: 'EXPAND OFF;'
-                            })
-
-                            setTimeout(() => {
-                              IPCRenderer.send('pty:command', {
-                                id: connectionID,
-                                cmd: 'CONSISTENCY;SERIAL CONSISTENCY;',
-                                blockID: getRandom.id(10)
-                              })
-
-                              setTimeout(() => {
-                                IPCRenderer.send('pty:command', {
-                                  id: connectionID,
-                                  cmd: `PAGING ${pageSize};`,
-                                  blockID: getRandom.id(10)
-                                })
-
-                                setTimeout(() => {
-                                  IPCRenderer.send('pty:command', {
-                                    id: connectionID,
-                                    cmd: 'TRACING;',
-                                    blockID: getRandom.id(10)
-                                  })
-                                }, 1000)
-                              }, 1000)
-                            }, 1000)
-                          }, 1000)
-
                           try {
-                            loggedInUsername = allOutput.match(/KEYWORD\:USERNAME\:\[(.*?)\]/i)[1]
+                            loggedInUsername = info.data.username
                           } catch (e) {}
 
                           {
@@ -2265,884 +3033,130 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           } catch (e) {}
                         } catch (e) {}
 
-                        /**
-                         * Inner function to check if the metadata has been fetched or not
-                         * The declaration was at the very beginning of this code block
-                         */
-                        checkMetadata = (refresh = false) => {
-                          try {
-                            // Update `isMetadataFetched` to `true`; so no need to get it again till the user asks to
-                            isMetadataFetched = true
+                        // For consistency
+                        try {
+                          setTimeout(() => {
+                            for (let consistencyType of ['consistency', 'serialConsistency']) {
+                              let setConsistency = info.data[consistencyType]
 
-                            // Inner function to create either the old or new editor
-                            let createEditor = (type, metadata) => {
-                              let editor = monaco.editor.createModel(beautifyJSON(metadata, true), 'json')
-
-                              workareaElement.find(`span[data-id="${oldSnapshotNameID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
-                              workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
-                              workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
-
-                              // Return the editor's object
-                              return editor
-                            }
-
-                            // Get the cluster's metadata
-                            Modules.Connections.getMetadata(connectionID, async (metadata) => {
                               try {
-                                // Convert the metadata from JSON string to an object
-                                try {
-                                  metadata = JSON.parse(metadata)
-                                } catch (e) {
-                                  try {
-                                    if (OS.platform() != 'win32')
-                                      throw 0
+                                let consistencyLevels = Modules.Consts.ConsistencyLevels[consistencyType == 'consistency' ? 'Regular' : 'Serial']
 
-                                    metadata = metadata.replace(/\\"/g, `\"`)
+                                if (!(consistencyLevels.some((level) => level == setConsistency)))
+                                  throw 0
 
-                                    metadata = JSON.parse(metadata)
-                                  } catch (e) {}
-                                }
+                                let consistencyAction = workareaElement.find('div.session-action.consistency-level[action="consistency-level"]')
 
-                                // Update latest metadata
-                                latestMetadata = metadata
+                                if (consistencyAction.css('display') == 'none')
+                                  consistencyAction.fadeIn('fast')
 
-                                // Save the latest metadata in the OS keychain
-                                try {
-                                  let snippetsMetadata = latestMetadata.keyspaces.map((keyspace) => {
-                                    return {
-                                      name: keyspace.name,
-                                      tables: [...keyspace.tables, ...keyspace.indexes, ...keyspace.views].map((_object) => _object.name)
-                                    }
-                                  })
+                                consistencyAction.children('button').find(`b[${consistencyType == 'consistency' ? 'standard' : 'serial'}]`).text(setConsistency)
 
-                                  encryptTextBG(JSON.stringify(snippetsMetadata), `metadata_${connectionID}`)
-                                } catch (e) {}
-
-                                {
-                                  let clusterNameInfoElement = workareaElement.find('div.connection-info').find('div.info[info="cluster-name"]')
-
-                                  try {
-                                    clusterNameInfoElement.children('div._placeholder').hide()
-                                    clusterNameInfoElement.children('div.text').text(`${metadata.cluster_name == undefined || metadata.cluster_name.length <= 0 ? 'Unknown' : metadata.cluster_name}`)
-                                  } catch (e) {}
-                                }
-
-                                // Build the tree view
-                                let treeview = await buildTreeview(JSON.parse(JSON.stringify(metadata)), true, getActiveWorkspaceID(), connectionID),
-                                  // Point at the metadata content's container
-                                  metadataContent = workareaElement.find(`div.metadata-content[data-id="${metadataContentID}"]`)
-
-                                // Create the tree view of the metadata and hold the returned object
-                                jsTreeObject = metadataContent.jstree(treeview)
-
-                                // Disable the selection feature of a tree node
-                                jsTreeObject.disableSelection()
-
-                                try {
-                                  jsTreeObject.unbind('contextmenu')
-                                  jsTreeObject.unbind('loaded.jstree')
-                                  jsTreeObject.unbind('search.jstree')
-                                  jsTreeObject.unbind('after_open.jstree')
-                                  jsTreeObject.unbind('select_node.jstree')
-                                  workareaElement.find('div.right-elements div.arrows div.btn').unbind('click')
-                                } catch (e) {}
-
-                                try {
-                                  jsTreeObject.on('loaded.jstree', () => {
-                                    setTimeout(() => {
-                                      if (metadataContent.data('jstreeLastOpenedNodeID') != undefined && metadataContent.data('jstreeLastOpenedNodeID').length == 32)
-                                        jsTreeObject.jstree()._open_to(metadataContent.data('jstreeLastOpenedNodeID'))
-
-                                      if (metadataContent.data('jstreeLastSelectedNodeID') != undefined && metadataContent.data('jstreeLastSelectedNodeID').length == 32)
-                                        jsTreeObject.jstree().select_node(metadataContent.data('jstreeLastSelectedNodeID'))
-                                    })
-                                  })
-                                } catch (e) {}
-
-                                /**
-                                 * Create a listener to the event `contextmenu`
-                                 * This event `contextmenu` is customized for the JSTree plugin
-                                 */
-                                jsTreeObject.on('contextmenu', async function(event) {
-                                  // Remove the default contextmenu created by the plugin
-                                  $('.vakata-context').remove()
-
-                                  // If connection is lost with the connection then no context-menu would be shown
-                                  if (isConnectionLost)
-                                    return
-
-                                  // Point at the right-clicked node
-                                  let clickedNode = $(event.target)
-
-                                  // If the node is not one of the specified types then skip this process
-                                  if (['a', 'i', 'span'].every((type) => !clickedNode.is(clickedNode)))
-                                    return
-
-                                  /**
-                                   * The main element in the node is the anchor `a`
-                                   * If the clicked element is not `a` but `i` or `span` then the `a` is actually their parent
-                                   */
-                                  try {
-                                    // If the right-clicked node is an anchor already then skip this try-catch block
-                                    if (clickedNode.is('a'))
-                                      throw 0
-
-                                    // Point at the clicked element's parent `a`
-                                    clickedNode = clickedNode.parent()
-                                  } catch (e) {}
-
-                                  // If after the manipulation the final element is not an anchor or doesn't have a required attribute then skip the process
-                                  if (!clickedNode.is('a') || clickedNode.attr('allow-right-context') != 'true')
-                                    return
-
-                                  // If there's no processing element in the anchor then append one
-                                  if (clickedNode.find('div.processing').length <= 0)
-                                    clickedNode.append($(`<div class="processing"></div>`))
-
-                                  let [
-                                    // Get the target's node name in Cassandra
-                                    targetName,
-                                    // Get the target's keyspace's name - if it's a table -
-                                    keyspaceName,
-                                    tableName,
-                                    // Get the target's type - cluster, keyspace or table -
-                                    nodeType
-                                  ] = getAttributes(clickedNode, ['name', 'keyspace', 'table', 'type'])
-
-                                  // Define the scope to be passed with the request
-                                  scope = `keyspace>${nodeType == 'keyspace' ? targetName : keyspaceName}${nodeType != 'keyspace' ? 'table>' + targetName : ''}`
-
-                                  // If the node type is cluster then only `cluster` is needed as a scope
-                                  if (nodeType == 'cluster' || nodeType == 'keyspaces')
-                                    scope = 'cluster'
-
-                                  // If the node type is an index
-                                  try {
-                                    if (nodeType != 'index')
-                                      throw 0
-
-                                    // Add the keyspace
-                                    scope = `keyspace>${keyspaceName}`
-
-                                    // Add the index's table
-                                    scope += `table>${tableName}`
-
-                                    // And finally add the index itself
-                                    scope += `index>${targetName}`
-                                  } catch (e) {}
-
-                                  let contextMenu = [{
-                                    label: I18next.capitalize(I18next.t('get CQL description')),
-                                    submenu: [{
-                                        label: I18next.capitalize(I18next.t('display in the work area')),
-                                        click: `() => views.main.webContents.send('cql-desc:get', {
-                                                      connectionID: '${getAttributes(connectionElement, 'data-id')}',
-                                                      scope: '${scope}',
-                                                      tabID: '${cqlDescriptionContentID}',
-                                                      nodeID: '${getAttributes(clickedNode, 'id')}'
-                                                    })`
-                                      },
-                                      {
-                                        label: I18next.capitalize(I18next.t('save it as a text file')),
-                                        click: `() => views.main.webContents.send('cql-desc:get', {
-                                                      connectionID: '${getAttributes(connectionElement, 'data-id')}',
-                                                      scope: '${scope}',
-                                                      tabID: '${cqlDescriptionContentID}',
-                                                      nodeID: '${getAttributes(clickedNode, 'id')}',
-                                                      saveAsFile: true
-                                                    })`
-                                      },
-                                    ]
-                                  }]
-
-                                  let commands = {
-                                      ddl: [],
-                                      dql: [],
-                                      dml: [],
-                                      dcl: []
-                                    },
-                                    isSystemKeyspace = false,
-                                    replicationStrategy = {},
-                                    keyspaceJSONObj = {},
-                                    keyspaceUDTs = [],
-                                    keyspaceTables = []
-
-                                  try {
-                                    if (['cluster'].every((type) => nodeType != type))
-                                      throw 0
-
-                                    commands.ddl.push({
-                                      label: I18next.capitalize(I18next.t('create keyspace')),
-                                      action: 'createKeyspace',
-                                      click: `() => views.main.webContents.send('create-keyspace', {
-                                                  datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
-                                                  keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`
-                                    })
-                                  } catch (e) {}
-
-                                  try {
-                                    if (['keyspace', 'udts-parent', 'udt', 'tables-parent', 'counter-tables-parent', 'table'].every((type) => nodeType != type) || (clickedNode.attr('data-is-virtual') != null && ['keyspace', 'table'].every((type) => nodeType != type)))
-                                      throw 0
-
-                                    try {
-                                      if (['udt', 'counter-tables-parent', 'tables-parent', 'table'].every((type) => !nodeType.includes(type)))
-                                        throw 0
-
-                                      if (nodeType != 'table')
-                                        contextMenu = []
-
-                                      targetName = keyspaceName
-                                    } catch (e) {}
-
-                                    let keyspaceInfo = metadata.keyspaces.find((keyspace) => keyspace.name == targetName)
-
-                                    isSystemKeyspace = Modules.Consts.CassandraSystemKeyspaces.some((keyspace) => keyspace == keyspaceInfo.name)
-
-                                    try {
-                                      $('#rightClickActionsMetadata').attr('data-keyspace-info', `${JSON.stringify(keyspaceInfo)}`)
-                                    } catch (e) {}
-
-                                    replicationStrategy = JSON.parse(repairJSONString(`${keyspaceInfo.replication_strategy}`) || `{}`)
-
-                                    keyspaceJSONObj = metadata.keyspaces.find((keyspace) => keyspace.name == targetName)
-
-                                    keyspaceUDTs = keyspaceJSONObj.user_types
-
-                                    keyspaceTables = (keyspaceJSONObj.tables || []).map((table) => table.name)
-
-                                    if ((replicationStrategy || {}).class == 'LocalStrategy')
-                                      throw 0
-
-                                    if (contextMenu.length != 0)
-                                      contextMenu = contextMenu.concat([{
-                                        type: 'separator',
-                                      }])
-
-                                    commands.ddl = commands.ddl.concat([{
-                                        label: I18next.capitalize(I18next.t('create UDT')),
-                                        action: 'createUDT',
-                                        click: `() => views.main.webContents.send('create-udt', {
-                                                  keyspaceName: '${targetName}',
-                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                  numOfUDTs: ${keyspaceUDTs.length},
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                        visible: !isSystemKeyspace && ['keyspace', 'udts-parent'].some((type) => nodeType == type),
-                                      },
-                                      {
-                                        label: I18next.capitalize(I18next.t('create table')),
-                                        action: 'createStandardTable',
-                                        click: `() => views.main.webContents.send('create-table', {
-                                                  keyspaceName: '${targetName}',
-                                                  tables: '${JSON.stringify(keyspaceTables) || []}',
-                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                  numOfUDTs: ${keyspaceUDTs.length},
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                  })`,
-                                        visible: !isSystemKeyspace && ['keyspace', 'tables-parent'].some((type) => nodeType == type)
-                                      },
-                                      {
-                                        label: I18next.capitalize(I18next.t('create counter table')),
-                                        action: 'createCounterTable',
-                                        click: `() => views.main.webContents.send('create-counter-table', {
-                                                  keyspaceName: '${targetName}',
-                                                  tables: '${JSON.stringify(keyspaceTables) || []}',
-                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                  numOfUDTs: ${keyspaceUDTs.length},
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                        visible: !isSystemKeyspace && ['keyspace', 'tables-parent', 'counter-tables-parent'].some((type) => nodeType == type)
-                                      },
-                                      {
-                                        label: I18next.capitalize(I18next.t('alter UDT')),
-                                        action: 'alterUDT',
-                                        click: `() => views.main.webContents.send('alter-udt', {
-                                                  keyspaceName: '${targetName}',
-                                                  udtName: '${clickedNode.attr('name')}',
-                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                  numOfUDTs: ${keyspaceUDTs.length},
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                        visible: nodeType == 'udt'
-                                      },
-                                      {
-                                        label: I18next.capitalize(I18next.t('drop UDT')),
-                                        action: 'dropUDT',
-                                        click: `() => views.main.webContents.send('drop-udt', {
-                                                  udtName: '${clickedNode.attr('name')}',
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  keyspaceName: '${targetName}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                        visible: nodeType == 'udt'
-                                      }
-                                    ])
-
-                                    commands.dml = commands.dml.concat([{
-                                        label: I18next.capitalize(I18next.t('insert row as JSON')),
-                                        action: 'insertRow',
-                                        click: `() => views.main.webContents.send('insert-row', {
-                                                  tableName: '${clickedNode.attr('name')}',
-                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  keyspaceName: '${keyspaceName}',
-                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}',
-                                                  asJSON: 'true'
-                                                })`,
-                                        visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
-                                      },
-                                      {
-                                        label: I18next.capitalize(I18next.t('insert row')),
-                                        action: 'insertRow',
-                                        click: `() => views.main.webContents.send('insert-row', {
-                                                  tableName: '${clickedNode.attr('name')}',
-                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  keyspaceName: '${keyspaceName}',
-                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                        visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
-                                      },
-                                      {
-                                        label: I18next.capitalize(I18next.t('increment/decrement counter(s)')),
-                                        action: 'incrementDecrementCounter',
-                                        click: `() => views.main.webContents.send('insert-row', {
-                                                  tableName: '${clickedNode.attr('name')}',
-                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  keyspaceName: '${keyspaceName}',
-                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                        visible: clickedNode.attr('is-counter-table') == 'true'
-                                      }
-                                    ])
-
-                                    commands.ddl.push({
-                                      label: I18next.capitalize(I18next.t('alter table')),
-                                      action: 'alterTable',
-                                      click: `() => views.main.webContents.send('alter-table', {
-                                                  tableName: '${clickedNode.attr('name')}',
-                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                  numOfUDTs: ${keyspaceUDTs.length},
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  keyspaceName: '${keyspaceName}',
-                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                      visible: nodeType == 'table'
-                                    })
-
-                                    commands.dml.push({
-                                      label: I18next.capitalize(I18next.t('delete row/colum')),
-                                      action: 'insertRow',
-                                      click: `() => views.main.webContents.send('delete-row-column', {
-                                                  tableName: '${clickedNode.attr('name')}',
-                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  keyspaceName: '${keyspaceName}',
-                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                      visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
-                                    })
-
-                                    commands.ddl = commands.ddl.concat([{
-                                        label: I18next.capitalize(I18next.t('drop table')),
-                                        action: 'dropTable',
-                                        click: `() => views.main.webContents.send('drop-table', {
-                                                  tableName: '${clickedNode.attr('name')}',
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  keyspaceName: '${keyspaceName}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                        visible: nodeType == 'table'
-                                      }, {
-                                        label: I18next.capitalize(I18next.t('truncate table')),
-                                        action: 'truncateTable',
-                                        click: `() => views.main.webContents.send('truncate-table', {
-                                                  tableName: '${clickedNode.attr('name')}',
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  keyspaceName: '${keyspaceName}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                        visible: nodeType == 'table'
-                                      },
-                                      {
-                                        label: I18next.capitalize(I18next.t('alter keyspace')),
-                                        action: 'alterKeyspace',
-                                        click: `() => views.main.webContents.send('alter-keyspace', {
-                                                  datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
-                                                  keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                                  keyspaceName: '${targetName}',
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                        visible: nodeType == 'keyspace'
-                                      },
-                                      {
-                                        label: I18next.capitalize(I18next.t('drop keyspace')),
-                                        action: 'dropKeyspace',
-                                        click: `() => views.main.webContents.send('drop-keyspace', {
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  keyspaceName: '${targetName}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                        visible: nodeType == 'keyspace'
-                                      }
-                                    ])
-
-                                    if (isSystemKeyspace)
-                                      contextMenu = contextMenu.filter((item) => item.action != 'dropKeyspace')
-                                  } catch (e) {}
-
-                                  try {
-                                    if ((replicationStrategy || {}).class == 'LocalStrategy' && !isSystemKeyspace)
-                                      throw 0
-
-                                    commands.dql.push({
-                                      label: I18next.capitalize(I18next.t('select row as JSON')),
-                                      action: 'selectRow',
-                                      click: `() => views.main.webContents.send('select-row', {
-                                                  tableName: '${clickedNode.attr('name')}',
-                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  keyspaceName: '${keyspaceName}',
-                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}',
-                                                  asJSON: 'true'
-                                                })`,
-                                      visible: nodeType == 'table'
-                                    }, {
-                                      label: I18next.capitalize(I18next.t('select row')),
-                                      action: 'selectRow',
-                                      click: `() => views.main.webContents.send('select-row', {
-                                                  tableName: '${clickedNode.attr('name')}',
-                                                  tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                  udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  keyspaceName: '${keyspaceName}',
-                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`,
-                                      visible: nodeType == 'table'
-                                    })
-                                  } catch (e) {}
-
-                                  try {
-                                    if (nodeType != 'keyspaces')
-                                      throw 0
-
-                                    commands.ddl.push({
-                                      label: I18next.capitalize(I18next.t('create keyspace')),
-                                      action: 'createKeyspace',
-                                      click: `() => views.main.webContents.send('create-keyspace', {
-                                                  datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
-                                                  keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                                  tabID: '_${cqlshSessionContentID}',
-                                                  textareaID: '_${cqlshSessionStatementInputID}',
-                                                  btnID: '_${executeStatementBtnID}'
-                                                })`
-                                    })
-                                  } catch (e) {}
-
-                                  if (contextMenu.length > 0 && contextMenu.find((item) => item.type == 'separator') == undefined)
-                                    contextMenu = contextMenu.concat([{
-                                      type: 'separator',
-                                    }])
-
-                                  if (clickedNode.attr('data-is-virtual') == 'true') {
-                                    commands.ddl = []
-                                    commands.dml = []
-                                    commands.dcl = []
+                                if (activeSessionsConsistencyLevels[activeConnectionID] == undefined)
+                                  activeSessionsConsistencyLevels[activeConnectionID] = {
+                                    standard: '',
+                                    serial: ''
                                   }
 
-                                  contextMenu = contextMenu.concat([{
-                                      label: I18next.capitalize(I18next.t('commands')),
-                                      enabled: false
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('DDL (Data Definition Language)')),
-                                      enabled: commands.ddl.length > 0 && commands.ddl.some((command) => command.visible != false),
-                                      submenu: commands.ddl
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('DQL (Data Query Language)')),
-                                      enabled: commands.dql.length > 0 && commands.dql.some((command) => command.visible != false),
-                                      submenu: commands.dql
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('DML (Data Manipulation Language)')),
-                                      enabled: commands.dml.length > 0 && commands.dml.some((command) => command.visible != false),
-                                      submenu: commands.dml
-                                    },
-                                    {
-                                      label: I18next.capitalize(I18next.t('DCL (Data Control Language)')),
-                                      enabled: commands.dcl.length > 0 && commands.dcl.some((command) => command.visible != false),
-                                      submenu: commands.dcl
-                                    }
-                                  ])
+                                activeSessionsConsistencyLevels[activeConnectionID][consistencyType == 'consistency' ? 'standard' : 'serial'] = setConsistency
 
-                                  try {
-                                    if (!['cluster', 'keyspace', 'table'].some((type) => nodeType == type))
-                                      throw 0
+                                isConsistencyCommand = true
+                              } catch (e) {}
+                            }
+                          }, 500)
+                        } catch (e) {}
 
-                                    contextMenu = contextMenu.concat([{
-                                        type: 'separator',
-                                      },
-                                      {
-                                        label: I18next.capitalize(I18next.t('features')),
-                                        enabled: false
-                                      }
-                                    ])
+                        // For paging
+                        try {
+                          setTimeout(() => {
+                            let paginationAction = workareaElement.find('div.session-action.pagination-size[action="pagination-size"]')
 
-                                    let click = ''
+                            if (info.data.pageSize <= 0 && pageSize <= 0) {
+                              paginationAction.fadeOut('fast')
+                              throw 0
+                            }
 
-                                    if (nodeType == 'cluster')
-                                      click = `() => views.main.webContents.send('axonops-integration', {
-                                          workareaID: '${workareaElement.attr('workarea-id')}',
-                                          connectionID: '${connectionID}',
-                                          clusterName: 'cluster'
-                                        })`
+                            let detectedPagingSize = parseInt(pageSize)
 
-                                    if (nodeType == 'keyspace')
-                                      click = `() => views.main.webContents.send('axonops-integration', {
-                                          workareaID: '${workareaElement.attr('workarea-id')}',
-                                          connectionID: '${connectionID}',
-                                          keyspaceName: '${targetName}'
-                                        })`
+                            if (isNaN(detectedPagingSize))
+                              detectedPagingSize = parseInt(info.data.pageSize)
 
-                                    if (nodeType == 'table')
-                                      click = `() => views.main.webContents.send('axonops-integration', {
-                                          workareaID: '${workareaElement.attr('workarea-id')}',
-                                          connectionID: '${connectionID}',
-                                          tableName: '${clickedNode.attr('name')}',
-                                          keyspaceName: '${keyspaceName}'
-                                        })`
+                            if (isNaN(detectedPagingSize))
+                              throw 0
 
-                                    contextMenu = contextMenu.concat([{
-                                      label: I18next.capitalize(I18next.replaceData(`view $data dashboard`, [I18next.t(`${nodeType}`)])),
-                                      action: 'axonops-integration',
-                                      click,
-                                      enabled: isAxonOpsIntegrationActionEnabled,
-                                      icon: Path.join(__dirname, '..', '..', '..', 'assets', 'images', `axonops-icon-transparent-16x16${!isHostThemeDark ? '-dark' : ''}.png`)
-                                    }])
+                            activeSessionsPaginationSize = detectedPagingSize
 
-                                    // The snippets feature
-                                    contextMenu = contextMenu.concat([{
-                                      label: I18next.capitalize(I18next.t(`view related snippets`)),
-                                      action: 'cql-snippets',
-                                      click: nodeType == 'keyspace' ? `() => views.main.webContents.send('cql-snippets:view', {
-                                          workareaID: '${workareaElement.attr('workarea-id')}',
-                                          connectionID: '${connectionID}',
-                                          keyspaceName: '${targetName}',
-                                          workareaID: '${workareaElement.attr('workarea-id')}'
-                                          })` : `() => views.main.webContents.send('cql-snippets:view', {
-                                            workareaID: '${workareaElement.attr('workarea-id')}',
-                                            connectionID: '${connectionID}',
-                                            tableName: '${clickedNode.attr('name')}',
-                                            keyspaceName: '${keyspaceName}',
-                                            workareaID: '${workareaElement.attr('workarea-id')}'
-                                          })`,
-                                      enabled: nodeType != 'cluster'
-                                    }])
-                                  } catch (e) {}
+                            if (paginationAction.css('display') == 'none')
+                              paginationAction.fadeIn('fast')
 
-                                  // Send a request to the main thread regards pop-up a menu
-                                  IPCRenderer.send('show-context-menu', JSON.stringify(contextMenu))
-                                })
-
-                                // Handle the search feature in the metadata tree view
-                                {
-                                  // Define the current index of the search results
-                                  let currentIndex = 0,
-                                    // Hold the last search results in an array
-                                    lastSearchResults = []
-
-                                  // Once a search process is completed
-                                  jsTreeObject.on('search.jstree', function(event, data) {
-                                    try {
-                                      // Reset the current index to be the first result
-                                      currentIndex = 0
-
-                                      // Hold the search results
-                                      lastSearchResults = metadataContent.find('a.jstree-search')
-
-                                      // Remove the click animation class from all results; to be able to execute the animation again
-                                      lastSearchResults.removeClass('animate-click')
-
-                                      // Whether or not the search container should be shown
-                                      workareaElement.find('div.right-elements').toggleClass('show', data.nodes.length > 0)
-
-                                      // Reset the current result where the pointer has reached
-                                      workareaElement.find('div.result-count span.current').text(`1`)
-
-                                      // Set the new number of results
-                                      workareaElement.find('div.result-count span.total').text(`${lastSearchResults.length}`)
-
-                                      // If there's at least one result for this search then attempt to click the first result
-                                      try {
-                                        lastSearchResults[0].click()
-                                      } catch (e) {}
-                                    } catch (e) {}
-                                  })
-
-                                  jsTreeObject.on('after_open.jstree', function(event, data) {
-                                    metadataContent.data('jstreeLastOpenedNodeID', `${data.node.id}`)
-                                  })
-
-                                  jsTreeObject.on('select_node.jstree', function(event, data) {
-                                    metadataContent.data('jstreeLastSelectedNodeID', `${data.node.id}`)
-                                  })
-
-                                  // Clicks either the previous or the next buttons/arrows
-                                  workareaElement.find('div.right-elements div.arrows div.btn').click(function() {
-                                    try {
-                                      // Increase the index if the clicked button is `next`, otherwise decrease it
-                                      currentIndex += $(this).hasClass('next') ? 1 : -1
-
-                                      // If the pointer has reached the first result already then move to the last one
-                                      if (currentIndex < 0)
-                                        currentIndex = lastSearchResults.length - 1
-
-                                      // If the pointer has reached the last result then move to the first one
-                                      if (currentIndex > lastSearchResults.length - 1)
-                                        currentIndex = 0
-
-                                      // Update the current index text
-                                      workareaElement.find('div.result-count span.current').text(`${currentIndex + 1}`)
-
-                                      // Attempt to click the reached result
-                                      lastSearchResults[currentIndex].click()
-
-                                      // Remove the click animation class from the reached result
-                                      $(lastSearchResults[currentIndex]).removeClass('animate-click')
-
-                                      // Add the click animation class to the reached result
-                                      setTimeout(() => $(lastSearchResults[currentIndex]).addClass('animate-click'), 50)
-                                    } catch (e) {}
-                                  })
-                                }
-
-                                // This try-catch block is for initializing the metadata differentiation after getting the metadata
-                                try {
-                                  // If this is a refresh then skip this try-catch block
-                                  if (refresh)
-                                    throw 0
-
-                                  setTimeout(() => {
-                                    // Get the newest/latest saved snapshot for the connection
-                                    Modules.Connections.getNewestSnapshot(Path.join(getWorkspaceFolderPath(workspaceID), getAttributes(connectionElement, 'data-folder')), (snapshot) => {
-                                      // The metadata to be loaded is by default the recently fetched one
-                                      let toBeLoadedMetadata = metadata
-
-                                      try {
-                                        // If there's a saved snapshot then get its content
-                                        if (snapshot.content != undefined)
-                                          toBeLoadedMetadata = snapshot.content
-
-                                        // Parse the content from JSON string to object
-                                        toBeLoadedMetadata = JSON.parse(toBeLoadedMetadata)
-
-                                        let snapshotTakenTime = ''
-
-                                        try {
-                                          snapshotTakenTime = toBeLoadedMetadata.time
-
-                                          delete toBeLoadedMetadata.time
-                                        } catch (e) {}
-
-                                        try {
-                                          if (snapshotTakenTime.length <= 0)
-                                            throw 0
-
-                                          snapshotTakenTime = ` (${formatTimestamp(snapshotTakenTime)})`
-                                        } catch (e) {}
-
-                                        // The old side's badge will be updated with the snapshot name
-                                        setTimeout(() => {
-                                          workareaElement.find(`span.old-snapshot[data-id="${oldSnapshotNameID}"]`).text(`: 11${snapshot.name}${snapshotTakenTime}`)
-                                        }, 1000);
-
-                                        // The new side's badge will be updated with fetched time of the latest metadata
-                                        workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
-
-                                        workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).attr('data-time', `${new Date().getTime()}`)
-                                      } catch (e) {}
-
-                                      // Create an editor for the old metadata content
-                                      metadataDiffEditors.old.object = createEditor('old', toBeLoadedMetadata)
-
-                                      // Create an editor for the new metadata content
-                                      metadataDiffEditors.new.object = createEditor('new', metadata)
-
-                                      diffEditor.setModel({
-                                        original: metadataDiffEditors.old.object,
-                                        modified: metadataDiffEditors.new.object
-                                      })
-
-                                      diffEditor.onDidUpdateDiff(function() {
-                                        // Point at the results
-                                        let result = diffEditor.getLineChanges(),
-                                          // Point at the differentiation show button000
-                                          differentiationBtn = workareaElement.find(`span.btn[data-id="${showDifferentiationBtnID}"]`),
-                                          // Point at the changes/differences container
-                                          changesContainer = workareaElement.find(`div.changes-lines[data-id="${changesLinesContainerID}"]`)
-
-                                        // Update the number of detected changes
-                                        differentiationBtn.attr('data-changes', result.length)
-
-                                        // Update the button's text by showing the number of detected changes
-                                        differentiationBtn.children('span').filter(':last').text(result.length); // This semicolon is critical here
-
-                                        workareaElement.find(`span.btn[data-id="${diffNavigationPrevBtnID}"]`).add(workareaElement.find(`span.btn[data-id="${diffNavigationNextBtnID}"]`)).toggleClass('disabled', result.length <= 0)
-
-                                        // If there's no detected change then end the process
-                                        if (result.length <= 0)
-                                          return
-
-                                        // Remove all previous changed lines from the changes' container
-                                        changesContainer.children('div.line').remove()
-
-                                        // Loop through each change in the content
-                                        result.forEach((change) => {
-                                          // Line UI element structure
-                                          let element = `
-                                                       <div class="line" data-number="${change.originalStartLineNumber}">
-                                                         <span class="number">${change.originalStartLineNumber}</span>
-                                                         <span class="content">${metadataDiffEditors.old.object.getLineContent(change.originalStartLineNumber)}</span>
-                                                       </div>`
-
-                                          // Append the line element to the container
-                                          changesContainer.append($(element).click(function() {
-                                            // Get the line's number
-                                            let lineNumber = parseInt($(this).attr('data-number')); // This semicolon is critical here
-
-                                            try {
-                                              diffEditor.revealLineInCenter(lineNumber)
-                                            } catch (e) {}
-                                          }))
-                                        }) // This semicolon is critical here
-                                      })
-
-                                      // Update its layout
-                                      setTimeout(() => diffEditor.layout(), 200)
-
-                                      /**
-                                       * Create a resize observer for the work area body element
-                                       * By doing this the editor's dimensions will always fit with the dialog's dimensions
-                                       */
-                                      setTimeout(() => {
-                                        (new ResizeObserver(() => {
-                                          try {
-                                            diffEditor.layout()
-                                          } catch (e) {}
-                                        })).observe(workareaElement[0])
-                                      })
-
-                                      // // Detect differentiation between old and new content
-                                      // detectDifferentiationShow(toBeLoadedMetadata, metadata)
-                                    })
-
-                                  })
-                                } catch (e) {
-                                  try {
-                                    errorLog(e, 'connections')
-                                  } catch (e) {}
-                                }
-
-                                // Hide the loading indicator in the tree view section
-                                setTimeout(() => {
-                                  metadataContent.parent().removeClass('loading')
-
-                                  let cqlSnippetsButton = workareaElement.find('div.session-action[action="cql-snippets"]').find('button.btn')
-
-                                  cqlSnippetsButton.removeClass('disabled')
-                                  cqlSnippetsButton.attr('disabled', null)
-                                }, 150)
-                              } catch (e) {
-                                try {
-                                  errorLog(e, 'connections')
-                                } catch (e) {}
-                              }
-                            })
-                          } catch (e) {
                             try {
-                              errorLog(e, 'connections')
+                              detectedPagingSize = detectedPagingSize.format()
                             } catch (e) {}
-                          }
-                        }
-                        // End of the check metadata function
+
+                            paginationAction.find(`span.size`).text(`${detectedPagingSize}`)
+                          }, 750)
+                        } catch (e) {}
+
+                        // For tracing
+                        try {
+                          setTimeout(() => {
+                            let queryTracingAction = workareaElement.find('div.session-action.query-tracing[action="query-tracing"]')
+
+                            if (queryTracingAction.css('display') == 'none')
+                              queryTracingAction.fadeIn('fast')
+
+                            let isTracingEnabled = info.data.tracing
+
+                            queryTracingAction.data('tracingStatus', isTracingEnabled)
+
+                            queryTracingAction.find(`span.staus`).text(`${isTracingEnabled ? 'ON' : 'OFF'}`)
+                          }, 1000)
+                        } catch (e) {}
+
+                        // Check metadata
+                        try {
+                          checkMetadata()
+                        } catch (e) {}
+                      })
+
+                      try {
+                        IPCRenderer.removeAllListeners(`pty:data:${connectionID}`)
+                      } catch (e) {}
+
+                      // Listen to data sent from the pty instance which are fetched from the cqlsh tool
+                      IPCRenderer.on(`pty:data:${connectionID}`, (_, data) => {
+                        try {
+                          clearTimeout(killProcessTimeout)
+                        } catch (e) {}
+
+                        // Stop any work if the connection is lost
+                        if (isConnectionLost)
+                          return
 
                         // Determine whether or not the metadata function will be called
                         try {
-                          // If the cqlsh prompt hasn't been found in the received data or cqlsh is not loaded yet then the work area isn't ready to get metadata
-                          if ((new RegExp('cqlsh\s*(\:|\s*)(.+|\s*)\>')).exec(data.output) == null || !isCQLSHLoaded)
-                            throw 0
-
-                          // If metadata hasn't been got yet
-                          if (!isMetadataFetched) {
-                            // Call the metadata function
+                          if (isCQLSHLoaded && !isMetadataFetched)
                             checkMetadata()
-
-                            // Skip the upcoming code in this try-catch block
-                            throw 0
-                          }
                         } catch (e) {}
+
+                        /**
+                         * First check: There's an error
+                         */
 
                         /**
                          * For the app's terminal
                          *
                          * Get cqlsh current prompt - for instance; `cqlsh>` -
                          */
-                        let prompt = data.output.match(/^(.*?cqlsh.*?>)/gm),
-                          // Update the active prefix to be used
-                          activePrefix = prefix
-
-                        /**
-                         * The upcoming block is about the interactive terminal
-                         *
-                         * Whether or not the output is related to paging process
-                         */
-                        let isOutputWithPaging = data.output.indexOf('KEYWORD:PAGING:CONTINUE') != -1,
+                        let prompt = data?.output?.promptInfo?.prompt || '',
+                          /**
+                           * The upcoming block is about the interactive terminal
+                           *
+                           * Whether or not the output is related to paging process
+                           */
+                          isOutputWithPaging = data?.output?.data?.hasMore != undefined && data?.output?.data?.identifier === 'SELECT',
                           // Whether or not the output has been completed
-                          isOutputCompleted = data.output.indexOf('KEYWORD:OUTPUT:COMPLETED:ALL') != -1,
-                          // Whether or not this output is incomplete
-                          isOutputIncomplete = allOutput.endsWith('KEYWORD:STATEMENT:INCOMPLETE'),
-                          // Whether or not this output is ignored
-                          isOutputIgnored = data.output.indexOf('KEYWORD:STATEMENT:IGNORE') != -1,
+                          isOutputCompleted = (isOutputWithPaging && !data?.output?.data?.hasMore) || (!isOutputWithPaging && data?.output?.allCompleted),
                           // Define the variable that will hold a timeout to refresh the metadata content
                           refreshMetadataTimeout
 
@@ -3164,195 +3178,15 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                           isOutputWithPaging = isOutputWithPaging || blockElement.attr('data-is-paging') != undefined
 
-                          try {
-                            isOutputIncomplete = (isSourceCommand ? !(allOutput.includes('KEYWORD:OUTPUT:SOURCE:COMPLETED')) : isOutputIncomplete) || isOutputWithPaging
-                          } catch (e) {}
-
-                          // Update the block's output
-                          blocksOutput[data.blockID] = `${blocksOutput[data.blockID] || ''}${data.output}`
-
-                          // Define the final content to be manipulated and rendered
-                          finalContent = blocksOutput[data.blockID]
-
-                          // Get the identifiers detected in the statements
-                          let statementsIdentifiers = [],
-                            statementsStNextIdentifiers = [],
-                            statementsNdNextIdentifiers = []
-
-                          try {
-                            // Get the detected identifiers
-                            statementsIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[(.*?)\]/i)[1].split(',')
-                            // Manipulate them
-                            statementsIdentifiers = statementsIdentifiers.map((identifier) => identifier.trim())
-                          } catch (e) {}
-
-                          try {
-                            statementsStNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[(.*?)\]/i)[1].split(',')
-                            statementsStNextIdentifiers = statementsStNextIdentifiers.map((identifier) => identifier.trim())
-                          } catch (e) {}
-
-                          try {
-                            statementsNdNextIdentifiers = finalContent.match(/KEYWORD\:STATEMENTS\:IDENTIFIERS\:\[.*?\]\[.*?\]\[(.*?)\]/i)[1].split(',')
-                            statementsNdNextIdentifiers = statementsNdNextIdentifiers.map((identifier) => identifier.trim())
-                          } catch (e) {}
-
                           // Handle if the statement's execution process has stopped
                           try {
                             // Toggle the `busy` state of the execution button
-                            workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+                            workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').removeClass('busy')
 
-                            // Attempt to clear the killing process button showing state
-                            try {
-                              clearTimeout(killProcessTimeout)
-                            } catch (e) {}
-
-                            // Hide the button if there's no incomplete output
-                            if (!isOutputIncomplete)
-                              hintsContainer.add(killProcessBtn.parent()).removeClass('show')
-
-                            // There's an incomplete output
-                            if (isOutputIncomplete)
-                              killProcessTimeout = setTimeout(() => {
-                                killProcessBtn.parent().addClass('show')
-
-                                workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
-                                workareaElement.find('.disableable').addClass('disabled')
-                                workareaElement.addClass('busy-cqlsh')
-
-                                if (!isOutputWithPaging)
-                                  setTimeout(() => hintsContainer.addClass('show'), 1000)
-                              }, 1500)
+                            // hintsContainer.add(killProcessBtn.parent()).removeClass('show')
                           } catch (e) {}
 
-                          try {
-                            if (!isOutputIgnored || blockElement.children('div.output').find('div.incomplete-statement').length != 0)
-                              throw 0
-
-                            // The sub output structure UI
-                            let element = `
-                                           <div class="sub-output info incomplete-statement">
-                                             <div class="sub-output-content"><span mulang="incomplete statement has been detected and stopped the execution flow" capitalize-first></span>.</div>
-                                           </div>`
-
-                            blockElement.children('div.output').children('div.executing').hide()
-
-                            // Append a `sub-output` element in the output's container
-                            blockElement.children('div.output').append($(element).show(function() {
-                              workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').addClass('busy')
-
-                              // Apply the chosen language on the UI element after being fully loaded
-                              setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
-
-                              // Execute this code whatever the case is
-                              setTimeout(() => {
-                                // Unbind all events regards the actions' buttons of the block
-                                blockElement.find('div.btn[action], div.btn[sub-action]').unbind()
-
-                                // Clicks the copy button; to copy content in JSON string format
-                                blockElement.find('div.btn[action="copy"]').click(function() {
-                                  // Get all sub output elements
-                                  let allOutputElements = blockElement.find('div.output').find('div.sub-output').find('div.sub-output-content'),
-                                    // Initial group of all output inside the block
-                                    outputGroup = []
-
-                                  // Loop through each sub output
-                                  allOutputElements.each(function() {
-                                    try {
-                                      // If the output is not a table then skip this try-catch block
-                                      if ($(this).find('div.tabulator').length <= 0)
-                                        throw 0
-
-                                      // Push the table's data as JSON
-                                      outputGroup.push(Tabulator.findTable($(this).find('div.tabulator')[0])[0].getData())
-
-                                      // Skip the upcoming code
-                                      return
-                                    } catch (e) {}
-
-                                    // Just get the output's text
-                                    outputGroup.push($(this).text())
-                                  })
-
-                                  // Get the beautified version of the block's content
-                                  let contentBeautified = beautifyJSON({
-                                      statement: blockElement.find('div.statement div.text').text() || 'No statement',
-                                      output: outputGroup
-                                    }),
-                                    // Get the content's size
-                                    contentSize = Bytes(ValueSize(contentBeautified))
-
-                                  // Copy content to the clipboard
-                                  try {
-                                    Clipboard.writeText(contentBeautified)
-                                  } catch (e) {
-                                    try {
-                                      errorLog(e, 'connections')
-                                    } catch (e) {}
-                                  }
-
-                                  // Give feedback to the user
-                                  showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
-                                })
-
-                                // Clicks the deletion button
-                                blockElement.find('div.btn[action="delete"]').click(() => {
-                                  let queriesContainer = workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
-
-                                  setTimeout(function() {
-                                    // Remove related query tracing element if exists
-                                    blockElement.find('div.btn[sub-action="tracing"]').each(function() {
-                                      workareaElement.find(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
-                                    })
-
-                                    // If there's still one query tracing result then skip this try-catch block
-                                    try {
-                                      if (queriesContainer.find('div.query').length > 0)
-                                        throw 0
-
-                                      // Show the emptiness class
-                                      queriesContainer.addClass('_empty')
-                                    } catch (e) {}
-                                  }, 500)
-
-                                  // Remove the block from the session
-                                  blockElement.remove()
-
-                                  try {
-                                    // Point at the session's statements' container
-                                    let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
-
-                                    // If there's still one block then skip this try-catch block
-                                    if (sessionContainer.find('div.block').length > 0)
-                                      throw 0
-
-                                    // Show the emptiness class
-                                    sessionContainer.parent().find(`div.empty-statements`).addClass('show')
-                                  } catch (e) {}
-                                })
-                              })
-
-                              setTimeout(() => {
-                                try {
-                                  blockElement.parent().animate({
-                                    scrollTop: blockElement.parent().get(0).scrollHeight
-                                  }, 100)
-                                } catch (e) {}
-                              }, 500)
-                            }))
-
-                            return
-                          } catch (e) {}
-
-                          // If no output has been detected then skip this try-catch block
-                          if (['KEYWORD:OUTPUT:COMPLETED:ALL', 'KEYWORD:PAGING:CONTINUE'].every((keyword) => !finalContent.includes(keyword)))
-                            throw 0
-
-                          // Get the detected output of each statement
-                          let detectedOutput
-
-                          if (finalContent.includes('KEYWORD:OUTPUT:COMPLETED:ALL')) {
-                            detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:OUTPUT:COMPLETED:ALL/gm)
-
+                          if (isOutputWithPaging && isOutputCompleted) {
                             blockElement.attr('data-is-paging-completed', 'true')
 
                             let nextPageBtn = blockElement.find('button[data-action="next-page"]')
@@ -3362,10 +3196,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                             nextPageBtn.parent().find('button[data-page="last"]').removeClass('hidden')
 
-                            try {
-                              clearTimeout(killProcessTimeout)
-                            } catch (e) {}
-
                             setTimeout(() => {
                               workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute button').parent().removeClass('busy')
 
@@ -3373,783 +3203,699 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               workareaElement.find('.disableable').removeClass('disabled')
                               workareaElement.removeClass('busy-cqlsh')
 
-                              killProcessBtn.parent().removeClass('show')
+                              // killProcessBtn.parent().removeClass('show')
                             }, 2000)
-                          } else {
-                            detectedOutput = finalContent.match(/([\s\S]*?)KEYWORD:PAGING:CONTINUE/gm)
                           }
 
                           // Handle all statements and their output
                           try {
-                            // Loop through each detected output
-                            for (let output of detectedOutput) {
-                              // Make sure to remove the current handled output
-                              blocksOutput[data.blockID] = blocksOutput[data.blockID].replace(output, '')
+                            // Point at the output's container
+                            let outputContainer = blockElement.children('div.output'),
+                              queryID
 
-                              // Point at the output's container
-                              let outputContainer = blockElement.children('div.output'),
-                                // Define a regex to match each output of each statement
-                                statementOutputRegex = /KEYWORD:OUTPUT:STARTED([\s\S]*?)(KEYWORD:OUTPUT:COMPLETED|KEYWORD:PAGING:CONTINUE)/gm,
-                                // Define variable to initially hold the regex's match
-                                matches,
-                                // The index of loop's pointer
-                                loopIndex = -1
+                            try {
+                              queryID = data.output.data.queryId
+                            } catch (e) {}
 
-                              try {
-                                let tableObj = blockElement.data('tableObj')
+                            try {
+                              let tableObj = blockElement.data('tableObj')
 
-                                if (`${output}`.indexOf('KEYWORD:JSON:STARTED') <= -1 || tableObj == undefined)
+                              // Make sure the giving data are rows
+                              if (data?.output?.data?.rows.length <= 0 || tableObj == undefined)
+                                throw 0
+
+                              if (tableObj != undefined) {
+                                convertJSONToTable(data?.output?.data?.rows, (newPage) => {
+                                  tableObj.blockRedraw()
+                                  tableObj.addData(newPage.json, false).then(() => {
+                                    tableObj.restoreRedraw()
+
+                                    tableObj.setPage(tableObj.getPageMax())
+
+                                    let nextPageBtn = blockElement.find('button[data-action="next-page"]')
+
+                                    nextPageBtn.find('[spinner]').hide()
+                                    nextPageBtn.attr('disabled', null)
+                                  })
+                                })
+
+                                return
+                              }
+                            } catch (e) {}
+
+                            // Whether or not an error has been found in the output
+                            let isErrorFound = false
+
+                            try {
+                              isErrorFound = data.output.success != undefined && !data.output.success && data.output.error != undefined
+                            } catch (e) {}
+
+                            // Point at the current identifier
+                            let statementIdentifier = data?.output?.identifier,
+                              statementsStNextIdentifier = data?.output?.secondToken,
+                              statementsNdNextIdentifier = data?.output?.thirdToken,
+                              match = data?.output?.data?.message
+
+                            try {
+                              if (isErrorFound)
+                                match = `[${data?.output?.code}]: ${data?.output?.error}`
+                            } catch (e) {}
+
+                            // Refresh the latest metadata based on specific actions and only if no erorr has occurred
+                            try {
+                              if (['alter', 'create', 'drop'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound)) {
+                                // Make sure the statement is not about specific actions
+                                if (['role', 'user'].some((identifier) => statementsStNextIdentifier.toLowerCase().indexOf(identifier) != -1))
                                   throw 0
 
-                                jsonString = `${output}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
+                                // Make sure to clear the previous timeout
+                                try {
+                                  clearTimeout(refreshMetadataTimeout)
+                                } catch (e) {}
 
-                                jsonString = jsonString.replace(/KEYWORD:TABLEMETA:INFO:\[.+\]/, '')
+                                // Set the timeout to be triggerd and refresh the metadata
+                                refreshMetadataTimeout = setTimeout(() => workareaElement.find(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(), 1000)
+                              }
+                            } catch (e) {}
 
-                                if (tableObj != undefined) {
-                                  convertJSONToTable(jsonString, (newPage) => {
-                                    tableObj.blockRedraw()
-                                    tableObj.addData(newPage.json, false).then(() => {
-                                      tableObj.restoreRedraw()
+                            try {
+                              if (!(['select'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1)))
+                                throw 0
 
-                                      tableObj.setPage(tableObj.getPageMax())
+                              noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span> - <span mulang="no data found" capitalize-first></span>.</no-output>'
+                            } catch (e) {}
 
-                                      let nextPageBtn = blockElement.find('button[data-action="next-page"]')
+                            try {
+                              if (`${statementIdentifier}`.toLowerCase() != 'begin' || !([statementsStNextIdentifier, statementsNdNextIdentifier].some((identifier) => `${identifier}`.toLowerCase() == 'batch')))
+                                throw 0
 
-                                      nextPageBtn.find('[spinner]').hide()
-                                      nextPageBtn.attr('disabled', null)
-                                    })
-                                  })
+                              noOutputElement = '<no-output>Batch <span mulang="CQL statement executed" capitalize-first></span>.</no-output>'
+                            } catch (e) {}
 
-                                  return
-                                }
+                            let isOutputHighlighted = false
+
+                            try {
+                              isOutputHighlighted = (['desc', 'describe'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound))
+                            } catch (e) {}
+
+                            try {
+                              if (!isOutputHighlighted)
+                                throw 0
+
+                              match = Highlight.highlight(match, {
+                                language: 'cql'
+                              }).value
+                            } catch (e) {}
+
+                            let isConsistencyCommand = false
+
+                            // For consistency
+                            try {
+                              if (!((['consistency', 'serial']).some((command) => minifyText(statementIdentifier) == command)))
+                                throw 0
+
+                              let consistencyType = minifyText(statementIdentifier),
+                                setConsistency = `${match}`.trim()
+
+                              try {
+                                setConsistency = setConsistency.match(/\s+([A-Z_]+)\.$/g)[0].trim().replace(/\./g, '')
                               } catch (e) {}
 
-                              // Loop through the final content and match output
-                              while ((matches = statementOutputRegex.exec(output)) !== null) {
-                                // Increase the loop; to match the identifier of the current output's statement
-                                loopIndex = loopIndex + 1
+                              try {
+                                let consistencyLevels = Modules.Consts.ConsistencyLevels[consistencyType == 'consistency' ? 'Regular' : 'Serial']
 
-                                // Point at the current identifier
-                                let statementIdentifier = statementsIdentifiers[loopIndex],
-                                  statementsStNextIdentifier = statementsStNextIdentifiers[loopIndex],
-                                  statementsNdNextIdentifier = statementsNdNextIdentifiers[loopIndex]
+                                if (!(consistencyLevels.some((level) => level == setConsistency)))
+                                  throw 0
 
-                                // Avoid infinite loops with zero-width matches
-                                if (matches.index === statementOutputRegex.lastIndex)
-                                  statementOutputRegex.lastIndex++
+                                let consistencyAction = workareaElement.find('div.session-action.consistency-level[action="consistency-level"]')
 
-                                // Loop through each matched part of the output
-                                matches.forEach((match, groupIndex) => {
-                                  // Ignore specific group
-                                  if (groupIndex != 1)
-                                    return
+                                if (consistencyAction.css('display') == 'none')
+                                  consistencyAction.fadeIn('fast')
 
-                                  // Whether or not an error has been found in the output
-                                  let isErrorFound = `${match}`.indexOf('KEYWORD:ERROR:STARTED') != -1,
-                                    isOutputInfo = `${match}`.indexOf('[OUTPUT:INFO]') != -1
+                                consistencyAction.children('button').find(`b[${consistencyType == 'consistency' ? 'standard' : 'serial'}]`).text(setConsistency)
 
-                                  // Refresh the latest metadata based on specific actions and only if no erorr has occurred
-                                  try {
-                                    if (['alter', 'create', 'drop'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound)) {
-                                      // Make sure the statement is not about specific actions
-                                      if (['role', 'user'].some((identifier) => statementsStNextIdentifier.toLowerCase().indexOf(identifier) != -1))
-                                        throw 0
+                                if (activeSessionsConsistencyLevels[activeConnectionID] == undefined)
+                                  activeSessionsConsistencyLevels[activeConnectionID] = {
+                                    standard: '',
+                                    serial: ''
+                                  }
 
-                                      // Make sure to clear the previous timeout
-                                      try {
-                                        clearTimeout(refreshMetadataTimeout)
-                                      } catch (e) {}
+                                activeSessionsConsistencyLevels[activeConnectionID][consistencyType == 'consistency' ? 'standard' : 'serial'] = setConsistency
 
-                                      // Set the timeout to be triggerd and refresh the metadata
-                                      refreshMetadataTimeout = setTimeout(() => workareaElement.find(`div.btn[data-id="${refreshMetadataBtnID}"]`).click(), 1000)
-                                    }
-                                  } catch (e) {}
+                                isConsistencyCommand = true
+                              } catch (e) {}
+                            } catch (e) {}
 
-                                  try {
-                                    if (!(['select'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1)))
-                                      throw 0
+                            // For paging
+                            try {
+                              if (minifyText(statementIdentifier) != 'paging')
+                                throw 0
 
-                                    noOutputElement = '<no-output><span mulang="CQL statement executed" capitalize-first></span> - <span mulang="no data found" capitalize-first></span>.</no-output>'
-                                  } catch (e) {}
+                              let paginationAction = workareaElement.find('div.session-action.pagination-size[action="pagination-size"]')
 
-                                  try {
-                                    if (`${statementIdentifier}`.toLowerCase() != 'begin' || !([statementsStNextIdentifier, statementsNdNextIdentifier].some((identifier) => `${identifier}`.toLowerCase() == 'batch')))
-                                      throw 0
+                              if (`${match}`.includes('OFF')) {
+                                paginationAction.fadeOut('fast')
+                                throw 0
+                              }
 
-                                    noOutputElement = '<no-output>Batch <span mulang="CQL statement executed" capitalize-first></span>.</no-output>'
-                                  } catch (e) {}
+                              // Make sure paging is ON
+                              if (!(`${match}`.includes('ON')) && isNaN(parseInt(statementsStNextIdentifier)))
+                                throw 0
 
-                                  let isOutputHighlighted = false
+                              let detectedPagingSize = parseInt(`${match}`.match(/size\:\s*(\d+)/)[1])
 
-                                  try {
-                                    isOutputHighlighted = (['desc', 'describe'].some((type) => statementIdentifier.toLowerCase().indexOf(type) != -1 && !isErrorFound))
-                                  } catch (e) {}
+                              if (isNaN(detectedPagingSize))
+                                throw 0
 
-                                  try {
-                                    if (!isOutputHighlighted)
-                                      throw 0
+                              activeSessionsPaginationSize = detectedPagingSize
 
-                                    match = Highlight.highlight(match, {
-                                      language: 'cql'
-                                    }).value
-                                  } catch (e) {}
+                              if (paginationAction.css('display') == 'none')
+                                paginationAction.fadeIn('fast')
 
-                                  let isConsistencyCommand = false
+                              try {
+                                detectedPagingSize = detectedPagingSize.format()
+                              } catch (e) {}
 
-                                  // For consistency
-                                  try {
-                                    if (!((['consistency', 'serial']).some((command) => minifyText(statementIdentifier) == command)))
-                                      throw 0
+                              paginationAction.find(`span.size`).text(`${detectedPagingSize}`)
+                            } catch (e) {}
 
-                                    let consistencyType = minifyText(statementIdentifier),
-                                      setConsistency = `${match}`.trim()
+                            // For tracing
+                            try {
+                              if (minifyText(statementIdentifier) != 'tracing')
+                                throw 0
 
-                                    try {
-                                      setConsistency = setConsistency.match(/\s+([A-Z_]+)\.$/g)[0].trim().replace(/\./g, '')
-                                    } catch (e) {}
+                              let queryTracingAction = workareaElement.find('div.session-action.query-tracing[action="query-tracing"]')
 
-                                    try {
-                                      let consistencyLevels = Modules.Consts.ConsistencyLevels[consistencyType == 'consistency' ? 'Regular' : 'Serial']
+                              if (queryTracingAction.css('display') == 'none')
+                                queryTracingAction.fadeIn('fast')
 
-                                      if (!(consistencyLevels.some((level) => level == setConsistency)))
-                                        throw 0
+                              let isTracingEnabled = `${match}`.includes('ON')
 
-                                      let consistencyAction = workareaElement.find('div.session-action.consistency-level[action="consistency-level"]')
+                              queryTracingAction.data('tracingStatus', isTracingEnabled)
 
-                                      if (consistencyAction.css('display') == 'none')
-                                        consistencyAction.fadeIn('fast')
+                              queryTracingAction.find(`span.staus`).text(`${isTracingEnabled ? 'ON' : 'OFF'}`)
+                            } catch (e) {}
 
-                                      consistencyAction.children('button').find(`b[${consistencyType == 'consistency' ? 'standard' : 'serial'}]`).text(setConsistency)
+                            // The sub output structure UI
+                            let element = `
+                                 <div class="sub-output ${isErrorFound ? 'error' : ''}">
+                                   <div class="general-hint select-rows">
+                                    <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> To perform a range selection hold <kbd>SHIFT</kbd> key and click on the end row, also, hold <kbd>CTRL</kbd> key and click on a row to deselect it.
+                                   </div>
+                                   <div class="sub-output-content"></div>
+                                   <div class="sub-actions" hidden>
+                                     <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="download the block" capitalize-first>
+                                       <ion-icon name="download"></ion-icon>
+                                     </div>
+                                     <div class="download-options">
+                                       <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                         <ion-icon name="csv"></ion-icon>
+                                       </div>
+                                       <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                         <ion-icon name="pdf"></ion-icon>
+                                       </div>
+                                     </div>
+                                     <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="trace the query" capitalize-first>
+                                       <ion-icon name="query-tracing"></ion-icon>
+                                     </div>
+                                   </div>
+                                 </div>`
 
-                                      if (activeSessionsConsistencyLevels[activeConnectionID] == undefined)
-                                        activeSessionsConsistencyLevels[activeConnectionID] = {
-                                          standard: '',
-                                          serial: ''
-                                        }
+                            outputContainer.children('div.executing').hide()
 
-                                      activeSessionsConsistencyLevels[activeConnectionID][consistencyType == 'consistency' ? 'standard' : 'serial'] = setConsistency
+                            // Append a `sub-output` element in the output's container
+                            outputContainer.append($(element).show(function() {
+                              // Point at the appended element
+                              let outputElement = $(this)
 
-                                      isConsistencyCommand = true
-                                    } catch (e) {}
-                                  } catch (e) {}
+                              // Apply the chosen language on the UI element after being fully loaded
+                              setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
 
-                                  // For paging
-                                  try {
-                                    if (minifyText(statementIdentifier) != 'paging')
-                                      throw 0
+                              // If the number of executed statements are more than `1` then show a badge indicates that
+                              setTimeout(() => {
+                                try {
+                                  // Get the number of statements in the current block based on how many sub output elements exist
+                                  let numberOfStatements = data.output.statementsCount
 
-                                    let paginationAction = workareaElement.find('div.session-action.pagination-size[action="pagination-size"]')
+                                  // If it's less than `2` then hide the badge
+                                  if (numberOfStatements < 2)
+                                    throw 0
 
-                                    if (`${match}`.includes('OFF')) {
-                                      paginationAction.fadeOut('fast')
-                                      throw 0
-                                    }
+                                  // Show the badge with the number of statements
+                                  blockElement.find('div.statements-count').text(`${numberOfStatements} statements`).show()
+                                } catch (e) {
+                                  // Hide the badge
+                                  blockElement.find('div.statements-count').hide()
+                                }
+                              }, 250)
 
-                                    // Make sure paging is ON
-                                    if (!(`${match}`.includes('ON')) && isNaN(parseInt(statementsStNextIdentifier)))
-                                      throw 0
+                              // Define the JSON string which will be updated if the output has valid JSON block
+                              let jsonRows = '',
+                                // Define the tabulator object if one is created
+                                tabulatorObject = null,
+                                isJSONKeywordFound = `${statementsStNextIdentifier}`.toLowerCase().indexOf('json') != -1
 
-                                    let detectedPagingSize = parseInt(`${match}`.match(/size\:\s*(\d+)/)[1])
+                              try {
+                                if (!isJSONKeywordFound)
+                                  throw 0
 
-                                    if (isNaN(detectedPagingSize))
-                                      throw 0
+                                outputElement.find('div.sub-actions').attr('hidden', null)
 
-                                    activeSessionsPaginationSize = detectedPagingSize
+                                outputElement.find('div.sub-actions').css('width', '30px')
 
-                                    if (paginationAction.css('display') == 'none')
-                                      paginationAction.fadeIn('fast')
+                                outputElement.find('div.sub-actions').children('div.sub-action[sub-action="download"]').hide()
 
-                                    try {
-                                      detectedPagingSize = detectedPagingSize.format()
-                                    } catch (e) {}
+                                outputElement.addClass('actions-shown')
+                              } catch (e) {}
 
-                                    paginationAction.find(`span.size`).text(`${detectedPagingSize}`)
-                                  } catch (e) {}
+                              // Handle if the content has JSON string
+                              try {
+                                // If the statement is not `SELECT` or 'DELETE' then don't attempt to render a table
+                                // if (['select', 'delete', 'create', 'insert'].every((command) => statementIdentifier.toLowerCase().indexOf(command) <= -1) || isJSONKeywordFound || connectionLost)
+                                if (data.output.data.message != undefined || data.output.data.rows == undefined || isJSONKeywordFound)
+                                  throw 0
 
-                                  // For paging
-                                  try {
-                                    if (minifyText(statementIdentifier) != 'tracing')
-                                      throw 0
+                                let selectorTableInfo = ''
 
-                                    let queryTracingAction = workareaElement.find('div.session-action.query-tracing[action="query-tracing"]')
+                                try {
+                                  selectorTableInfo = `${data?.output?.keyspace}.${data?.output?.table}`
+                                } catch (e) {}
 
-                                    if (queryTracingAction.css('display') == 'none')
-                                      queryTracingAction.fadeIn('fast')
+                                try {
+                                  jsonRows = data?.output?.data?.rows
+                                } catch (e) {}
 
-                                    let isTracingEnabled = `${match}`.includes('ON')
+                                // Convert the JSON string to HTML table related to a Tabulator object
+                                convertTableToTabulator(jsonRows, outputElement.find('div.sub-output-content'), activeSessionsPaginationSize || 50, false, (_tabulatorObject) => {
+                                  // As a tabulator object has been created add the associated class
+                                  outputElement.find('div.sub-actions').attr('hidden', null)
 
-                                    queryTracingAction.data('tracingStatus', isTracingEnabled)
+                                  outputElement.addClass('actions-shown')
 
-                                    queryTracingAction.find(`span.staus`).text(`${isTracingEnabled ? 'ON' : 'OFF'}`)
-                                  } catch (e) {}
+                                  // Hold the created object
+                                  tabulatorObject = _tabulatorObject
 
-                                  // The sub output structure UI
-                                  let element = `
-                                           <div class="sub-output ${isErrorFound ? 'error' : ''} ${isOutputInfo ? 'info': ''}">
-                                             <div class="general-hint select-rows">
-                                              <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> To perform a range selection hold <kbd>SHIFT</kbd> key and click on the end row, also, hold <kbd>CTRL</kbd> key and click on a row to deselect it.
-                                             </div>
-                                             <div class="sub-output-content"></div>
-                                             <div class="sub-actions" hidden>
-                                               <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="download the block" capitalize-first>
-                                                 <ion-icon name="download"></ion-icon>
-                                               </div>
-                                               <div class="download-options">
-                                                 <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
-                                                   <ion-icon name="csv"></ion-icon>
-                                                 </div>
-                                                 <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
-                                                   <ion-icon name="pdf"></ion-icon>
-                                                 </div>
-                                               </div>
-                                               <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="trace the query" capitalize-first>
-                                                 <ion-icon name="query-tracing"></ion-icon>
-                                               </div>
-                                             </div>
-                                           </div>`
+                                  tabulatorObject.selectorTableInfo = selectorTableInfo
 
-                                  outputContainer.children('div.executing').hide()
+                                  let paginator = outputElement.find('div.sub-output-content').find('span.tabulator-paginator')
 
-                                  // Append a `sub-output` element in the output's container
-                                  outputContainer.append($(element).show(function() {
-                                    // Point at the appended element
-                                    let outputElement = $(this)
+                                  paginator.find('button[data-page="last"], button[data-page="next"]').addClass('hidden')
 
-                                    // Apply the chosen language on the UI element after being fully loaded
-                                    setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+                                  paginator.find('button[data-page="last"]').before($(`<button class="tabulator-page" data-action="next-page" type="button" role="button" aria-label="Next Page" title="Next Page"><span>Next</span><l-chaotic-orbit spinner style="vertical-align: middle; position: relative; bottom: 1px; margin-left: 5px; display:none; --uib-size: 17px; --uib-color: black; --uib-speed: 0.7s;"></l-chaotic-orbit></button>`).show(function() {
+                                    blockElement.data('tableObj', tabulatorObject)
 
-                                    // If the number of executed statements are more than `1` then show a badge indicates that
-                                    setTimeout(() => {
-                                      try {
-                                        // Get the number of statements in the current block based on how many sub output elements exist
-                                        let numberOfStatements = outputContainer.find('div.sub-output').length
+                                    $(this).data('blockID', data.blockID)
 
-                                        // If it's less than `2` then hide the badge
-                                        if (numberOfStatements < 2)
-                                          throw 0
+                                    $(this).click(function() {
+                                      let originalNextBtn = $(this).parent().find('button[data-page="next"]')
 
-                                        // Show the badge with the number of statements
-                                        blockElement.find('div.statements-count').text(`${numberOfStatements} statements`).hide().fadeIn('fast')
-                                      } catch (e) {
-                                        // Hide the badge
-                                        blockElement.find('div.statements-count').hide()
+                                      if (originalNextBtn.attr('disabled') == undefined || isOutputCompleted || blockElement.attr('data-is-paging-completed') == 'true') {
+                                        originalNextBtn.click()
+                                        return
                                       }
-                                    }, 500)
 
-                                    /**
-                                     * Reaching here with `match` means this is an output to be rendered
-                                     *
-                                     * Manipulate the content
-                                     * Remove any given prompts within the output
-                                     */
-                                    match = match.replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
-                                      // Remove the statement from the output
-                                      .replace(new RegExp(quoteForRegex(blockElement.children('div.statement').text()), 'g'), '')
-                                      // Get rid of tracing results
-                                      .replace(/Tracing\s*session\:[\S\s]+/gi, '')
-                                      // Trim the output
-                                      .trim()
+                                      $(this).find('[spinner]').css('display', 'inline-block')
+                                      $(this).attr('disabled', '')
 
-                                    // Make sure to show the emptiness message if the output is empty
-                                    if (minifyText(match).replace(/nooutputreceived\./g, '').length <= 0)
-                                      match = noOutputElement
+                                      IPCRenderer.send('pty:fetch-next-query', {
+                                        id: connectionID,
+                                        queryID,
+                                        blockID: $(this).data('blockID')
+                                      })
+                                    })
+                                  }))
 
-                                    // Define the JSON string which will be updated if the output has valid JSON block
-                                    let jsonString = '',
-                                      // Define the tabulator object if one is created
-                                      tabulatorObject = null,
-                                      connectionLost = `${match}`.indexOf('NoHostAvailable:') != -1,
-                                      isJSONKeywordFound = `${statementsStNextIdentifier}`.toLowerCase().indexOf('json') != -1
+                                  // Add `Select rows in the page` option
+                                  let selectPageRowsCheckboxID = `_${getRandom.id()}`
 
-                                    try {
-                                      if (!isJSONKeywordFound)
-                                        throw 0
-
-                                      outputElement.find('div.sub-actions').attr('hidden', null)
-
-                                      outputElement.find('div.sub-actions').css('width', '30px')
-
-                                      outputElement.find('div.sub-actions').children('div.sub-action[sub-action="download"]').hide()
-
-                                      outputElement.addClass('actions-shown')
-                                    } catch (e) {}
-
-                                    // Handle if the content has JSON string
-                                    try {
-                                      // If the statement is not `SELECT` or 'DELETE' then don't attempt to render a table
-                                      // if (['select', 'delete', 'create', 'insert'].every((command) => statementIdentifier.toLowerCase().indexOf(command) <= -1) || isJSONKeywordFound || connectionLost)
-                                      if (isJSONKeywordFound || connectionLost)
-                                        throw 0
-
-                                      if (`${match}`.indexOf('KEYWORD:JSON:STARTED') <= -1)
-                                        throw 0
-
-                                      jsonString = `${match}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
-
-                                      let selectorTableInfo = ''
-                                      try {
-                                        if (!jsonString.includes('KEYWORD:TABLEMETA:INFO'))
-                                          throw 0
-
-                                        selectorTableInfo = jsonString.match(/KEYWORD:TABLEMETA:INFO:\[(.+)\]/)[1]
-
-                                        jsonString = jsonString.replace(/KEYWORD:TABLEMETA:INFO:\[.+\]/, '')
-                                      } catch (e) {}
-
-                                      // Convert the JSON string to HTML table related to a Tabulator object
-                                      convertTableToTabulator(jsonString, outputElement.find('div.sub-output-content'), activeSessionsPaginationSize || 50, false, (_tabulatorObject) => {
-                                        // As a tabulator object has been created add the associated class
-                                        outputElement.find('div.sub-actions').attr('hidden', null)
-
-                                        outputElement.addClass('actions-shown')
-
-                                        // Hold the created object
-                                        tabulatorObject = _tabulatorObject
-
-                                        tabulatorObject.selectorTableInfo = selectorTableInfo
-
-                                        let paginator = outputElement.find('div.sub-output-content').find('span.tabulator-paginator')
-
-                                        paginator.find('button[data-page="last"], button[data-page="next"]').addClass('hidden')
-
-                                        paginator.find('button[data-page="last"]').before($(`<button class="tabulator-page" data-action="next-page" type="button" role="button" aria-label="Next Page" title="Next Page"><span>Next</span><l-chaotic-orbit spinner style="vertical-align: middle; position: relative; bottom: 1px; margin-left: 5px; display:none; --uib-size: 17px; --uib-color: black; --uib-speed: 0.7s;"></l-chaotic-orbit></button>`).show(function() {
-                                          blockElement.data('tableObj', tabulatorObject)
-
-                                          $(this).data('blockID', data.blockID)
-
-                                          $(this).click(function() {
-                                            let originalNextBtn = $(this).parent().find('button[data-page="next"]')
-
-                                            if (originalNextBtn.attr('disabled') == undefined || isOutputCompleted || blockElement.attr('data-is-paging-completed') == 'true') {
-                                              originalNextBtn.click()
-                                              return
-                                            }
-
-                                            $(this).find('[spinner]').css('display', 'inline-block')
-                                            $(this).attr('disabled', '')
-
-                                            IPCRenderer.send('pty:command', {
-                                              id: connectionID,
-                                              cmd: '',
-                                              blockID: $(this).data('blockID')
-                                            })
-                                          })
-                                        }))
-
-                                        // Add `Select rows in the page` option
-                                        let selectPageRowsCheckboxID = `_${getRandom.id()}`
-
-                                        outputElement.find('div.sub-output-content').find('div.tabulator').find('div.tabulator-headers').children('div.tabulator-col[tabulator-field="checkbox"]').first().append($(`
+                                  outputElement.find('div.sub-output-content').find('div.tabulator').find('div.tabulator-headers').children('div.tabulator-col[tabulator-field="checkbox"]').first().append($(`
                                         <div class="select-page-rows-container">
                                           <div class="form-check">
                                             <input class="form-check-input no-tabulator-style" type="checkbox" role="switch" id="${selectPageRowsCheckboxID}">
                                           </div>
                                         </div>
                                         `).show(function() {
-                                          getElementMDBObject($(this))
+                                    getElementMDBObject($(this))
 
-                                          setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+                                    setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
 
-                                          $(this).find('input').change(function() {
-                                            let isChecked = $(this).prop('checked')
+                                    $(this).find('input').change(function() {
+                                      let isChecked = $(this).prop('checked')
 
-                                            tabulatorObject[isChecked ? 'selectRow' : 'deselectRow'](isChecked ? 'visible' : '')
-                                          })
-                                        }))
-
-                                        tabulatorObject.on('rowContext', function(e, row) {
-                                          e.preventDefault()
-
-                                          let selectedRows = tabulatorObject.getSelectedRows()
-
-                                          if (selectedRows.length <= 0)
-                                            selectedRows.push(row)
-
-                                          let [keyspaceName, tableName] = tabulatorObject.selectorTableInfo.split('.'),
-                                            keyspaceObject = latestMetadata.keyspaces.find((keyspace) => keyspace.name == keyspaceName),
-                                            tableObject = keyspaceObject.tables.find((table) => table.name == tableName)
-
-                                          selectedRows = selectedRows.map((selectedRow) => selectedRow._row.data)
-
-                                          let generationInfo = {
-                                              keyspaceName,
-                                              tableName,
-                                              tableObject,
-                                              selectedRows
-                                            },
-                                            tempObjectID = `_${getRandom.id(10)}`
-
-                                          tempObjects[tempObjectID] = generationInfo
-
-                                          IPCRenderer.send('show-context-menu', JSON.stringify([{
-                                            label: I18next.capitalizeFirstLetter(`${I18next.t('generate insert statement(s)')}`),
-                                            click: `() => views.main.webContents.send('insert-statements:generate', {
-                                                      tempObjectID: '${tempObjectID}'
-                                                    })`
-                                          }]))
-                                        })
-
-                                        let isRowSelectionEnabled = false
-
-                                        let handleRowClick = () => {
-                                          let selectedRows = tabulatorObject.getSelectedRows(),
-                                            hintElement = outputElement.find('div.general-hint.select-rows')
-
-                                          isRowSelectionEnabled = selectedRows.length > 0
-
-                                          if (isRowSelectionEnabled) {
-                                            selectedRows.forEach((row) => $(row._row.element).find('input.select-row[type="checkbox"]').prop('checked', true))
-                                          } else {
-                                            tabulatorTableContainer.find('input.select-row[type="checkbox"]').prop('checked', false)
-
-                                            $(`input#${selectPageRowsCheckboxID}`).prop('checked', false)
-                                          }
-
-                                          hintElement.toggle(selectedRows.length > 0)
-                                        }
-
-                                        tabulatorObject.on('rowSelected', () => handleRowClick())
-
-                                        tabulatorObject.on('rowDeselected', () => handleRowClick())
-
-                                        let clickOutsideEvent,
-                                          tabulatorTableContainer = outputElement.find('div.tabulator[id]')
-
-                                        setTimeout(() => tabulatorObject.on('cellClick', function(e, cell) {
-                                          let cellElement = $(cell._cell.element),
-                                            rowSelectCheckbox = cellElement.find('input.select-row[type="checkbox"]')
-
-                                          try {
-                                            if (rowSelectCheckbox.length <= 0 && !isRowSelectionEnabled)
-                                              throw 0
-
-                                            tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
-
-                                            rowSelectCheckbox = $(cell._cell.row.element).find('input.select-row[type="checkbox"]')
-
-                                            let currentCheckboxState = rowSelectCheckbox.prop('checked')
-
-                                            // Always deselect
-                                            if (e.ctrlKey && !e.shiftKey)
-                                              currentCheckboxState = true
-
-                                            cell._cell.row.component[!currentCheckboxState ? 'select' : 'deselect']()
-
-                                            rowSelectCheckbox.prop('checked', !currentCheckboxState)
-
-                                            /**
-                                             * Check if SHIFT is being held
-                                             * If so then select all previous rows
-                                             */
-                                            if (e.shiftKey && !e.ctrlKey)
-                                              $(cell._cell.row.element).prevUntil('div.tabulator-row.tabulator-selected').each(function() {
-                                                let checkbox = $(this).find('input.select-row[type="checkbox"]')
-
-                                                if (!checkbox.prop('checked'))
-                                                  checkbox.closest('div.tabulator-cell[tabulator-field="checkbox"]').click()
-                                              })
-
-                                            return
-                                          } catch (e) {}
-
-                                          // Disable cell selection when row selection is enabled
-                                          if (isRowSelectionEnabled)
-                                            return
-
-                                          try {
-                                            tabulatorTableContainer.oneClickOutside('off')
-                                          } catch (e) {}
-
-                                          tabulatorTableContainer.addClass('arrows-nav')
-
-                                          tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
-
-                                          clickOutsideEvent = tabulatorTableContainer.oneClickOutside({
-                                            callback: function() {
-                                              tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
-
-                                              tabulatorTableContainer.removeClass('arrows-nav')
-                                            },
-                                            calledFromClickInsideHandler: true
-                                          })
-
-                                          $(cell._cell.element).addClass('tabulator-editing')
-                                        }))
-                                      })
-
-                                      try {
-                                        workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
-
-                                        try {
-                                          clearTimeout(killProcessTimeout)
-                                        } catch (e) {}
-
-                                        if (!isOutputIncomplete)
-                                          hintsContainer.add(killProcessBtn.parent()).removeClass('show')
-
-                                        if (isOutputIncomplete)
-                                          killProcessTimeout = setTimeout(() => {
-                                            killProcessBtn.parent().addClass('show')
-
-                                            workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
-                                            workareaElement.find('.disableable').addClass('disabled')
-                                            workareaElement.addClass('busy-cqlsh')
-
-                                            if (!isOutputWithPaging)
-                                              setTimeout(() => hintsContainer.addClass('show'), 1000)
-                                          }, 1500)
-                                      } catch (e) {}
-
-                                      // Show the block
-                                      blockElement.show().addClass('show')
-
-                                      // Scroll at the bottom of the blocks' container after each new block
-                                      setTimeout(() => {
-                                        try {
-                                          blockElement.parent().animate({
-                                            scrollTop: blockElement.parent().get(0).scrollHeight
-                                          }, 100)
-                                        } catch (e) {}
-                                      }, 100)
-
-                                      // Skip the upcoming code
-                                      return
-                                    } catch (e) {} finally {
-                                      // Execute this code whatever the case is
-                                      setTimeout(() => {
-                                        // Unbind all events regards the actions' buttons of the block
-                                        blockElement.find('div.btn[action], div.btn[sub-action]').unbind()
-
-                                        // Clicks the copy button; to copy content in JSON string format
-                                        blockElement.find('div.btn[action="copy"]').click(function() {
-                                          // Get all sub output elements
-                                          let allOutputElements = blockElement.find('div.output').find('div.sub-output').find('div.sub-output-content'),
-                                            // Initial group of all output inside the block
-                                            outputGroup = []
-
-                                          // Loop through each sub output
-                                          allOutputElements.each(function() {
-                                            try {
-                                              // If the output is not a table then skip this try-catch block
-                                              if ($(this).find('div.tabulator').length <= 0)
-                                                throw 0
-
-                                              // Push the table's data as JSON
-                                              outputGroup.push(Tabulator.findTable($(this).find('div.tabulator')[0])[0].getData())
-
-                                              // Skip the upcoming code
-                                              return
-                                            } catch (e) {}
-
-                                            // Just get the output's text
-                                            outputGroup.push($(this).text())
-                                          })
-
-                                          // Get the beautified version of the block's content
-                                          let contentBeautified = beautifyJSON({
-                                              statement: blockElement.find('div.statement div.text').text() || 'No statement',
-                                              output: outputGroup
-                                            }),
-                                            // Get the content's size
-                                            contentSize = Bytes(ValueSize(contentBeautified))
-
-                                          // Copy content to the clipboard
-                                          try {
-                                            Clipboard.writeText(contentBeautified)
-                                          } catch (e) {
-                                            try {
-                                              errorLog(e, 'connections')
-                                            } catch (e) {}
-                                          }
-
-                                          // Give feedback to the user
-                                          showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
-                                        })
-
-                                        // Clicks the download button; to download the tabulator object either as PDF or CSV
-                                        outputElement.find('div.btn[sub-action="download"]').click(function() {
-                                          // Point at the download options' container
-                                          let downloadOptionsElement = outputElement.find('div.download-options'),
-                                            // Whether or not the optionss' container is hidden
-                                            isOptionsHidden = downloadOptionsElement.css('display') == 'none'
-
-                                          // Show/hide the container
-                                          downloadOptionsElement.css('display', isOptionsHidden ? 'flex' : 'none')
-                                        })
-
-                                        // Handle the download options
-                                        {
-                                          // Download the table as CSV
-                                          outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', 'statement_block.csv'))
-
-                                          // Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), descriptionFileName)
-
-                                          // Download the table as PDF
-                                          outputElement.find('div.option[option="pdf"]').click(() => tabulatorObject.download('pdf', 'statement_block.pdf', {
-                                            orientation: 'portrait',
-                                            title: `${blockStatement}`,
-                                          }))
-                                        }
-
-                                        // Handle the clicks of the tracing button
-                                        {
-                                          // Point at the tracing button
-                                          let tracingButton = outputElement.find('div.btn[sub-action="tracing"]')
-
-                                          setTimeout(() => {
-                                            // Get the session's tracing ID
-                                            let sessionID
-
-                                            try {
-                                              sessionID = detectedSessionsID.filter((sessionID) => sessionID != null)[0]
-                                            } catch (e) {}
-
-                                            try {
-                                              // If there's no session ID exists then skip this try-catch block
-                                              if (sessionID == undefined)
-                                                throw 0
-
-                                              tracingButton.attr('data-session-id', sessionID)
-
-                                              detectedSessionsID = detectedSessionsID.map((_sessionID) => _sessionID == sessionID ? null : _sessionID)
-
-                                              // Enable the tracing button
-                                              tracingButton.removeClass('disabled')
-
-                                              // Add listener to the `click` event
-                                              tracingButton.click(() => clickEvent(true, sessionID))
-                                            } catch (e) {}
-                                          }, 2000)
-
-                                          // Clicks the deletion button
-                                          blockElement.find('div.btn[action="delete"]').click(() => {
-                                            let queriesContainer = workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
-
-                                            setTimeout(function() {
-                                              // Remove related query tracing element if exists
-                                              blockElement.find('div.btn[sub-action="tracing"]').each(function() {
-                                                workareaElement.find(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
-                                              })
-
-                                              // If there's still one query tracing result then skip this try-catch block
-                                              try {
-                                                if (queriesContainer.find('div.query').length > 0)
-                                                  throw 0
-
-                                                // Show the emptiness class
-                                                queriesContainer.addClass('_empty')
-                                              } catch (e) {}
-                                            }, 500)
-
-                                            // Remove the block from the session
-                                            blockElement.remove()
-
-                                            setTimeout(() => $(window.visualViewport).trigger('resize'))
-
-                                            try {
-                                              // Point at the session's statements' container
-                                              let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
-
-                                              // If there's still one block then skip this try-catch block
-                                              if (sessionContainer.find('div.block').length > 0)
-                                                throw 0
-
-                                              // Show the emptiness class
-                                              sessionContainer.parent().find(`div.empty-statements`).addClass('show')
-                                            } catch (e) {}
-                                          })
-                                        }
-                                      })
-                                    }
-
-                                    // Reaching here with JSON keyword means there's a content needs to be handled
-                                    try {
-                                      if (`${match}`.indexOf('KEYWORD:JSON:STARTED') <= -1)
-                                        throw 0
-
-                                      jsonString = `${match}`.match(/KEYWORD:JSON:STARTED\s*([\s\S]+)\s*KEYWORD:JSON:COMPLETED/)[1]
-
-                                      jsonString = jsonString.replace(/KEYWORD:TABLEMETA:INFO:\[.+\]/, '')
-
-                                      if (!pathIsAccessible(`${jsonString.trim()}`))
-                                        throw 0
-
-                                      let tempFilePath = `${jsonString.trim()}`
-
-                                      FS.readFile(tempFilePath, 'utf8', (err, data) => {
-                                        if (err)
-                                          throw 0
-
-                                        match = `${data}`
-                                      })
-                                    } catch (e) {}
-
-                                    try {
-                                      if (OS.platform() != 'win32')
-                                        throw 0
-
-                                      match = match.replace(/\n(?![^<]*<\/span>)/gim, '')
-                                    } catch (e) {}
-
-                                    // Manipulate the content
-                                    match = match.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
-                                      .replace(createRegex(OS.EOL, 'g'), '<br>')
-                                      .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>')
-                                      .replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
-                                      .replace('[OUTPUT:INFO]', '')
-                                      .replace(/\r?\n?KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\r?\n?/gmi, '')
-
-                                    // Convert any ANSI characters to HTML characters - especially colors -
-                                    match = (new ANSIToHTML()).toHtml(match)
-
-                                    // Reaching here and has a `json` keyword in the output means there's no record/row to be shown
-                                    if (StripTags(match).length <= 0)
-                                      match = noOutputElement
-
-                                    match = `<pre>${match}</pre>`
-
-                                    // For consistency level
-                                    if (isConsistencyCommand)
-                                      match = `${match}<div class="consistency-level-enhanced-console-info"><ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> This consistency will be used for all subsequent queries in this session.</div>`
-
-                                    // Set the final content and make sure the localization process is updated
-                                    outputElement.find('div.sub-output-content').html(match).show(function() {
-                                      $(this).children('pre').find('br').remove()
-
-                                      // Apply the localization process on elements that support it
-                                      setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+                                      tabulatorObject[isChecked ? 'selectRow' : 'deselectRow'](isChecked ? 'visible' : '')
                                     })
                                   }))
+
+                                  tabulatorObject.on('rowContext', function(e, row) {
+                                    e.preventDefault()
+
+                                    let selectedRows = tabulatorObject.getSelectedRows()
+
+                                    if (selectedRows.length <= 0)
+                                      selectedRows.push(row)
+
+                                    let [keyspaceName, tableName] = tabulatorObject.selectorTableInfo.split('.'),
+                                      keyspaceObject = latestMetadata.keyspaces.find((keyspace) => keyspace.name == keyspaceName),
+                                      tableObject = keyspaceObject.tables.find((table) => table.name == tableName)
+
+                                    selectedRows = selectedRows.map((selectedRow) => selectedRow._row.data)
+
+                                    let generationInfo = {
+                                        keyspaceName,
+                                        tableName,
+                                        tableObject,
+                                        selectedRows
+                                      },
+                                      tempObjectID = `_${getRandom.id(10)}`
+
+                                    tempObjects[tempObjectID] = generationInfo
+
+                                    IPCRenderer.send('show-context-menu', JSON.stringify([{
+                                      label: I18next.capitalizeFirstLetter(`${I18next.t('generate insert statement(s)')}`),
+                                      click: `() => views.main.webContents.send('insert-statements:generate', {
+                                                      tempObjectID: '${tempObjectID}'
+                                                    })`
+                                    }]))
+                                  })
+
+                                  let isRowSelectionEnabled = false
+
+                                  let handleRowClick = () => {
+                                    let selectedRows = tabulatorObject.getSelectedRows(),
+                                      hintElement = outputElement.find('div.general-hint.select-rows')
+
+                                    isRowSelectionEnabled = selectedRows.length > 0
+
+                                    if (isRowSelectionEnabled) {
+                                      selectedRows.forEach((row) => $(row._row.element).find('input.select-row[type="checkbox"]').prop('checked', true))
+                                    } else {
+                                      tabulatorTableContainer.find('input.select-row[type="checkbox"]').prop('checked', false)
+
+                                      $(`input#${selectPageRowsCheckboxID}`).prop('checked', false)
+                                    }
+
+                                    hintElement.toggle(selectedRows.length > 0)
+                                  }
+
+                                  tabulatorObject.on('rowSelected', () => handleRowClick())
+
+                                  tabulatorObject.on('rowDeselected', () => handleRowClick())
+
+                                  let clickOutsideEvent,
+                                    tabulatorTableContainer = outputElement.find('div.tabulator[id]')
+
+                                  setTimeout(() => tabulatorObject.on('cellClick', function(e, cell) {
+                                    let cellElement = $(cell._cell.element),
+                                      rowSelectCheckbox = cellElement.find('input.select-row[type="checkbox"]')
+
+                                    try {
+                                      if (rowSelectCheckbox.length <= 0 && !isRowSelectionEnabled)
+                                        throw 0
+
+                                      tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
+
+                                      rowSelectCheckbox = $(cell._cell.row.element).find('input.select-row[type="checkbox"]')
+
+                                      let currentCheckboxState = rowSelectCheckbox.prop('checked')
+
+                                      // Always deselect
+                                      if (e.ctrlKey && !e.shiftKey)
+                                        currentCheckboxState = true
+
+                                      cell._cell.row.component[!currentCheckboxState ? 'select' : 'deselect']()
+
+                                      rowSelectCheckbox.prop('checked', !currentCheckboxState)
+
+                                      /**
+                                       * Check if SHIFT is being held
+                                       * If so then select all previous rows
+                                       */
+                                      if (e.shiftKey && !e.ctrlKey)
+                                        $(cell._cell.row.element).prevUntil('div.tabulator-row.tabulator-selected').each(function() {
+                                          let checkbox = $(this).find('input.select-row[type="checkbox"]')
+
+                                          if (!checkbox.prop('checked'))
+                                            checkbox.closest('div.tabulator-cell[tabulator-field="checkbox"]').click()
+                                        })
+
+                                      return
+                                    } catch (e) {}
+
+                                    // Disable cell selection when row selection is enabled
+                                    if (isRowSelectionEnabled)
+                                      return
+
+                                    try {
+                                      tabulatorTableContainer.oneClickOutside('off')
+                                    } catch (e) {}
+
+                                    tabulatorTableContainer.addClass('arrows-nav')
+
+                                    tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
+
+                                    clickOutsideEvent = tabulatorTableContainer.oneClickOutside({
+                                      callback: function() {
+                                        tabulatorTableContainer.find('div.tabulator-cell').removeClass('tabulator-editing')
+
+                                        tabulatorTableContainer.removeClass('arrows-nav')
+                                      },
+                                      calledFromClickInsideHandler: true
+                                    })
+
+                                    $(cell._cell.element).addClass('tabulator-editing')
+                                  }))
+                                })
+
+                                // try {
+                                //   workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+                                //
+                                //   try {
+                                //     clearTimeout(killProcessTimeout)
+                                //   } catch (e) {}
+                                //
+                                //   if (!isOutputIncomplete)
+                                //     hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+                                //
+                                //   if (isOutputIncomplete)
+                                //     killProcessTimeout = setTimeout(() => {
+                                //       killProcessBtn.parent().addClass('show')
+                                //
+                                //       workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
+                                //       workareaElement.find('.disableable').addClass('disabled')
+                                //       workareaElement.addClass('busy-cqlsh')
+                                //
+                                //       // if (!isOutputWithPaging)
+                                //       //   setTimeout(() => hintsContainer.addClass('show'), 1000)
+                                //     }, 1500)
+                                // } catch (e) {}
+
+                                // Show the block
+                                blockElement.show().addClass('show')
+
+                                // Scroll at the bottom of the blocks' container after each new block
+                                setTimeout(() => {
+                                  try {
+                                    blockElement.parent().animate({
+                                      scrollTop: blockElement.parent().get(0).scrollHeight
+                                    }, 100)
+                                  } catch (e) {}
+                                }, 100)
+
+                                // Skip the upcoming code
+                                return
+                              } catch (e) {} finally {
+                                // Execute this code whatever the case is
+                                setTimeout(() => {
+                                  // Unbind all events regards the actions' buttons of the block
+                                  blockElement.find('div.btn[action], div.btn[sub-action]').unbind()
+
+                                  // Clicks the copy button; to copy content in JSON string format
+                                  blockElement.find('div.btn[action="copy"]').click(function() {
+                                    // Get all sub output elements
+                                    let allOutputElements = blockElement.find('div.output').find('div.sub-output').find('div.sub-output-content'),
+                                      // Initial group of all output inside the block
+                                      outputGroup = []
+
+                                    // Loop through each sub output
+                                    allOutputElements.each(function() {
+                                      try {
+                                        // If the output is not a table then skip this try-catch block
+                                        if ($(this).find('div.tabulator').length <= 0)
+                                          throw 0
+
+                                        // Push the table's data as JSON
+                                        outputGroup.push(Tabulator.findTable($(this).find('div.tabulator')[0])[0].getData())
+
+                                        // Skip the upcoming code
+                                        return
+                                      } catch (e) {}
+
+                                      // Just get the output's text
+                                      outputGroup.push($(this).text())
+                                    })
+
+                                    // Get the beautified version of the block's content
+                                    let contentBeautified = beautifyJSON({
+                                        statement: blockElement.find('div.statement div.text').text() || 'No statement',
+                                        output: outputGroup
+                                      }),
+                                      // Get the content's size
+                                      contentSize = Bytes(ValueSize(contentBeautified))
+
+                                    // Copy content to the clipboard
+                                    try {
+                                      Clipboard.writeText(contentBeautified)
+                                    } catch (e) {
+                                      try {
+                                        errorLog(e, 'connections')
+                                      } catch (e) {}
+                                    }
+
+                                    // Give feedback to the user
+                                    showToast(I18next.capitalize(I18next.t('copy content')), I18next.capitalizeFirstLetter(I18next.replaceData('content has been copied to the clipboard, the size is $data', [contentSize])) + '.', 'success')
+                                  })
+
+                                  // Clicks the download button; to download the tabulator object either as PDF or CSV
+                                  outputElement.find('div.btn[sub-action="download"]').click(function() {
+                                    // Point at the download options' container
+                                    let downloadOptionsElement = outputElement.find('div.download-options'),
+                                      // Whether or not the optionss' container is hidden
+                                      isOptionsHidden = downloadOptionsElement.css('display') == 'none'
+
+                                    // Show/hide the container
+                                    downloadOptionsElement.css('display', isOptionsHidden ? 'flex' : 'none')
+                                  })
+
+                                  // Handle the download options
+                                  {
+                                    // Download the table as CSV
+                                    outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', 'statement_block.csv'))
+
+                                    // Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), descriptionFileName)
+
+                                    // Download the table as PDF
+                                    outputElement.find('div.option[option="pdf"]').click(() => tabulatorObject.download('pdf', 'statement_block.pdf', {
+                                      orientation: 'portrait',
+                                      title: `${blockStatement}`,
+                                    }))
+                                  }
+
+                                  // Handle the clicks of the tracing button
+                                  {
+                                    // Point at the tracing button
+                                    let tracingButton = outputElement.find('div.btn[sub-action="tracing"]')
+
+                                    setTimeout(() => {
+                                      // Get the session's tracing ID
+                                      let sessionID
+
+                                      try {
+                                        sessionID = detectedSessionsID.filter((sessionID) => sessionID != null)[0]
+                                      } catch (e) {}
+
+                                      try {
+                                        // If there's no session ID exists then skip this try-catch block
+                                        if (sessionID == undefined)
+                                          throw 0
+
+                                        tracingButton.attr('data-session-id', sessionID)
+
+                                        detectedSessionsID = detectedSessionsID.map((_sessionID) => _sessionID == sessionID ? null : _sessionID)
+
+                                        // Enable the tracing button
+                                        tracingButton.removeClass('disabled')
+
+                                        // Add listener to the `click` event
+                                        tracingButton.click(() => clickEvent(true, sessionID))
+                                      } catch (e) {}
+                                    }, 2000)
+
+                                    // Clicks the deletion button
+                                    blockElement.find('div.btn[action="delete"]').click(() => {
+                                      let queriesContainer = workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`)
+
+                                      setTimeout(function() {
+                                        // Remove related query tracing element if exists
+                                        blockElement.find('div.btn[sub-action="tracing"]').each(function() {
+                                          workareaElement.find(`div.queries div.query[data-session-id="${$(this).attr('data-session-id')}"]`).remove()
+                                        })
+
+                                        // If there's still one query tracing result then skip this try-catch block
+                                        try {
+                                          if (queriesContainer.find('div.query').length > 0)
+                                            throw 0
+
+                                          // Show the emptiness class
+                                          queriesContainer.addClass('_empty')
+                                        } catch (e) {}
+                                      }, 500)
+
+                                      // Remove the block from the session
+                                      blockElement.remove()
+
+                                      setTimeout(() => $(window.visualViewport).trigger('resize'))
+
+                                      try {
+                                        // Point at the session's statements' container
+                                        let sessionContainer = workareaElement.find(`#_${cqlshSessionContentID}_container`)
+
+                                        // If there's still one block then skip this try-catch block
+                                        if (sessionContainer.find('div.block').length > 0)
+                                          throw 0
+
+                                        // Show the emptiness class
+                                        sessionContainer.parent().find(`div.empty-statements`).addClass('show')
+                                      } catch (e) {}
+                                    })
+                                  }
                                 })
                               }
-                            }
+
+                              match = `<pre>${match}</pre>`
+
+                              // For consistency level
+                              if (isConsistencyCommand)
+                                match = `${match}<div class="consistency-level-enhanced-console-info"><ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> This consistency will be used for all subsequent queries in this session.</div>`
+
+                              // Set the final content and make sure the localization process is updated
+                              outputElement.find('div.sub-output-content').html(match).show(function() {
+                                $(this).children('pre').find('br').remove()
+
+                                // Apply the localization process on elements that support it
+                                setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
+                              })
+                            }))
                           } catch (e) {}
 
                           // Show the current active prefix/prompt
-                          setTimeout(() => blockElement.find('div.prompt').text(minifyText(prefix).slice(0, -1)).hide().fadeIn('fast'), 1000)
-
-                          try {
-                            workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
-
+                          setTimeout(() => {
                             try {
-                              clearTimeout(killProcessTimeout)
+                              blockElement.find('div.prompt').text(minifyText(data.output.data.promptInfo.prompt).slice(0, -1)).hide().fadeIn('fast')
                             } catch (e) {}
+                          }, 1000)
 
-                            if (!isOutputIncomplete)
-                              hintsContainer.add(killProcessBtn.parent()).removeClass('show')
-
-                            if (isOutputIncomplete)
-                              killProcessTimeout = setTimeout(() => {
-                                killProcessBtn.parent().addClass('show')
-
-                                workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
-                                workareaElement.find('.disableable').addClass('disabled')
-                                workareaElement.addClass('busy-cqlsh')
-
-                                if (!isOutputWithPaging)
-                                  setTimeout(() => hintsContainer.addClass('show'), 1000)
-                              }, 1500)
-                          } catch (e) {}
+                          // try {
+                          //   workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').toggleClass('busy', isOutputIncomplete)
+                          //
+                          //   try {
+                          //     clearTimeout(killProcessTimeout)
+                          //   } catch (e) {}
+                          //
+                          //   if (!isOutputIncomplete)
+                          //     hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+                          //
+                          //   if (isOutputIncomplete)
+                          //     killProcessTimeout = setTimeout(() => {
+                          //       killProcessBtn.parent().addClass('show')
+                          //
+                          //       workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
+                          //       workareaElement.find('.disableable').addClass('disabled')
+                          //       workareaElement.addClass('busy-cqlsh')
+                          //
+                          //       // if (!isOutputWithPaging)
+                          //       //   setTimeout(() => hintsContainer.addClass('show'), 1000)
+                          //     }, 1500)
+                          // } catch (e) {}
 
                           // Show the block
                           blockElement.show().addClass('show')
@@ -4166,348 +3912,21 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                         try {
                           // Check if the query tracing feature has been enabled/disabled
-                          {
-                            // Point at the hint UI element in the query tracing's tab
-                            let queryTracingHint = workareaElement.find(`div.tab-pane#_${queryTracingContentID}`).find('hint')
-
-                            // If it has been enabled
-                            if (data.output.toLowerCase().indexOf('tracing is enabled') != -1)
-                              queryTracingHint.hide()
-
-                            // If it has been disabled
-                            if (data.output.toLowerCase().indexOf('disabled tracing') != -1)
-                              queryTracingHint.show()
-                          }
-                        } catch (e) {}
-
-                        // Set the prompt which has been got from cqlsh tool
-                        activePrefix = ''
-
-                        try {
-                          // If it is `null` then skip this try-catch block
-                          if (prompt == null && prompt.search('cqlsh>'))
-                            throw 0
-
-                          // Got a prompt, adopt it
-                          activePrefix = `${prompt[0]} `
-                          prefix = activePrefix
+                          // {
+                          //   // Point at the hint UI element in the query tracing's tab
+                          //   let queryTracingHint = workareaElement.find(`div.tab-pane#_${queryTracingContentID}`).find('hint')
+                          //
+                          //   // If it has been enabled
+                          //   if (data.output.toLowerCase().indexOf('tracing is enabled') != -1)
+                          //     queryTracingHint.hide()
+                          //
+                          //   // If it has been disabled
+                          //   if (data.output.toLowerCase().indexOf('disabled tracing') != -1)
+                          //     queryTracingHint.show()
+                          // }
                         } catch (e) {}
                       })
                       // The listener to data sent from the pty instance has been finished
-
-                      try {
-                        if (!isBasicCQLSHEnabled)
-                          throw 0
-
-                        // Create the terminal instance from the XtermJS constructor
-                        terminalObjects[terminalID] = new XTerm({
-                          theme: XTermThemes.Atom
-                        })
-
-                        // Set the `terminal` variable to be as a reference to the object
-                        terminal = terminalObjects[terminalID]
-
-                        // Add log
-                        try {
-                          addLog(`CQL console created for the connection '${getAttributes(connectionElement, ['data-name', 'data-id'])}'`)
-                        } catch (e) {}
-
-                        /**
-                         * Custom terminal options
-                         *
-                         * Change font family to `JetBrains Mono` and set its size and line height
-                         * https://www.jetbrains.com/lp/mono/
-                         */
-                        terminal.options.fontFamily = `'Terminal', monospace`
-                        terminal.options.fontSize = 13
-                        terminal.options.lineHeight = 1.35
-
-                        // Enable the cursor blink when the terminal is being focused on
-                        terminal._publicOptions.cursorBlink = true
-
-                        try {
-                          setTimeout(() => {
-                            /**
-                             * Define XtermJS addons
-                             *
-                             * Fit addon; to resize the terminal without distortion
-                             */
-                            fitAddon = new FitAddon.FitAddon()
-
-                            /**
-                             * Load XtermJS addons
-                             *
-                             * Load the `Fit` addon
-                             */
-                            terminal.loadAddon(fitAddon)
-
-                            // The terminal now will be shown in the UI
-                            terminal.open(workareaElement.find(`div.terminal-container[data-id="${terminalContainerID}"]`)[0])
-
-                            // Load the `Canvas` addon
-                            terminal.loadAddon(new CanvasAddon())
-
-                            // Load the `Webfont` addon
-                            terminal.loadAddon(new XtermWebFonts())
-
-                            // Fit the terminal with its container
-                            setTimeout(() => fitAddon.fit())
-
-                            // Push the fit addon object to the related array
-                            terminalFitAddonObjects.push(fitAddon)
-
-                            // Call the fit addon for the terminal
-                            setTimeout(() => fitAddon.fit(), 1200)
-
-                            try {
-                              IPCRenderer.removeAllListeners(`pty:data-basic:${connectionID}`)
-                            } catch (e) {}
-
-                            // Listen to data sent from the pty instance regards the basic terminal
-                            IPCRenderer.on(`pty:data-basic:${connectionID}`, (_, data) => {
-                              try {
-                                // If the session is paused then nothing would be printed
-                                if (isSessionPaused)
-                                  throw 0
-
-                                // Print/write the data to the terminal
-                                terminal.write(data.output)
-                              } catch (e) {}
-                            })
-
-                            /**
-                             * Listen to the user's input to the terminal's buffer
-                             * This listener will send the character to the pty instance to be handled in realtime
-                             *
-                             * Point at the terminal's viewport in the UI
-                             */
-                            let terminalViewport = workareaElement.find(`div.terminal-container[data-id="${terminalContainerID}"]`).find('div.xterm-viewport')[0],
-                              // Get the terminal's active buffer; to get the entire written statement if needed
-                              terminalBuffer = terminal.buffer.active
-
-                            // Listen to data from the user - input to the terminal -
-                            terminal.onData((char) => {
-                              // Get the entire written statement
-                              let statement = terminalBuffer.getLine(terminalBuffer.baseY + terminalBuffer.cursorY).translateToString(true)
-
-                              // Remove any prefixes
-                              statement = statement.replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
-
-                              // Check if the command is terminating the cqlsh session
-                              let isQuitFound = (['quit', 'exit']).some((command) => statement.toLowerCase().startsWith(command)),
-                                // Get the key code
-                                keyCode = char.charCodeAt(0)
-
-                              try {
-                                /**
-                                 * `quit` or `exit` command will close the connection
-                                 * If none of them were found then skip this try-catch block
-                                 */
-                                if (!isQuitFound)
-                                  throw 0
-
-                                // Show feedback to the user
-                                printMessageInBasicTerminal(terminal, 'info', `Work area for the connection ${getAttributes(connectionElement, 'data-name')} will be closed in few seconds`)
-
-                                // Pause the print of output from the Pty instance
-                                isSessionPaused = true
-
-                                // Dispose the readline addon
-                                prefix = ''
-
-                                // Click the close connection button after a while
-                                setTimeout(() => workareaElement.find('div.connection-actions div.action[action="close"] div.btn-container div.btn').click(), 2000)
-                              } catch (e) {}
-
-                              // Send the character in realtime to the pty instance
-                              IPCRenderer.send('pty:data', {
-                                id: connectionID,
-                                char
-                              })
-
-                              // Make sure both the app's UI terminal and the associated pty instance are syned in their size
-                              IPCRenderer.send('pty:resize', {
-                                id: connectionID,
-                                cols: terminal.cols,
-                                rows: terminal.rows
-                              })
-
-                              // Switch between the key code's values
-                              switch (keyCode) {
-                                // `ENTER`
-                                case 13: {
-                                  // Scroll to the very bottom of the terminal
-                                  terminalViewport.scrollTop = terminalViewport.scrollHeight
-
-                                  // Resize the terminal
-                                  fitAddon.fit()
-                                  break
-                                }
-                              }
-                            })
-
-                            // Listen to custom key event
-                            terminal.attachCustomKeyEventHandler((event) => {
-                              // Get different values from the event
-                              let {
-                                key, // The pressed key
-                                ctrlKey, // Whether or not the `CTRL` is being pressed
-                                shiftKey, // Whether or not the `SHIFT` is being pressed
-                                metaKey // Whether or not the `META/WINDOWS/SUPER` key is being pressed
-                              } = event
-
-                              // Inner function to prevent the event from performing its defined handler
-                              let preventEvent = () => {
-                                /**
-                                 * Prevent the default behavior of pressing the combination
-                                 * https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault
-                                 */
-                                event.preventDefault()
-
-                                /**
-                                 * Prevent further propagation of the event in the capturing and bubbling phases
-                                 * https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation
-                                 */
-                                event.stopPropagation()
-                              }
-
-                              // Hande `CTRL+R`
-                              try {
-                                if (!(ctrlKey && key.toLowerCase() == 'r'))
-                                  throw 0
-
-                                // Call the inner function
-                                preventEvent()
-
-                                // Return `false` to make sure the handler of xtermjs won't be executed
-                                return false
-                              } catch (e) {}
-
-                              /**
-                               * Handle the terminal's buffer clearing process on Windows
-                               * `CTRL+L`
-                               */
-                              try {
-                                if (!(ctrlKey && (key.toLowerCase() == 'l')) || OS.platform() != 'win32')
-                                  throw 0
-
-                                // Call the inner function
-                                preventEvent()
-
-                                // Clear the buffer
-                                terminal.clear()
-
-                                // Return `false` to make sure the handler of xtermjs won't be executed
-                                return false
-                              } catch (e) {}
-
-                              /**
-                               * Handle the termination of the terminal's session
-                               * `CTRL+D`
-                               */
-                              try {
-                                if (!(ctrlKey && key.toLowerCase() == 'd' && !shiftKey))
-                                  throw 0
-
-                                // Call the inner function
-                                preventEvent()
-
-                                // Return `false` to make sure the handler of xtermjs won't be executed
-                                return false
-                              } catch (e) {}
-
-                              /**
-                               * Handle the copying process of selected text in the terminal
-                               *
-                               * `CTRL+SHIFT+C` for Linux and Windows
-                               * `CMD+C` for macOS
-                               */
-                              try {
-                                if (!((ctrlKey && shiftKey && `${key}`.toLowerCase() === 'c') || (metaKey && `${key}`.toLowerCase() === 'c')))
-                                  throw 0
-
-                                // Call the inner function
-                                preventEvent()
-
-                                // Attempt to write the selected text in the terminal
-                                try {
-                                  Clipboard.writeText(terminal.getSelection())
-                                } catch (e) {}
-
-                                // Return `false` to make sure the handler of xtermjs won't be executed
-                                return false
-                              } catch (e) {}
-                            })
-
-                            /**
-                             * Listen to `keydown` event in the terminal's container
-                             * The main reason is to provide the ability to increase/decrease and reset the terminal's font size
-                             * Custom event `changefont` has been added, it will be triggered when the app's zooming level is changing
-                             */
-                            setTimeout(() => {
-                              try {
-                                if (OS.platform() == 'darwin')
-                                  throw 0
-
-                                // Increase font size
-                                Modules.Shortcuts.setShortcutInSession(workareaElement.find('div.terminal.xterm')[0], 'basic-console-font-increase', () => terminal.options.fontSize += 1)
-
-                                // Decrease font size
-                                Modules.Shortcuts.setShortcutInSession(workareaElement.find('div.terminal.xterm')[0], 'basic-console-font-decrease', () => terminal.options.fontSize -= 1)
-
-                                // Reset font size
-                                Modules.Shortcuts.setShortcutInSession(workareaElement.find('div.terminal.xterm')[0], 'basic-console-font-reset', () => terminal.options.fontSize = 13)
-
-                                workareaElement.find('div.terminal.xterm').on('changefont', function(e, keyCode = null) {
-                                  // If the `CTRL` key is not pressed or `CTRL` and `SHIFT` are being pressed together then skip this try-catch block
-                                  if ((!e.ctrlKey && e.type != 'changefont') || e.shiftKey)
-                                    return true
-
-                                  // If the event type is `changefont` then the keycode is provided in variable `keyCode`
-                                  if (e.type == 'changefont')
-                                    e.keyCode = keyCode
-
-                                  // Switch between the `keyCode` values
-                                  switch (e.keyCode) {
-                                    // `+` Increase the font size
-                                    case 187: {
-                                      terminal.options.fontSize += 1
-                                      break
-                                    }
-                                    // `-` Decrease the font size
-                                    case 189: {
-                                      terminal.options.fontSize -= 1
-                                      break
-                                    }
-                                    // `0` reset the font size
-                                    case 48: {
-                                      terminal.options.fontSize = 13
-                                      break
-                                    }
-                                  }
-
-                                  // Prevent any default behavior
-                                  e.preventDefault()
-                                })
-                              } catch (e) {}
-                            }, 1000)
-                          })
-                        } catch (e) {
-                          try {
-                            errorLog(e, 'connections')
-                          } catch (e) {}
-                        }
-                        // End of handling the app's basic terminal
-                      } catch (e) {}
-
-                      /*
-                       * Point at killing the current process
-                       * Point at the CQLSH session's overall container
-                       */
-                      let cqlshSessionTabContainer = workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`),
-                        killProcessBtn = cqlshSessionTabContainer.find('div.kill-process button'),
-                        hintsContainer = cqlshSessionTabContainer.find('div.hints-container'),
-                        killProcessTimeout
 
                       // This block of code for the interactive terminal
                       {
@@ -4815,9 +4234,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   clearTimeout(killProcessTimeout)
                                 } catch (e) {}
 
-                                try {
-                                  killProcessBtn.parent().addClass('show')
-                                } catch (e) {}
+                                // try {
+                                //   killProcessBtn.parent().addClass('show')
+                                // } catch (e) {}
                               }
 
                               statementTextContainer.prepend($(`<span class="spinner"><l-wobble style="--uib-size: 25px; --uib-color: #f0f0f0; --uib-speed: 0.77s;"></l-wobble></span>`).hide(function() {
@@ -4840,7 +4259,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                     executeBtn.parent().removeClass('busy')
 
-                                    killProcessBtn.parent().removeClass('show')
+                                    // killProcessBtn.parent().removeClass('show')
 
                                     workareaElement.find('div.session-actions').find('button').attr('disabled', null)
                                     workareaElement.find('.disableable').removeClass('disabled')
@@ -5009,17 +4428,17 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               clearTimeout(killProcessTimeout)
                             } catch (e) {}
 
-                            hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+                            // hintsContainer.add(killProcessBtn.parent()).removeClass('show')
 
                             killProcessTimeout = setTimeout(() => {
-                              killProcessBtn.parent().addClass('show')
+                              // killProcessBtn.parent().addClass('show')
 
                               workareaElement.find('div.session-actions').find('button').attr('disabled', 'true')
                               workareaElement.find('.disableable').addClass('disabled')
                               workareaElement.addClass('busy-cqlsh')
 
-                              if (!isOutputWithPaging)
-                                setTimeout(() => hintsContainer.addClass('show'), 1000)
+                              // if (!isOutputWithPaging)
+                              //   setTimeout(() => hintsContainer.addClass('show'), 1000)
                             }, 1500)
                           }
 
@@ -5079,83 +4498,85 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           })
                         })
 
-                        killProcessBtn.click(function() {
-                          let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`),
-                            isSourceCommand = blockElement.attr('data-is-source-command') != undefined,
-                            isPagingProcess = blockElement.attr('data-is-paging') != undefined
+                        workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', null)
 
-                          if (isPagingProcess) {
-                            blockElement.attr({
-                              'data-is-paging': null,
-                              'data-is-paging-completed': 'true'
-                            })
-
-                            let nextPageBtn = blockElement.find('button[data-action="next-page"]')
-
-                            nextPageBtn.find('[spinner]').hide()
-                            nextPageBtn.attr('disabled', null)
-
-                            nextPageBtn.parent().find('button[data-page="last"]').removeClass('hidden')
-
-                            IPCRenderer.send('pty:command', {
-                              id: connectionID,
-                              cmd: '\x03',
-                              blockID
-                            })
-                          } else {
-                            if (isSourceCommand)
-                              IPCRenderer.send('pty:command', {
-                                id: connectionID,
-                                cmd: `\r\r`,
-                                blockID
-                              })
-
-                            IPCRenderer.send('pty:command', {
-                              id: connectionID,
-                              cmd: `KEYWORD:STATEMENT:IGNORE-${Math.floor(Math.random() * 999) + 1}`,
-                              blockID
-                            })
-                          }
-
-                          try {
-                            if (!isSourceCommand)
-                              throw 0
-
-                            blockElement.children('div.output').append($(`
-                                    <div class="sub-output info">
-                                      <div class="sub-output-content">The execution process has been terminated.</div>
-                                    </div>`))
-
-                            blockElement.find('div.statement').children('div.text').removeClass('executing')
-
-                            executeBtn.parent().removeClass('busy')
-
-                            killProcessBtn.parent().removeClass('show')
-
-                            workareaElement.find('div.session-actions').find('button').attr('disabled', null)
-                            workareaElement.find('.disableable').removeClass('disabled')
-                            workareaElement.removeClass('busy-cqlsh')
-
-                            blockElement.find('div.statement').find('span.spinner').hide()
-
-                            {
-                              workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
-                                'opacity': '',
-                                'pointer-events': ''
-                              })
-
-                              workareaElement.find('div.metadata-content').css({
-                                'opacity': '',
-                                'pointer-events': '',
-                                'transition': ''
-                              })
-
-                              workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', null)
-
-                              workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').removeClass('disabled')
-                            }
-                          } catch (e) {}
-                        }).hover(() => hintsContainer.hide(), () => hintsContainer.show())
+                        // killProcessBtn.click(function() {
+                        //   let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`),
+                        //     isSourceCommand = blockElement.attr('data-is-source-command') != undefined,
+                        //     isPagingProcess = blockElement.attr('data-is-paging') != undefined
+                        //
+                        //   if (isPagingProcess) {
+                        //     blockElement.attr({
+                        //       'data-is-paging': null,
+                        //       'data-is-paging-completed': 'true'
+                        //     })
+                        //
+                        //     let nextPageBtn = blockElement.find('button[data-action="next-page"]')
+                        //
+                        //     nextPageBtn.find('[spinner]').hide()
+                        //     nextPageBtn.attr('disabled', null)
+                        //
+                        //     nextPageBtn.parent().find('button[data-page="last"]').removeClass('hidden')
+                        //
+                        //     IPCRenderer.send('pty:command', {
+                        //       id: connectionID,
+                        //       cmd: '\x03',
+                        //       blockID
+                        //     })
+                        //   } else {
+                        //     if (isSourceCommand)
+                        //       IPCRenderer.send('pty:command', {
+                        //         id: connectionID,
+                        //         cmd: `\r\r`,
+                        //         blockID
+                        //       })
+                        //
+                        //     IPCRenderer.send('pty:command', {
+                        //       id: connectionID,
+                        //       cmd: `KEYWORD:STATEMENT:IGNORE-${Math.floor(Math.random() * 999) + 1}`,
+                        //       blockID
+                        //     })
+                        //   }
+                        //
+                        //   try {
+                        //     if (!isSourceCommand)
+                        //       throw 0
+                        //
+                        //     blockElement.children('div.output').append($(`
+                        //             <div class="sub-output info">
+                        //               <div class="sub-output-content">The execution process has been terminated.</div>
+                        //             </div>`))
+                        //
+                        //     blockElement.find('div.statement').children('div.text').removeClass('executing')
+                        //
+                        //     executeBtn.parent().removeClass('busy')
+                        //
+                        //     killProcessBtn.parent().removeClass('show')
+                        //
+                        //     workareaElement.find('div.session-actions').find('button').attr('disabled', null)
+                        //     workareaElement.find('.disableable').removeClass('disabled')
+                        //     workareaElement.removeClass('busy-cqlsh')
+                        //
+                        //     blockElement.find('div.statement').find('span.spinner').hide()
+                        //
+                        //     {
+                        //       workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
+                        //         'opacity': '',
+                        //         'pointer-events': ''
+                        //       })
+                        //
+                        //       workareaElement.find('div.metadata-content').css({
+                        //         'opacity': '',
+                        //         'pointer-events': '',
+                        //         'transition': ''
+                        //       })
+                        //
+                        //       workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', null)
+                        //
+                        //       workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').removeClass('disabled')
+                        //     }
+                        //   } catch (e) {}
+                        // }).hover(() => hintsContainer.hide(), () => hintsContainer.show())
 
                         // The statement's input field's value has been updated
                         statementInputField.on('input', function() {

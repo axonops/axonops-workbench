@@ -140,13 +140,16 @@ class Session {
 
     CQLNode[!isAstraDB ? 'connect' : 'connectWithAstraBundle'](parameters).then((result) => {
       // Send connection status
-      this.window.webContents.send(`pty:connection-status:${this.id}`, result)
+      this.window.webContents.send(`pty:connection-status:${this.id}`, {
+        ...result,
+        data: null
+      })
 
       // Error, no need to do anything further
       if (result.error)
         return
 
-      this.sessionInstance = result.data.CQLSession
+      this.sessionInstance = isAstraDB ? result.data.session : result.data
     })
   }
 
@@ -172,6 +175,13 @@ class Session {
         output: result,
         blockID: this.latestBlockID
       })
+    }).then(async (result) => {
+      // Handle early errors (incomplete, parse error) that don't trigger onProgress
+      if (!result.success && result.statementsCount === 0)
+        this.window.webContents.send(`pty:data:${this.id}`, {
+          output: result,
+          blockID: this.latestBlockID
+        })
     })
   }
 
@@ -183,7 +193,25 @@ class Session {
         output: result,
         blockID
       })
+    }).then(async (result) => {
+      // Handle early errors (incomplete, parse error) that don't trigger onProgress
+      if (!result.success && result.statementsCount === 0)
+        this.window.webContents.send(`pty:data:${this.id}`, {
+          output: result,
+          blockID: this.latestBlockID
+        })
     })
+  }
+
+  fetchNextPage(queryID, blockID) {
+    // Update the latest received block ID as well
+    this.latestBlockID = blockID || ''
+
+    // Attempt to execute the given command(s) and return the result
+    this.sessionInstance.fetchNextPage(queryID).then(async (result) => this.window.webContents.send(`pty:data:${this.id}`, {
+      output: result,
+      blockID: this.latestBlockID
+    }))
   }
 
   // Close, kill and destroy the pty instance, furthermore, kill the instance using a different approach by its process ID

@@ -1285,14 +1285,11 @@ let getMetadata = (connectionID, callback) => {
   IPCRenderer.on(`connection:metadata:${metadataSendID}:${connectionID}`, (_, data) => {
     try {
       // If `null` has been received then we weren't able to get the result
-      if (data.metadata == null)
+      if (!data.result.success || data.result.data == null)
         return callback(null)
 
       // Define the given block of data
-      let metadata = data.metadata
-
-      // "Repair" the given metadata to be parsed later
-      metadata = repairJSONString(metadata)
+      let metadata = data.result.data
 
       // Call the `callback` function and pass the final metadata JSON object
       callback(metadata)

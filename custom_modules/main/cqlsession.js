@@ -171,10 +171,12 @@ class Session {
     // Attempt to execute the given command(s) and return the result
     this.sessionInstance.execute(command, {
       stopOnError: true,
-      onProgress: async (result) => this.window.webContents.send(`pty:data:${this.id}`, {
-        output: result,
-        blockID: this.latestBlockID
-      })
+      onProgress: async (result) => {
+        this.window.webContents.send(`pty:data:${this.id}`, {
+          output: result,
+          blockID: this.latestBlockID
+        })
+      }
     }).then(async (result) => {
       // Handle early errors (incomplete, parse error) that don't trigger onProgress
       if (!result.success && result.statementsCount === 0)
@@ -185,32 +187,42 @@ class Session {
     })
   }
 
-  sourceCommand(data, blockID) {
+  sourceCommand(files, stopOnError, blockID) {
     this.sessionInstance.executeSourceFiles({
-      files: data.files,
-      stopOnError: data.stopOnError,
-      onProgress: async (result) => this.window.webContents.send(`pty:data:${this.id}`, {
-        output: result,
-        blockID
-      })
+      files,
+      stopOnError,
+      onProgress: async (result) => {
+        this.window.webContents.send(`cql:file:execute:data:${this.id}`, {
+          output: result,
+          blockID
+        })
+      }
     }).then(async (result) => {
       // Handle early errors (incomplete, parse error) that don't trigger onProgress
       if (!result.success && result.statementsCount === 0)
-        this.window.webContents.send(`pty:data:${this.id}`, {
+        this.window.webContents.send(`cql:file:execute:data:${this.id}`, {
           output: result,
           blockID: this.latestBlockID
         })
     })
   }
 
-  fetchNextPage(queryID, blockID) {
+  stopSourceExecution() {
+    this.sessionInstance.stopSourceExecution().then(async (result) => this.window.webContents.send(`pty:stop-source-execution:${this.id}`, {
+      output: result
+    }))
+  }
+
+  fetchNextPage(queryID, blockID, subOutputID) {
     // Update the latest received block ID as well
     this.latestBlockID = blockID || ''
 
     // Attempt to execute the given command(s) and return the result
     this.sessionInstance.fetchNextPage(queryID).then(async (result) => this.window.webContents.send(`pty:data:${this.id}`, {
       output: result,
-      blockID: this.latestBlockID
+      blockID: this.latestBlockID,
+      subOutputID,
+      fromNextPage: true
     }))
   }
 
@@ -278,7 +290,7 @@ class Session {
     this.getQueryTracingRequestID = requestID
 
     try {
-      this.sessionInstance.getQueryTrace(sessionID).then((result) => this.window.webContents.send(requestID, {
+      this.sessionInstance.getQueryTrace(sessionID).then((result) => this.window.webContents.send(`connection:query-tracing:${requestID}`, {
         result,
         connectionID: this.id
       }))

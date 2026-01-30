@@ -1327,11 +1327,14 @@ let getCQLDescription = (connectionID, scope, callback) => {
   // Listen to the response from the main thread
   IPCRenderer.on(`connection:cql-desc:${cqlDescSendID}:${connectionID}`, (_, data) => {
     try {
+      if (!data.result.success)
+        throw 0
+      
       /**
        * If `null` has been received then we weren't able to get the result
        * Call the `callback` function and pass the final CQL description
        */
-      callback(data.cqlDesc)
+      callback(data.result.data.ddl)
     } catch (e) {
       // If any error has occurred then return the `null` value
       callback(null)
@@ -1423,107 +1426,17 @@ let getSSHTunnelingInfo = async (workspaceID, connectionFolder, connectionID) =>
  * @Return: {string} query tracing result in JSON string format
  */
 let getQueryTracingResult = (connectionID, sessionID, callback) => {
-  let result = '', // Final result which be returned
-    requestTimeout = null, // Timeout to be triggered if we don't get a valid result
-    requestID = getRandom.id(10), // Generate a random ID for the request
-    isResultSent = false // Flag to tell if the result has already been sent for the current request
+  let requestID = getRandom.id(10) // Generate a random ID for the request
 
-  // Send a request to get the query tracing result from the main thread, which will use functions in class `Pty`
-  IPCRenderer.send('pty:query-tracing', {
-    id: requestID,
-    connectionID,
-    sessionID
-  })
-
-  // Set timeout function to be triggered if final result hasn't been received within 5 seconds
-  let setRequestTimeOut = () => {
-      requestTimeout = setTimeout(() => callTheCallbackFunction(null), 5000)
-    },
-    // Clear the timeout function and reset it if needed to
-    clearRequestTimeOut = (reset = false) => {
-      // Clear the timer
-      clearTimeout(requestTimeout)
-
-      // If no need to reset then we may skip the upcoming code
-      if (!reset)
-        return
-
-      // Reset the timeout function again
-      setRequestTimeOut()
-    },
-    // Inner function to determine to call the callback function
-    callTheCallbackFunction = (result) => {
-      // If the result has already been sent then skip the upcoming code
-      if (isResultSent)
-        return
-
-      // Update the flag
-      isResultSent = true
-
-      // Call the callback function
-      callback(result)
-    }
-
-  // Call the function; to start the timer
-  setRequestTimeOut()
+    // Send a request to get the query tracing result from the main thread, which will use functions in class `Pty`
+    IPCRenderer.send('pty:query-tracing', {
+      id: requestID,
+      connectionID,
+      sessionID
+    })
 
   // The data is sent as chunks, we catch those chunks one by one and add them to `result`, once a keyword (n rows) is found we end the listening and return the result
-  IPCRenderer.on(`connection:query-tracing:${requestID}`, (_, data) => {
-    // If `null` has been received then we weren't able to get the result
-    if (data.block == null)
-      return callTheCallbackFunction(null)
-
-    // Append the catched block in `result`
-    result += data.block
-
-    // Call the timer clearing function with reset
-    clearRequestTimeOut(true)
-
-    // Check if the keyword has been catched
-    try {
-      // If not, we may skip this try-catch block
-      if ((new RegExp('\\(\\s*\\d+\\s*row(s|)\\)')).exec(result) == null)
-        throw 0
-
-      // Call the timer clearing function without reset
-      clearRequestTimeOut()
-
-      // Manipulate the data before returning it
-      try {
-        // Create a variable and store the result's content in it; so we'll have a result to return if something went wrong inside that try-catch block
-        let temp = result
-
-        // Get rid of the control characters that could be added by the terminal
-        temp = `${temp}`.replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
-
-        // Get rid of the styling characters as well
-        temp = temp.replace(/(\[0m|\[0\;1\;33m)/g, '')
-
-        // Match and clean more ASCII escape characters for Windows
-        if (OS.platform == 'win32')
-          temp = temp.replace(/[\x1B\x9B][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]|\[0K|\[\?25[hl]/g, '')
-
-        // Match the JSON block and ignore everything else
-        temp = temp.match(/\{[\s\S]+\}/gm).join('')
-
-
-        temp = temp.match(/\{.*?\}/gm)
-
-        temp = temp.map((row) => {
-          try {
-            return JSON.parse(repairJSONString(row))
-          } catch (e) {}
-
-          return row
-        })
-
-        result = temp
-      } catch (e) {}
-
-      // Call the `callback` function and pass the final `result`
-      return callTheCallbackFunction(result)
-    } catch (e) {}
-  })
+  IPCRenderer.on(`connection:query-tracing:${requestID}`, (_, data) => callback(data))
 }
 
 /**

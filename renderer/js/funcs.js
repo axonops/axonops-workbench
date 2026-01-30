@@ -751,8 +751,15 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
 
       convertedJSON.table[0].unshift('select-checkbox')
 
-      for (let jsonData of convertedJSON.json)
+      let currentIndex = 0
+
+      for (let jsonData of convertedJSON.json) {
         jsonData.checkbox = ''
+
+        jsonData._rowIndex = currentIndex
+
+        currentIndex += 1
+      }
     } catch (e) {}
 
     // Append the HTML table to the passed container
@@ -762,25 +769,35 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
           // Create a Tabulator object with set properties
           tabulatorTable = new Tabulator(`div#_${tableID}`, {
             layout: 'fitDataStretch',
-            columns: convertedJSON.table[0].map((column) => {
-              let isCheckbox = column == 'select-checkbox',
-                finalFormat = {}
+            index: '_rowIndex',
+            initialSort: [{
+              column: "_rowIndex",
+              dir: "asc"
+            }],
+            columns: [{
+                field: "_rowIndex",
+                visible: false
+              },
+              ...convertedJSON.table[0].map((column) => {
+                let isCheckbox = column == 'select-checkbox',
+                  finalFormat = {}
 
-              try {
-                finalFormat = {
-                  title: !isCheckbox ? column : 'select',
-                  field: !isCheckbox ? column : 'checkbox',
-                  headerFilter: !isCheckbox ? 'input' : ''
-                }
+                try {
+                  finalFormat = {
+                    title: !isCheckbox ? column : 'select',
+                    field: !isCheckbox ? column : 'checkbox',
+                    headerFilter: !isCheckbox ? 'input' : ''
+                  }
 
-                if (isCheckbox)
-                  finalFormat.formatter = () => `<div class="form-check">
+                  if (isCheckbox)
+                    finalFormat.formatter = () => `<div class="form-check">
                                                     <input class="form-check-input select-row" type="checkbox">
                                                   </div>`
-              } catch (e) {}
+                } catch (e) {}
 
-              return finalFormat
-            }),
+                return finalFormat
+              })
+            ],
             data: convertedJSON.json,
             resizableColumnFit: true,
             resizableRowGuide: true,

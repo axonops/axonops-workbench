@@ -977,10 +977,6 @@ ul.dropdown-menu {
   }
 }
 
-.sub-output.error * {
-  color: #f3546f !important;
-}
-
 span.badge.sub-badge {
   margin-left: 10px;
   position: relative;
@@ -1252,4 +1248,36 @@ div.tabulator-cell[tabulator-field="checkbox"] {
     width: fit-content;
     pointer-events: none !important;
   }
+}
+
+div.sub-output {
+  div.statement-content {
+    position: absolute;
+    top: -23px;
+    left: 10px;
+    margin: auto;
+    background: #3a3a3a;
+    padding: 2px 7px;
+    border-radius: 5px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+.sub-output.error {
+  div.sub-output-content {
+    color: #f3546f !important;
+
+    * {
+      color: #f3546f !important;
+    }
+  }
+}
+
+.sub-output.margin-top-statement {
+    margin-top: 35px;
+}
+
+.sub-output.margin-top-statement-first {
+    margin-top: 20px;
 }

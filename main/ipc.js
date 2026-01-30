@@ -35,7 +35,13 @@ const keysServiceName = `AxonOpsWorkbench`
       if (!data.isSourceCommand)
         throw 0
 
-      CQLSHInstances[data.id].sourceCommand(data.cmd, data.blockID)
+      let filesPaths = []
+
+      try {
+        filesPaths.push(data.cmd)
+      } catch (e) {}
+
+      CQLSHInstances[data.id].sourceCommand(filesPaths, data.stopOnError, data.blockID)
 
       return
     } catch (e) {}
@@ -47,7 +53,13 @@ const keysServiceName = `AxonOpsWorkbench`
 
   IPCMain.on('pty:fetch-next-query', (_, data) => {
     try {
-      CQLSHInstances[data.id].fetchNextPage(data.queryID, data.blockID)
+      CQLSHInstances[data.id].fetchNextPage(data.queryID, data.blockID, data.subOutputID)
+    } catch (e) {}
+  })
+
+  IPCMain.on('pty:stop-source-execution', (_, connectionID) => {
+    try {
+      CQLSHInstances[connectionID].stopSourceExecution()
     } catch (e) {}
   })
 

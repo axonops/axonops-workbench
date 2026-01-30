@@ -1649,16 +1649,16 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       }
 
                       // Request to get query tracing result by passing the connection's and the session's IDs
-                      Modules.Connections.getQueryTracingResult(connectionID, sessionID, (result) => {
+                      Modules.Connections.getQueryTracingResult(connectionID, sessionID, (data) => {
                         // If the `result` value is `null` then the app wasn't able to get the query tracing result
-                        if (result == null)
+                        if (data == undefined || data?.result?.succes == false)
                           return
 
-                        let dataCenters = JSON.parse(connectionElement.attr('data-datacenters'))
+                        let result = [],
+                          dataCenters = JSON.parse(connectionElement.attr('data-datacenters'))
 
                         try {
-                          result = result.map((activity) => {
-
+                          result = (data.result.data.events || []).map((activity) => {
                             try {
                               activity.data_center = dataCenters.find((dataCenter) => dataCenter.address == activity.source).datacenter
                             } catch (e) {}
@@ -1713,31 +1713,31 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                         // The query tracing's result UI structure
                         let element = `
-                                   <div class="query" data-session-id="${sessionID}">
-                                     <span class="badge rounded-pill badge-secondary id-time">#${sessionID} <ion-icon name="time"></ion-icon> ${formatTimeUUID(sessionID)}</span>
-                                     <div class="sources" id="_${sourcesContainerID}">
-                                       <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="all">
-                                         <span source-ip>All</span>
-                                       </button>
-                                     </div>
-                                     <div class="info-left">
-                                       <div class="left-chart">
-                                         <canvas data-canvas-id="${canvasTimelineID}" width="100%"></canvas>
-                                         <button type="button" class="btn btn-tertiary zoom-reset" data-mdb-ripple-color="light" id="_${zoomResetBtnID}">
-                                           <ion-icon name="zoom-reset"></ion-icon>
-                                         </button>
-                                       </div>
-                                       <div class="right-chart"><canvas data-canvas-id="${canvasPieChartID}" width="100%"></canvas></div>
-                                     </div>
-                                     <div class="info-right">
-                                       <div class="copy-tracing" style="z-index: 1;">
-                                         <div class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-title data-mulang="copy the tracing result" capitalize-first>
-                                           <ion-icon name="copy-solid"></ion-icon>
-                                         </div>
-                                       </div>
-                                       <div class="activities-table" id="_${tableBodyID}"></div>
-                                     </div>
-                                   </div>`
+                                    <div class="query" data-session-id="${sessionID}">
+                                      <span class="badge rounded-pill badge-secondary id-time">#${sessionID} <ion-icon name="time"></ion-icon> ${formatTimeUUID(data.result.data.session.sessionId)}</span>
+                                      <div class="sources" id="_${sourcesContainerID}">
+                                        <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="all">
+                                          <span source-ip>All</span>
+                                        </button>
+                                      </div>
+                                      <div class="info-left">
+                                        <div class="left-chart">
+                                          <canvas data-canvas-id="${canvasTimelineID}" width="100%"></canvas>
+                                          <button type="button" class="btn btn-tertiary zoom-reset" data-mdb-ripple-color="light" id="_${zoomResetBtnID}">
+                                            <ion-icon name="zoom-reset"></ion-icon>
+                                          </button>
+                                        </div>
+                                        <div class="right-chart"><canvas data-canvas-id="${canvasPieChartID}" width="100%"></canvas></div>
+                                      </div>
+                                      <div class="info-right">
+                                        <div class="copy-tracing" style="z-index: 1;">
+                                          <div class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-title data-mulang="copy the tracing result" capitalize-first>
+                                            <ion-icon name="copy-solid"></ion-icon>
+                                          </div>
+                                        </div>
+                                        <div class="activities-table" id="_${tableBodyID}"></div>
+                                      </div>
+                                    </div>`
 
                         // Prepend the tracing's result to the container
                         queriesContainer.prepend($(element).show(function() {
@@ -1798,7 +1798,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 })
                               } catch (e) {}
 
-                              convertTableToTabulator(JSON.stringify(tableData), $(`div[id="_${tableBodyID}"]`), 10, true, (tabulatorObject) => setTimeout(() => {
+                              convertTableToTabulator(tableData, $(`div[id="_${tableBodyID}"]`), 10, true, (tabulatorObject) => setTimeout(() => {
                                 activitesTabulatorObject = tabulatorObject
 
                                 tabulatorObject.redraw()
@@ -2067,11 +2067,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             } catch (e) {}
 
                             let element = `
-                                      <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="${sourceIP}">
-                                        <span class="color" style="bottom: 0px; background-color:${sourceColor}"></span>
-                                        <span source-ip>${sourceIP}</span>
-                                        <span class="badge badge-dark ms-2 rounded-pill" ${dataCenter == '' ? 'hidden' : ''}>${dataCenter}</span>
-                                      </button>`
+                                       <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="${sourceIP}">
+                                         <span class="color" style="bottom: 0px; background-color:${sourceColor}"></span>
+                                         <span source-ip>${sourceIP}</span>
+                                         <span class="badge badge-dark ms-2 rounded-pill" ${dataCenter == '' ? 'hidden' : ''}>${dataCenter}</span>
+                                       </button>`
 
                             $(this).find(`div.sources[id="_${sourcesContainerID}"]`).append($(element).show(function() {
                               $(this).data('chart-data', data)
@@ -2251,25 +2251,35 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 ] = getAttributes(clickedNode, ['name', 'keyspace', 'table', 'type'])
 
                                 // Define the scope to be passed with the request
-                                scope = `keyspace>${nodeType == 'keyspace' ? targetName : keyspaceName}${nodeType != 'keyspace' ? 'table>' + targetName : ''}`
+                                scope = {}
+
+                                try {
+                                  scope.keyspace = nodeType == 'keyspace' ? targetName : keyspaceName
+                                } catch (e) {}
+
+                                try {
+                                  let tableScope = nodeType != 'keyspace' ? targetName : ''
+
+                                  if (tableScope.length > 0)
+                                    scope.table = tableScope
+                                } catch (e) {}
 
                                 // If the node type is cluster then only `cluster` is needed as a scope
                                 if (nodeType == 'cluster' || nodeType == 'keyspaces')
-                                  scope = 'cluster'
+                                  scope = {
+                                    cluster: true
+                                  }
 
                                 // If the node type is an index
                                 try {
                                   if (nodeType != 'index')
                                     throw 0
 
-                                  // Add the keyspace
-                                  scope = `keyspace>${keyspaceName}`
-
-                                  // Add the index's table
-                                  scope += `table>${tableName}`
-
-                                  // And finally add the index itself
-                                  scope += `index>${targetName}`
+                                  scope = {
+                                    keyspace: keyspaceName,
+                                    table: keyspaceName,
+                                    index: targetName
+                                  }
                                 } catch (e) {}
 
                                 let contextMenu = [{
@@ -2278,7 +2288,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       label: I18next.capitalize(I18next.t('display in the work area')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
                                                     connectionID: '${getAttributes(connectionElement, 'data-id')}',
-                                                    scope: '${scope}',
+                                                    scope: '${JSON.stringify(scope)}',
                                                     tabID: '${cqlDescriptionContentID}',
                                                     nodeID: '${getAttributes(clickedNode, 'id')}'
                                                   })`
@@ -2287,7 +2297,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       label: I18next.capitalize(I18next.t('save it as a text file')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
                                                     connectionID: '${getAttributes(connectionElement, 'data-id')}',
-                                                    scope: '${scope}',
+                                                    scope: '${JSON.stringify(scope)}',
                                                     tabID: '${cqlDescriptionContentID}',
                                                     nodeID: '${getAttributes(clickedNode, 'id')}',
                                                     saveAsFile: true
@@ -3154,7 +3164,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                            *
                            * Whether or not the output is related to paging process
                            */
-                          isOutputWithPaging = data?.output?.data?.hasMore != undefined && data?.output?.data?.identifier === 'SELECT',
+                          isOutputWithPaging = (data?.output?.data?.hasMore != undefined && data?.output?.identifier === 'SELECT') || data?.fromNextPage,
                           // Whether or not the output has been completed
                           isOutputCompleted = (isOutputWithPaging && !data?.output?.data?.hasMore) || (!isOutputWithPaging && data?.output?.allCompleted),
                           // Define the variable that will hold a timeout to refresh the metadata content
@@ -3183,11 +3193,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             // Toggle the `busy` state of the execution button
                             workareaElement.find(`div.tab-pane[tab="cqlsh-session"]#_${cqlshSessionContentID}`).find('div.execute').removeClass('busy')
 
-                            // hintsContainer.add(killProcessBtn.parent()).removeClass('show')
+                            hintsContainer.add(killProcessBtn.parent()).removeClass('show')
                           } catch (e) {}
 
                           if (isOutputWithPaging && isOutputCompleted) {
-                            blockElement.attr('data-is-paging-completed', 'true')
+                            blockElement.find(`div.sub-output[sub-id="${data.subOutputID}"]`).attr('data-is-paging-completed', 'true')
 
                             let nextPageBtn = blockElement.find('button[data-action="next-page"]')
 
@@ -3203,7 +3213,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               workareaElement.find('.disableable').removeClass('disabled')
                               workareaElement.removeClass('busy-cqlsh')
 
-                              // killProcessBtn.parent().removeClass('show')
+                              killProcessBtn.parent().removeClass('show')
                             }, 2000)
                           }
 
@@ -3218,18 +3228,33 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             } catch (e) {}
 
                             try {
-                              let tableObj = blockElement.data('tableObj')
+                              let tableObj = blockElement.find(`div.sub-output[sub-id="${data.subOutputID}"]`).data('tableObj')
 
                               // Make sure the giving data are rows
                               if (data?.output?.data?.rows.length <= 0 || tableObj == undefined)
                                 throw 0
 
                               if (tableObj != undefined) {
-                                convertJSONToTable(data?.output?.data?.rows, (newPage) => {
+                                convertJSONToTable(data.output.data.rows, (newPage) => {
+                                  let existingCount = tableObj.getData().length,
+                                    newRowsIndex = -1
+
+                                  try {
+                                    newPage.json = newPage.json.map((row) => {
+                                      newRowsIndex += 1
+
+                                      return {
+                                        ...row,
+                                        _rowIndex: existingCount + newRowsIndex
+                                      }
+                                    })
+                                  } catch (e) {}
+
                                   tableObj.blockRedraw()
+                                  tableObj.clearSort()
                                   tableObj.addData(newPage.json, false).then(() => {
                                     tableObj.restoreRedraw()
-
+                                    tableObj.setSort('_rowIndex', 'asc')
                                     tableObj.setPage(tableObj.getPageMax())
 
                                     let nextPageBtn = blockElement.find('button[data-action="next-page"]')
@@ -3396,9 +3421,25 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               queryTracingAction.find(`span.staus`).text(`${isTracingEnabled ? 'ON' : 'OFF'}`)
                             } catch (e) {}
 
+                            let statementContent = '',
+                              sessionIDAttr = ''
+
+                            try {
+                              if (data.output.statement.length != 0 && data.output.statementsCount > 1)
+                                statementContent = `<div class="statement-content"><pre>${Highlight.highlight(data.output.statement, {
+                                                                language: 'cql'
+                                                            }).value}</pre></div>`
+                            } catch (e) {}
+
+                            try {
+                              if (data.output.data.traceSessionId != undefined)
+                                sessionIDAttr = `data-tracing-session-id="${data.output.data.traceSessionId}"`
+                            } catch (e) {}
+
                             // The sub output structure UI
                             let element = `
-                                 <div class="sub-output ${isErrorFound ? 'error' : ''}">
+                                 <div class="sub-output ${isErrorFound ? 'error' : ''} ${statementContent.length != 0 ? (outputContainer.children('div.sub-output').length <= 0 ? 'margin-top-statement-first' : 'margin-top-statement') : ''}" sub-id="${getRandom.id(10)}" ${sessionIDAttr}>
+                                   ${statementContent}
                                    <div class="general-hint select-rows">
                                     <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> To perform a range selection hold <kbd>SHIFT</kbd> key and click on the end row, also, hold <kbd>CTRL</kbd> key and click on a row to deselect it.
                                    </div>
@@ -3450,7 +3491,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               }, 250)
 
                               // Define the JSON string which will be updated if the output has valid JSON block
-                              let jsonRows = '',
+                              let jsonRows = [],
                                 // Define the tabulator object if one is created
                                 tabulatorObject = null,
                                 isJSONKeywordFound = `${statementsStNextIdentifier}`.toLowerCase().indexOf('json') != -1
@@ -3478,12 +3519,15 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 let selectorTableInfo = ''
 
                                 try {
-                                  selectorTableInfo = `${data?.output?.keyspace}.${data?.output?.table}`
+                                  selectorTableInfo = `${data?.output?.data?.keyspace}.${data?.output?.data?.table}`
                                 } catch (e) {}
 
                                 try {
                                   jsonRows = data?.output?.data?.rows
                                 } catch (e) {}
+
+                                if (jsonRows.length <= 0)
+                                  throw 0
 
                                 // Convert the JSON string to HTML table related to a Tabulator object
                                 convertTableToTabulator(jsonRows, outputElement.find('div.sub-output-content'), activeSessionsPaginationSize || 50, false, (_tabulatorObject) => {
@@ -3501,15 +3545,18 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                   paginator.find('button[data-page="last"], button[data-page="next"]').addClass('hidden')
 
+                                  if (outputElement.attr('sub-id') == undefined)
+                                    outputElement.attr('sub-id', getRandom.id(10))
+
                                   paginator.find('button[data-page="last"]').before($(`<button class="tabulator-page" data-action="next-page" type="button" role="button" aria-label="Next Page" title="Next Page"><span>Next</span><l-chaotic-orbit spinner style="vertical-align: middle; position: relative; bottom: 1px; margin-left: 5px; display:none; --uib-size: 17px; --uib-color: black; --uib-speed: 0.7s;"></l-chaotic-orbit></button>`).show(function() {
-                                    blockElement.data('tableObj', tabulatorObject)
+                                    outputElement.data('tableObj', tabulatorObject)
 
                                     $(this).data('blockID', data.blockID)
 
                                     $(this).click(function() {
                                       let originalNextBtn = $(this).parent().find('button[data-page="next"]')
 
-                                      if (originalNextBtn.attr('disabled') == undefined || isOutputCompleted || blockElement.attr('data-is-paging-completed') == 'true') {
+                                      if ((originalNextBtn.attr('disabled') == undefined && isOutputCompleted) || outputElement.attr('data-is-paging-completed') == 'true') {
                                         originalNextBtn.click()
                                         return
                                       }
@@ -3520,6 +3567,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       IPCRenderer.send('pty:fetch-next-query', {
                                         id: connectionID,
                                         queryID,
+                                        subOutputID: outputElement.attr('sub-id'),
                                         blockID: $(this).data('blockID')
                                       })
                                     })
@@ -3790,12 +3838,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       let sessionID
 
                                       try {
-                                        sessionID = detectedSessionsID.filter((sessionID) => sessionID != null)[0]
+                                        sessionID = outputElement.attr('data-tracing-session-id')
                                       } catch (e) {}
 
                                       try {
                                         // If there's no session ID exists then skip this try-catch block
-                                        if (sessionID == undefined)
+                                        if (sessionID == undefined || sessionID.length <= 0)
                                           throw 0
 
                                         tracingButton.attr('data-session-id', sessionID)
@@ -3808,7 +3856,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                         // Add listener to the `click` event
                                         tracingButton.click(() => clickEvent(true, sessionID))
                                       } catch (e) {}
-                                    }, 2000)
+                                    }, 500)
 
                                     // Clicks the deletion button
                                     blockElement.find('div.btn[action="delete"]').click(() => {
@@ -3850,6 +3898,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   }
                                 })
                               }
+
+                              if (match == undefined || `${match}`.length <= 0)
+                                match = noOutputElement
 
                               match = `<pre>${match}</pre>`
 
@@ -4234,9 +4285,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   clearTimeout(killProcessTimeout)
                                 } catch (e) {}
 
-                                // try {
-                                //   killProcessBtn.parent().addClass('show')
-                                // } catch (e) {}
+                                try {
+                                  killProcessBtn.parent().addClass('show')
+
+                                  killProcessBtn.parent().attr('hidden', null)
+                                } catch (e) {}
                               }
 
                               statementTextContainer.prepend($(`<span class="spinner"><l-wobble style="--uib-size: 25px; --uib-color: #f0f0f0; --uib-speed: 0.77s;"></l-wobble></span>`).hide(function() {
@@ -4259,7 +4312,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                     executeBtn.parent().removeClass('busy')
 
-                                    // killProcessBtn.parent().removeClass('show')
+                                    killProcessBtn.parent().removeClass('show')
 
                                     workareaElement.find('div.session-actions').find('button').attr('disabled', null)
                                     workareaElement.find('.disableable').removeClass('disabled')
@@ -4311,7 +4364,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   setTimeout(() => {
                                     IPCRenderer.send('pty:command', {
                                       id: connectionID,
-                                      cmd: `SOURCE '${filePath}${isExecutionTerminatedOnError ? '{KEYWORD:STOPONERROR:TRUE}' : ''}'`,
+                                      cmd: `${filePath}`,
+                                      stopOnError: isExecutionTerminatedOnError,
                                       blockID,
                                       isSourceCommand: true
                                     })
@@ -4331,41 +4385,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     IPCRenderer.removeAllListeners(`cql:file:execute:data:${connectionID}`)
                                   } catch (e) {}
 
-                                  let ansiToHTML = new ANSIToHTML(),
-                                    errorsCount = 0
-
                                   IPCRenderer.on(`cql:file:execute:data:${connectionID}`, (_, data) => {
                                     let errors = []
 
                                     try {
-                                      errors = JSON.parse(data.errors)
-                                    } catch (e) {}
-
-                                    errorsCount += errors.length
-
-                                    try {
-                                      errors = errors.map((error) => {
-                                        try {
-                                          if (OS.platform() != 'win32')
-                                            throw 0
-
-                                          error = error.replace(/\n(?![^<]*<\/span>)/gim, '')
-                                        } catch (e) {}
-
-                                        // Manipulate the content
-                                        error = error.replace(new RegExp(`(${OS.EOL}){2,}`, `g`), OS.EOL)
-                                          .replace(createRegex(OS.EOL, 'g'), '<br>')
-                                          .replace(/<br\s*\/?>\s*<br\s*\/?>/g, '<br>')
-                                          .replace(/([\Ss]+(\@))?cqlsh.*\>\s*/g, '')
-                                          .replace('[OUTPUT:INFO]', '')
-                                          .replace(/\r?\n?KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\r?\n?/gmi, '')
-
-                                        error = ansiToHTML.toHtml(error)
-
-                                        error = StripTags(error)
-
-                                        return error
-                                      })
+                                      errors = data.output.errors
                                     } catch (e) {}
 
                                     {
@@ -4375,17 +4399,18 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                         errorsContainer.html(`${errorsContainer.html()}<pre>${error}</pre>`)
                                     }
 
-                                    if (errors.length != 0)
-                                      workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).attr('hidden', null).find('div.sub-output-content:not(.all-errors)').find('span').text(`${errorsCount} error(s) occured in this execution cycle.`)
+                                    if (data.output.statementsFailed != 0)
+                                      workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_error"]`).attr('hidden', null).find('div.sub-output-content:not(.all-errors)').find('span').text(`${data.output.statementsFailed} error(s) occured in this execution cycle.`)
 
-                                    workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_executed"]`).attr('hidden', null).text(`${data.totalExecutions} statement(s) executed in this execution cycle.`)
+                                    workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_executed"]`).attr('hidden', null).text(`${data.output.statementsRun}/${data.output.statementsTotal} statement(s) executed in this execution cycle.`)
 
-                                    if (!data.isFinished)
+                                    if (!data.output.isComplete)
                                       return
 
                                     workareaElement.find(`div.sub-output[data-id="${fileExecutionInfoID}_info"]`).attr('hidden', null)
 
-                                    setTimeout(() => handleFileExecution(++fileIndex), 1000)
+                                    if (!data.output.cancelled)
+                                      setTimeout(() => handleFileExecution(++fileIndex), 1000)
                                   })
                                 }
 
@@ -4500,83 +4525,53 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                         workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', null)
 
-                        // killProcessBtn.click(function() {
-                        //   let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`),
-                        //     isSourceCommand = blockElement.attr('data-is-source-command') != undefined,
-                        //     isPagingProcess = blockElement.attr('data-is-paging') != undefined
-                        //
-                        //   if (isPagingProcess) {
-                        //     blockElement.attr({
-                        //       'data-is-paging': null,
-                        //       'data-is-paging-completed': 'true'
-                        //     })
-                        //
-                        //     let nextPageBtn = blockElement.find('button[data-action="next-page"]')
-                        //
-                        //     nextPageBtn.find('[spinner]').hide()
-                        //     nextPageBtn.attr('disabled', null)
-                        //
-                        //     nextPageBtn.parent().find('button[data-page="last"]').removeClass('hidden')
-                        //
-                        //     IPCRenderer.send('pty:command', {
-                        //       id: connectionID,
-                        //       cmd: '\x03',
-                        //       blockID
-                        //     })
-                        //   } else {
-                        //     if (isSourceCommand)
-                        //       IPCRenderer.send('pty:command', {
-                        //         id: connectionID,
-                        //         cmd: `\r\r`,
-                        //         blockID
-                        //       })
-                        //
-                        //     IPCRenderer.send('pty:command', {
-                        //       id: connectionID,
-                        //       cmd: `KEYWORD:STATEMENT:IGNORE-${Math.floor(Math.random() * 999) + 1}`,
-                        //       blockID
-                        //     })
-                        //   }
-                        //
-                        //   try {
-                        //     if (!isSourceCommand)
-                        //       throw 0
-                        //
-                        //     blockElement.children('div.output').append($(`
-                        //             <div class="sub-output info">
-                        //               <div class="sub-output-content">The execution process has been terminated.</div>
-                        //             </div>`))
-                        //
-                        //     blockElement.find('div.statement').children('div.text').removeClass('executing')
-                        //
-                        //     executeBtn.parent().removeClass('busy')
-                        //
-                        //     killProcessBtn.parent().removeClass('show')
-                        //
-                        //     workareaElement.find('div.session-actions').find('button').attr('disabled', null)
-                        //     workareaElement.find('.disableable').removeClass('disabled')
-                        //     workareaElement.removeClass('busy-cqlsh')
-                        //
-                        //     blockElement.find('div.statement').find('span.spinner').hide()
-                        //
-                        //     {
-                        //       workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
-                        //         'opacity': '',
-                        //         'pointer-events': ''
-                        //       })
-                        //
-                        //       workareaElement.find('div.metadata-content').css({
-                        //         'opacity': '',
-                        //         'pointer-events': '',
-                        //         'transition': ''
-                        //       })
-                        //
-                        //       workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', null)
-                        //
-                        //       workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').removeClass('disabled')
-                        //     }
-                        //   } catch (e) {}
-                        // }).hover(() => hintsContainer.hide(), () => hintsContainer.show())
+                        killProcessBtn.click(function() {
+                          let blockElement = workareaElement.find(`div.interactive-terminal-container div.session-content div.block[data-id="${blockID}"]`)
+
+                          IPCRenderer.send('pty:stop-source-execution', connectionID)
+
+                          try {
+                            IPCRenderer.removeAllListeners(`pty:stop-source-execution:${connectionID}`)
+                          } catch (e) {}
+
+                          IPCRenderer.on(`pty:stop-source-execution:${connectionID}`, (_, result) => {
+                            try {
+                              blockElement.children('div.output').append($(`
+                                      <div class="sub-output info">
+                                        <div class="sub-output-content">The execution process has been terminated.</div>
+                                      </div>`))
+
+                              blockElement.find('div.statement').children('div.text').removeClass('executing')
+
+                              executeBtn.parent().removeClass('busy')
+
+                              killProcessBtn.parent().removeClass('show')
+
+                              workareaElement.find('div.session-actions').find('button').attr('disabled', null)
+                              workareaElement.find('.disableable').removeClass('disabled')
+                              workareaElement.removeClass('busy-cqlsh')
+
+                              blockElement.find('div.statement').find('span.spinner').hide()
+
+                              {
+                                workareaElement.find('div.metadata-actions').find('div.action[action="copy"], div.action[action="refresh"]').css({
+                                  'opacity': '',
+                                  'pointer-events': ''
+                                })
+
+                                workareaElement.find('div.metadata-content').css({
+                                  'opacity': '',
+                                  'pointer-events': '',
+                                  'transition': ''
+                                })
+
+                                workareaElement.find('div.tab-pane[tab="cqlsh-session"]').find('div.session-action[action="execute-file"] button').attr('disabled', null)
+
+                                workareaElement.find('ul.nav.nav-tabs').find('li.nav-item:not(:first-of-type) a.nav-link').removeClass('disabled')
+                              }
+                            } catch (e) {}
+                          })
+                        })
 
                         // The statement's input field's value has been updated
                         statementInputField.on('input', function() {
@@ -4800,6 +4795,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             // If there's no saved history then simply skip this try-catch block
                             if (history.length <= 0)
                               throw 0
+
+                            history = history.filter((statement) => !statement.startsWith('SOURCE_'))
 
                             // Increment/decrement the current history's index based on the pressed key
                             workareaElement.data('lastData').history += isUpArrow ? 1 : -1
@@ -5056,6 +5053,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   if (history.length <= 0)
                                     throw 0
 
+                                  history = history.filter((statement) => !statement.startsWith('SOURCE_'))
+
                                   // Increment/decrement the current history's index based on the pressed key
                                   workareaElement.data('lastData').history += 1
 
@@ -5099,6 +5098,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   // If there's no saved history then simply skip this try-catch block
                                   if (history.length <= 0)
                                     throw 0
+
+                                  history = history.filter((statement) => !statement.startsWith('SOURCE_'))
 
                                   // Increment/decrement the current history's index based on the pressed key
                                   workareaElement.data('lastData').history += -1

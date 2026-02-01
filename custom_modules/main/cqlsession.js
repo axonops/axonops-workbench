@@ -19,7 +19,7 @@
  *
  * Load the new module
  */
-const CQLNode = require('@cqlai/node').CQLSession
+const CQLNode = require('@axonops/cqlai-node').CQLSession
 
 /**
  * The module is mainly this class with different attributes and methods
@@ -107,7 +107,7 @@ class Session {
       if ([null, undefined].includes(this.ssh))
         throw 0
 
-      parameters.port = this.ssh.port
+      parameters.port = parseInt(this.ssh.port)
       parameters.overridePort = this.ssh.oport
       parameters.overridePort = this.ssh.oport
     } catch (e) {}
@@ -373,6 +373,22 @@ let testConnection = (window, data) => {
         varsValues: data.variables.values
       }
     }
+
+    // Detect local cluster connection test
+    try {
+      if (options.sshPort == undefined)
+        throw 0
+
+      options.host = '127.0.0.1'
+      options.port = parseInt(options.port)
+    } catch (e) {}
+
+    try {
+      for (let option of ['varsManifest', 'varsValues', 'cqlshrc']) {
+        if (options[option] == undefined)
+          delete options[option]
+      }
+    } catch (e) {}
 
     CQLNode[!isAstraDB ? 'testConnectionWithID' : 'testAstraConnectionWithID'](options).then((testResult) => sendResult(testResult))
 

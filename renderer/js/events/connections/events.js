@@ -733,17 +733,17 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                     }
 
                     // Define the content of the bash session tab to be added
-                    bashSessionTab = `
-                           <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="bash session" capitalize data-title>
-                             <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${bashSessionContentID}" role="tab" aria-selected="true">
-                               <span class="icon">
-                                 <ion-icon name="bash"></ion-icon>
-                               </span>
-                               <span class="title">
-                                 <span mulang="bash session" capitalize></span>
-                               </span>
-                             </a>
-                           </li>`
+                    // bashSessionTab = `
+                    //        <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="bash session" capitalize data-title>
+                    //          <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${bashSessionContentID}" role="tab" aria-selected="true">
+                    //            <span class="icon">
+                    //              <ion-icon name="bash"></ion-icon>
+                    //            </span>
+                    //            <span class="title">
+                    //              <span mulang="bash session" capitalize></span>
+                    //            </span>
+                    //          </a>
+                    //        </li>`
                   } catch (e) {}
 
                   let isAxonOpsIntegrationActionEnabled = isInitAxonOpsIntegrationEnabled && !(Store.get(`${workspaceID}:AxonOpsIntegrationEnabled`) != undefined && !Store.get(`${workspaceID}:AxonOpsIntegrationEnabled`)) && !(Store.get(`${connectionID}:AxonOpsIntegrationEnabled`) != undefined && !Store.get(`${connectionID}:AxonOpsIntegrationEnabled`)) && connectionElement.attr('data-axonops-integration-organization') != undefined
@@ -1623,7 +1623,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                      * {object || boolean} `_` this parameter can be the event object, or flag to tell about the seesion's ID
                      * {string} `link` the link's content
                      */
-                    let clickEvent = (_, link) => {
+                    let clickEvent = (_, link, tracingButton = null) => {
+                      try {
+                        tracingButton.addClass('perform-process')
+                      } catch (e) {}
+
                       /**
                        * Get the session ID from the link - by slicing the protocol `session://`
                        * Other is passing `true` to `_` parameter; which tells that the function has been called from the interactive terminal
@@ -1638,6 +1642,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                       // If the clicked session exists in the query tracing's container
                       if (queriesContainer.children(`div.query[data-session-id="${sessionID}"]`).length != 0) {
+                        try {
+                          tracingButton.removeClass('perform-process')
+                        } catch (e) {}
+
                         // Just add the session ID in the search input and it'll handle the rest
                         workareaElement.find(`input#_${queryTracingSearchInputID}`).val(sessionID)
 
@@ -1650,6 +1658,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                       // Request to get query tracing result by passing the connection's and the session's IDs
                       Modules.Connections.getQueryTracingResult(connectionID, sessionID, (data) => {
+                        try {
+                          tracingButton.removeClass('perform-process')
+                        } catch (e) {}
+
                         // If the `result` value is `null` then the app wasn't able to get the query tracing result
                         if (data == undefined || data?.result?.succes == false)
                           return
@@ -3458,6 +3470,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                      </div>
                                      <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="trace the query" capitalize-first>
                                        <ion-icon name="query-tracing"></ion-icon>
+                                       <div class="processing"></div>
                                      </div>
                                    </div>
                                  </div>`
@@ -3556,7 +3569,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     $(this).click(function() {
                                       let originalNextBtn = $(this).parent().find('button[data-page="next"]')
 
-                                      if ((originalNextBtn.attr('disabled') == undefined && isOutputCompleted) || outputElement.attr('data-is-paging-completed') == 'true') {
+                                      if (isOutputCompleted || outputElement.attr('data-is-paging-completed') == 'true') {
                                         originalNextBtn.click()
                                         return
                                       }
@@ -3854,7 +3867,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                         tracingButton.removeClass('disabled')
 
                                         // Add listener to the `click` event
-                                        tracingButton.click(() => clickEvent(true, sessionID))
+                                        tracingButton.click(() => clickEvent(true, sessionID, tracingButton))
                                       } catch (e) {}
                                     }, 500)
 

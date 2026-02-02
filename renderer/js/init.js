@@ -1454,6 +1454,9 @@ $(document).on('initialize', () => {
 
 // Check whether or not binaries exist
 $(document).on('initialize', () => {
+  // TODO: This block should be removed later
+  return
+  
   // Get the app's path
   IPCRenderer.invoke('app-path:get').then((appPath) => {
     setTimeout(() => {

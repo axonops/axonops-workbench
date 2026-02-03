@@ -41,7 +41,7 @@ jobs:
               --generate-notes $OPTIONS
 
   build:
-    name: Build on ${{ matrix.target }}
+    name: Workbench for ${{ matrix.target }} ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
     needs: [release]
     strategy:
@@ -67,6 +67,7 @@ jobs:
 
           - os: windows-latest
             target: Windows
+            arch: x64
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4

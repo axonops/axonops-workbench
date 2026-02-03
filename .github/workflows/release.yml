@@ -49,17 +49,21 @@ jobs:
         include:
           - os: [ubuntu-24.04]
             target: Linux
+            arch: x64
 
           - os: [ubuntu-24.04-arm]
             target: Linux
+            arch: arm64
 
-          # M1
+          # macOS x64 (cross-compiled on ARM via Rosetta)
           - os: macos-14
             target: Macos
+            arch: x64
 
-          # X86
-          - os: macos-13
+          # macOS ARM64 (native)
+          - os: macos-14
             target: Macos
+            arch: arm64
 
           - os: windows-latest
             target: Windows
@@ -76,11 +80,20 @@ jobs:
 
       - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
         run: |
+          # Map matrix arch to binary arch (for macOS cross-compilation)
+          if [ "${{ matrix.arch }}" == "x64" ]; then
+            BINARY_ARCH="x86_64"
+          elif [ "${{ matrix.arch }}" == "arm64" ]; then
+            BINARY_ARCH="arm64"
+          else
+            BINARY_ARCH="$(uname -m)"
+          fi
+
           mkdir -p main/bin
           for binary in cqlsh keys_generator; do
-            curl -fL ${CQLSH_GITHUB_URL}/${CQLSH_BUILD_VERSION}/${binary}-$(uname -s)-$(uname -m).tar | tar xf - -C main/bin
-            mv main/bin/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}
-            mv main/bin/${binary}/${binary}-$(uname -s)-$(uname -m) main/bin/${binary}/${binary}
+            curl -fL ${CQLSH_GITHUB_URL}/${CQLSH_BUILD_VERSION}/${binary}-$(uname -s)-${BINARY_ARCH}.tar | tar xf - -C main/bin
+            mv main/bin/${binary}-$(uname -s)-${BINARY_ARCH} main/bin/${binary}
+            mv main/bin/${binary}/${binary}-$(uname -s)-${BINARY_ARCH} main/bin/${binary}/${binary}
           done
           sed -i.bak "s/%CQLSH_VERSION%/$CQLSH_BUILD_VERSION/g" renderer/views/index.html
           rm -f renderer/views/index.html.bak
@@ -139,9 +152,9 @@ jobs:
             export USE_SYSTEM_FPM=true
           fi
 
-          if [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "arm64" ]; then
+          if [ "$(uname -s)" == "Darwin" ] && [ "${{ matrix.arch }}" == "arm64" ]; then
             npm run mac:arm64
-          elif [ "$(uname -s )" == "Darwin" ] && [ "$(uname -m)" == "x86_64" ]; then
+          elif [ "$(uname -s)" == "Darwin" ] && [ "${{ matrix.arch }}" == "x64" ]; then
             npm run mac
           fi
           export CSC_IDENTITY_AUTO_DISCOVERY=false
@@ -287,13 +300,11 @@ jobs:
         uses: anchore/sbom-action@v0
         with:
           artifact-name: sbom.spdx.json
-          root-directory: ${{ github.workspace }}
 
       - name: Generate SBOM 2/2
         uses: anchore/sbom-action@v0
         with:
           artifact-name: sbom.cyclonedx.json
-          root-directory: ${{ github.workspace }}
           format: cyclonedx-json
 
 # Release brew

@@ -19,7 +19,10 @@
     "copyright": "©2025 AxonOps Limited",
     "appId": "com.axonops.workbench.cassandra",
     "compression": "maximum",
-    "asarUnpack": "**/*.node",
+    "asarUnpack": [
+      "**/*.node",
+      "**/node_modules/@axonops/cqlai-node/lib/**"
+    ],
     "extraResources": [
       "data",
       "main/bin",
@@ -326,6 +329,7 @@
     "license-checker": "^25.0.1"
   },
   "dependencies": {
+    "@axonops/cqlai-node": "^0.1.2",
     "@axonops/node-pty": "^1.0.2",
     "@mhmdkrmabd/rsa-keys-generator-node": "^1.1.0",
     "@ramumb/strip-tags": "^0.1.3",

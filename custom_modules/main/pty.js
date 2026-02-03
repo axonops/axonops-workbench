@@ -23,6 +23,8 @@
  * PTY module
  * Creates pseudo terminal, it returns a terminal object that allows interaction - reads and writes - with that terminal
  */
+const CQLNode = require('@axonops/cqlai-node').CQLSession
+
 const PTY = require('@axonops/node-pty'),
   // Provides the ability to spawn subprocesses
   ChildProcessSpawn = require('child_process').spawn,
@@ -879,305 +881,97 @@ let testConnection = (window, data) => {
       version: '-' // Apache Cassandra's version
       // `error` attribute is added in case there's one
     },
-    // If we've got JSON string then the connection test has succeeded
-    gotJSON = false,
-    // Used to prevent sending the test result more than once
-    resultSent = false,
-    // Counter; to make sure that a response will be sent to the renderer thread for sure after 4 received data blocks
-    count = 0,
-    // Save the last given output; so we can track the connection process and detect errors
-    lastOutput = '',
-    // Whether or not send the test's final result
-    send = false,
-    // Send time out to be triggered within 5 seconds
-    sendTimeout = null,
-    // All output from the testing process is appended here
-    fullOutput = '',
     // The connection test process' ID
-    processID = data.processID,
-    tempProcess,
-    terminateProcess = () => {
-      // Define final status to be returned
-      let status = false
-
-      try {
-        // Call the `destroy` function from the pty instance
-        try {
-          tempProcess.destroy()
-        } catch (e) {}
-
-        // Attempt to kill the pty instance process by its process ID
-        try {
-          Kill(tempProcess.pid, 'SIGKILL')
-        } catch (e) {}
-
-        // Successfully terminated
-        status = true
-      } catch (e) {
-        try {
-          // If the error is a number then don't log the error
-          if (!isNaN(parseInt(e.toString())))
-            throw 0
-
-          addLog(`Error in process terminal. Details: ${e}`, 'error')
-        } catch (e) {}
-      } finally {
-        // Send final status
-        window.webContents.send(`process:terminate:${processID}:result`, status)
-
-        // Send to the renderer thread that the test process has been finished with `terminated` attribute
-        window.webContents.send(`pty:test-connection:${data.requestID}`, {
-          ...result,
-          terminated: true
-        })
-      }
-    }
+    processID = data.processID
 
   window.webContents.send(`process:can-be-terminated:${processID}`, true)
 
-  // Received request to terminate the connection test process
-  IPCMain.on(`process:terminate:${processID}`, () => terminateProcess())
-
-  try {
-    let request = global.terminatedTestsIDs.find((id) => id.requestID == data.requestID)
-
-    if (request == undefined)
-      throw 0
-
-    if (!request.replySent)
-      terminateProcess()
-
-    request.replySent = true
-
-    return
-  } catch (e) {}
-
   // There might be duplicated code here; as this function is isolated from the Pty class
   try {
-    // Create a temporary pty instance that will contain cqlsh instance
-    tempProcess = PTY.spawn(Shell, [], {
-      cwd: CWD,
-      useConpty: false
-    })
+    let options = {}
 
-    // If the host is Windows then change the binary call format
-    let binCall = (Platform == 'win32') ? 'cqlsh.exe' : './cqlsh',
-      // Define the cqlsh tool's directory
-      binDirectory = `cd "cqlsh" && `
-
-    // Switch to the single-file mode
-    try {
-      if (!FS.lstatSync(Path.join(CWD, `cqlsh`)).isDirectory())
-        binDirectory = ''
-    } catch (e) {}
-
-    // If there are more arguments to be passed - like username and password -
-    let moreArguments = ''
     try {
       // If not, then we may skip this try-catch block
       if ([null, undefined].includes(data.secrets))
         throw 0
 
       // Otherwise, secrets will be passed as arguments
-      moreArguments += `--username="${data.secrets.username}"  -SPLIT- `
-      moreArguments += `--password="${data.secrets.password}"  -SPLIT- `
+      options.username = data.secrets.username
+      options.password = data.secrets.password
     } catch (e) {}
 
     // Check if we've got a port to override the given one in `cqlsh.rc`
-    let override = ''
-    if (data.sshPort != undefined)
-      override = `127.0.0.1 ${data.sshPort} --overrideHost="${data.sshHost}"`
+    if (data.sshPort != undefined) {
+      options.port = data.sshPort
+      options.host = data.sshHost
+    }
 
     if (data.port != undefined)
-      override = `127.0.0.1 ${data.port}`
-
-    // Check if adding a change code page command is required
-    let pageCode = Platform == 'win32' ? 'chcp 65001 && ' : ''
+      options.port = data.port
 
     try {
       data.variables = data.variables || {}
     } catch (e) {}
 
-    let command = `${pageCode}${binDirectory}${binCall} -SPLIT- ${override} -SPLIT- --cqlshrc="${data.cqlshrc || data.cqlshrcPath}" -SPLIT- ${moreArguments} --test 1 --varsManifest="${data.variables.manifest}" -SPLIT- --varsValues="${data.variables.values}" -SPLIT- --workspaceID="${data.workspaceID}"`
+    options.requestID = processID
 
-    try {
-      if (data.scbFilePath == undefined)
-        throw 0
+    let isAstraDB = !(data.scbFilePath == undefined)
 
-      command = `${pageCode}${binDirectory}${binCall} -SPLIT- ${override} -SPLIT- ${moreArguments} --test 1 -SPLIT- --workspaceID="${data.workspaceID}" --secure-connect-bundle="${data.scbFilePath}"`
-    } catch (e) {}
+    if (isAstraDB)
+      options.bundlePath = data.scbFilePath
 
-    try {
-      // If the host OS is macOS then skip this try-catch block
-      if (Platform == 'darwin')
-        throw 0
-
-      // Run the cqlsh's executing command in the main process
-      tempProcess.write(command.replace(/\-SPLIT\-/g, '') + OS.EOL)
-    } catch (e) {
-      // Split the command into portions using the keyword
-      let commandSplit = command.split('-SPLIT-')
-
-      // Loop through each portion and execute it
-      commandSplit.forEach((portion, index) => tempProcess.write(`${portion.trimStart()}${(index + 1) >= commandSplit.length ? OS.EOL : (' \\' + OS.EOL)}`))
+    options = {
+      ...data,
+      ...options
     }
 
-    // With every received data
-    tempProcess.on('data', async (output) => {
-      // If the output contains any of the strings then it won't be count
-      if (['bin', 'bash', 'zsh'].every((str) => output.toLowerCase().indexOf(str) <= -1))
-        ++count // Increment the counter
+    if (!isAstraDB) {
+      options = {
+        ...options,
+        cqlshrc: data.cqlshrc || data.cqlshrcPath,
+        varsManifest: data.variables.manifest,
+        varsValues: data.variables.values
+      }
+    }
 
-      // Append the output's content
-      fullOutput += `${output}`
+    CQLNode[!isAstraDB ? 'testConnectionWithID' : 'testAstraConnectionWithID'](options).then((testResult) => sendResult(testResult))
 
-      // Get rid of new line and line breaks
-      fullOutput = fullOutput.replace(/\n/g, '')
-      fullOutput = fullOutput.replace(/\r/g, '')
-
-      // Check the output in overall; to determine if the testing process has finished or not
-      checkOutput(output)
-    })
-
-    // Check the given output against several conditions
-    let checkOutput = (output) => {
-      // If a JSON object has been given then skip the checking process
-      if (gotJSON)
-        return
-
-      // If `--cqlshrc` has been catched in the output then it means something went wrong with the test and we weren't able to make the test process
-      if (lastOutput.indexOf('--cqlshrc') != -1 || lastOutput.match(/\-\-[a-z]+/gm) != null)
-        lastOutput = 'Unable to make the test process'
-
-      // Set the manipulated output as the last output if it has met the conditions
-      if (output.toLowerCase().indexOf('active code') <= 0 && output.length > 5 && ['bin', 'bash', 'zsh'].every((str) => output.indexOf(str) <= -1))
-        lastOutput = output.replace(/\r?\n?KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\r?\n?/gmi, '')
-
-      // Replace non-ascii chars, except the common ones - like brackets and colon -
-      lastOutput = lastOutput.replace(/[^\x20-\x7E()[\]:,"']/g, '')
-
-      // Match and clean more ASCII escape characters for Windows
-      if (Platform == 'win32')
-        lastOutput = lastOutput.replace(/[\x1B\x9B][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]|\[0K|\[\?25[hl]/g, '')
-
-      // Replace `[K` char which can be printed in Windows cmd
-      lastOutput = lastOutput.replace(/\[K/g, '')
-
-      // If this try-catch block has been executed without errors then it means we've got JSON data and we may send the data and end the test process
+    // Inner function to send the test's result
+    let sendResult = (testResult) => {
       try {
-        // Manipulate the full output
-        let jsonString = manipulateOutput(fullOutput)
-
-        // Deal with the given data as JSON string by default
-        jsonString = jsonString.match(/\{[\s\S]+\}/gm)[0]
-
-        // Repair the JSON to make sure it can be converted to JSON object easily
-        jsonString = JSONRepair(jsonString)
-
-        // Convert JSON content from string to object
-        let jsonObject = JSON.parse(jsonString)
-
         /**
          * The test connection has been completed with success
          * We can get the Apache Cassandra version that we've connected with
          */
-        result.connected = true
-        result.version = jsonObject.build
+        result.connected = testResult.success
 
-        // If the version is `undefined` then it happens that the output split into multiple lines
-        if (result.version == undefined)
-          result.version = jsonObject[0].build
+        if (result.connected) {
+          result.version = testResult.data.build
 
-        // Get the connection's data center
-        result.datacenter = jsonObject.datacenter
+          // Get the connection's data center
+          result.datacenter = testResult.data.datacenter
 
-        // Do the same thing - as the version - with the data center
-        if (result.datacenter == undefined)
-          result.datacenter = jsonObject[0].datacenter
-
-        try {
           // Get all detected/seen data centers
-          result.datacenters = jsonObject.datacenters
-
-          // Do the same thing - as the data center - with the data centers
-          if (result.datacenters == undefined)
-            result.datacenters = jsonObject[0].datacenters
-        } catch (e) {}
-
-        // Set `gotJSON` to true to end the connection test
-        gotJSON = true
+          result.datacenters = testResult.data.datacenters
+        } else {
+          result.error = `${testResult.error} [${testResult.code}]`
+        }
       } catch (e) {}
 
-      // Inner function to send the test's result
-      let sendResult = () => {
-        // If the condition is `true` then send the test result to the renderer thread
-        window.webContents.send(`pty:test-connection:${data.requestID}`, {
-          ...result,
-          error: lastOutput.replace(/\r?\n?KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\r?\n?/gmi, '')
-        })
+      // If the condition is `true` then send the test result to the renderer thread
+      window.webContents.send(`pty:test-connection:${data.requestID}`, {
+        ...result
+      })
 
-        // Add log about the result
-        try {
-          addLog(`Test result with connection/node is ${JSON.stringify(result)}`)
-        } catch (e) {}
-
-        // Update `resultSent` to prevent sending the test result more than once
-        resultSent = true
-
-        // To be more sure about ending the testing process 3 attempts (300ms in total) is executed; to kill the pty process by its pid
-        try {
-          let tries = 0,
-            interval = setInterval(() => {
-              if (tries > 2)
-                return clearInterval(interval); // This semicolon is critical here
-
-              ++tries
-              try {
-                // Call the `destroy` function from the pty instance
-                tempProcess.destroy()
-
-                // Attempt to kill the pty instance process by its process ID
-                Kill(tempProcess.pid, 'SIGKILL')
-              } catch (e) {}
-            }, 100)
-        } catch (e) {}
-      }
-
-      // Either we've got a valid JSON string or catched the `TEST-COMPLETED` keyword or an error has occurred, and the test's result is not yet sent to the renderer thread
-      if ((gotJSON || (fullOutput.indexOf('KEYWORD:TEST:COMPLETED') != -1) || (fullOutput.toLowerCase().indexOf('error') != -1 && fullOutput.toLowerCase().indexOf('symbol') <= -1)) && !resultSent) {
-        // If we need to send the results now
-        if (send) {
-          // Clear the timeout function
-          clearTimeout(sendTimeout)
-
-          // Call the send function
-          sendResult()
-
-          // Skip the upcoming code
-          return
-        }
-
-        // Update `send` to `true`; to send the results next time or within 5 seconds
-        send = true
-
-        // Set timeout to be triggered if there's no more output
-        sendTimeout = setTimeout(() => sendResult())
-      }
+      // Add log about the result
+      try {
+        addLog(`Test result with connection/node is ${JSON.stringify(result)}`)
+      } catch (e) {}
     }
-  } catch (e) {
-    try {
-      // If the error is a number then don't log the error
-      if (!isNaN(parseInt(e.toString())))
-        throw 0
+  } catch (e) {}
 
-      addLog(`Error in process terminal. Details: ${e}`, 'error')
-    } catch (e) {}
-
-    window.webContents.send(`pty:test-connection:${data.requestID}`, {
-      ...result,
-      error: lastOutput.replace(/\r?\n?KEYWORD:([A-Z0-9]+)(:[A-Z0-9]+)*((-|:)[a-zA-Z0-9\[\]\,]+)*\r?\n?/gmi, '')
-    })
-  }
+  // Received request to terminate the connection test process
+  IPCMain.on(`process:terminate:${processID}`, () => CQLNode.cancelTestConnection(processID))
 }
 
 /**

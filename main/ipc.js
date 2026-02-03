@@ -20,12 +20,12 @@ const keysServiceName = `AxonOpsWorkbench`
 
     // Create a pty instance
     try {
-      CQLSHInstances[data.id] = new Modules.Pty.Pty(views.main, data)
+      CQLSHInstances[data.id] = new Modules.Cqlsession.Session(views.main, data)
     } catch (e) {}
 
     // Call that instance to create a cqlsh instance
     try {
-      CQLSHInstances[data.id].createCQLSHInstance(data)
+      CQLSHInstances[data.id].connect(data)
     } catch (e) {}
   })
 
@@ -35,9 +35,13 @@ const keysServiceName = `AxonOpsWorkbench`
       if (!data.isSourceCommand)
         throw 0
 
-      CQLSHInstances[data.id].sourceCommand(data.cmd, data.blockID, views.backgroundProcesses)
+      let filesPaths = []
 
-      views.backgroundProcesses.webContents.send('cql:file:execute', data)
+      try {
+        filesPaths.push(data.cmd)
+      } catch (e) {}
+
+      CQLSHInstances[data.id].sourceCommand(filesPaths, data.stopOnError, data.blockID)
 
       return
     } catch (e) {}
@@ -47,61 +51,36 @@ const keysServiceName = `AxonOpsWorkbench`
     } catch (e) {}
   })
 
-  IPCMain.on('cql:file:execute:data', (_, data) => views.main.webContents.send(`cql:file:execute:data:${data.id}`, data))
-
-  // Send a realtime data to the pty instance - while the user is acutally typing
-  IPCMain.on('pty:data', (_, data) => {
+  IPCMain.on('pty:fetch-next-query', (_, data) => {
     try {
-      CQLSHInstances[data.id].realtimeData(data.char)
+      CQLSHInstances[data.id].fetchNextPage(data.queryID, data.blockID, data.subOutputID)
     } catch (e) {}
   })
 
-  // Send a resize request to the pty instance based on the app's associated UI terminal
-  IPCMain.on('pty:resize', (_, data) => {
+  IPCMain.on('pty:stop-source-execution', (_, connectionID) => {
     try {
-      CQLSHInstances[data.id].resize(data)
+      CQLSHInstances[connectionID].stopSourceExecution()
     } catch (e) {}
   })
 
   // Get the metadata of a connection
   IPCMain.on('pty:metadata', (_, data) => {
     try {
-      CQLSHInstances[data.id].getMetadata(data.metadataSendID, data.currentBuffer)
+      CQLSHInstances[data.id].getMetadata(data.metadataSendID)
     } catch (e) {}
   })
 
   // Get the CQL description of a connection, keyspace in it, or table
   IPCMain.on('pty:cql-desc', (_, data) => {
     try {
-      CQLSHInstances[data.id].getCQLDescription(data.cqlDescSendID, data.scope, data.currentBuffer)
-    } catch (e) {}
-  })
-
-  // Check the connectivity with a connection
-  IPCMain.on('pty:check-connection', (_, data) => {
-    try {
-      CQLSHInstances[data.id].checkConnectivity(data.checkConnectivityRequestID, data.currentBuffer)
+      CQLSHInstances[data.id].getCQLDescription(data.cqlDescSendID, data.scope)
     } catch (e) {}
   })
 
   // Get the result of the query tracing process
   IPCMain.on('pty:query-tracing', (_, data) => {
     try {
-      CQLSHInstances[data.connectionID].getQueryTracing(data.id, data.sessionID, data.currentBuffer)
-    } catch (e) {}
-  })
-
-  // Pause the pty instance
-  IPCMain.on('pty:pause', (_, id) => {
-    try {
-      CQLSHInstances[id].pause()
-    } catch (e) {}
-  })
-
-  // Resume the pty instance
-  IPCMain.on('pty:resume', (_, id) => {
-    try {
-      CQLSHInstances[id].resume()
+      CQLSHInstances[data.connectionID].getQueryTracing(data.id, data.sessionID)
     } catch (e) {}
   })
 
@@ -115,7 +94,7 @@ const keysServiceName = `AxonOpsWorkbench`
   // Test connection with a connection
   IPCMain.on('pty:test-connection', (_, data) => {
     // Call this function from `pty.js` file
-    Modules.Pty.testConnection(views.main, data)
+    Modules.Cqlsession.testConnection(views.main, data)
   })
 
   // Terminate a connection test process - especially docker/sandbox project -
@@ -136,15 +115,22 @@ const keysServiceName = `AxonOpsWorkbench`
     })
   })
 
-  // Create a Bash session
-  IPCMain.on(`pty:create:bash-session`, (_, data) => {
-    Modules.Pty.bashSession(views.main, {
-      ...data,
-      IPCMain
-    })
+  IPCMain.handle(`pty:get-info`, async (_, connectionID) => {
+    let info = {}
+
+    try {
+      info = await CQLSHInstances[connectionID].sessionInstance.getInfo()
+    } catch (e) {}
+
+    return info
   })
 
-  IPCMain.on('pty:cqlsh:initialize', () => Modules.Pty.initializeCQLSH(views.main))
+  IPCMain.on(`pty:set-paging`, async (_, data) => {
+    try {
+      if (!(isNaN(data.value) || data.value <= 0))
+        CQLSHInstances[data.id].sessionInstance.setPaging(data.value)
+    } catch (e) {}
+  })
 }
 
 /**

@@ -31,6 +31,39 @@
       // Add the processing class
       clickedNode.addClass('perform-process')
 
+      let scopeFormat = '',
+        scopeToString = (scopeObject) => {
+          if (scopeObject.cluster)
+            return 'cluster'
+
+          let scope = `keyspace>${scopeObject.keyspace}`
+
+          if (scopeObject.table) {
+            scope += `table>${scopeObject.table}`
+            if (scopeObject.index) {
+              scope += `index>${scopeObject.index}`
+            }
+          } else if (scopeObject.type) {
+            scope += `type>${scopeObject.type}`
+          } else if (scopeObject.function) {
+            scope += `function>${scopeObject.function}`
+          } else if (scopeObject.aggregate) {
+            scope += `aggregate>${scopeObject.aggregate}`
+          } else if (scopeObject.view) {
+            scope += `view>${scopeObject.view}`
+          }
+
+          return scope
+        }
+
+      try {
+        data.scope = JSON.parse(data.scope)
+      } catch (e) {}
+
+      try {
+        scopeFormat = scopeToString(data.scope)
+      } catch (e) {}
+
       // Get the CQL description based on the passed scope
       Modules.Connections.getCQLDescription(data.connectionID, data.scope, (description) => {
         // As the description has been received remove the processing class
@@ -48,7 +81,7 @@
             throw 0
 
           // keyspace_cyclingtable_products_2024-11-14_203041
-          let descriptionScope = data.scope.replace(/>/gm, '-').replace('table-', '-table-'),
+          let descriptionScope = scopeFormat.replace(/>/gm, '-').replace('table-', '-table-'),
             descriptionFileName = Sanitize(`${descriptionScope}-${formatTimestamp(new Date().getTime(), true)}.cql`).replace(/\s+/gm, '_') || 'cql_desc.cql'
 
           try {
@@ -110,9 +143,9 @@
         setTimeout(() => $(window.visualViewport).trigger('resize'), 260)
 
         // Check if there's an associated CQL description
-        let associatedDescription = cqlDescriptionsContainer.find(`div.description[data-scope="${data.scope}"]`),
+        let associatedDescription = cqlDescriptionsContainer.find(`div.description[data-scope="${scopeFormat}"]`),
           // Manipulate the scope to be set in the badge
-          scope = data.scope == 'cluster' ? `Cluster: ${getAttributes(connectionElement, 'data-name')}` : ''
+          scope = scopeFormat == 'cluster' ? `Cluster: ${getAttributes(connectionElement, 'data-name')}` : ''
 
         try {
           // If the scope's length after the manipulation is not `0` then it's a `cluster` scope and this try-catch block may be skipped
@@ -120,7 +153,7 @@
             throw 0
 
           // Manipulate the scope
-          scope = data.scope.replace(/\s*\>\s*/gm, ': ')
+          scope = scopeFormat.replace(/\s*\>\s*/gm, ': ')
             .replace(/keyspace:/gm, 'Keyspace: ')
             .replace(/table:/gm, '<span class="dot"></span> Table: ')
             .replace(/\s+/gm, ' ')
@@ -151,7 +184,7 @@
 
         // Description's UI element structure
         let element = `
-            <div class="description" data-scope="${data.scope}">
+            <div class="description" data-scope="${scopeFormat}">
               <div class="sticky-header">
                 <span class="badge rounded-pill badge-secondary description-scope">
                   <a href="#_${editorContainerID}">${scope}</a>

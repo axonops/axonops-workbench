@@ -57,10 +57,6 @@ jobs:
           - os: macos-14
             target: Macos
 
-          # X86
-          - os: macos-13
-            target: Macos
-
           - os: windows-latest
             target: Windows
     steps:

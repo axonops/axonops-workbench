@@ -1705,22 +1705,23 @@ $(document).on('initialize', () => {
   }
 
   try {
-    if (OS.platform() != 'darwin')
-      return getConfigToLoad()
-
-    getRSAKey('public', (key) => {
-      getRSAKey('private', (key) => {
-        IPCRenderer.send('pty:cqlsh:initialize')
-
-        IPCRenderer.on('pty:cqlsh:initialize:finished', () => {
-          getConfigToLoad()
-
-          try {
-            IPCRenderer.removeAllListeners('pty:cqlsh:initialize:finished')
-          } catch (e) {}
-        })
-      })
-    })
+    getConfigToLoad()
+    // if (OS.platform() != 'darwin')
+    //   return getConfigToLoad()
+    //
+    // getRSAKey('public', (key) => {
+    //   getRSAKey('private', (key) => {
+    //     IPCRenderer.send('pty:cqlsh:initialize')
+    //
+    //     IPCRenderer.on('pty:cqlsh:initialize:finished', () => {
+    //       getConfigToLoad()
+    //
+    //       try {
+    //         IPCRenderer.removeAllListeners('pty:cqlsh:initialize:finished')
+    //       } catch (e) {}
+    //     })
+    //   })
+    // })
   } catch (e) {}
 })
 

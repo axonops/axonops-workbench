@@ -1,9 +1,11 @@
 onlyBuiltDependencies:
   - '@axonops/node-pty'
+  - '@axonops/cqlai-node'
   - '@mhmdkrmabd/rsa-keys-generator-node'
   - better-sqlite3
   - cpu-features
   - electron
   - electron-winstaller
   - keytar
+  - koffi
   - ssh2

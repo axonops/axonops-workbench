@@ -709,165 +709,22 @@ let repairJSONString = (json) => {
  * @Return: {object} the JSON in table array format, and the manipulated JSON
  */
 let convertJSONToTable = (json, callback) => {
-  // Get the JSON string's file path if it has been passed in the `json` parameter
-  let tempFilePath = '',
-    // Inner function to convert the JSON string into object
-    conversionProcess = () => {
-      // Delete the temp file - in case its path has been passed -
-      try {
-        FS.unlink(`${tempFilePath}`, () => {})
-      } catch (e) {}
-
-      // Start the repairing process
-      try {
-        json = JSON.parse(json)
-
-        if (json.length == undefined) {
-          json = JSON.stringify(json)
-          throw 0
-        }
-      } catch (e) {
-        json = `${json}`.split('\n')
-      }
-
-      let stringJSON = '',
-        foundJSON = []
-
-      try {
-        if (OS.platform() != 'win32')
-          throw 0
-
-        json.forEach((record) => {
-          stringJSON += `${record}`
-
-          try {
-            let match = `${stringJSON}`.match(/\{[\s\S]+\}/gm)
-
-            if (match == null)
-              return
-
-            foundJSON.push(match[0])
-
-            stringJSON = stringJSON.replace(/\{[\s\S]+\}/gm, '')
-          } catch (e) {}
-        })
-      } catch (e) {}
-
-      try {
-        // Convert each record/row to JSON object inside array
-        let jsonObject = [...(foundJSON.length != 0 ? foundJSON : json)].map((item) => {
-          let finalItem = item
-
-          try {
-            if (typeof finalItem === 'object')
-              throw 0
-
-            finalItem = JSON.parse(repairJSONString(item))
-          } catch (e) {}
-
-          return finalItem
-        })
-
-        // Loop through each record
-        for (let i = 0; i < jsonObject.length; i++) {
-          // Point at the record
-          let record = jsonObject[i]
-
-          // Loop through each column inside the current record
-          Object.keys(record).forEach((key) => {
-            // Get the value of the current column
-            let data = record[key]
-
-            try {
-              // Process only for Windows
-              if (OS.platform() != 'win32')
-                throw 0
-
-              // If the data is `undefined`
-              if (data == undefined) {
-                // Delete it from the record with its key
-                delete jsonObject[i][key]
-
-                // Skip the remaining code in this try-catch block
-                throw 0
-              }
-
-              // If the key has characters - like new line -
-              if (minifyText(key) != key) {
-                // Minify the key and add it to the record
-                jsonObject[i][minifyText(key)] = data
-
-                // Delete the old key
-                delete jsonObject[i][key]
-              }
-            } catch (e) {}
-
-            // If the value type is not `object` then skip the upcoming code
-            if (typeof data != 'object')
-              return
-
-            // Convert the data of type `object` to be string
-            try {
-              record[key] = JSON.stringify(data)
-            } catch (e) {
-              record[key] = `${data}`
-            } finally {
-              // Add keyword to be recognized once the Tabulator object is created
-              record[key] += '-OBJECT-'
-            }
-          })
-        }
-
-        // Convert the final manipulated JSON object to HTML table string
-        let tableHTML = ConvertJSONTable(jsonObject)
-
-        // Return final result
-        return {
-          table: tableHTML,
-          json: jsonObject
-        }
-      } catch (e) {}
-
-      /**
-       * Reaching here means the conversion wasn't successful
-       * Return empty string
-       */
-      return ''
-    }
-
   try {
-    if (!pathIsAccessible(`${json.trim()}`))
-      throw 0
+    // Convert the final manipulated JSON object to HTML table string
+    let tableHTML = ConvertJSONTable(json)
 
-    tempFilePath = `${json.trim()}`
-
-    FS.readFile(tempFilePath, 'utf8', (err, data) => {
-      if (err)
-        return callback('')
-
-      json = data
-
-      return callback(conversionProcess())
-
-      let compressedJSON = Base64.toByteArray(data)
-
-      Zlib.gunzip(compressedJSON, (_err, buffer) => {
-        if (_err)
-          return callback('')
-
-        json = buffer.toString()
-
-        return callback(conversionProcess())
-      })
+    // Return final result
+    return callback({
+      table: tableHTML,
+      json
     })
+  } catch (e) {}
 
-    return
-  } catch (e) {
-    // Attempt to repair the passed JSON string
-    json = repairJSONString(json)
-  }
-
-  callback(conversionProcess())
+  /**
+   * Reaching here means the conversion wasn't successful
+   * Return empty string
+   */
+  callback(json)
 }
 
 /**
@@ -894,8 +751,15 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
 
       convertedJSON.table[0].unshift('select-checkbox')
 
-      for (let jsonData of convertedJSON.json)
+      let currentIndex = 0
+
+      for (let jsonData of convertedJSON.json) {
         jsonData.checkbox = ''
+
+        jsonData._rowIndex = currentIndex
+
+        currentIndex += 1
+      }
     } catch (e) {}
 
     // Append the HTML table to the passed container
@@ -905,25 +769,35 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
           // Create a Tabulator object with set properties
           tabulatorTable = new Tabulator(`div#_${tableID}`, {
             layout: 'fitDataStretch',
-            columns: convertedJSON.table[0].map((column) => {
-              let isCheckbox = column == 'select-checkbox',
-                finalFormat = {}
+            index: '_rowIndex',
+            initialSort: [{
+              column: "_rowIndex",
+              dir: "asc"
+            }],
+            columns: [{
+                field: "_rowIndex",
+                visible: false
+              },
+              ...convertedJSON.table[0].map((column) => {
+                let isCheckbox = column == 'select-checkbox',
+                  finalFormat = {}
 
-              try {
-                finalFormat = {
-                  title: !isCheckbox ? column : 'select',
-                  field: !isCheckbox ? column : 'checkbox',
-                  headerFilter: !isCheckbox ? 'input' : ''
-                }
+                try {
+                  finalFormat = {
+                    title: !isCheckbox ? column : 'select',
+                    field: !isCheckbox ? column : 'checkbox',
+                    headerFilter: !isCheckbox ? 'input' : ''
+                  }
 
-                if (isCheckbox)
-                  finalFormat.formatter = () => `<div class="form-check">
+                  if (isCheckbox)
+                    finalFormat.formatter = () => `<div class="form-check">
                                                     <input class="form-check-input select-row" type="checkbox">
                                                   </div>`
-              } catch (e) {}
+                } catch (e) {}
 
-              return finalFormat
-            }),
+                return finalFormat
+              })
+            ],
             data: convertedJSON.json,
             resizableColumnFit: true,
             resizableRowGuide: true,

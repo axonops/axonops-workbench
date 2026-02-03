@@ -1453,78 +1453,79 @@ $(document).on('initialize', () => {
 })
 
 // Check whether or not binaries exist
-$(document).on('initialize', () => {
-  // TODO: This block should be removed later
-  return
-  
-  // Get the app's path
-  IPCRenderer.invoke('app-path:get').then((appPath) => {
-    setTimeout(() => {
-      try {
-        // Define the path to all binaries
-        let binariesPath = Path.join((extraResourcesPath != null ? Path.join(appPath) : Path.join(__dirname, '..', '..')), 'main', 'bin'),
-          // Define binaries to be checked
-          // binaries = ['cqlsh', 'keys_generator']
-          binaries = []
-
-        // Check their existence
-        Terminal.run(`cd "${binariesPath}" && ${OS.platform() == 'win32' ? 'dir' : 'ls'}`, (err, data, stderr) => {
-          // Make sure all of them are exist
-          let areBinariesExist = binaries.every((binary) => `${data}`.search(binary))
-
-          // Skip the upcoming code if all of them exist
-          try {
-            if (!areBinariesExist)
-              throw 0
-
-            // If the host is Windows then change the binary call format
-            let binCall = (OS.platform() == 'win32') ? 'cqlsh.exe' : './cqlsh',
-              // Define the cqlsh tool's directory
-              binDirectory = `&& cd "cqlsh" && `
-
-            // Switch to the single-file mode
-            try {
-              if (!FS.lstatSync(Path.join(binariesPath, `cqlsh`)).isDirectory())
-                binDirectory = '&&'
-            } catch (e) {}
-
-            Terminal.run(`cd "${binariesPath}" ${binDirectory} ${binCall} --cversion=1`, (err, data, stderr) => {
-              try {
-                data = minifyText(manipulateOutput(data))
-              } catch (e) {}
-
-              if (!(data != undefined && `${data}`.length != 0)) {
-                $('div#moreAbout div[data-version="binaries"]').hide()
-                return
-              }
-
-              try {
-                import(Path.join(__dirname, '..', '..', 'node_modules', 'url-join', 'lib', 'url-join.js')).then((module) => {
-                  let releaseLink = module.default(Modules.Consts.URLS.Binaries, 'releases', 'tag', data)
-
-                  $('div#moreAbout div[data-version="binaries"] button').click(() => {
-                    try {
-                      Open(releaseLink)
-                    } catch (e) {}
-                  })
-                })
-              } catch (e) {}
-
-              $('div#moreAbout div[data-version="binaries"] span').text(data)
-            })
-
-            return
-          } catch (e) {}
-
-          $('div#moreAbout div[data-version="binaries"]').hide()
-
-          // Show feedback to the user if one of the binaries is missing
-          showToast(I18next.capitalize(I18next.t(`binaries check`)), I18next.capitalizeFirstLetter(I18next.t(`it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app`)) + '.', 'failure')
-        })
-      } catch (e) {}
-    }, 3000)
-  })
-})
+// $(document).on('initialize', () => {
+//
+//   // TODO: This block should be removed later
+//   return
+//
+//   // Get the app's path
+//   IPCRenderer.invoke('app-path:get').then((appPath) => {
+//     setTimeout(() => {
+//       try {
+//         // Define the path to all binaries
+//         let binariesPath = Path.join((extraResourcesPath != null ? Path.join(appPath) : Path.join(__dirname, '..', '..')), 'main', 'bin'),
+//           // Define binaries to be checked
+//           // binaries = ['cqlsh', 'keys_generator']
+//           binaries = []
+//
+//         // Check their existence
+//         Terminal.run(`cd "${binariesPath}" && ${OS.platform() == 'win32' ? 'dir' : 'ls'}`, (err, data, stderr) => {
+//           // Make sure all of them are exist
+//           let areBinariesExist = binaries.every((binary) => `${data}`.search(binary))
+//
+//           // Skip the upcoming code if all of them exist
+//           try {
+//             if (!areBinariesExist)
+//               throw 0
+//
+//             // If the host is Windows then change the binary call format
+//             let binCall = (OS.platform() == 'win32') ? 'cqlsh.exe' : './cqlsh',
+//               // Define the cqlsh tool's directory
+//               binDirectory = `&& cd "cqlsh" && `
+//
+//             // Switch to the single-file mode
+//             try {
+//               if (!FS.lstatSync(Path.join(binariesPath, `cqlsh`)).isDirectory())
+//                 binDirectory = '&&'
+//             } catch (e) {}
+//
+//             Terminal.run(`cd "${binariesPath}" ${binDirectory} ${binCall} --cversion=1`, (err, data, stderr) => {
+//               try {
+//                 data = minifyText(manipulateOutput(data))
+//               } catch (e) {}
+//
+//               if (!(data != undefined && `${data}`.length != 0)) {
+//                 $('div#moreAbout div[data-version="binaries"]').hide()
+//                 return
+//               }
+//
+//               try {
+//                 import(Path.join(__dirname, '..', '..', 'node_modules', 'url-join', 'lib', 'url-join.js')).then((module) => {
+//                   let releaseLink = module.default(Modules.Consts.URLS.Binaries, 'releases', 'tag', data)
+//
+//                   $('div#moreAbout div[data-version="binaries"] button').click(() => {
+//                     try {
+//                       Open(releaseLink)
+//                     } catch (e) {}
+//                   })
+//                 })
+//               } catch (e) {}
+//
+//               $('div#moreAbout div[data-version="binaries"] span').text(data)
+//             })
+//
+//             return
+//           } catch (e) {}
+//
+//           $('div#moreAbout div[data-version="binaries"]').hide()
+//
+//           // Show feedback to the user if one of the binaries is missing
+//           showToast(I18next.capitalize(I18next.t(`binaries check`)), I18next.capitalizeFirstLetter(I18next.t(`it seems some or all binaries shipped with the app are corrupted or missing, this state will cause critical issues for many processes. Please make sure to have the official complete version of the app`)) + '.', 'failure')
+//         })
+//       } catch (e) {}
+//     }, 3000)
+//   })
+// })
 
 // Initialization process for the `About` modal - with ID `#appAbout` -
 $(document).on('initialize', () => {

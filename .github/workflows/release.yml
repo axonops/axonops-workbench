@@ -80,11 +80,13 @@ jobs:
 
       - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
         run: |
-          # Map matrix arch to binary arch (for macOS cross-compilation)
+          # Map matrix arch to binary arch
           if [ "${{ matrix.arch }}" == "x64" ]; then
             BINARY_ARCH="x86_64"
-          elif [ "${{ matrix.arch }}" == "arm64" ]; then
+          elif [ "${{ matrix.arch }}" == "arm64" ] && [ "$(uname -s)" == "Darwin" ]; then
             BINARY_ARCH="arm64"
+          elif [ "${{ matrix.arch }}" == "arm64" ] && [ "$(uname -s)" == "Linux" ]; then
+            BINARY_ARCH="aarch64"
           else
             BINARY_ARCH="$(uname -m)"
           fi

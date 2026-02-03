@@ -300,13 +300,11 @@ jobs:
         uses: anchore/sbom-action@v0
         with:
           artifact-name: sbom.spdx.json
-          root-directory: ${{ github.workspace }}
 
       - name: Generate SBOM 2/2
         uses: anchore/sbom-action@v0
         with:
           artifact-name: sbom.cyclonedx.json
-          root-directory: ${{ github.workspace }}
           format: cyclonedx-json
 
 # Release brew

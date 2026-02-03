@@ -138,6 +138,28 @@ class Session {
         }
     } catch (e) {}
 
+    try {
+      for (let parameter of ['varsManifest', 'varsValues', 'cqlshrc']) {
+        let toBeDeleted = false
+
+        if (parameters[parameter] == undefined)
+          toBeDeleted = true
+
+        try {
+          if (toBeDeleted)
+            throw 0
+
+          let file = FS.readFileSync(parameters[parameter], 'utf8')
+
+          if (file.length <= 0)
+            toBeDeleted = true
+        } catch (e) {}
+
+        if (toBeDeleted)
+          delete parameters[parameter]
+      }
+    } catch (e) {}
+
     CQLNode[!isAstraDB ? 'connect' : 'connectWithAstraBundle'](parameters).then((result) => {
       // Send connection status
       this.window.webContents.send(`pty:connection-status:${this.id}`, {
@@ -385,7 +407,22 @@ let testConnection = (window, data) => {
 
     try {
       for (let option of ['varsManifest', 'varsValues', 'cqlshrc']) {
+        let toBeDeleted = false
+
         if (options[option] == undefined)
+          toBeDeleted = true
+
+        try {
+          if (toBeDeleted)
+            throw 0
+
+          let file = FS.readFileSync(options[option], 'utf8')
+
+          if (file.length <= 0)
+            toBeDeleted = true
+        } catch (e) {}
+
+        if (toBeDeleted)
           delete options[option]
       }
     } catch (e) {}

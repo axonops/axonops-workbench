@@ -108,8 +108,9 @@ class Session {
         throw 0
 
       parameters.port = parseInt(this.ssh.port)
-      parameters.overridePort = this.ssh.oport
-      parameters.overridePort = this.ssh.oport
+      parameters.host = `127.0.0.1`
+      // parameters.overridePort = this.ssh.oport
+      // parameters.overridePort = this.ssh.oport
     } catch (e) {}
 
     try {
@@ -353,14 +354,6 @@ let testConnection = (window, data) => {
       }
     } catch (e) {}
 
-    try {
-      // Check if we've got a port to override the given one in `cqlsh.rc`
-      if (data.sshPort != undefined) {
-        options.port = data.sshPort
-        options.host = data.sshHost
-      }
-    } catch (e) {}
-
     // Check if we've got an actual port
     if (data.port != undefined)
       options.port = data.port
@@ -398,11 +391,13 @@ let testConnection = (window, data) => {
 
     // Detect local cluster connection test
     try {
-      if (options.sshPort == undefined)
+      if (data.isSSH !== true)
         throw 0
 
+      let port = data.port != undefined ? data.port : data.sshPort
+
       options.host = '127.0.0.1'
-      options.port = parseInt(options.port)
+      options.port = parseInt(port)
     } catch (e) {}
 
     try {

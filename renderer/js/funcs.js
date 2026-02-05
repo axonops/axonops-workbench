@@ -743,17 +743,35 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
     // Get a random ID for the table
     let tableID = getRandom.id(20),
       // The variable which is going to hold the Tabulator object
-      tabulatorTable
+      tabulatorTable,
+      columns = [],
+      rows = []
+
+    try {
+      if (convertedJSON.table != undefined) {
+        columns = convertedJSON.table[0]
+      } else {
+        columns = Object.keys(convertedJSON[0])
+      }
+    } catch (e) {}
+
+    try {
+      if (convertedJSON.json != undefined) {
+        rows = convertedJSON.json
+      } else {
+        rows = convertedJSON
+      }
+    } catch (e) {}
 
     try {
       if (paginationSizeSelectorEnabled)
         throw 0
 
-      convertedJSON.table[0].unshift('select-checkbox')
+      columns.unshift('select-checkbox')
 
       let currentIndex = 0
 
-      for (let jsonData of convertedJSON.json) {
+      for (let jsonData of rows) {
         jsonData.checkbox = ''
 
         jsonData._rowIndex = currentIndex
@@ -778,7 +796,7 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
                 field: "_rowIndex",
                 visible: false
               },
-              ...convertedJSON.table[0].map((column) => {
+              ...columns.map((column) => {
                 let isCheckbox = column == 'select-checkbox',
                   finalFormat = {}
 
@@ -798,7 +816,7 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
                 return finalFormat
               })
             ],
-            data: convertedJSON.json,
+            data: rows,
             resizableColumnFit: true,
             resizableRowGuide: true,
             movableColumns: true,

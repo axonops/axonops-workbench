@@ -701,10 +701,7 @@ $(document).on('initialize', () => {
     }
   }
 
-  // Ion Icons
-  {
-    loadScript(Path.join(__dirname, '..', 'js', 'external', 'ionicons', 'main.js'))
-  }
+  // Ion Icons — loaded via <script type="module"> in index.html <head> for faster startup
 
   // jsPDF - for the Tabulator library -
   {
@@ -867,7 +864,8 @@ $(document).on('initialize', () => {
         return loadingPromise
 
       loadingPromise = new Promise((resolve, reject) => {
-        loadStyleSheet(Path.join(__dirname, '..', '..', 'node_modules/monaco-editor/min/vs/style.css'))
+        // loadStyleSheet(Path.join(__dirname, '..', '..', 'node_modules/monaco-editor/min/vs/style.css'))
+        loadStyleSheet(Path.join(__dirname, '..', '..', 'node_modules/monaco-editor/min/vs/editor/editor.main.css'))
 
         loadScript(Path.join(__dirname, '..', '..', 'node_modules/monaco-editor/min/vs/loader.js'))
 

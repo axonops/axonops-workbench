@@ -21,6 +21,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Load the master CSS file for the entire app -->
   <link rel="stylesheet" href="../styles/master.css">
+  <!-- Preload ionicons module chain so all files download in parallel -->
+  <link rel="modulepreload" href="../js/external/ionicons/esm.js">
+  <link rel="modulepreload" href="../js/external/ionicons/p-6f4eae92.js">
+  <link rel="modulepreload" href="../js/external/ionicons/p-4372c4bc.js">
+  <link rel="modulepreload" href="../js/external/ionicons/p-27972752.js">
+  <link rel="modulepreload" href="../js/external/ionicons/p-206e6cb0.entry.js">
+  <!-- Load ionicons immediately — registers <ion-icon> custom element -->
+  <script type="module" src="../js/external/ionicons/esm.js" data-stencil-namespace="ionicons"></script>
   <!-- Load the initialization/booting JS file -->
   <script src="../js/init.js"></script>
 </head>

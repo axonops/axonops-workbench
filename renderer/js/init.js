@@ -96,14 +96,11 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
 // Load bootstrap JS files
 $(document).on('pre-initialize', async () => {
   /**
-   * Functions file
-   * It has global functions that are used throughout the app
+   * Utility files
+   * They have global functions that are used throughout the app
    */
-  $.ajax({
-    async: false,
-    url: Path.join(__dirname, '..', 'js', 'funcs.js'),
-    dataType: 'script'
-  })
+  for (let file of ['core', 'treeview', 'extensions', 'crypto', 'app'])
+    $.ajax({ async: false, url: Path.join(__dirname, '..', 'js', 'utils', `${file}.js`), dataType: 'script' })
 
   /**
    * Essential modification for the `console` function after loading the `functions` file
@@ -1359,7 +1356,7 @@ $(document).on('initialize', () => {
   {
     loadStyleSheet(Path.join(__dirname, '..', '..', 'node_modules', 'highlight.js', 'styles', 'hybrid.css'))
 
-    Highlight.registerLanguage('cql', require(Path.join(__dirname, '..', '..', 'renderer', 'js', 'cql_highlight.js')))
+    Highlight.registerLanguage('cql', require(Path.join(__dirname, '..', '..', 'renderer', 'js', 'utils', 'cql_highlight.js')))
   }
 
   // TippyJS

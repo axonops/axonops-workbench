@@ -2722,7 +2722,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                      action: 'axonops-integration',
                                      click,
                                      enabled: isAxonOpsIntegrationActionEnabled,
-                                     icon: Path.join(__dirname, '..', '..', '..', 'assets', 'images', `axonops-icon-transparent-16x16${!isHostThemeDark ? '-dark' : ''}.png`)
+                                     icon: Path.join(__dirname, '..', 'assets', 'images', `axonops-icon-transparent-16x16${!isHostThemeDark ? '-dark' : ''}.png`)
                                    }])
 
                                    // The snippets feature
@@ -6198,7 +6198,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                        throw 0
 
                                      // Append the `webview` ElectronJS custom element
-                                     workareaElement.find(`div.tab-pane#_${localClustersAxonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', '..', '..', 'js', 'axonops', 'agent-webview.js')}"></webview>`).show(function() {
+                                     workareaElement.find(`div.tab-pane#_${localClustersAxonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops', 'agent-webview.js')}"></webview>`).show(function() {
                                        // Point at the webview element
                                        let webView = $(this)[0]
 
@@ -7838,7 +7838,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                         throw 0
 
                                       // Append the `webview`
-                                      $(`div.tab-pane#_${localClustersAxonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', '..', '..', 'js', 'axonops', 'agent-webview.js')}"></webview>`).show(function() {
+                                      $(`div.tab-pane#_${localClustersAxonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops', 'agent-webview.js')}"></webview>`).show(function() {
                                         // Point at the webview element
                                         let webView = $(this)[0]
 
@@ -8442,7 +8442,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                   elementPath = Path.join(getWorkspaceFolderPath(getAttributes(connectionElement, 'data-workspace-id')), getAttributes(connectionElement, 'data-folder'))
                 } catch (e) {
                   // Get the sandbox project's path
-                  elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..', '..', '..')), 'data', 'localclusters', getAttributes(connectionElement, 'data-folder'))
+                  elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters', getAttributes(connectionElement, 'data-folder'))
                 }
 
                 // Open the final path

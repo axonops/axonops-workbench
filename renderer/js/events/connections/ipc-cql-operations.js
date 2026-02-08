@@ -4134,7 +4134,7 @@ let updateActionStatusForInsertRow,
                             throw 0
 
                           let iconName = isPartition ? 'partition' : 'clustering',
-                            iconPath = Path.join(__dirname, '..', '..', '..', 'js', 'external', 'jstree', 'theme', 'extra', `${iconName}-key.png`)
+                            iconPath = Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra', `${iconName}-key.png`)
 
                           // isPartition
                           // partition-key.png
@@ -5758,7 +5758,7 @@ let updateActionStatusForInsertRow,
                             throw 0
 
                           let iconName = isPartition ? 'partition' : 'clustering',
-                            iconPath = Path.join(__dirname, '..', '..', '..', 'js', 'external', 'jstree', 'theme', 'extra', `${iconName}-key.png`)
+                            iconPath = Path.join(__dirname, '..', 'js', 'external', 'jstree', 'theme', 'extra', `${iconName}-key.png`)
 
                           // isPartition
                           // partition-key.png

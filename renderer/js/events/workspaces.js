@@ -32,14 +32,14 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
     // Check the status of whether or not the sandbox projects feature is enabled
     let isSandboxProjectsEnabled = config.get('features', 'localClusters') == 'true'
 
-    // Get all saved workspaces
-    Modules.Workspaces.getWorkspaces().then(async (workspaces) => {
+    // Get all saved workspaces and docker projects in parallel
+    Promise.all([
+      Modules.Workspaces.getWorkspaces(),
+      isSandboxProjectsEnabled ? Modules.Docker.getProjects() : Promise.resolve([])
+    ]).then(([workspaces, dockerProjects]) => {
       // Clean the container if the event is `get` workspaces
       if (event == 'getWorkspaces')
         workspacesContainer.html('')
-
-      // Get all saved docker projects
-      let dockerProjects = isSandboxProjectsEnabled ? await Modules.Docker.getProjects() : []
 
       // Add or remove the empty class based on the number of saved workspaces
       workspacesContainer.parent().toggleClass('empty', workspaces.length <= 0 && dockerProjects.length <= 0)

@@ -6184,15 +6184,18 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                try {
                                  workarea.find('[data-title]').each(function() {
                                    try {
-                                     let tippyInstance = mdbObjects.find((obj) => obj.type === 'Tooltip' && obj.element && $(this).is(obj.element))
+                                     // O(1) WeakMap lookup instead of O(n) array scan
+                                     let typeMap = mdbObjectsIndex.get(this)
+                                     let tippyObj = typeMap && typeMap['Tooltip']
 
-                                     if (!(tippyInstance && tippyInstance.object))
+                                     if (!tippyObj)
                                        throw 0
 
-                                     tippyInstance.object.destroy()
+                                     tippyObj.destroy()
+                                     delete typeMap['Tooltip']
 
                                      // Remove from mdbObjects array
-                                     let index = mdbObjects.indexOf(tippyInstance)
+                                     let index = mdbObjects.findIndex((obj) => obj.type === 'Tooltip' && obj.object === tippyObj)
 
                                      if (index !== -1)
                                        mdbObjects.splice(index, 1)
@@ -6556,8 +6559,15 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                  showTabsTitles = rightSide.outerWidth() > minimumAllowedWidth,
                                  // Get all tabs' tooltips in the work area
                                  workareaTooltipElements = [...workareaElement.find('[tab-tooltip]')],
-                                 // Get tooltips' objects of the tabs' tooltips
-                                 workareaTooltipObjects = mdbObjects.filter((mdbObject) => workareaTooltipElements.some((elem) => mdbObject.element.is(elem)))
+                                 // Get tooltips' objects of the tabs' tooltips via O(m) WeakMap lookups instead of O(n*m) array scan
+                                 workareaTooltipObjects = workareaTooltipElements.reduce((acc, elem) => {
+                                   try {
+                                     let typeMap = mdbObjectsIndex.get(elem)
+                                     if (typeMap && typeMap['Tooltip'] != undefined)
+                                       acc.push({ element: $(elem), object: typeMap['Tooltip'], type: 'Tooltip' })
+                                   } catch (e) {}
+                                   return acc
+                                 }, [])
 
                                // Inside the workareas, find all tabs' titles and toggle their display based on the window width
                                workareaElement
@@ -10737,7 +10747,9 @@ const ConnectionTestProcessTerminationTimeout = 250
                        * Update the tooltip's content and state
                        * Get the object
                        */
-                      let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
+                      let tooltipLookup = null
+                      try { let tm = mdbObjectsIndex.get(this); if (tm) tooltipLookup = tm['Tooltip'] } catch (_e) {}
+                      let tooltipObject = tooltipLookup ? [{ object: tooltipLookup }] : []
 
                       // Clear the file's name preview
                       $(this).parent().attr('file-name', '-')
@@ -11742,7 +11754,9 @@ const ConnectionTestProcessTerminationTimeout = 250
            * Update the tooltip's content and state
            * Get the object
            */
-          let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
+          let tooltipLookup = null
+          try { let tm = mdbObjectsIndex.get(this); if (tm) tooltipLookup = tm['Tooltip'] } catch (_e) {}
+          let tooltipObject = tooltipLookup ? [{ object: tooltipLookup }] : []
 
           // Clear the file's name preview
           $(this).parent().attr('file-name', '-')

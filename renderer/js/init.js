@@ -71,35 +71,21 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', async (_, path) =
       /**
        * For the process `ensureFile`
        *
-       * Loop through each file
+       * Ensure all files exist in parallel
        */
-      for (let file of processTypes.ensureFile) {
+      await Promise.all(processTypes.ensureFile.map(async (file) => {
         try {
-          // If the current file about `logging`
-          if (file[1] != 'logging')
-            throw 0
-
-          // Ensure the file exists
-          try {
-            await FS.ensureFile(Path.join(appPath, ...file))
-          } catch (e) {}
-
-          // Skip the upcoming code and move to the next file
-          continue
+          let basePath = (file[1] == 'logging') ? appPath : (extraResourcesPath || appPath)
+          await FS.ensureFile(Path.join(basePath, ...file))
         } catch (e) {}
-
-        // Ensure the file exists
-        try {
-          await FS.ensureFile(Path.join((extraResourcesPath || appPath), ...file))
-        } catch (e) {}
-      }
+      }))
     } catch (e) {} finally {
       // Now call the `pre-initialize` event for `document`
-      setTimeout(() => $(document).trigger('pre-initialize'), 100)
+      setTimeout(() => $(document).trigger('pre-initialize'))
     }
   } catch (e) {
     // Now call the `pre-initialize` event for `document`
-    setTimeout(() => $(document).trigger('pre-initialize'), 100)
+    setTimeout(() => $(document).trigger('pre-initialize'))
   }
 
   try {
@@ -189,7 +175,7 @@ $(document).on('pre-initialize', async () => {
      * Now call the `initialization` event for `document`
      * This event will load and initialize the entire app after getting the path of the extra resources
      */
-    setTimeout(() => $(document).trigger('initialize'), 100)
+    setTimeout(() => $(document).trigger('initialize'))
 
     // Skip the upcoming code
     return
@@ -201,7 +187,7 @@ $(document).on('pre-initialize', async () => {
      * Now call the `initialization` event for `document`
      * This event will load and initialize the entire app after getting the path of the extra resources
      */
-    setTimeout(() => $(document).trigger('initialize'), 100)
+    setTimeout(() => $(document).trigger('initialize'))
   })
 })
 
@@ -218,6 +204,7 @@ $(document).on('initialize', () => {
     // Get logs info
     setTimeout(() => {
       IPCRenderer.invoke('logging:get:info').then((info) => {
+
         try {
           if (info.file == null) {
             $(`div.row.for-logging-info div.logs-info.file`).parent().hide()
@@ -255,7 +242,7 @@ $(document).on('initialize', () => {
           } catch (e) {}
         })
       })
-    }, 5000)
+    }, 1000)
 
     // If the logging feature is not enabled then skip the upcoming code
     if (!isLoggingFeatureEnabled)
@@ -372,7 +359,7 @@ $(document).on('initialize', () => {
         buttons.back.toggleClass('disabled', !webviewAIAssistant[0].canGoBack())
         buttons.forward.toggleClass('disabled', !webviewAIAssistant[0].canGoForward())
       }, 500)
-    }, 2000)
+    })
   } catch (e) {}
 })
 
@@ -381,12 +368,10 @@ $(document).on('initialize', async () => getMachineID().then((id) => {
   machineID = id
 
   // Add the first set of logs
-  setTimeout(() => {
-    try {
-      addLog(`AxonOps Workbench has loaded all components and is ready to be used`)
-      addLog(`This machine has a unique ID of '${machineID}'`, 'env')
-    } catch (e) {}
-  }, 1000)
+  try {
+    addLog(`AxonOps Workbench has loaded all components and is ready to be used`)
+    addLog(`This machine has a unique ID of '${machineID}'`, 'env')
+  } catch (e) {}
 }))
 
 // Initialize `I18next` module
@@ -781,13 +766,11 @@ $(document).on('initialize', () => {
     }
 
     {
-      setTimeout(function() {
-        let dateTimePicker = Path.join(__dirname, '..', 'js', 'external', 'datetimepicker')
+      let dateTimePicker = Path.join(__dirname, '..', 'js', 'external', 'datetimepicker')
 
-        loadStyleSheet(Path.join(dateTimePicker, 'style.css'))
+      loadStyleSheet(Path.join(dateTimePicker, 'style.css'))
 
-        loadScript(Path.join(dateTimePicker, 'datetimepicker.js'))
-      }, 1000)
+      loadScript(Path.join(dateTimePicker, 'datetimepicker.js'))
     }
   }
 
@@ -820,13 +803,11 @@ $(document).on('initialize', () => {
   {
     loadScript(Path.join(__dirname, '..', '..', 'node_modules', 'chart.js', 'dist', 'chart.umd.js'))
 
-    setTimeout(() => {
-      try {
-        const ZoomPlugin = require('chartjs-plugin-zoom')
+    try {
+      const ZoomPlugin = require('chartjs-plugin-zoom')
 
-        Chart.register(ZoomPlugin)
-      } catch (e) {}
-    }, 500)
+      Chart.register(ZoomPlugin)
+    } catch (e) {}
   }
 
   // text-extensions
@@ -1017,7 +998,9 @@ $(document).on('initialize', () => {
                      * Update the tooltip's content and state
                      * Get the object
                      */
-                    let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is(input))
+                    let tooltipLookup = null
+                    try { let tm = mdbObjectsIndex.get(input[0]); if (tm) tooltipLookup = tm['Tooltip'] } catch (_e) {}
+                    let tooltipObject = tooltipLookup ? [{ object: tooltipLookup }] : []
 
                     // If the path to the file is invalid or inaccessible then don't adopt it
                     if (!pathIsAccessible(optionValue)) {
@@ -1093,7 +1076,9 @@ $(document).on('initialize', () => {
                      * Update the tooltip's content and state
                      * Get the object
                      */
-                    let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
+                    let tooltipLookup = null
+                    try { let tm = mdbObjectsIndex.get(this); if (tm) tooltipLookup = tm['Tooltip'] } catch (_e) {}
+                    let tooltipObject = tooltipLookup ? [{ object: tooltipLookup }] : []
 
                     // Clear the file's name preview
                     $(this).parent().attr('file-name', '-')
@@ -1369,12 +1354,12 @@ $(document).on('initialize', () => {
       } catch (e) {}
     }
 
-  }, 1500)
+  })
 
   {
     loadStyleSheet(Path.join(__dirname, '..', '..', 'node_modules', 'highlight.js', 'styles', 'hybrid.css'))
 
-    setTimeout(() => Highlight.registerLanguage('cql', require(Path.join(__dirname, '..', '..', 'renderer', 'js', 'cql_highlight.js'))))
+    Highlight.registerLanguage('cql', require(Path.join(__dirname, '..', '..', 'renderer', 'js', 'cql_highlight.js')))
   }
 
   // TippyJS
@@ -1447,7 +1432,7 @@ $(document).on('initialize', () => {
       // On parent click, hide the tooltip
       $(this).click(() => tooltip.hide())
     })
-  }, 1000)
+  })
 })
 
 // Check whether or not binaries exist
@@ -1687,18 +1672,16 @@ $(document).on('initialize', () => {
    * Get the app's config
    */
   let getConfigToLoad = () => {
-    setTimeout(() => {
-      Modules.Config.getConfig((config) => {
-        // Whether or not the copyright notice is acknowledged already
-        let isCopyrightAcknowledged = config.get('security', 'cassandraCopyrightAcknowledged') == 'true'
+    Modules.Config.getConfig((config) => {
+      // Whether or not the copyright notice is acknowledged already
+      let isCopyrightAcknowledged = config.get('security', 'cassandraCopyrightAcknowledged') == 'true'
 
-        // If it's not then skip the upcoming code - the app won't be loaded till the checkbox is checked -
-        if (!isCopyrightAcknowledged)
-          return getConfigToLoad()
+      // If it's not then skip the upcoming code - the app won't be loaded till the checkbox is checked -
+      if (!isCopyrightAcknowledged)
+        return setTimeout(getConfigToLoad)
 
-        // Send the event
-        IPCRenderer.send('initialized')
-      })
+      // Send the event
+      IPCRenderer.send('initialized')
     })
   }
 
@@ -1724,7 +1707,7 @@ $(document).on('initialize', () => {
 })
 
 // Send the `loaded` event to the main thread, and show the `About` dialog/modal
-$(document).on('initialize', () => setTimeout(() => {
+$(document).on('initialize', () => {
   $('div#moreAbout').children('div[data-version]:not([data-version="binaries"])').each(function() {
     try {
       let version = process.versions[$(this).attr('data-version')]
@@ -1746,9 +1729,9 @@ $(document).on('initialize', () => setTimeout(() => {
     if (!isCheckingForUpdatesEnabled)
       return
 
-    $(document).ready(() => setTimeout(() => $(document).trigger('checkForUpdates'), 3000))
+    $(document).ready(() => $(document).trigger('checkForUpdates'))
   })
-}, 3000))
+})
 
 $(document).on('checkForUpdates', function(e, manualCheck = false) {
   IPCRenderer.invoke('check-app-format').then((info) => {

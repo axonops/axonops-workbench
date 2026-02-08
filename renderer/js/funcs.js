@@ -30,38 +30,12 @@ let getElementMDBObject = (element, type = 'Input') => {
   // Define the final object which be returned
   let object = null
 
-  // Check if the MDB object has already been created
+  // O(1) WeakMap lookup instead of O(n) array scan
   try {
-    // Get the MDB object by filtering all created objects
-    let foundObject = mdbObjects.find((object) => {
-      let objectUIElement = object.element
-
-      // #1 Attempt to get the UI element
-      try {
-        objectUIElement = object.element.length > 1 ? object.element[0] : objectUIElement
-      } catch (e) {}
-
-      // #2 Attempt to get the UI element
-      try {
-        objectUIElement = object.object.reference || objectUIElement
-      } catch (e) {}
-
-      let isObjectFound = false
-
-      try {
-        isObjectFound = objectUIElement.is(element) && object.type == type
-      } catch (e) {
-        try {
-          isObjectFound = $(objectUIElement).is(element) && object.type == type
-        } catch (e) {}
-      }
-
-      return isObjectFound
-    })
-
-    // If it has already been found then return it
-    if (foundObject != undefined)
-      return foundObject.object
+    let domNode = element[0] || element
+    let typeMap = mdbObjectsIndex.get(domNode)
+    if (typeMap && typeMap[type] != undefined)
+      return typeMap[type]
   } catch (e) {}
 
   /**
@@ -153,6 +127,14 @@ let getElementMDBObject = (element, type = 'Input') => {
       }
     })
 
+    // Store in WeakMap index for O(1) future lookups
+    try {
+      let domNode = element[0] || element
+      let typeMap = mdbObjectsIndex.get(domNode) || {}
+      typeMap[type] = object
+      mdbObjectsIndex.set(domNode, typeMap)
+    } catch (e) {}
+
     // Push the created object to be returned later once it's called
     mdbObjects.push({
       element,
@@ -177,6 +159,14 @@ let getElementMDBObject = (element, type = 'Input') => {
       object = new mdb[type](element.parent()[0])
     } catch (e) {}
   }
+
+  // Store in WeakMap index for O(1) future lookups
+  try {
+    let domNode = element[0] || element
+    let typeMap = mdbObjectsIndex.get(domNode) || {}
+    typeMap[type] = object
+    mdbObjectsIndex.set(domNode, typeMap)
+  } catch (e) {}
 
   // Push the created object to be returned later once it's called
   mdbObjects.push({
@@ -5365,6 +5355,10 @@ let cleanupResources = () => {
       try {
         if (obj.object && obj.object.destroy)
           obj.object.destroy()
+        // Clear from WeakMap index
+        let domNode = (obj.element && obj.element[0]) || obj.element
+        let typeMap = mdbObjectsIndex.get(domNode)
+        if (typeMap) delete typeMap['Tooltip']
       } catch (e) {}
     })
 

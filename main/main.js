@@ -500,28 +500,25 @@ App.on('ready', () => {
       if (!status.loaded || !status.initialized)
         return checkStatus()
 
-      // Trigger after 1s of loading the main view
-      setTimeout(() => {
-        // Destroy the intro view/window entirely
-        try {
-          views.intro.destroy()
-        } catch (e) {}
+      // Destroy the intro view/window entirely
+      try {
+        views.intro.destroy()
+      } catch (e) {}
 
-        // Show the main view/window and maximize it
-        try {
-          if (global.IsCLIMode)
-            throw 0
+      // Show the main view/window and maximize it
+      try {
+        if (global.IsCLIMode)
+          throw 0
 
-          views.main.show()
-          views.main.maximize()
-        } catch (e) {}
+        views.main.show()
+        views.main.maximize()
+      } catch (e) {}
 
-        /**
-         * Send a `shown` status to the main view
-         * This will tell the app to load workspaces
-         */
-        setTimeout(() => views.main.webContents.send('windows-shown'))
-      }, 100)
+      /**
+       * Send a `shown` status to the main view
+       * This will tell the app to load workspaces
+       */
+      views.main.webContents.send('windows-shown')
     }, 125)
   }
 

@@ -97,6 +97,7 @@ let terminalObjects = [],
  * This array is associated with a singleton pattern implementation in the function `getElementMDBObject(element, ?type)`
  */
 let mdbObjects = [],
+  mdbObjectsIndex = new WeakMap(),
   /**
    * The MDB object of the `add` and `refresh` connections floating buttons' tooltips
    * Those two tooltips are defined in this way as they need to be referenced and updated many times during the active session

@@ -3831,16 +3831,76 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                    // Handle the download options
                                    {
-                                     // Download the table as CSV
-                                     outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', 'statement_block.csv'))
+                                     // Helper to save export via Electron dialog with workspace default path
+                                     let saveExport = (extension, generateFn) => {
+                                       let fileName = `statement_block.${extension}`
 
-                                     // Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), descriptionFileName)
+                                       try {
+                                         fileName = Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), fileName)
+                                       } catch (e) {}
+
+                                       let dialogID = getRandom.id(5),
+                                         dialogData = {
+                                           id: dialogID,
+                                           title: I18next.capitalize(I18next.t('save as')) + ` ${extension.toUpperCase()}`,
+                                           properties: ['showHiddenFiles', 'createDirectory', 'promptToCreate'],
+                                           defaultPath: fileName,
+                                           type: 'showSaveDialog'
+                                         }
+
+                                       IPCRenderer.send('dialog:create', dialogData)
+
+                                       IPCRenderer.on(`dialog:${dialogID}`, (_, path) => {
+                                         path = `${path}`
+
+                                         try {
+                                           IPCRenderer.removeAllListeners(`dialog:${dialogID}`)
+                                         } catch (e) {}
+
+                                         try {
+                                           if (path.length <= 0)
+                                             throw 0
+
+                                           generateFn((data) => {
+                                             let writeData = typeof data === 'string' ? data : Buffer.from(data)
+
+                                             FS.writeFile(path, writeData, (err) => {
+                                               if (err)
+                                                 return showToast(I18next.capitalize(I18next.t('save as')) + ` ${extension.toUpperCase()}`, I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to save the file')) + '.', 'failure')
+
+                                               showToast(I18next.capitalize(I18next.t('save as')) + ` ${extension.toUpperCase()}`, I18next.capitalizeFirstLetter(I18next.t('the file has been saved successfully')) + '.', 'success')
+                                             })
+                                           })
+                                         } catch (e) {}
+                                       })
+                                     }
+
+                                     // Download the table as CSV
+                                     outputElement.find('div.option[option="csv"]').click(() => {
+                                       saveExport('csv', (callback) => {
+                                         let checkboxCol = tabulatorObject.getColumn('checkbox')
+                                         if (checkboxCol) checkboxCol.hide()
+
+                                         tabulatorObject.download('csv', 'statement_block.csv', {}, 'active', callback)
+
+                                         if (checkboxCol) checkboxCol.show()
+                                       })
+                                     })
 
                                      // Download the table as PDF
-                                     outputElement.find('div.option[option="pdf"]').click(() => tabulatorObject.download('pdf', 'statement_block.pdf', {
-                                       orientation: 'portrait',
-                                       title: `${blockStatement}`,
-                                     }))
+                                     outputElement.find('div.option[option="pdf"]').click(() => {
+                                       saveExport('pdf', (callback) => {
+                                         let checkboxCol = tabulatorObject.getColumn('checkbox')
+                                         if (checkboxCol) checkboxCol.hide()
+
+                                         tabulatorObject.download('pdf', 'statement_block.pdf', {
+                                           orientation: 'portrait',
+                                           title: `${blockStatement}`,
+                                         }, 'active', callback)
+
+                                         if (checkboxCol) checkboxCol.show()
+                                       })
+                                     })
                                    }
 
                                    // Handle the clicks of the tracing button

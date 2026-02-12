@@ -9,14 +9,14 @@
  */
 let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _connectionID = '') => {
   let counterIDs = 0,
-    getMD5IDForNode = async (amount = 1) => {
+    getMD5IDForNode = async (amount = 1, customStr = '') => {
       let ids = []
 
       for (let i = 0; i < amount; i++) {
         counterIDs = counterIDs + 1
 
         try {
-          ids.push(await MD5(`${counterIDs}`))
+          ids.push(await MD5(`${customStr.length != 0 ? customStr : counterIDs}`))
         } catch (e) {
           try {
             errorLog(e, 'functions')
@@ -439,10 +439,8 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
   // Loop through the keyspaces
   for (let keyspace of metadata.keyspaces) {
     // Get a unique ID for the current keyspace, and an ID for its tables' container
-    let [
-      keyspaceID,
-      tablesID
-    ] = await getMD5IDForNode(2),
+    let keyspaceID = await getMD5IDForNode(1, `${keyspace.name}`),
+      tablesID = await getMD5IDForNode(),
       indexesInfo = []
 
     // Build tree view for the keyspace
@@ -520,16 +518,16 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
     for (let table of keyspace.tables) {
 
       // Get random IDs for all upcoming children
-      let [
-        tableID,
-        primaryKeysID,
-        partitionKeysID,
-        clusteringKeysID,
-        columnsID,
-        triggersID,
-        viewsID,
-        indexesID
-      ] = await getMD5IDForNode(8)
+      let tableID = await getMD5IDForNode(1, `${keyspace.name}.${table.name}`),
+        [
+          primaryKeysID,
+          partitionKeysID,
+          clusteringKeysID,
+          columnsID,
+          triggersID,
+          viewsID,
+          indexesID
+        ] = await getMD5IDForNode(7)
 
       let isCounterTable = table.columns.find((column) => column.cql_type == 'counter') != undefined
 
@@ -1761,10 +1759,62 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
     }
   } catch (e) {}
 
+  // Handle permissions and roles
+  try {
+    if (metadata.roles.length <= 0)
+      throw 0
+
+    let [usersID, standardUsersID, superUsersID] = await getMD5IDForNode(4)
+
+    treeStructure.core.data.push({
+      'id': usersID,
+      'parent': '#',
+      'text': `Users`,
+      'type': 'default',
+      'icon': normalizePath(Path.join(extraIconsPath, 'user_definitions.png')),
+      'state': {
+        'opened': false,
+        'selected': false
+      }
+    }, {
+      'id': standardUsersID,
+      'parent': usersID,
+      'text': `Standard Users`,
+      'type': 'default',
+      'icon': normalizePath(Path.join(extraIconsPath, 'user_definitions.png')),
+      'state': {
+        'opened': false,
+        'selected': false
+      }
+    }, {
+      'id': superUsersID,
+      'parent': usersID,
+      'text': `Super Users`,
+      'type': 'default',
+      'icon': normalizePath(Path.join(extraIconsPath, 'user_definitions.png')),
+      'state': {
+        'opened': false,
+        'selected': false
+      }
+    })
+
+    for (let roleObject of metadata.roles) {
+      // Get a random ID for the `Virtual Keyspaces` node
+      let roleID = await getMD5IDForNode()
+
+      treeStructure.core.data.push({
+        id: roleID,
+        parent: roleObject.is_superuser ? superUsersID : standardUsersID,
+        text: `${roleObject.role}`,
+        type: 'default',
+        'icon': normalizePath(Path.join(extraIconsPath, 'user_definitions.png'))
+      })
+    }
+  } catch (e) {}
+
   // Return the final tree structure
   return treeStructure
 }
-
 
 let sortItemsAlphabetically = (array, sortBy) => {
   try {
@@ -1778,4 +1828,17 @@ let sortItemsAlphabetically = (array, sortBy) => {
       return 0
     })
   } catch (e) {}
+}
+
+let goToNodeInTree = (keyspaceAndTableNames) => {
+  MD5(keyspaceAndTableNames || '').then((md5Hash) => {
+    let hashedID = `${md5Hash}_anchor`,
+      treeViewElement = $(`div.workarea div.sub-sides.left div.connection-metadata div.metadata-content:visible`)
+
+    try {
+      treeViewElement.jstree(true)._open_to(md5Hash)
+
+      $(`a.jstree-anchor[id="${hashedID}"]`).click()
+    } catch (e) {}
+  })
 }

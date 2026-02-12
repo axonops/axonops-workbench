@@ -1275,9 +1275,14 @@ div.sub-output {
 }
 
 .sub-output.margin-top-statement {
-    margin-top: 35px;
+  margin-top: 35px;
 }
 
 .sub-output.margin-top-statement-first {
-    margin-top: 20px;
+  margin-top: 20px;
+}
+
+span.clickable-entity {
+  text-decoration: underline;
+  cursor: pointer;
 }

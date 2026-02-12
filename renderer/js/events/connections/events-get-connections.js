@@ -3202,6 +3202,17 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                            isOutputWithPaging = isOutputWithPaging || blockElement.attr('data-is-paging') != undefined
 
+                           try {
+                             if (data.output.data.keyspace == undefined)
+                               throw 0
+
+                             let keyspaceAndTableNames = `${data.output.data.keyspace}.${data.output.data.table}`
+
+                             blockElement.find('div.statement, div.statement-content').each(function() {
+                               $(this).html($(this).html().replace(new RegExp(keyspaceAndTableNames, 'gi'), `<span class="clickable-entity" onclick="goToNodeInTree('${keyspaceAndTableNames}')">${keyspaceAndTableNames}</span>`))
+                             })
+                           } catch (e) {}
+
                            // Handle if the statement's execution process has stopped
                            try {
                              // Toggle the `busy` state of the execution button
@@ -9567,4 +9578,3 @@ let updateMiniConnection
 
 // Set the time which after it the termination of the connection test process is allowed
 const ConnectionTestProcessTerminationTimeout = 250
-

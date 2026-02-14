@@ -7384,7 +7384,7 @@
     let tippyInstance = [],
       dateTimePickerObject = []
 
-    $('button#insertionTimestampPicker, button#deleteTimestampPicker').click(function(_, isInitProcess = false) {
+    $('button#insertionTimestampPicker, button#deleteTimestampPicker, button#updateTimestampPicker').click(function(_, isInitProcess = false) {
       try {
         let tippyReference = $(this),
           id = $(this).attr('id')
@@ -7495,7 +7495,7 @@
       } catch (e) {}
     })
 
-    setTimeout(() => $('button#insertionTimestampPicker, button#deleteTimestampPicker').trigger('click', true), 3000)
+    setTimeout(() => $('button#insertionTimestampPicker, button#deleteTimestampPicker, button#updateTimestampPicker').trigger('click', true), 3000)
 
     setTimeout(() => {
       // Point at the list container
@@ -7685,6 +7685,51 @@
       $('div#tableFieldsNonPKColumnsDeleteAction div.columns').toggle(matchedColumns.length > 0)
 
       matchedColumns.show()
+    })
+  }
+
+  {
+    $('input#updateTtl').add($('input#updateTimestamp')).each(function() {
+      let clearField = $(this).parent().parent().find('div.clear-field')
+
+      $(this).on('input', function() {
+        try {
+          clearField.toggleClass('hide', $(this).val().length <= 0)
+        } catch (e) {}
+
+        if ($(this).is($('input#updateTimestamp')))
+          $(this).toggleClass('is-invalid', $(this).val().length > 0 && getCheckedValue('lwtUpdateOptions') != 'updateNoSelectOption')
+
+        setTimeout(() => {
+          try {
+            updateActionStatusForUpdateRow()
+          } catch (e) {}
+        })
+      })
+
+      clearField.children('div.btn').click(function() {
+        let rlatedInutField = $(this).parent().parent().find('input'),
+          inputObject = getElementMDBObject(rlatedInutField)
+
+        try {
+          rlatedInutField.val('').trigger('input')
+        } catch (e) {}
+
+        try {
+          inputObject.update()
+          setTimeout(() => inputObject._deactivate())
+        } catch (e) {}
+      })
+    })
+
+    $('input[name="updateTtlValueType"]').each(function() {
+      $(this).on('change input', function() {
+        setTimeout(() => {
+          try {
+            updateActionStatusForUpdateRow()
+          } catch (e) {}
+        })
+      })
     })
   }
 
@@ -9226,10 +9271,539 @@
         })
       }
 
+      updateActionStatusForUpdateRow = () => {
+        try {
+          clearTimeout(mainFunctionTimeOut)
+        } catch (e) {}
+
+        mainFunctionTimeOut = setTimeout(() => {
+          let dialogElement = $('#rightClickActionsMetadata'),
+            [
+              keyspaceName,
+              tableName
+            ] = getAttributes(dialogElement, ['data-keyspace-name', 'data-table-name']).map((name) => addDoubleQuotes(name)),
+            relatedTreesObjects = {
+              primaryKey: $('div#tableFieldsPrimaryKeyTreeUpdateAction').jstree(),
+              columns: {
+                regular: $('div#tableFieldsRegularColumnsTreeUpdateAction').jstree(),
+                collection: $('div#tableFieldsCollectionColumnsTreeUpdateAction').jstree(),
+                udt: $('div#tableFieldsUDTColumnsTreeUpdateAction').jstree()
+              }
+            },
+            lwtTreesObjects = {
+              regular: $('div#tableFieldsRegularColumnsTreeUpdateLWT').jstree(),
+              collection: $('div#tableFieldsCollectionColumnsTreeUpdateLWT').jstree(),
+              udt: $('div#tableFieldsUDTColumnsTreeUpdateLWT').jstree()
+            },
+            lwtOption = getCheckedValue('lwtUpdateOptions')
+
+          let keyspaceUDTs = []
+
+          try {
+            keyspaceUDTs = JSON.parse(JSONRepair($(dialogElement).attr('data-keyspace-udts'))).map((udt) => udt.name)
+          } catch (e) {}
+
+          let allNodes = dialogElement.find('div[action="update-row"]').find(`a.jstree-anchor`)
+
+          allNodes.each(function() {
+            if ($(this)[0].scrollWidth == $(this).innerWidth() || $(this).find('ul.dropdown-menu.for-insertion-actions').hasClass('show'))
+              return
+
+            let widthDifference = Math.abs($(this)[0].scrollWidth - $(this).innerWidth()),
+              typeValueSpan = $(this).find('span.type-value'),
+              spanWidth = typeValueSpan.outerWidth() - 4
+
+            typeValueSpan.css('width', `${spanWidth - widthDifference}px`).addClass('overflow')
+          })
+
+          $(`div[action="update-row"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).removeClass('invalid')
+
+          let isPrimaryKeyMissingFields = false
+
+          try {
+            let primaryKeyAddButtons = $('#tableFieldsPrimaryKeyTreeUpdateAction').find('button[action="add-item"]').get()
+
+            for (let addItemBtn of primaryKeyAddButtons) {
+              let button = $(addItemBtn),
+                relatedNode = button.closest('a.jstree-anchor'),
+                hasChildren = relatedTreesObjects.primaryKey.get_node(relatedNode.attr('add-hidden-node')).children_d.length > 0
+
+              if (!hasChildren) {
+                isPrimaryKeyMissingFields = true
+
+                relatedNode.addClass('invalid')
+
+                continue
+              }
+
+              relatedNode.removeClass('invalid')
+            }
+          } catch (e) {}
+
+          if ($('#updateTimestamp').hasClass('is-invalid'))
+            $(`div[action="update-row"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
+
+          try {
+            if (allNodes.filter(`:not(.ignored)`).find('.is-invalid:not(.ignore-invalid)').length <= 0 && !isPrimaryKeyMissingFields && !$('#updateTimestamp').hasClass('is-invalid'))
+              throw 0
+
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', ''), 50)
+
+            $(`div[action="update-row"] div.types-of-transactions div.sections div.section div.btn[section="standard"]`).addClass('invalid')
+
+            return
+          } catch (e) {}
+
+          let handleFieldsPre = (treeObject, mainNodeID = '#') => {
+            let relatedFieldsArray = []
+
+            try {
+              treeObject.get_node(mainNodeID)
+            } catch (e) {
+              return relatedFieldsArray
+            }
+
+            for (let currentNodeID of treeObject.get_node(mainNodeID).children) {
+              let currentNode = $(`a.jstree-anchor[static-id="${currentNodeID}"]`)
+
+              try {
+                if (currentNode.length <= 0)
+                  currentNode = $(`a.jstree-anchor[id="${currentNodeID}_anchor"]`)
+              } catch (e) {}
+
+              let [
+                fieldName,
+                fieldType,
+                isMandatory,
+                isMapItem
+              ] = getAttributes(currentNode, ['name', 'type', 'mandatory', 'is-map-item']),
+                fieldValue = currentNode.find('input'),
+                isFieldIgnored = currentNode.hasClass('ignored') || currentNode.hasClass('unavailable'),
+                isNULL = currentNode.find('button[action="apply-null"]').hasClass('applied')
+
+              try {
+                if (fieldValue.attr('type') == 'checkbox') {
+                  fieldValue = currentNode.find('input[type="checkbox"]').prop('indeterminate') ? '' : `${currentNode.find('input[type="checkbox"]').prop('checked')}`
+                } else {
+                  fieldValue = fieldValue.val()
+                }
+              } catch (e) {}
+
+              if (isFieldIgnored)
+                continue
+
+              if ((fieldValue == undefined || fieldValue.length <= 0) && !isNULL && isMandatory != 'true' && isMapItem != 'true') {
+                let childrenFields = handleFieldsPre(treeObject, currentNodeID)
+
+                if (childrenFields.length > 0)
+                  relatedFieldsArray[currentNodeID] = childrenFields
+
+                continue
+              }
+
+              relatedFieldsArray.push({
+                id: currentNodeID,
+                name: fieldName,
+                type: fieldType,
+                value: fieldValue,
+                parent: treeObject.get_parent(currentNodeID),
+                isNULL,
+                isMapItem: isMapItem == 'true'
+              })
+
+              let childrenFields = handleFieldsPre(treeObject, currentNodeID)
+
+              if (childrenFields.length > 0)
+                relatedFieldsArray[currentNodeID] = childrenFields
+            }
+
+            return relatedFieldsArray
+          }
+
+          let primaryKeyFields = handleFieldsPre(relatedTreesObjects.primaryKey),
+            columnsRegularFields = handleFieldsPre(relatedTreesObjects.columns.regular),
+            columnsCollectionFields = handleFieldsPre(relatedTreesObjects.columns.collection),
+            columnsUDTFields = handleFieldsPre(relatedTreesObjects.columns.udt)
+
+          let handleFieldsPost = (fields, isUDT = false, isCollection = false, parentType = null) => {
+            let names = [],
+              values = []
+
+            for (let field of fields) {
+              try {
+                if (['name', 'type', 'value'].every((attribute) => field[attribute] == undefined) && !field.isMapItem)
+                  continue
+
+                let value = ''
+
+                // Handle collection type
+                try {
+                  if (!(['map', 'set', 'list'].some((type) => `${field.type}`.includes(`${type}<`))) && !field.isMapItem)
+                    throw 0
+
+                  let items = []
+
+                  try {
+                    items = fields[field.id]
+
+                    if (fields[field.id].length <= 0)
+                      continue
+                  } catch (e) {}
+
+                  let fieldValue = handleFieldsPost(items, false, true, parentType || field.type)
+
+                  try {
+                    let isUDTType = false
+
+                    try {
+                      isUDTType = fieldValue.values[1].startsWith('{') && fieldValue.values[1].endsWith('}')
+                    } catch (e) {}
+
+                    fieldValue = fieldValue.values.join(field.isMapItem ? ': ' : ', ')
+
+                    if (parentType != null && (`${parentType}`.includes(`list<`) || `${parentType}`.includes(`set<`)) && (field.isMapItem || `${field.type}`.includes(`map<`))) {
+                      fieldValue = `{${fieldValue}}`
+                    } else if (field.parent == '#' || isUDT) {
+                      fieldValue = `${field.type}`.includes(`list<`) ? `[${fieldValue}]` : (`${field.type}`.includes(`set<`) || (`${field.type}`.includes(`map<`) && !isUDTType) ? `{${fieldValue}}` : `${fieldValue}`)
+                    }
+                  } catch (e) {}
+
+                  if (field.parent == '#')
+                    names.push(`${field.name}`)
+
+                  if (field.parent != '#' && isUDT)
+                    names.push(`${field.name}`)
+
+                  values.push(field.isMapItem ? `${fieldValue}` : `${fieldValue}`)
+
+                  continue
+                } catch (e) {}
+
+                // Handle UDT type
+                try {
+                  let manipulatedType = `${field.type}`
+
+                  try {
+                    if (`${manipulatedType}`.match(/^frozen</) == null) throw 0;
+
+                    manipulatedType = `${manipulatedType}`.match(/^frozen<(.*?)>$/)[1];
+                  } catch (e) {}
+
+                  try {
+                    manipulatedType = `${manipulatedType}`.match(/<(.*?)>$/)[1];
+                  } catch (e) {}
+
+                  if (!(keyspaceUDTs.includes(manipulatedType)))
+                    throw 0
+
+                  let subFields = []
+
+                  try {
+                    subFields = fields[field.id]
+
+                    if (fields[field.id].length <= 0)
+                      continue
+                  } catch (e) {}
+
+                  let fieldValue = handleFieldsPost(subFields, true, false),
+                    joinedValue = []
+
+                  try {
+                    for (let i = 0; i < fieldValue.names.length; i++) {
+                      let subFieldName = addDoubleQuotes(fieldValue.names[i])
+
+                      joinedValue.push(`${subFieldName}: ${fieldValue.values[i]}`)
+                    }
+
+                    joinedValue = joinedValue.join(', ')
+
+                    joinedValue = `{ ${joinedValue} }`
+                  } catch (e) {}
+
+                  if (field.parent == '#')
+                    names.push(`${field.name}`)
+
+                  if (field.parent != '#' && isUDT)
+                    names.push(`${field.name}`)
+
+                  values.push(`${joinedValue}`)
+
+                  continue
+                } catch (e) {}
+
+                // Standard type
+                try {
+                  let isSingleQuotesNeeded = false
+
+                  value = `${field.value}`
+
+                  try {
+                    try {
+                      if (['text', 'varchar', 'ascii', 'inet'].some((type) => type == field.type))
+                        isSingleQuotesNeeded = true
+                    } catch (e) {}
+
+                    try {
+                      if (field.type != 'time')
+                        throw 0
+
+                      if (IsTimestamp(value)) {
+                        try {
+                          value = formatTimestamp(parseInt(value), false, true).split(/\s+/)[1]
+                        } catch (e) {}
+                      }
+
+                      if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
+                        isSingleQuotesNeeded = true
+                    } catch (e) {}
+
+                    try {
+                      if (field.type != 'date')
+                        throw 0
+
+                      if (IsTimestamp(value)) {
+                        try {
+                          value = `toDate(${value})`
+                        } catch (e) {}
+                      }
+
+                      if (ValidateDate(value, 'boolean') || !value.endsWith(')'))
+                        isSingleQuotesNeeded = true
+                    } catch (e) {}
+
+                    try {
+                      if (field.type != 'timestamp')
+                        throw 0
+
+                      if (ValidateDate(value, 'boolean'))
+                        value = `toTimestamp('${value}')`
+                    } catch (e) {}
+                  } catch (e) {}
+
+                  try {
+                    if (!isSingleQuotesNeeded)
+                      throw 0
+
+                    value = `${value}`.replace(/(^|[^'])'(?!')/g, "$1''")
+
+                    value = `'${value}'`
+                  } catch (e) {}
+
+                  if (field.isNULL)
+                    value = 'NULL'
+
+                  if (field.parent == '#' || isUDT)
+                    names.push(isUDT ? `${field.name}` : `${field.name}`)
+
+                  values.push(isUDT || isCollection ? `${value}` : `${value}`)
+                } catch (e) {}
+              } catch (e) {}
+            }
+
+            return {
+              names,
+              values
+            }
+          }
+
+          let manipulatedFields = {
+            primaryKey: handleFieldsPost(primaryKeyFields),
+            columnsRegular: handleFieldsPost(columnsRegularFields),
+            columnsCollection: handleFieldsPost(columnsCollectionFields),
+            columnsUDT: handleFieldsPost(columnsUDTFields)
+          }
+
+          // Build WHERE clause from primary key fields
+          let whereClause = ''
+
+          try {
+            let temp = []
+
+            for (let i = 0; i < manipulatedFields.primaryKey.names.length; i++)
+              temp.push(`${addDoubleQuotes(manipulatedFields.primaryKey.names[i])} = ${manipulatedFields.primaryKey.values[i]}`)
+
+            whereClause = temp.join(' AND ')
+          } catch (e) {}
+
+          // Build SET clause from column fields
+          let setClause = ''
+
+          try {
+            let temp = []
+
+            for (let fieldsClass of ['columnsRegular', 'columnsCollection', 'columnsUDT']) {
+              let fields = manipulatedFields[fieldsClass]
+
+              for (let i = 0; i < fields.names.length; i++)
+                temp.push(`${addDoubleQuotes(fields.names[i])} = ${fields.values[i]}`)
+            }
+
+            setClause = temp.join(',' + OS.EOL + '  ')
+          } catch (e) {}
+
+          try {
+            clearTimeout(changeFooterButtonsStateTimeout)
+          } catch (e) {}
+
+          changeFooterButtonsStateTimeout = setTimeout(() => dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', (whereClause.length <= 0 || setClause.length <= 0) ? '' : null), 50)
+
+          // Handle LWT IF conditions
+          let ifConditions = ''
+
+          try {
+            if (lwtOption == 'updateIfExistsOption') {
+              ifConditions = OS.EOL + `IF EXISTS`
+            } else if (lwtOption == 'updateIfColumnOption') {
+              let lwtRegularFields = handleFieldsPre(lwtTreesObjects.regular),
+                lwtCollectionFields = handleFieldsPre(lwtTreesObjects.collection),
+                lwtUDTFields = handleFieldsPre(lwtTreesObjects.udt)
+
+              let lwtManipulatedFields = {
+                regular: handleFieldsPost(lwtRegularFields),
+                collection: handleFieldsPost(lwtCollectionFields),
+                udt: handleFieldsPost(lwtUDTFields)
+              }
+
+              let temp = []
+
+              for (let lwtClass of Object.keys(lwtManipulatedFields)) {
+                let fields = lwtManipulatedFields[lwtClass]
+
+                for (let i = 0; i < fields.names.length; i++) {
+                  let name = fields.names[i],
+                    value = fields.values[i]
+
+                  if ([name, value].some((attribute) => `${attribute}` == 'undefined'))
+                    continue
+
+                  temp.push(`${addDoubleQuotes(name)} = ${value}`)
+                }
+              }
+
+              if (temp.length > 0)
+                ifConditions = OS.EOL + `IF ${temp.join(' AND ')}`
+            }
+          } catch (e) {}
+
+          // USING clause (TTL + TIMESTAMP)
+          let usingClause = ''
+
+          try {
+            let extraOptions = ''
+
+            // TTL
+            try {
+              let ttlValue = $('#updateTtl').val(),
+                ttlValueType = getCheckedValue('updateTtlValueType'),
+                multipliers = {
+                  ms: 1,
+                  s: 1000,
+                  m: 60000,
+                  h: 3600000,
+                  d: 86400000
+                }
+
+              if (`${ttlValue}`.length <= 0)
+                throw 0
+
+              try {
+                ttlValue = parseInt(ttlValue) * (multipliers[ttlValueType] || 1)
+              } catch (e) {}
+
+              if (isNaN(ttlValue))
+                throw 0
+
+              extraOptions = `TTL ${ttlValue}`
+            } catch (e) {}
+
+            // TIMESTAMP
+            try {
+              if (lwtOption != 'updateNoSelectOption')
+                throw 0
+
+              let timestamp = $('#updateTimestamp').val()
+
+              if (`${timestamp}`.length <= 0)
+                throw 0
+
+              let timestampTxt = `TIMESTAMP ${timestamp}`
+
+              extraOptions = `${extraOptions}` + (extraOptions.length <= 0 ? '' : ' AND ') + timestampTxt
+            } catch (e) {}
+
+            if (extraOptions.length > 0)
+              usingClause = `USING ${extraOptions}` + OS.EOL
+          } catch (e) {}
+
+          // Get consistency level
+          let writeConsistencyLevel = '',
+            serialConsistencyLevel = ''
+
+          try {
+            let writeLevel = $('#updateWriteConsistencyLevel').val()
+
+            writeConsistencyLevel = `CONSISTENCY ${writeLevel};`
+
+            if (writeLevel == activeSessionsConsistencyLevels[activeConnectionID].standard)
+              writeConsistencyLevel = `-- ${writeConsistencyLevel} Note: CQL session already using this CL`
+
+            writeConsistencyLevel = `${writeConsistencyLevel}` + OS.EOL
+          } catch (e) {}
+
+          try {
+            if (lwtOption == 'updateNoSelectOption')
+              throw 0
+
+            let serialLevel = $('#updateSerialConsistencyLevel').val()
+
+            serialConsistencyLevel = `SERIAL CONSISTENCY ${serialLevel};`
+
+            if (serialLevel == activeSessionsConsistencyLevels[activeConnectionID].serial)
+              serialConsistencyLevel = `-- ${serialConsistencyLevel} Note: CQL session already using this CL`
+
+            serialConsistencyLevel = `${serialConsistencyLevel}` + OS.EOL
+          } catch (e) {}
+
+          let statement =
+            `${writeConsistencyLevel}${serialConsistencyLevel}` +
+            `UPDATE ${keyspaceName}.${tableName}` + OS.EOL +
+            `${usingClause}` +
+            `SET ${setClause}` + OS.EOL +
+            `WHERE ${whereClause}${ifConditions};`
+
+          try {
+            actionEditor.setValue(statement)
+          } catch (e) {}
+
+        })
+      }
+
       setTimeout(() => {
-        for (let action of ['delete', 'insert']) {
+        let updateConsistencyLevelsContainer = $(`div.dropdown[for-select="updateWriteConsistencyLevel"] ul.dropdown-menu, div.dropdown[for-select="updateSerialConsistencyLevel"] ul.dropdown-menu`)
+
+        updateConsistencyLevelsContainer.find('a').click(function() {
+          let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)
+
+          selectElement.val($(this).attr('value')).trigger('input')
+
+          setTimeout(() => {
+            try {
+              updateActionStatusForUpdateRow()
+            } catch (e) {}
+          })
+        })
+      })
+
+      setTimeout(() => {
+        for (let action of ['delete', 'insert', 'update']) {
+          let lwtOptionsName = action == 'delete' ? 'lwtDeleteOptions' : (action == 'insert' ? 'lwtInsertOptions' : 'lwtUpdateOptions')
+
           $(`input#${action}WriteConsistencyLevel`).add(`input#${action}SerialConsistencyLevel`).on('input', () => {
-            let lwtOption = getCheckedValue(action == 'delete' ? 'lwtDeleteOptions' : 'lwtInsertOptions')
+            let lwtOption = getCheckedValue(lwtOptionsName)
 
             if (lwtOption == `${action}NoSelectOption`) {
               $(`div.consistency-level-warning-${action}`).hide()
@@ -9281,6 +9855,26 @@
           $('input#insertWriteConsistencyLevel').add($('#insertionTimestamp')).trigger('input')
         })
       })
+
+      $('input[type="radio"][name="lwtUpdateOptions"]').on('change', function() {
+        $('#updateTimestamp').attr('disabled', $(this).attr('id') == 'updateNoSelectOption' ? null : '')
+
+        if ($(this).attr('id') == 'updateNoSelectOption') {
+          $('#rightClickActionsMetadata').find('div[update-consistency="write"]').removeClass('col-md-6').addClass('col-md-12')
+
+          $('#rightClickActionsMetadata').find('div[update-consistency="serial"]').hide()
+        } else {
+          $('#rightClickActionsMetadata').find('div[update-consistency="write"], div[update-consistency="serial"]').removeClass('col-md-12').addClass('col-md-6').show()
+        }
+
+        setTimeout(() => {
+          try {
+            updateActionStatusForUpdateRow()
+          } catch (e) {}
+
+          $('input#updateWriteConsistencyLevel').add($('#updateTimestamp')).trigger('input')
+        })
+      })
     } catch (e) {}
   }, 10000)
 
@@ -9303,6 +9897,28 @@
       insertRowAction.children(`div[section="${section}"]`).show()
 
       insertRowAction.find('div.lwt-hint-insert').toggle(section == 'lwt')
+    })
+  }
+
+  {
+    let updateRowAction = $('div[action="update-row"]'),
+      sectionsButtons = updateRowAction.find('div.btn[section]')
+
+    sectionsButtons.click(function() {
+      if ($(this).hasClass('active'))
+        return
+
+      sectionsButtons.removeClass('active')
+
+      $(this).addClass('active')
+
+      updateRowAction.children('div[section]').hide()
+
+      let section = $(this).attr('section')
+
+      updateRowAction.children(`div[section="${section}"]`).show()
+
+      updateRowAction.find('div.lwt-hint-update').toggle(section == 'lwt')
     })
   }
 

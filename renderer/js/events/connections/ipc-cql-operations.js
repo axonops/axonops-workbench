@@ -4393,6 +4393,1587 @@ let updateActionStatusForInsertRow,
       }
 
       {
+        let tableFieldsUpdateTreeContainers = {
+          primaryKey: $('div#tableFieldsPrimaryKeyTreeUpdateAction'),
+          columnsRegular: $('div#tableFieldsRegularColumnsTreeUpdateAction'),
+          columnsCollection: $('div#tableFieldsCollectionColumnsTreeUpdateAction'),
+          columnsUDT: $('div#tableFieldsUDTColumnsTreeUpdateAction')
+        }
+
+        let tableFieldsUpdateLWTTreeContainers = {
+          columnsRegular: $('div#tableFieldsRegularColumnsTreeUpdateLWT'),
+          columnsCollection: $('div#tableFieldsCollectionColumnsTreeUpdateLWT'),
+          columnsUDT: $('div#tableFieldsUDTColumnsTreeUpdateLWT')
+        }
+
+        let effectedUpdateNodes = {}
+
+        IPCRenderer.on('update-row', (_, data) => {
+          Modules.Config.getConfig((config) => {
+            let enableBlobPreview = false
+
+            try {
+              enableBlobPreview = config.get('features', 'previewBlob') == 'true'
+            } catch (e) {}
+
+            effectedUpdateNodes = {}
+
+            let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+            $('button#executeActionStatement').attr({
+              'data-tab-id': `${data.tabID}`,
+              'data-textarea-id': `${data.textareaID}`,
+              'data-btn-id': `${data.btnID}`
+            })
+
+            $('#rightClickActionsMetadata').find('div.modal-body').css('height', 'auto')
+
+            $('#rightClickActionsMetadata').attr({
+              'data-state': null,
+              'data-keyspace-name': `${data.keyspaceName}`,
+              'data-table-name': `${data.tableName}`
+            })
+
+            $('input#updateTtl').val('')
+            $('input#updateTtlMS').prop('checked', true)
+            $('input#updateTimestamp').val('')
+
+            $('input#updateNoSelectOption').prop('checked', true)
+            $('input#updateNoSelectOption').trigger('change')
+
+            $('div[action="update-row"] div[section="standard"]').click()
+
+            try {
+              $('div.dropdown[for-select="updateWriteConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeConnectionID].standard}"]`).click()
+            } catch (e) {}
+
+            try {
+              $('div.dropdown[for-select="updateSerialConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeConnectionID].serial}"]`).click()
+            } catch (e) {}
+
+            $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'update row').html(`${I18next.capitalize(I18next.t('update row'))} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
+
+            $('#rightClickActionsMetadata').attr('data-keyspace-tables', `${data.tables}`)
+
+            $('#rightClickActionsMetadata').attr('data-keyspace-udts', `${data.udts}`)
+
+            try {
+              for (let container of Object.keys(tableFieldsUpdateTreeContainers)) {
+                try {
+                  tableFieldsUpdateTreeContainers[container].jstree('destroy')
+                } catch (e) {}
+              }
+            } catch (e) {}
+
+            try {
+              for (let container of Object.keys(tableFieldsUpdateLWTTreeContainers)) {
+                try {
+                  tableFieldsUpdateLWTTreeContainers[container].jstree('destroy')
+                } catch (e) {}
+              }
+            } catch (e) {}
+
+            let keys = [],
+              columns = [],
+              udts = [],
+              keyspaceUDTs = []
+
+            try {
+              let tableObj = JSON.parse(JSONRepair(data.tables)).find((table) => table.name == data.tableName)
+
+              try {
+                keys = tableObj.primary_key.map((key) => {
+                  let isPartition = tableObj.partition_key.find((partitionKey) => partitionKey.name == key.name) != undefined
+
+                  return {
+                    name: key.name,
+                    type: key.cql_type,
+                    isPartition
+                  }
+                })
+              } catch (e) {}
+
+              try {
+                columns = tableObj.columns.filter((column) => tableObj.primary_key.find((key) => key.name == column.name) == undefined)
+                  .map((column) => {
+                    return {
+                      name: column.name,
+                      type: column.cql_type
+                    }
+                  })
+              } catch (e) {}
+
+              try {
+                try {
+                  keyspaceUDTs = JSON.parse(JSONRepair(data.udts))
+                } catch (e) {}
+
+                for (let column of columns) {
+                  let udtStructure = {},
+                    manipulatedColumnType = column.type
+
+                  manipulatedColumnType = removeFrozenKeyword(`${manipulatedColumnType}`)
+
+                  try {
+                    manipulatedColumnType = `${manipulatedColumnType}`.match(/<(.*?)>$/)[1];
+                  } catch (e) {}
+
+                  let udtObject = keyspaceUDTs.find((udt) => udt.name == manipulatedColumnType)
+
+                  if (udtObject == undefined || ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))
+                    continue
+
+                  udtStructure = {
+                    ...udtObject,
+                    ...column
+                  }
+
+                  udts.push(udtStructure)
+                }
+
+                columns = columns.filter((column) => udts.find((udt) => udt.name == column.name) == undefined)
+              } catch (e) {}
+            } catch (e) {}
+
+            let groupStructure = buildTableFieldsTreeview(keys, columns, udts, keyspaceUDTs, enableBlobPreview),
+              handleHiddenNodes = (treeData) => {
+                let index = 0
+
+                while (index < treeData.length) {
+                  const node = treeData[index]
+
+                  try {
+                    if (Array.isArray(node)) {
+                      processArray(node)
+
+                      index++
+
+                      continue
+                    }
+
+                    if (node.a_attr['add-hidden-node'] !== undefined) {
+                      treeData.splice(index + 1, 0, {
+                        id: node.a_attr['add-hidden-node'],
+                        parent: node.parent,
+                        state: {
+                          opened: true,
+                          selected: false
+                        },
+                        text: ``
+                      })
+
+                      index++
+                    }
+                  } catch (e) {}
+
+                  index++
+
+                }
+                return treeData;
+              },
+              handleNodeCreationDeletion = () => {
+                let allUpdateRelatedInputs = $('#rightClickActionsMetadata').find('div[action="update-row"]').find('input').get()
+
+                for (let inputDOM of allUpdateRelatedInputs) {
+                  let input = $(inputDOM),
+                    [
+                      inputCassandraType,
+                      inputHTMLType,
+                      inputID
+                    ] = getAttributes(input, ['data-field-type', 'type', 'id']),
+                    inputSavedValue = effectedUpdateNodes[inputID] || ''
+
+                  if (inputSavedValue == undefined || inputSavedValue.length <= 0)
+                    continue
+
+                  try {
+                    if (inputHTMLType != 'checkbox')
+                      throw 0
+
+                    if (input.attr('data-set-indeterminate') == 'true') {
+                      input.attr('data-set-indeterminate', null)
+
+                      input.prop('indeterminate', true)
+
+                      input.trigger('change')
+
+                      throw 0
+                    }
+
+                    input.prop('checked', !(inputSavedValue != 'true'))
+
+                    input.prop('indeterminate', inputSavedValue == 'indeterminate')
+
+                    input.trigger('change')
+
+                    continue
+                  } catch (e) {}
+
+                  try {
+                    if (inputCassandraType != 'blob')
+                      throw 0
+
+                    input.val(inputSavedValue.inputValue).trigger('input')
+
+                    input.data('value', inputSavedValue.dataValue)
+
+                    continue
+                  } catch (e) {}
+
+                  // Not `blob` or `boolean`
+                  try {
+                    input.val(inputSavedValue).trigger('input')
+                  } catch (e) {}
+                }
+
+                setTimeout(() => {
+                  try {
+                    updateActionStatusForUpdateRow()
+                  } catch (e) {}
+                })
+              }
+
+            try {
+              for (let treeViewType of Object.keys(groupStructure))
+                groupStructure[treeViewType].core.data = handleHiddenNodes(groupStructure[treeViewType].core.data)
+            } catch (e) {}
+
+            // Primary Key tree (WHERE clause)
+            {
+              let primaryKeyTreeElements = tableFieldsUpdateTreeContainers.primaryKey.add('div#updatePrimaryKeyBadge')
+
+              try {
+                if (keys.length <= 0)
+                  throw 0
+
+                primaryKeyTreeElements.show()
+
+                try {
+                  groupStructure.primaryKey.core.data = groupStructure.primaryKey.core.data.filter((field) => field != undefined)
+                } catch (e) {}
+
+                let primaryKeyTreeObject = tableFieldsUpdateTreeContainers.primaryKey.jstree(groupStructure.primaryKey)
+
+                try {
+                  primaryKeyTreeObject.unbind('loaded.jstree')
+                } catch (e) {}
+
+                try {
+                  primaryKeyTreeObject.on('loaded.jstree', () => setTimeout(() => primaryKeyTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${primaryKeyTreeObject.find('a.jstree-anchor').length - index}`))))
+                } catch (e) {}
+              } catch (e) {
+                primaryKeyTreeElements.hide()
+              }
+            }
+
+            // Regular columns tree (SET clause)
+            {
+              let columnsRegularTreeElements = tableFieldsUpdateTreeContainers.columnsRegular.add('div#updateRegularColumnsBadge')
+
+              try {
+                if (!(columns.some((column) => ['map', 'set', 'list'].every((type) => !(`${column.type}`.includes(`${type}<`))))))
+                  throw 0
+
+                columnsRegularTreeElements.show()
+
+                try {
+                  groupStructure.regularColumns.core.data = groupStructure.regularColumns.core.data.filter((field) => field != undefined)
+                } catch (e) {}
+
+                let regularColumnsTreeObject = tableFieldsUpdateTreeContainers.columnsRegular.jstree(groupStructure.regularColumns)
+
+                try {
+                  regularColumnsTreeObject.unbind('loaded.jstree')
+                } catch (e) {}
+
+                try {
+                  regularColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => regularColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${regularColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                } catch (e) {}
+              } catch (e) {
+                columnsRegularTreeElements.hide()
+              }
+            }
+
+            // Collection columns tree (SET clause)
+            {
+              let columnsCollectionTreeElements = tableFieldsUpdateTreeContainers.columnsCollection.add('div#updateCollectionColumnsBadge')
+
+              try {
+                if (!(columns.some((column) => ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))))
+                  throw 0
+
+                columnsCollectionTreeElements.show()
+
+                try {
+                  groupStructure.collectionColumns.core.data = groupStructure.collectionColumns.core.data.filter((field) => field != undefined)
+                } catch (e) {}
+
+                let collectionColumnsTreeObject = tableFieldsUpdateTreeContainers.columnsCollection.jstree(groupStructure.collectionColumns)
+
+                try {
+                  collectionColumnsTreeObject.unbind('loaded.jstree')
+                } catch (e) {}
+
+                try {
+                  collectionColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => collectionColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${collectionColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                } catch (e) {}
+              } catch (e) {
+                columnsCollectionTreeElements.hide()
+              }
+            }
+
+            // UDT columns tree (SET clause)
+            {
+              let columnsUDTTreeElements = tableFieldsUpdateTreeContainers.columnsUDT.add('div#updateUDTColumnsBadge')
+              try {
+                if (udts.length <= 0)
+                  throw 0
+
+                columnsUDTTreeElements.show()
+
+                try {
+                  groupStructure.udtColumns.core.data = groupStructure.udtColumns.core.data.filter((field) => field != undefined)
+                } catch (e) {}
+
+                let udtColumnsTreeObject = tableFieldsUpdateTreeContainers.columnsUDT.jstree(groupStructure.udtColumns)
+
+                try {
+                  udtColumnsTreeObject.unbind('loaded.jstree')
+                } catch (e) {}
+
+                try {
+                  udtColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => udtColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${udtColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                } catch (e) {}
+              } catch (e) {
+                columnsUDTTreeElements.hide()
+              }
+            }
+
+            // LWT trees (IF column = value conditions)
+            {
+              let lwtGroupStructure = buildTableFieldsTreeview([], columns, udts, keyspaceUDTs, enableBlobPreview)
+
+              try {
+                for (let treeViewType of Object.keys(lwtGroupStructure))
+                  lwtGroupStructure[treeViewType].core.data = handleHiddenNodes(lwtGroupStructure[treeViewType].core.data)
+              } catch (e) {}
+
+              {
+                let lwtRegularTreeElements = tableFieldsUpdateLWTTreeContainers.columnsRegular.add('div#updateLWTRegularColumnsBadge')
+
+                try {
+                  if (!(columns.some((column) => ['map', 'set', 'list'].every((type) => !(`${column.type}`.includes(`${type}<`))))))
+                    throw 0
+
+                  lwtRegularTreeElements.show()
+
+                  try {
+                    lwtGroupStructure.regularColumns.core.data = lwtGroupStructure.regularColumns.core.data.filter((field) => field != undefined)
+                  } catch (e) {}
+
+                  let lwtRegularTreeObject = tableFieldsUpdateLWTTreeContainers.columnsRegular.jstree(lwtGroupStructure.regularColumns)
+
+                  try {
+                    lwtRegularTreeObject.unbind('loaded.jstree')
+                  } catch (e) {}
+
+                  try {
+                    lwtRegularTreeObject.on('loaded.jstree', () => setTimeout(() => lwtRegularTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${lwtRegularTreeObject.find('a.jstree-anchor').length - index}`))))
+                  } catch (e) {}
+                } catch (e) {
+                  lwtRegularTreeElements.hide()
+                }
+              }
+
+              {
+                let lwtCollectionTreeElements = tableFieldsUpdateLWTTreeContainers.columnsCollection.add('div#updateLWTCollectionColumnsBadge')
+
+                try {
+                  if (!(columns.some((column) => ['map', 'set', 'list'].some((type) => `${column.type}`.includes(`${type}<`)))))
+                    throw 0
+
+                  lwtCollectionTreeElements.show()
+
+                  try {
+                    lwtGroupStructure.collectionColumns.core.data = lwtGroupStructure.collectionColumns.core.data.filter((field) => field != undefined)
+                  } catch (e) {}
+
+                  let lwtCollectionTreeObject = tableFieldsUpdateLWTTreeContainers.columnsCollection.jstree(lwtGroupStructure.collectionColumns)
+
+                  try {
+                    lwtCollectionTreeObject.unbind('loaded.jstree')
+                  } catch (e) {}
+
+                  try {
+                    lwtCollectionTreeObject.on('loaded.jstree', () => setTimeout(() => lwtCollectionTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${lwtCollectionTreeObject.find('a.jstree-anchor').length - index}`))))
+                  } catch (e) {}
+                } catch (e) {
+                  lwtCollectionTreeElements.hide()
+                }
+              }
+
+              {
+                let lwtUDTTreeElements = tableFieldsUpdateLWTTreeContainers.columnsUDT.add('div#updateLWTUDTColumnsBadge')
+
+                try {
+                  if (udts.length <= 0)
+                    throw 0
+
+                  lwtUDTTreeElements.show()
+
+                  try {
+                    lwtGroupStructure.udtColumns.core.data = lwtGroupStructure.udtColumns.core.data.filter((field) => field != undefined)
+                  } catch (e) {}
+
+                  let lwtUDTTreeObject = tableFieldsUpdateLWTTreeContainers.columnsUDT.jstree(lwtGroupStructure.udtColumns)
+
+                  try {
+                    lwtUDTTreeObject.unbind('loaded.jstree')
+                  } catch (e) {}
+
+                  try {
+                    lwtUDTTreeObject.on('loaded.jstree', () => setTimeout(() => lwtUDTTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${lwtUDTTreeObject.find('a.jstree-anchor').length - index}`))))
+                  } catch (e) {}
+                } catch (e) {
+                  lwtUDTTreeElements.hide()
+                }
+              }
+            }
+
+            // Set up event handlers for all standard tree containers
+            let allUpdateTreeContainers = {
+              ...tableFieldsUpdateTreeContainers,
+              ...Object.fromEntries(Object.entries(tableFieldsUpdateLWTTreeContainers).map(([k, v]) => [`lwt_${k}`, v]))
+            }
+
+            setTimeout(() => {
+              for (let container of Object.keys(allUpdateTreeContainers)) {
+                let tableFieldsTreeContainer = allUpdateTreeContainers[container]
+
+                try {
+                  tableFieldsTreeContainer.unbind('loaded.jstree')
+                  tableFieldsTreeContainer.unbind('select_node.jstree')
+                  tableFieldsTreeContainer.unbind('create_node.jstree')
+                  tableFieldsTreeContainer.unbind('delete_node.jstree')
+                  tableFieldsTreeContainer.unbind('hide_node.jstree')
+                } catch (e) {}
+
+                tableFieldsTreeContainer.on('loaded.jstree', () => {
+                  tableFieldsTreeContainer.find('input').each(function() {
+                    setTimeout(() => {
+                      try {
+                        let mdbObject = getElementMDBObject($(this))
+
+                        mdbObject.update()
+                      } catch (e) {}
+                    }, 100)
+                  })
+
+                  setTimeout(() => {
+                    try {
+                      updateActionStatusForUpdateRow()
+                    } catch (e) {}
+                  })
+
+                  tableFieldsTreeContainer.find('a.jstree-anchor[add-hidden-node]').each(function() {
+                    let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${$(this).attr('add-hidden-node')}"]`)
+
+                    hiddenNode.css('margin-top', '-45px')
+
+                    hiddenNode.children('a').css('pointer-events', 'none')
+                  })
+
+                  setTimeout(() => {
+                    {
+                      let allActionsMenuToggleBtns = tableFieldsTreeContainer.find('button.dropdown-toggle').get()
+
+                      for (let toggleBtn of allActionsMenuToggleBtns) {
+                        let actionsDropDownObject = getElementMDBObject($(toggleBtn), 'Dropdown'),
+                          actionsDropDownElement = $(actionsDropDownObject._menu)
+
+                        try {
+                          $(toggleBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(toggleBtn).click(() => {
+                          for (let subToggleBtn of allActionsMenuToggleBtns) {
+                            if ($(subToggleBtn).is($(toggleBtn)))
+                              continue
+
+                            let subActionsDropDownObject = getElementMDBObject($(subToggleBtn), 'Dropdown'),
+                              subActionsDropDownElement = $(subActionsDropDownObject._menu)
+
+                            try {
+                              subActionsDropDownElement.hide()
+                              subActionsDropDownObject.hide()
+                            } catch (e) {}
+                          }
+
+                          setTimeout(() => {
+                            actionsDropDownElement.toggle()
+                            actionsDropDownObject.toggle()
+                          })
+
+                          setTimeout(() => {
+                            actionsDropDownElement.oneClickOutside({
+                              callback: function() {
+                                try {
+                                  actionsDropDownElement.hide()
+                                  actionsDropDownObject.hide()
+                                } catch (e) {}
+                              },
+                              exceptions: toggleBtn
+                            })
+                          })
+
+                          setTimeout(() => {
+                            try {
+                              updateActionStatusForUpdateRow()
+                            } catch (e) {}
+                          })
+                        })
+                      }
+                    }
+
+                    {
+                      let allAddItemActionBtns = tableFieldsTreeContainer.find('button[action="add-item"]').get()
+
+                      for (let addItemActionBtn of allAddItemActionBtns) {
+                        try {
+                          $(addItemActionBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(addItemActionBtn).click(function() {
+                          let relatedNode = $(this).parent().parent().parent(),
+                            [
+                              id,
+                              type,
+                              fieldType,
+                              mandatory,
+                              hiddenNodeID
+                            ] = getAttributes(relatedNode, ['id', 'type', 'field-type', 'mandatory', 'add-hidden-node']),
+                            isTypeMap = `${type}`.includes('map<'),
+                            relatedTreeObject = relatedNode.closest('div.table-fields-tree').jstree(),
+                            relatedHiddenNode = relatedTreeObject.element.find(`li[id="hiddenNodeID"]`)
+
+                          try {
+                            type = removeFrozenKeyword(`${type}`)
+                          } catch (e) {}
+
+                          try {
+                            type = `${type}`.match(/<(.*?)>$/)[1]
+                          } catch (e) {}
+
+                          try {
+                            if (!isTypeMap)
+                              throw 0
+
+                            type = `${type}`.replace(/\s+/, '').split(',')
+
+                            type = type.map((subType) => {
+                              try {
+                                subType = removeFrozenKeyword(`${subType}`)
+                              } catch (e) {}
+
+                              subType = subType.replace(/(.*?)</gi, '').replace(/>(.*?)/gi, '')
+
+                              return subType
+                            })
+
+                          } catch (e) {}
+
+                          try {
+                            if (typeof type != 'object')
+                              throw 0
+
+                            let itemMainNodeID = getRandom.id(30),
+                              itemMainNodeStrucutre = {
+                                id: itemMainNodeID,
+                                parent: hiddenNodeID,
+                                state: {
+                                  opened: true,
+                                  selected: false
+                                },
+                                a_attr: {
+                                  'is-map-item': true
+                                },
+                                text: `
+                                <div class="input-group">
+                                  <div class="input-group-text for-insertion for-name ignored-applied">
+                                    <span class="name">
+                                      <span mulang="name" capitalize></span>
+                                      <ion-icon name="right-arrow-filled"></ion-icon>
+                                    </span>
+                                    <span class="name-value">Item #${getRandom.id(3)}</span>
+                                  </div>
+                                  <div class="input-group-text for-insertion for-actions ignored-applied">
+                                    <span class="actions">
+                                      <span mulang="actions" capitalize></span>
+                                      <ion-icon name="right-arrow-filled"></ion-icon>
+                                    </span>
+                                    <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
+                                      <ion-icon name="trash-outline"></ion-icon>
+                                      <span mulang="delete item"></span>
+                                    </button>
+                                  </div>
+                                </div>`
+                              }
+
+                            let mapKeyUDTObject = keyspaceUDTs.find((udt) => udt.name == type[0]),
+                              mapKeyObject = {
+                                isUDT: mapKeyUDTObject != undefined,
+                                name: ``,
+                                type: type[0],
+                                fieldType: 'collection-map-key',
+                                isMandatory: false,
+                                noEmptyValue: true
+                              },
+                              mapKeyStructure = buildTableFieldsTreeview([], [], [], keyspaceUDTs, enableBlobPreview, mapKeyObject.isUDT ? {
+                                ...mapKeyUDTObject,
+                                ...mapKeyObject
+                              } : mapKeyObject)
+
+                            let mapValueUDTObject = keyspaceUDTs.find((udt) => udt.name == type[1]),
+                              mapValueObject = {
+                                isUDT: mapValueUDTObject != undefined,
+                                name: ``,
+                                type: type[1],
+                                fieldType: 'collection-map-value',
+                                isMandatory: false,
+                                noEmptyValue: true
+                              },
+                              mapValueStructure = buildTableFieldsTreeview([], [], [], keyspaceUDTs, enableBlobPreview, mapValueObject.isUDT ? {
+                                ...mapValueUDTObject,
+                                ...mapValueObject
+                              } : mapValueObject)
+
+                            try {
+                              mapKeyStructure.parent = itemMainNodeID
+                            } catch (e) {}
+
+                            try {
+                              mapValueStructure.parent = itemMainNodeID
+                            } catch (e) {}
+
+                            let allNewNodes = []
+
+                            try {
+                              if (Array.isArray(itemMainNodeStrucutre)) {
+                                allNewNodes = allNewNodes.concat(itemMainNodeStrucutre)
+                              } else {
+                                allNewNodes.push(itemMainNodeStrucutre)
+                              }
+                            } catch (e) {}
+
+                            try {
+                              if (Array.isArray(mapKeyStructure)) {
+                                allNewNodes = allNewNodes.concat(mapKeyStructure)
+                              } else {
+                                allNewNodes.push(mapKeyStructure)
+                              }
+                            } catch (e) {}
+
+                            try {
+                              if (Array.isArray(mapValueStructure)) {
+                                allNewNodes = allNewNodes.concat(mapValueStructure)
+                              } else {
+                                allNewNodes.push(mapValueStructure)
+                              }
+                            } catch (e) {}
+
+                            try {
+                              allNewNodes = flattenArray(allNewNodes)
+                            } catch (e) {}
+
+                            try {
+                              allNewNodes = handleHiddenNodes(allNewNodes)
+                            } catch (e) {}
+
+                            for (let i = 0; i < allNewNodes.length; i++) {
+                              let node = allNewNodes[i]
+
+                              try {
+                                if (node.parent != '#')
+                                  throw 0
+
+                                allNewNodes[i].parent = itemMainNodeID
+                              } catch (e) {}
+
+                              try {
+                                let nodeText = Cheerio.load(allNewNodes[i].text)
+
+                                try {
+                                  nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')
+                                } catch (e) {}
+
+                                allNewNodes[i].text = nodeText('body').html()
+                              } catch (e) {}
+
+                              try {
+                                relatedTreeObject.create_node(allNewNodes[i].parent, allNewNodes[i])
+                              } catch (e) {}
+
+                              try {
+                                handleNodeCreationDeletion()
+                              } catch (e) {}
+                            }
+
+                            return
+                          } catch (e) {}
+
+                          let nodeUDTType = keyspaceUDTs.find((udt) => udt.name == type),
+                            nodeTypeObject = {
+                              isUDT: nodeUDTType != undefined,
+                              name: ``,
+                              type: type,
+                              fieldType: 'collection-type',
+                              isMandatory: false,
+                              noEmptyValue: true
+                            },
+                            nodeTypeStructure = buildTableFieldsTreeview([], [], [], keyspaceUDTs, enableBlobPreview, nodeTypeObject.isUDT ? {
+                              ...nodeUDTType,
+                              ...nodeTypeObject
+                            } : nodeTypeObject)
+
+                          try {
+                            nodeTypeStructure = Array.isArray(nodeTypeStructure) ? flattenArray(nodeTypeStructure) : [nodeTypeStructure]
+                          } catch (e) {}
+
+                          try {
+                            nodeTypeStructure = handleHiddenNodes(nodeTypeStructure)
+                          } catch (e) {}
+
+                          for (let i = 0; i < nodeTypeStructure.length; i++) {
+                            try {
+                              if (nodeTypeStructure[i].parent != '#')
+                                throw 0
+
+                              let nodeText = Cheerio.load(nodeTypeStructure[i].text),
+                                deleteItemBtn = `
+                              <button type="button" class="btn btn-light btn-rounded btn-sm" data-mdb-ripple-color="dark" action="delete-item">
+                                <ion-icon name="trash-outline"></ion-icon>
+                                <span mulang="delete item"></span>
+                              </button>`
+
+                              try {
+                                nodeText('body').find('div.input-group-text.for-not-ignoring').attr('hidden', '')
+                              } catch (e) {}
+
+                              let actionsGroup = nodeText('div.input-group-text.for-actions')
+
+                              if (actionsGroup.length != 0) {
+                                actionsGroup.find('button').before(deleteItemBtn)
+                              } else {
+                                let actionsGroupContainer = `
+                                  <div class="input-group-text for-insertion for-actions ignored-applied">
+                                    <span class="actions">
+                                      <span mulang="actions" capitalize></span>
+                                      <ion-icon name="right-arrow-filled"></ion-icon>
+                                    </span>
+                                    ${deleteItemBtn}
+                                  </div>`
+
+                                nodeText('div.input-group').append(actionsGroupContainer)
+                              }
+
+                              nodeTypeStructure[i].text = nodeText('body').html()
+
+                              nodeTypeStructure[i].parent = hiddenNodeID
+                            } catch (e) {}
+
+                            try {
+                              relatedTreeObject.create_node(nodeTypeStructure[i].parent, {
+                                ...nodeTypeStructure[i]
+                              })
+                            } catch (e) {}
+
+                            try {
+                              handleNodeCreationDeletion()
+                            } catch (e) {}
+                          }
+
+                          try {
+                            updateActionStatusForUpdateRow()
+                          } catch (e) {}
+                        })
+                      }
+
+                      let allDeleteItemActionBtns = tableFieldsTreeContainer.find('button[action="delete-item"]').get()
+
+                      for (let deleteItemActionBtn of allDeleteItemActionBtns) {
+                        try {
+                          $(deleteItemActionBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(deleteItemActionBtn).click(function() {
+                          let relatedNode = $(this).parent().parent().parent(),
+                            relatedTreeObject = relatedNode.closest('div.table-fields-tree').jstree()
+
+                          try {
+                            let deletedNode = relatedTreeObject.get_node(relatedNode)
+
+                            relatedTreeObject.delete_node(deletedNode)
+
+                            try {
+                              handleNodeCreationDeletion()
+                            } catch (e) {}
+                          } catch (e) {}
+                        })
+                      }
+                    }
+
+                    {
+                      let AllIgnoreCheckboxes = tableFieldsTreeContainer.find('div.not-ignore-checkbox').get()
+
+                      for (let ignoreCheckbox of AllIgnoreCheckboxes) {
+                        try {
+                          $(ignoreCheckbox).unbind('click')
+                        } catch (e) {}
+
+                        $(ignoreCheckbox).click(function() {
+                          let relatedNode = $(this).closest('a.jstree-anchor'),
+                            relatedTreeObject = relatedNode.closest('div.table-fields-tree').jstree(),
+                            relatedNodeObject = relatedTreeObject.get_node(relatedNode)
+
+                          $(this).attr('data-status', `${$(this).attr('data-status') == 'true' ? 'false' : 'true'}`)
+
+                          let checkBoxStatus = $(this).attr('data-status')
+
+                          relatedNode.toggleClass('ignored', checkBoxStatus != 'true')
+
+                          let allChildrenNodes = relatedNodeObject.children_d
+
+                          try {
+                            if (relatedNode.attr('add-hidden-node') == undefined)
+                              throw 0
+
+                            let hiddenNodeObject = relatedTreeObject.get_node(`${relatedNode.attr('add-hidden-node')}`)
+
+                            allChildrenNodes = allChildrenNodes.concat(hiddenNodeObject.children_d)
+                          } catch (e) {}
+
+                          for (let childrenNodeID of allChildrenNodes) {
+                            let childrenNode = $(`a[id="${childrenNodeID}_anchor"]`)
+
+                            childrenNode.toggleClass('ignored', checkBoxStatus != 'true')
+                          }
+
+                          setTimeout(() => {
+                            try {
+                              updateActionStatusForUpdateRow()
+                            } catch (e) {}
+                          })
+                        })
+                      }
+                    }
+
+                    {
+                      let allClearFieldBtns = tableFieldsTreeContainer.find('div.clear-field div.btn').get()
+
+                      for (let clearFieldBtn of allClearFieldBtns) {
+                        try {
+                          $(clearFieldBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(clearFieldBtn).click(function() {
+                          let relatedNode = $(this).closest('a.jstree-anchor'),
+                            rlatedInutField = relatedNode.find('input'),
+                            inputObject = getElementMDBObject(rlatedInutField)
+
+                          try {
+                            rlatedInutField.val('').trigger('input')
+                          } catch (e) {}
+
+                          try {
+                            inputObject.update()
+                            setTimeout(() => inputObject._deactivate())
+                          } catch (e) {}
+
+                          setTimeout(() => {
+                            try {
+                              updateActionStatusForUpdateRow()
+                            } catch (e) {}
+                          })
+                        })
+                      }
+                    }
+
+                    {
+                      let allNULLApplyBtns = tableFieldsTreeContainer.find('button[action="apply-null"]').get()
+
+                      for (let applyBtn of allNULLApplyBtns) {
+                        try {
+                          $(applyBtn).unbind('click')
+                        } catch (e) {}
+
+                        $(applyBtn).click(function() {
+                          let isNULLApplied = $(this).hasClass('applied')
+
+                          $(this).closest('a.jstree-anchor').find('.null-related').toggleClass('null-applied', !isNULLApplied)
+                          $(this).toggleClass('applied', !isNULLApplied)
+
+                          setTimeout(() => {
+                            try {
+                              updateActionStatusForUpdateRow()
+                            } catch (e) {}
+                          })
+                        })
+                      }
+                    }
+                  })
+
+                  setTimeout(() => {
+                    try {
+                      tableFieldsTreeContainer.find('input').unbind('input')
+                      tableFieldsTreeContainer.find('input').unbind('change')
+                    } catch (e) {}
+
+                    tableFieldsTreeContainer.find('input').on('input change', function() {
+                      let [
+                        inputCassandraType,
+                        inputHTMLType,
+                        inputID
+                      ] = getAttributes($(this), ['data-field-type', 'type', 'id']),
+                        relatedNode = $(this).closest('a.jstree-anchor'),
+                        isMandatory = relatedNode.attr('mandatory') == 'true',
+                        isEmptyValueNotAllowed = relatedNode.attr('no-empty-value') == 'true'
+
+                      try {
+                        if (!((isMandatory || isEmptyValueNotAllowed) && $(this).val().length <= 0))
+                          throw 0
+
+                        relatedNode.find('div.clear-field').addClass('hide')
+
+                        $(this).addClass('is-invalid')
+
+                        setTimeout(() => {
+                          try {
+                            updateActionStatusForUpdateRow()
+                          } catch (e) {}
+                        })
+
+                        return
+                      } catch (e) {}
+
+                      $(this).removeClass('is-invalid')
+
+                      try {
+                        if (inputHTMLType != 'checkbox')
+                          throw 0
+
+                        if ($(this).attr('data-set-indeterminate') == 'true') {
+                          $(this).attr('data-set-indeterminate', null)
+
+                          $(this).prop('indeterminate', true)
+                        }
+
+                        $(`label[for="${$(this).attr('id')}"]`).text($(this).prop('indeterminate') ? 'not set' : ($(this).prop('checked') ? 'true' : 'false'))
+
+                        effectedUpdateNodes[inputID] = $(this).prop('indeterminate') ? 'indeterminate' : `${$(this).prop('checked')}`
+                      } catch (e) {}
+
+                      if (inputHTMLType != 'checkbox')
+                        effectedUpdateNodes[inputID] = $(this).val()
+
+                      // `inet` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'inet')
+                          throw 0
+
+                        let ipValue = $(this).val(),
+                          isValidIP = isIP(`${ipValue}`) != 0
+
+                        if (minifyText(ipValue).length <= 0)
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidIP)
+                      } catch (e) {}
+
+                      // `uuid` and `timeuuid` Cassandra types - `text` input type
+                      try {
+                        if (!(['uuid', 'timeuuid'].some((type) => inputCassandraType == type)))
+                          throw 0
+
+                        let uuidValue = $(this).val(),
+                          isValidUUID = isUUID(`${uuidValue}`),
+                          uuidFunction = inputCassandraType == 'uuid' ? 'uuid' : 'now'
+
+                        if (minifyText(uuidValue).length <= 0 || uuidValue == `${uuidFunction}()`)
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidUUID)
+                      } catch (e) {}
+
+                      // `timestamp` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'timestamp')
+                          throw 0
+
+                        let timestampValue = $(this).val()
+
+                        try {
+                          timestampValue = !isNaN(timestampValue) ? parseInt(timestampValue) : timestampValue
+                        } catch (e) {}
+
+                        let isValidTimestamp = !isNaN((new Date(timestampValue).getTime()))
+
+                        if (minifyText($(this).val()).length <= 0 || $(this).val() == 'current_timestamp()')
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidTimestamp)
+                      } catch (e) {}
+
+                      // `date` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'date')
+                          throw 0
+
+                        let dateValue = $(this).val(),
+                          isValidDate = (`${dateValue}`.match(/^\d{4}-\d{2}-\d{2}$/) != null || !isNaN(dateValue)) && !(isNaN(new Date(parseInt(dateValue)).getTime()))
+
+                        if (minifyText($(this).val()).length <= 0 || $(this).val() == 'current_date()')
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidDate)
+                      } catch (e) {}
+
+                      // `time` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'time')
+                          throw 0
+
+                        let timeValue = $(this).val(),
+                          isValidTime = (`${timeValue}`.match(/^\d{2}:\d{2}:\d{2}(\.\d+)*$/) != null || !isNaN(timeValue)) && !(isNaN(new Date(parseInt(timeValue)).getTime()))
+
+                        if (minifyText($(this).val()).length <= 0 || $(this).val() == 'current_time()')
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidTime)
+                      } catch (e) {}
+
+                      // `duration` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'duration')
+                          throw 0
+
+                        let durationValue = $(this).val(),
+                          isValidDuration = `${durationValue}`.match(/^P(?!$)(\d+Y)?(\d+M)?(\d+D)?(T(?!$)(\d+H)?(\d+M)?(\d*\.?\d*S)?)?$/) != null
+
+                        if (minifyText($(this).val()).length <= 0)
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidDuration)
+                      } catch (e) {}
+
+                      // `blob` Cassandra type - `text` input type
+                      try {
+                        if (inputCassandraType != 'blob')
+                          throw 0
+
+                        let blobValue = $(this).val(),
+                          isValidBlob = `${blobValue}`.match(/^(?:0x)[0-9a-fA-F]+(\.\.\.)?$/) != null
+
+                        if (minifyText($(this).val()).length <= 0)
+                          throw $(this).removeClass('is-invalid')
+
+                        $(this).toggleClass('is-invalid', !isValidBlob)
+
+                        effectedUpdateNodes[inputID] = {
+                          inputValue: $(this).val(),
+                          dataValue: $(this).data('value')
+                        }
+                      } catch (e) {}
+
+                      try {
+                        relatedNode.find('div.clear-field').toggleClass('hide', $(this).val().length <= 0)
+                      } catch (e) {}
+
+                      setTimeout(() => {
+                        try {
+                          updateActionStatusForUpdateRow()
+                        } catch (e) {}
+                      })
+                    })
+
+                    let tippyInstances = []
+
+                    tableFieldsTreeContainer.find('a.dropdown-item').on('click', function() {
+                      let btnAction = $(this).attr('action')
+
+                      switch (btnAction) {
+                        case 'function': {
+                          let functionContent = $(this).attr('data-function'),
+                            inputField = $(this).parent().parent().parent().parent().find('input'),
+                            inputObject = getElementMDBObject(inputField)
+
+                          inputField.val(`${functionContent}`).trigger('input')
+
+                          try {
+                            inputObject.update()
+                          } catch (e) {}
+
+                          break
+                        }
+                        case 'datetimepicker': {
+                          let viewMode = $(this).attr('data-view-mode'),
+                            inputField = $(this).parent().parent().parent().parent().find('input'),
+                            inputObject = getElementMDBObject(inputField)
+
+                          try {
+                            let tippyReference = $(this).parent().parent().parent().find('button'),
+                              tippyInstance = tippyInstances.find((instance) => $(instance.reference).is(tippyReference))
+
+                            if (tippyInstance != undefined) {
+                              try {
+                                tippyInstance.enable()
+                                tippyInstance.show()
+                              } catch (e) {}
+
+                              throw 0
+                            }
+
+                            let pickerContainerID = getRandom.id(30),
+                              isDataCleared = false
+
+                            tippyInstance = tippy(tippyReference[0], {
+                              content: `<div id="_${pickerContainerID}"></div>`,
+                              appendTo: () => document.body,
+                              allowHTML: true,
+                              arrow: false,
+                              interactive: true,
+                              placement: 'right-start',
+                              trigger: 'click',
+                              theme: 'material',
+                              showOnCreate: true,
+                              onShow(instance) {
+                                let popper = $(instance.popper),
+                                  reference = $(instance.reference),
+                                  inputField = reference.parent().parent().find('input'),
+                                  inputObject = getElementMDBObject(inputField)
+
+                                if (popper.find('div.row, form').length != 0)
+                                  return
+
+                                setTimeout(() => {
+                                  try {
+                                    if (viewMode != 'HMS-D')
+                                      throw 0
+
+                                    let [
+                                      yearsInputID,
+                                      monthsInputID,
+                                      daysInputID,
+                                      hoursInputID,
+                                      minutesInputID,
+                                      secondsInputID,
+                                      clearBtnID,
+                                      confirmBtnID
+                                    ] = getRandom.id(10, 8).map((id) => `_${id}_du`),
+                                      durationForm = `
+                                      <div class="row for-duration">
+                                        <div class="input-group">
+                                        <div class="input-group-text" style="height: 29px; font-size: 100%;">
+                                            <span mulang="period" capitalize></span>
+                                          </div>
+                                          <div class="form-outline form-white">
+                                            <input type="number" step="1" min="0" class="form-control form-control-sm" id="${yearsInputID}" data-part-suffix="Y">
+                                            <label class="form-label">
+                                              <span mulang="years" capitalize></span>
+                                            </label>
+                                          </div>
+                                          <div class="form-outline form-white">
+                                            <input type="number" step="1" min="0" class="form-control form-control-sm" id="${monthsInputID}" data-part-suffix="M">
+                                            <label class="form-label">
+                                              <span mulang="months" capitalize></span>
+                                            </label>
+                                          </div>
+                                          <div class="form-outline form-white">
+                                            <input type="number" step="1" min="0" class="form-control form-control-sm" id="${daysInputID}" data-part-suffix="D">
+                                            <label class="form-label">
+                                              <span mulang="days" capitalize></span>
+                                            </label>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="row for-duration">
+                                        <div class="input-group">
+                                          <div class="input-group-text" style="height: 29px; font-size: 100%;">
+                                            <span mulang="time" capitalize></span>
+                                          </div>
+                                          <div class="form-outline form-white">
+                                            <input type="number" step="1" min="0" class="form-control form-control-sm" id="${hoursInputID}" data-part-suffix="H">
+                                            <label class="form-label">
+                                              <span mulang="hours" capitalize></span>
+                                            </label>
+                                          </div>
+                                          <div class="form-outline form-white">
+                                            <input type="number" step="1" min="0" class="form-control form-control-sm" id="${minutesInputID}" data-part-suffix="M">
+                                            <label class="form-label">
+                                              <span mulang="minutes" capitalize></span>
+                                            </label>
+                                          </div>
+                                          <div class="form-outline form-white">
+                                            <input type="number" step="1" min="0" class="form-control form-control-sm" id="${secondsInputID}" data-part-suffix="S">
+                                            <label class="form-label">
+                                              <span mulang="seconds" capitalize></span>
+                                            </label>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="row for-duration">
+                                        <div class="col-md-4">
+                                          <button type="button" class="btn btn-secondary btn-sm" id="${clearBtnID}">
+                                            <span mulang="clear"></span>
+                                          </button>
+                                        </div>
+                                        <div class="col-md-8">
+                                          <button type="button" class="btn btn-primary changed-bg changed-color btn-sm" id="${confirmBtnID}">
+                                            <span mulang="confirm"></span>
+                                          </button>
+                                        </div>
+                                      </div>`
+
+                                    $(`div#_${pickerContainerID}`).append($(durationForm).show(function() {
+                                      let durationFormElement = $(this)
+
+                                      setTimeout(() => durationFormElement.find('input').each(function() {
+                                        setTimeout(() => getElementMDBObject($(this)))
+                                      }))
+
+                                      setTimeout(() => durationFormElement.find('button').each(function() {
+                                        getElementMDBObject($(this), 'Button')
+                                      }))
+
+                                      setTimeout(() => Modules.Localization.applyLanguageSpecific(durationFormElement.find('span[mulang], [data-mulang]')))
+
+                                      setTimeout(() => {
+                                        $(`button#${clearBtnID}`).add(`button#${confirmBtnID}`).unbind('click')
+
+                                        $(`button#${clearBtnID}`).click(function() {
+                                          for (let durationInputField of $(this).parent().parent().parent().find('input').get()) {
+                                            $(durationInputField).val(``).trigger('input')
+
+                                            try {
+                                              let durationInputObject = getElementMDBObject($(durationInputObject))
+
+                                              durationInputObject.update()
+                                              setTimeout(() => durationInputObject._deactivate())
+                                            } catch (e) {}
+                                          }
+
+                                          inputField.val(``).trigger('input')
+
+                                          try {
+                                            inputObject.update()
+                                            setTimeout(() => inputObject._deactivate())
+                                          } catch (e) {}
+
+                                          setTimeout(() => {
+                                            try {
+                                              updateActionStatusForUpdateRow()
+                                            } catch (e) {}
+                                          })
+                                        })
+
+                                        $(`button#${confirmBtnID}`).click(function() {
+                                          try {
+                                            let duration = `P`
+
+                                            try {
+                                              let periodInputFields = [yearsInputID, monthsInputID, daysInputID]
+
+                                              for (let periodInputFieldID of periodInputFields) {
+                                                let inputElement = $(`input#${periodInputFieldID}`),
+                                                  inputSuffix = inputElement.attr('data-part-suffix'),
+                                                  inputValue = parseInt(inputElement.val()) >= 1 ? `${inputElement.val()}${inputSuffix}` : ''
+
+                                                duration += inputValue
+                                              }
+                                            } catch (e) {}
+
+                                            try {
+                                              let timeInputFields = [hoursInputID, minutesInputID, secondsInputID],
+                                                tempTxt = ''
+
+                                              for (let timeInputFieldID of timeInputFields) {
+                                                let inputElement = $(`input#${timeInputFieldID}`),
+                                                  inputSuffix = inputElement.attr('data-part-suffix'),
+                                                  inputValue = parseInt(inputElement.val()) >= 1 ? `${inputElement.val()}${inputSuffix}` : ''
+
+                                                tempTxt += inputValue
+                                              }
+
+                                              if (tempTxt.length <= 0)
+                                                throw 0
+
+                                              duration += `T${tempTxt}`
+                                            } catch (e) {}
+
+                                            duration = duration == 'P' ? '' : duration
+
+                                            inputField.val(duration).trigger('input')
+
+                                            try {
+                                              inputObject.update()
+                                            } catch (e) {}
+
+                                          } catch (e) {} finally {
+                                            try {
+                                              instance.disable()
+                                              instance.hide()
+                                            } catch (e) {}
+                                          }
+
+                                          setTimeout(() => {
+                                            try {
+                                              updateActionStatusForUpdateRow()
+                                            } catch (e) {}
+                                          })
+                                        })
+                                      })
+                                    }))
+
+                                    return
+                                  } catch (e) {}
+
+                                  setTimeout(() => $(instance.popper).find('div.tippy-content').addClass('no-padding'))
+
+                                  setTimeout(() => $(`div#_${pickerContainerID}`).datetimepicker({
+                                    date: new Date(),
+                                    viewMode,
+                                    onClear: () => {
+                                      inputField.val('').trigger('input')
+
+                                      isDataCleared = true
+
+                                      try {
+                                        inputObject.update()
+                                        setTimeout(() => inputObject._deactivate())
+                                      } catch (e) {}
+
+                                      setTimeout(() => {
+                                        try {
+                                          updateActionStatusForUpdateRow()
+                                        } catch (e) {}
+                                      })
+                                    },
+                                    onDateChange: function() {
+                                      isDataCleared = this.getValue() == null
+                                    },
+                                    onOk: function() {
+                                      try {
+                                        if (isDataCleared)
+                                          throw 0
+
+                                        let dateTimeValue = this.getText(viewMode == 'YMDHMS' ? 'YYYY-MM-DD HH:mm:ss.i' : (viewMode == 'YMD' ? 'YYYY-MM-DD' : 'HH:mm:ss.i'))
+
+                                        try {
+                                          if (viewMode != 'YMDHMS')
+                                            throw 0
+
+                                          dateTimeValue = new Date(this.getValue()).getTime()
+                                        } catch (e) {}
+
+                                        inputField.val(`${dateTimeValue}`).trigger('input')
+
+                                        try {
+                                          inputObject.update()
+                                        } catch (e) {}
+
+                                      } catch (e) {} finally {
+                                        try {
+                                          instance.disable()
+                                          instance.hide()
+                                        } catch (e) {}
+                                      }
+
+                                      setTimeout(() => {
+                                        try {
+                                          updateActionStatusForUpdateRow()
+                                        } catch (e) {}
+                                      })
+                                    }
+                                  }))
+                                })
+                              }
+                            })
+
+                            tippyInstances.push(tippyInstance)
+                          } catch (e) {}
+
+                          break
+                        }
+                      }
+                    })
+
+                    setTimeout(() => {
+                      tableFieldsTreeContainer.find('input:not([type="radio"])').trigger('input')
+                      tableFieldsTreeContainer.find('input:not([type="radio"])').trigger('change')
+
+                      tableFieldsTreeContainer.find('button.expand-range.expanded').trigger('click')
+                    })
+                  })
+
+                  setTimeout(() => Modules.Localization.applyLanguageSpecific(tableFieldsTreeContainer.find('span[mulang], [data-mulang]')))
+
+                  setTimeout(() => {
+                    for (let inputField of tableFieldsTreeContainer.find('input').get()) {
+                      setTimeout(() => {
+                        try {
+                          let mdbObject = getElementMDBObject($(inputField))
+
+                          setTimeout(() => {
+                            try {
+                              mdbObject.update()
+                            } catch (e) {}
+                          })
+                        } catch (e) {}
+                      })
+                    }
+                  })
+                })
+
+                let triggerLoadEventTimeOut = null,
+                  triggerLoadEvent = () => {
+                    try {
+                      clearTimeout(triggerLoadEventTimeOut)
+                    } catch (e) {}
+
+                    setTimeout(() => {
+                      try {
+                        updateActionStatusForUpdateRow()
+                      } catch (e) {}
+                    })
+
+                    triggerLoadEventTimeOut = setTimeout(() => tableFieldsTreeContainer.trigger('loaded.jstree'))
+                  }
+
+                tableFieldsTreeContainer.on('create_node.jstree', function(e, data) {
+                  let parentNodeID = '_'
+
+                  try {
+                    parentNodeID = data.node.parents.at(-2)
+                  } catch (e) {}
+
+                  try {
+                    let relatedToHiddenNode = tableFieldsTreeContainer.find(`a.jstree-anchor[add-hidden-node="${parentNodeID}"]`)
+
+                    if (relatedToHiddenNode.length <= 0)
+                      throw 0
+
+                    let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${parentNodeID}"]`)
+
+                    hiddenNode.children('a.jstree-anchor').attr({
+                      'is-hidden-node': 'true',
+                      'related-node-id': relatedToHiddenNode.attr('static-id')
+                    })
+
+                    hiddenNode.css('margin-top', '-45px')
+
+                    hiddenNode.children('a').css('pointer-events', 'none')
+                  } catch (e) {}
+
+                  triggerLoadEvent()
+                })
+
+                tableFieldsTreeContainer.on('delete_node.jstree', function(e, data) {
+                  try {
+                    data.instance.hide_node(data.node.id)
+                  } catch (e) {}
+                })
+
+                tableFieldsTreeContainer.on('hide_node.jstree', function(e, data) {
+                  let parentNodeID = '_'
+
+                  try {
+                    parentNodeID = data.node.parents.at(-2)
+                  } catch (e) {}
+
+                  setTimeout(() => {
+                    try {
+                      let relatedToHiddenNode = tableFieldsTreeContainer.find(`a.jstree-anchor[add-hidden-node="${parentNodeID}"]`)
+
+                      if (relatedToHiddenNode.length <= 0)
+                        throw 0
+
+                      let hiddenNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${parentNodeID}"]`)
+
+                      hiddenNode.children('a.jstree-anchor').attr({
+                        'is-hidden-node': 'true',
+                        'related-node-id': relatedToHiddenNode.attr('static-id')
+                      })
+
+                      hiddenNode.css('margin-top', '-45px')
+
+                      hiddenNode.children('a').css('pointer-events', 'none')
+                    } catch (e) {}
+
+                    setTimeout(() => {
+                      try {
+                        updateActionStatusForUpdateRow()
+                      } catch (e) {}
+
+                      triggerLoadEvent()
+                    })
+                  })
+                })
+
+                tableFieldsTreeContainer.on('select_node.jstree', function(e, data) {
+                  let clickedNode = tableFieldsTreeContainer.find(`li.jstree-node[id="${data.node.id}"]`)
+
+                  try {
+                    let clickedTarget = $(data.event.target)
+
+                    if (!clickedTarget.hasClass('focus-area'))
+                      throw 0
+
+                    let relatedInput = clickedTarget.parent().children('input')
+
+                    setTimeout(() => {
+                      try {
+                        if (relatedInput.attr('type') != 'checkbox')
+                          throw 0
+
+                        if (relatedInput.prop('indeterminate')) {
+                          relatedInput.prop('indeterminate', false)
+                          relatedInput.prop('checked', true)
+                          relatedInput.trigger('change')
+                        } else {
+                          if (!(relatedInput.prop('checked'))) {
+                            relatedInput.prop('indeterminate', true)
+                            relatedInput.trigger('change')
+                          } else {
+                            relatedInput.trigger('click').trigger('input')
+                          }
+                        }
+
+                        return
+                      } catch (e) {}
+
+                      relatedInput.trigger('focus').trigger('input')
+                    })
+                  } catch (e) {}
+
+                  setTimeout(() => {
+                    try {
+                      data.instance.deselect_all()
+                    } catch (e) {}
+                  }, 100)
+                })
+              }
+            })
+
+            $('div.modal#rightClickActionsMetadata div[action]').hide()
+            $('div.modal#rightClickActionsMetadata div[action="update-row"]').show()
+
+            $('#rightClickActionsMetadata').addClass('insertion-action').removeClass('show-editor')
+
+            rightClickActionsMetadataModal.show()
+          })
+        })
+      }
+
+      {
         let tableFieldsSelectTreeContainers = {
           primaryKey: $('div#tableFieldsPrimaryKeyTreeSelectAction'),
           columnsRegular: $('div#tableFieldsRegularColumnsTreeSelectAction'),

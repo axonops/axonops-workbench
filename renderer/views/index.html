@@ -3181,6 +3181,235 @@
               </div>
             </div>
 
+            <div action="update-row" style="margin-top: -20px;">
+              <div class="types-of-transactions">
+                <div class="sections">
+                  <div class="section">
+                    <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="standard">
+                      <span mulang="standard" capitalize></span>
+                    </div>
+                  </div>
+                  <div class="section">
+                    <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="lwt">
+                      <span mulang="lightweight transaction" capitalize></span> (LWT)
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="lwt-hint-update">
+                <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span mulang="lightweight transactions" capitalize></span> (LWTs) <span
+                  mulang="provide strong consistency but can impact performance and scalability. Use them only when required" capitalize-first></span>.
+              </div>
+
+              <div class="fields-badge-action" style="padding: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="consistency level" capitalize></span>
+                </span>
+              </div>
+              <div class="row flex consistency-level-row">
+                <div class="col-md-12" update-consistency="write">
+                  <div class="form-outline form-white" style="z-index: 2; width: calc(100% - 35px);">
+                    <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                    <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="updateWriteConsistencyLevel" value="" readonly noopacity>
+                    <label class="form-label">
+                      <span mulang="write consistency level" capitalize></span>
+                    </label>
+                    <div class="valid-feedback"></div>
+                    <div class="invalid-feedback"></div>
+                  </div>
+                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true" data-title
+                    data-mulang="consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.[br][br]However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:[br][code]R + W > RF[/code][br](Read replicas + Write replicas > Replication Factor)[br][br]Example: With [code]RF=3[/code], using [code]QUORUM (2)[/code] for both reads and writes ensures strong consistency [code](2+2>3)[/code] while maintaining availability and tolerance to failure"
+                    capitalize-first data-tippy-delay="[100, 0]">
+                    <ion-icon name="info-circle-outline" style="transform: translateX(0px);"></ion-icon>
+                  </div>
+                  <div class="dropdown" for-select="updateWriteConsistencyLevel">
+                    <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                    <ul class="dropdown-menu top-margin" style="width: calc(100% - 35px) !important;">
+                      <li><a class="dropdown-item" href="#" value="ANY">ANY</a></li>
+                      <li><a class="dropdown-item" href="#" value="LOCAL_ONE">LOCAL_ONE</a></li>
+                      <li><a class="dropdown-item" href="#" value="ONE">ONE</a></li>
+                      <li><a class="dropdown-item" href="#" value="TWO">TWO</a></li>
+                      <li><a class="dropdown-item" href="#" value="THREE">THREE</a></li>
+                      <li><a class="dropdown-item" href="#" value="QUORUM">QUORUM</a></li>
+                      <li><a class="dropdown-item" href="#" value="LOCAL_QUORUM">LOCAL_QUORUM</a></li>
+                      <li><a class="dropdown-item" href="#" value="EACH_QUORUM">EACH_QUORUM</a></li>
+                      <li><a class="dropdown-item" href="#" value="ALL">ALL</a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="col-md-6" update-consistency="serial" style="display: none;">
+                  <div class="form-outline form-white" style="z-index: 2; width: calc(100% - 35px);">
+                    <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                    <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="updateSerialConsistencyLevel" value="" readonly noopacity>
+                    <label class="form-label">
+                      <span mulang="serial consistency level" capitalize></span>
+                    </label>
+                    <div class="valid-feedback"></div>
+                    <div class="invalid-feedback"></div>
+                  </div>
+                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true" data-title
+                    data-mulang="[p]This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL[/p][ul][li][strong]SERIAL[/strong]: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.[/li][li][strong]LOCAL_SERIAL[/strong]: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments[/li][/ul][p]Recommended Consistency Level Combinations for LWTs[/p][table class='_lwt_table'][thead][tr][th]Deployment Scenario[/th][th]Write Consistency Level[/th][th]Serial Consistency Level[/th][/tr][/thead][tbody][tr][td][strong]Multi-DC Strong Consistency[/strong][/td][td][code]EACH_QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][tr][td][strong]Multi-DC High Performance[/strong][/td][td][code]LOCAL_QUORUM[/code][/td][td][code]LOCAL_SERIAL[/code][/td][/tr][tr][td][strong]Single-DC Clusters[/strong][/td][td][code]QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][/tbody][/table]"
+                    capitalize-first data-tippy-delay="[100, 0]" data-tippy-maxWidth="590">
+                    <ion-icon name="info-circle-outline" style="transform: translateX(0px);"></ion-icon>
+                  </div>
+                  <div class="dropdown" for-select="updateSerialConsistencyLevel">
+                    <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                    <ul class="dropdown-menu top-margin" style="width: calc(100% - 35px) !important;">
+                      <li><a class="dropdown-item" href="#" value="SERIAL">SERIAL</a></li>
+                      <li><a class="dropdown-item" href="#" value="LOCAL_SERIAL">LOCAL_SERIAL</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="consistency-level-warning-update">
+                <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span></span>.
+              </div>
+
+              <div section="standard">
+                <div class="fields-badge-action" id="updatePrimaryKeyBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="primary key" capitalize></span> (WHERE)
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeyTreeUpdateAction"></div>
+
+                <div class="fields-badge-action" id="updateRegularColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="regular columns" capitalize></span> (SET)
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsRegularColumnsTreeUpdateAction"></div>
+
+                <div class="fields-badge-action" id="updateCollectionColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="collection types columns" capitalize></span> (SET)
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsCollectionColumnsTreeUpdateAction"></div>
+
+                <div class="fields-badge-action" id="updateUDTColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="UDT columns" capitalize></span> (SET)
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsUDTColumnsTreeUpdateAction"></div>
+
+                <div class="fields-badge-action" id="updateExtraOptionsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="extra options" capitalize></span>
+                  </span>
+                </div>
+
+                <div class="row flex data-ttl-row">
+                  <div class="col-md-6">
+                    <div class="form-outline form-white">
+                      <div class="clear-field hide">
+                        <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                          <ion-icon name="close"></ion-icon>
+                        </div>
+                      </div>
+                      <input type="number" class="form-control" id="updateTtl">
+                      <label for="updateTtl" class="form-label">
+                        <span mulang="Data Time-To-Live" capitalize></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="updateTtlValueType" id="updateTtlMS" value="ms" checked>
+                      <label class="form-check-label" for="updateTtlMS">ms</label>
+                    </div>
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="updateTtlValueType" id="updateTtlS" value="s">
+                      <label class="form-check-label" for="updateTtlS">s</label>
+                    </div>
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="updateTtlValueType" id="updateTtlM" value="m">
+                      <label class="form-check-label" for="updateTtlM">m</label>
+                    </div>
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="updateTtlValueType" id="updateTtlH" value="h">
+                      <label class="form-check-label" for="updateTtlH">h</label>
+                    </div>
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="updateTtlValueType" id="updateTtlD" value="d">
+                      <label class="form-check-label" for="updateTtlD">d</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row flex data-insertion-timestamp-row" style="align-items: flex-start;">
+                  <div class="col-md-6">
+                    <div class="form-outline form-white">
+                      <div class="clear-field hide">
+                        <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                          <ion-icon name="close"></ion-icon>
+                        </div>
+                      </div>
+                      <input type="number" class="form-control" id="updateTimestamp">
+                      <label for="updateTimestamp" class="form-label">
+                        <span mulang="data insertion timestamp" capitalize></span>
+                      </label>
+                      <div class="invalid-feedback" style="white-space: nowrap;">
+                        <span mulang="please choose between using a Lightweight Transaction (LWT) or setting a timestamp" capitalize-first></span>. <span mulang="you cannot use both" capitalize-first></span>.
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <button type="button" class="btn btn-light btn-rounded btn-sm ripple-surface-dark" style="margin-left: 10px;
+      opacity: 0.8; transform: translateY(4px);" id="updateTimestampPicker">
+                      <ion-icon name="calendar" role="img" class="md hydrated" aria-label="calendar"></ion-icon> <span mulang="date time picker" capitalize></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div section="lwt" style="display: none;">
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="Options" capitalize></span>
+                  </span>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
+                  <input class="form-check-input" type="radio" name="lwtUpdateOptions" value id="updateNoSelectOption" checked>
+                  <label class="form-check-label" for="updateNoSelectOption">
+                    <span mulang="no selection" capitalize-first></span>.
+                  </label>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
+                  <input class="form-check-input" type="radio" name="lwtUpdateOptions" value id="updateIfExistsOption">
+                  <label class="form-check-label" for="updateIfExistsOption">
+                    <span mulang="include [code]IF EXISTS[/code] keyword" capitalize-first></span>.
+                  </label>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px;">
+                  <input class="form-check-input" type="radio" name="lwtUpdateOptions" value id="updateIfColumnOption">
+                  <label class="form-check-label" for="updateIfColumnOption">
+                    <span mulang="use [code]IF column =[/code]" capitalize-first></span>.
+                  </label>
+                </div>
+
+                <div class="fields-badge-action" id="updateLWTRegularColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="regular columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsRegularColumnsTreeUpdateLWT"></div>
+                <div class="fields-badge-action" id="updateLWTCollectionColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="collection types columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsCollectionColumnsTreeUpdateLWT"></div>
+                <div class="fields-badge-action" id="updateLWTUDTColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="UDT columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsUDTColumnsTreeUpdateLWT"></div>
+              </div>
+            </div>
+
             <div class="action-editor" style="z-index:50000">
               <div class="editor"></div>
             </div>

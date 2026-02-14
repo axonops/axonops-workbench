@@ -2114,7 +2114,8 @@ div.input-group-text.for-not-ignoring {
 
 div[action="insert-row"],
 div[action="delete-row-column"],
-div[action="select-row"] {
+div[action="select-row"],
+div[action="update-row"] {
   margin: -30px -16px -16px;
   padding: 5px 0;
 
@@ -2427,7 +2428,8 @@ div[data-is-main-input="true"] {
 }
 
 div[action="delete-row-column"],
-div[action="select-row"] {
+div[action="select-row"],
+div[action="update-row"] {
   div.table-fields-tree {
     position: relative;
 
@@ -2708,11 +2710,13 @@ div.axonops-integration-status-hint,
 div.consistency-level-enhanced-console-info,
 div.consistency-level-warning-delete,
 div.consistency-level-warning-insert,
+div.consistency-level-warning-update,
 div.delete-columns-hint,
 div.general-hint,
 div.in-operator-error,
 div.lwt-hint,
 div.lwt-hint-insert,
+div.lwt-hint-update,
 div.non-pk-columns-warning {
   background: rgba(123, 181, 255, 0.1);
   font-size: 85%;
@@ -2750,6 +2754,7 @@ div.non-pk-columns-warning {
   &.axonops-integration-status-hint,
   &.consistency-level-warning-delete,
   &.consistency-level-warning-insert,
+  &.consistency-level-warning-update,
   &.non-pk-columns-warning {
     background: rgba(255, 234, 123, 0.1);
   }
@@ -2833,23 +2838,39 @@ a.jstree-anchor {
 }
 
 div#tableFieldsRegularColumnsTreeDeleteAction,
-div#tableFieldsRegularColumnsTreeSelectAction {
+div#tableFieldsRegularColumnsTreeSelectAction,
+div#tableFieldsRegularColumnsTreeUpdateAction {
   z-index: 8;
 }
 
 div#tableFieldsCollectionColumnsTreeDeleteAction,
-div#tableFieldsCollectionColumnsTreeSelectAction {
+div#tableFieldsCollectionColumnsTreeSelectAction,
+div#tableFieldsCollectionColumnsTreeUpdateAction {
   z-index: 7;
 }
 
 div#tableFieldsUDTColumnsTreeDeleteAction,
-div#tableFieldsUDTColumnsTreeSelectAction {
+div#tableFieldsUDTColumnsTreeSelectAction,
+div#tableFieldsUDTColumnsTreeUpdateAction {
   z-index: 6;
 }
 
 div#tableFieldsPrimaryKeyTreeDeleteAction,
-div#tableFieldsPrimaryKeyTreeSelectAction {
+div#tableFieldsPrimaryKeyTreeSelectAction,
+div#tableFieldsPrimaryKeyTreeUpdateAction {
   z-index: 5;
+}
+
+div#tableFieldsRegularColumnsTreeUpdateLWT {
+  z-index: 8;
+}
+
+div#tableFieldsCollectionColumnsTreeUpdateLWT {
+  z-index: 7;
+}
+
+div#tableFieldsUDTColumnsTreeUpdateLWT {
+  z-index: 6;
 }
 
 a[data-operator-id].disabled {

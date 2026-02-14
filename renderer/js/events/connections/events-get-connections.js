@@ -2537,6 +2537,22 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                      visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                    })
 
+                                   commands.dml.push({
+                                     label: I18next.capitalize(I18next.t('update row')),
+                                     action: 'updateRow',
+                                     click: `() => views.main.webContents.send('update-row', {
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
+                                     visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                   })
+
                                    commands.ddl = commands.ddl.concat([{
                                        label: I18next.capitalize(I18next.t('drop table')),
                                        action: 'dropTable',

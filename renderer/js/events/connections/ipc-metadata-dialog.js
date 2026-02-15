@@ -429,6 +429,13 @@
 
             updateActionStatusForInsertRow()
           } catch (e) {}
+
+          try {
+            if (currentActiveAction != 'create-index')
+              throw 0
+
+            updateActionStatusForCreateIndex()
+          } catch (e) {}
         })
 
         $('input[type="checkbox"]#keyspaceDurableWrites').on('change', function() {
@@ -436,6 +443,84 @@
             updateActionStatusForKeyspaces()
           } catch (e) {}
         })
+
+        // Create Index event handlers
+        {
+          // Column dropdown selection
+          $('ul#createIndexColumnList').on('click', 'a.dropdown-item', function() {
+            let columnName = $(this).attr('value'),
+              columnType = $(this).attr('data-type') || ''
+
+            $('input#createIndexColumn').val(columnName).attr('data-column-type', columnType)
+
+            // Toggle collection modifier visibility based on column type
+            let modifierSection = $('div.create-index-collection-modifier'),
+              isMap = /^map\s*</.test(columnType) || /^frozen\s*<\s*map\s*</.test(columnType),
+              isSetOrList = /^(set|list)\s*</.test(columnType) || /^frozen\s*<\s*(set|list)\s*</.test(columnType),
+              isFrozen = /^frozen\s*</.test(columnType)
+
+            if (isMap || isSetOrList) {
+              modifierSection.show()
+
+              // Show/hide specific modifiers based on collection type
+              $('input#createIndexModifierKeys').parent().toggle(isMap && !isFrozen)
+              $('input#createIndexModifierEntries').parent().toggle(isMap && !isFrozen)
+              $('input#createIndexModifierValues').parent().toggle(!isFrozen)
+              $('input#createIndexModifierFull').parent().toggle(isFrozen)
+
+              // Reset to None
+              $('input#createIndexModifierNone').prop('checked', true)
+            } else {
+              modifierSection.hide()
+              $('input#createIndexModifierNone').prop('checked', true)
+            }
+
+            setTimeout(() => {
+              try { updateActionStatusForCreateIndex() } catch (e) {}
+            })
+          })
+
+          // Form input handlers - all trigger statement regeneration
+          $('input#createIndexName').on('input', function() {
+            setTimeout(() => {
+              try { updateActionStatusForCreateIndex() } catch (e) {}
+            })
+          })
+
+          $('input#createIndexIfNotExists').on('change', function() {
+            setTimeout(() => {
+              try { updateActionStatusForCreateIndex() } catch (e) {}
+            })
+          })
+
+          $('input#createIndexUsing').on('input', function() {
+            setTimeout(() => {
+              try { updateActionStatusForCreateIndex() } catch (e) {}
+            })
+          })
+
+          $('input[name="createIndexCollectionModifier"]').on('change', function() {
+            setTimeout(() => {
+              try { updateActionStatusForCreateIndex() } catch (e) {}
+            })
+          })
+
+          // WITH OPTIONS checkbox + select handlers
+          $('input#createIndexOptionCaseSensitive, input#createIndexOptionNormalize, input#createIndexOptionAscii').on('change', function() {
+            let selectId = $(this).attr('id') + 'Value'
+            $(`select#${selectId}`).prop('disabled', !$(this).prop('checked'))
+
+            setTimeout(() => {
+              try { updateActionStatusForCreateIndex() } catch (e) {}
+            })
+          })
+
+          $('select#createIndexOptionCaseSensitiveValue, select#createIndexOptionNormalizeValue, select#createIndexOptionAsciiValue').on('change', function() {
+            setTimeout(() => {
+              try { updateActionStatusForCreateIndex() } catch (e) {}
+            })
+          })
+        }
 
         $('button#executeActionStatement').click(function() {
           let currentActiveAction = $('div.modal#rightClickActionsMetadata div[action]').filter(':visible').attr('action')
@@ -473,6 +558,13 @@
               throw 0
 
             updateActionStatusForStandardTables()
+          } catch (e) {}
+
+          try {
+            if (currentActiveAction != 'create-index')
+              throw 0
+
+            updateActionStatusForCreateIndex()
           } catch (e) {}
 
           try {
@@ -4083,6 +4175,78 @@
               } catch (e) {}
             })
           }
+        }
+
+        let updateActionStatusForCreateIndex
+
+        updateActionStatusForCreateIndex = () => {
+          try {
+            clearTimeout(mainFunctionTimeOut)
+          } catch (e) {}
+
+          mainFunctionTimeOut = setTimeout(() => {
+            let columnName = $('input#createIndexColumn').val(),
+              columnType = $('input#createIndexColumn').attr('data-column-type') || '',
+              indexName = $('input#createIndexName').val().trim(),
+              ifNotExists = $('input#createIndexIfNotExists').prop('checked'),
+              usingClass = $('input#createIndexUsing').val().trim(),
+              collectionModifier = $('input[name="createIndexCollectionModifier"]:checked').val(),
+              keyspaceName = addDoubleQuotes($('#rightClickActionsMetadata').attr('data-keyspacename')),
+              tableName = addDoubleQuotes($('#rightClickActionsMetadata').attr('data-tablename'))
+
+            // Column is mandatory
+            let isInvalid = !columnName || columnName.length <= 0
+
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => {
+              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+            }, 50)
+
+            if (isInvalid)
+              return
+
+            // Build the column expression
+            let quotedColumn = addDoubleQuotes(columnName)
+            let columnExpr = collectionModifier ? `${collectionModifier}(${quotedColumn})` : quotedColumn
+
+            // Build statement
+            let statement = `CREATE INDEX`
+
+            if (ifNotExists)
+              statement += ` IF NOT EXISTS`
+
+            if (indexName.length > 0)
+              statement += ` ${addDoubleQuotes(indexName)}`
+
+            statement += `${OS.EOL}ON ${keyspaceName}.${tableName} (${columnExpr})`
+
+            if (usingClass.length > 0)
+              statement += `${OS.EOL}USING '${usingClass}'`
+
+            // Build WITH OPTIONS
+            let options = []
+
+            if ($('#createIndexOptionCaseSensitive').prop('checked'))
+              options.push(`'case_sensitive': '${$('#createIndexOptionCaseSensitiveValue').val()}'`)
+
+            if ($('#createIndexOptionNormalize').prop('checked'))
+              options.push(`'normalize': '${$('#createIndexOptionNormalizeValue').val()}'`)
+
+            if ($('#createIndexOptionAscii').prop('checked'))
+              options.push(`'ascii': '${$('#createIndexOptionAsciiValue').val()}'`)
+
+            if (options.length > 0)
+              statement += `${OS.EOL}WITH OPTIONS = { ${options.join(', ')} }`
+
+            statement += ';'
+
+            try {
+              actionEditor.setValue(statement)
+            } catch (e) {}
+          })
         }
 
         let updateActionStatusForStandardTables

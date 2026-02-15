@@ -1552,6 +1552,7 @@ div.modal#rightClickActionsMetadata {
   div.input-group {
     div.input-group-text {
       &.counter-table-name-keyspace,
+      &.create-index-keyspace-table,
       &.standard-table-name-keyspace,
       &.table-name-keyspace,
       &.udt-name-keyspace {
@@ -1563,7 +1564,8 @@ div.modal#rightClickActionsMetadata {
           content: '.';
         }
 
-        div.keyspace-name {
+        div.keyspace-name,
+        div.keyspace-table-name {
           max-width: 200px;
           overflow: hidden;
           white-space: nowrap;

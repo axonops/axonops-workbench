@@ -1104,6 +1104,68 @@ let updateActionStatusForInsertRow,
         })
       })
 
+      IPCRenderer.on('create-index', (_, data) => {
+        let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+        $('button#executeActionStatement').attr({
+          'data-tab-id': `${data.tabID}`,
+          'data-textarea-id': `${data.textareaID}`,
+          'data-btn-id': `${data.btnID}`
+        })
+
+        $('#rightClickActionsMetadata').attr({
+          'data-state': null,
+          'data-keyspacename': `${data.keyspaceName}`,
+          'data-tablename': `${data.tableName}`
+        })
+
+        $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'create index').text(I18next.capitalize(I18next.t('create index')))
+
+        // Parse table metadata to get columns
+        let tableObj = null,
+          allColumns = []
+
+        try {
+          tableObj = JSON.parse(JSONRepair(data.tables)).find((table) => table.name == data.tableName)
+        } catch (e) {}
+
+        try {
+          let partitionKeys = (tableObj.partition_key || []).map((key) => ({ name: key.name, type: key.cql_type, kind: 'partition_key' })),
+            clusteringKeys = (tableObj.clustering_key || []).map((key) => ({ name: key.name, type: key.cql_type, kind: 'clustering' })),
+            primaryKeyNames = (tableObj.primary_key || []).map((key) => key.name),
+            regularColumns = (tableObj.columns || []).filter((col) => !primaryKeyNames.includes(col.name) && col.cql_type != 'counter').map((col) => ({ name: col.name, type: col.cql_type, kind: col.is_static ? 'static' : 'regular' }))
+
+          allColumns = [...partitionKeys, ...clusteringKeys, ...regularColumns]
+        } catch (e) {}
+
+        // Populate column dropdown
+        let columnList = $('ul#createIndexColumnList')
+        columnList.empty()
+
+        for (let col of allColumns) {
+          columnList.append(`<li><a class="dropdown-item" href="#" value="${col.name}" data-type="${col.type}" data-kind="${col.kind}">${col.name} <span style="opacity: 0.5;">(${col.type})</span></a></li>`)
+        }
+
+        // Reset form state
+        $('input#createIndexName').val('')
+        $('input#createIndexColumn').val('').removeAttr('data-column-type')
+        $('input#createIndexIfNotExists').prop('checked', true)
+        $('input#createIndexUsing').val('sai')
+        $('input[name="createIndexCollectionModifier"]#createIndexModifierNone').prop('checked', true)
+        $('div.create-index-collection-modifier').hide()
+        $('input#createIndexOptionCaseSensitive, input#createIndexOptionNormalize, input#createIndexOptionAscii').prop('checked', false)
+        $('select#createIndexOptionCaseSensitiveValue, select#createIndexOptionNormalizeValue, select#createIndexOptionAsciiValue').prop('disabled', true)
+
+        // Set keyspace.table display
+        $('div.create-index-keyspace-table div.keyspace-table-name').text(`${data.keyspaceName}.${data.tableName}`)
+
+        $('div.modal#rightClickActionsMetadata div[action]').hide()
+        $('div.modal#rightClickActionsMetadata div[action="create-index"]').show()
+        $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
+
+        rightClickActionsMetadataModal.show()
+      })
+
       let tableFieldsTreeContainers = {
         primaryKey: $('div#tableFieldsPrimaryKeysTree'),
         columnsRegular: $('div#tableFieldsRegularColumnsTree'),

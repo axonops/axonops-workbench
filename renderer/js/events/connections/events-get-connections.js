@@ -2521,6 +2521,20 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                      visible: nodeType == 'table'
                                    })
 
+                                   commands.ddl.push({
+                                     label: I18next.capitalize(I18next.t('create index')),
+                                     action: 'createIndex',
+                                     click: `() => views.main.webContents.send('create-index', {
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
+                                     visible: nodeType == 'table'
+                                   })
+
                                    commands.dml.push({
                                      label: I18next.capitalize(I18next.t('delete row/colum')),
                                      action: 'insertRow',

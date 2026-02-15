@@ -462,6 +462,10 @@
             if (isMap || isSetOrList) {
               modifierSection.show()
 
+              $('#chooseIndexColumn').css('margin-bottom', '35px')
+
+              $('div.dropdown[for-select="createIndexColumn"]').css('bottom', '55px')
+
               // Show/hide specific modifiers based on collection type
               $('input#createIndexModifierKeys').parent().toggle(isMap && !isFrozen)
               $('input#createIndexModifierEntries').parent().toggle(isMap && !isFrozen)
@@ -472,6 +476,11 @@
               $('input#createIndexModifierNone').prop('checked', true)
             } else {
               modifierSection.hide()
+
+              $('#chooseIndexColumn').css('margin-bottom', '5px')
+
+              $('div.dropdown[for-select="createIndexColumn"]').css('bottom', '30px')
+
               $('input#createIndexModifierNone').prop('checked', true)
             }
 
@@ -505,17 +514,8 @@
             })
           })
 
-          // WITH OPTIONS checkbox + select handlers
+          // WITH OPTIONS switch handlers
           $('input#createIndexOptionCaseSensitive, input#createIndexOptionNormalize, input#createIndexOptionAscii').on('change', function() {
-            let selectId = $(this).attr('id') + 'Value'
-            $(`select#${selectId}`).prop('disabled', !$(this).prop('checked'))
-
-            setTimeout(() => {
-              try { updateActionStatusForCreateIndex() } catch (e) {}
-            })
-          })
-
-          $('select#createIndexOptionCaseSensitiveValue, select#createIndexOptionNormalizeValue, select#createIndexOptionAsciiValue').on('change', function() {
             setTimeout(() => {
               try { updateActionStatusForCreateIndex() } catch (e) {}
             })
@@ -4229,14 +4229,14 @@
             // Build WITH OPTIONS
             let options = []
 
-            if ($('#createIndexOptionCaseSensitive').prop('checked'))
-              options.push(`'case_sensitive': '${$('#createIndexOptionCaseSensitiveValue').val()}'`)
+            if (!$('#createIndexOptionCaseSensitive').prop('checked'))
+              options.push(`'case_sensitive': 'false'`)
 
             if ($('#createIndexOptionNormalize').prop('checked'))
-              options.push(`'normalize': '${$('#createIndexOptionNormalizeValue').val()}'`)
+              options.push(`'normalize': 'true'`)
 
             if ($('#createIndexOptionAscii').prop('checked'))
-              options.push(`'ascii': '${$('#createIndexOptionAsciiValue').val()}'`)
+              options.push(`'ascii': 'true'`)
 
             if (options.length > 0)
               statement += `${OS.EOL}WITH OPTIONS = { ${options.join(', ')} }`

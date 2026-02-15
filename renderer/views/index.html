@@ -2548,7 +2548,7 @@
             <div action="create-index" style="margin-top: -20px;">
               <div class="action-elements">
                 <div class="input-group" style="margin-bottom: 30px;">
-                  <div class="input-group-text create-index-keyspace-table">
+                  <div class="input-group-text create-index-keyspace-table standard-table-name-keyspace">
                     <div class="keyspace-table-name"></div>
                   </div>
                   <div class="form-outline form-white">
@@ -2561,9 +2561,9 @@
                     </label>
                   </div>
                 </div>
-                <div class="form-outline form-white" style="margin-bottom: 50px; z-index: 2;">
+                <div id="chooseIndexColumn" class="form-outline form-white" style="margin-bottom: 5px; z-index: 2;">
                   <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
-                  <input type="text" class="form-control form-icon-trailing form-control-lg" style="cursor: pointer;" id="createIndexColumn" value="" readonly noopacity>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" style="background-color: inherit; cursor: pointer;" id="createIndexColumn" value="" readonly noopacity>
                   <label class="form-label">
                     <span mulang="column" capitalize></span>
                     <span class="badge badge-dark-1 rounded-pill badge-mandatory">
@@ -2614,34 +2614,22 @@
                     <span mulang="index class" capitalize></span> (USING)
                   </label>
                 </div>
-                <div class="create-index-options-section">
+                <div class="create-index-options-section" style="position: relative; z-index: 0;">
                   <span class="badge badge-secondary" style="opacity: 0.85;">
-                    <span>WITH OPTIONS</span>
+                    <span><span mulang="extra options" capitalize></span></span>
                   </span>
                   <div style="margin-top: 10px;">
-                    <div class="form-check" style="margin-bottom: 8px; display: flex; align-items: center;">
-                      <input class="form-check-input" type="checkbox" id="createIndexOptionCaseSensitive">
-                      <label class="form-check-label" for="createIndexOptionCaseSensitive" style="margin-right: 10px;">case_sensitive</label>
-                      <select class="form-select form-select-sm" id="createIndexOptionCaseSensitiveValue" style="width: 80px;" disabled>
-                        <option value="true" selected>true</option>
-                        <option value="false">false</option>
-                      </select>
+                    <div class="form-check form-switch form-white" style="margin-bottom: 8px;">
+                      <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="createIndexOptionCaseSensitive" checked>
+                      <label class="form-check-label" for="createIndexOptionCaseSensitive"><code>case_sensitive</code></label>
                     </div>
-                    <div class="form-check" style="margin-bottom: 8px; display: flex; align-items: center;">
-                      <input class="form-check-input" type="checkbox" id="createIndexOptionNormalize">
-                      <label class="form-check-label" for="createIndexOptionNormalize" style="margin-right: 10px;">normalize</label>
-                      <select class="form-select form-select-sm" id="createIndexOptionNormalizeValue" style="width: 80px;" disabled>
-                        <option value="true">true</option>
-                        <option value="false" selected>false</option>
-                      </select>
+                    <div class="form-check form-switch form-white" style="margin-bottom: 8px;">
+                      <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="createIndexOptionNormalize">
+                      <label class="form-check-label" for="createIndexOptionNormalize"><code>normalize</code></label>
                     </div>
-                    <div class="form-check" style="margin-bottom: 8px; display: flex; align-items: center;">
-                      <input class="form-check-input" type="checkbox" id="createIndexOptionAscii">
-                      <label class="form-check-label" for="createIndexOptionAscii" style="margin-right: 10px;">ascii</label>
-                      <select class="form-select form-select-sm" id="createIndexOptionAsciiValue" style="width: 80px;" disabled>
-                        <option value="true">true</option>
-                        <option value="false" selected>false</option>
-                      </select>
+                    <div class="form-check form-switch form-white" style="margin-bottom: 8px;">
+                      <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="createIndexOptionAscii">
+                      <label class="form-check-label" for="createIndexOptionAscii"><code>ascii</code></label>
                     </div>
                   </div>
                 </div>

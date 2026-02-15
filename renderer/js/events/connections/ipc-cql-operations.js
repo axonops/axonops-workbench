@@ -1130,10 +1130,22 @@ let updateActionStatusForInsertRow,
         } catch (e) {}
 
         try {
-          let partitionKeys = (tableObj.partition_key || []).map((key) => ({ name: key.name, type: key.cql_type, kind: 'partition_key' })),
-            clusteringKeys = (tableObj.clustering_key || []).map((key) => ({ name: key.name, type: key.cql_type, kind: 'clustering' })),
+          let partitionKeys = (tableObj.partition_key || []).map((key) => ({
+              name: key.name,
+              type: key.cql_type,
+              kind: 'partition_key'
+            })),
+            clusteringKeys = (tableObj.clustering_key || []).map((key) => ({
+              name: key.name,
+              type: key.cql_type,
+              kind: 'clustering'
+            })),
             primaryKeyNames = (tableObj.primary_key || []).map((key) => key.name),
-            regularColumns = (tableObj.columns || []).filter((col) => !primaryKeyNames.includes(col.name) && col.cql_type != 'counter').map((col) => ({ name: col.name, type: col.cql_type, kind: col.is_static ? 'static' : 'regular' }))
+            regularColumns = (tableObj.columns || []).filter((col) => !primaryKeyNames.includes(col.name) && col.cql_type != 'counter').map((col) => ({
+              name: col.name,
+              type: col.cql_type,
+              kind: col.is_static ? 'static' : 'regular'
+            }))
 
           allColumns = [...partitionKeys, ...clusteringKeys, ...regularColumns]
         } catch (e) {}
@@ -1153,8 +1165,15 @@ let updateActionStatusForInsertRow,
         $('input#createIndexUsing').val('sai')
         $('input[name="createIndexCollectionModifier"]#createIndexModifierNone').prop('checked', true)
         $('div.create-index-collection-modifier').hide()
-        $('input#createIndexOptionCaseSensitive, input#createIndexOptionNormalize, input#createIndexOptionAscii').prop('checked', false)
-        $('select#createIndexOptionCaseSensitiveValue, select#createIndexOptionNormalizeValue, select#createIndexOptionAsciiValue').prop('disabled', true)
+        $('#chooseIndexColumn').css('margin-bottom', '5px')
+        $('div.dropdown[for-select="createIndexColumn"]').css('bottom', '30px')
+        $('input#createIndexOptionCaseSensitive').prop('checked', true)
+        $('input#createIndexOptionNormalize, input#createIndexOptionAscii').prop('checked', false)
+
+        // Auto-select the first column
+        try {
+          columnList.find('a.dropdown-item').first().trigger('click')
+        } catch (e) {}
 
         // Set keyspace.table display
         $('div.create-index-keyspace-table div.keyspace-table-name').text(`${data.keyspaceName}.${data.tableName}`)
@@ -1164,6 +1183,110 @@ let updateActionStatusForInsertRow,
         $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
 
         rightClickActionsMetadataModal.show()
+      })
+
+      IPCRenderer.on('drop-column', (_, data) => {
+        let columnName = addDoubleQuotes(`${data.columnName}`),
+          tableName = addDoubleQuotes(`${data.tableName}`),
+          keyspaceName = addDoubleQuotes(`${data.keyspaceName}`),
+          columnKind = `${data.columnKind}`
+
+        if ([columnName, tableName, keyspaceName].some((name) => minifyText(name).length <= 0))
+          return
+
+        // Validate: cannot drop primary key columns
+        if (['partition-key', 'clustering-key'].includes(columnKind)) {
+          openDialog(I18next.capitalizeFirstLetter(I18next.replaceData(
+            `cannot drop the column [b]$data[/b] because it is part of the [b]primary key[/b] of the table [b]$data[/b]. Primary key columns (partition keys and clustering keys) cannot be dropped`,
+            [columnName, `${keyspaceName}.${tableName}`]
+          )) + '.', () => {})
+          return
+        }
+
+        // Parse table metadata for validation
+        let tableObj = null
+
+        try {
+          tableObj = JSON.parse(JSONRepair(data.tables)).find((t) => t.name == data.tableName)
+        } catch (e) {}
+
+        // Validate: cannot drop columns from tables with materialized views
+        let dependentViews = []
+
+        try {
+          dependentViews = (tableObj.views || []).map((v) => v.name)
+        } catch (e) {}
+
+        if (dependentViews.length > 0) {
+          openDialog(I18next.capitalizeFirstLetter(I18next.replaceData(
+            `cannot drop the column [b]$data[/b] because the table [b]$data[/b] has dependent materialized view(s): [b]$data[/b]. You must drop these materialized views before dropping any column from this table`,
+            [columnName, `${keyspaceName}.${tableName}`, dependentViews.join(', ')]
+          )) + '.', () => {})
+          return
+        }
+
+        // Validate: cannot drop columns with dependent secondary indexes
+        let dependentIndexes = []
+
+        try {
+          for (let index of (tableObj.indexes || [])) {
+            let target = index.target || ''
+
+            if (target == data.columnName || target.includes(`(${data.columnName})`))
+              dependentIndexes.push(index.name)
+          }
+        } catch (e) {}
+
+        if (dependentIndexes.length > 0) {
+          openDialog(I18next.capitalizeFirstLetter(I18next.replaceData(
+            `cannot drop the column [b]$data[/b] because it has dependent secondary index(es): [b]$data[/b]. You must drop these indexes before dropping this column`,
+            [columnName, dependentIndexes.join(', ')]
+          )) + '.', () => {})
+          return
+        }
+
+        // All validations passed — show confirmation dialog
+        let dropColumnEditor = monaco.editor.getEditors().find((editor) => $(`div.modal#extraDataActions .editor`).find('div.monaco-editor').is(editor.getDomNode()))
+
+        $(`div.modal#extraDataActions div.editor-container`).removeClass('truncate')
+
+        let dropStatement = `ALTER TABLE ${keyspaceName}.${tableName} DROP ${columnName};`
+
+        try {
+          dropColumnEditor.setValue(dropStatement)
+        } catch (e) {}
+
+        setTimeout(() => $(window.visualViewport).trigger('resize'), 100)
+
+        openExtraDataActionsDialog(I18next.capitalizeFirstLetter(I18next.replaceData(
+          `are you sure you want to drop the column [b]$data[/b] from the table [b]$data[/b]? This action is irreversible. The column will become unavailable for queries immediately, and its data will be removed during the next compaction`,
+          [columnName, `${keyspaceName}.${tableName}`]
+        )) + '.', (confirmed) => {
+          if (!confirmed)
+            return
+
+          try {
+            getElementMDBObject($(`a.nav-link.btn[href="#${data.tabID}"]`), 'Tab').show()
+          } catch (e) {}
+
+          let activeWorkarea = $(`div.body div.right div.content div[content="workarea"] div.workarea[connection-id="${activeConnectionID}"]`)
+
+          try {
+            activeWorkarea.find('div.terminal-container').hide()
+            activeWorkarea.find('div.interactive-terminal-container').show()
+          } catch (e) {}
+
+          try {
+            let statementInputField = $(`textarea#${data.textareaID}`)
+            statementInputField.val(dropColumnEditor.getValue())
+            statementInputField.trigger('input').focus()
+            AutoSize.update(statementInputField[0])
+          } catch (e) {}
+
+          try {
+            setTimeout(() => $(`button#${data.btnID}`).click(), 100)
+          } catch (e) {}
+        })
       })
 
       let tableFieldsTreeContainers = {

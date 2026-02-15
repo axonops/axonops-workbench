@@ -207,7 +207,7 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
 
     try {
       // If the child is not any of the defined types then skip this try-catch block
-      if (['Keyspace', 'Table', 'View', 'Index', 'User Type'].every((type) => text != type))
+      if (['Keyspace', 'Table', 'View', 'Index', 'User Type', 'Column'].every((type) => text != type))
         throw 0
 
       // Set an `a_attr` attribute with important sub-attributes
@@ -241,6 +241,13 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
 
         structure.a_attr.type = 'udt'
         structure.a_attr.keyspace = object.keyspace
+      } catch (e) {}
+
+      try {
+        if (text != 'Column')
+          throw 0
+
+        structure.a_attr['column-kind'] = icon || 'column'
       } catch (e) {}
     } catch (e) {}
 
@@ -687,10 +694,10 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
             delete column.is_reversed
 
           // Build a tree view for the column
-          await buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'static-column'))
+          await buildTreeViewForChild(`${columnsID}_static`, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'static-column'), { keyspace: keyspace.name, table: table.name })
 
           if (isCounterTable)
-            await buildTreeViewForChild(`${columnsID}_${counterTablesID}_static`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'static-column'))
+            await buildTreeViewForChild(`${columnsID}_${counterTablesID}_static`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : 'static-column'), { keyspace: keyspace.name, table: table.name })
         }
       }
 
@@ -732,10 +739,10 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
             delete column.is_reversed
 
           // Build a tree view for the column
-          await buildTreeViewForChild(columnsID, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : (isStatic ? 'static-column' : 'column')))
+          await buildTreeViewForChild(columnsID, columnID, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : (isStatic ? 'static-column' : 'column')), { keyspace: keyspace.name, table: table.name })
 
           if (isCounterTable)
-            await buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : (isStatic ? 'static-column' : 'column')))
+            await buildTreeViewForChild(`${columnsID}_${counterTablesID}`, `${columnID}_${counterTablesID}`, `Column`, column, isPartitionKey ? 'partition-key' : (isClusteringKey ? 'clustering-key' : (isStatic ? 'static-column' : 'column')), { keyspace: keyspace.name, table: table.name })
         }
       }
 

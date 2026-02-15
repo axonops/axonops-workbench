@@ -1559,6 +1559,8 @@ div.modal#rightClickActionsMetadata {
         border-color: #4e4e4e;
         position: relative;
         height: 45px;
+        opacity: 0.9;
+        font-size: 95%;
 
         &:after {
           content: '.';
@@ -2112,6 +2114,13 @@ div.input-group-text.for-not-ignoring {
       transform: scale(0.75) translateX(-7px);
     }
   }
+}
+
+div[action="create-index"] {
+  input#createIndexColumn {
+    background-color: inherit;
+  }
+
 }
 
 div[action="insert-row"],

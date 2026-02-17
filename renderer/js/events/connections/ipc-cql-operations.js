@@ -1185,6 +1185,49 @@ let updateActionStatusForInsertRow,
         rightClickActionsMetadataModal.show()
       })
 
+      IPCRenderer.on('copy-table', (_, data) => {
+        let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+        $('button#executeActionStatement').attr({
+          'data-tab-id': `${data.tabID}`,
+          'data-textarea-id': `${data.textareaID}`,
+          'data-btn-id': `${data.btnID}`
+        })
+
+        $('#rightClickActionsMetadata').attr({
+          'data-state': null,
+          'data-keyspacename': `${data.keyspaceName}`,
+          'data-tablename': `${data.tableName}`
+        })
+
+        $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'copy to/from').html(`${I18next.capitalize(I18next.t('copy to/from'))} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
+
+        // Reset form
+        $('#copyTableFilePathTo, #copyTableFilePathFrom').val('')
+        $('div[action="copy-table"] div[role="file-selector"]').attr('file-name', '-')
+        $('input#copyTableHeader').prop('checked', false)
+        $('input#copyTableDelimiter').val(',')
+        $('input#copyTableNullval').val('null')
+        $('input#copyTableMaxrows').val('-1')
+        $('input#copyTablePagesize').val('1000')
+        $('input#copyTableSkiprows').val('0')
+        $('input#copyTableChunksize').val('5000')
+        $('input#copyTableMaxbatchsize').val('20')
+        $('input#copyTableMaxrequests').val('6')
+
+        // Reset to Copy To tab
+        $('div[action="copy-table"] .types-of-transactions .btn[section="copy-to"]').addClass('active')
+        $('div[action="copy-table"] .types-of-transactions .btn[section="copy-from"]').removeClass('active')
+        $('div[action="copy-table"] .copy-table-to-option').show()
+        $('div[action="copy-table"] .copy-table-from-option').hide()
+
+        $('div.modal#rightClickActionsMetadata div[action]').hide()
+        $('div.modal#rightClickActionsMetadata div[action="copy-table"]').show()
+        $('#rightClickActionsMetadata').removeClass('insertion-action show-editor')
+
+        rightClickActionsMetadataModal.show()
+      })
+
       IPCRenderer.on('drop-column', (_, data) => {
         let columnName = addDoubleQuotes(`${data.columnName}`),
           tableName = addDoubleQuotes(`${data.tableName}`),

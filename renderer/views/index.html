@@ -2636,6 +2636,98 @@
               </div>
             </div>
 
+            <div action="copy-table" style="margin-top: -20px;">
+              <div class="action-elements">
+                <div class="types-of-transactions" style="margin-left: 0; margin-right: 0; width: 100%;">
+                  <div class="sections">
+                    <div class="section">
+                      <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="copy-to">
+                        COPY TO
+                      </div>
+                    </div>
+                    <div class="section">
+                      <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="copy-from">
+                        COPY FROM
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-outline form-white margin-bottom file copy-table-to-option" role="file-selector" file-name="-" file-info="Export CSV" data-copy-table="true" style="margin-top: 25px; margin-bottom: 25px;">
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" id="copyTableFilePathTo" readonly>
+                </div>
+                <div class="form-outline form-white margin-bottom file copy-table-from-option" role="file-selector" file-name="-" file-info="Import CSV" data-copy-table="true" style="display: none; margin-top: 25px; margin-bottom: 25px;">
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" id="copyTableFilePathFrom" readonly>
+                </div>
+
+                <span class="badge badge-secondary" style="opacity: 0.85; margin-bottom: 5px;">
+                  <span mulang="options" capitalize></span>
+                </span>
+                <div style="margin-top: 10px; margin-bottom: 20px;">
+                  <div class="form-check form-switch form-white" style="margin-bottom: 8px;">
+                    <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="copyTableHeader">
+                    <label class="form-check-label" for="copyTableHeader">Header</label>
+                  </div>
+                  <div class="row" style="margin-bottom: 8px;">
+                    <div class="col-md-6">
+                      <div class="form-outline form-white" style="width: calc(100% - 5px);">
+                        <input type="text" class="form-control form-control-lg" id="copyTableDelimiter" value=",">
+                        <label class="form-label">Delimiter</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-outline form-white">
+                        <input type="text" class="form-control form-control-lg" id="copyTableNullval" value="null">
+                        <label class="form-label"><code>null</code> Value</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row" style="margin-bottom: 8px;">
+                    <div class="col-md-6">
+                      <div class="form-outline form-white" style="width: calc(100% - 5px);">
+                        <input type="number" class="form-control form-control-lg" id="copyTableMaxrows" value="-1">
+                        <label class="form-label">Max Rows</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6 copy-table-to-option">
+                      <div class="form-outline form-white">
+                        <input type="number" class="form-control form-control-lg" id="copyTablePagesize" value="1000">
+                        <label class="form-label">Page Size</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row copy-table-from-option" style="margin-bottom: 8px; display: none;">
+                    <div class="col-md-6">
+                      <div class="form-outline form-white" style="width: calc(100% - 5px);">
+                        <input type="number" class="form-control form-control-lg" id="copyTableSkiprows" value="0">
+                        <label class="form-label">Skip Rows</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-outline form-white">
+                        <input type="number" class="form-control form-control-lg" id="copyTableChunksize" value="5000">
+                        <label class="form-label">Chunk Size</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row copy-table-from-option" style="margin-bottom: 8px; display: none;">
+                    <div class="col-md-6">
+                      <div class="form-outline form-white" style="width: calc(100% - 5px);">
+                        <input type="number" class="form-control form-control-lg" id="copyTableMaxbatchsize" value="20">
+                        <label class="form-label">Max Batch Size</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-outline form-white">
+                        <input type="number" class="form-control form-control-lg" id="copyTableMaxrequests" value="6">
+                        <label class="form-label">Max Requests</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div action="insert-row">
               <div class="types-of-transactions">
                 <div class="sections">

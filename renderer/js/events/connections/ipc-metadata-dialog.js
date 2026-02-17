@@ -522,6 +522,93 @@
           })
         }
 
+        // Copy Table event handlers
+        {
+          // Tab switcher
+          $('div[action="copy-table"] .types-of-transactions .btn').on('click', function() {
+            $('div[action="copy-table"] .types-of-transactions .btn').removeClass('active')
+            $(this).addClass('active')
+
+            let isCopyFrom = $(this).attr('section') == 'copy-from'
+
+            $('div[action="copy-table"] .copy-table-to-option').toggle(!isCopyFrom)
+            $('div[action="copy-table"] .copy-table-from-option').toggle(isCopyFrom)
+
+            // Clear file paths when switching tabs
+            $('#copyTableFilePathTo, #copyTableFilePathFrom').val('')
+            $('div[action="copy-table"] div[role="file-selector"]').attr('file-name', '-')
+
+            setTimeout(() => {
+              try { updateActionStatusForCopyTable() } catch (e) {}
+            })
+          })
+
+          // File selector click handler
+          $('div[action="copy-table"] div.form-outline[role="file-selector"] input').on('click', function(e) {
+            e.preventDefault()
+
+            let isCopyFrom = $(this).attr('id') == 'copyTableFilePathFrom',
+              requestID = getRandom.id(10),
+              selectorDiv = $(this).parent(),
+              data = isCopyFrom ? {
+                id: requestID,
+                title: I18next.capitalizeFirstLetter(I18next.t('select CSV file to import')),
+                properties: ['openFile', 'showHiddenFiles'],
+                filters: [{
+                  name: 'CSV',
+                  extensions: ['csv']
+                }, {
+                  name: I18next.capitalize(I18next.t('all files')),
+                  extensions: ['*']
+                }]
+              } : {
+                id: requestID,
+                title: I18next.capitalizeFirstLetter(I18next.t('save CSV file')),
+                type: 'showSaveDialog',
+                properties: ['showHiddenFiles', 'createDirectory', 'promptToCreate'],
+                defaultPath: 'export.csv',
+                filters: [{
+                  name: 'CSV',
+                  extensions: ['csv']
+                }]
+              }
+
+            IPCRenderer.send('dialog:create', data)
+
+            IPCRenderer.on(`dialog:${requestID}`, (_, filePath) => {
+              filePath = `${filePath || ''}`
+
+              try {
+                IPCRenderer.removeAllListeners(`dialog:${requestID}`)
+              } catch (e) {}
+
+              if (filePath.length <= 0)
+                return
+
+              $(this).val(filePath)
+              selectorDiv.attr('file-name', Path.basename(filePath))
+
+              setTimeout(() => {
+                try { updateActionStatusForCopyTable() } catch (e) {}
+              })
+            })
+          })
+
+          // Form input handlers
+          $('input#copyTableHeader').on('change', function() {
+            setTimeout(() => {
+              try { updateActionStatusForCopyTable() } catch (e) {}
+            })
+          })
+
+          $('input#copyTableDelimiter, input#copyTableNullval, input#copyTableMaxrows, input#copyTablePagesize, input#copyTableSkiprows, input#copyTableChunksize, input#copyTableMaxbatchsize, input#copyTableMaxrequests').on('input', function() {
+            setTimeout(() => {
+              try { updateActionStatusForCopyTable() } catch (e) {}
+            })
+          })
+
+        }
+
         $('button#executeActionStatement').click(function() {
           let currentActiveAction = $('div.modal#rightClickActionsMetadata div[action]').filter(':visible').attr('action')
 
@@ -565,6 +652,13 @@
               throw 0
 
             updateActionStatusForCreateIndex()
+          } catch (e) {}
+
+          try {
+            if (currentActiveAction != 'copy-table')
+              throw 0
+
+            updateActionStatusForCopyTable()
           } catch (e) {}
 
           try {
@@ -4240,6 +4334,93 @@
 
             if (options.length > 0)
               statement += `${OS.EOL}WITH OPTIONS = { ${options.join(', ')} }`
+
+            statement += ';'
+
+            try {
+              actionEditor.setValue(statement)
+            } catch (e) {}
+          })
+        }
+
+        let updateActionStatusForCopyTable
+
+        updateActionStatusForCopyTable = () => {
+          try {
+            clearTimeout(mainFunctionTimeOut)
+          } catch (e) {}
+
+          mainFunctionTimeOut = setTimeout(() => {
+            let isCopyFrom = $('div[action="copy-table"] .types-of-transactions .btn.active').attr('section') == 'copy-from',
+              filePath = (isCopyFrom ? $('input#copyTableFilePathFrom') : $('input#copyTableFilePathTo')).val().trim(),
+              header = $('input#copyTableHeader').prop('checked'),
+              delimiter = $('input#copyTableDelimiter').val(),
+              nullval = $('input#copyTableNullval').val(),
+              maxrows = $('input#copyTableMaxrows').val().trim(),
+              keyspaceName = addDoubleQuotes($('#rightClickActionsMetadata').attr('data-keyspacename')),
+              tableName = addDoubleQuotes($('#rightClickActionsMetadata').attr('data-tablename'))
+
+            // File path is mandatory
+            let isInvalid = !filePath || filePath.length <= 0
+
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => {
+              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+            }, 50)
+
+            if (isInvalid)
+              return
+
+            // Build statement
+            let direction = isCopyFrom ? 'FROM' : 'TO',
+              statement = `COPY ${keyspaceName}.${tableName} ${direction} '${filePath}'`
+
+            // Collect WITH options (only non-default values)
+            let options = []
+
+            if (header)
+              options.push(`HEADER = true`)
+
+            if (delimiter != ',')
+              options.push(`DELIMITER = '${delimiter}'`)
+
+            if (nullval != 'null')
+              options.push(`NULLVAL = '${nullval}'`)
+
+            if (maxrows != '-1' && maxrows != '')
+              options.push(`MAXROWS = ${maxrows}`)
+
+            if (!isCopyFrom) {
+              // COPY TO specific
+              let pagesize = $('input#copyTablePagesize').val().trim()
+
+              if (pagesize != '1000' && pagesize != '')
+                options.push(`PAGESIZE = ${pagesize}`)
+            } else {
+              // COPY FROM specific
+              let skiprows = $('input#copyTableSkiprows').val().trim(),
+                chunksize = $('input#copyTableChunksize').val().trim(),
+                maxbatchsize = $('input#copyTableMaxbatchsize').val().trim(),
+                maxrequests = $('input#copyTableMaxrequests').val().trim()
+
+              if (skiprows != '0' && skiprows != '')
+                options.push(`SKIPROWS = ${skiprows}`)
+
+              if (chunksize != '5000' && chunksize != '')
+                options.push(`CHUNKSIZE = ${chunksize}`)
+
+              if (maxbatchsize != '20' && maxbatchsize != '')
+                options.push(`MAXBATCHSIZE = ${maxbatchsize}`)
+
+              if (maxrequests != '6' && maxrequests != '')
+                options.push(`MAXREQUESTS = ${maxrequests}`)
+            }
+
+            if (options.length > 0)
+              statement += `${OS.EOL}WITH ${options.join(`${OS.EOL}AND `)}`
 
             statement += ';'
 

@@ -2583,6 +2583,19 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                   })
 
+                                  commands.dml.push({
+                                    label: I18next.capitalize(I18next.t('copy to/from')),
+                                    action: 'copyTable',
+                                    click: `() => views.main.webContents.send('copy-table', {
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
+                                    visible: nodeType == 'table'
+                                  })
+
                                   commands.ddl = commands.ddl.concat([{
                                       label: I18next.capitalize(I18next.t('drop table')),
                                       action: 'dropTable',

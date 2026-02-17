@@ -2005,6 +2005,10 @@
           if (e.type == 'keypress' && e.keyCode != 13)
             return
 
+          // Skip copy-table file selectors — handled by their own handler
+          if ($(this).parent().attr('data-copy-table'))
+            return
+
           // Prevent the default behavior of the event
           e.preventDefault()
 

@@ -8,6 +8,7 @@
  * @Return: {object} a valid tree structure to be rendered
  */
 let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _connectionID = '') => {
+  console.log(metadata)
   let counterIDs = 0,
     getMD5IDForNode = async (amount = 1, customStr = '') => {
       let ids = []
@@ -1779,6 +1780,10 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
       'text': `Users`,
       'type': 'default',
       'icon': normalizePath(Path.join(extraIconsPath, 'user_definitions.png')),
+      'a_attr': {
+        'type': 'users-parent',
+        'allow-right-context': 'true'
+      },
       'state': {
         'opened': false,
         'selected': false
@@ -1789,6 +1794,10 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
       'text': `Standard Users`,
       'type': 'default',
       'icon': normalizePath(Path.join(extraIconsPath, 'user_definitions.png')),
+      'a_attr': {
+        'type': 'standard-users-parent',
+        'allow-right-context': 'true'
+      },
       'state': {
         'opened': false,
         'selected': false
@@ -1799,6 +1808,10 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
       'text': `Super Users`,
       'type': 'default',
       'icon': normalizePath(Path.join(extraIconsPath, 'user_definitions.png')),
+      'a_attr': {
+        'type': 'super-users-parent',
+        'allow-right-context': 'true'
+      },
       'state': {
         'opened': false,
         'selected': false

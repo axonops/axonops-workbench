@@ -2314,6 +2314,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                 let contextMenu = [{
                                   label: I18next.capitalize(I18next.t('get CQL description')),
+                                  enabled: !['users-parent', 'standard-users-parent', 'super-users-parent'].includes(nodeType),
                                   submenu: [{
                                       label: I18next.capitalize(I18next.t('display in the work area')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
@@ -2734,6 +2735,21 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     type: 'separator',
                                   }])
 
+                                try {
+                                  if (!['users-parent', 'standard-users-parent', 'super-users-parent'].some((type) => nodeType == type))
+                                    throw 0
+
+                                  commands.dcl.push({
+                                    label: I18next.capitalize(I18next.t('create super user')),
+                                    action: 'createSuperUser',
+                                    click: `() => views.main.webContents.send('create-super-user', {
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`
+                                  })
+                                } catch (e) {}
+
                                 if (clickedNode.attr('data-is-virtual') == 'true') {
                                   commands.ddl = []
                                   commands.dml = []
@@ -3058,6 +3074,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       // End of the check metadata function
 
                       IPCRenderer.invoke(`pty:get-info`, connectionID).then((info) => {
+                        console.log(info);
                         try {
                           if (info.success)
                             throw 0
@@ -3073,6 +3090,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                           return
                         } catch (e) {}
+
+                        // Show it in the interactive terminal
+                        if (minifyText(info.data.host).length != 0)
+                          addBlock($(`#_${cqlshSessionContentID}_container`), getRandom.id(10), `Connecting with host ${info.data.host} in Cluster: ${info.data.clusterName}, Data Center: ${info.data.datacenter} and Rack: ${info.data.rack}.`, null, true, 'neutral', true)
 
                         // Check if `CQLSH-STARTED` has been received
                         try {
@@ -8696,10 +8717,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                   // Get Apache Cassandra's version
                   version = getAttributes(connectionElement, 'data-latest-cassandra-version') || getAttributes(connectionElement, 'data-cassandra-version'),
                   host = getAttributes(connectionElement, 'data-host')
-
-                // Show it in the interactive terminal
-                if (minifyText(host).length != 0)
-                  addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `Connecting with host ${host}.`, null, true, 'neutral', true)
 
                 addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `Detected Apache Cassandra version is ${version}.`, null, true, 'neutral', true)
 

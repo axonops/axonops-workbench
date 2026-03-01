@@ -3593,6 +3593,77 @@
               </div>
             </div>
 
+            <div action="create-super-user" style="margin-top: -20px;">
+              <div class="action-elements">
+                <div class="super-user-warning" style="display: block; margin: 0; width: 100%; margin-bottom: 20px; margin-top: 5px;">
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span mulang="a Cassandra superuser requires QUORUM consistency level for authentication and authorization, which can cause significant performance degradation, especially in multi-datacenter environments. This superuser should only be used once to bootstrap your initial security configuration. It is recommended to create DBA users and regular users for typical usage and not use superusers" capitalize-first></span>.
+                </div>
+
+                <div class="form-outline form-white" style="margin-bottom: 30px;">
+                  <input type="text" class="form-control form-control-lg" id="createSuperUserRoleName">
+                  <label class="form-label">
+                    <span mulang="role name" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback">
+                    <span mulang capitalize-first></span>
+                  </div>
+                </div>
+                <div class="form-outline form-white" style="margin-bottom: 10px;">
+                  <div class="reveal-password">
+                    <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                      <ion-icon name="eye-opened"></ion-icon>
+                    </div>
+                  </div>
+                  <input type="password" class="form-control form-control-lg" id="createSuperUserPassword">
+                  <label class="form-label">
+                    <span mulang="password" capitalize-first></span>
+                  </label>
+                </div>
+                <div class="create-super-user-password-strength">
+                  <div class="strength-bar">
+                    <div class="strength-bar-fill" data-strength="0"></div>
+                  </div>
+                </div>
+                <div style="padding: 0 15px; margin-bottom: 15px;">
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createSuperUserPasswordType" value="standard" id="createSuperUserPasswordStandard" checked>
+                    <label class="form-check-label" for="createSuperUserPasswordStandard">
+                      <span mulang="standard password" capitalize-first></span>
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createSuperUserPasswordType" value="hashed" id="createSuperUserPasswordHashed">
+                    <label class="form-check-label" for="createSuperUserPasswordHashed">
+                      <span mulang="hashed password" capitalize-first></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="create-super-user-hashed-options" style="display: none; padding: 0 15px; margin-bottom: 15px;">
+                  <div class="form-outline form-white" style="margin-bottom: 10px;">
+                    <input type="text" class="form-control form-control-lg" id="createSuperUserExistingHash">
+                    <label class="form-label">
+                      <span mulang="bcrypt hash" capitalize></span>
+                    </label>
+                  </div>
+                  <div class="create-super-user-generate-hash">
+                    <button type="button" class="btn btn-secondary btn-sm" id="createSuperUserGenerateHashBtn">
+                      <ion-icon name="lock-closed"></ion-icon>
+                      <span mulang="generate hashed password" capitalize-first></span>
+                    </button>
+                  </div>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="createSuperUserCopyCredentials">
+                    <ion-icon name="copy"></ion-icon>
+                    <span mulang="copy credentials to clipboard" capitalize-first></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <div class="action-editor" style="z-index:50000">
               <div class="editor"></div>
             </div>

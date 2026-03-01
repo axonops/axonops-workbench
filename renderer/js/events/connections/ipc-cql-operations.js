@@ -1228,6 +1228,39 @@ let updateActionStatusForInsertRow,
         rightClickActionsMetadataModal.show()
       })
 
+      IPCRenderer.on('create-super-user', (_, data) => {
+        let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+        $('button#executeActionStatement').attr({
+          'data-tab-id': `${data.tabID}`,
+          'data-textarea-id': `${data.textareaID}`,
+          'data-btn-id': `${data.btnID}`
+        })
+
+        $('#rightClickActionsMetadata').attr('data-state', null)
+
+        $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'create super user').text(I18next.capitalize(I18next.t('create super user')))
+
+        // Reset form fields
+        $('input#createSuperUserRoleName').val('').removeClass('is-invalid')
+        $('input#createSuperUserPassword').val('').removeClass('is-invalid').attr('type', 'password')
+        $('input#createSuperUserPasswordStandard').prop('checked', true)
+        $('input#createSuperUserExistingHash').val('')
+        $('div.create-super-user-hashed-options').hide()
+        $('button#createSuperUserCopyCredentials').attr('disabled', '')
+        $('div.create-super-user-password-strength .strength-bar-fill').attr('data-strength', '0')
+
+        $('div.modal#rightClickActionsMetadata div[action]').hide()
+        $('div.modal#rightClickActionsMetadata div[action="create-super-user"]').show()
+        $('#rightClickActionsMetadata').addClass('insertion-action').removeClass('show-editor')
+
+        setTimeout(() => {
+          try { updateActionStatusForCreateSuperUser() } catch (e) {}
+        })
+
+        rightClickActionsMetadataModal.show()
+      })
+
       IPCRenderer.on('drop-column', (_, data) => {
         let columnName = addDoubleQuotes(`${data.columnName}`),
           tableName = addDoubleQuotes(`${data.tableName}`),

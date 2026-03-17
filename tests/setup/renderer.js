@@ -189,8 +189,9 @@ global.mdb = {
   }
 };
 
-// Mock global MDB objects array
+// Mock global MDB objects array and WeakMap index
 global.mdbObjects = [];
+global.mdbObjectsIndex = new WeakMap();
 
 // Mock Monaco Editor
 global.monaco = {
@@ -403,6 +404,7 @@ global.MutationObserver = jest.fn().mockImplementation(() => ({
 beforeEach(() => {
   jest.clearAllMocks();
   global.mdbObjects = [];
+  global.mdbObjectsIndex = new WeakMap();
 });
 
 // Clean up after all tests

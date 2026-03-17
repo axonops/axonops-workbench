@@ -2120,7 +2120,286 @@ div[action="create-index"] {
   input#createIndexColumn {
     background-color: inherit;
   }
+}
 
+div[action="create-super-user"] {
+  div.create-super-user-warning {
+    background: rgba(224, 168, 0, 0.1);
+    border: 1px solid rgba(224, 168, 0, 0.3);
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin: 0 15px 15px;
+    font-size: 0.85em;
+    line-height: 1.6;
+
+    .warning-title {
+      color: #e0a800;
+      font-weight: 600;
+      margin-bottom: 5px;
+
+      ion-icon {
+        margin-right: 5px;
+        vertical-align: middle;
+      }
+    }
+
+    p {
+      margin: 5px 0 0;
+      opacity: 0.85;
+    }
+  }
+
+  div.create-super-user-hashed-options {
+    .create-super-user-generated-hash-field {
+      input {
+        background-color: inherit;
+        font-family: monospace;
+        font-size: 0.85em;
+      }
+    }
+  }
+
+  div.create-super-user-password-strength {
+    .strength-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      margin-bottom: 5px;
+    }
+
+    .strength-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s, background-color 0.3s;
+
+      &[data-strength="1"] {
+        width: 30%;
+        background-color: #e0a800;
+      }
+
+      &[data-strength="2"] {
+        width: 55%;
+        background-color: #fd7e14;
+      }
+
+      &[data-strength="3"] {
+        width: 80%;
+        background-color: #0d6efd;
+      }
+
+      &[data-strength="4"] {
+        width: 100%;
+        background-color: #198754;
+      }
+    }
+
+    .strength-label {
+      font-size: 0.75em;
+      opacity: 0.7;
+    }
+  }
+
+  button#createSuperUserCopyCredentials,
+  button#createSuperUserGenerateHashBtn {
+    opacity: 0.85;
+
+    ion-icon {
+      margin-right: 3px;
+      vertical-align: middle;
+    }
+  }
+}
+
+div[action="create-dba-user"] {
+  div.dba-user-warning {
+    background: rgba(224, 168, 0, 0.1);
+    border: 1px solid rgba(224, 168, 0, 0.3);
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin: 0 15px 15px;
+    font-size: 0.85em;
+    line-height: 1.6;
+  }
+
+  div.create-dba-user-password-strength {
+    .strength-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      margin-bottom: 5px;
+    }
+
+    .strength-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s, background-color 0.3s;
+
+      &[data-strength="0"] {
+        width: 10%;
+        background-color: #dc3545;
+      }
+
+      &[data-strength="1"] {
+        width: 30%;
+        background-color: #e0a800;
+      }
+
+      &[data-strength="2"] {
+        width: 55%;
+        background-color: #fd7e14;
+      }
+
+      &[data-strength="3"] {
+        width: 80%;
+        background-color: #0d6efd;
+      }
+
+      &[data-strength="4"] {
+        width: 100%;
+        background-color: #198754;
+      }
+    }
+
+    .strength-label {
+      font-size: 0.75em;
+      opacity: 0.7;
+    }
+  }
+
+  div.create-dba-user-cidr-info,
+  div.create-dba-user-dc-info {
+    line-height: 1.6;
+  }
+
+  div.create-dba-user-dc-checkboxes {
+    padding-bottom: 5px;
+  }
+
+  button#createDBAUserCopyCredentials,
+  button#createDBAUserGenerateHashBtn {
+    opacity: 0.85;
+
+    ion-icon {
+      margin-right: 3px;
+      vertical-align: middle;
+    }
+  }
+}
+
+div[action="reset-counters"] {
+  div.reset-counters-warning {
+    background: rgba(224, 168, 0, 0.1);
+    border: 1px solid rgba(224, 168, 0, 0.3);
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin: 0 15px 15px;
+    font-size: 0.85em;
+    line-height: 1.6;
+  }
+
+  div.reset-counters-columns-info {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-bottom: 15px;
+
+    div.counter-column {
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-content: center;
+      align-items: center;
+      justify-content: flex-start;
+      margin-right: 10px;
+      margin-bottom: 5px;
+      padding-left: 5px;
+      padding-right: 5px;
+      color: inherit;
+      text-transform: none;
+      transition: 0.2s opacity ease-in-out;
+      border-radius: 4px;
+    }
+  }
+}
+
+div[action="find-udt-usages"] {
+  div.find-usages-header {
+    padding: 0 15px;
+
+    h6 {
+      margin-bottom: 5px;
+    }
+
+    .find-usages-udt-name {
+      font-weight: bold;
+      color: #90caf9;
+    }
+
+    .find-usages-summary {
+      font-size: 0.85em;
+      margin-bottom: 15px;
+    }
+  }
+
+  div.find-usages-results {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0 15px;
+  }
+
+  div.find-usages-result-item {
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    div.result-entity {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+
+      ion-icon {
+        font-size: 1.2em;
+      }
+
+      .result-entity-name {
+        font-weight: 500;
+      }
+
+      .badge {
+        font-size: 0.75em;
+      }
+    }
+
+    div.result-columns {
+      padding-left: 28px;
+
+      div.result-column-item {
+        font-size: 0.85em;
+        padding: 2px 0;
+
+        .result-column-name {
+          color: #e0e0e0;
+        }
+
+        .result-column-type {
+          color: #9e9e9e;
+          margin-left: 8px;
+        }
+      }
+    }
+  }
 }
 
 div[action="insert-row"],
@@ -2728,7 +3007,9 @@ div.in-operator-error,
 div.lwt-hint,
 div.lwt-hint-insert,
 div.lwt-hint-update,
-div.non-pk-columns-warning {
+div.non-pk-columns-warning,
+div.reset-all-counters-warning,
+div.super-user-warning {
   background: rgba(123, 181, 255, 0.1);
   font-size: 85%;
   line-height: 19px;
@@ -2766,7 +3047,9 @@ div.non-pk-columns-warning {
   &.consistency-level-warning-delete,
   &.consistency-level-warning-insert,
   &.consistency-level-warning-update,
-  &.non-pk-columns-warning {
+  &.non-pk-columns-warning,
+  &.reset-all-counters-warning,
+  &.super-user-warning {
     background: rgba(255, 234, 123, 0.1);
   }
 

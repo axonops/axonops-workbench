@@ -1729,6 +1729,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                         let element = `
                                      <div class="query" data-session-id="${sessionID}">
                                        <span class="badge rounded-pill badge-secondary id-time">#${sessionID} <ion-icon name="time"></ion-icon> ${formatTimeUUID(data.result.data.session.sessionId)}</span>
+                                       <div class="delete-tracing">
+                                         <button type="button" class="btn btn-sm btn-tertiary delete-tracing" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-mulang="delete tracing results" capitalize data-title>
+                                           <ion-icon name="close"></ion-icon>
+                                         </button>
+                                       </div>
                                        <div class="sources" id="_${sourcesContainerID}">
                                          <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="all">
                                            <span source-ip>All</span>
@@ -1839,6 +1844,21 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                               // Give feedback to the user
                               showToast(I18next.capitalize(I18next.t('copy query tracing result')), I18next.capitalizeFirstLetter(I18next.replaceData('query tracing result with session ID of [b]$data[/b] has been copied to the clipboard, the size is $data', [sessionID, resultSize])) + '.', 'success')
+                            })
+                          })
+
+                          setTimeout(() => {
+                            let queryTracingElement = $(this)
+
+                            $(this).find('div.delete-tracing').click(function() {
+                              queryTracingElement.remove()
+
+                              try {
+                                if (queriesContainer.find('div.query').length <= 0) {
+                                  workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`).addClass('_empty')
+                                  $(`input#_${queryTracingSearchInputID}`).val('').trigger('input')
+                                }
+                              } catch (e) {}
                             })
                           })
 
@@ -2314,6 +2334,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                 let contextMenu = [{
                                   label: I18next.capitalize(I18next.t('get CQL description')),
+                                  enabled: !['users-parent', 'standard-users-parent', 'super-users-parent'].includes(nodeType),
                                   submenu: [{
                                       label: I18next.capitalize(I18next.t('display in the work area')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
@@ -2469,6 +2490,20 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                                  btnID: '_${executeStatementBtnID}'
                                                })`,
                                       visible: nodeType == 'udt'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('find usages')),
+                                      action: 'findUDTUsages',
+                                      click: `() => views.main.webContents.send('find-udt-usages', {
+                                                 keyspaceName: '${targetName}',
+                                                 udtName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 views: '${JSON.stringify(keyspaceJSONObj.views || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
+                                      visible: nodeType == 'udt'
                                     }
                                   ])
 
@@ -2513,6 +2548,19 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                                  tabID: '_${cqlshSessionContentID}',
                                                  keyspaceName: '${keyspaceName}',
                                                  isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
+                                      visible: clickedNode.attr('is-counter-table') == 'true'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('reset all counters')),
+                                      action: 'resetAllCounters',
+                                      click: `() => views.main.webContents.send('reset-counters', {
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
                                                  textareaID: '_${cqlshSessionStatementInputID}',
                                                  btnID: '_${executeStatementBtnID}'
                                                })`,
@@ -2733,6 +2781,32 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   contextMenu = contextMenu.concat([{
                                     type: 'separator',
                                   }])
+
+                                try {
+                                  if (!['users-parent', 'standard-users-parent', 'super-users-parent'].some((type) => nodeType == type))
+                                    throw 0
+
+                                  commands.dcl.push({
+                                    label: I18next.capitalize(I18next.t('create super user')),
+                                    action: 'createSuperUser',
+                                    click: `() => views.main.webContents.send('create-super-user', {
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`
+                                  })
+
+                                  commands.dcl.push({
+                                    label: I18next.capitalize(I18next.t('create DBA user')),
+                                    action: 'createDBAUser',
+                                    click: `() => views.main.webContents.send('create-dba-user', {
+                                                 datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`
+                                  })
+                                } catch (e) {}
 
                                 if (clickedNode.attr('data-is-virtual') == 'true') {
                                   commands.ddl = []
@@ -3073,6 +3147,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                           return
                         } catch (e) {}
+
+                        // Show it in the interactive terminal
+                        if (minifyText(info.data.host).length != 0)
+                          addBlock($(`#_${cqlshSessionContentID}_container`), getRandom.id(10), `Connecting with host ${info.data.host} in Cluster: ${info.data.clusterName}, Data Center: ${info.data.datacenter} and Rack: ${info.data.rack}.`, null, true, 'neutral', true)
 
                         // Check if `CQLSH-STARTED` has been received
                         try {
@@ -8696,10 +8774,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                   // Get Apache Cassandra's version
                   version = getAttributes(connectionElement, 'data-latest-cassandra-version') || getAttributes(connectionElement, 'data-cassandra-version'),
                   host = getAttributes(connectionElement, 'data-host')
-
-                // Show it in the interactive terminal
-                if (minifyText(host).length != 0)
-                  addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `Connecting with host ${host}.`, null, true, 'neutral', true)
 
                 addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `Detected Apache Cassandra version is ${version}.`, null, true, 'neutral', true)
 

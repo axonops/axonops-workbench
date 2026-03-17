@@ -436,6 +436,28 @@
 
             updateActionStatusForCreateIndex()
           } catch (e) {}
+
+          try {
+            if (currentActiveAction != 'create-super-user')
+              throw 0
+
+            updateActionStatusForCreateSuperUser()
+          } catch (e) {}
+
+          try {
+            if (currentActiveAction != 'reset-counters')
+              throw 0
+
+            updateActionStatusForResetCounters()
+          } catch (e) {}
+
+          try {
+            if (currentActiveAction != 'create-dba-user')
+              throw 0
+
+            updateActionStatusForCreateDBAUser()
+          } catch (e) {}
+
         })
 
         $('input[type="checkbox"]#keyspaceDurableWrites').on('change', function() {
@@ -485,39 +507,51 @@
             }
 
             setTimeout(() => {
-              try { updateActionStatusForCreateIndex() } catch (e) {}
+              try {
+                updateActionStatusForCreateIndex()
+              } catch (e) {}
             })
           })
 
           // Form input handlers - all trigger statement regeneration
           $('input#createIndexName').on('input', function() {
             setTimeout(() => {
-              try { updateActionStatusForCreateIndex() } catch (e) {}
+              try {
+                updateActionStatusForCreateIndex()
+              } catch (e) {}
             })
           })
 
           $('input#createIndexIfNotExists').on('change', function() {
             setTimeout(() => {
-              try { updateActionStatusForCreateIndex() } catch (e) {}
+              try {
+                updateActionStatusForCreateIndex()
+              } catch (e) {}
             })
           })
 
           $('input#createIndexUsing').on('input', function() {
             setTimeout(() => {
-              try { updateActionStatusForCreateIndex() } catch (e) {}
+              try {
+                updateActionStatusForCreateIndex()
+              } catch (e) {}
             })
           })
 
           $('input[name="createIndexCollectionModifier"]').on('change', function() {
             setTimeout(() => {
-              try { updateActionStatusForCreateIndex() } catch (e) {}
+              try {
+                updateActionStatusForCreateIndex()
+              } catch (e) {}
             })
           })
 
           // WITH OPTIONS switch handlers
           $('input#createIndexOptionCaseSensitive, input#createIndexOptionNormalize, input#createIndexOptionAscii').on('change', function() {
             setTimeout(() => {
-              try { updateActionStatusForCreateIndex() } catch (e) {}
+              try {
+                updateActionStatusForCreateIndex()
+              } catch (e) {}
             })
           })
         }
@@ -539,7 +573,9 @@
             $('div[action="copy-table"] div[role="file-selector"]').attr('file-name', '-')
 
             setTimeout(() => {
-              try { updateActionStatusForCopyTable() } catch (e) {}
+              try {
+                updateActionStatusForCopyTable()
+              } catch (e) {}
             })
           })
 
@@ -589,7 +625,9 @@
               selectorDiv.attr('file-name', Path.basename(filePath))
 
               setTimeout(() => {
-                try { updateActionStatusForCopyTable() } catch (e) {}
+                try {
+                  updateActionStatusForCopyTable()
+                } catch (e) {}
               })
             })
           })
@@ -597,17 +635,283 @@
           // Form input handlers
           $('input#copyTableHeader').on('change', function() {
             setTimeout(() => {
-              try { updateActionStatusForCopyTable() } catch (e) {}
+              try {
+                updateActionStatusForCopyTable()
+              } catch (e) {}
             })
           })
 
           $('input#copyTableDelimiter, input#copyTableNullval, input#copyTableMaxrows, input#copyTablePagesize, input#copyTableSkiprows, input#copyTableChunksize, input#copyTableMaxbatchsize, input#copyTableMaxrequests').on('input', function() {
             setTimeout(() => {
-              try { updateActionStatusForCopyTable() } catch (e) {}
+              try {
+                updateActionStatusForCopyTable()
+              } catch (e) {}
             })
           })
 
         }
+
+        // Create Super User event handlers
+        {
+          $('input#createSuperUserRoleName').on('input', function() {
+            let roleName = $(this).val().trim(),
+              isNameInvalid = roleName.length > 0 && `${roleName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
+
+            $(this).toggleClass('is-invalid', isNameInvalid)
+
+            if (isNameInvalid)
+              $(this).closest('.form-outline').find('.invalid-feedback span').attr('mulang', 'provided name is invalid, only alphanumeric and underscores are allowed')
+
+            setTimeout(() => {
+              try {
+                updateActionStatusForCreateSuperUser()
+              } catch (e) {}
+            })
+          })
+
+          $('input#createSuperUserPassword').on('input', function() {
+            let password = $(this).val()
+
+            // Update password strength bar
+            if (password.length > 0) {
+              let result = Zxcvbn(password),
+                labels = ['too weak', 'weak', 'fair', 'strong', 'very strong']
+
+              $('div.create-super-user-password-strength').show()
+              $('div.create-super-user-password-strength .strength-bar-fill').attr('data-strength', result.score)
+            } else {
+              $('div.create-super-user-password-strength .strength-bar-fill').attr('data-strength', 0)
+            }
+
+            setTimeout(() => {
+              try {
+                updateActionStatusForCreateSuperUser()
+              } catch (e) {}
+            })
+          })
+
+          $('input[name="createSuperUserPasswordType"]').on('change', function() {
+            let isHashed = $(this).val() == 'hashed'
+
+            $('div.create-super-user-hashed-options').toggle(isHashed)
+            $('input#createSuperUserPassword').attr('type', isHashed ? 'text' : 'password')
+
+            // Reset hashed options state
+            $('input#createSuperUserExistingHash').val('')
+
+            setTimeout(() => {
+              try {
+                updateActionStatusForCreateSuperUser()
+              } catch (e) {}
+            })
+          })
+
+          $('input#createSuperUserExistingHash').on('input', function() {
+            setTimeout(() => {
+              try {
+                updateActionStatusForCreateSuperUser()
+              } catch (e) {}
+            })
+          })
+
+          $('button#createSuperUserGenerateHashBtn').click(function() {
+            let password = $('input#createSuperUserPassword').val().trim()
+
+            if (password.length <= 0)
+              return
+
+            try {
+              let hash = Bcrypt.hashSync(password, 10)
+
+              $('input#createSuperUserExistingHash').val(hash)
+
+              try {
+                getElementMDBObject($('input#createSuperUserExistingHash')).update()
+              } catch (e) {}
+
+              setTimeout(() => {
+                try {
+                  updateActionStatusForCreateSuperUser()
+                } catch (e) {}
+              })
+            } catch (e) {}
+          })
+
+          $('button#createSuperUserCopyCredentials').click(function() {
+            let roleName = $('input#createSuperUserRoleName').val().trim(),
+              isHashed = $('input#createSuperUserPasswordHashed').prop('checked'),
+              password = ''
+
+            if (isHashed)
+              password = $('input#createSuperUserExistingHash').val().trim()
+            else
+              password = $('input#createSuperUserPassword').val().trim()
+
+            let credentials = `user: ${roleName}\npassword: ${password}`
+
+            try {
+              Clipboard.writeText(credentials)
+            } catch (e) {
+              try {
+                errorLog(e, 'connections')
+              } catch (e) {}
+            }
+
+            showToast(I18next.capitalize(I18next.t('copy credentials')), I18next.capitalizeFirstLetter(I18next.t('credentials have been copied to the clipboard')) + '.', 'success')
+          })
+        }
+
+        // Reset All Counters event handlers
+        {
+          $('div.reset-counters-pk-fields').on('input', 'input', function() {
+            setTimeout(() => {
+              try { updateActionStatusForResetCounters() } catch (e) {}
+            })
+          })
+        }
+
+        // Create DBA User event handlers
+        {
+          $('input#createDBAUserRoleName').on('input', function() {
+            let roleName = $(this).val().trim(),
+              isNameInvalid = roleName.length > 0 && `${roleName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
+
+            $(this).toggleClass('is-invalid', isNameInvalid)
+
+            if (isNameInvalid)
+              $(this).closest('.form-outline').find('.invalid-feedback span').attr('mulang', 'provided name is invalid, only alphanumeric and underscores are allowed')
+
+            setTimeout(() => {
+              try { updateActionStatusForCreateDBAUser() } catch (e) {}
+            })
+          })
+
+          $('input#createDBAUserPassword').on('input', function() {
+            let password = $(this).val()
+
+            if (password.length > 0) {
+              let result = Zxcvbn(password),
+                labels = ['too weak', 'weak', 'fair', 'strong', 'very strong']
+
+              $('div.create-dba-user-password-strength').show()
+              $('div.create-dba-user-password-strength .strength-bar-fill').attr('data-strength', result.score)
+              $('div.create-dba-user-password-strength .strength-label').attr('mulang', labels[result.score]).text(I18next.capitalize(I18next.t(labels[result.score])))
+            } else {
+              $('div.create-dba-user-password-strength').hide()
+            }
+
+            setTimeout(() => {
+              try { updateActionStatusForCreateDBAUser() } catch (e) {}
+            })
+          })
+
+          $('input[name="createDBAUserPasswordType"]').on('change', function() {
+            let isHashed = $(this).val() == 'hashed'
+
+            $('div.create-dba-user-hashed-options').toggle(isHashed)
+            $('input#createDBAUserPassword').attr('type', isHashed ? 'text' : 'password')
+            $('input#createDBAUserExistingHash').val('')
+
+            setTimeout(() => {
+              try { updateActionStatusForCreateDBAUser() } catch (e) {}
+            })
+          })
+
+          $('input#createDBAUserExistingHash').on('input', function() {
+            setTimeout(() => {
+              try { updateActionStatusForCreateDBAUser() } catch (e) {}
+            })
+          })
+
+          $('button#createDBAUserGenerateHashBtn').click(function() {
+            let password = $('input#createDBAUserPassword').val().trim()
+
+            if (password.length <= 0)
+              return
+
+            try {
+              let hash = Bcrypt.hashSync(password, 10)
+
+              $('input#createDBAUserExistingHash').val(hash)
+
+              try {
+                getElementMDBObject($('input#createDBAUserExistingHash')).update()
+              } catch (e) {}
+
+              setTimeout(() => {
+                try { updateActionStatusForCreateDBAUser() } catch (e) {}
+              })
+            } catch (e) {}
+          })
+
+          $('input[name="createDBAUserDCAccess"]').on('change', function() {
+            let isSpecific = $(this).val() == 'specific'
+
+            $('div.create-dba-user-dc-checkboxes').toggle(isSpecific)
+
+            setTimeout(() => {
+              try { updateActionStatusForCreateDBAUser() } catch (e) {}
+            })
+          })
+
+          $('div.create-dba-user-dc-checkboxes').on('change', 'input.create-dba-user-dc-checkbox', function() {
+            setTimeout(() => {
+              try { updateActionStatusForCreateDBAUser() } catch (e) {}
+            })
+          })
+
+          $('input[name="createDBAUserCIDRAccess"]').on('change', function() {
+            let isSpecific = $(this).val() == 'specific'
+
+            $('div.create-dba-user-cidr-input').toggle(isSpecific)
+
+            setTimeout(() => {
+              try { updateActionStatusForCreateDBAUser() } catch (e) {}
+            })
+          })
+
+          $('input#createDBAUserCIDRGroups').on('input', function() {
+            setTimeout(() => {
+              try { updateActionStatusForCreateDBAUser() } catch (e) {}
+            })
+          })
+
+          $('button#createDBAUserCopyCredentials').click(function() {
+            let roleName = $('input#createDBAUserRoleName').val().trim(),
+              isHashed = $('input#createDBAUserPasswordHashed').prop('checked'),
+              password = ''
+
+            if (isHashed)
+              password = $('input#createDBAUserExistingHash').val().trim()
+            else
+              password = $('input#createDBAUserPassword').val().trim()
+
+            let credentials = `user: ${roleName}\npassword: ${password}`
+
+            try {
+              Clipboard.writeText(credentials)
+            } catch (e) {
+              try {
+                errorLog(e, 'connections')
+              } catch (e) {}
+            }
+
+            showToast(I18next.capitalize(I18next.t('copy credentials')), I18next.capitalizeFirstLetter(I18next.t('credentials have been copied to the clipboard')) + '.', 'success')
+          })
+        }
+
+        // Find UDT Usages - click result to navigate to entity in tree
+        $(document).on('click', 'div[action="find-udt-usages"] .find-usages-result-item', function() {
+          let navigateTo = $(this).attr('data-navigate')
+
+          if (navigateTo) {
+            goToNodeInTree(navigateTo)
+
+            try {
+              getElementMDBObject($('#rightClickActionsMetadata'), 'Modal').hide()
+            } catch (e) {}
+          }
+        })
 
         $('button#executeActionStatement').click(function() {
           let currentActiveAction = $('div.modal#rightClickActionsMetadata div[action]').filter(':visible').attr('action')
@@ -659,6 +963,27 @@
               throw 0
 
             updateActionStatusForCopyTable()
+          } catch (e) {}
+
+          try {
+            if (currentActiveAction != 'create-super-user')
+              throw 0
+
+            updateActionStatusForCreateSuperUser()
+          } catch (e) {}
+
+          try {
+            if (currentActiveAction != 'reset-counters')
+              throw 0
+
+            updateActionStatusForResetCounters()
+          } catch (e) {}
+
+          try {
+            if (currentActiveAction != 'create-dba-user')
+              throw 0
+
+            updateActionStatusForCreateDBAUser()
           } catch (e) {}
 
           try {
@@ -4423,6 +4748,203 @@
               statement += `${OS.EOL}WITH ${options.join(`${OS.EOL}AND `)}`
 
             statement += ';'
+
+            try {
+              actionEditor.setValue(statement)
+            } catch (e) {}
+          })
+        }
+
+        let updateActionStatusForCreateSuperUser
+
+        updateActionStatusForCreateSuperUser = () => {
+          try {
+            clearTimeout(mainFunctionTimeOut)
+          } catch (e) {}
+
+          mainFunctionTimeOut = setTimeout(() => {
+            let roleName = $('input#createSuperUserRoleName').val().trim(),
+              isHashed = $('input#createSuperUserPasswordHashed').prop('checked'),
+              password = '',
+              isInvalid = false
+
+            // Get the appropriate password/hash value
+            if (isHashed)
+              password = $('input#createSuperUserExistingHash').val().trim()
+            else
+              password = $('input#createSuperUserPassword').val().trim()
+
+            // Validate
+            let isNameInvalid = `${roleName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
+
+            if (isNameInvalid || password.length <= 0)
+              isInvalid = true
+
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => {
+              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+              $('button#createSuperUserCopyCredentials').attr('disabled', isInvalid ? '' : null)
+            }, 50)
+
+            if (isInvalid)
+              return
+
+            // Escape single quotes in password/hash
+            let escapedPassword = `${password}`.replace(/(^|[^'])'(?!')/g, "$1''")
+
+            // Build statement
+            let quotedRoleName = addDoubleQuotes(roleName),
+              passwordKeyword = isHashed ? 'HASHED PASSWORD' : 'PASSWORD',
+              statement = `CREATE ROLE ${quotedRoleName} WITH SUPERUSER = true AND LOGIN = true${OS.EOL}AND ${passwordKeyword} = '${escapedPassword}';`
+
+            try {
+              actionEditor.setValue(statement)
+            } catch (e) {}
+          })
+        }
+
+        let updateActionStatusForResetCounters
+
+        updateActionStatusForResetCounters = () => {
+          try {
+            clearTimeout(mainFunctionTimeOut)
+          } catch (e) {}
+
+          mainFunctionTimeOut = setTimeout(() => {
+            let keyspaceName = addDoubleQuotes($('#rightClickActionsMetadata').attr('data-keyspace-name')),
+              tableName = addDoubleQuotes($('#rightClickActionsMetadata').attr('data-table-name')),
+              counterColumns = [],
+              isInvalid = false
+
+            try {
+              counterColumns = JSON.parse($('#rightClickActionsMetadata').attr('data-counter-columns'))
+            } catch (e) {}
+
+            // Collect PK field values
+            let pkFields = $('div.reset-counters-pk-fields input').get(),
+              pkConditions = []
+
+            for (let field of pkFields) {
+              let pkName = addDoubleQuotes($(field).attr('data-pk-name')),
+                pkType = $(field).attr('data-pk-type'),
+                pkValue = $(field).val().trim()
+
+              if (pkValue.length <= 0) {
+                isInvalid = true
+                continue
+              }
+
+              // Quote string-like types
+              let needsQuotes = ['text', 'varchar', 'ascii', 'inet', 'timestamp', 'date', 'time'].some((t) => pkType.includes(t))
+
+              pkConditions.push(`${pkName} = ${needsQuotes ? `'${pkValue.replace(/'/g, "''")}'` : pkValue}`)
+            }
+
+            if (pkFields.length <= 0)
+              isInvalid = true
+
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => {
+              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+            }, 50)
+
+            if (isInvalid)
+              return
+
+            let whereClause = pkConditions.join(' AND '),
+              setClause = counterColumns.map((col) => `${addDoubleQuotes(col)} = ${addDoubleQuotes(col)} + 0`).join(`,${OS.EOL}  `)
+
+            // Build two-statement CQL: DELETE then UPDATE with counter + 0
+            let statement = `DELETE FROM ${keyspaceName}.${tableName}${OS.EOL}WHERE ${whereClause};${OS.EOL}${OS.EOL}UPDATE ${keyspaceName}.${tableName}${OS.EOL}SET ${setClause}${OS.EOL}WHERE ${whereClause};`
+
+            try {
+              actionEditor.setValue(statement)
+            } catch (e) {}
+          })
+        }
+
+        let updateActionStatusForCreateDBAUser
+
+        updateActionStatusForCreateDBAUser = () => {
+          try {
+            clearTimeout(mainFunctionTimeOut)
+          } catch (e) {}
+
+          mainFunctionTimeOut = setTimeout(() => {
+            let roleName = $('input#createDBAUserRoleName').val().trim(),
+              isHashed = $('input#createDBAUserPasswordHashed').prop('checked'),
+              password = '',
+              isInvalid = false
+
+            // Get the appropriate password/hash value
+            if (isHashed)
+              password = $('input#createDBAUserExistingHash').val().trim()
+            else
+              password = $('input#createDBAUserPassword').val().trim()
+
+            // Validate
+            let isNameInvalid = `${roleName}`.match(/^(?:[a-zA-Z][a-zA-Z0-9_]*|".+?")$/gm) == null
+
+            if (isNameInvalid || password.length <= 0)
+              isInvalid = true
+
+            try {
+              clearTimeout(changeFooterButtonsStateTimeout)
+            } catch (e) {}
+
+            changeFooterButtonsStateTimeout = setTimeout(() => {
+              dialogElement.find('button.switch-editor').add($('#executeActionStatement')).attr('disabled', isInvalid ? '' : null)
+              $('button#createDBAUserCopyCredentials').attr('disabled', isInvalid ? '' : null)
+            }, 50)
+
+            if (isInvalid)
+              return
+
+            // Escape single quotes in password/hash
+            let escapedPassword = `${password}`.replace(/(^|[^'])'(?!')/g, "$1''")
+
+            // Build CREATE ROLE statement
+            let quotedRoleName = addDoubleQuotes(roleName),
+              passwordKeyword = isHashed ? 'HASHED PASSWORD' : 'PASSWORD',
+              statement = `CREATE ROLE ${quotedRoleName} WITH LOGIN = true AND SUPERUSER = false${OS.EOL}AND ${passwordKeyword} = '${escapedPassword}'`
+
+            // DC access control
+            let dcAccess = $('input[name="createDBAUserDCAccess"]:checked').val()
+
+            if (dcAccess == 'specific') {
+              let selectedDCs = $('input.create-dba-user-dc-checkbox:checked').map(function() { return `'${$(this).val()}'` }).get()
+
+              if (selectedDCs.length > 0)
+                statement += `${OS.EOL}AND ACCESS TO DATACENTERS {${selectedDCs.join(', ')}}`
+            }
+
+            // CIDR access control
+            let cidrAccess = $('input[name="createDBAUserCIDRAccess"]:checked').val()
+
+            if (cidrAccess == 'specific') {
+              let cidrGroups = $('input#createDBAUserCIDRGroups').val().trim()
+
+              if (cidrGroups.length > 0) {
+                let groups = cidrGroups.split(',').map((g) => `'${g.trim()}'`).filter((g) => g != "''")
+
+                if (groups.length > 0)
+                  statement += `${OS.EOL}AND ACCESS FROM CIDRS {${groups.join(', ')}}`
+              }
+            }
+
+            statement += `;${OS.EOL}${OS.EOL}`
+
+            // GRANT statements
+            statement += `GRANT ALL PERMISSIONS ON ALL KEYSPACES TO ${quotedRoleName};${OS.EOL}`
+            statement += `GRANT ALL PERMISSIONS ON ALL MBEANS TO ${quotedRoleName};${OS.EOL}`
+            statement += `GRANT ALL PERMISSIONS ON ALL FUNCTIONS TO ${quotedRoleName};${OS.EOL}`
+            statement += `GRANT ALL ON ALL ROLES TO ${quotedRoleName};`
 
             try {
               actionEditor.setValue(statement)

@@ -1228,6 +1228,252 @@ let updateActionStatusForInsertRow,
         rightClickActionsMetadataModal.show()
       })
 
+      IPCRenderer.on('create-super-user', (_, data) => {
+        let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+        $('button#executeActionStatement').attr({
+          'data-tab-id': `${data.tabID}`,
+          'data-textarea-id': `${data.textareaID}`,
+          'data-btn-id': `${data.btnID}`
+        })
+
+        $('#rightClickActionsMetadata').attr('data-state', null)
+
+        $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'create super user').text(I18next.capitalize(I18next.t('create super user')))
+
+        // Reset form fields
+        $('input#createSuperUserRoleName').val('').removeClass('is-invalid')
+        $('input#createSuperUserPassword').val('').removeClass('is-invalid').attr('type', 'password')
+        $('input#createSuperUserPasswordStandard').prop('checked', true)
+        $('input#createSuperUserExistingHash').val('')
+        $('div.create-super-user-hashed-options').hide()
+        $('button#createSuperUserCopyCredentials').attr('disabled', '')
+        $('div.create-super-user-password-strength .strength-bar-fill').attr('data-strength', '0')
+
+        $('div.modal#rightClickActionsMetadata div[action]').hide()
+        $('div.modal#rightClickActionsMetadata div[action="create-super-user"]').show()
+        $('#rightClickActionsMetadata').addClass('insertion-action').removeClass('show-editor')
+
+        setTimeout(() => {
+          try { updateActionStatusForCreateSuperUser() } catch (e) {}
+        })
+
+        rightClickActionsMetadataModal.show()
+      })
+
+      IPCRenderer.on('create-dba-user', (_, data) => {
+        let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+        $('button#executeActionStatement').attr({
+          'data-tab-id': `${data.tabID}`,
+          'data-textarea-id': `${data.textareaID}`,
+          'data-btn-id': `${data.btnID}`
+        })
+
+        $('#rightClickActionsMetadata').attr('data-state', null)
+
+        $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'create DBA user').text(I18next.capitalize(I18next.t('create DBA user')))
+
+        // Reset form fields
+        $('input#createDBAUserRoleName').val('').removeClass('is-invalid')
+        $('input#createDBAUserPassword').val('').removeClass('is-invalid').attr('type', 'password')
+        $('input#createDBAUserPasswordStandard').prop('checked', true)
+        $('input#createDBAUserExistingHash').val('')
+        $('div.create-dba-user-hashed-options').hide()
+        $('div.create-dba-user-password-strength').hide()
+        $('div.create-dba-user-password-strength .strength-bar-fill').attr('data-strength', '0')
+        $('button#createDBAUserCopyCredentials').attr('disabled', '')
+
+        // Reset DC access
+        $('input#createDBAUserDCAll').prop('checked', true)
+        $('div.create-dba-user-dc-checkboxes').hide().empty()
+
+        // Populate DC checkboxes from connection metadata
+        let datacenters = []
+
+        try {
+          datacenters = JSON.parse(data.datacenters)
+        } catch (e) {}
+
+        let dcNames = [...new Set(datacenters.map((dc) => dc.datacenter))].filter((name) => name)
+
+        for (let dcName of dcNames) {
+          $('div.create-dba-user-dc-checkboxes').append(`<div class="form-check" style="margin-bottom: 5px;"><input class="form-check-input create-dba-user-dc-checkbox" type="checkbox" value="${dcName}" id="createDBAUserDC_${dcName}"><label class="form-check-label" for="createDBAUserDC_${dcName}">${dcName}</label></div>`)
+        }
+
+        // Reset CIDR access
+        $('input#createDBAUserCIDRAll').prop('checked', true)
+        $('div.create-dba-user-cidr-input').hide()
+        $('input#createDBAUserCIDRGroups').val('')
+
+        $('div.modal#rightClickActionsMetadata div[action]').hide()
+        $('div.modal#rightClickActionsMetadata div[action="create-dba-user"]').show()
+        $('#rightClickActionsMetadata').addClass('insertion-action').removeClass('show-editor')
+
+        setTimeout(() => {
+          try { updateActionStatusForCreateDBAUser() } catch (e) {}
+        })
+
+        rightClickActionsMetadataModal.show()
+      })
+
+      IPCRenderer.on('find-udt-usages', (_, data) => {
+        let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+        $('div.modal#rightClickActionsMetadata div[action]').hide()
+        $('div.modal#rightClickActionsMetadata div[action="find-udt-usages"]').show()
+
+        // Hide execute button, switch-editor button, and editor for this read-only action
+        $('button#executeActionStatement').hide()
+        $('button.switch-editor').hide()
+        $('div.modal#rightClickActionsMetadata div.action-editor').hide()
+
+        $('#rightClickActionsMetadata').attr('data-state', null)
+        $('#rightClickActionsMetadata').addClass('insertion-action').removeClass('show-editor')
+
+        // Set modal title
+        $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'find usages').text(I18next.capitalize(I18next.t('find usages')))
+
+        // Set UDT name in header
+        $('div[action="find-udt-usages"] .find-usages-udt-name').text(data.udtName)
+
+        // Parse tables and views
+        let tables = JSON.parse(data.tables || '[]'),
+          views = JSON.parse(data.views || '[]'),
+          udtName = data.udtName,
+          keyspaceName = data.keyspaceName,
+          results = []
+
+        // Search tables for UDT references
+        for (let table of tables) {
+          let allColumns = [...(table.partition_key || []), ...(table.clustering_key || []), ...(table.columns || [])]
+
+          let matchingColumns = allColumns.filter((col) => {
+            let cleanType = removeFrozenKeyword(col.cql_type)
+            return cleanType.includes(udtName)
+          })
+
+          matchingColumns = [...new Map(matchingColumns.map((c) => [c.name, c])).values()]
+
+          if (matchingColumns.length > 0)
+            results.push({ name: table.name, type: 'Table', columns: matchingColumns, navigateTo: `${keyspaceName}.${table.name}` })
+        }
+
+        // Search views for UDT references
+        for (let view of views) {
+          let allColumns = [...(view.partition_key || []), ...(view.clustering_key || []), ...(view.columns || [])]
+
+          let matchingColumns = allColumns.filter((col) => {
+            let cleanType = removeFrozenKeyword(col.cql_type)
+            return cleanType.includes(udtName)
+          })
+
+          matchingColumns = [...new Map(matchingColumns.map((c) => [c.name, c])).values()]
+
+          if (matchingColumns.length > 0)
+            results.push({ name: view.name, type: 'View', columns: matchingColumns, navigateTo: `${keyspaceName}.${view.name}` })
+        }
+
+        // Build results HTML
+        let resultsContainer = $('div[action="find-udt-usages"] .find-usages-results')
+        resultsContainer.empty()
+
+        if (results.length === 0) {
+          $('div[action="find-udt-usages"] .find-usages-no-results').show()
+          $('div[action="find-udt-usages"] .find-usages-summary').text('')
+        } else {
+          $('div[action="find-udt-usages"] .find-usages-no-results').hide()
+
+          let totalColumns = results.reduce((sum, r) => sum + r.columns.length, 0)
+          $('div[action="find-udt-usages"] .find-usages-summary').text(`Found ${totalColumns} column(s) across ${results.length} entity(ies)`)
+
+          for (let result of results) {
+            let icon = result.type === 'Table' ? 'grid-outline' : 'layers-outline',
+              columnsHTML = result.columns.map((col) =>
+                `<div class="result-column-item">
+                  <span class="result-column-name">${EscapeHTML(col.name)}</span>
+                  <span class="result-column-type">${EscapeHTML(col.cql_type)}</span>
+                </div>`
+              ).join('')
+
+            resultsContainer.append(`
+              <div class="find-usages-result-item" data-navigate="${EscapeHTML(result.navigateTo)}">
+                <div class="result-entity">
+                  <ion-icon name="${icon}"></ion-icon>
+                  <span class="result-entity-name">${EscapeHTML(result.name)}</span>
+                  <span class="badge badge-secondary">${result.type}</span>
+                </div>
+                <div class="result-columns">${columnsHTML}</div>
+              </div>
+            `)
+          }
+        }
+
+        rightClickActionsMetadataModal.show()
+      })
+
+      IPCRenderer.on('reset-counters', (_, data) => {
+        let rightClickActionsMetadataModal = getElementMDBObject($('#rightClickActionsMetadata'), 'Modal')
+
+        $('button#executeActionStatement').attr({
+          'data-tab-id': `${data.tabID}`,
+          'data-textarea-id': `${data.textareaID}`,
+          'data-btn-id': `${data.btnID}`
+        })
+
+        $('#rightClickActionsMetadata').attr({
+          'data-state': null,
+          'data-keyspace-name': `${data.keyspaceName}`,
+          'data-table-name': `${data.tableName}`
+        })
+
+        $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', 'reset all counters').html(`${I18next.capitalize(I18next.t('reset all counters'))} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
+
+        // Parse table metadata to get PK and counter columns
+        let tableObj,
+          keys = [],
+          counterColumns = []
+
+        try {
+          tableObj = JSON.parse(JSONRepair(data.tables)).find((t) => t.name == data.tableName)
+          keys = tableObj.primary_key
+          counterColumns = tableObj.columns.filter((c) => c.cql_type == 'counter')
+        } catch (e) {}
+
+        // Store counter column names on modal for statement generation
+        $('#rightClickActionsMetadata').attr('data-counter-columns', JSON.stringify(counterColumns.map((c) => c.name)))
+
+        // Build PK input fields dynamically
+        let pkContainer = $('div.reset-counters-pk-fields').empty()
+
+        for (let key of keys) {
+          pkContainer.append(`<div class="form-outline form-white" style="margin-bottom: 10px;"><input type="text" class="form-control form-control-lg" data-pk-name="${key.name}" data-pk-type="${key.cql_type}"><label class="form-label">${addDoubleQuotes(key.name)} <span style="opacity: 0.5;">(${key.cql_type})</span></label></div>`)
+        }
+
+        // Show counter columns info (read-only list)
+        let columnsInfo = $('div.reset-counters-columns-info').empty()
+
+        for (let col of counterColumns) {
+          columnsInfo.append(`<div class="counter-column"><ion-icon name="refresh" style="vertical-align: middle; margin-right: 5px;"></ion-icon> ${addDoubleQuotes(col.name)}</div>`)
+        }
+
+        // Show the reset-counters section
+        $('div.modal#rightClickActionsMetadata div[action]').hide()
+        $('div.modal#rightClickActionsMetadata div[action="reset-counters"]').show()
+        $('#rightClickActionsMetadata').addClass('insertion-action').removeClass('show-editor')
+
+        // Initialize MDB inputs and trigger statement update
+        setTimeout(() => {
+          pkContainer.find('.form-outline').each(function() {
+            new mdb.Input(this).init()
+          })
+
+          try { updateActionStatusForResetCounters() } catch (e) {}
+        })
+
+        rightClickActionsMetadataModal.show()
+      })
+
       IPCRenderer.on('drop-column', (_, data) => {
         let columnName = addDoubleQuotes(`${data.columnName}`),
           tableName = addDoubleQuotes(`${data.tableName}`),
@@ -1397,7 +1643,9 @@ let updateActionStatusForInsertRow,
             $('div.dropdown[for-select="insertSerialConsistencyLevel"]').find(`a[value="${activeSessionsConsistencyLevels[activeConnectionID].serial}"]`).click()
           } catch (e) {}
 
-          $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', !(data.isCounterTable == 'true') ? 'insert row' : 'increment/decrement counter').html(`${I18next.capitalize(I18next.t(!(data.isCounterTable == 'true') ? 'insert row' : 'increment/decrement counter'))} ${isInsertionAsJSON ? '(JSON)' : ''} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
+          let insertRowTitle = !(data.isCounterTable == 'true') ? 'insert row' : 'increment/decrement counter'
+
+          $('#rightClickActionsMetadata').find('h5.modal-title').children('span').attr('mulang', insertRowTitle).html(`${I18next.capitalize(I18next.t(insertRowTitle))} ${isInsertionAsJSON ? '(JSON)' : ''} <span class="keyspace-table-info badge rounded-pill badge-secondary" style="text-transform: none; background-color: rgba(235, 237, 239, 0.15); color: #ffffff;">${data.keyspaceName}.${data.tableName}</span>`)
 
           $('#rightClickActionsMetadata').attr('data-keyspace-tables', `${data.tables}`)
 

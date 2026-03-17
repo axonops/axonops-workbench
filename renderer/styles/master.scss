@@ -5082,6 +5082,39 @@ div.query {
       opacity: 0.9;
     }
   }
+
+  div.delete-tracing {
+    background: #a1a3a4;
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 5px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 5px #17181a;
+    overflow: hidden;
+
+    button {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      transform: rotate(-90deg);
+      transition: opacity0.2s ease-in-out;
+
+      &:hover {
+        opacity: 0.9;
+      }
+
+      ion-icon {
+        color: #363940;
+        font-size: 165%;
+        opacity: 1;
+        position: relative;
+        top: -1px;
+      }
+    }
+  }
 }
 
 #createSandboxProjectProcess,
@@ -5830,6 +5863,15 @@ div.create-super-user-hashed-options {
     position: relative;
     top: -5px;
     margin-left: 10px;
+  }
+}
+
+button#createSuperUserGenerateHashBtn {
+  ion-icon {
+    color: inherit !important;
+    font-size: 135%;
+    position: relative;
+    bottom: 1px;
   }
 }
 /**

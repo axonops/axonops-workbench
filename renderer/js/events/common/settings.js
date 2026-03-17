@@ -711,7 +711,12 @@
 }
 
 {
-  $("#rightClickActionsMetadata")[0].addEventListener('hidden.mdb.modal', () => $("#rightClickActionsMetadata").removeClass('insertion-action'))
+  $("#rightClickActionsMetadata")[0].addEventListener('hidden.mdb.modal', () => {
+    $("#rightClickActionsMetadata").removeClass('insertion-action')
+    $('button#executeActionStatement').show()
+    $('button.switch-editor').show()
+    $('div.modal#rightClickActionsMetadata div.action-editor').show()
+  })
 }
 
 // Check and update the app's icon's badge in macOS based on the currently active work areas (connections)

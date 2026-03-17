@@ -3596,7 +3596,9 @@
             <div action="create-super-user" style="margin-top: -20px;">
               <div class="action-elements">
                 <div class="super-user-warning" style="display: block; margin: 0; width: 100%; margin-bottom: 20px; margin-top: 5px;">
-                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span mulang="a Cassandra superuser requires QUORUM consistency level for authentication and authorization, which can cause significant performance degradation, especially in multi-datacenter environments. This superuser should only be used once to bootstrap your initial security configuration. It is recommended to create DBA users and regular users for typical usage and not use superusers" capitalize-first></span>.
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span
+                    mulang="a Cassandra superuser requires QUORUM consistency level for authentication and authorization, which can cause significant performance degradation, especially in multi-datacenter environments. This superuser should only be used once to bootstrap your initial security configuration. It is recommended to create DBA users and regular users for typical usage and not use superusers"
+                    capitalize-first></span>.
                 </div>
 
                 <div class="form-outline form-white" style="margin-bottom: 30px;">
@@ -3660,6 +3662,191 @@
                     <ion-icon name="copy"></ion-icon>
                     <span mulang="copy credentials to clipboard" capitalize-first></span>
                   </button>
+                </div>
+              </div>
+            </div>
+
+            <div action="create-dba-user" style="margin-top: -20px;">
+              <div class="action-elements">
+                <div class="dba-user-warning" style="display: block; margin-top: 0px; margin-bottom: 10px;">
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span
+                    mulang="this DBA user is created using standard Cassandra DBA permissions that may not be as you require. This user will have read/write access to all tables, user and role management permissions, access to all functions, MBeans and nodetool commands"
+                    capitalize-first></span>.
+                </div>
+
+                <div class="form-outline form-white margin-bottom">
+                  <input type="text" class="form-control form-control-lg" id="createDBAUserRoleName">
+                  <label class="form-label">
+                    <span mulang="role name" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback">
+                    <span mulang capitalize-first></span>
+                  </div>
+                </div>
+
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="authentication" capitalize></span>
+                    <span class="badge badge-dark-1 rounded-pill badge-mandatory" style="margin-left: 5px;">
+                      <span mulang="mandatory" capitalize></span>
+                    </span>
+                  </span>
+                </div>
+                <div style="padding: 0 15px; margin-bottom: 15px;">
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createDBAUserPasswordType" value="standard" id="createDBAUserPasswordStandard" checked>
+                    <label class="form-check-label" for="createDBAUserPasswordStandard">
+                      <span mulang="standard password" capitalize-first></span>
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createDBAUserPasswordType" value="hashed" id="createDBAUserPasswordHashed">
+                    <label class="form-check-label" for="createDBAUserPasswordHashed">
+                      <span mulang="hashed password" capitalize-first></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="form-outline form-white" style="margin-bottom: 10px; padding: 0 15px;">
+                  <input type="password" class="form-control form-control-lg" id="createDBAUserPassword">
+                  <label class="form-label">
+                    <span mulang="password" capitalize-first></span>
+                  </label>
+                </div>
+                <div class="create-dba-user-password-strength" style="display: none; padding: 0 15px; margin-bottom: 15px;">
+                  <div class="strength-bar">
+                    <div class="strength-bar-fill" data-strength="0"></div>
+                  </div>
+                  <span class="strength-label" mulang="too weak" capitalize-first></span>
+                </div>
+
+                <div class="create-dba-user-hashed-options" style="display: none; padding: 0 15px; margin-bottom: 15px;">
+                  <div class="form-outline form-white" style="margin-bottom: 10px;">
+                    <input type="text" class="form-control form-control-lg" id="createDBAUserExistingHash">
+                    <label class="form-label">
+                      <span mulang="bcrypt hash" capitalize-first></span>
+                    </label>
+                  </div>
+                  <div class="create-dba-user-generate-hash">
+                    <button type="button" class="btn btn-secondary btn-sm" id="createDBAUserGenerateHashBtn">
+                      <ion-icon name="lock-closed"></ion-icon>
+                      <span mulang="generate hashed password" capitalize-first></span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="datacenter access control" capitalize></span>
+                    <span class="badge badge-dark-1 rounded-pill" style="margin-left: 5px;">
+                      <span mulang="optional" capitalize></span>
+                    </span>
+                  </span>
+                </div>
+                <div class="create-dba-user-dc-info" style="padding: 0 15px; margin-bottom: 10px; font-size: 0.85em; opacity: 0.7;">
+                  <ion-icon name="info-circle-outline" style="font-size:120%; vertical-align: middle; margin-right: 3px;"></ion-icon> <span
+                    mulang="DC-level access control requires cluster configuration. Verify network_authorizer is properly configured in cassandra.yaml before proceeding otherwise this may have no effect" capitalize-first></span>.
+                </div>
+                <div style="padding: 0 15px; margin-bottom: 10px;">
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createDBAUserDCAccess" value="all" id="createDBAUserDCAll" checked>
+                    <label class="form-check-label" for="createDBAUserDCAll">
+                      <span mulang="all datacenters" capitalize-first></span>
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createDBAUserDCAccess" value="specific" id="createDBAUserDCSpecific">
+                    <label class="form-check-label" for="createDBAUserDCSpecific">
+                      <span mulang="specific datacenters" capitalize-first></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="create-dba-user-dc-checkboxes" style="display: none; padding: 0 15px; margin-bottom: 15px;"></div>
+
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="CIDR access control" capitalize></span>
+                    <span class="badge badge-dark-1 rounded-pill" style="margin-left: 5px;">
+                      <span mulang="optional" capitalize></span>
+                    </span>
+                  </span>
+                </div>
+                <div class="create-dba-user-cidr-info" style="padding: 0 15px; margin-bottom: 10px; font-size: 0.85em; opacity: 0.7;">
+                  <ion-icon name="info-circle-outline" style="font-size:120%; vertical-align: middle; margin-right: 3px;"></ion-icon> <span
+                    mulang="CIDR access control requires cluster configuration to be enabled and CIDR groups to be created before assigning to users" capitalize-first></span>.
+                </div>
+                <div style="padding: 0 15px; margin-bottom: 10px;">
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createDBAUserCIDRAccess" value="all" id="createDBAUserCIDRAll" checked>
+                    <label class="form-check-label" for="createDBAUserCIDRAll">
+                      <span mulang="all CIDRs" capitalize-first></span>
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createDBAUserCIDRAccess" value="specific" id="createDBAUserCIDRSpecific">
+                    <label class="form-check-label" for="createDBAUserCIDRSpecific">
+                      <span mulang="specific CIDR groups" capitalize-first></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="create-dba-user-cidr-input" style="display: none; padding: 0 15px; margin-bottom: 15px;">
+                  <div class="form-outline form-white">
+                    <input type="text" class="form-control form-control-lg" id="createDBAUserCIDRGroups">
+                    <label class="form-label">
+                      <span mulang="CIDR group names (comma-separated)" capitalize-first></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div style="padding: 0 15px; margin-bottom: 10px;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="createDBAUserCopyCredentials">
+                    <ion-icon name="copy"></ion-icon>
+                    <span mulang="copy credentials to clipboard" capitalize-first></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div action="reset-counters" style="margin-top: -20px;">
+              <div class="action-elements">
+                <div class="reset-all-counters-warning" style="display: block; margin: 0; width: 100%; margin-bottom: 20px; margin-top: 5px;">
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span
+                    mulang="resetting counters in a multi-client environment carries risks: the reset operation is not atomic, other clients may increment or decrement the counter during reset, the final counter value may be incorrect if concurrent updates occur, and once reset, there is no way to recover the previous value"
+                    capitalize-first></span>.
+                </div>
+
+                <div class="fields-badge-action">
+                  <span class="badge badge-secondary">
+                    <span mulang="primary key" capitalize></span>
+                    <span class="badge badge-dark-1 rounded-pill badge-mandatory" style="margin-left: 5px;">
+                      <span mulang="mandatory" capitalize></span>
+                    </span>
+                  </span>
+                </div>
+                <div class="reset-counters-pk-fields" style="margin: 15px 0px; margin-bottom: 30px;"></div>
+
+                <div class="fields-badge-action">
+                  <span class="badge badge-secondary">
+                    <span mulang="counter columns to reset" capitalize></span>
+                  </span>
+                </div>
+                <div class="reset-counters-columns-info"></div>
+              </div>
+            </div>
+
+            <div action="find-udt-usages" style="display:none; margin-top: -20px;">
+              <div class="action-elements">
+                <div class="find-usages-header">
+                  <h6>
+                    <span mulang="usages of" capitalize></span> <span class="find-usages-udt-name"></span>
+                  </h6>
+                  <p class="find-usages-summary text-muted"></p>
+                </div>
+                <div class="find-usages-results"></div>
+                <div class="find-usages-no-results" style="display:none">
+                  <p class="text-muted" style="text-align:center; padding:30px;">
+                    <span mulang="no usages found" capitalize></span>
+                  </p>
                 </div>
               </div>
             </div>

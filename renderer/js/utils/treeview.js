@@ -8,7 +8,6 @@
  * @Return: {object} a valid tree structure to be rendered
  */
 let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _connectionID = '') => {
-  console.log(metadata)
   let counterIDs = 0,
     getMD5IDForNode = async (amount = 1, customStr = '') => {
       let ids = []

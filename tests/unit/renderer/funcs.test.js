@@ -56,6 +56,7 @@ describe('Global Functions (funcs.js)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     global.mdbObjects = [];
+    global.mdbObjectsIndex = new WeakMap();
   });
 
   describe('getElementMDBObject', () => {

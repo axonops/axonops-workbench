@@ -21,7 +21,7 @@
  *
  * @Return: {object} list of saved workspaces
  */
-let getWorkspacesInternal = () => {
+let getWorkspacesInternal = async () => {
   let workspaces = [] // Final object which be returned
 
   // Add log about this process
@@ -43,13 +43,14 @@ let getWorkspacesInternal = () => {
     // Update the returned object
     workspaces = savedWorkspaces
 
-    // Loop through each workspace and get `connections.json` file inside each one
-    for (let workspace of workspaces) {
+    // Read `connections.json` for all workspaces in parallel
+    await Promise.allSettled(workspaces.map(async (workspace) => {
       try {
         // Define the current workspace path - default or custom -
-        let folderPath = !workspace.defaultPath ? workspace.path : Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces'),
-          // Read `connections.json` file of that workspace
-          connections = FS.readFileSync(Path.join(folderPath, workspace.folder, 'connections.json'), 'utf8')
+        let folderPath = !workspace.defaultPath ? workspace.path : Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces')
+
+        // Read `connections.json` file of that workspace
+        let connections = await FS.promises.readFile(Path.join(folderPath, workspace.folder, 'connections.json'), 'utf8')
 
         // Convert the JSON content from string to object
         try {
@@ -65,15 +66,14 @@ let getWorkspacesInternal = () => {
           errorLog(e, 'workspaces')
         } catch (e) {}
       }
-    }
+    }))
   } catch (e) {
     try {
       errorLog(e, 'workspaces')
     } catch (e) {}
-  } finally {
-    // Return workspaces
-    return workspaces
   }
+
+  return workspaces
 }
 
 let getWorkspaces = async () => await getWorkspacesInternal()

@@ -5874,6 +5874,35 @@ button#createSuperUserGenerateHashBtn {
     bottom: 1px;
   }
 }
+
+a#addNewVariable {
+  position: relative;
+
+  svg.loading-spinner {
+    position: absolute;
+    top: 2px;
+    bottom: 0;
+    left: 19px;
+    margin: auto;
+    opacity: 0;
+  }
+
+  &.disabled {
+    svg.loading-spinner {
+      opacity: 1;
+      transition: opacity 0.15s;
+    }
+
+    ion-icon {
+      opacity: 0;
+    }
+  }
+
+  ion-icon {
+    opacity: 1;
+    transition: opacity 0.15s;
+  }
+}
 /**
 * Import right-to-left style
 */

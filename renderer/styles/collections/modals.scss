@@ -150,7 +150,7 @@ div.modal {
         @include scrollbar(#515151, #262626);
 
         div.modal-section {
-          height: 400px;
+          height: 100%;
           padding: 5px 10px 0 0;
 
           &[section="variables"] {
@@ -507,6 +507,7 @@ div.modal {
 
     div.side-right {
       width: calc(100% - 270px) !important;
+      height: -webkit-fill-available;
     }
   }
 
@@ -4061,7 +4062,7 @@ div#searchConnections {
           overflow: hidden;
           margin: 0 7px 0 0;
           width: fit-content;
-          padding-right: 10px;
+          padding: 0px 5px;
           display: flex;
           flex: {
             direction: row;

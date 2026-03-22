@@ -62,179 +62,186 @@ let getConnections = async (workspaceID, rawData = false) => {
     if (rawData)
       return savedConnections
 
-    // Loop through the workspace's connections
-    for (let connection of savedConnections) {
+    // Hoist Keytar read outside the loop — one call for all connections instead of N calls
+    let allSecrets = []
+    try {
+      allSecrets = await Keytar.findCredentials('AxonOpsWorkbenchClustersSecrets')
+    } catch (e) {
       try {
-        // This `temp` object will be used to manipulate the current connection's info and then pushed
-        let temp = {
-          name: connection.name,
-          folder: connection.folder,
-          host: '',
-          cqlshrc: '',
-          cqlshrcPath: '',
-          info: {
-            id: '',
-            datacenter: ''
-          }
+        errorLog(e, 'connections')
+      } catch (e) {}
+    }
+
+    // Process all connections in parallel
+    let results = await Promise.allSettled(savedConnections.map(async (connection) => {
+      // This `temp` object will be used to manipulate the current connection's info and then pushed
+      let temp = {
+        name: connection.name,
+        folder: connection.folder,
+        host: '',
+        cqlshrc: '',
+        cqlshrcPath: '',
+        info: {
+          id: '',
+          datacenter: ''
         }
+      }
 
-        // Define the connection's folder path
-        let connectionFolderPath = Path.join(workspaceFolder, connection.folder),
-          /**
-           * Try to access files in that folder
-           * This is required; to get the content of the `info.json` file, also, the content of the `cqlsh.rc` file
-           */
-          info = await FS.readFileSync(Path.join(connectionFolderPath, 'info.json'), 'utf8')
+      // Define the connection's folder path
+      let connectionFolderPath = Path.join(workspaceFolder, connection.folder)
 
-        // Define the cqlsh.rc content
-        let cqlshrc = ''
+      /**
+       * Read info.json, cqlsh.rc, and ssh-tunnel.json in parallel
+       * cqlsh.rc and ssh-tunnel.json are skipped for secure connection bundles
+       */
+      let [infoResult, cqlshrcResult, sshResult] = await Promise.allSettled([
+        FS.promises.readFile(Path.join(connectionFolderPath, 'info.json'), 'utf8'),
+        connection.scb != undefined
+          ? Promise.resolve('')
+          : FS.promises.readFile(Path.join(connectionFolderPath, 'config', 'cqlsh.rc'), 'utf8'),
+        connection.scb != undefined
+          ? Promise.resolve('')
+          : FS.promises.readFile(Path.join(connectionFolderPath, 'config', 'ssh-tunnel.json'), 'utf8'),
+      ])
 
-        // In case the connection is not a secure connection bundle
-        if (connection.scb == undefined)
-          cqlshrc = await FS.readFileSync(Path.join(connectionFolderPath, 'config', 'cqlsh.rc'), 'utf8')
+      // info.json is required — bail out if it failed
+      if (infoResult.status !== 'fulfilled')
+        return null
 
-        // Add the connection's info to the `temp.info` object and make sure to convert JSON content from string to object
-        temp.info = JSON.parse(info)
+      let info = infoResult.value
+      let cqlshrc = cqlshrcResult.status === 'fulfilled' ? cqlshrcResult.value : ''
+      let sshTunnelRaw = sshResult.status === 'fulfilled' ? sshResult.value : ''
+
+      // Add the connection's info to the `temp.info` object and make sure to convert JSON content from string to object
+      temp.info = JSON.parse(info)
+
+      /**
+       * Check if the current connection has secrets to be passed with the final result
+       *
+       * Different implementation has been performed for Linux and macOS, and Windows
+       */
+      try {
+        // Find secrets associated with the current connection from the hoisted allSecrets array
+        let secret = allSecrets.find((secret) => secret.account == temp.info.id)
+
+        // If no secrets are found then skip this try-catch block
+        if (secret == undefined)
+          throw 0
+
+        // Add those secrets to the final result
+        temp.info.secrets = JSON.parse(secret.password)
+      } catch (e) {
+        try {
+          errorLog(e, 'connections')
+        } catch (e) {}
+      }
+
+      try {
+        if (cqlshrc.length <= 0)
+          throw 0
+
+        // Add the content of the `cqlsh.rc` file alongside the path to the file
+        temp.cqlshrc = cqlshrc
+        temp.cqlshrcPath = Path.join(connectionFolderPath, 'config', 'cqlsh.rc')
 
         /**
-         * Check if the current connection has secrets to be passed with the final result
-         *
-         * Different implementation has been performed for Linux and macOS, and Windows
+         * Get the connection's host to be used by the UI with ease
+         * Final result will be `{IP}:{Port}`
          */
-        try {
-          // Define the final array which will hold the secrets
-          let secrets = []
+        let cqlshContent = await getCQLSHRCContent(workspaceID, cqlshrc, null),
+          host = `${cqlshContent.connection.hostname || '127.0.0.1'}:${cqlshContent.connection.port || '9040'}`
 
+        temp.host = host
+      } catch (e) {}
+
+      try {
+        if (connection.scb != undefined)
+          throw 0
+
+        // Check SSH tunneling info existence, and if so then add that info to `temp`
+        let sshTunnel = []
+        try {
+          // Convert the JSON content from string to object
           try {
-            // Get all saved secrets from the keychain
-            secrets = await Keytar.findCredentials('AxonOpsWorkbenchClustersSecrets')
+            sshTunnel = JSON.parse(sshTunnelRaw)
           } catch (e) {
-            try {
-              errorLog(e, 'connections')
-            } catch (e) {}
+            sshTunnel = []
           }
 
-          // Find secrets associated with the current connection
-          let secret = secrets.find((secret) => secret.account == temp.info.id)
+          // If the result of parsing `sshTunnel` is not a JSON object then skip the upcoming code
+          if (typeof sshTunnel != 'object' || sshTunnel.length <= 0)
+            throw 1
 
-          // If no secrets are found then skip this try-catch block
-          if (secret == undefined)
-            throw 0
+          // Try to change variables to their values
+          try {
+            // Get variables based on the workspace
+            let variables = await getProperVariables(workspaceID)
 
-          // Add those secrets to the final result
-          temp.info.secrets = JSON.parse(secret.password)
+            // Call the `variablesToValues` function and change what needed to variables
+            sshTunnel = variablesToValues(sshTunnel, variables)
+          } catch (e) {}
+
+          // Update host value as we now have SSH tunneling info
+          temp.host = sshTunnel.dstAddr != '127.0.0.1' ? sshTunnel.dstAddr : sshTunnel.host
+          temp.host = `${temp.host}:${sshTunnel.dstPort}`
         } catch (e) {
           try {
             errorLog(e, 'connections')
           } catch (e) {}
+
+          sshTunnel = []
         }
 
+        /**
+         * Check if either a passphrase or a private key exist
+         * If so then set them in the OS keychain and remove them
+         */
         try {
-          if (cqlshrc.length <= 0)
+          if (['passphrase', 'privatekey'].every((attribute) => sshTunnel[attribute] == undefined))
             throw 0
 
-          // Add the content of the `cqlsh.rc` file alongside the path to the file
-          temp.cqlshrc = cqlshrc
-          temp.cqlshrcPath = Path.join(connectionFolderPath, 'config', 'cqlsh.rc')
+          let savedSecrets = temp.info.secrets,
+            finalSecrets = {}
 
-          /**
-           * Get the connection's host to be used by the UI with ease
-           * Final result will be `{IP}:{Port}`
-           */
-          let cqlshContent = await getCQLSHRCContent(workspaceID, cqlshrc, null),
-            host = `${cqlshContent.connection.hostname || '127.0.0.1'}:${cqlshContent.connection.port || '9040'}`
-
-          temp.host = host
-        } catch (e) {}
-
-        try {
-          if (connection.scb != undefined)
-            throw 0
-
-          // Check SSH tunneling info existence, and if so then add that info to `temp`
-          let sshTunnel = []
-          try {
-            // Get the info file of the current connection
-            sshTunnel = await FS.readFileSync(Path.join(connectionFolderPath, 'config', 'ssh-tunnel.json'), 'utf8')
-
-            // Convert the JSON content from string to object
-            try {
-              sshTunnel = JSON.parse(sshTunnel)
-            } catch (e) {
-              sshTunnel = []
+          if (savedSecrets != undefined) {
+            finalSecrets = {
+              ...savedSecrets
             }
-
-            // If the result of parsing `sshTunnel` is not a JSON object then skip the upcoming code
-            if (typeof sshTunnel != 'object' || sshTunnel.length <= 0)
-              throw 1
-
-            // Try to change variables to their values
-            try {
-              // Get variables based on the workspace
-              let variables = await getProperVariables(workspaceID)
-
-              // Call the `variablesToValues` function and change what needed to variables
-              sshTunnel = variablesToValues(sshTunnel, variables)
-            } catch (e) {}
-
-            // Update host value as we now have SSH tunneling info
-            temp.host = sshTunnel.dstAddr != '127.0.0.1' ? sshTunnel.dstAddr : sshTunnel.host
-            temp.host = `${temp.host}:${sshTunnel.dstPort}`
-          } catch (e) {
-            try {
-              errorLog(e, 'connections')
-            } catch (e) {}
-
-            sshTunnel = []
           }
 
-          /**
-           * Check if either a passphrase or a private key exist
-           * If so then set them in the OS keychain and remove them
-           */
-          try {
-            if (['passphrase', 'privatekey'].every((attribute) => sshTunnel[attribute] == undefined))
-              throw 0
+          if (sshTunnel.passphrase != undefined)
+            delete sshTunnel.passphrase
 
-            let savedSecrets = temp.info.secrets,
-              finalSecrets = {}
+          if (sshTunnel.privatekey != undefined) {
+            finalSecrets.sshPrivatekey = `${sshTunnel.privatekey}`
 
-            if (savedSecrets != undefined) {
-              finalSecrets = {
-                ...savedSecrets
-              }
-            }
+            delete sshTunnel.privatekey
+          }
 
-            if (sshTunnel.passphrase != undefined)
-              delete sshTunnel.passphrase
+          await Keytar.setPassword(
+            'AxonOpsWorkbenchClustersSecrets',
+            temp.info.id, JSON.stringify({
+              ...finalSecrets
+            })
+          )
 
-            if (sshTunnel.privatekey != undefined) {
-              finalSecrets.sshPrivatekey = `${sshTunnel.privatekey}`
-
-              delete sshTunnel.privatekey
-            }
-
-            await Keytar.setPassword(
-              'AxonOpsWorkbenchClustersSecrets',
-              temp.info.id, JSON.stringify({
-                ...finalSecrets
-              })
-            )
-
-            await FS.writeFileSync(Path.join(connectionFolderPath, 'config', 'ssh-tunnel.json'), beautifyJSON(sshTunnel))
-          } catch (e) {}
-
-          sshTunnel.passphrase = temp.info.secrets.sshPassphrase
-          sshTunnel.privatekey = temp.info.secrets.sshPrivatekey
-
-          // Set SSH tunneling info in `temp.ssh` object
-          temp.ssh = sshTunnel
+          await FS.promises.writeFile(Path.join(connectionFolderPath, 'config', 'ssh-tunnel.json'), beautifyJSON(sshTunnel))
         } catch (e) {}
 
-        // Push the temp into the `connections` array
-        connections.push(temp)
+        sshTunnel.passphrase = temp.info.secrets.sshPassphrase
+        sshTunnel.privatekey = temp.info.secrets.sshPrivatekey
+
+        // Set SSH tunneling info in `temp.ssh` object
+        temp.ssh = sshTunnel
       } catch (e) {}
-    }
+
+      return temp
+    }))
+
+    // Collect fulfilled results (skip null — connections where info.json was unreadable)
+    connections = results
+      .filter((r) => r.status === 'fulfilled' && r.value != null)
+      .map((r) => r.value)
   } catch (e) {
     try {
       errorLog(e, 'connections')
@@ -755,7 +762,7 @@ let getCQLSHRCContent = async (workspaceID, cqlshrc = null, editor = null, chang
           // Get the option's value
           let option = result[section][_option],
             // Check if there are variables in that value
-            exists = variables.filter((variable) => option.search('${' + variable.name + '}'))
+            exists = variables.filter((variable) => `${option}`.includes('${' + variable.name + '}'))
 
           // If no variable has been found then skip the current option and move to the next one
           if (exists.length <= 0)
@@ -873,17 +880,20 @@ let updateFilesVariables = async (workspaceID, cqlshrc, cqlshrcPath, removedVari
   // Final content which be returned
   let newContent = cqlshrc; // This semicolon is critical here
 
-  // Sort each given array based on the values' lengths
-  [savedVariables, removedVariables, changedVariables].forEach((variablesArray) => {
-    try {
-      variablesArray.sort((a, b) => {
-        let aSide = a.value.old || a.value,
-          bSide = b.value.old || b.value
+  // Sort arrays by value length (longest first) to prevent substring conflicts during replacement
+  if (Array.isArray(removedVariables))
+    removedVariables.sort((a, b) => `${b.value}`.length - `${a.value}`.length)
 
-        return `${bSide}`.length - `${aSide}`.length
-      })
-    } catch (e) {}
-  })
+  if (Array.isArray(changedVariables))
+    changedVariables.sort((a, b) => `${b.value.old}`.length - `${a.value.old}`.length)
+
+  if (savedVariables != null) {
+    if (Array.isArray(savedVariables.before))
+      savedVariables.before.sort((a, b) => `${b.value}`.length - `${a.value}`.length)
+
+    if (Array.isArray(savedVariables.after))
+      savedVariables.after.sort((a, b) => `${b.value}`.length - `${a.value}`.length)
+  }
 
   // Inner function to get a given variable's value - nested-variables are resolved -
   let getVariableValue = (status, name, scope) => {
@@ -918,7 +928,7 @@ let updateFilesVariables = async (workspaceID, cqlshrc, cqlshrcPath, removedVari
           let exists = savedVariables.after.filter(
             (variable) =>
             // Check the variable's name exists in the option's value
-            passedValue.search('${' + variable.name + '}') &&
+            passedValue.includes('${' + variable.name + '}') &&
             // Check that the variable's scope includes the passed workspace
             variable.scope.some((workspace) => [workspaceID, 'workspace-all'].includes(workspace))
           )
@@ -978,7 +988,7 @@ let updateFilesVariables = async (workspaceID, cqlshrc, cqlshrcPath, removedVari
             let variablesExist = removedVariables.filter(
               (variable) =>
               // Check the variable's name exists in the option's value
-              option.search('${' + variable.name + '}') &&
+              `${option}`.includes('${' + variable.name + '}') &&
               // Check that the variable's scope includes the passed workspace
               (`${variable.scope}`.split(',')).some((workspace) => [workspaceID, 'workspace-all'].includes(workspace))
             )
@@ -1023,7 +1033,7 @@ let updateFilesVariables = async (workspaceID, cqlshrc, cqlshrcPath, removedVari
 
           for (let variable of changedVariables) {
             try {
-              let variableExists = option.search('${' + variable.name.old + '}') &&
+              let variableExists = `${option}`.includes('${' + variable.name.old + '}') &&
                 variable.scope.old.some((workspace) => [workspaceID, 'workspace-all'].includes(workspace))
 
               // If the variable doesn't exist in the current SSH value then skip it and move to the next changed variable
@@ -1136,7 +1146,7 @@ let updateFilesVariables = async (workspaceID, cqlshrc, cqlshrcPath, removedVari
             let variablesExist = removedVariables.filter(
               (variable) =>
               // Check the variable's name exists in the SSH's value
-              value.search('${' + variable.name + '}') &&
+              `${value}`.includes('${' + variable.name + '}') &&
               // Check that the variable's scope includes the passed workspace
               (`${variable.scope}`.split(',')).some((workspace) => [workspaceID, 'workspace-all'].includes(workspace))
             )
@@ -1170,7 +1180,7 @@ let updateFilesVariables = async (workspaceID, cqlshrc, cqlshrcPath, removedVari
           // Check where the old variable name is being used - taking into account the old scope - and replace it with its old value
           for (let variable of changedVariables) {
             try {
-              let exists = value.search('${' + variable.name.old + '}') &&
+              let exists = `${value}`.includes('${' + variable.name.old + '}') &&
                 variable.scope.old.some((workspace) => [workspaceID, 'workspace-all'].includes(workspace))
 
               // If the variable doesn't exist in the current SSH value then skip it and move to the next changed variable
@@ -1233,7 +1243,7 @@ let updateFilesVariables = async (workspaceID, cqlshrc, cqlshrcPath, removedVari
           } catch (e) {}
 
           // And update the content object in overall
-          sshTunnelingInfo[_sshValue] = value
+          sshTunnelingInfo[sshKey] = value
         } catch (e) {}
       }
 

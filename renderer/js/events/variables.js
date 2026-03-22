@@ -25,6 +25,10 @@
 
   // Click the `Add Variable` button inside the dialog
   $('#addNewVariable').click(() => {
+    // Guard against clicks while `retrieveVariables()` is still running (race condition)
+    if ($('#addNewVariable').hasClass('disabled'))
+      return
+
     // Remove the `empty` class; so the emptiness message will disappear
     variablesList.removeClass('empty')
 
@@ -150,19 +154,19 @@
        * Check collision
        *
        * First, filter variables and keep whose are similar in name or value
+       * Check against both newly added variables (temp) and already saved ones (variablesBeforeUpdate)
        */
-      collision = temp.filter((variable) => variable.name == nameInput.val() || variable.value == variableNewValue)
+      collision = [...temp, ...variablesBeforeUpdate].filter((variable) => variable.name == nameInput.val() || variable.value == variableNewValue)
 
       /**
        * Second, apply another filter that will keep variables with an intersection in their scope
-       * The result will be a `collision` array that has variables with the same name or value and has intersected scope
+       * Scopes intersect if: either side is workspace-all, OR they share at least one specific workspace ID
        */
       collision = collision.filter(
-        (variable) => variable.scope.some(
-          (workspace) => selectedWorkspaces.find(
-            (_workspace) => ['workspace-all', workspace].includes(_workspace) || workspace == 'workspace-all'
-          )
-        )
+        (variable) =>
+          variable.scope.includes('workspace-all') ||
+          selectedWorkspaces.includes('workspace-all') ||
+          variable.scope.some((workspace) => selectedWorkspaces.includes(workspace))
       )
 
       // If there is a collision then end the process and give feedback
@@ -277,11 +281,9 @@
       // Update variables' values file
       await Keytar.setPassword('AxonOpsWorkbenchVarsValues', 'content', JSON.stringify(variables) || '')
 
-      // Call the update function
-      setTimeout(async () => {
-        // Tell the function to update the editor's content by passing `true`
-        await updateVariablesInData(true)
-      })
+      // Tell the function to update the editor's content by passing `true`
+      // This must complete before calling the callback so the UI only sees success after files are written
+      await updateVariablesInData(true)
 
       // Update the process' status
       status = true
@@ -301,9 +303,19 @@
   // Retrieve all saved values in JSON object format
   retrieveVariables = async (onlyVariables = false, handleNestedVariables = false) => {
     try {
-      // The saved variables' manifest and their values
-      let variablesManifest = await Keytar.findPassword('AxonOpsWorkbenchVarsManifest'),
-        variablesValues = await Keytar.findPassword('AxonOpsWorkbenchVarsValues')
+      // Disable the `Add Variable` button to prevent race conditions while loading
+      if (!onlyVariables)
+        $('#addNewVariable').addClass('disabled')
+
+      // Update saved workspaces first so badges render correctly in createVariableElement
+      if (!onlyVariables)
+        savedWorkspaces = await Modules.Workspaces.getWorkspaces()
+
+      // The saved variables' manifest and their values - read both in parallel
+      let [variablesManifest, variablesValues] = await Promise.all([
+        Keytar.findPassword('AxonOpsWorkbenchVarsManifest'),
+        Keytar.findPassword('AxonOpsWorkbenchVarsValues')
+      ])
 
       // Define the final variables object,
       let variables = [],
@@ -318,9 +330,10 @@
       variablesManifestObject.forEach((variable) => {
         try {
           // Check if there's a value exists in the variables' values file
+          // Sort scopes before comparing so order differences don't cause false mismatches
           let exists = variablesValuesObject.find(
             (_variable) =>
-            _variable.name == variable.name && JSON.stringify(_variable.scope) == JSON.stringify(variable.scope)
+            _variable.name == variable.name && JSON.stringify([..._variable.scope].sort()) == JSON.stringify([...variable.scope].sort())
           )
 
           // If it exists, push and adopt it
@@ -347,7 +360,7 @@
 
       try {
         // Call the inner function which gets the missing variables
-        missingVariables = await getMissingVariables(variables)
+        missingVariables = await getMissingVariables(variables, savedWorkspaces)
 
         // Manipulate the data to be merged with the `variables` array
         missingVariables = Object.keys(missingVariables).map((variableName) => {
@@ -377,13 +390,14 @@
 
       // Create a row element for each variable
       variables.forEach((variable) => createVariableElement(variable))
-
-      // Update saved workspaces array
-      savedWorkspaces = await Modules.Workspaces.getWorkspaces()
     } catch (e) {
       try {
         errorLog(e, 'variables')
       } catch (e) {}
+    } finally {
+      // Re-enable the `Add Variable` button now that loading is complete
+      if (!onlyVariables)
+        $('#addNewVariable').removeClass('disabled')
     }
   }
 
@@ -454,235 +468,243 @@
           </div>
         </div>`
 
-    // Prepend the element - show it at the top - to the container's content
-    content.prepend($(element).show(function() {
-      /**
-       * Once the element is added
-       *
-       * Add workspaces as badge buttons; to provide the ability to change the variables' scope
-       */
-      let allWorkspacesID = `workspace-all` // The ID to cover all workspaces in the scope
+    // Prepend the element to the container's content and set up all sub-elements directly
+    let $el = $(element)
+    content.prepend($el)
 
-      setTimeout(() => {
-        // Point at the related container that will have all badges
-        let selectedWorkspaces = $(this).find(`div.workspaces`),
-          // Define workspaces that will be added as badges, including the `All workspaces` badge
-          workspacesToAdd = [{
-              id: allWorkspacesID,
-              name: '<span mulang="all workspaces" capitalize-first></span>',
-              color: undefined
-            },
-            ...savedWorkspaces
-          ]
+    /**
+     * Once the element is added
+     *
+     * Add workspaces as badge buttons; to provide the ability to change the variables' scope
+     */
+    let allWorkspacesID = `workspace-all` // The ID to cover all workspaces in the scope
 
-        // Loop through workspaces
-        workspacesToAdd.forEach((workspace) => {
-          // Determine if the workspace is selected based on whether or not it's in the variable's scope
-          let selected = variable.scope.find((workspaceID) => workspaceID == workspace.id) != undefined
+    setTimeout(() => {
+      // Point at the related container that will have all badges
+      let selectedWorkspaces = $el.find(`div.workspaces`),
+        // Define workspaces that will be added as badges, including the `All workspaces` badge
+        workspacesToAdd = [{
+            id: allWorkspacesID,
+            name: '<span mulang="all workspaces" capitalize-first></span>',
+            color: undefined
+          },
+          ...savedWorkspaces
+        ]
 
-          // Badge button UI element structure
-          let element = `
-              <div class="btn ripple-surface-light workspace badge rounded-pill" id="${workspace.id}" data-selected="${selected}" data-mdb-ripple-color="light">
-                <span class="color" style="background: ${workspace.color}" ${workspace.color == undefined ? 'hidden' : ''}></span>
-                <span class="title">${workspace.name}</span>
-              </div>`
+      // Loop through workspaces
+      workspacesToAdd.forEach((workspace) => {
+        // Determine if the workspace is selected based on whether or not it's in the variable's scope
+        let selected = variable.scope.find((workspaceID) => workspaceID == workspace.id) != undefined
 
-          // Append the workspace as a clickable badge
-          selectedWorkspaces.append($(element).click(function() {
-            // Determine if the badge is now selected or not
-            let selected = $(this).attr('data-selected') == 'true',
-              allWorkspacesButton = selectedWorkspaces.children(`div.btn.workspace[id="${allWorkspacesID}"]`)
+        // Badge button UI element structure
+        let element = `
+            <div class="btn ripple-surface-light workspace badge rounded-pill" id="${workspace.id}" data-selected="${selected}" data-mdb-ripple-color="light">
+              <span class="color" style="background: ${workspace.color}" ${workspace.color == undefined ? 'hidden' : ''}></span>
+              <span class="title">${workspace.name}</span>
+            </div>`
 
-            // If the clicked badge is `All workspaces`
-            if ($(this).attr('id') == allWorkspacesID) {
-              // Loop through badges
-              selectedWorkspaces.children('div.btn.workspace').each(function() {
-                // Deselect all other badges rather than the `All workspaces`
-                $(this).attr('data-selected', $(this).attr('id') != allWorkspacesID ? 'false' : 'true')
-              })
+        // Append the workspace as a clickable badge
+        selectedWorkspaces.append($(element).click(function() {
+          // Determine if the badge is now selected or not
+          let selected = $(this).attr('data-selected') == 'true',
+            allWorkspacesButton = selectedWorkspaces.children(`div.btn.workspace[id="${allWorkspacesID}"]`)
 
-              // Make sure to select the `All workspaces` badge
-              $(allWorkspacesButton).attr('data-selected', 'true')
-
-              // Skip the upcoming code
-              return
-            }
-
-            // If the clicked badge is not `All workspaces` then deselect the `All workspaces` badge
-            $(allWorkspacesButton).attr('data-selected', 'false')
-
-            // Switch the selection status of the currently clicked badge
-            $(this).attr('data-selected', !selected)
-
-            // Check if all workspaces have been selected, or none of them
-            let allSelected = true,
-              noneSelected = true
-
-            // Loop through all badges
+          // If the clicked badge is `All workspaces`
+          if ($(this).attr('id') == allWorkspacesID) {
+            // Loop through badges
             selectedWorkspaces.children('div.btn.workspace').each(function() {
-              // If the current badge is `All workspaces` then skip and jump to the next badge; because it's already handled
-              if ($(this).attr('id') == allWorkspacesID)
-                return
-
-              // If the current badge is not selected then one badge at least is not selected
-              if ($(this).attr('data-selected') == 'false')
-                allSelected = false
-
-              // If the current badge is selected then one badge at least is selected
-              if ($(this).attr('data-selected') == 'true')
-                noneSelected = false
-            })
-
-            // If not all badges are selected, and if one badge at least is selected then skip the upcoming code
-            if (!allSelected && !noneSelected)
-              return
-
-            /**
-             * Reaching here means either all badges are selected, or none of them are selected, and in both cases select the `All workspaces` badge
-             *
-             * Loop through all badges
-             */
-            selectedWorkspaces.children('div.btn.workspace').each(function() {
-              // Deselect badge if it is not `All workspaces`
+              // Deselect all other badges rather than the `All workspaces`
               $(this).attr('data-selected', $(this).attr('id') != allWorkspacesID ? 'false' : 'true')
             })
 
-            // Select `All workspaces` badge
+            // Make sure to select the `All workspaces` badge
             $(allWorkspacesButton).attr('data-selected', 'true')
-          }))
-        })
 
-        // Click the `resolve variables` - the `eye` - button
-        $(this).find('div.resolve-variables div.btn').click(async function() {
-          try {
-            // Get all available variables
-            let allVariables = await retrieveAllVariables(true),
-              // Point at the `delete` button; to retrieve saved info about the variable
-              deleteBtn = $(`a[button-id="${deleteBtnID}"]`),
-              // Get the variable's name
-              variableName = deleteBtn.attr('variable-name'),
-              // Get its scope as an array
-              workspaces = deleteBtn.attr('variable-scope').split(','),
-              // Whether or not the value has already been resolved
-              isValueResolved = $(this).find('ion-icon').attr('name') == 'eye-closed',
-              // Get the resolved version of the variable
-              variableResolved = allVariables.find((variable) => variable.name == variableName && JSON.stringify(variable.scope) == JSON.stringify(workspaces))
-
-            // Change the button's state
-            $(this).find('ion-icon').attr('name', `eye-${isValueResolved ? 'opened' : 'closed'}`)
-
-            // Set the value based on the state
-            $(`input#_${variableValueID}`).val(isValueResolved ? variableResolved.originalValue : variableResolved.value)
-
-            // Disable/enable the value's input field based on the state
-            $(`input#_${variableValueID}`).attr('disabled', isValueResolved ? null : '')
-          } catch (e) {}
-        })
-      })
-
-      // Handle different events and UI elements related to variables
-      setTimeout(() => {
-        // Create Material Design text field's object for `name` and `value` inputs of the variable
-        let variableNameObject = getElementMDBObject($(`input[id="_${variableNameID}"]`)),
-          variableValueObject = getElementMDBObject($(`input[id="_${variableValueID}"]`))
-
-        // If the given variable's name is not empty then set that name in the input field
-        if (variable.name.trim().length != 0) {
-          $(`input[id="_${variableNameID}"]`).val(variable.name)
-          variableNameObject.update()
-        }
-
-        // Same check for the variable's value
-        if (variable.value.trim().length != 0) {
-          $(`input[id="_${variableValueID}"]`).val(variable.value)
-          variableValueObject.update()
-        }
-
-        // Clicks the deletion button
-        $(`a[button-id="${deleteBtnID}"]`).click(function() {
-          // Define saved name, value, and scope
-          let [name, value, scope] = getAttributes($(this), ['variable-name', 'variable-value', 'variable-scope'])
-
-          // Remove the entire row
-          $(this).parent().parent().parent().parent().parent().remove()
-
-          // Filter variables and remove the deleted one
-          variables = variables.filter((_var) => _var.name != name && _var.value != value)
-
-          // Show the empty message again if there are no variables nor any rows
-          if (variables.length <= 0 && content.children('div.variable').length <= 0) {
-            variablesList.addClass('empty')
-            $('#refreshVariables').add('#deleteSelectedVariables').removeClass('show')
+            // Skip the upcoming code
+            return
           }
 
-          // Skip the upcoming code if the deletion of this variable should be ignored
-          if ($(this).attr('ignored') != undefined)
+          // If the clicked badge is not `All workspaces` then deselect the `All workspaces` badge
+          $(allWorkspacesButton).attr('data-selected', 'false')
+
+          // Switch the selection status of the currently clicked badge
+          $(this).attr('data-selected', !selected)
+
+          // Check if all workspaces have been selected, or none of them
+          let allSelected = true,
+            noneSelected = true
+
+          // Loop through all badges
+          selectedWorkspaces.children('div.btn.workspace').each(function() {
+            // If the current badge is `All workspaces` then skip and jump to the next badge; because it's already handled
+            if ($(this).attr('id') == allWorkspacesID)
+              return
+
+            // If the current badge is not selected then one badge at least is not selected
+            if ($(this).attr('data-selected') == 'false')
+              allSelected = false
+
+            // If the current badge is selected then one badge at least is selected
+            if ($(this).attr('data-selected') == 'true')
+              noneSelected = false
+          })
+
+          // If not all badges are selected, and if one badge at least is selected then skip the upcoming code
+          if (!allSelected && !noneSelected)
             return
 
-          // If the `removedVariables` is `null` then update it to `array`
-          if (removedVariables == null)
-            removedVariables = []
-
-          // Push that variable in the removed variables; so it'll be handled in the next variables update
-          removedVariables.push({
-            name,
-            value,
-            scope
+          /**
+           * Reaching here means either all badges are selected, or none of them are selected, and in both cases select the `All workspaces` badge
+           *
+           * Loop through all badges
+           */
+          selectedWorkspaces.children('div.btn.workspace').each(function() {
+            // Deselect badge if it is not `All workspaces`
+            $(this).attr('data-selected', $(this).attr('id') != allWorkspacesID ? 'false' : 'true')
           })
-        })
 
-        // When there's a change in the checkbox's state
-        $(this).find('input[type="checkbox"]').change(function() {
-          // Get the state - checked or not -
-          let checked = $(this).prop('checked')
+          // Select `All workspaces` badge
+          $(allWorkspacesButton).attr('data-selected', 'true')
+        }))
+      })
 
-          try {
-            // If the checkbox is checked
-            if (checked) {
-              // Show the bulk deletion button
-              $(`#deleteSelectedVariables`).addClass('show')
+      // Click the `resolve variables` - the `eye` - button
+      $el.find('div.resolve-variables div.btn').click(async function() {
+        try {
+          // Get all available variables
+          let allVariables = await retrieveAllVariables(true),
+            // Point at the `delete` button; to retrieve saved info about the variable
+            deleteBtn = $(`a[button-id="${deleteBtnID}"]`),
+            // Get the variable's name
+            variableName = deleteBtn.attr('variable-name'),
+            // Get its scope as an array, trimming any whitespace from each entry
+            workspaces = deleteBtn.attr('variable-scope').split(',').map((w) => w.trim()),
+            // Whether or not the value has already been resolved
+            isValueResolved = $(this).find('ion-icon').attr('name') == 'eye-closed',
+            // Get the resolved version of the variable; sort scopes before comparing to avoid order-dependent mismatches
+            variableResolved = allVariables.find((variable) =>
+              variable.name == variableName &&
+              JSON.stringify([...variable.scope].sort()) == JSON.stringify([...workspaces].sort())
+            )
 
-              // Skip the upcoming code in this try-catch block
-              throw 0
-            }
+          // If the resolved variable wasn't found then skip the upcoming code
+          if (variableResolved == undefined)
+            throw 0
 
-            /**
-             * Reaching here means the new state of the checkbox is unchecked
-             *
-             * Get all checkboxes in the variables' container's content
-             */
-            let checkboxes = variablesList.find('input[type="checkbox"]'),
-              // Flag to determine a at least one checked checkbox has been found
-              foundChecked = false
+          // Change the button's state
+          $(this).find('ion-icon').attr('name', `eye-${isValueResolved ? 'opened' : 'closed'}`)
 
-            // Loop through each checkbox
-            checkboxes.each(function() {
-              // If the current checkbox is checked
-              if ($(this).prop('checked')) {
-                // Change the `foundChecked` flag
-                foundChecked = true
+          // Set the value based on the state
+          $(`input#_${variableValueID}`).val(isValueResolved ? variableResolved.originalValue : variableResolved.value)
 
-                // End the loop
-                return false
-              }
-            })
+          // Disable/enable the value's input field based on the state
+          $(`input#_${variableValueID}`).attr('disabled', isValueResolved ? null : '')
+        } catch (e) {}
+      })
+    })
 
-            // Show/hide the bulk deletion button based on the final state of the flag
-            $(`#deleteSelectedVariables`).toggleClass('show', foundChecked)
-          } catch (e) {
-            try {
-              errorLog(e, 'variables')
-            } catch (e) {}
-          }
+    // Handle different events and UI elements related to variables
+    setTimeout(() => {
+      // Create Material Design text field's object for `name` and `value` inputs of the variable
+      let variableNameObject = getElementMDBObject($(`input[id="_${variableNameID}"]`)),
+        variableValueObject = getElementMDBObject($(`input[id="_${variableValueID}"]`))
+
+      // If the given variable's name is not empty then set that name in the input field
+      if (variable.name.trim().length != 0) {
+        $(`input[id="_${variableNameID}"]`).val(variable.name)
+        variableNameObject.update()
+      }
+
+      // Same check for the variable's value
+      if (variable.value.trim().length != 0) {
+        $(`input[id="_${variableValueID}"]`).val(variable.value)
+        variableValueObject.update()
+      }
+
+      // Clicks the deletion button
+      $(`a[button-id="${deleteBtnID}"]`).click(function() {
+        // Define saved name, value, and scope
+        let [name, value, scope] = getAttributes($(this), ['variable-name', 'variable-value', 'variable-scope'])
+
+        // Remove the entire row
+        $(this).parent().parent().parent().parent().parent().remove()
+
+        // Filter variables and remove the deleted one
+        variables = variables.filter((_var) => _var.name != name && _var.value != value)
+
+        // Show the empty message again if there are no variables nor any rows
+        if (variables.length <= 0 && content.children('div.variable').length <= 0) {
+          variablesList.addClass('empty')
+          $('#refreshVariables').add('#deleteSelectedVariables').removeClass('show')
+        }
+
+        // Skip the upcoming code if the deletion of this variable should be ignored
+        if ($(this).attr('ignored') != undefined)
+          return
+
+        // If the `removedVariables` is `null` then update it to `array`
+        if (removedVariables == null)
+          removedVariables = []
+
+        // Push that variable in the removed variables; so it'll be handled in the next variables update
+        removedVariables.push({
+          name,
+          value,
+          scope
         })
       })
 
-      // Reset the `invalid` feedback
-      setTimeout(() => $(this).find('input[type="text"]').on('input click focus', () => $(this).find('input[type="text"]').removeClass('is-invalid')))
+      // When there's a change in the checkbox's state
+      $el.find('input[type="checkbox"]').change(function() {
+        // Get the state - checked or not -
+        let checked = $(this).prop('checked')
 
-      // Apply the chosen language on the UI element after being fully loaded
-      setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
-    }))
+        try {
+          // If the checkbox is checked
+          if (checked) {
+            // Show the bulk deletion button
+            $(`#deleteSelectedVariables`).addClass('show')
+
+            // Skip the upcoming code in this try-catch block
+            throw 0
+          }
+
+          /**
+           * Reaching here means the new state of the checkbox is unchecked
+           *
+           * Get all checkboxes in the variables' container's content
+           */
+          let checkboxes = variablesList.find('input[type="checkbox"]'),
+            // Flag to determine a at least one checked checkbox has been found
+            foundChecked = false
+
+          // Loop through each checkbox
+          checkboxes.each(function() {
+            // If the current checkbox is checked
+            if ($(this).prop('checked')) {
+              // Change the `foundChecked` flag
+              foundChecked = true
+
+              // End the loop
+              return false
+            }
+          })
+
+          // Show/hide the bulk deletion button based on the final state of the flag
+          $(`#deleteSelectedVariables`).toggleClass('show', foundChecked)
+        } catch (e) {
+          try {
+            errorLog(e, 'variables')
+          } catch (e) {}
+        }
+      })
+    })
+
+    // Reset the `invalid` feedback
+    setTimeout(() => $el.find('input[type="text"]').on('input click focus', () => $el.find('input[type="text"]').removeClass('is-invalid')))
+
+    // Apply the chosen language on the UI element after being fully loaded
+    setTimeout(() => Modules.Localization.applyLanguageSpecific($el.find('span[mulang], [data-mulang]')))
   }
 
   /**
@@ -699,8 +721,8 @@
       // Get all saved/updated variables
       updatedVariables = await retrieveAllVariables(true)
 
-    // Loop through all saved workspaces
-    for (let workspace of savedWorkspaces) {
+    // Process all workspaces in parallel
+    await Promise.all(savedWorkspaces.map(async (workspace) => {
       // Get the connections of the current workspace
       let connections = await Modules.Connections.getConnections(workspace.id)
 
@@ -712,16 +734,17 @@
         }
       })
 
-      // Loop through connections objects, and update their `cqlsh.rc` file's content
-      for (let connection of connections)
-        await Modules.Connections.updateFilesVariables(workspace.id, connection.content, connection.path, removedVariables, changedVariables, {
+      // Update all connections' `cqlsh.rc` files in parallel
+      await Promise.all(connections.map((connection) =>
+        Modules.Connections.updateFilesVariables(workspace.id, connection.content, connection.path, removedVariables, changedVariables, {
           before: variablesBeforeUpdate,
           after: updatedVariables
         })
+      ))
 
       // If the current workspace is not the active one, or there's no need to update the editor's content then skip the upcoming code
       if (workspace.id != workspaceID || !updateEditor)
-        continue
+        return
 
       // Get the editor's content
       let editorContent = addEditConnectionEditor.getValue(),
@@ -733,7 +756,7 @@
 
       // Set the new content
       addEditConnectionEditor.setValue(newContent)
-    }
+    }))
 
     // Reset arrays
     removedVariables = null
@@ -747,19 +770,21 @@
   }
 
   // Inner function to get the missing variables in all connections
-  let getMissingVariables = async (savedVariables) => {
-    // Get all saved workspaces
-    let workspaces = await Modules.Workspaces.getWorkspaces(),
-      // Define the array which will hold all the missing variables
-      missingVariables = []
+  let getMissingVariables = async (savedVariables, workspaces = null) => {
+    // Use the provided workspaces or fetch them if not passed in
+    if (!workspaces)
+      workspaces = await Modules.Workspaces.getWorkspaces()
 
-    // Loop through each saved workspace
-    for (let workspace of workspaces) {
+    // Define the array which will hold all the missing variables
+    let missingVariables = []
+
+    // Fetch all workspaces' connections in parallel
+    await Promise.all(workspaces.map(async (workspace) => {
       // Get the workspace's connections
       let connections = await Modules.Connections.getConnections(workspace.id)
 
-      // Loop through each saved connection
-      for (let connection of connections) {
+      // Process all connections in parallel
+      await Promise.all(connections.map(async (connection) => {
         // Get the connection's cqlsh.rc file's content and convert it to Object
         let cqlshrcContentObject = await Modules.Connections.getCQLSHRCContent(null, connection.cqlshrc, null, false),
           // Get all sections in the content
@@ -790,26 +815,23 @@
             // Keep the variable's name
             match = match.map((variable) => `${variable.slice(2, variable.length - 1)}`)
 
-            // Loop through each detected variable
-            for (let variable of match) {
-              // Determine if there's a missing variable or more in the current connection
-              if (!(
-                  match.every((variable) =>
-                    savedVariables.some((savedVariable) =>
-                      savedVariable.name == variable && ['workspace-all', workspace.id].some((id) => savedVariable.scope.includes(id))
-                    )
-                  ))) {
-                if (missingVariables[variable] == undefined)
-                  missingVariables[variable] = []
+            // Loop through each detected variable and check if it's missing individually
+            for (let variableName of match) {
+              // A variable is missing if no saved variable matches its name within the current workspace's scope
+              if (!savedVariables.some((savedVariable) =>
+                  savedVariable.name == variableName && ['workspace-all', workspace.id].some((id) => savedVariable.scope.includes(id))
+                )) {
+                if (missingVariables[variableName] == undefined)
+                  missingVariables[variableName] = []
 
-                // Push the variable with its workspace - scope -
-                missingVariables[variable].push(workspace.id)
+                // Push the workspace - scope - where this variable is missing
+                missingVariables[variableName].push(workspace.id)
               }
             }
           }
         }
-      }
-    }
+      }))
+    }))
 
     // Return the detected missing variables
     return missingVariables
@@ -859,7 +881,7 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
       // Get the current object's value
       let value = result[objectValue],
         // Check if there's a variable's value - or more - in the current value
-        exists = variables.filter((variable) => value.search(variable.value))
+        exists = variables.filter((variable) => `${value}`.includes(variable.value))
 
       try {
         /**
@@ -877,7 +899,7 @@ let variablesManipulation = async (workspaceID, object, rawData = false) => {
           // Get the current object's value
           let subValue = value[_subValue],
             // Check if there's a variable's value - or more - in the current value
-            exists = variables.filter((variable) => subValue.search(variable.value))
+            exists = variables.filter((variable) => `${subValue}`.includes(variable.value))
 
           // If there's no variable's value found in the current `value` then skip it and move to the next one
           if (exists.length <= 0)
@@ -964,7 +986,7 @@ let variablesToValues = (object, variables) => {
       // Get the value of the current key
       let value = object[key],
         // Check if there is a variable or more in the value
-        exists = variables.filter((variable) => value.search('${' + variable.name + '}'))
+        exists = variables.filter((variable) => `${value}`.includes('${' + variable.name + '}'))
 
       // If no variable has been found in the key's value then skip it and move to the next key
       if (exists.length <= 0)
@@ -1002,7 +1024,8 @@ let variablesToValues = (object, variables) => {
  */
 let resolveNestedVariables = (variables) => {
   // Inner function to resolve a passed variable's value
-  let resolveValue = (savedVariable) => {
+  // `visited` tracks variable names in the current resolution chain to detect circular references
+  let resolveValue = (savedVariable, visited = new Set()) => {
     // The final variable to be returned
     let finalValue = `${savedVariable.value}`,
       // Define and match all available variables in the current variable's value
@@ -1025,12 +1048,16 @@ let resolveNestedVariables = (variables) => {
             )
           )
 
-        // If the nested variable hasn't been defined or it's actually the current variable then skip it
-        if (variable == undefined || variable === savedVariable)
+        // If the nested variable hasn't been defined, it's the current variable, or it creates a cycle then skip it
+        if (variable == undefined || variable === savedVariable || visited.has(variableName))
           continue
 
+        // Track the current variable name to detect multi-hop cycles (e.g. A→B→A)
+        let nextVisited = new Set(visited)
+        nextVisited.add(savedVariable.name)
+
         // Resolve the variable's value recursively
-        let resolvedValue = resolveValue(variable)
+        let resolvedValue = resolveValue(variable, nextVisited)
 
         // Set the new updated value
         finalValue = `${finalValue}`.replace(foundVariable, resolvedValue)

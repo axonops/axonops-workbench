@@ -1306,7 +1306,12 @@
                     <ion-icon name="trash"></ion-icon> <span mulang="delete selected variables" capitalize></span>
                   </a>
                   <a action="add" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" id="addNewVariable">
-                    <ion-icon name="plus"></ion-icon> <span mulang="add variable" capitalize></span>
+                    <ion-icon name="plus"></ion-icon>
+                    <svg l-ring-2 class="loading-spinner" viewBox="0 0 40 40" height="18" width="18" style="--uib-size: 16px; --uib-color: #ffffff; --uib-speed: 0.44s; --uib-bg-opacity: 0.25;">
+                      <circle class="track" cx="20" cy="20" r="17.5" pathlength="100" stroke-width="2px" fill="none" />
+                      <circle class="car" cx="20" cy="20" r="17.5" pathlength="100" stroke-width="2px" fill="none" />
+                    </svg>
+                    <span mulang="add variable" capitalize></span>
                   </a>
                 </div>
                 <div class="variables-list empty">
@@ -1481,7 +1486,7 @@
                   </div>
                 </div>
               </div>
-              <div class="modal-section" section="features" hidden>
+              <div class="modal-section" section="features" hidden style="overflow-y: scroll;">
                 <div class="row flex margin-bottom more-margin flex-advanced">
                   <div class="col-md-3">
                     <div>
@@ -1988,7 +1993,7 @@
                         <span mulang="show more"></span>
                       </button>
                       <div id="moreAbout">
-                        <div data-version="binaries">
+                        <div data-version="binaries" hidden>
                           cqlsh v<span></span>
                           <button type="button" class="btn btn-tertiary open-link" data-mdb-ripple-color="light">
                             <ion-icon name="external-link"></ion-icon>

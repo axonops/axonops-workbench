@@ -618,12 +618,13 @@ let loadConnectionMetadata = async (workspaceID, workspaceName, connectionID, co
 
       jstreeViewObject.settings.core.data.push(...newNodes)
 
-      cqlSnippets.finishedLoadingMetadataNodes.push(cqlSnippets.loadingMetadataNodes.find((loadingNode) => loadingNode.nodeID == nodeID))
-
-      cqlSnippets.loadingMetadataNodes = cqlSnippets.loadingMetadataNodes.filter((loadingNode) => loadingNode.nodeID != nodeID)
-
       jstreeViewObject.refresh(true)
     } catch (e) {}
+
+    // Always clean up the spinner, regardless of success or failure
+    cqlSnippets.finishedLoadingMetadataNodes.push(cqlSnippets.loadingMetadataNodes.find((loadingNode) => loadingNode.nodeID == nodeID))
+
+    cqlSnippets.loadingMetadataNodes = cqlSnippets.loadingMetadataNodes.filter((loadingNode) => loadingNode.nodeID != nodeID)
   }
 
   if (internalData != null)

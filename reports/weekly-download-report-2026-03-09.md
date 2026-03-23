@@ -1,15 +1,15 @@
 # 📊 AxonOps Workbench Weekly Download Report
 
-**Generated on:** 2026-03-23 00:05:38 UTC  
+**Generated on:** 2026-03-09 00:03:45 UTC  
 **Repository:** [axonops/axonops-workbench](https://github.com/axonops/axonops-workbench)
 
 ## 📈 Executive Summary
 
 | Metric | Current | Change from Last Week |
 |--------|---------|----------------------|
-| **Total Downloads** | **3,432** | **▲ +7** |
-| User Release Downloads | 3,057 | ▲ +7 (+0.2%) |
-| Internal Release Downloads | 375 | → 0 (+0.0%) |
+| **Total Downloads** | **3,413** | **▲ +11** |
+| User Release Downloads | 3,039 | ▲ +11 (+0.4%) |
+| Internal Release Downloads | 374 | → 0 (+0.0%) |
 
 ### 💻 User Downloads by Operating System
 
@@ -17,35 +17,35 @@ _Note: This tracks downloads from user releases only, excluding internal release
 
 | OS | Downloads | Change | Trend |
 |----|-----------|--------|-------|
-| Windows | 698 | ▲ +5 (+0.7%) | ➡️ |
-| macOS | 529 | ▲ +1 (+0.2%) | ➡️ |
-| Linux | 1,083 | ▲ +1 (+0.1%) | ➡️ |
+| Windows | 690 | ▲ +4 (+0.6%) | ➡️ |
+| macOS | 524 | ▲ +3 (+0.6%) | ➡️ |
+| Linux | 1,079 | ▲ +4 (+0.4%) | ➡️ |
 | Other | 7 | → 0 (+0.0%) | ➡️ |
 
 ### 🆕 Latest User Release: Release for v1.0.8
 
 **Version:** [v1.0.8](https://github.com/axonops/axonops-workbench/releases/tag/v1.0.8)  
-**Published:** 2025-12-06 (106 days ago)  
-**Total Downloads:** 355
+**Published:** 2025-12-06 (92 days ago)  
+**Total Downloads:** 337
 
 **Downloads by OS:**
-- Windows: 146
-- macOS: 90
-- Linux: 101
+- Windows: 138
+- macOS: 85
+- Linux: 97
 - Other: 0
 
 | Asset | OS | Downloads | Size |
 |-------|----|-----------|------|
-| [AxonOps.Workbench-1.0.8-win-x64.msi](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-win-x64.msi) | Windows | 124 | 207.4 MB |
-| [AxonOps.Workbench-1.0.8-mac-arm64.dmg](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-mac-arm64.dmg) | macOS | 75 | 180.4 MB |
-| [AxonOps.Workbench-1.0.8-linux-amd64.deb](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-linux-amd64.deb) | Linux | 73 | 136.2 MB |
-| [AxonOps.Workbench-1.0.8-win-x64.exe](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-win-x64.exe) | Windows | 22 | 208.5 MB |
+| [AxonOps.Workbench-1.0.8-win-x64.msi](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-win-x64.msi) | Windows | 118 | 207.4 MB |
+| [AxonOps.Workbench-1.0.8-mac-arm64.dmg](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-mac-arm64.dmg) | macOS | 71 | 180.4 MB |
+| [AxonOps.Workbench-1.0.8-linux-amd64.deb](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-linux-amd64.deb) | Linux | 69 | 136.2 MB |
+| [AxonOps.Workbench-1.0.8-win-x64.exe](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-win-x64.exe) | Windows | 20 | 208.5 MB |
 | [AxonOps.Workbench-1.0.8-linux-x86_64.rpm](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-linux-x86_64.rpm) | Linux | 14 | 139.5 MB |
 | [AxonOps.Workbench-1.0.8-mac-arm64.zip](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-mac-arm64.zip) | macOS | 9 | 193.4 MB |
 | [AxonOps.Workbench-1.0.8-linux-aarch64...](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-linux-aarch64.rpm) | Linux | 7 | 131.8 MB |
 | [AxonOps.Workbench-1.0.8-linux-x64.tar.gz](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-linux-x64.tar.gz) | Linux | 7 | 201.8 MB |
 | [AxonOps.Workbench-1.0.8-mac-x64.dmg](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-mac-x64.dmg) | macOS | 3 | 187.2 MB |
-| [AxonOps.Workbench-1.0.8-mac-arm64.pkg](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-mac-arm64.pkg) | macOS | 2 | 202.2 MB |
+| [AxonOps.Workbench-1.0.8-mac-arm64.pkg](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-mac-arm64.pkg) | macOS | 1 | 202.2 MB |
 | [AxonOps.Workbench-1.0.8-mac-x64.pkg](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-mac-x64.pkg) | macOS | 1 | 210.5 MB |
 | [AxonOps.Workbench-1.0.8-linux-arm64.deb](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-linux-arm64.deb) | Linux | 0 | 161.7 MB |
 | [AxonOps.Workbench-1.0.8-linux-arm64.t...](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-linux-arm64.tar.gz) | Linux | 0 | 200.5 MB |
@@ -58,17 +58,17 @@ _Note: This tracks downloads from user releases only, excluding internal release
 ## 🚀 User Releases
 
 ### Overview
-- **Total Downloads:** 3,057
-- **Weekly Change:** ▲ +7 (+0.2%)
+- **Total Downloads:** 3,039
+- **Weekly Change:** ▲ +11 (+0.4%)
 
 ### 📥 Top Downloaded Assets
 
 | Asset | Downloads | Change |
 |-------|-----------|--------|
-| AxonOps.Workbench-1.0.8-win-x64.msi | 124 | ▲ +4 |
+| AxonOps.Workbench-1.0.8-win-x64.msi | 118 | ▲ +3 |
 | AxonOps.Workbench-0.9.4-win-x64.msi | 98 | → 0 |
-| AxonOps.Workbench-1.0.8-mac-arm64.dmg | 75 | ▲ +1 |
-| AxonOps.Workbench-1.0.8-linux-amd64.deb | 73 | ▲ +1 |
+| AxonOps.Workbench-1.0.8-mac-arm64.dmg | 71 | ▲ +3 |
+| AxonOps.Workbench-1.0.8-linux-amd64.deb | 69 | ▲ +3 |
 | AxonOps.Workbench-1.0.1-win-x64.msi | 49 | → 0 |
 | AxonOps.Workbench-1.0.0-win-x64.exe | 31 | → 0 |
 | AxonOps.Workbench-1.0.0-win-x64.msi | 31 | → 0 |
@@ -80,7 +80,7 @@ _Note: This tracks downloads from user releases only, excluding internal release
 
 | Release | Version | Downloads | Change |
 |---------|---------|-----------|--------|
-| Release for v1.0.8 | [v1.0.8](https://github.com/axonops/axonops-workbench/releases/tag/v1.0.8) | 355 | ▲ +7 |
+| Release for v1.0.8 | [v1.0.8](https://github.com/axonops/axonops-workbench/releases/tag/v1.0.8) | 337 | ▲ +11 |
 | Release for v0.9.4 | [v0.9.4](https://github.com/axonops/axonops-workbench/releases/tag/v0.9.4) | 194 | → 0 |
 | Release for v1.0.1 | [v1.0.1](https://github.com/axonops/axonops-workbench/releases/tag/v1.0.1) | 160 | → 0 |
 | Release for v1.0.0 | [v1.0.0](https://github.com/axonops/axonops-workbench/releases/tag/v1.0.0) | 157 | → 0 |
@@ -96,18 +96,18 @@ _Note: This tracks downloads from user releases only, excluding internal release
 _Sorted by version number, showing up to 15 user releases with downloads_
 
 <details>
-<summary><strong>Release for v1.0.8</strong> - 355 downloads ▲ +7</summary>
+<summary><strong>Release for v1.0.8</strong> - 337 downloads ▲ +11</summary>
 
 - **Version:** [v1.0.8](https://github.com/axonops/axonops-workbench/releases/tag/v1.0.8)
 - **Published:** 2025-12-06
-- **Total Downloads:** 355
+- **Total Downloads:** 337
 
 | Asset | Downloads | Size | Link |
 |-------|-----------|------|------|
-| AxonOps.Workbench-1.0.8-win-x64.msi | 124 | 207.4 MB | [⬇](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-win-x64.msi) |
-| AxonOps.Workbench-1.0.8-mac-arm64.dmg | 75 | 180.4 MB | [⬇](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-mac-arm64.dmg) |
-| AxonOps.Workbench-1.0.8-linux-amd64.deb | 73 | 136.2 MB | [⬇](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-linux-amd64.deb) |
-| AxonOps.Workbench-1.0.8-win-x64.exe | 22 | 208.5 MB | [⬇](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-win-x64.exe) |
+| AxonOps.Workbench-1.0.8-win-x64.msi | 118 | 207.4 MB | [⬇](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-win-x64.msi) |
+| AxonOps.Workbench-1.0.8-mac-arm64.dmg | 71 | 180.4 MB | [⬇](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-mac-arm64.dmg) |
+| AxonOps.Workbench-1.0.8-linux-amd64.deb | 69 | 136.2 MB | [⬇](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-linux-amd64.deb) |
+| AxonOps.Workbench-1.0.8-win-x64.exe | 20 | 208.5 MB | [⬇](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-win-x64.exe) |
 | AxonOps.Workbench-1.0.8-linux-x86_64.rpm | 14 | 139.5 MB | [⬇](https://github.com/axonops/axonops-workbench/releases/download/v1.0.8/AxonOps.Workbench-1.0.8-linux-x86_64.rpm) |
 
 </details>
@@ -355,7 +355,7 @@ _Sorted by version number, showing up to 15 user releases with downloads_
 ## 🔧 Internal Releases
 
 ### Overview
-- **Total Downloads:** 375
+- **Total Downloads:** 374
 - **Weekly Change:** → 0 (+0.0%)
 
 ### 📥 Top Downloaded Assets

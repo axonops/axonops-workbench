@@ -108,8 +108,9 @@ class Session {
         throw 0
 
       parameters.port = parseInt(this.ssh.port)
-      parameters.overridePort = this.ssh.oport
-      parameters.overridePort = this.ssh.oport
+      parameters.host = `127.0.0.1`
+      // parameters.overridePort = this.ssh.oport
+      // parameters.overridePort = this.ssh.oport
     } catch (e) {}
 
     try {
@@ -136,6 +137,28 @@ class Session {
           bundlePath: this.scbFilePath,
           ...parameters
         }
+    } catch (e) {}
+
+    try {
+      for (let parameter of ['varsManifest', 'varsValues', 'cqlshrc']) {
+        let toBeDeleted = false
+
+        if (parameters[parameter] == undefined)
+          toBeDeleted = true
+
+        try {
+          if (toBeDeleted)
+            throw 0
+
+          let file = FS.readFileSync(parameters[parameter], 'utf8')
+
+          if (file.length <= 0)
+            toBeDeleted = true
+        } catch (e) {}
+
+        if (toBeDeleted)
+          delete parameters[parameter]
+      }
     } catch (e) {}
 
     CQLNode[!isAstraDB ? 'connect' : 'connectWithAstraBundle'](parameters).then((result) => {
@@ -331,14 +354,6 @@ let testConnection = (window, data) => {
       }
     } catch (e) {}
 
-    try {
-      // Check if we've got a port to override the given one in `cqlsh.rc`
-      if (data.sshPort != undefined) {
-        options.port = data.sshPort
-        options.host = data.sshHost
-      }
-    } catch (e) {}
-
     // Check if we've got an actual port
     if (data.port != undefined)
       options.port = data.port
@@ -376,16 +391,33 @@ let testConnection = (window, data) => {
 
     // Detect local cluster connection test
     try {
-      if (options.sshPort == undefined)
+      if (data.isSSH !== true)
         throw 0
 
+      let port = data.port != undefined ? data.port : data.sshPort
+
       options.host = '127.0.0.1'
-      options.port = parseInt(options.port)
+      options.port = parseInt(port)
     } catch (e) {}
 
     try {
       for (let option of ['varsManifest', 'varsValues', 'cqlshrc']) {
+        let toBeDeleted = false
+
         if (options[option] == undefined)
+          toBeDeleted = true
+
+        try {
+          if (toBeDeleted)
+            throw 0
+
+          let file = FS.readFileSync(options[option], 'utf8')
+
+          if (file.length <= 0)
+            toBeDeleted = true
+        } catch (e) {}
+
+        if (toBeDeleted)
           delete options[option]
       }
     } catch (e) {}

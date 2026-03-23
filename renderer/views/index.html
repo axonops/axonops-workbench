@@ -21,6 +21,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Load the master CSS file for the entire app -->
   <link rel="stylesheet" href="../styles/master.css">
+  <!-- Preload ionicons module chain so all files download in parallel -->
+  <link rel="modulepreload" href="../js/external/ionicons/esm.js">
+  <link rel="modulepreload" href="../js/external/ionicons/p-6f4eae92.js">
+  <link rel="modulepreload" href="../js/external/ionicons/p-4372c4bc.js">
+  <link rel="modulepreload" href="../js/external/ionicons/p-27972752.js">
+  <link rel="modulepreload" href="../js/external/ionicons/p-206e6cb0.entry.js">
+  <!-- Load ionicons immediately — registers <ion-icon> custom element -->
+  <script type="module" src="../js/external/ionicons/esm.js" data-stencil-namespace="ionicons"></script>
   <!-- Load the initialization/booting JS file -->
   <script src="../js/init.js"></script>
 </head>
@@ -223,7 +231,7 @@
         </div>
 
         <!-- Integrate the AxonOps AI using `webview` tag -->
-        <!-- <webview style="height: calc(100% - 30px); bottom: auto;" class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups preload="../js/axonops_ai_webview.js"></webview> -->
+        <!-- <webview style="height: calc(100% - 30px); bottom: auto;" class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups preload="../js/axonops/ai-webview.js"></webview> -->
         <webview style="height: calc(100% - 30px); bottom: auto;" class="animate-hide" id="ai_assistant_webview" nodeIntegrationInSubFrames nodeintegration allowpopups></webview>
 
         <div class="more-list-bg"></div>
@@ -2537,6 +2545,189 @@
               </div>
             </div>
 
+            <div action="create-index" style="margin-top: -20px;">
+              <div class="action-elements">
+                <div class="input-group" style="margin-bottom: 30px;">
+                  <div class="input-group-text create-index-keyspace-table standard-table-name-keyspace">
+                    <div class="keyspace-table-name"></div>
+                  </div>
+                  <div class="form-outline form-white">
+                    <input type="text" class="form-control form-control-lg" id="createIndexName">
+                    <label class="form-label">
+                      <span mulang="index name" capitalize></span>
+                      <span class="badge badge-dark-1 rounded-pill" style="opacity: 0.6;">
+                        <span mulang="optional" capitalize></span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                <div id="chooseIndexColumn" class="form-outline form-white" style="margin-bottom: 5px; z-index: 2;">
+                  <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" style="background-color: inherit; cursor: pointer;" id="createIndexColumn" value="" readonly noopacity>
+                  <label class="form-label">
+                    <span mulang="column" capitalize></span>
+                    <span class="badge badge-dark-1 rounded-pill badge-mandatory">
+                      <span mulang="mandatory" capitalize></span>
+                    </span>
+                  </label>
+                </div>
+                <div class="dropdown adjust" for-select="createIndexColumn">
+                  <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                  <ul class="dropdown-menu" id="createIndexColumnList"></ul>
+                </div>
+                <div class="create-index-collection-modifier" style="display: none; margin-top: -30px; margin-bottom: 20px;">
+                  <span class="badge badge-secondary" style="opacity: 0.85;">
+                    <span mulang="collection modifier" capitalize></span>
+                  </span>
+                  <div style="margin-top: 10px;">
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="createIndexCollectionModifier" id="createIndexModifierNone" value="" checked>
+                      <label class="form-check-label" for="createIndexModifierNone">
+                        <span mulang="none" capitalize></span>
+                      </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="createIndexCollectionModifier" id="createIndexModifierKeys" value="KEYS">
+                      <label class="form-check-label" for="createIndexModifierKeys">KEYS</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="createIndexCollectionModifier" id="createIndexModifierValues" value="VALUES">
+                      <label class="form-check-label" for="createIndexModifierValues">VALUES</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="createIndexCollectionModifier" id="createIndexModifierEntries" value="ENTRIES">
+                      <label class="form-check-label" for="createIndexModifierEntries">ENTRIES</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="createIndexCollectionModifier" id="createIndexModifierFull" value="FULL">
+                      <label class="form-check-label" for="createIndexModifierFull">FULL</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-check" style="margin-top: 20px; margin-bottom: 20px;">
+                  <input class="form-check-input" type="checkbox" value id="createIndexIfNotExists" checked>
+                  <label class="form-check-label" for="createIndexIfNotExists">IF NOT EXISTS</label>
+                </div>
+                <div class="form-outline form-white" style="margin-bottom: 30px;">
+                  <input type="text" class="form-control form-control-lg" id="createIndexUsing" value="sai">
+                  <label class="form-label">
+                    <span mulang="index class" capitalize></span> (USING)
+                  </label>
+                </div>
+                <div class="create-index-options-section" style="position: relative; z-index: 0;">
+                  <span class="badge badge-secondary" style="opacity: 0.85;">
+                    <span><span mulang="extra options" capitalize></span></span>
+                  </span>
+                  <div style="margin-top: 10px;">
+                    <div class="form-check form-switch form-white" style="margin-bottom: 8px;">
+                      <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="createIndexOptionCaseSensitive" checked>
+                      <label class="form-check-label" for="createIndexOptionCaseSensitive"><code>case_sensitive</code></label>
+                    </div>
+                    <div class="form-check form-switch form-white" style="margin-bottom: 8px;">
+                      <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="createIndexOptionNormalize">
+                      <label class="form-check-label" for="createIndexOptionNormalize"><code>normalize</code></label>
+                    </div>
+                    <div class="form-check form-switch form-white" style="margin-bottom: 8px;">
+                      <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="createIndexOptionAscii">
+                      <label class="form-check-label" for="createIndexOptionAscii"><code>ascii</code></label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div action="copy-table" style="margin-top: -20px;">
+              <div class="action-elements">
+                <div class="types-of-transactions" style="margin-left: 0; margin-right: 0; width: 100%;">
+                  <div class="sections">
+                    <div class="section">
+                      <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="copy-to">
+                        COPY TO
+                      </div>
+                    </div>
+                    <div class="section">
+                      <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="copy-from">
+                        COPY FROM
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-outline form-white margin-bottom file copy-table-to-option" role="file-selector" file-name="-" file-info="Export CSV" data-copy-table="true" style="margin-top: 25px; margin-bottom: 25px;">
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" id="copyTableFilePathTo" readonly>
+                </div>
+                <div class="form-outline form-white margin-bottom file copy-table-from-option" role="file-selector" file-name="-" file-info="Import CSV" data-copy-table="true" style="display: none; margin-top: 25px; margin-bottom: 25px;">
+                  <input type="text" class="form-control form-icon-trailing form-control-lg" id="copyTableFilePathFrom" readonly>
+                </div>
+
+                <span class="badge badge-secondary" style="opacity: 0.85; margin-bottom: 5px;">
+                  <span mulang="options" capitalize></span>
+                </span>
+                <div style="margin-top: 10px; margin-bottom: 20px;">
+                  <div class="form-check form-switch form-white" style="margin-bottom: 8px;">
+                    <input class="form-check-input checkbox-checked" type="checkbox" role="switch" id="copyTableHeader">
+                    <label class="form-check-label" for="copyTableHeader">Header</label>
+                  </div>
+                  <div class="row" style="margin-bottom: 8px;">
+                    <div class="col-md-6">
+                      <div class="form-outline form-white" style="width: calc(100% - 5px);">
+                        <input type="text" class="form-control form-control-lg" id="copyTableDelimiter" value=",">
+                        <label class="form-label">Delimiter</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-outline form-white">
+                        <input type="text" class="form-control form-control-lg" id="copyTableNullval" value="null">
+                        <label class="form-label"><code>null</code> Value</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row" style="margin-bottom: 8px;">
+                    <div class="col-md-6">
+                      <div class="form-outline form-white" style="width: calc(100% - 5px);">
+                        <input type="number" class="form-control form-control-lg" id="copyTableMaxrows" value="-1">
+                        <label class="form-label">Max Rows</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6 copy-table-to-option">
+                      <div class="form-outline form-white">
+                        <input type="number" class="form-control form-control-lg" id="copyTablePagesize" value="1000">
+                        <label class="form-label">Page Size</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row copy-table-from-option" style="margin-bottom: 8px; display: none;">
+                    <div class="col-md-6">
+                      <div class="form-outline form-white" style="width: calc(100% - 5px);">
+                        <input type="number" class="form-control form-control-lg" id="copyTableSkiprows" value="0">
+                        <label class="form-label">Skip Rows</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-outline form-white">
+                        <input type="number" class="form-control form-control-lg" id="copyTableChunksize" value="5000">
+                        <label class="form-label">Chunk Size</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row copy-table-from-option" style="margin-bottom: 8px; display: none;">
+                    <div class="col-md-6">
+                      <div class="form-outline form-white" style="width: calc(100% - 5px);">
+                        <input type="number" class="form-control form-control-lg" id="copyTableMaxbatchsize" value="20">
+                        <label class="form-label">Max Batch Size</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-outline form-white">
+                        <input type="number" class="form-control form-control-lg" id="copyTableMaxrequests" value="6">
+                        <label class="form-label">Max Requests</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div action="insert-row">
               <div class="types-of-transactions">
                 <div class="sections">
@@ -3170,6 +3361,493 @@
                   </span>
                 </div>
                 <div class="table-fields-tree children-transform" id="tableFieldsUDTColumnsTreeDeleteAction"></div>
+              </div>
+            </div>
+
+            <div action="update-row" style="margin-top: -20px;">
+              <div class="types-of-transactions">
+                <div class="sections">
+                  <div class="section">
+                    <div class="btn btn-tertiary btn-lg active" data-mdb-ripple-color="dark" section="standard">
+                      <span mulang="standard" capitalize></span>
+                    </div>
+                  </div>
+                  <div class="section">
+                    <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="lwt">
+                      <span mulang="lightweight transaction" capitalize></span> (LWT)
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="lwt-hint-update">
+                <ion-icon name="info-circle-outline" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span mulang="lightweight transactions" capitalize></span> (LWTs) <span
+                  mulang="provide strong consistency but can impact performance and scalability. Use them only when required" capitalize-first></span>.
+              </div>
+
+              <div class="fields-badge-action" style="padding: 10px;">
+                <span class="badge badge-secondary">
+                  <span mulang="consistency level" capitalize></span>
+                </span>
+              </div>
+              <div class="row flex consistency-level-row">
+                <div class="col-md-12" update-consistency="write">
+                  <div class="form-outline form-white" style="z-index: 2; width: calc(100% - 35px);">
+                    <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                    <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="updateWriteConsistencyLevel" value="" readonly noopacity>
+                    <label class="form-label">
+                      <span mulang="write consistency level" capitalize></span>
+                    </label>
+                    <div class="valid-feedback"></div>
+                    <div class="invalid-feedback"></div>
+                  </div>
+                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true" data-title
+                    data-mulang="consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.[br][br]However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:[br][code]R + W > RF[/code][br](Read replicas + Write replicas > Replication Factor)[br][br]Example: With [code]RF=3[/code], using [code]QUORUM (2)[/code] for both reads and writes ensures strong consistency [code](2+2>3)[/code] while maintaining availability and tolerance to failure"
+                    capitalize-first data-tippy-delay="[100, 0]">
+                    <ion-icon name="info-circle-outline" style="transform: translateX(0px);"></ion-icon>
+                  </div>
+                  <div class="dropdown" for-select="updateWriteConsistencyLevel">
+                    <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                    <ul class="dropdown-menu top-margin" style="width: calc(100% - 35px) !important;">
+                      <li><a class="dropdown-item" href="#" value="ANY">ANY</a></li>
+                      <li><a class="dropdown-item" href="#" value="LOCAL_ONE">LOCAL_ONE</a></li>
+                      <li><a class="dropdown-item" href="#" value="ONE">ONE</a></li>
+                      <li><a class="dropdown-item" href="#" value="TWO">TWO</a></li>
+                      <li><a class="dropdown-item" href="#" value="THREE">THREE</a></li>
+                      <li><a class="dropdown-item" href="#" value="QUORUM">QUORUM</a></li>
+                      <li><a class="dropdown-item" href="#" value="LOCAL_QUORUM">LOCAL_QUORUM</a></li>
+                      <li><a class="dropdown-item" href="#" value="EACH_QUORUM">EACH_QUORUM</a></li>
+                      <li><a class="dropdown-item" href="#" value="ALL">ALL</a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="col-md-6" update-consistency="serial" style="display: none;">
+                  <div class="form-outline form-white" style="z-index: 2; width: calc(100% - 35px);">
+                    <ion-icon name="arrow-down" class="trailing" style="font-size: 190%;"></ion-icon>
+                    <input type="text" class="form-control form-icon-trailing" style="background-color: inherit; cursor: pointer;" id="updateSerialConsistencyLevel" value="" readonly noopacity>
+                    <label class="form-label">
+                      <span mulang="serial consistency level" capitalize></span>
+                    </label>
+                    <div class="valid-feedback"></div>
+                    <div class="invalid-feedback"></div>
+                  </div>
+                  <div class="tooltip-info absolute" data-tippy="tooltip" data-mdb-placement="bottom" data-mdb-html="true" data-title
+                    data-mulang="[p]This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL[/p][ul][li][strong]SERIAL[/strong]: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.[/li][li][strong]LOCAL_SERIAL[/strong]: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments[/li][/ul][p]Recommended Consistency Level Combinations for LWTs[/p][table class='_lwt_table'][thead][tr][th]Deployment Scenario[/th][th]Write Consistency Level[/th][th]Serial Consistency Level[/th][/tr][/thead][tbody][tr][td][strong]Multi-DC Strong Consistency[/strong][/td][td][code]EACH_QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][tr][td][strong]Multi-DC High Performance[/strong][/td][td][code]LOCAL_QUORUM[/code][/td][td][code]LOCAL_SERIAL[/code][/td][/tr][tr][td][strong]Single-DC Clusters[/strong][/td][td][code]QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][/tbody][/table]"
+                    capitalize-first data-tippy-delay="[100, 0]" data-tippy-maxWidth="590">
+                    <ion-icon name="info-circle-outline" style="transform: translateX(0px);"></ion-icon>
+                  </div>
+                  <div class="dropdown" for-select="updateSerialConsistencyLevel">
+                    <button class="btn dropdown-toggle" type="button" data-mdb-toggle="dropdown"></button>
+                    <ul class="dropdown-menu top-margin" style="width: calc(100% - 35px) !important;">
+                      <li><a class="dropdown-item" href="#" value="SERIAL">SERIAL</a></li>
+                      <li><a class="dropdown-item" href="#" value="LOCAL_SERIAL">LOCAL_SERIAL</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="consistency-level-warning-update">
+                <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span></span>.
+              </div>
+
+              <div section="standard">
+                <div class="fields-badge-action" id="updatePrimaryKeyBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="primary key" capitalize></span> (WHERE)
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsPrimaryKeyTreeUpdateAction"></div>
+
+                <div class="fields-badge-action" id="updateRegularColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="regular columns" capitalize></span> (SET)
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsRegularColumnsTreeUpdateAction"></div>
+
+                <div class="fields-badge-action" id="updateCollectionColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="collection types columns" capitalize></span> (SET)
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsCollectionColumnsTreeUpdateAction"></div>
+
+                <div class="fields-badge-action" id="updateUDTColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="UDT columns" capitalize></span> (SET)
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsUDTColumnsTreeUpdateAction"></div>
+
+                <div class="fields-badge-action" id="updateExtraOptionsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="extra options" capitalize></span>
+                  </span>
+                </div>
+
+                <div class="row flex data-ttl-row">
+                  <div class="col-md-6">
+                    <div class="form-outline form-white">
+                      <div class="clear-field hide">
+                        <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                          <ion-icon name="close"></ion-icon>
+                        </div>
+                      </div>
+                      <input type="number" class="form-control" id="updateTtl">
+                      <label for="updateTtl" class="form-label">
+                        <span mulang="Data Time-To-Live" capitalize></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="updateTtlValueType" id="updateTtlMS" value="ms" checked>
+                      <label class="form-check-label" for="updateTtlMS">ms</label>
+                    </div>
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="updateTtlValueType" id="updateTtlS" value="s">
+                      <label class="form-check-label" for="updateTtlS">s</label>
+                    </div>
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="updateTtlValueType" id="updateTtlM" value="m">
+                      <label class="form-check-label" for="updateTtlM">m</label>
+                    </div>
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="updateTtlValueType" id="updateTtlH" value="h">
+                      <label class="form-check-label" for="updateTtlH">h</label>
+                    </div>
+                    <div class="form-check form-check-inline" data-mdb-ripple-init data-mdb-ripple-color="light">
+                      <input class="form-check-input" type="radio" name="updateTtlValueType" id="updateTtlD" value="d">
+                      <label class="form-check-label" for="updateTtlD">d</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row flex data-insertion-timestamp-row" style="align-items: flex-start;">
+                  <div class="col-md-6">
+                    <div class="form-outline form-white">
+                      <div class="clear-field hide">
+                        <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                          <ion-icon name="close"></ion-icon>
+                        </div>
+                      </div>
+                      <input type="number" class="form-control" id="updateTimestamp">
+                      <label for="updateTimestamp" class="form-label">
+                        <span mulang="data insertion timestamp" capitalize></span>
+                      </label>
+                      <div class="invalid-feedback" style="white-space: nowrap;">
+                        <span mulang="please choose between using a Lightweight Transaction (LWT) or setting a timestamp" capitalize-first></span>. <span mulang="you cannot use both" capitalize-first></span>.
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <button type="button" class="btn btn-light btn-rounded btn-sm ripple-surface-dark" style="margin-left: 10px;
+      opacity: 0.8; transform: translateY(4px);" id="updateTimestampPicker">
+                      <ion-icon name="calendar" role="img" class="md hydrated" aria-label="calendar"></ion-icon> <span mulang="date time picker" capitalize></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div section="lwt" style="display: none;">
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="Options" capitalize></span>
+                  </span>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
+                  <input class="form-check-input" type="radio" name="lwtUpdateOptions" value id="updateNoSelectOption" checked>
+                  <label class="form-check-label" for="updateNoSelectOption">
+                    <span mulang="no selection" capitalize-first></span>.
+                  </label>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px; margin-bottom: 7px;">
+                  <input class="form-check-input" type="radio" name="lwtUpdateOptions" value id="updateIfExistsOption">
+                  <label class="form-check-label" for="updateIfExistsOption">
+                    <span mulang="include [code]IF EXISTS[/code] keyword" capitalize-first></span>.
+                  </label>
+                </div>
+                <div class="form-check margin-bottom" style="padding-left: 32px;">
+                  <input class="form-check-input" type="radio" name="lwtUpdateOptions" value id="updateIfColumnOption">
+                  <label class="form-check-label" for="updateIfColumnOption">
+                    <span mulang="use [code]IF column =[/code]" capitalize-first></span>.
+                  </label>
+                </div>
+
+                <div class="fields-badge-action" id="updateLWTRegularColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="regular columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsRegularColumnsTreeUpdateLWT"></div>
+                <div class="fields-badge-action" id="updateLWTCollectionColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="collection types columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsCollectionColumnsTreeUpdateLWT"></div>
+                <div class="fields-badge-action" id="updateLWTUDTColumnsBadge" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="UDT columns" capitalize></span>
+                  </span>
+                </div>
+                <div class="table-fields-tree children-transform" id="tableFieldsUDTColumnsTreeUpdateLWT"></div>
+              </div>
+            </div>
+
+            <div action="create-super-user" style="margin-top: -20px;">
+              <div class="action-elements">
+                <div class="super-user-warning" style="display: block; margin: 0; width: 100%; margin-bottom: 20px; margin-top: 5px;">
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span
+                    mulang="a Cassandra superuser requires QUORUM consistency level for authentication and authorization, which can cause significant performance degradation, especially in multi-datacenter environments. This superuser should only be used once to bootstrap your initial security configuration. It is recommended to create DBA users and regular users for typical usage and not use superusers"
+                    capitalize-first></span>.
+                </div>
+
+                <div class="form-outline form-white" style="margin-bottom: 30px;">
+                  <input type="text" class="form-control form-control-lg" id="createSuperUserRoleName">
+                  <label class="form-label">
+                    <span mulang="role name" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback">
+                    <span mulang capitalize-first></span>
+                  </div>
+                </div>
+                <div class="form-outline form-white" style="margin-bottom: 10px;">
+                  <div class="reveal-password">
+                    <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                      <ion-icon name="eye-opened"></ion-icon>
+                    </div>
+                  </div>
+                  <input type="password" class="form-control form-control-lg" id="createSuperUserPassword">
+                  <label class="form-label">
+                    <span mulang="password" capitalize-first></span>
+                  </label>
+                </div>
+                <div class="create-super-user-password-strength">
+                  <div class="strength-bar">
+                    <div class="strength-bar-fill" data-strength="0"></div>
+                  </div>
+                </div>
+                <div style="padding: 0 15px; margin-bottom: 15px;">
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createSuperUserPasswordType" value="standard" id="createSuperUserPasswordStandard" checked>
+                    <label class="form-check-label" for="createSuperUserPasswordStandard">
+                      <span mulang="standard password" capitalize-first></span>
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createSuperUserPasswordType" value="hashed" id="createSuperUserPasswordHashed">
+                    <label class="form-check-label" for="createSuperUserPasswordHashed">
+                      <span mulang="hashed password" capitalize-first></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="create-super-user-hashed-options" style="display: none; padding: 0 15px; margin-bottom: 15px;">
+                  <div class="form-outline form-white" style="margin-bottom: 10px;">
+                    <input type="text" class="form-control form-control-lg" id="createSuperUserExistingHash">
+                    <label class="form-label">
+                      <span mulang="bcrypt hash" capitalize></span>
+                    </label>
+                  </div>
+                  <div class="create-super-user-generate-hash">
+                    <button type="button" class="btn btn-secondary btn-sm" id="createSuperUserGenerateHashBtn">
+                      <ion-icon name="lock-closed"></ion-icon>
+                      <span mulang="generate hashed password" capitalize-first></span>
+                    </button>
+                  </div>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="createSuperUserCopyCredentials">
+                    <ion-icon name="copy"></ion-icon>
+                    <span mulang="copy credentials to clipboard" capitalize-first></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div action="create-dba-user" style="margin-top: -20px;">
+              <div class="action-elements">
+                <div class="dba-user-warning" style="display: block; margin-top: 0px; margin-bottom: 10px;">
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span
+                    mulang="this DBA user is created using standard Cassandra DBA permissions that may not be as you require. This user will have read/write access to all tables, user and role management permissions, access to all functions, MBeans and nodetool commands"
+                    capitalize-first></span>.
+                </div>
+
+                <div class="form-outline form-white margin-bottom">
+                  <input type="text" class="form-control form-control-lg" id="createDBAUserRoleName">
+                  <label class="form-label">
+                    <span mulang="role name" capitalize></span>
+                  </label>
+                  <div class="valid-feedback"></div>
+                  <div class="invalid-feedback">
+                    <span mulang capitalize-first></span>
+                  </div>
+                </div>
+
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="authentication" capitalize></span>
+                    <span class="badge badge-dark-1 rounded-pill badge-mandatory" style="margin-left: 5px;">
+                      <span mulang="mandatory" capitalize></span>
+                    </span>
+                  </span>
+                </div>
+                <div style="padding: 0 15px; margin-bottom: 15px;">
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createDBAUserPasswordType" value="standard" id="createDBAUserPasswordStandard" checked>
+                    <label class="form-check-label" for="createDBAUserPasswordStandard">
+                      <span mulang="standard password" capitalize-first></span>
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createDBAUserPasswordType" value="hashed" id="createDBAUserPasswordHashed">
+                    <label class="form-check-label" for="createDBAUserPasswordHashed">
+                      <span mulang="hashed password" capitalize-first></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="form-outline form-white" style="margin-bottom: 10px; padding: 0 15px;">
+                  <input type="password" class="form-control form-control-lg" id="createDBAUserPassword">
+                  <label class="form-label">
+                    <span mulang="password" capitalize-first></span>
+                  </label>
+                </div>
+                <div class="create-dba-user-password-strength" style="display: none; padding: 0 15px; margin-bottom: 15px;">
+                  <div class="strength-bar">
+                    <div class="strength-bar-fill" data-strength="0"></div>
+                  </div>
+                  <span class="strength-label" mulang="too weak" capitalize-first></span>
+                </div>
+
+                <div class="create-dba-user-hashed-options" style="display: none; padding: 0 15px; margin-bottom: 15px;">
+                  <div class="form-outline form-white" style="margin-bottom: 10px;">
+                    <input type="text" class="form-control form-control-lg" id="createDBAUserExistingHash">
+                    <label class="form-label">
+                      <span mulang="bcrypt hash" capitalize-first></span>
+                    </label>
+                  </div>
+                  <div class="create-dba-user-generate-hash">
+                    <button type="button" class="btn btn-secondary btn-sm" id="createDBAUserGenerateHashBtn">
+                      <ion-icon name="lock-closed"></ion-icon>
+                      <span mulang="generate hashed password" capitalize-first></span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="datacenter access control" capitalize></span>
+                    <span class="badge badge-dark-1 rounded-pill" style="margin-left: 5px;">
+                      <span mulang="optional" capitalize></span>
+                    </span>
+                  </span>
+                </div>
+                <div class="create-dba-user-dc-info" style="padding: 0 15px; margin-bottom: 10px; font-size: 0.85em; opacity: 0.7;">
+                  <ion-icon name="info-circle-outline" style="font-size:120%; vertical-align: middle; margin-right: 3px;"></ion-icon> <span
+                    mulang="DC-level access control requires cluster configuration. Verify network_authorizer is properly configured in cassandra.yaml before proceeding otherwise this may have no effect" capitalize-first></span>.
+                </div>
+                <div style="padding: 0 15px; margin-bottom: 10px;">
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createDBAUserDCAccess" value="all" id="createDBAUserDCAll" checked>
+                    <label class="form-check-label" for="createDBAUserDCAll">
+                      <span mulang="all datacenters" capitalize-first></span>
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createDBAUserDCAccess" value="specific" id="createDBAUserDCSpecific">
+                    <label class="form-check-label" for="createDBAUserDCSpecific">
+                      <span mulang="specific datacenters" capitalize-first></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="create-dba-user-dc-checkboxes" style="display: none; padding: 0 15px; margin-bottom: 15px;"></div>
+
+                <div class="fields-badge-action" style="padding: 10px;">
+                  <span class="badge badge-secondary">
+                    <span mulang="CIDR access control" capitalize></span>
+                    <span class="badge badge-dark-1 rounded-pill" style="margin-left: 5px;">
+                      <span mulang="optional" capitalize></span>
+                    </span>
+                  </span>
+                </div>
+                <div class="create-dba-user-cidr-info" style="padding: 0 15px; margin-bottom: 10px; font-size: 0.85em; opacity: 0.7;">
+                  <ion-icon name="info-circle-outline" style="font-size:120%; vertical-align: middle; margin-right: 3px;"></ion-icon> <span
+                    mulang="CIDR access control requires cluster configuration to be enabled and CIDR groups to be created before assigning to users" capitalize-first></span>.
+                </div>
+                <div style="padding: 0 15px; margin-bottom: 10px;">
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createDBAUserCIDRAccess" value="all" id="createDBAUserCIDRAll" checked>
+                    <label class="form-check-label" for="createDBAUserCIDRAll">
+                      <span mulang="all CIDRs" capitalize-first></span>
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="createDBAUserCIDRAccess" value="specific" id="createDBAUserCIDRSpecific">
+                    <label class="form-check-label" for="createDBAUserCIDRSpecific">
+                      <span mulang="specific CIDR groups" capitalize-first></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="create-dba-user-cidr-input" style="display: none; padding: 0 15px; margin-bottom: 15px;">
+                  <div class="form-outline form-white">
+                    <input type="text" class="form-control form-control-lg" id="createDBAUserCIDRGroups">
+                    <label class="form-label">
+                      <span mulang="CIDR group names (comma-separated)" capitalize-first></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div style="padding: 0 15px; margin-bottom: 10px;">
+                  <button type="button" class="btn btn-secondary btn-sm" id="createDBAUserCopyCredentials">
+                    <ion-icon name="copy"></ion-icon>
+                    <span mulang="copy credentials to clipboard" capitalize-first></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div action="reset-counters" style="margin-top: -20px;">
+              <div class="action-elements">
+                <div class="reset-all-counters-warning" style="display: block; margin: 0; width: 100%; margin-bottom: 20px; margin-top: 5px;">
+                  <ion-icon name="warn-circle-outline" style="font-size:135%;" class="management-tools-hint-icon no-select localclusters-dialog"></ion-icon> <span
+                    mulang="resetting counters in a multi-client environment carries risks: the reset operation is not atomic, other clients may increment or decrement the counter during reset, the final counter value may be incorrect if concurrent updates occur, and once reset, there is no way to recover the previous value"
+                    capitalize-first></span>.
+                </div>
+
+                <div class="fields-badge-action">
+                  <span class="badge badge-secondary">
+                    <span mulang="primary key" capitalize></span>
+                    <span class="badge badge-dark-1 rounded-pill badge-mandatory" style="margin-left: 5px;">
+                      <span mulang="mandatory" capitalize></span>
+                    </span>
+                  </span>
+                </div>
+                <div class="reset-counters-pk-fields" style="margin: 15px 0px; margin-bottom: 30px;"></div>
+
+                <div class="fields-badge-action">
+                  <span class="badge badge-secondary">
+                    <span mulang="counter columns to reset" capitalize></span>
+                  </span>
+                </div>
+                <div class="reset-counters-columns-info"></div>
+              </div>
+            </div>
+
+            <div action="find-udt-usages" style="display:none; margin-top: -20px;">
+              <div class="action-elements">
+                <div class="find-usages-header">
+                  <h6>
+                    <span mulang="usages of" capitalize></span> <span class="find-usages-udt-name"></span>
+                  </h6>
+                  <p class="find-usages-summary text-muted"></p>
+                </div>
+                <div class="find-usages-results"></div>
+                <div class="find-usages-no-results" style="display:none">
+                  <p class="text-muted" style="text-align:center; padding:30px;">
+                    <span mulang="no usages found" capitalize></span>
+                  </p>
+                </div>
               </div>
             </div>
 

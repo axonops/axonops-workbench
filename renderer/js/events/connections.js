@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 {
-  require(Path.join(__dirname, '..', 'js', 'events', 'connections', 'events'))
+  let connectionsPath = Path.join(__dirname, '..', 'js', 'events', 'connections')
 
-  require(Path.join(__dirname, '..', 'js', 'events', 'connections', 'ipc'))
+  loadScript(Path.join(connectionsPath, 'events-get-connections.js'))
+  loadScript(Path.join(connectionsPath, 'events-connection-dialogs.js'))
+  loadScript(Path.join(connectionsPath, 'events-connection-ui.js'))
+
+  loadScript(Path.join(connectionsPath, 'ipc-cql-operations.js'))
+  loadScript(Path.join(connectionsPath, 'ipc-metadata-dialog.js'))
+  loadScript(Path.join(connectionsPath, 'ipc-misc.js'))
 }

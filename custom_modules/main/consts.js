@@ -42,9 +42,9 @@ const Constants = {
     CrashHandlerServer: 'http://127.0.0.1:55155/set/crash'
   },
   // Default `cqlsh.rc` file's content
-  CQLSHRC: require(Path.join(__dirname, '..', '..', 'renderer', 'js', 'default_cqlshrc.js')).CQLSHRC,
+  CQLSHRC: require(Path.join(__dirname, '..', '..', 'renderer', 'js', 'defaults', 'cqlshrc.js')).CQLSHRC,
   // Default `docker-compose.yml` content
-  DockerComposeYAML: require(Path.join(__dirname, '..', '..', 'renderer', 'js', 'default_docker_compose_yml.js')).DockerYAML,
+  DockerComposeYAML: require(Path.join(__dirname, '..', '..', 'renderer', 'js', 'defaults', 'docker-compose.js')).DockerYAML,
   // Define sensitive data to be checked inside the `cqlsh.rc` content
   SensitiveData: ['username', 'password', 'credentials'],
   // Allowed HTML tags to be rendered in the localization process

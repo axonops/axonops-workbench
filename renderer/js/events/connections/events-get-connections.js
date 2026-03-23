@@ -93,6 +93,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
            * The value will be updated with every test connection process
            */
           testConnectionProcessID,
+          encryptedUsername,
+          encryptedPassword,
           /**
            * Define the variable which holds the latest generated ID for the SSH tunnel creation process
            * The value will be updated with every test connection process
@@ -724,12 +726,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                     // Define the content of the AxonOps tab to be added
                     if (getAttributes(connectionElement, 'data-axonops-installed') === 'true') {
                       axonopsTab = `
-                             <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title>
-                               <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${localClustersAxonopsContentID}" role="tab" aria-selected="true">
-                                 <span class="icon"><ion-icon name="axonops"></ion-icon></span>
-                                 <span class="title">AxonOps</span>
-                               </a>
-                             </li>`
+                              <li class="nav-item axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title>
+                                <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${localClustersAxonopsContentID}" role="tab" aria-selected="true">
+                                  <span class="icon"><ion-icon name="axonops"></ion-icon></span>
+                                  <span class="title">AxonOps</span>
+                                </a>
+                              </li>`
                     }
 
                     // Define the content of the bash session tab to be added
@@ -750,464 +752,464 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                   // Connection work area's UI element structure
                   let element = `
-                             <div class="workarea" connection-id="${connectionID}" workarea-id="${workareaID}">
-                               <div class="sub-sides left">
-                                 <div class="connection-info">
-                                   <div class="name-ssl ${isSandbox ? 'is-sandbox' : ''}">
-                                     <div class="name no-select-reverse">${getAttributes(connectionElement, 'data-name')}</div>
-                                     <div class="status" data-tippy="tooltip" data-mdb-placement="left" data-mulang="analyzing status" capitalize-first data-title ${isSCBConnection ? 'hidden' : ''}>
-                                       <ion-icon name="unknown"></ion-icon>
-                                     </div>
-                                     <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps in browser" capitalize-first data-title ${getAttributes(connectionElement, 'data-axonops-installed') !== 'true' ? 'hidden' : ''}>
-                                       <ion-icon name="globe"></ion-icon>
-                                     </div>
-                                     <div class="axonops-integration-icon" data-tippy="tooltip" data-mdb-placement="left" data-mulang="launch AxonOps" capitalize-first data-title ${!isAxonOpsIntegrationActionEnabled ? 'hidden' : ''}>
-                                       <ion-icon name="axonops"></ion-icon>
-                                       <ion-icon name="globe"></ion-icon>
-                                     </div>
-                                     <div class="connection-status">
-                                       <l-ripples style="--uib-size: 20px; --uib-color: #ff8000; --uib-speed: 7s;"><div class="dot"></div></l-ripples>
-                                     </div>
-                                   </div>
-                                   <div class="additional">
-                                     <div class="info" info="host" ${isSCBConnection ? 'hidden' : ''}>
-                                       <div class="title">host
-                                         <ion-icon name="right-arrow-filled"></ion-icon>
-                                       </div>
-                                       <div class="text no-select-reverse">${getAttributes(connectionElement, 'data-host')}</div>
-                                     </div>
-                                     <div class="info" info="cassandra">
-                                       <div class="title">cassandra
-                                         <ion-icon name="right-arrow-filled"></ion-icon>
-                                       </div>
-                                       <div class="text no-select-reverse">v${getAttributes(connectionElement, 'data-cassandra-version')}</div>
-                                     </div>
-                                     <div class="info" info="data-center">
-                                       <div class="title">data center
-                                         <ion-icon name="right-arrow-filled"></ion-icon>
-                                       </div>
-                                       <div class="text no-select-reverse">${getAttributes(connectionElement, 'data-datacenter')}</div>
-                                     </div>
-                                     <div class="info" info="cluster-name">
-                                       <div class="title">cluster name
-                                         <ion-icon name="right-arrow-filled"></ion-icon>
-                                       </div>
-                                       <div class="text no-select-reverse"></div>
-                                       <div class="_placeholder" style="width: 50px;"></div>
-                                     </div>
-                                     <div class="info" info="cassandra-username">
-                                       <div class="title">username
-                                         <ion-icon name="right-arrow-filled"></ion-icon>
-                                       </div>
-                                       <div class="text no-select-reverse"></div>
-                                       <div class="_placeholder" style="width: 50px;"></div>
-                                     </div>
-                                   </div>
-                                 </div>
-                                 <div class="connection-metadata loading" ${isSCBConnection ? 'style="height: calc(100% - 217px);"' : ''}>
-                                   <div class="search-in-metadata">
-                                     <div class="form-outline form-white margin-bottom">
-                                       <input type="text" class="form-control form-icon-trailing form-control-sm">
-                                       <label class="form-label">
-                                         <span mulang="search in metadata" capitalize-first></span>
-                                       </label>
-                                       <div class="right-elements">
-                                         <div class="result-count">
-                                           <span class="current"></span>/<span class="total"></span>
-                                         </div>
-                                         <div class="arrows">
-                                           <div class="next btn btn-tertiary" data-mdb-ripple-color="light">
-                                             <ion-icon name="arrow-down"></ion-icon>
-                                           </div>
-                                           <div class="previous btn btn-tertiary" data-mdb-ripple-color="light">
-                                             <ion-icon name="arrow-up"></ion-icon>
-                                           </div>
-                                         </div>
-                                       </div>
-                                     </div>
-                                   </div>
-                                   <div class="metadata-content" data-id="${metadataContentID}">
-                                   </div>
-                                   <div class="loading">
-                                     <div class="sub-content">
-                                     <img src="../assets/lottie/loading-metadata.gif" background="transparent" style="position: absolute; inset: 0; margin: auto; width: -webkit-fill-available;">
-                                     </div>
-                                   </div>
-                                   <div class="metadata-actions">
-                                     <div class="action" action="copy">
-                                       <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="copy metadata" capitalize-first data-id="${copyMetadataBtnID}">
-                                         <ion-icon name="copy"></ion-icon>
-                                       </div>
-                                     </div>
-                                     <div class="action" action="refresh">
-                                       <div class="btn btn-tertiary disableable" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="refresh metadata" capitalize-first data-id="${refreshMetadataBtnID}">
-                                         <ion-icon name="refresh"></ion-icon>
-                                       </div>
-                                     </div>
-                                     <div class="action" action="search">
-                                       <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="search in metadata" capitalize-first data-id="${searchInMetadataBtnID}">
-                                         <ion-icon name="search" style="font-size: 135%;"></ion-icon>
-                                       </div>
-                                     </div>
-                                   </div>
-                                 </div>
-                               </div>
-                               <div class="sub-sides right">
-                                 <div class="header">
-                                   <div class="connection-tabs">
-                                     <ul class="nav nav-tabs nav-justified mb-3" id="ex-with-icons" role="tablist">
-                                       <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL console" capitalize data-title>
-                                         <a tab-content="cqlsh-session" class="nav-link btn btn-tertiary active" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlshSessionContentID}" role="tab" aria-selected="true">
-                                           <span class="icon">
-                                             <ion-icon name="terminal"></ion-icon>
-                                           </span>
-                                           <span class="title">
-                                             <span mulang="CQL console" capitalize></span>
-                                           </span>
-                                         </a>
-                                       </li>
-                                       ${bashSessionTab}
-                                       <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL description" capitalize data-title>
-                                         <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlDescriptionContentID}" role="tab" aria-selected="true">
-                                           <span class="icon">
-                                             <ion-icon name="cql-description"></ion-icon>
-                                           </span>
-                                           <span class="title">
-                                             <span mulang="CQL description" capitalize></span>
-                                           </span>
-                                         </a>
-                                       </li>
-                                       <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="query tracing" capitalize data-title>
-                                         <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${queryTracingContentID}" role="tab" aria-selected="true">
-                                           <span class="icon">
-                                             <ion-icon name="query-tracing"></ion-icon>
-                                           </span>
-                                           <span class="title">
-                                             <span mulang="query tracing" capitalize></span>
-                                           </span>
-                                         </a>
-                                       </li>
-                                       <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="schema diff" capitalize data-title>
-                                         <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${metadataDifferentiationContentID}" role="tab" aria-selected="true">
-                                           <span class="icon">
-                                             <ion-icon name="differentiation"></ion-icon>
-                                           </span>
-                                           <span class="title">
-                                             <span mulang="schema diff" capitalize></span>
-                                           </span>
-                                         </a>
-                                       </li>
-                                       <li class="nav-item axonops-integration-tab axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title>
-                                         <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${axonopsIntegrationContentID}" role="tab" aria-selected="true">
-                                           <span class="icon"><ion-icon name="axonops"></ion-icon></span>
-                                           <span class="title">AxonOps</span>
-                                         </a>
-                                       </li>
-                                       ${axonopsTab}
-                                     </ul>
-                                   </div>
-                                   <div class="connection-actions colored-box-shadow" style="width:40px">
-                                     <div class="action" action="restart" hidden>
-                                       <div class="btn-container">
-                                         <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="restart the work area" capitalize-first data-id="${restartWorkareaBtnID}">
-                                           <ion-icon name="restart"></ion-icon>
-                                         </div>
-                                       </div>
-                                     </div>
-                                     <div class="action" action="close">
-                                       <div class="btn-container">
-                                         <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="close and disconnect" capitalize-first data-id="${closeWorkareaBtnID}">
-                                           <ion-icon name="close"></ion-icon>
-                                         </div>
-                                       </div>
-                                     </div>
-                                   </div>
-                                 </div>
-                                 <div class="tab-content">
-                                   <div class="tab-pane fade show active loading" tab="cqlsh-session" id="_${cqlshSessionContentID}" role="tabpanel">
-                                     <div class="switch-terminal" hidden>
-                                       <button type="button" class="btn btn-primary changed-bg changed-color" disabled>
-                                         <ion-icon name="switch"></ion-icon>
-                                         <span mulang="switch terminal"></span>
-                                       </button>
-                                     </div>
-                                     <div class="terminal-container" data-id="${terminalContainerID}" style="display:none;"></div>
-                                     <div class="interactive-terminal-container" data-id="${terminalContainerID}_interactive">
-                                       <div class="container-header" style="${!isBasicCQLSHEnabled ? 'width: 100%;' : ''}">
-                                         <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
-                                           <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
-                                           <input spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionSearchInputID}">
-                                           <label class="form-label">
-                                             <span mulang="search in the session" capitalize-first></span>
-                                           </label>
-                                         </div>
-                                       </div>
-                                       <div class="session-content" id="_${cqlshSessionContentID}_container"></div>
-                                       <div class="empty-statements show" id="_${containerEmptyStatementsID}">
-                                         <div class="container">
-                                           <div class="semi-colon">;</div>
-                                           <div class="message"><span mulang="start now by executing cql statement" capitalize-first></span></div>
-                                         </div>
-                                       </div>
-                                       <div class="container-footer" id="_${containerFooterID}">
-                                         <div class="session-actions">
-                                           <div class="session-action" action="history">
-                                             <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light" disabled>
-                                               <ion-icon name="history"></ion-icon>
-                                               <span class="button-label"><span mulang="statements history"></span></span>
-                                             </button>
-                                           </div>
-                                           <div class="session-action" action="execute-file">
-                                             <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light" disabled>
-                                               <ion-icon name="files"></ion-icon>
-                                               <span class="button-label"><span mulang="execute CQL file(s)"></span></span>
-                                             </button>
-                                           </div>
-                                           <div class="session-action" action="cql-snippets">
-                                             <button class="btn btn-secondary btn-rounded disabled" type="button" data-mdb-ripple-color="light" disabled>
-                                               <ion-icon name="snippets"></ion-icon>
-                                               <span class="button-label"><span mulang="CQL snippets"></span></span>
-                                             </button>
-                                           </div>
-                                           <div class="actions-right-side">
-                                           <div class="session-action query-tracing" action="query-tracing">
-                                           <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
-                                             <ion-icon name="query-tracing"></ion-icon>
-                                             <span class="button-label"><span mulang="query tracing">query tracing</span>:</span>
-                                             <span class="staus" style="margin-left: 7px;"></span>
-                                             <div class="tooltip-info" style="transform: translateY(1px) translateX(5px);" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
-                                             data-title data-mulang="query tracing captures detailed diagnostic information about query execution across the cluster. Useful for troubleshooting performance issues and understanding query paths.[br][br][b]Note[/b]: Tracing adds overhead to your queries and should only be used temporarily for debugging specific queries. Enabling tracing for extended periods or bulk operations may impact cluster performance" capitalize-first data-tippy-delay="[300, 0]">
-                                               <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
-                                             </div>
-                                           </button>
-                                           </div>
-                                           <div class="session-action pagination-size" action="pagination-size">
-                                           <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
-                                             <ion-icon name="pagination"></ion-icon>
-                                             <span class="button-label"><span mulang="page size">page size</span>:</span>
-                                             <span class="size" style="margin-left: 7px;">0</span>
-                                           </button>
-                                           </div>
-                                           <div class="session-action consistency-level" action="consistency-level">
-                                           <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
-                                             <ion-icon name="consistency"></ion-icon>
-                                             <span class="button-label"><span mulang="consistency">consistency</span>:</span>
-                                             <span class="badge rounded-pill badge-dark"><b standard></b></span>
-                                             <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
-                                               data-title data-mulang="consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.[br][br]However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:[br][code]R + W > RF[/code][br](Read replicas + Write replicas > Replication Factor)[br][br]Example: With [code]RF=3[/code], using [code]QUORUM (2)[/code] for both reads and writes ensures strong consistency [code](2+2>3)[/code] while maintaining availability and tolerance to failure" capitalize-first data-tippy-delay="[300, 0]">
-                                               <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
-                                             </div>
-                                             <span class="badge rounded-pill badge-dark"><b serial></b></span>
-                                             <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
-                                               data-title data-mulang="[p]This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL[/p][ul][li][strong]SERIAL[/strong]: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.[/li][li][strong]LOCAL_SERIAL[/strong]: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments[/li][/ul][p]Recommended Consistency Level Combinations for LWTs[/p][table tooltiptable][thead][tr][th]Deployment Scenario[/th][th]Write Consistency Level[/th][th]Serial Consistency Level[/th][/tr][/thead][tbody][tr][td][strong]Multi-DC Strong Consistency[/strong][/td][td][code]EACH_QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][tr][td][strong]Multi-DC High Performance[/strong][/td][td][code]LOCAL_QUORUM[/code][/td][td][code]LOCAL_SERIAL[/code][/td][/tr][tr][td][strong]Single-DC Clusters[/strong][/td][td][code]QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][/tbody][/table]" capitalize-first data-tippy-delay="[300, 0]" data-tippy-maxWidth="590">
-                                               <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
-                                             </div>
-                                           </button>
-                                           </div>
-                                           </div>
-                                         </div>
-                                         <div class="top">
-                                           <div class="consistency-levels"></div>
-                                           <div class="change-consistency-levels">
-                                             <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
-                                               <ion-icon name="consistency"></ion-icon>
-                                               <span mulang="change levels"></span>
-                                             </button>
-                                           </div>
-                                           <div class="current-pagination-size">
-                                             <div class="form-outline form-white">
-                                               <input type="number" class="form-control form-control-sm">
-                                               <label class="form-label">
-                                                 <span mulang="paging size" capitalize></span>
-                                               </label>
-                                             </div>
-                                           </div>
-                                           <div class="change-pagination-size">
-                                             <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
-                                               <ion-icon name="pagination"></ion-icon>
-                                               <span mulang="change paging size"></span>
-                                             </button>
-                                           </div>
-                                           <div class="history-items"></div>
-                                           <div class="history-items-clear-all">
-                                             <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
-                                               <ion-icon name="trash"></ion-icon>
-                                               <span mulang="clear all statements"></span>
-                                             </button>
-                                           </div>
-                                           <div class="history" style="display: none;">
-                                             <button class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
-                                               <ion-icon name="history"></ion-icon>
-                                             </button>
-                                           </div>
-                                           <div class="textarea">
-                                             <div class="form-outline form-white margin-bottom">
-                                               <div class="suggestion"></div>
-                                               <textarea spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionStatementInputID}" data-role="cqlsh-textarea"></textarea>
-                                               <label class="form-label">
-                                                 <span mulang="execute a cql statement" capitalize-first></span>
-                                               </label>
-                                             </div>
-                                           </div>
-                                           <div class="kill-process" hidden>
-                                             <button class="btn btn-primary changed-bg changed-color" type="button" data-mdb-ripple-color="var(--mdb-danger)" data-tippy="tooltip" data-mdb-placement="left" data-title data-mulang="kill the process" capitalize-first>
-                                               <ion-icon name="close"></ion-icon>
-                                             </button>
-                                           </div>
-                                           <div class="hints-container">
-                                             <div class="hint changed-bg changed-color">
-                                               <div class="text">
-                                                 <span mulang="an incomplete statement would have interrupted the execution flow" capitalize-first></span>
-                                               </div>
-                                             </div>
-                                           </div>
-                                           <div class="execute">
-                                             <button id="_${executeStatementBtnID}" class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
-                                               <ion-icon name="send"></ion-icon>
-                                               <svg l-reuleaux x="0px" y="0px" viewBox="0 0 37 37" height="20" width="20" preserveAspectRatio="xMidYMid meet" style="--uib-size: 20px; --uib-color: white; --uib-speed: 0.8s; --uib-bg-opacity: 0.25;">
-                                                 <path class="track" fill="none" stroke-width="2" pathLength="100"
-                                                   d="M36.63 31.746 c0 -13.394 -7.3260000000000005 -25.16 -18.13 -31.375999999999998 C7.696 6.66 0.37 18.352 0.37 31.746 c5.328 3.108 11.544 4.8839999999999995 18.13 4.8839999999999995 S31.301999999999996 34.854 36.63 31.746z"></path>
-                                                 <path class="car" fill="none" stroke-width="2" pathLength="100"
-                                                   d="M36.63 31.746 c0 -13.394 -7.3260000000000005 -25.16 -18.13 -31.375999999999998 C7.696 6.66 0.37 18.352 0.37 31.746 c5.328 3.108 11.544 4.8839999999999995 18.13 4.8839999999999995 S31.301999999999996 34.854 36.63 31.746z"></path>
-                                               </svg>
-                                             </button>
-                                           </div>
-                                         </div>
-                                         <div class="bottom">
-                                           <div class="suggestions-list"></div>
-                                         </div>
-                                         <div class="console-editor"></div>
-                                       </div>
-                                     </div>
-                                     <div class="loading">
-                                       <div class="sub-content" style="text-align: center;">
-                                         <img src="../assets/lottie/loading-cqlsh.gif" class="gif" style="height: -webkit-fill-available;">
-                                       </div>
-                                     </div>
-                                   </div>
-                                   <div class="tab-pane fade _empty" tab="cql-description" id="_${cqlDescriptionContentID}" role="tabpanel">
-                                     <div class="descriptions-container">
-                                       <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;width: calc(100% - 45px);">
-                                         <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
-                                         <input type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlDescriptionSearchInputID}">
-                                         <label class="form-label">
-                                           <span mulang="search for CQL description" capitalize-first></span>
-                                         </label>
-                                         <div class="close-all-descriptions">
-                                           <button type="button" id="_${cqlDescriptionsCloseAllBtnID}" class="btn btn-sm btn-secondary ripple-surface-light" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="close all descriptions" capitalize data-title>
-                                             <ion-icon name="close"></ion-icon>
-                                           </button>
-                                         </div>
-                                       </div>
-                                       <div class="descriptions">
-                                       </div>
-                                     </div>
-                                     <div class="empty">
-                                       <div class="lottie-container" style="text-align: center;">
-                                         <img src="../assets/lottie/empty-cql-description.gif" class="gif" style="height: -webkit-fill-available;">
-                                         <div class="message"><span mulang="right click on the cluster, keyspace or table and get its CQL description" capitalize-first></span>.
-                                         </div>
-                                       </div>
-                                     </div>
-                                   </div>
-                                   <div class="tab-pane fade _empty" tab="query-tracing" id="_${queryTracingContentID}" role="tabpanel">
-                                     <div class="queries-container">
-                                       <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
-                                         <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
-                                         <input type="text" class="form-control form-icon-trailing form-control-lg" id="_${queryTracingSearchInputID}">
-                                         <label class="form-label">
-                                           <span mulang="search by session ID or part of the query" capitalize-first></span>
-                                         </label>
-                                       </div>
-                                       <div class="queries">
-                                       </div>
-                                     </div>
-                                     <div class="empty">
-                                       <div class="lottie-container" style="text-align: center;">
-                                         <img src="../assets/lottie/empty-query-tracing.gif" class="gif" style="height: -webkit-fill-available;">
-                                         <div class="message"><span mulang="no query has been traced yet" capitalize-first></span>.<hint> <span mulang="it can be enabled by running" capitalize-first></span> <code>tracing on</code></hint>
-                                         </div>
-                                       </div>
-                                     </div>
-                                   </div>
-                                   <div class="tab-pane fade" tab="metadata-differentiation" id="_${metadataDifferentiationContentID}" role="tabpanel">
-                                     <div class="metadata-content-container">
-                                       <div class="metadata-content all">
-                                         <div class="editor-container-all"></div>
-                                       </div>
-                                       <span class="badge badge-secondary old"><span mulang="previous" capitalize></span><span class="old-snapshot" data-id="${oldSnapshotNameID}"></span></span>
-                                       <div class="centered-badges">
-                                         <span class="badge badge-primary btn btn-secondary btn-sm changes" style="cursor:pointer;" data-mdb-ripple-color="dark" data-changes="0" data-id="${showDifferentiationBtnID}"><span mulang="changes" capitalize></span>: <span>0</span></span>
-                                         <div class="diff-navigation">
-                                           <span class="diff-nav-prev btn btn-secondary btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="previous change" capitalize-first
-                                             data-id="${diffNavigationPrevBtnID}">
-                                             <ion-icon name="arrow-up"></ion-icon>
-                                           </span>
-                                           <span class="diff-nav-next btn btn-secondary btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="next change" capitalize-first
-                                             data-id="${diffNavigationNextBtnID}">
-                                             <ion-icon name="arrow-up"></ion-icon>
-                                           </span>
-                                         </div>
-                                         <div class="actions">
-                                           <span class="refresh btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="refresh metadata" capitalize-first
-                                             data-id="${refreshDifferentiationBtnID}">
-                                             <ion-icon name="refresh"></ion-icon>
-                                           </span>
-                                           <span class="save-snapshot btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="save a schema snapshot" capitalize-first
-                                             data-id="${saveSnapshotBtnID}">
-                                             <ion-icon name="save-floppy"></ion-icon>
-                                           </span>
-                                           <span class="load-snapshot btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-titl data-mulang="load a schema snapshot" capitalize-first
-                                             data-id="${loadSnapshotBtnID}">
-                                             <ion-icon name="upload"></ion-icon>
-                                           </span>
-                                           <span class="snapshots-folder btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="open the schema snapshot folder" capitalize-first
-                                             data-id="${openSnapshotsFolderBtnID}">
-                                             <ion-icon name="folder-open-outline"></ion-icon>
-                                           </span>
-                                           <span class="change-view btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="change the editors view" capitalize-first
-                                             data-id="${changeViewBtnID}" hidden>
-                                             <ion-icon name="diff-vertical"></ion-icon>
-                                           </span>
-                                         </div>
-                                       </div>
-                                       <span class="badge badge-secondary new"><span mulang="new" capitalize></span><span class="new-metadata-time" data-id="${newMetadataTimeID}" data-time></span></span>
-                                       <div class="save-snapshot-suffix" data-id="${saveSnapshotSuffixContainerID}">
-                                         <div class="time"></div>
-                                         <div class="form-outline form-white margin-bottom">
-                                           <input type="text" class="form-control form-icon-trailing form-control-lg">
-                                           <label class="form-label"><span mulang="snapshot suffix" capitalize></span> (<span mulang="optional" capitalize></span>)</label>
-                                         </div>
-                                         <button type="button" class="btn btn-primary btn-sm changed-bg changed-color"><span mulang="save schema snapshot"></span></button>
-                                       </div>
-                                       <div class="changes-lines" data-id="${changesLinesContainerID}">
-                                       </div>
-                                     </div>
-                                   </div>
-                                   <div class="tab-pane fade" tab="axonops-integration" id="_${axonopsIntegrationContentID}" role="tabpanel">
-                                    <webview nodeIntegrationInSubFrames nodeintegration></webview>
-                                    <div class="axonops-webview-actions">
-                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="home" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="load cluster view" hidden capitalize-first>
-                                        <ion-icon name="home"></ion-icon>
+                              <div class="workarea" connection-id="${connectionID}" workarea-id="${workareaID}">
+                                <div class="sub-sides left">
+                                  <div class="connection-info">
+                                    <div class="name-ssl ${isSandbox ? 'is-sandbox' : ''}">
+                                      <div class="name no-select-reverse">${getAttributes(connectionElement, 'data-name')}</div>
+                                      <div class="status" data-tippy="tooltip" data-mdb-placement="left" data-mulang="analyzing status" capitalize-first data-title ${isSCBConnection ? 'hidden' : ''}>
+                                        <ion-icon name="unknown"></ion-icon>
                                       </div>
-                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="refresh" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="refresh the view" capitalize-first>
-                                        <ion-icon name="refresh" style="transform: translateY(2px);"></ion-icon>
+                                      <div class="axonops-agent" data-tippy="tooltip" data-mdb-placement="left" data-mulang="open AxonOps in browser" capitalize-first data-title ${getAttributes(connectionElement, 'data-axonops-installed') !== 'true' ? 'hidden' : ''}>
+                                        <ion-icon name="globe"></ion-icon>
                                       </div>
-                                      <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="logout" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="logout" capitalize-first hidden>
-                                        <ion-icon name="logout"></ion-icon>
+                                      <div class="axonops-integration-icon" data-tippy="tooltip" data-mdb-placement="left" data-mulang="launch AxonOps" capitalize-first data-title ${!isAxonOpsIntegrationActionEnabled ? 'hidden' : ''}>
+                                        <ion-icon name="axonops"></ion-icon>
+                                        <ion-icon name="globe"></ion-icon>
                                       </div>
-                                      <div class="webview-action btn btn-tertiary webview-current-link" data-tippy-maxWidth="1000" data-mdb-ripple-color="light" action="about" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="-">
-                                        <ion-icon name="about" style="font-size: 190%; transform: translateY(-2px);"></ion-icon>
+                                      <div class="connection-status">
+                                        <l-ripples style="--uib-size: 20px; --uib-color: #ff8000; --uib-speed: 7s;"><div class="dot"></div></l-ripples>
                                       </div>
                                     </div>
-                                   </div>
-                                   <div class="tab-pane fade" id="_${localClustersAxonopsContentID}" role="tabpanel"></div>
-                                   <div class="tab-pane fade" tab="bash-session" id="_${bashSessionContentID}" role="tabpanel">
-                                     <div class="terminal-container" data-id="${terminalBashContainerID}"></div>
-                                   </div>
-                                 </div>
-                               </div>
-                             </div>`
+                                    <div class="additional">
+                                      <div class="info" info="host" ${isSCBConnection ? 'hidden' : ''}>
+                                        <div class="title">host
+                                          <ion-icon name="right-arrow-filled"></ion-icon>
+                                        </div>
+                                        <div class="text no-select-reverse">${getAttributes(connectionElement, 'data-host')}</div>
+                                      </div>
+                                      <div class="info" info="cassandra">
+                                        <div class="title">cassandra
+                                          <ion-icon name="right-arrow-filled"></ion-icon>
+                                        </div>
+                                        <div class="text no-select-reverse">v${getAttributes(connectionElement, 'data-cassandra-version')}</div>
+                                      </div>
+                                      <div class="info" info="data-center">
+                                        <div class="title">data center
+                                          <ion-icon name="right-arrow-filled"></ion-icon>
+                                        </div>
+                                        <div class="text no-select-reverse">${getAttributes(connectionElement, 'data-datacenter')}</div>
+                                      </div>
+                                      <div class="info" info="cluster-name">
+                                        <div class="title">cluster name
+                                          <ion-icon name="right-arrow-filled"></ion-icon>
+                                        </div>
+                                        <div class="text no-select-reverse"></div>
+                                        <div class="_placeholder" style="width: 50px;"></div>
+                                      </div>
+                                      <div class="info" info="cassandra-username">
+                                        <div class="title">username
+                                          <ion-icon name="right-arrow-filled"></ion-icon>
+                                        </div>
+                                        <div class="text no-select-reverse"></div>
+                                        <div class="_placeholder" style="width: 50px;"></div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="connection-metadata loading" ${isSCBConnection ? 'style="height: calc(100% - 217px);"' : ''}>
+                                    <div class="search-in-metadata">
+                                      <div class="form-outline form-white margin-bottom">
+                                        <input type="text" class="form-control form-icon-trailing form-control-sm">
+                                        <label class="form-label">
+                                          <span mulang="search in metadata" capitalize-first></span>
+                                        </label>
+                                        <div class="right-elements">
+                                          <div class="result-count">
+                                            <span class="current"></span>/<span class="total"></span>
+                                          </div>
+                                          <div class="arrows">
+                                            <div class="next btn btn-tertiary" data-mdb-ripple-color="light">
+                                              <ion-icon name="arrow-down"></ion-icon>
+                                            </div>
+                                            <div class="previous btn btn-tertiary" data-mdb-ripple-color="light">
+                                              <ion-icon name="arrow-up"></ion-icon>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="metadata-content" data-id="${metadataContentID}">
+                                    </div>
+                                    <div class="loading">
+                                      <div class="sub-content">
+                                      <img src="../assets/lottie/loading-metadata.gif" background="transparent" style="position: absolute; inset: 0; margin: auto; width: -webkit-fill-available;">
+                                      </div>
+                                    </div>
+                                    <div class="metadata-actions">
+                                      <div class="action" action="copy">
+                                        <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="copy metadata" capitalize-first data-id="${copyMetadataBtnID}">
+                                          <ion-icon name="copy"></ion-icon>
+                                        </div>
+                                      </div>
+                                      <div class="action" action="refresh">
+                                        <div class="btn btn-tertiary disableable" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="refresh metadata" capitalize-first data-id="${refreshMetadataBtnID}">
+                                          <ion-icon name="refresh"></ion-icon>
+                                        </div>
+                                      </div>
+                                      <div class="action" action="search">
+                                        <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="search in metadata" capitalize-first data-id="${searchInMetadataBtnID}">
+                                          <ion-icon name="search" style="font-size: 135%;"></ion-icon>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="sub-sides right">
+                                  <div class="header">
+                                    <div class="connection-tabs">
+                                      <ul class="nav nav-tabs nav-justified mb-3" id="ex-with-icons" role="tablist">
+                                        <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL console" capitalize data-title>
+                                          <a tab-content="cqlsh-session" class="nav-link btn btn-tertiary active" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlshSessionContentID}" role="tab" aria-selected="true">
+                                            <span class="icon">
+                                              <ion-icon name="terminal"></ion-icon>
+                                            </span>
+                                            <span class="title">
+                                              <span mulang="CQL console" capitalize></span>
+                                            </span>
+                                          </a>
+                                        </li>
+                                        ${bashSessionTab}
+                                        <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="CQL description" capitalize data-title>
+                                          <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${cqlDescriptionContentID}" role="tab" aria-selected="true">
+                                            <span class="icon">
+                                              <ion-icon name="cql-description"></ion-icon>
+                                            </span>
+                                            <span class="title">
+                                              <span mulang="CQL description" capitalize></span>
+                                            </span>
+                                          </a>
+                                        </li>
+                                        <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="query tracing" capitalize data-title>
+                                          <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${queryTracingContentID}" role="tab" aria-selected="true">
+                                            <span class="icon">
+                                              <ion-icon name="query-tracing"></ion-icon>
+                                            </span>
+                                            <span class="title">
+                                              <span mulang="query tracing" capitalize></span>
+                                            </span>
+                                          </a>
+                                        </li>
+                                        <li class="nav-item" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="schema diff" capitalize data-title>
+                                          <a class="nav-link btn btn-tertiary disabled" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${metadataDifferentiationContentID}" role="tab" aria-selected="true">
+                                            <span class="icon">
+                                              <ion-icon name="differentiation"></ion-icon>
+                                            </span>
+                                            <span class="title">
+                                              <span mulang="schema diff" capitalize></span>
+                                            </span>
+                                          </a>
+                                        </li>
+                                        <li class="nav-item axonops-integration-tab axonops-tab" role="presentation" tab-tooltip data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="AxonOps" capitalize data-title>
+                                          <a class="nav-link btn btn-tertiary" data-mdb-ripple-color="dark" data-mdb-toggle="tab" href="#_${axonopsIntegrationContentID}" role="tab" aria-selected="true">
+                                            <span class="icon"><ion-icon name="axonops"></ion-icon></span>
+                                            <span class="title">AxonOps</span>
+                                          </a>
+                                        </li>
+                                        ${axonopsTab}
+                                      </ul>
+                                    </div>
+                                    <div class="connection-actions colored-box-shadow" style="width:40px">
+                                      <div class="action" action="restart" hidden>
+                                        <div class="btn-container">
+                                          <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="restart the work area" capitalize-first data-id="${restartWorkareaBtnID}">
+                                            <ion-icon name="restart"></ion-icon>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="action" action="close">
+                                        <div class="btn-container">
+                                          <div class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="close and disconnect" capitalize-first data-id="${closeWorkareaBtnID}">
+                                            <ion-icon name="close"></ion-icon>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="tab-content">
+                                    <div class="tab-pane fade show active loading" tab="cqlsh-session" id="_${cqlshSessionContentID}" role="tabpanel">
+                                      <div class="switch-terminal" hidden>
+                                        <button type="button" class="btn btn-primary changed-bg changed-color" disabled>
+                                          <ion-icon name="switch"></ion-icon>
+                                          <span mulang="switch terminal"></span>
+                                        </button>
+                                      </div>
+                                      <div class="terminal-container" data-id="${terminalContainerID}" style="display:none;"></div>
+                                      <div class="interactive-terminal-container" data-id="${terminalContainerID}_interactive">
+                                        <div class="container-header" style="${!isBasicCQLSHEnabled ? 'width: 100%;' : ''}">
+                                          <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
+                                            <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                                            <input spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionSearchInputID}">
+                                            <label class="form-label">
+                                              <span mulang="search in the session" capitalize-first></span>
+                                            </label>
+                                          </div>
+                                        </div>
+                                        <div class="session-content" id="_${cqlshSessionContentID}_container"></div>
+                                        <div class="empty-statements show" id="_${containerEmptyStatementsID}">
+                                          <div class="container">
+                                            <div class="semi-colon">;</div>
+                                            <div class="message"><span mulang="start now by executing cql statement" capitalize-first></span></div>
+                                          </div>
+                                        </div>
+                                        <div class="container-footer" id="_${containerFooterID}">
+                                          <div class="session-actions">
+                                            <div class="session-action" action="history">
+                                              <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light" disabled>
+                                                <ion-icon name="history"></ion-icon>
+                                                <span class="button-label"><span mulang="statements history"></span></span>
+                                              </button>
+                                            </div>
+                                            <div class="session-action" action="execute-file">
+                                              <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light" disabled>
+                                                <ion-icon name="files"></ion-icon>
+                                                <span class="button-label"><span mulang="execute CQL file(s)"></span></span>
+                                              </button>
+                                            </div>
+                                            <div class="session-action" action="cql-snippets">
+                                              <button class="btn btn-secondary btn-rounded disabled" type="button" data-mdb-ripple-color="light" disabled>
+                                                <ion-icon name="snippets"></ion-icon>
+                                                <span class="button-label"><span mulang="CQL snippets"></span></span>
+                                              </button>
+                                            </div>
+                                            <div class="actions-right-side">
+                                            <div class="session-action query-tracing" action="query-tracing">
+                                            <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
+                                              <ion-icon name="query-tracing"></ion-icon>
+                                              <span class="button-label"><span mulang="query tracing">query tracing</span>:</span>
+                                              <span class="staus" style="margin-left: 7px;"></span>
+                                              <div class="tooltip-info" style="transform: translateY(1px) translateX(5px);" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
+                                              data-title data-mulang="query tracing captures detailed diagnostic information about query execution across the cluster. Useful for troubleshooting performance issues and understanding query paths.[br][br][b]Note[/b]: Tracing adds overhead to your queries and should only be used temporarily for debugging specific queries. Enabling tracing for extended periods or bulk operations may impact cluster performance" capitalize-first data-tippy-delay="[300, 0]">
+                                                <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
+                                              </div>
+                                            </button>
+                                            </div>
+                                            <div class="session-action pagination-size" action="pagination-size">
+                                            <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
+                                              <ion-icon name="pagination"></ion-icon>
+                                              <span class="button-label"><span mulang="page size">page size</span>:</span>
+                                              <span class="size" style="margin-left: 7px;">0</span>
+                                            </button>
+                                            </div>
+                                            <div class="session-action consistency-level" action="consistency-level">
+                                            <button class="btn btn-secondary btn-rounded" type="button" data-mdb-ripple-color="light">
+                                              <ion-icon name="consistency"></ion-icon>
+                                              <span class="button-label"><span mulang="consistency">consistency</span>:</span>
+                                              <span class="badge rounded-pill badge-dark"><b standard></b></span>
+                                              <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
+                                                data-title data-mulang="consistency level (CL) controls how many replica nodes must acknowledge a read/write before success. Higher CLs increase data accuracy but reduce availability/performance, while lower CLs favor availability.[br][br]However, tolerance to failure does not mean inconsistent data. To guarantee strong consistency, use:[br][code]R + W > RF[/code][br](Read replicas + Write replicas > Replication Factor)[br][br]Example: With [code]RF=3[/code], using [code]QUORUM (2)[/code] for both reads and writes ensures strong consistency [code](2+2>3)[/code] while maintaining availability and tolerance to failure" capitalize-first data-tippy-delay="[300, 0]">
+                                                <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
+                                              </div>
+                                              <span class="badge rounded-pill badge-dark"><b serial></b></span>
+                                              <div class="tooltip-info" data-tippy="tooltip" data-mdb-placement="top" data-mdb-html="true"
+                                                data-title data-mulang="[p]This consistency choice only applies when using Light Weight Transactions (LWTs). Understanding SERIAL vs LOCAL_SERIAL[/p][ul][li][strong]SERIAL[/strong]: Enforces linearizable consistency across all datacenters, requiring consensus from all involved datacenters.[/li][li][strong]LOCAL_SERIAL[/strong]: Only enforces linearizable consistency within the local datacenter, which can be much faster in multi-datacenter deployments[/li][/ul][p]Recommended Consistency Level Combinations for LWTs[/p][table tooltiptable][thead][tr][th]Deployment Scenario[/th][th]Write Consistency Level[/th][th]Serial Consistency Level[/th][/tr][/thead][tbody][tr][td][strong]Multi-DC Strong Consistency[/strong][/td][td][code]EACH_QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][tr][td][strong]Multi-DC High Performance[/strong][/td][td][code]LOCAL_QUORUM[/code][/td][td][code]LOCAL_SERIAL[/code][/td][/tr][tr][td][strong]Single-DC Clusters[/strong][/td][td][code]QUORUM[/code][/td][td][code]SERIAL[/code][/td][/tr][/tbody][/table]" capitalize-first data-tippy-delay="[300, 0]" data-tippy-maxWidth="590">
+                                                <ion-icon name="info-circle-outline" style="transform: translateX(0px); font-size: 170%; margin-left: 4px;"></ion-icon>
+                                              </div>
+                                            </button>
+                                            </div>
+                                            </div>
+                                          </div>
+                                          <div class="top">
+                                            <div class="consistency-levels"></div>
+                                            <div class="change-consistency-levels">
+                                              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                                                <ion-icon name="consistency"></ion-icon>
+                                                <span mulang="change levels"></span>
+                                              </button>
+                                            </div>
+                                            <div class="current-pagination-size">
+                                              <div class="form-outline form-white">
+                                                <input type="number" class="form-control form-control-sm">
+                                                <label class="form-label">
+                                                  <span mulang="paging size" capitalize></span>
+                                                </label>
+                                              </div>
+                                            </div>
+                                            <div class="change-pagination-size">
+                                              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                                                <ion-icon name="pagination"></ion-icon>
+                                                <span mulang="change paging size"></span>
+                                              </button>
+                                            </div>
+                                            <div class="history-items"></div>
+                                            <div class="history-items-clear-all">
+                                              <button type="button" class="btn btn-tertiary" data-mdb-ripple-color="light">
+                                                <ion-icon name="trash"></ion-icon>
+                                                <span mulang="clear all statements"></span>
+                                              </button>
+                                            </div>
+                                            <div class="history" style="display: none;">
+                                              <button class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
+                                                <ion-icon name="history"></ion-icon>
+                                              </button>
+                                            </div>
+                                            <div class="textarea">
+                                              <div class="form-outline form-white margin-bottom">
+                                                <div class="suggestion"></div>
+                                                <textarea spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionStatementInputID}" data-role="cqlsh-textarea"></textarea>
+                                                <label class="form-label">
+                                                  <span mulang="execute a cql statement" capitalize-first></span>
+                                                </label>
+                                              </div>
+                                            </div>
+                                            <div class="kill-process" hidden>
+                                              <button class="btn btn-primary changed-bg changed-color" type="button" data-mdb-ripple-color="var(--mdb-danger)" data-tippy="tooltip" data-mdb-placement="left" data-title data-mulang="kill the process" capitalize-first>
+                                                <ion-icon name="close"></ion-icon>
+                                              </button>
+                                            </div>
+                                            <div class="hints-container">
+                                              <div class="hint changed-bg changed-color">
+                                                <div class="text">
+                                                  <span mulang="an incomplete statement would have interrupted the execution flow" capitalize-first></span>
+                                                </div>
+                                              </div>
+                                            </div>
+                                            <div class="execute">
+                                              <button id="_${executeStatementBtnID}" class="btn btn-tertiary" type="button" data-mdb-ripple-color="light" disabled>
+                                                <ion-icon name="send"></ion-icon>
+                                                <svg l-reuleaux x="0px" y="0px" viewBox="0 0 37 37" height="20" width="20" preserveAspectRatio="xMidYMid meet" style="--uib-size: 20px; --uib-color: white; --uib-speed: 0.8s; --uib-bg-opacity: 0.25;">
+                                                  <path class="track" fill="none" stroke-width="2" pathLength="100"
+                                                    d="M36.63 31.746 c0 -13.394 -7.3260000000000005 -25.16 -18.13 -31.375999999999998 C7.696 6.66 0.37 18.352 0.37 31.746 c5.328 3.108 11.544 4.8839999999999995 18.13 4.8839999999999995 S31.301999999999996 34.854 36.63 31.746z"></path>
+                                                  <path class="car" fill="none" stroke-width="2" pathLength="100"
+                                                    d="M36.63 31.746 c0 -13.394 -7.3260000000000005 -25.16 -18.13 -31.375999999999998 C7.696 6.66 0.37 18.352 0.37 31.746 c5.328 3.108 11.544 4.8839999999999995 18.13 4.8839999999999995 S31.301999999999996 34.854 36.63 31.746z"></path>
+                                                </svg>
+                                              </button>
+                                            </div>
+                                          </div>
+                                          <div class="bottom">
+                                            <div class="suggestions-list"></div>
+                                          </div>
+                                          <div class="console-editor"></div>
+                                        </div>
+                                      </div>
+                                      <div class="loading">
+                                        <div class="sub-content" style="text-align: center;">
+                                          <img src="../assets/lottie/loading-cqlsh.gif" class="gif" style="height: -webkit-fill-available;">
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="tab-pane fade _empty" tab="cql-description" id="_${cqlDescriptionContentID}" role="tabpanel">
+                                      <div class="descriptions-container">
+                                        <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;width: calc(100% - 45px);">
+                                          <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                                          <input type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlDescriptionSearchInputID}">
+                                          <label class="form-label">
+                                            <span mulang="search for CQL description" capitalize-first></span>
+                                          </label>
+                                          <div class="close-all-descriptions">
+                                            <button type="button" id="_${cqlDescriptionsCloseAllBtnID}" class="btn btn-sm btn-secondary ripple-surface-light" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="bottom" data-mulang="close all descriptions" capitalize data-title>
+                                              <ion-icon name="close"></ion-icon>
+                                            </button>
+                                          </div>
+                                        </div>
+                                        <div class="descriptions">
+                                        </div>
+                                      </div>
+                                      <div class="empty">
+                                        <div class="lottie-container" style="text-align: center;">
+                                          <img src="../assets/lottie/empty-cql-description.gif" class="gif" style="height: -webkit-fill-available;">
+                                          <div class="message"><span mulang="right click on the cluster, keyspace or table and get its CQL description" capitalize-first></span>.
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="tab-pane fade _empty" tab="query-tracing" id="_${queryTracingContentID}" role="tabpanel">
+                                      <div class="queries-container">
+                                        <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
+                                          <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
+                                          <input type="text" class="form-control form-icon-trailing form-control-lg" id="_${queryTracingSearchInputID}">
+                                          <label class="form-label">
+                                            <span mulang="search by session ID or part of the query" capitalize-first></span>
+                                          </label>
+                                        </div>
+                                        <div class="queries">
+                                        </div>
+                                      </div>
+                                      <div class="empty">
+                                        <div class="lottie-container" style="text-align: center;">
+                                          <img src="../assets/lottie/empty-query-tracing.gif" class="gif" style="height: -webkit-fill-available;">
+                                          <div class="message"><span mulang="no query has been traced yet" capitalize-first></span>.<hint> <span mulang="it can be enabled by running" capitalize-first></span> <code>tracing on</code></hint>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="tab-pane fade" tab="metadata-differentiation" id="_${metadataDifferentiationContentID}" role="tabpanel">
+                                      <div class="metadata-content-container">
+                                        <div class="metadata-content all">
+                                          <div class="editor-container-all"></div>
+                                        </div>
+                                        <span class="badge badge-secondary old"><span mulang="previous" capitalize></span><span class="old-snapshot" data-id="${oldSnapshotNameID}"></span></span>
+                                        <div class="centered-badges">
+                                          <span class="badge badge-primary btn btn-secondary btn-sm changes" style="cursor:pointer;" data-mdb-ripple-color="dark" data-changes="0" data-id="${showDifferentiationBtnID}"><span mulang="changes" capitalize></span>: <span>0</span></span>
+                                          <div class="diff-navigation">
+                                            <span class="diff-nav-prev btn btn-secondary btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="previous change" capitalize-first
+                                              data-id="${diffNavigationPrevBtnID}">
+                                              <ion-icon name="arrow-up"></ion-icon>
+                                            </span>
+                                            <span class="diff-nav-next btn btn-secondary btn-sm disabled" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="next change" capitalize-first
+                                              data-id="${diffNavigationNextBtnID}">
+                                              <ion-icon name="arrow-up"></ion-icon>
+                                            </span>
+                                          </div>
+                                          <div class="actions">
+                                            <span class="refresh btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="refresh metadata" capitalize-first
+                                              data-id="${refreshDifferentiationBtnID}">
+                                              <ion-icon name="refresh"></ion-icon>
+                                            </span>
+                                            <span class="save-snapshot btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="save a schema snapshot" capitalize-first
+                                              data-id="${saveSnapshotBtnID}">
+                                              <ion-icon name="save-floppy"></ion-icon>
+                                            </span>
+                                            <span class="load-snapshot btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-titl data-mulang="load a schema snapshot" capitalize-first
+                                              data-id="${loadSnapshotBtnID}">
+                                              <ion-icon name="upload"></ion-icon>
+                                            </span>
+                                            <span class="snapshots-folder btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="open the schema snapshot folder" capitalize-first
+                                              data-id="${openSnapshotsFolderBtnID}">
+                                              <ion-icon name="folder-open-outline"></ion-icon>
+                                            </span>
+                                            <span class="change-view btn btn-secondary btn-sm" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="change the editors view" capitalize-first
+                                              data-id="${changeViewBtnID}" hidden>
+                                              <ion-icon name="diff-vertical"></ion-icon>
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <span class="badge badge-secondary new"><span mulang="new" capitalize></span><span class="new-metadata-time" data-id="${newMetadataTimeID}" data-time></span></span>
+                                        <div class="save-snapshot-suffix" data-id="${saveSnapshotSuffixContainerID}">
+                                          <div class="time"></div>
+                                          <div class="form-outline form-white margin-bottom">
+                                            <input type="text" class="form-control form-icon-trailing form-control-lg">
+                                            <label class="form-label"><span mulang="snapshot suffix" capitalize></span> (<span mulang="optional" capitalize></span>)</label>
+                                          </div>
+                                          <button type="button" class="btn btn-primary btn-sm changed-bg changed-color"><span mulang="save schema snapshot"></span></button>
+                                        </div>
+                                        <div class="changes-lines" data-id="${changesLinesContainerID}">
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="tab-pane fade" tab="axonops-integration" id="_${axonopsIntegrationContentID}" role="tabpanel">
+                                     <webview nodeIntegrationInSubFrames nodeintegration></webview>
+                                     <div class="axonops-webview-actions">
+                                       <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="home" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="load cluster view" hidden capitalize-first>
+                                         <ion-icon name="home"></ion-icon>
+                                       </div>
+                                       <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="refresh" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="refresh the view" capitalize-first>
+                                         <ion-icon name="refresh" style="transform: translateY(2px);"></ion-icon>
+                                       </div>
+                                       <div class="webview-action btn btn-tertiary" data-mdb-ripple-color="light" action="logout" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="logout" capitalize-first hidden>
+                                         <ion-icon name="logout"></ion-icon>
+                                       </div>
+                                       <div class="webview-action btn btn-tertiary webview-current-link" data-tippy-maxWidth="1000" data-mdb-ripple-color="light" action="about" data-tippy="tooltip" data-mdb-placement="top" data-title data-mulang="-">
+                                         <ion-icon name="about" style="font-size: 190%; transform: translateY(-2px);"></ion-icon>
+                                       </div>
+                                     </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="_${localClustersAxonopsContentID}" role="tabpanel"></div>
+                                    <div class="tab-pane fade" tab="bash-session" id="_${bashSessionContentID}" role="tabpanel">
+                                      <div class="terminal-container" data-id="${terminalBashContainerID}"></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>`
 
                   // Append the connection's work area
                   content.append($(element).show(function() {
@@ -1432,10 +1434,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                           // Line UI element structure
                           let element = `
-                                     <div class="line" data-number="${change.number}">
-                                       <span class="number">${change.number}</span>
-                                       <span class="content">${change.content}</span>
-                                     </div>`
+                                      <div class="line" data-number="${change.number}">
+                                        <span class="number">${change.number}</span>
+                                        <span class="content">${change.content}</span>
+                                      </div>`
 
                           // Append the line element to the container
                           changesContainer.append($(element).click(function() {
@@ -1521,49 +1523,49 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                       // The statement's block UI structure
                       let element = `
-                                   <div class="block show${compact ? ' compact' : ''}" data-id="${blockID}">
-                                     <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
-                                       <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
-                                         <img src="../assets/lottie/${type || 'neutral'}.gif" background="transparent" style="height: -webkit-fill-available;">
-                                       </span>
-                                       <div class="text"><pre>${statementText}</pre></div>
-                                       <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
-                                         <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="execute-statement" data-tippy="tooltip" data-mdb-placement="bottom" data-title onclick="executeStatement(this)" data-mulang="execute the statement" capitalize-first>
-                                           <ion-icon name="execute-solid" style="font-size: 125%;"></ion-icon>
-                                         </div>
-                                         <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="bottom" onclick="copyStatement(this)" data-mulang="copy the statement" capitalize-first>
-                                           <ion-icon name="copy-solid"></ion-icon>
-                                         </div>
-                                       </div>
-                                     </div>
-                                     <div class="info-badges">
-                                       <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
-                                       <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
-                                     </div>
-                                     <div class="output">
-                                       <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
-                                       ${isOnlyInfo ? statement : ''}
-                                     </div>
-                                     <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
-                                       <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="download the block" capitalize-first hidden>
-                                         <ion-icon name="download"></ion-icon>
-                                       </div>
-                                       <div class="download-options">
-                                         <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
-                                           <ion-icon name="csv"></ion-icon>
-                                         </div>
-                                         <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
-                                           <ion-icon name="pdf"></ion-icon>
-                                         </div>
-                                       </div>
-                                       <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
-                                         <ion-icon name="copy-solid"></ion-icon>
-                                       </div>
-                                       <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="delete the block" capitalize-first>
-                                         <ion-icon name="trash"></ion-icon>
-                                       </div>
-                                     </div>
-                                   </div>`
+                                    <div class="block show${compact ? ' compact' : ''}" data-id="${blockID}">
+                                      <div class="statement ${isOnlyInfo ? type + ' capitalize' : ''}">
+                                        <span class="toast-type" ${!isOnlyInfo ? 'hidden' : ''}>
+                                          <img src="../assets/lottie/${type || 'neutral'}.gif" background="transparent" style="height: -webkit-fill-available;">
+                                        </span>
+                                        <div class="text"><pre>${statementText}</pre></div>
+                                        <div class="actions for-statement" ${isOnlyInfo ? 'hidden' : ''}>
+                                          <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="execute-statement" data-tippy="tooltip" data-mdb-placement="bottom" data-title onclick="executeStatement(this)" data-mulang="execute the statement" capitalize-first>
+                                            <ion-icon name="execute-solid" style="font-size: 125%;"></ion-icon>
+                                          </div>
+                                          <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy-statement" data-tippy="tooltip" data-mdb-placement="bottom" onclick="copyStatement(this)" data-mulang="copy the statement" capitalize-first>
+                                            <ion-icon name="copy-solid"></ion-icon>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="info-badges">
+                                        <div class="prompt badge badge-secondary" ${isOnlyInfo ? 'hidden' : ''}></div>
+                                        <div class="statements-count badge badge-info" ${isOnlyInfo ? 'hidden' : ''}></div>
+                                      </div>
+                                      <div class="output">
+                                        <div class="executing" ${isOnlyInfo ? 'hidden' : ''}></div>
+                                        ${isOnlyInfo ? statement : ''}
+                                      </div>
+                                      <div class="actions" style="${isOnlyInfo ? 'width:30px;' : ''}">
+                                        <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="download the block" capitalize-first hidden>
+                                          <ion-icon name="download"></ion-icon>
+                                        </div>
+                                        <div class="download-options">
+                                          <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                            <ion-icon name="csv"></ion-icon>
+                                          </div>
+                                          <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                            <ion-icon name="pdf"></ion-icon>
+                                          </div>
+                                        </div>
+                                        <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="copy" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="copy the block" capitalize-first ${isOnlyInfo ? 'hidden' : ''}>
+                                          <ion-icon name="copy-solid"></ion-icon>
+                                        </div>
+                                        <div class="action btn btn-tertiary" data-mdb-ripple-color="dark" action="delete" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="delete the block" capitalize-first>
+                                          <ion-icon name="trash"></ion-icon>
+                                        </div>
+                                      </div>
+                                    </div>`
 
                       // Append the block and hide it - till and output is received -
                       sessionContainer.append($(element).show(function() {
@@ -1725,31 +1727,36 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                         // The query tracing's result UI structure
                         let element = `
-                                    <div class="query" data-session-id="${sessionID}">
-                                      <span class="badge rounded-pill badge-secondary id-time">#${sessionID} <ion-icon name="time"></ion-icon> ${formatTimeUUID(data.result.data.session.sessionId)}</span>
-                                      <div class="sources" id="_${sourcesContainerID}">
-                                        <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="all">
-                                          <span source-ip>All</span>
-                                        </button>
-                                      </div>
-                                      <div class="info-left">
-                                        <div class="left-chart">
-                                          <canvas data-canvas-id="${canvasTimelineID}" width="100%"></canvas>
-                                          <button type="button" class="btn btn-tertiary zoom-reset" data-mdb-ripple-color="light" id="_${zoomResetBtnID}">
-                                            <ion-icon name="zoom-reset"></ion-icon>
-                                          </button>
-                                        </div>
-                                        <div class="right-chart"><canvas data-canvas-id="${canvasPieChartID}" width="100%"></canvas></div>
-                                      </div>
-                                      <div class="info-right">
-                                        <div class="copy-tracing" style="z-index: 1;">
-                                          <div class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-title data-mulang="copy the tracing result" capitalize-first>
-                                            <ion-icon name="copy-solid"></ion-icon>
-                                          </div>
-                                        </div>
-                                        <div class="activities-table" id="_${tableBodyID}"></div>
-                                      </div>
-                                    </div>`
+                                     <div class="query" data-session-id="${sessionID}">
+                                       <span class="badge rounded-pill badge-secondary id-time">#${sessionID} <ion-icon name="time"></ion-icon> ${formatTimeUUID(data.result.data.session.sessionId)}</span>
+                                       <div class="delete-tracing">
+                                         <button type="button" class="btn btn-sm btn-tertiary delete-tracing" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-mulang="delete tracing results" capitalize data-title>
+                                           <ion-icon name="close"></ion-icon>
+                                         </button>
+                                       </div>
+                                       <div class="sources" id="_${sourcesContainerID}">
+                                         <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="all">
+                                           <span source-ip>All</span>
+                                         </button>
+                                       </div>
+                                       <div class="info-left">
+                                         <div class="left-chart">
+                                           <canvas data-canvas-id="${canvasTimelineID}" width="100%"></canvas>
+                                           <button type="button" class="btn btn-tertiary zoom-reset" data-mdb-ripple-color="light" id="_${zoomResetBtnID}">
+                                             <ion-icon name="zoom-reset"></ion-icon>
+                                           </button>
+                                         </div>
+                                         <div class="right-chart"><canvas data-canvas-id="${canvasPieChartID}" width="100%"></canvas></div>
+                                       </div>
+                                       <div class="info-right">
+                                         <div class="copy-tracing" style="z-index: 1;">
+                                           <div class="btn btn-tertiary" data-mdb-ripple-color="light" data-tippy="tooltip" data-mdb-placement="left" data-title data-mulang="copy the tracing result" capitalize-first>
+                                             <ion-icon name="copy-solid"></ion-icon>
+                                           </div>
+                                         </div>
+                                         <div class="activities-table" id="_${tableBodyID}"></div>
+                                       </div>
+                                     </div>`
 
                         // Prepend the tracing's result to the container
                         queriesContainer.prepend($(element).show(function() {
@@ -1837,6 +1844,21 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                               // Give feedback to the user
                               showToast(I18next.capitalize(I18next.t('copy query tracing result')), I18next.capitalizeFirstLetter(I18next.replaceData('query tracing result with session ID of [b]$data[/b] has been copied to the clipboard, the size is $data', [sessionID, resultSize])) + '.', 'success')
+                            })
+                          })
+
+                          setTimeout(() => {
+                            let queryTracingElement = $(this)
+
+                            $(this).find('div.delete-tracing').click(function() {
+                              queryTracingElement.remove()
+
+                              try {
+                                if (queriesContainer.find('div.query').length <= 0) {
+                                  workareaElement.find(`div.tab-pane[tab="query-tracing"]#_${queryTracingContentID}`).addClass('_empty')
+                                  $(`input#_${queryTracingSearchInputID}`).val('').trigger('input')
+                                }
+                              } catch (e) {}
                             })
                           })
 
@@ -2079,11 +2101,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             } catch (e) {}
 
                             let element = `
-                                       <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="${sourceIP}">
-                                         <span class="color" style="bottom: 0px; background-color:${sourceColor}"></span>
-                                         <span source-ip>${sourceIP}</span>
-                                         <span class="badge badge-dark ms-2 rounded-pill" ${dataCenter == '' ? 'hidden' : ''}>${dataCenter}</span>
-                                       </button>`
+                                        <button type="button" class="btn btn-secondary btn-rounded btn-sm" data-source="${sourceIP}">
+                                          <span class="color" style="bottom: 0px; background-color:${sourceColor}"></span>
+                                          <span source-ip>${sourceIP}</span>
+                                          <span class="badge badge-dark ms-2 rounded-pill" ${dataCenter == '' ? 'hidden' : ''}>${dataCenter}</span>
+                                        </button>`
 
                             $(this).find(`div.sources[id="_${sourcesContainerID}"]`).append($(element).show(function() {
                               $(this).data('chart-data', data)
@@ -2203,11 +2225,15 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               try {
                                 jsTreeObject.on('loaded.jstree', () => {
                                   setTimeout(() => {
-                                    if (metadataContent.data('jstreeLastOpenedNodeID') != undefined && metadataContent.data('jstreeLastOpenedNodeID').length == 32)
-                                      jsTreeObject.jstree()._open_to(metadataContent.data('jstreeLastOpenedNodeID'))
+                                    try {
+                                      if (metadataContent.data('jstreeLastOpenedNodeID') != undefined && metadataContent.data('jstreeLastOpenedNodeID').length == 32)
+                                        jsTreeObject.jstree()._open_to(metadataContent.data('jstreeLastOpenedNodeID'))
+                                    } catch (e) {}
 
-                                    if (metadataContent.data('jstreeLastSelectedNodeID') != undefined && metadataContent.data('jstreeLastSelectedNodeID').length == 32)
-                                      jsTreeObject.jstree().select_node(metadataContent.data('jstreeLastSelectedNodeID'))
+                                    try {
+                                      if (metadataContent.data('jstreeLastSelectedNodeID') != undefined && metadataContent.data('jstreeLastSelectedNodeID').length == 32)
+                                        jsTreeObject.jstree().select_node(metadataContent.data('jstreeLastSelectedNodeID'))
+                                    } catch (e) {}
                                   })
                                 })
                               } catch (e) {}
@@ -2294,26 +2320,39 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   }
                                 } catch (e) {}
 
+                                // If the node type is a column
+                                try {
+                                  if (nodeType != 'column')
+                                    throw 0
+
+                                  scope = {
+                                    keyspace: keyspaceName,
+                                    table: tableName,
+                                    column: targetName
+                                  }
+                                } catch (e) {}
+
                                 let contextMenu = [{
                                   label: I18next.capitalize(I18next.t('get CQL description')),
+                                  enabled: !['users-parent', 'standard-users-parent', 'super-users-parent'].includes(nodeType),
                                   submenu: [{
                                       label: I18next.capitalize(I18next.t('display in the work area')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
-                                                    connectionID: '${getAttributes(connectionElement, 'data-id')}',
-                                                    scope: '${JSON.stringify(scope)}',
-                                                    tabID: '${cqlDescriptionContentID}',
-                                                    nodeID: '${getAttributes(clickedNode, 'id')}'
-                                                  })`
+                                                     connectionID: '${getAttributes(connectionElement, 'data-id')}',
+                                                     scope: '${JSON.stringify(scope)}',
+                                                     tabID: '${cqlDescriptionContentID}',
+                                                     nodeID: '${getAttributes(clickedNode, 'id')}'
+                                                   })`
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('save it as a text file')),
                                       click: `() => views.main.webContents.send('cql-desc:get', {
-                                                    connectionID: '${getAttributes(connectionElement, 'data-id')}',
-                                                    scope: '${JSON.stringify(scope)}',
-                                                    tabID: '${cqlDescriptionContentID}',
-                                                    nodeID: '${getAttributes(clickedNode, 'id')}',
-                                                    saveAsFile: true
-                                                  })`
+                                                     connectionID: '${getAttributes(connectionElement, 'data-id')}',
+                                                     scope: '${JSON.stringify(scope)}',
+                                                     tabID: '${cqlDescriptionContentID}',
+                                                     nodeID: '${getAttributes(clickedNode, 'id')}',
+                                                     saveAsFile: true
+                                                   })`
                                     },
                                   ]
                                 }]
@@ -2338,12 +2377,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     label: I18next.capitalize(I18next.t('create keyspace')),
                                     action: 'createKeyspace',
                                     click: `() => views.main.webContents.send('create-keyspace', {
-                                                datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
-                                                keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`
+                                                 datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                 keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`
                                   })
                                 } catch (e) {}
 
@@ -2389,67 +2428,81 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       label: I18next.capitalize(I18next.t('create UDT')),
                                       action: 'createUDT',
                                       click: `() => views.main.webContents.send('create-udt', {
-                                                keyspaceName: '${targetName}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                numOfUDTs: ${keyspaceUDTs.length},
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 keyspaceName: '${targetName}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 numOfUDTs: ${keyspaceUDTs.length},
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                       visible: !isSystemKeyspace && ['keyspace', 'udts-parent'].some((type) => nodeType == type),
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('create table')),
                                       action: 'createStandardTable',
                                       click: `() => views.main.webContents.send('create-table', {
-                                                keyspaceName: '${targetName}',
-                                                tables: '${JSON.stringify(keyspaceTables) || []}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                numOfUDTs: ${keyspaceUDTs.length},
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                                })`,
+                                                 keyspaceName: '${targetName}',
+                                                 tables: '${JSON.stringify(keyspaceTables) || []}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 numOfUDTs: ${keyspaceUDTs.length},
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                                 })`,
                                       visible: !isSystemKeyspace && ['keyspace', 'tables-parent'].some((type) => nodeType == type)
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('create counter table')),
                                       action: 'createCounterTable',
                                       click: `() => views.main.webContents.send('create-counter-table', {
-                                                keyspaceName: '${targetName}',
-                                                tables: '${JSON.stringify(keyspaceTables) || []}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                numOfUDTs: ${keyspaceUDTs.length},
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 keyspaceName: '${targetName}',
+                                                 tables: '${JSON.stringify(keyspaceTables) || []}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 numOfUDTs: ${keyspaceUDTs.length},
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                       visible: !isSystemKeyspace && ['keyspace', 'tables-parent', 'counter-tables-parent'].some((type) => nodeType == type)
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('alter UDT')),
                                       action: 'alterUDT',
                                       click: `() => views.main.webContents.send('alter-udt', {
-                                                keyspaceName: '${targetName}',
-                                                udtName: '${clickedNode.attr('name')}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                numOfUDTs: ${keyspaceUDTs.length},
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 keyspaceName: '${targetName}',
+                                                 udtName: '${clickedNode.attr('name')}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 numOfUDTs: ${keyspaceUDTs.length},
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                       visible: nodeType == 'udt'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('drop UDT')),
                                       action: 'dropUDT',
                                       click: `() => views.main.webContents.send('drop-udt', {
-                                                udtName: '${clickedNode.attr('name')}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${targetName}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 udtName: '${clickedNode.attr('name')}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${targetName}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
+                                      visible: nodeType == 'udt'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('find usages')),
+                                      action: 'findUDTUsages',
+                                      click: `() => views.main.webContents.send('find-udt-usages', {
+                                                 keyspaceName: '${targetName}',
+                                                 udtName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 views: '${JSON.stringify(keyspaceJSONObj.views || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                       visible: nodeType == 'udt'
                                     }
                                   ])
@@ -2458,46 +2511,59 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       label: I18next.capitalize(I18next.t('insert row as JSON')),
                                       action: 'insertRow',
                                       click: `() => views.main.webContents.send('insert-row', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}',
-                                                asJSON: 'true'
-                                              })`,
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}',
+                                                 asJSON: 'true'
+                                               })`,
                                       visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('insert row')),
                                       action: 'insertRow',
                                       click: `() => views.main.webContents.send('insert-row', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                       visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('increment/decrement counter(s)')),
                                       action: 'incrementDecrementCounter',
                                       click: `() => views.main.webContents.send('insert-row', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
+                                      visible: clickedNode.attr('is-counter-table') == 'true'
+                                    },
+                                    {
+                                      label: I18next.capitalize(I18next.t('reset all counters')),
+                                      action: 'resetAllCounters',
+                                      click: `() => views.main.webContents.send('reset-counters', {
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                       visible: clickedNode.attr('is-counter-table') == 'true'
                                     }
                                   ])
@@ -2506,16 +2572,30 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     label: I18next.capitalize(I18next.t('alter table')),
                                     action: 'alterTable',
                                     click: `() => views.main.webContents.send('alter-table', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                numOfUDTs: ${keyspaceUDTs.length},
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 numOfUDTs: ${keyspaceUDTs.length},
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
+                                    visible: nodeType == 'table'
+                                  })
+
+                                  commands.ddl.push({
+                                    label: I18next.capitalize(I18next.t('create index')),
+                                    action: 'createIndex',
+                                    click: `() => views.main.webContents.send('create-index', {
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                     visible: nodeType == 'table'
                                   })
 
@@ -2523,69 +2603,125 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     label: I18next.capitalize(I18next.t('delete row/colum')),
                                     action: 'insertRow',
                                     click: `() => views.main.webContents.send('delete-row-column', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                     visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                  })
+
+                                  commands.dml.push({
+                                    label: I18next.capitalize(I18next.t('update row')),
+                                    action: 'updateRow',
+                                    click: `() => views.main.webContents.send('update-row', {
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
+                                    visible: nodeType == 'table' && clickedNode.attr('is-counter-table') == 'false'
+                                  })
+
+                                  commands.dml.push({
+                                    label: I18next.capitalize(I18next.t('copy to/from')),
+                                    action: 'copyTable',
+                                    click: `() => views.main.webContents.send('copy-table', {
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
+                                    visible: nodeType == 'table'
                                   })
 
                                   commands.ddl = commands.ddl.concat([{
                                       label: I18next.capitalize(I18next.t('drop table')),
                                       action: 'dropTable',
                                       click: `() => views.main.webContents.send('drop-table', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                       visible: nodeType == 'table'
                                     }, {
                                       label: I18next.capitalize(I18next.t('truncate table')),
                                       action: 'truncateTable',
                                       click: `() => views.main.webContents.send('truncate-table', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                       visible: nodeType == 'table'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('alter keyspace')),
                                       action: 'alterKeyspace',
                                       click: `() => views.main.webContents.send('alter-keyspace', {
-                                                datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
-                                                keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                                keyspaceName: '${targetName}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                 keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                                 keyspaceName: '${targetName}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                       visible: nodeType == 'keyspace'
                                     },
                                     {
                                       label: I18next.capitalize(I18next.t('drop keyspace')),
                                       action: 'dropKeyspace',
                                       click: `() => views.main.webContents.send('drop-keyspace', {
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${targetName}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${targetName}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                       visible: nodeType == 'keyspace'
                                     }
                                   ])
 
                                   if (isSystemKeyspace)
                                     contextMenu = contextMenu.filter((item) => item.action != 'dropKeyspace')
+                                } catch (e) {}
+
+                                // If the node type is a column
+                                try {
+                                  if (nodeType != 'column')
+                                    throw 0
+
+                                  let columnKeyspaceObj = metadata.keyspaces.find((_keyspace) => _keyspace.name == keyspaceName)
+
+                                  if (!columnKeyspaceObj)
+                                    throw 0
+
+                                  commands.ddl.push({
+                                    label: I18next.capitalize(I18next.t('drop column')),
+                                    action: 'dropColumn',
+                                    click: `() => views.main.webContents.send('drop-column', {
+                                                 columnName: '${targetName}',
+                                                 columnKind: '${clickedNode.attr('column-kind')}',
+                                                 tableName: '${tableName}',
+                                                 tables: '${JSON.stringify(columnKeyspaceObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
+                                    visible: nodeType == 'column' && !['partition-key', 'clustering-key'].includes(clickedNode.attr('column-kind'))
+                                  })
                                 } catch (e) {}
 
                                 try {
@@ -2596,30 +2732,30 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     label: I18next.capitalize(I18next.t('select row as JSON')),
                                     action: 'selectRow',
                                     click: `() => views.main.webContents.send('select-row', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}',
-                                                asJSON: 'true'
-                                              })`,
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}',
+                                                 asJSON: 'true'
+                                               })`,
                                     visible: nodeType == 'table'
                                   }, {
                                     label: I18next.capitalize(I18next.t('select row')),
                                     action: 'selectRow',
                                     click: `() => views.main.webContents.send('select-row', {
-                                                tableName: '${clickedNode.attr('name')}',
-                                                tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
-                                                udts: '${JSON.stringify(keyspaceUDTs) || []}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                keyspaceName: '${keyspaceName}',
-                                                isCounterTable: '${clickedNode.attr('is-counter-table')}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`,
+                                                 tableName: '${clickedNode.attr('name')}',
+                                                 tables: '${JSON.stringify(keyspaceJSONObj.tables || []).replace(/([^\\])'/g, "$1\\'")}',
+                                                 udts: '${JSON.stringify(keyspaceUDTs) || []}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 keyspaceName: '${keyspaceName}',
+                                                 isCounterTable: '${clickedNode.attr('is-counter-table')}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`,
                                     visible: nodeType == 'table'
                                   })
                                 } catch (e) {}
@@ -2632,12 +2768,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     label: I18next.capitalize(I18next.t('create keyspace')),
                                     action: 'createKeyspace',
                                     click: `() => views.main.webContents.send('create-keyspace', {
-                                                datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
-                                                keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
-                                                tabID: '_${cqlshSessionContentID}',
-                                                textareaID: '_${cqlshSessionStatementInputID}',
-                                                btnID: '_${executeStatementBtnID}'
-                                              })`
+                                                 datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                 keyspaces: '${JSON.stringify(metadata.keyspaces.map((keyspace) => keyspace.name))}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`
                                   })
                                 } catch (e) {}
 
@@ -2645,6 +2781,32 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   contextMenu = contextMenu.concat([{
                                     type: 'separator',
                                   }])
+
+                                try {
+                                  if (!['users-parent', 'standard-users-parent', 'super-users-parent'].some((type) => nodeType == type))
+                                    throw 0
+
+                                  commands.dcl.push({
+                                    label: I18next.capitalize(I18next.t('create super user')),
+                                    action: 'createSuperUser',
+                                    click: `() => views.main.webContents.send('create-super-user', {
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`
+                                  })
+
+                                  commands.dcl.push({
+                                    label: I18next.capitalize(I18next.t('create DBA user')),
+                                    action: 'createDBAUser',
+                                    click: `() => views.main.webContents.send('create-dba-user', {
+                                                 datacenters: '${getAttributes(connectionElement, 'data-datacenters')}',
+                                                 tabID: '_${cqlshSessionContentID}',
+                                                 textareaID: '_${cqlshSessionStatementInputID}',
+                                                 btnID: '_${executeStatementBtnID}'
+                                               })`
+                                  })
+                                } catch (e) {}
 
                                 if (clickedNode.attr('data-is-virtual') == 'true') {
                                   commands.ddl = []
@@ -2695,32 +2857,32 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                   if (nodeType == 'cluster')
                                     click = `() => views.main.webContents.send('axonops-integration', {
-                                        workareaID: '${workareaElement.attr('workarea-id')}',
-                                        connectionID: '${connectionID}',
-                                        clusterName: 'cluster'
-                                      })`
+                                         workareaID: '${workareaElement.attr('workarea-id')}',
+                                         connectionID: '${connectionID}',
+                                         clusterName: 'cluster'
+                                       })`
 
                                   if (nodeType == 'keyspace')
                                     click = `() => views.main.webContents.send('axonops-integration', {
-                                        workareaID: '${workareaElement.attr('workarea-id')}',
-                                        connectionID: '${connectionID}',
-                                        keyspaceName: '${targetName}'
-                                      })`
+                                         workareaID: '${workareaElement.attr('workarea-id')}',
+                                         connectionID: '${connectionID}',
+                                         keyspaceName: '${targetName}'
+                                       })`
 
                                   if (nodeType == 'table')
                                     click = `() => views.main.webContents.send('axonops-integration', {
-                                        workareaID: '${workareaElement.attr('workarea-id')}',
-                                        connectionID: '${connectionID}',
-                                        tableName: '${clickedNode.attr('name')}',
-                                        keyspaceName: '${keyspaceName}'
-                                      })`
+                                         workareaID: '${workareaElement.attr('workarea-id')}',
+                                         connectionID: '${connectionID}',
+                                         tableName: '${clickedNode.attr('name')}',
+                                         keyspaceName: '${keyspaceName}'
+                                       })`
 
                                   contextMenu = contextMenu.concat([{
                                     label: I18next.capitalize(I18next.replaceData(`view $data dashboard`, [I18next.t(`${nodeType}`)])),
                                     action: 'axonops-integration',
                                     click,
                                     enabled: isAxonOpsIntegrationActionEnabled,
-                                    icon: Path.join(__dirname, '..', '..', '..', 'assets', 'images', `axonops-icon-transparent-16x16${!isHostThemeDark ? '-dark' : ''}.png`)
+                                    icon: Path.join(__dirname, '..', 'assets', 'images', `axonops-icon-transparent-16x16${!isHostThemeDark ? '-dark' : ''}.png`)
                                   }])
 
                                   // The snippets feature
@@ -2728,17 +2890,17 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     label: I18next.capitalize(I18next.t(`view related snippets`)),
                                     action: 'cql-snippets',
                                     click: nodeType == 'keyspace' ? `() => views.main.webContents.send('cql-snippets:view', {
-                                        workareaID: '${workareaElement.attr('workarea-id')}',
-                                        connectionID: '${connectionID}',
-                                        keyspaceName: '${targetName}',
-                                        workareaID: '${workareaElement.attr('workarea-id')}'
-                                        })` : `() => views.main.webContents.send('cql-snippets:view', {
-                                          workareaID: '${workareaElement.attr('workarea-id')}',
-                                          connectionID: '${connectionID}',
-                                          tableName: '${clickedNode.attr('name')}',
-                                          keyspaceName: '${keyspaceName}',
-                                          workareaID: '${workareaElement.attr('workarea-id')}'
-                                        })`,
+                                         workareaID: '${workareaElement.attr('workarea-id')}',
+                                         connectionID: '${connectionID}',
+                                         keyspaceName: '${targetName}',
+                                         workareaID: '${workareaElement.attr('workarea-id')}'
+                                         })` : `() => views.main.webContents.send('cql-snippets:view', {
+                                           workareaID: '${workareaElement.attr('workarea-id')}',
+                                           connectionID: '${connectionID}',
+                                           tableName: '${clickedNode.attr('name')}',
+                                           keyspaceName: '${keyspaceName}',
+                                           workareaID: '${workareaElement.attr('workarea-id')}'
+                                         })`,
                                     enabled: nodeType != 'cluster'
                                   }])
                                 } catch (e) {}
@@ -2903,10 +3065,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       result.forEach((change) => {
                                         // Line UI element structure
                                         let element = `
-                                                     <div class="line" data-number="${change.originalStartLineNumber}">
-                                                       <span class="number">${change.originalStartLineNumber}</span>
-                                                       <span class="content">${metadataDiffEditors.old.object.getLineContent(change.originalStartLineNumber)}</span>
-                                                     </div>`
+                                                      <div class="line" data-number="${change.originalStartLineNumber}">
+                                                        <span class="number">${change.originalStartLineNumber}</span>
+                                                        <span class="content">${metadataDiffEditors.old.object.getLineContent(change.originalStartLineNumber)}</span>
+                                                      </div>`
 
                                         // Append the line element to the container
                                         changesContainer.append($(element).click(function() {
@@ -2985,6 +3147,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                           return
                         } catch (e) {}
+
+                        // Show it in the interactive terminal
+                        if (minifyText(info.data.host).length != 0)
+                          addBlock($(`#_${cqlshSessionContentID}_container`), getRandom.id(10), `Connecting with host ${info.data.host} in Cluster: ${info.data.clusterName}, Data Center: ${info.data.datacenter} and Rack: ${info.data.rack}.`, null, true, 'neutral', true)
 
                         // Check if `CQLSH-STARTED` has been received
                         try {
@@ -3199,6 +3365,17 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             blockElement.attr('data-is-paging', 'true')
 
                           isOutputWithPaging = isOutputWithPaging || blockElement.attr('data-is-paging') != undefined
+
+                          try {
+                            if (data.output.data.keyspace == undefined)
+                              throw 0
+
+                            let keyspaceAndTableNames = `${data.output.data.keyspace}.${data.output.data.table}`
+
+                            blockElement.find('div.statement, div.statement-content').each(function() {
+                              $(this).html($(this).html().replace(new RegExp(keyspaceAndTableNames, 'gi'), `<span class="clickable-entity" onclick="goToNodeInTree('${keyspaceAndTableNames}')">${keyspaceAndTableNames}</span>`))
+                            })
+                          } catch (e) {}
 
                           // Handle if the statement's execution process has stopped
                           try {
@@ -3439,8 +3616,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             try {
                               if (data.output.statement.length != 0 && data.output.statementsCount > 1)
                                 statementContent = `<div class="statement-content"><pre>${Highlight.highlight(data.output.statement, {
-                                                                language: 'cql'
-                                                            }).value}</pre></div>`
+                                                                 language: 'cql'
+                                                             }).value}</pre></div>`
                             } catch (e) {}
 
                             try {
@@ -3450,30 +3627,30 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                             // The sub output structure UI
                             let element = `
-                                 <div class="sub-output ${isErrorFound ? 'error' : ''} ${statementContent.length != 0 ? (outputContainer.children('div.sub-output').length <= 0 ? 'margin-top-statement-first' : 'margin-top-statement') : ''}" sub-id="${getRandom.id(10)}" ${sessionIDAttr}>
-                                   ${statementContent}
-                                   <div class="general-hint select-rows">
-                                    <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> To perform a range selection hold <kbd>SHIFT</kbd> key and click on the end row, also, hold <kbd>CTRL</kbd> key and click on a row to deselect it.
-                                   </div>
-                                   <div class="sub-output-content"></div>
-                                   <div class="sub-actions" hidden>
-                                     <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="download the block" capitalize-first>
-                                       <ion-icon name="download"></ion-icon>
-                                     </div>
-                                     <div class="download-options">
-                                       <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
-                                         <ion-icon name="csv"></ion-icon>
-                                       </div>
-                                       <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
-                                         <ion-icon name="pdf"></ion-icon>
-                                       </div>
-                                     </div>
-                                     <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="trace the query" capitalize-first>
-                                       <ion-icon name="query-tracing"></ion-icon>
-                                       <div class="processing"></div>
-                                     </div>
-                                   </div>
-                                 </div>`
+                                  <div class="sub-output ${isErrorFound ? 'error' : ''} ${statementContent.length != 0 ? (outputContainer.children('div.sub-output').length <= 0 ? 'margin-top-statement-first' : 'margin-top-statement') : ''}" sub-id="${getRandom.id(10)}" ${sessionIDAttr}>
+                                    ${statementContent}
+                                    <div class="general-hint select-rows">
+                                     <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> To perform a range selection hold <kbd>SHIFT</kbd> key and click on the end row, also, hold <kbd>CTRL</kbd> key and click on a row to deselect it.
+                                    </div>
+                                    <div class="sub-output-content"></div>
+                                    <div class="sub-actions" hidden>
+                                      <div class="sub-action btn btn-tertiary" data-mdb-ripple-color="dark" sub-action="download" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="download the block" capitalize-first>
+                                        <ion-icon name="download"></ion-icon>
+                                      </div>
+                                      <div class="download-options">
+                                        <div class="option btn btn-tertiary" option="csv" data-mdb-ripple-color="dark">
+                                          <ion-icon name="csv"></ion-icon>
+                                        </div>
+                                        <div class="option btn btn-tertiary" option="pdf" data-mdb-ripple-color="dark">
+                                          <ion-icon name="pdf"></ion-icon>
+                                        </div>
+                                      </div>
+                                      <div class="sub-action btn btn-tertiary disabled" data-mdb-ripple-color="dark" sub-action="tracing" data-tippy="tooltip" data-mdb-placement="bottom" data-title data-mulang="trace the query" capitalize-first>
+                                        <ion-icon name="query-tracing"></ion-icon>
+                                        <div class="processing"></div>
+                                      </div>
+                                    </div>
+                                  </div>`
 
                             outputContainer.children('div.executing').hide()
 
@@ -3590,12 +3767,12 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   let selectPageRowsCheckboxID = `_${getRandom.id()}`
 
                                   outputElement.find('div.sub-output-content').find('div.tabulator').find('div.tabulator-headers').children('div.tabulator-col[tabulator-field="checkbox"]').first().append($(`
-                                        <div class="select-page-rows-container">
-                                          <div class="form-check">
-                                            <input class="form-check-input no-tabulator-style" type="checkbox" role="switch" id="${selectPageRowsCheckboxID}">
-                                          </div>
-                                        </div>
-                                        `).show(function() {
+                                         <div class="select-page-rows-container">
+                                           <div class="form-check">
+                                             <input class="form-check-input no-tabulator-style" type="checkbox" role="switch" id="${selectPageRowsCheckboxID}">
+                                           </div>
+                                         </div>
+                                         `).show(function() {
                                     getElementMDBObject($(this))
 
                                     setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
@@ -3634,8 +3811,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     IPCRenderer.send('show-context-menu', JSON.stringify([{
                                       label: I18next.capitalizeFirstLetter(`${I18next.t('generate insert statement(s)')}`),
                                       click: `() => views.main.webContents.send('insert-statements:generate', {
-                                                      tempObjectID: '${tempObjectID}'
-                                                    })`
+                                                       tempObjectID: '${tempObjectID}'
+                                                     })`
                                     }]))
                                   })
 
@@ -3829,16 +4006,76 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                   // Handle the download options
                                   {
-                                    // Download the table as CSV
-                                    outputElement.find('div.option[option="csv"]').click(() => tabulatorObject.download('csv', 'statement_block.csv'))
+                                    // Helper to save export via Electron dialog with workspace default path
+                                    let saveExport = (extension, generateFn) => {
+                                      let fileName = `statement_block.${extension}`
 
-                                    // Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), descriptionFileName)
+                                      try {
+                                        fileName = Path.join(getWorkspaceFolderPath(getActiveWorkspaceID()), connectionElement.attr('data-folder'), fileName)
+                                      } catch (e) {}
+
+                                      let dialogID = getRandom.id(5),
+                                        dialogData = {
+                                          id: dialogID,
+                                          title: I18next.capitalize(I18next.t('save as')) + ` ${extension.toUpperCase()}`,
+                                          properties: ['showHiddenFiles', 'createDirectory', 'promptToCreate'],
+                                          defaultPath: fileName,
+                                          type: 'showSaveDialog'
+                                        }
+
+                                      IPCRenderer.send('dialog:create', dialogData)
+
+                                      IPCRenderer.on(`dialog:${dialogID}`, (_, path) => {
+                                        path = `${path}`
+
+                                        try {
+                                          IPCRenderer.removeAllListeners(`dialog:${dialogID}`)
+                                        } catch (e) {}
+
+                                        try {
+                                          if (path.length <= 0)
+                                            throw 0
+
+                                          generateFn((data) => {
+                                            let writeData = typeof data === 'string' ? data : Buffer.from(data)
+
+                                            FS.writeFile(path, writeData, (err) => {
+                                              if (err)
+                                                return showToast(I18next.capitalize(I18next.t('save as')) + ` ${extension.toUpperCase()}`, I18next.capitalizeFirstLetter(I18next.t('something went wrong, failed to save the file')) + '.', 'failure')
+
+                                              showToast(I18next.capitalize(I18next.t('save as')) + ` ${extension.toUpperCase()}`, I18next.capitalizeFirstLetter(I18next.t('the file has been saved successfully')) + '.', 'success')
+                                            })
+                                          })
+                                        } catch (e) {}
+                                      })
+                                    }
+
+                                    // Download the table as CSV
+                                    outputElement.find('div.option[option="csv"]').click(() => {
+                                      saveExport('csv', (callback) => {
+                                        let checkboxCol = tabulatorObject.getColumn('checkbox')
+                                        if (checkboxCol) checkboxCol.hide()
+
+                                        tabulatorObject.download('csv', 'statement_block.csv', {}, 'active', callback)
+
+                                        if (checkboxCol) checkboxCol.show()
+                                      })
+                                    })
 
                                     // Download the table as PDF
-                                    outputElement.find('div.option[option="pdf"]').click(() => tabulatorObject.download('pdf', 'statement_block.pdf', {
-                                      orientation: 'portrait',
-                                      title: `${blockStatement}`,
-                                    }))
+                                    outputElement.find('div.option[option="pdf"]').click(() => {
+                                      saveExport('pdf', (callback) => {
+                                        let checkboxCol = tabulatorObject.getColumn('checkbox')
+                                        if (checkboxCol) checkboxCol.hide()
+
+                                        tabulatorObject.download('pdf', 'statement_block.pdf', {
+                                          orientation: 'portrait',
+                                          title: `${blockStatement}`,
+                                        }, 'active', callback)
+
+                                        if (checkboxCol) checkboxCol.show()
+                                      })
+                                    })
                                   }
 
                                   // Handle the clicks of the tracing button
@@ -4317,9 +4554,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   if (fileIndex >= statement.length) {
                                     if (statement.length > 1)
                                       blockElement.children('div.output').append($(`
-                                            <div class="sub-output info">
-                                              <div class="sub-output-content">All files have been executed.</div>
-                                            </div>`))
+                                             <div class="sub-output info">
+                                               <div class="sub-output-content">All files have been executed.</div>
+                                             </div>`))
 
                                     statementTextContainer.removeClass('executing')
 
@@ -4357,20 +4594,20 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     showErrorsBtnID = getRandom.id(10),
                                     fileExecutionInfoID = getRandom.id(10),
                                     element = `
-                                            <div class="sub-output info incomplete-statement">
-                                              <div class="sub-output-content">${fileIndex + 1}: Executing file '${filePath}'</div>
-                                            </div>
-                                            <div class="sub-output" data-id="${fileExecutionInfoID}_executed" data-count="0" hidden>
-                                              <div class="sub-output-content">-</div>
-                                            </div>
-                                            <div class="sub-output error" data-id="${fileExecutionInfoID}_error" data-count="0" hidden>
-                                              <span class="arrow"><ion-icon name="arrow-down"></ion-icon></span>
-                                              <div class="sub-output-content" onclick="$(this).parent().children('div.sub-output-content.all-errors').slideToggle('fast');$(this).parent().children('span.arrow').toggleClass('show');" style="display: inline;"><span>-</span></div>
-                                              <div class="sub-output-content all-errors" style="display: none;"></div>
-                                            </div>
-                                            <div class="sub-output info" data-id="${fileExecutionInfoID}_info" hidden>
-                                              <div class="sub-output-content">The file has been fully executed.</div>
-                                            </div>`
+                                             <div class="sub-output info incomplete-statement">
+                                               <div class="sub-output-content">${fileIndex + 1}: Executing file '${filePath}'</div>
+                                             </div>
+                                             <div class="sub-output" data-id="${fileExecutionInfoID}_executed" data-count="0" hidden>
+                                               <div class="sub-output-content">-</div>
+                                             </div>
+                                             <div class="sub-output error" data-id="${fileExecutionInfoID}_error" data-count="0" hidden>
+                                               <span class="arrow"><ion-icon name="arrow-down"></ion-icon></span>
+                                               <div class="sub-output-content" onclick="$(this).parent().children('div.sub-output-content.all-errors').slideToggle('fast');$(this).parent().children('span.arrow').toggleClass('show');" style="display: inline;"><span>-</span></div>
+                                               <div class="sub-output-content all-errors" style="display: none;"></div>
+                                             </div>
+                                             <div class="sub-output info" data-id="${fileExecutionInfoID}_info" hidden>
+                                               <div class="sub-output-content">The file has been fully executed.</div>
+                                             </div>`
 
                                   blockElement.children('div.output').children('div.executing').hide()
 
@@ -4550,9 +4787,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                           IPCRenderer.on(`pty:stop-source-execution:${connectionID}`, (_, result) => {
                             try {
                               blockElement.children('div.output').append($(`
-                                      <div class="sub-output info">
-                                        <div class="sub-output-content">The execution process has been terminated.</div>
-                                      </div>`))
+                                       <div class="sub-output info">
+                                         <div class="sub-output-content">The execution process has been terminated.</div>
+                                       </div>`))
 
                               blockElement.find('div.statement').children('div.text').removeClass('executing')
 
@@ -4729,7 +4966,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                               // The suggestion UI structure
                               let element = `
-                                       <span ${isSuggestKeyspaces || isKeyspace ? 'data-double-quote-check="true"' : ''} class="btn suggestion badge rounded-pill ripple-surface-light" data-index="${index}" data-suggestion="${suggestion}" data-selected="false" data-mdb-ripple-color="light" style="display:none">${suggestion}</span>`
+                                        <span ${isSuggestKeyspaces || isKeyspace ? 'data-double-quote-check="true"' : ''} class="btn suggestion badge rounded-pill ripple-surface-light" data-index="${index}" data-suggestion="${suggestion}" data-selected="false" data-mdb-ripple-color="light" style="display:none">${suggestion}</span>`
 
                               // Append the suggestion and handle the `click` event
                               suggestionsList.append($(element).delay(50 * index).fadeIn(100 * (index + 1)).click(function() {
@@ -5783,26 +6020,26 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               snapshots.forEach((snapshot) => {
                                 // Snapshot UI element structure
                                 let element = `
-                                           <div class="snapshot" data-path="${snapshot.path}" data-name="${snapshot.name}">
-                                             <div class="_left">
-                                               <div class="name">${snapshot.name}</div>
-                                               <div class="badges">
-                                                 <span class="badge badge-primary">${formatTimestamp(snapshot.time)}</span>
-                                                 <span class="badge badge-secondary">${Bytes(snapshot.size)}</span>
-                                               </div>
-                                             </div>
-                                             <div class="_right">
-                                               <a action="load" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
-                                                 <ion-icon name="upload"></ion-icon>
-                                               </a>
-                                               <a action="delete" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false">
-                                                 <ion-icon name="trash"></ion-icon>
-                                               </a>
-                                               <a action="multiple" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="#1d1d1e">
-                                                 <input class="form-check-input" type="checkbox">
-                                               </a>
-                                             </div>
-                                           </div>`
+                                            <div class="snapshot" data-path="${snapshot.path}" data-name="${snapshot.name}">
+                                              <div class="_left">
+                                                <div class="name">${snapshot.name}</div>
+                                                <div class="badges">
+                                                  <span class="badge badge-primary">${formatTimestamp(snapshot.time)}</span>
+                                                  <span class="badge badge-secondary">${Bytes(snapshot.size)}</span>
+                                                </div>
+                                              </div>
+                                              <div class="_right">
+                                                <a action="load" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                                  <ion-icon name="upload"></ion-icon>
+                                                </a>
+                                                <a action="delete" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button" data-confirmed="false">
+                                                  <ion-icon name="trash"></ion-icon>
+                                                </a>
+                                                <a action="multiple" class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="#1d1d1e">
+                                                  <input class="form-check-input" type="checkbox">
+                                                </a>
+                                              </div>
+                                            </div>`
 
                                 // Append the snapshot to the container
                                 snapshotsContainer.append($(element).show(function() {
@@ -6136,7 +6373,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       throw 0
 
                                     // Append the `webview` ElectronJS custom element
-                                    workareaElement.find(`div.tab-pane#_${localClustersAxonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', '..', '..', 'js', 'axonops_agent_webview.js')}"></webview>`).show(function() {
+                                    workareaElement.find(`div.tab-pane#_${localClustersAxonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops', 'agent-webview.js')}"></webview>`).show(function() {
                                       // Point at the webview element
                                       let webView = $(this)[0]
 
@@ -6182,15 +6419,18 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               try {
                                 workarea.find('[data-title]').each(function() {
                                   try {
-                                    let tippyInstance = mdbObjects.find((obj) => obj.type === 'Tooltip' && obj.element && $(this).is(obj.element))
+                                    // O(1) WeakMap lookup instead of O(n) array scan
+                                    let typeMap = mdbObjectsIndex.get(this)
+                                    let tippyObj = typeMap && typeMap['Tooltip']
 
-                                    if (!(tippyInstance && tippyInstance.object))
+                                    if (!tippyObj)
                                       throw 0
 
-                                    tippyInstance.object.destroy()
+                                    tippyObj.destroy()
+                                    delete typeMap['Tooltip']
 
                                     // Remove from mdbObjects array
-                                    let index = mdbObjects.indexOf(tippyInstance)
+                                    let index = mdbObjects.findIndex((obj) => obj.type === 'Tooltip' && obj.object === tippyObj)
 
                                     if (index !== -1)
                                       mdbObjects.splice(index, 1)
@@ -6385,10 +6625,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                             // Connection's switcher UI element structure
                             let element = `
-                                       <div class="connection" _connection-id="${connectionID}" style="box-shadow: inset 0px 0px 0 1px ${workspaceColor || '#7c7c7c'};" active ${hideSwitcher ? "hidden" : "" }>
-                                         <button type="button" style="color: ${workspaceColor};" class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="right" data-mdb-html="true"
-                                           data-title="<span class='tooltip-left'>${getAttributes(connectionElement, 'data-name')}<br>${connectionHost}</span>" data-mdb-html="true" data-mdb-customClass="tooltip-left">${extractTwoCharsConnectionName(getAttributes(connectionElement, 'data-name'))}</button>
-                                       </div>`
+                                        <div class="connection" _connection-id="${connectionID}" style="box-shadow: inset 0px 0px 0 1px ${workspaceColor || '#7c7c7c'};" active ${hideSwitcher ? "hidden" : "" }>
+                                          <button type="button" style="color: ${workspaceColor};" class="btn btn-tertiary" data-mdb-ripple-color="dark" data-tippy="tooltip" data-mdb-placement="right" data-mdb-html="true"
+                                            data-title="<span class='tooltip-left'>${getAttributes(connectionElement, 'data-name')}<br>${connectionHost}</span>" data-mdb-html="true" data-mdb-customClass="tooltip-left">${extractTwoCharsConnectionName(getAttributes(connectionElement, 'data-name'))}</button>
+                                        </div>`
 
                             // Define the suitable adding function based on whether or not there's an overflow
                             let addingFunction = {
@@ -6490,8 +6730,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                   IPCRenderer.send('show-context-menu', JSON.stringify([{
                                     label: I18next.capitalizeFirstLetter(`${I18next.t('close connection')} (${I18next.capitalizeFirstLetter(I18next.t('disconnect'))})`),
                                     click: `() => views.main.webContents.send('workarea:close', {
-                                              btnID: '${closeWorkareaBtnID}'
-                                            })`
+                                               btnID: '${closeWorkareaBtnID}'
+                                             })`
                                   }]))
                                 })
                               })
@@ -6554,8 +6794,19 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 showTabsTitles = rightSide.outerWidth() > minimumAllowedWidth,
                                 // Get all tabs' tooltips in the work area
                                 workareaTooltipElements = [...workareaElement.find('[tab-tooltip]')],
-                                // Get tooltips' objects of the tabs' tooltips
-                                workareaTooltipObjects = mdbObjects.filter((mdbObject) => workareaTooltipElements.some((elem) => mdbObject.element.is(elem)))
+                                // Get tooltips' objects of the tabs' tooltips via O(m) WeakMap lookups instead of O(n*m) array scan
+                                workareaTooltipObjects = workareaTooltipElements.reduce((acc, elem) => {
+                                  try {
+                                    let typeMap = mdbObjectsIndex.get(elem)
+                                    if (typeMap && typeMap['Tooltip'] != undefined)
+                                      acc.push({
+                                        element: $(elem),
+                                        object: typeMap['Tooltip'],
+                                        type: 'Tooltip'
+                                      })
+                                  } catch (e) {}
+                                  return acc
+                                }, [])
 
                               // Inside the workareas, find all tabs' titles and toggle their display based on the window width
                               workareaElement
@@ -6755,28 +7006,28 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                             // The history item structure UI
                             let element = `
-                                       <div class="history-item" data-index="${index}" data-is-source-command="${isSourceCommand}">
-                                         <div class="index">${index < 10 ? '0' : ''}${index}</div>
-                                         <div class="inner-content">
-                                           <pre>${historyItem}</pre>
-                                         </div>
-                                         <div class="click-area"></div>
-                                         <div class="action-execute">
-                                           <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
-                                             <ion-icon name="execute-solid"></ion-icon>
-                                           </span>
-                                         </div>
-                                         <div class="action-copy">
-                                           <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
-                                             <ion-icon name="copy-solid"></ion-icon>
-                                           </span>
-                                         </div>
-                                         <div class="action-delete">
-                                           <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
-                                             <ion-icon name="trash"></ion-icon>
-                                           </span>
-                                         </div>
-                                       </div>`
+                                        <div class="history-item" data-index="${index}" data-is-source-command="${isSourceCommand}">
+                                          <div class="index">${index < 10 ? '0' : ''}${index}</div>
+                                          <div class="inner-content">
+                                            <pre>${historyItem}</pre>
+                                          </div>
+                                          <div class="click-area"></div>
+                                          <div class="action-execute">
+                                            <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                              <ion-icon name="execute-solid"></ion-icon>
+                                            </span>
+                                          </div>
+                                          <div class="action-copy">
+                                            <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                              <ion-icon name="copy-solid"></ion-icon>
+                                            </span>
+                                          </div>
+                                          <div class="action-delete">
+                                            <span class="btn btn-link btn-rounded btn-sm" data-mdb-ripple-color="light" href="#" role="button">
+                                              <ion-icon name="trash"></ion-icon>
+                                            </span>
+                                          </div>
+                                        </div>`
 
                             // Append the history item
                             historyItemsContainer.append($(element).show(function() {
@@ -6971,14 +7222,14 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             let serialElement = levels[1] == undefined ? '' : `<div class="level ${activeSessionsConsistencyLevels[activeConnectionID].serial == levels[1] ? 'selected' : ''}" data-type="serial" data-level-name="${levels[1]}">${levels[1]}</div>`
 
                             levelsTable.append(`
-                                    <tr>
-                                      <td type="standard">
-                                        <div class="level ${activeSessionsConsistencyLevels[activeConnectionID].standard == levels[0] ? 'selected' : ''}" data-type="standard" data-level-name="${levels[0]}">${levels[0]}</div>
-                                      </td>
-                                      <td type="serial">
-                                        ${serialElement}
-                                      </td>
-                                    </tr>`)
+                                     <tr>
+                                       <td type="standard">
+                                         <div class="level ${activeSessionsConsistencyLevels[activeConnectionID].standard == levels[0] ? 'selected' : ''}" data-type="standard" data-level-name="${levels[0]}">${levels[0]}</div>
+                                       </td>
+                                       <td type="serial">
+                                         ${serialElement}
+                                       </td>
+                                     </tr>`)
                           }
 
                           consistencyLevelsContainer.html('')
@@ -7211,21 +7462,21 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 } catch (e) {}
 
                                 let element = `
-                                            <div class="cql-file ${fileStats.size <= 0 ? 'invalid' : ''}">
-                                              <div class="sort-handler" style="cursor:grab;">
-                                                <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
-                                              </div>
-                                              <div class="file-info">
-                                                <div class="path">${filePath.slice(1)}</div>
-                                                <div class="metadata">
-                                                  <span class="badge rounded-pill badge-secondary" ${fileStats.size <= 0 ? 'hidden' : ''}><span mulang="size" capitalize></span>: ${Bytes(fileStats.size)}</span>
-                                                  <span class="badge rounded-pill badge-secondary" ${fileStats.size > 0 ? 'hidden' : ''}>The file is either missing or inaccessible</span>
-                                                </div>
-                                              </div>
-                                              <a class="btn btn-link btn-rounded btn-sm remove-cql-file" data-mdb-ripple-color="light" href="#" role="button">
-                                                <ion-icon name="trash"></ion-icon>
-                                              </a>
-                                            </div>`
+                                             <div class="cql-file ${fileStats.size <= 0 ? 'invalid' : ''}">
+                                               <div class="sort-handler" style="cursor:grab;">
+                                                 <ion-icon name="sort" style="font-size: 130%;"></ion-icon>
+                                               </div>
+                                               <div class="file-info">
+                                                 <div class="path">${filePath.slice(1)}</div>
+                                                 <div class="metadata">
+                                                   <span class="badge rounded-pill badge-secondary" ${fileStats.size <= 0 ? 'hidden' : ''}><span mulang="size" capitalize></span>: ${Bytes(fileStats.size)}</span>
+                                                   <span class="badge rounded-pill badge-secondary" ${fileStats.size > 0 ? 'hidden' : ''}>The file is either missing or inaccessible</span>
+                                                 </div>
+                                               </div>
+                                               <a class="btn btn-link btn-rounded btn-sm remove-cql-file" data-mdb-ripple-color="light" href="#" role="button">
+                                                 <ion-icon name="trash"></ion-icon>
+                                               </a>
+                                             </div>`
 
                                 filesContainer.append($(element).show(function() {
                                   let cqlFileElement = $(this)
@@ -7766,7 +8017,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                         throw 0
 
                                       // Append the `webview`
-                                      $(`div.tab-pane#_${localClustersAxonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', '..', '..', 'js', 'axonops_agent_webview.js')}"></webview>`).show(function() {
+                                      $(`div.tab-pane#_${localClustersAxonopsContentID}`).append($(`<webview src="${axonopsURL}" nodeIntegrationInSubFrames nodeintegration preload="${Path.join(__dirname, '..', 'js', 'axonops', 'agent-webview.js')}"></webview>`).show(function() {
                                         // Point at the webview element
                                         let webView = $(this)[0]
 
@@ -8370,7 +8621,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                   elementPath = Path.join(getWorkspaceFolderPath(getAttributes(connectionElement, 'data-workspace-id')), getAttributes(connectionElement, 'data-folder'))
                 } catch (e) {
                   // Get the sandbox project's path
-                  elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..', '..', '..')), 'data', 'localclusters', getAttributes(connectionElement, 'data-folder'))
+                  elementPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'localclusters', getAttributes(connectionElement, 'data-folder'))
                 }
 
                 // Open the final path
@@ -8523,10 +8774,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                   // Get Apache Cassandra's version
                   version = getAttributes(connectionElement, 'data-latest-cassandra-version') || getAttributes(connectionElement, 'data-cassandra-version'),
                   host = getAttributes(connectionElement, 'data-host')
-
-                // Show it in the interactive terminal
-                if (minifyText(host).length != 0)
-                  addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `Connecting with host ${host}.`, null, true, 'neutral', true)
 
                 addBlock($(`#_${info.cqlshSessionContentID}_container`), getRandom.id(10), `Detected Apache Cassandra version is ${version}.`, null, true, 'neutral', true)
 
@@ -8891,6 +9138,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
         if (sshCreation != null) {
           sshInfo.sshPort = sshCreation.port
           sshInfo.sshHost = sshCreation.host
+          sshInfo.isSSH = true
         }
 
         // Get variables manifest and values
@@ -9494,2623 +9742,3 @@ let updateMiniConnection
 
 // Set the time which after it the termination of the connection test process is allowed
 const ConnectionTestProcessTerminationTimeout = 250
-
-// Handle different events for elements related to connections - especially the add/edit connection dialog -
-{
-  // Add/edit dialog
-  {
-    // Define a portion of the common CSS selector
-    let dialog = `div.modal#addEditConnectionDialog div.modal-body div.side`
-
-    // Clicks any of the section's buttons in the left side of the dialog
-    {
-      $(`${dialog}-left div.sections div.section div.btn`).click(function() {
-        // Get the section's name
-        let section = $(this).attr('section')
-
-        // Deactivate all sections
-        $(`${dialog}-left div.sections div.section div.btn`).removeClass('active')
-
-        // Hide all sections
-        $(`${dialog}-right div.modal-section`).hide()
-
-        // Activate the clicked section
-        $(this).addClass('active')
-
-        // Show the clicked section
-        $(`${dialog}-right div.modal-section[section="${section}"]`).show().removeAttr('hidden')
-
-        // Remove any notification about an invalid input in the active section
-        try {
-          $(this).children('div.invalid-inputs').fadeOut('fast')
-        } catch (e) {}
-      })
-    }
-
-    // Events handlers for the `Add New Connection` dialog and its elements
-    {
-      // Handle `input` and `click` events for all input fields
-      {
-        $(`${dialog}-right div.modal-section [info-section][info-key]`).on('input click', async function() {
-          let input = $(this), // Point at the current input
-            workspaceID = getActiveWorkspaceID() // Get the active workspace's ID
-
-          // Remove any visual feedback about having an invalid value
-          input.removeClass('is-invalid')
-
-          // Ignore the input field if it is not associated with a section in the `cqlsh.rc` config file
-          if (getAttributes(input, 'info-section') == 'none')
-            return
-
-          // Get the input's value, section, and key
-          let value = input.val(),
-            [section, key] = getAttributes(input, ['info-section', 'info-key'])
-
-          // If the input is a switch then its value will be the whether it's checked or not
-          if (getAttributes(input, 'type') == 'checkbox')
-            value = input.prop('checked')
-
-          // If the input is a file selector then get the selected file's path, or just ignore it
-          if (getAttributes(input, 'type') == 'file') {
-            try {
-              value = input[0].files[0].path
-            } catch (e) {
-              value = ''
-            }
-          }
-
-          // Convert final value to string
-          value = `${value}`
-
-          // Inner function to update the editor's content
-          let update = async () => {
-            isUpdatingEditor = true // Change the value to `true`; to prevent collisions
-
-            try {
-              let timestampGenerator = cqlshValues.connection.timestamp_generator,
-                currentValue = $('input[info-section="connection"][info-key="timestamp_generator"]').attr('cqlsh-value')
-
-              cqlshValues.connection.timestamp_generator = (timestampGenerator == 'Not Set' || currentValue == 'Not Set') ? 'DISABLED' : currentValue
-            } catch (e) {}
-
-            // Get final values - from the input fields - as JSON object
-            let finalValues = await variablesManipulation(workspaceID, cqlshValues),
-              // Apply the final values to the editor's content
-              updatedCQLSH = Modules.Connections.setCQLSHRCContent(finalValues, null, addEditConnectionEditor)
-
-            // Set the new content
-            addEditConnectionEditor.setValue(updatedCQLSH)
-
-            // Refresh the editor's layout
-            addEditConnectionEditor.layout()
-          }
-
-          try {
-            // If the input's value is not empty then skip this try-catch block
-            if (`${value}`.trim().length > 0)
-              throw 0
-
-            /**
-             * As the input's value is empty multiple choices are present:
-             * One is to disable it in the editor by prepending a semicolon
-             * Other is set a default value instead of the empty one
-             *
-             * Define the final input's value
-             */
-            let finalValue = ''
-
-            // If the key/option is not one of those then it can be disabled in the editor's content
-            if (!(['hostname', 'port'].includes(key)))
-              finalValue = 'DISABLED'
-
-            // Set the final value
-            cqlshValues[section][key] = finalValue
-
-            // Call the inner function `update`
-            await update()
-
-            // Skip the upcoming code
-            return
-          } catch (e) {}
-
-          // Set the final value
-          cqlshValues[section][key] = value
-
-          // Call the inner `update` function
-          await update()
-        })
-      }
-
-      // When change occurs in any of the input fields - except the connection's name - the `SAVE THE CLUSTER` button will be disabled
-      {
-        $(`${dialog}-right div.modal-section [info-section][info-key]`).filter(function() {
-          let isNotConnectionName = $(this).is(':not([info-key="connectionName"])'),
-            isNotAxonOpsIntegration = !($(this).attr('info-key').startsWith('axonops-'))
-
-          return isNotConnectionName && isNotAxonOpsIntegration
-        }).on('input', () => $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null))
-      }
-
-      /**
-       * Switching between the editor and the input fields
-       *
-       * When switching to the editor, the scroll value should be `0` - being at the top of the dialog -; to let the editor fit the entire dialog
-       * Switching back to the input fields needs to set the scroll value before switching to the editor
-       */
-      {
-        // Define the scroll value, by default, the current scroll value is `0` - at the top of the dialog -
-        let scrollValue = 0,
-          dialogElement = $(`div.modal#addEditConnectionDialog`)
-
-        // Clicks the `SWITCH TO EDITOR` button
-        $('#switchEditor').click(function() {
-          // Point at the dialog's content element
-          let dialogBody = dialogElement.find('div.modal-body'),
-            // Determine if the editor is visible/shown or not
-            editorShown = dialogElement.hasClass('show-editor')
-
-          // Add the `show-editor` class if it is not added, otherwise it'll be removed
-          dialogElement.toggleClass('show-editor', !editorShown)
-
-          // Show/hide the expand editor's buttons
-          $(`button#expandEditor`).toggleClass('show', !editorShown)
-
-          // Update the current scroll value if the editor is not shown already, otherwise, keep the current saved value
-          scrollValue = !editorShown ? dialogBody[0].scrollTop : scrollValue
-
-          // Either scroll to the last saved position if the editor is visible, or scroll to the top of the dialog for the editor before showing it
-          dialogBody[0].scrollTo(0, editorShown ? scrollValue : 0)
-
-          // Update the editor's layout
-          addEditConnectionEditor.layout()
-
-          // Return the dialog to its normal dimensions once back to the UI mode instead of the editor mode
-          if (dialogElement.find('div.modal-dialog').hasClass('expanded'))
-            $(`button#expandEditor`).click()
-        })
-
-        /**
-         * Create a resize observer for the add/edit dialog's body element
-         * By doing this the editor's dimensions will be always fit with the dialog's dimensions
-         */
-        setTimeout(() => {
-          (new ResizeObserver(() => {
-            try {
-              addEditConnectionEditor.layout()
-            } catch (e) {}
-          })).observe(dialogElement.find('div.modal-body')[0])
-        })
-
-        // Get the MDB object for the expand button's tooltip
-        let tooltip = getElementMDBObject($(`button#expandEditor`), 'Tooltip')
-
-        // Click the expand button - to expand the editor's view -
-        $(`button#expandEditor`).click(function() {
-          // Whether or not the dialog is already expanded
-          let expanded = dialogElement.find('div.modal-dialog').hasClass('expanded')
-
-          // Hide the tooltip once the button is clicked
-          tooltip.hide()
-
-          try {
-            // If the dialog is already expanded then skip this try-catch block
-            if (expanded)
-              throw 0
-
-            // Update the expand's button icon
-            $(this).children('ion-icon').attr('name', 'collapse')
-
-            // Expand the dialog
-            dialogElement.children('div.modal-dialog').addClass('modal-xl expanded').removeClass('modal-lg')
-
-            // Resize the editor initially - the resize observer will keep updating the size -
-            addEditConnectionEditor.layout()
-
-            // Skip the upcoming code
-            return
-          } catch (e) {}
-
-          // Update the expand's button icon
-          $(this).children('ion-icon').attr('name', 'expand')
-
-          // Return to the default status of the dialog's size
-          dialogElement.children('div.modal-dialog').addClass('modal-lg').removeClass('modal-xl expanded')
-
-          // Resize the editor initially - the resize observer will keep updating the size -
-          addEditConnectionEditor.layout()
-        })
-      }
-
-      // Show/hide the password fields' values by interacting with the eye button
-      {
-        // Clicks the eye button
-        $('div.form-outline div.reveal-password div.btn').click(function() {
-          // Point at the password input field
-          let password = $(this).parent().parent().children('input'),
-            // If the input field type is `text` then the password value is revealed
-            revealed = getAttributes(password, 'type') == 'text' ? true : false
-
-          // Change the eye button's icon based on the revealing status
-          $(this).children('ion-icon').attr('name', revealed ? 'eye-opened' : 'eye-closed')
-
-          // Switch the password input field type based on the revealing status
-          password.attr('type', revealed ? 'password' : 'text')
-        })
-      }
-
-      {
-        // Define a temporary connection ID to be used in the testing and adding prcoesses
-        let tempConnectionID = null,
-          // Hold the test connection's object
-          testedConnectionObject = null,
-          // Hold the test connection's created SSH tunnel - if one has been created -
-          testedSSHTunnelObject = null
-
-        // The testing connection process with the to be added/updated connection
-        {
-          /**
-           * Define an initial ID for the connection test process of the to be added/updated connection
-           * The value will be updated with every test connection process
-           */
-          let testConnectionProcessID,
-            // Define an initial ID for the SSH tunnel creation process as well
-            sshTunnelCreationRequestID,
-            // Flag to tell if an SSH tunnel is needed before connecting with Cassandra connection/node
-            isSSHTunnelNeeded = false
-
-          // Clicks the `TEST CONNECTION` button to do a connection test with the connection before saving/updating it
-          $('#testConnection').click(async function() {
-            let hostname = '', // The given hostname
-              port = 9042, // Default port to connect with Apache Cassandra
-              dataCenter = $('[info-section="none"][info-key="datacenter"]').val(), // By default, no data center is set unless the user provides one
-              // Apache Cassandra's authentication username and password
-              username = '',
-              password = '',
-              waitForEncryption = false, // Don't wait for encryption as username and password are not provided
-              sshTunnel = false, // There is no SSH tunnel creation info
-              // SSH tunnel creation info's object
-              ssh = {
-                host: '',
-                username: '',
-                dstPort: 0
-              },
-              // Get the currently active workspace's ID
-              workspaceID = getActiveWorkspaceID(),
-              // Point at the `TEST CONNECTION` button
-              button = $(this),
-              // Point at the add/edit connection's dialog
-              dialogElement = $('div.modal#addEditConnectionDialog')
-
-            // Get a random ID for this connection test process
-            testConnectionProcessID = getRandom.id(30)
-
-            // Get a random ID for the SSH tunnel creation process
-            sshTunnelCreationRequestID = getRandom.id(30)
-
-            // Add log about this request
-            try {
-              addLog(`Request to test connection that could be added/updated`, 'action')
-            } catch (e) {}
-
-            try {
-              // For AstraDB Connection type
-              let isAstraDBConnectionType = $('div#addEditConnectionDialog').attr('data-selected-modal-body') == 'astra-db'
-
-              if (!isAstraDBConnectionType)
-                throw 0
-
-              let astraDBConnectionData = {
-                  ClientID: $('#astraDBClientID').val(),
-                  ClientSecret: $('#astraDBClientSecret').val(),
-                  SCBPath: $('#astraDBSCBPath').val()
-                },
-                requestID = getRandom.id(10)
-
-              // Check if there's any missing data
-              let isMissingDataFound = false
-
-              try {
-                for (let key of Object.keys(astraDBConnectionData)) {
-                  let data = astraDBConnectionData[key],
-                    isMissing = minifyText(data).length <= 0
-
-                  $(`#astraDB${key}`).toggleClass('is-invalid', isMissing)
-
-                  if (isMissing)
-                    isMissingDataFound = true
-                }
-              } catch (e) {}
-
-              if (isMissingDataFound)
-                return showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t('to test connection with Astra DB, all fields are required, please make sure to provide them all before attempting to test connection again')) + '.', 'failure')
-
-              // The dialog is testing the connection with the connection
-              dialogElement.addClass('test-connection')
-
-              // Show the termination process' button
-              IPCRenderer.removeAllListeners(`process:can-be-terminated:${testConnectionProcessID}`)
-              IPCRenderer.on(`process:can-be-terminated:${testConnectionProcessID}`, () => setTimeout(() => dialogElement.addClass('enable-terminate-process')))
-
-              // Disable all the buttons in the footer
-              button.add('#addConnection').add('#switchEditor').attr('disabled', 'disabled')
-
-              $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').addClass('disabled')
-
-              tempConnectionID = null
-
-              try {
-                // Get the SSH username and password - for Apache Cassandra's authentication -
-                username = astraDBConnectionData.ClientID
-                password = astraDBConnectionData.ClientSecret
-
-                // If both username and password have been provided then they'll be encrypted
-                waitForEncryption = [username, password].every((secret) => secret.trim().length != 0)
-              } catch (e) {}
-
-              getRSAKey('public', async (key) => {
-                try {
-                  // If the received key is valid then skip this try-catch block
-                  if (key.length > 0)
-                    throw 0
-
-                  // Remove the test connection class
-                  dialogElement.removeClass('test-connection enable-terminate-process')
-
-                  // Hide the termination process' button after a set time out
-                  setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-                  // Enable some buttons in the footer
-                  button.add('#switchEditor').removeAttr('disabled', 'disabled')
-
-                  $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
-
-                  // Disable the `SAVE CLUSTER` button
-                  $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
-
-                  // Show feedback to the user
-                  showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
-
-                  // Skip the upcoming code - end the process -
-                  return
-                } catch (e) {}
-
-                /**
-                 * Reaching here means the received key is valid
-                 *
-                 * Encrypt both values; username and password
-                 */
-                encryptedUsername = encryptText(key, username)
-                encryptedPassword = encryptText(key, password)
-
-                // Request to test connection based on the provided data
-                IPCRenderer.send('pty:test-connection', {
-                  requestID,
-                  processID: testConnectionProcessID,
-                  secrets: {
-                    username: encryptedUsername,
-                    password: encryptedPassword
-                  },
-                  workspaceID: getActiveWorkspaceID(),
-                  scbFilePath: astraDBConnectionData.SCBPath
-                })
-
-                // In both cases listen to the response about the connection test
-                IPCRenderer.on(`pty:test-connection:${requestID}`, async (_, result) => {
-                  try {
-                    IPCRenderer.removeAllListeners(`pty:test-connection:${requestID}`)
-                  } catch (e) {}
-
-                  setTimeout(async () => {
-                    /**
-                     * If there's a post-connection script(s) to be executed
-                     *
-                     * Set this variable to hold the overall script's execution feedback
-                     */
-                    let executionFeedback = ''
-
-                    // Hold the tested connection's object
-                    testedConnectionObject = result
-
-                    // Hold all detected/seen data centers' names in array
-                    let allDataCenters
-
-                    try {
-                      // Remove the test connection class
-                      dialogElement.removeClass('test-connection enable-terminate-process')
-
-                      // Hide the termination process' button after a set time out
-                      setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-                      // Enable the `TEST CONNECTION` button
-                      button.add('#switchEditor').removeAttr('disabled', 'disabled')
-
-                      $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
-
-                      // Determine if the connection test has succeeded or not, or terminated
-                      let notConnected = !result.connected || [undefined, null].includes(result.version) || result.terminated != undefined
-
-                      // Enable or disable the save button based on the test's result
-                      $('#addConnection').attr('disabled', !notConnected || getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') != undefined ? null : 'disabled')
-
-                      // Failed to connect with the connection - process hasn't been terminated -
-                      if (notConnected && result.terminated == undefined) {
-                        // Define the error message
-                        let error = result.error.trim().length != 0 ? ` ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
-
-                        // Show feedback to the user
-                        showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('failed to activate connection'))}${error}${executionFeedback}.`, 'failure')
-
-                        // Skip the upcoming code
-                        throw 0
-                      }
-
-                      // If the process has been terminated then skip this try-catch block
-                      if (result.terminated != undefined)
-                        throw 0
-
-                      /**
-                       * Successfully connected with the connection
-                       *
-                       * Get the success feedback suffix
-                       */
-                      let suffix = I18next.t('you may now add it')
-
-                      // Change the suffix if the dialog's current mode is `edit`
-                      if (getAttributes(dialogElement, 'data-edit-connection-id') != undefined)
-                        suffix = I18next.t('you can now complete the update')
-
-                      try {
-                        // If the version of Cassandra is not v3 then skip this try-catch block
-                        if (!result.version.startsWith('3.'))
-                          throw 0
-
-                        // Just warn the user about that unsupported version
-                        setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
-                      } catch (e) {}
-
-                      // Show feedback to the user
-                      showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('connection test has finished with success'))}, ${I18next.capitalizeFirstLetter(suffix)}${executionFeedback}.`, 'success')
-
-                      // Refresh workspaces - to ensure synchronization with the latest data -
-                      $(document).trigger('refreshWorkspaces')
-                    } catch (e) {}
-                  })
-                })
-              })
-
-              return
-            } catch (e) {}
-
-            // For Apache Cassandra Connection type
-            // Get a temporary random ID for the connection which is being tested
-            tempConnectionID = getRandom.id(30)
-
-            // Attempt to close the created SSH tunnel - if exists -
-            try {
-              IPCRenderer.send('ssh-tunnel:close', tempConnectionID)
-            } catch (e) {}
-
-            try {
-              /**
-               * To test the connection, the user should have provided the hostname at least
-               *
-               * Get the `hostname` for the given data
-               */
-              hostname = cqlshValues.connection.hostname
-
-              port = cqlshValues.connection.port
-
-              // If the hostname is empty or only whitespaces then skip this try-catch block
-              if (hostname.trim().length <= 0 || `${cqlshValues.connection.port}`.length <= 0)
-                throw 0
-            } catch (e) {
-              /**
-               * Being here means the given hostname is invalid
-               *
-               * Add `invalid` class to the `hostname` input field
-               */
-              if (`${cqlshValues.connection.port}`.length <= 0)
-                $('[info-section="connection"][info-key="port"]').addClass('is-invalid')
-
-              if (hostname.trim().length <= 0)
-                $('[info-section="connection"][info-key="hostname"]').addClass('is-invalid')
-
-              // Point at the basic section navigation button in the dialog
-              let basicSectionBtn = dialogElement.find('div.btn[section="basic"]')
-
-              // If the basic section is not the currently active one then show invalid inputs notification
-              if (!basicSectionBtn.hasClass('active'))
-                basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
-
-              // Show feedback to the user
-              showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t('to test connection, host name and port are the only required fields to be provided')) + '.', 'failure')
-
-              // Skip the upcoming code - end the connection test process -
-              return
-            }
-
-            // Determine if any sensitive data has been added to the `cqlsh.rc` file
-            let foundSensitiveData = false,
-              // Determine if there's pre-post connection script(s) to be executed
-              scripts = {
-                pre: [],
-                post: []
-              },
-              // Will store the `cqlsh.rc` config file's content in the editor
-              cqlshContent
-
-            /**
-             * Check pre and post connect scripts
-             * Get all scripts associated with the connection
-             */
-            let check = await Modules.Connections.getPrePostScripts(workspaceID)
-
-            // Set the received data
-            scripts.pre = check.pre
-            scripts.post = check.post
-            foundSensitiveData = check.foundSensitiveData
-            cqlshContent = check.cqlshContent
-
-            try {
-              // If no sensitive data has been found then skip this try-catch block
-              if (!foundSensitiveData)
-                throw 0
-
-              // Show feedback to the user about having sensitive data in the `cqlsh.rc` config file's content
-              showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t(`workbench stores sensitive data encrypted and securely using the appropriate secure storage mechanism for your OS. The [code]cqlsh.rc[/code] content added contains sensitive information (such as username, password or a path to a credentials file), which is not permitted. Please remove this sensitive data before attempting to connect again`)) + '.', 'failure')
-
-              // Enable the `TEST CONNECTION` button
-              button.add('#switchEditor').removeAttr('disabled', 'disabled')
-
-              $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
-
-              // Remove the test connection class
-              dialogElement.removeClass('test-connection enable-terminate-process')
-
-              // Hide the termination process' button after a set time out
-              setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-              // Skip the upcoming code
-              return
-            } catch (e) {}
-
-            // Check if there's a need to create an SSH tunnel
-            try {
-              // Get related inputs values to the SSH tunnel info
-              let values = ['username', 'password', 'privatekey', 'passphrase']
-
-              // Loop through each value
-              values.forEach((value) => {
-                // Get the value of the current input
-                ssh[value] = $(`[info-section="none"][info-key="ssh-${value}"]`).val()
-              })
-
-              // Check if username has been given but without password nor private key path
-              if (ssh.username.trim().length != 0 && ([ssh.password, ssh.privatekey].every((secret) => secret.trim().length <= 0)))
-                return showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('username [code]$data[/code] has been provided for creating an SSH tunnel without providing neither a password nor private key, please consider to provide one of them and try again', [ssh.username])) + '.', 'failure')
-
-              // If both username and (password or private key) have been provided then an SSH tunnel should be created
-              sshTunnel = ssh.username.trim().length != 0 && ([ssh.password, ssh.privatekey].some((secret) => secret.trim().length != 0))
-
-              // Set the flag's value
-              isSSHTunnelNeeded = sshTunnel
-            } catch (e) {}
-
-            // The dialog is testing the connection with the connection
-            dialogElement.addClass('test-connection')
-
-            // Show the termination process' button
-            IPCRenderer.removeAllListeners(`process:can-be-terminated:${testConnectionProcessID}`)
-            IPCRenderer.on(`process:can-be-terminated:${testConnectionProcessID}`, () => setTimeout(() => dialogElement.addClass('enable-terminate-process')))
-
-            // Disable all the buttons in the footer
-            button.add('#addConnection').add('#switchEditor').attr('disabled', 'disabled')
-
-            $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').addClass('disabled')
-
-            /**
-             * Inner function to do processes which are after the SSH tunneling creation process - whether the process has been executed or not -
-             *
-             * @Parameters:
-             * {object} `?sshCreation` the SSH tunnel object associated with the connection
-             */
-            let afterSSHProcess = async (sshCreation = null) => {
-              // Make sure to set tempConnectionID to `null` if there's no SSH tunnel to be created
-              if (sshCreation == null)
-                tempConnectionID = null
-
-              try {
-                // Get the SSH username and password - for Apache Cassandra's authentication -
-                username = $('[info-section="none"][info-key="username"]').val()
-                password = $('[info-section="none"][info-key="password"]').val()
-
-                // If both username and password have been provided then they'll be encrypted
-                waitForEncryption = [username, password].every((secret) => secret.trim().length != 0)
-              } catch (e) {}
-
-              // Inner function inside `afterSSHProcess` function; to start the connection test with connection
-              let startTestConnection = async () => {
-                /**
-                 * A custom port might be passed to the `cqlsh` tool in case there's an SSH tunnel creation process
-                 *
-                 * The variable which will have the `port` attribute as an override
-                 */
-                let override = null
-
-                // If an SSH tunnel creation object has been passed
-                if (sshCreation != null) {
-                  // Override the port
-                  override = {
-                    port: sshCreation.port
-                  }
-                }
-
-                // Get variables manifest and values
-                try {
-                  // Define JSON object which will hold the names of the temporary files
-                  let files = {}
-
-                  // Loop through the names of the content
-                  for (let name of ['manifest', 'values']) {
-                    // Get the content from the OS keychain
-                    let content = name == 'manifest' ? await Keytar.findPassword(`AxonOpsWorkbenchVars${I18next.capitalize(name)}`) : JSON.stringify(await retrieveAllVariables(true))
-
-                    // Create a name for the temporary file
-                    files[name] = Path.join(OS.tmpdir(), Sanitize(`${getRandom.id(20)}.aocwtmp`))
-
-                    // Create the temporary file with related content
-                    await FS.writeFileSync(files[name], content || '')
-                  }
-
-                  // Update the creation data to adopt the variables' info
-                  override = {
-                    ...override,
-                    variables: {
-                      ...files
-                    }
-                  }
-                } catch (e) {}
-
-                // If there's a need to wait for the encryption of the username and password before starting the connection test
-                if (waitForEncryption) {
-                  // Get the app's RSA public key - for encryption we use the public key -
-                  getRSAKey('public', async (key) => {
-                    try {
-                      // If the received key is valid then skip this try-catch block
-                      if (key.length > 0)
-                        throw 0
-
-                      // Delete the temp file which contains the `cqlsh.rc` config file's content
-                      try {
-                        await FS.unlinkSync(tempConfigFile)
-                      } catch (e) {
-                        try {
-                          errorLog(e, 'connections')
-                        } catch (e) {}
-                      }
-
-                      // Remove the test connection class
-                      dialogElement.removeClass('test-connection enable-terminate-process')
-
-                      // Hide the termination process' button after a set time out
-                      setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-                      // Enable some buttons in the footer
-                      button.add('#switchEditor').removeAttr('disabled', 'disabled')
-
-                      $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
-
-                      // Disable the `SAVE CLUSTER` button
-                      $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
-
-                      // Show feedback to the user
-                      showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
-
-                      // Skip the upcoming code - end the process -
-                      return
-                    } catch (e) {}
-
-                    /**
-                     * Reaching here means the received key is valid
-                     *
-                     * Encrypt both values; username and password
-                     */
-                    encryptedUsername = encryptText(key, username)
-                    encryptedPassword = encryptText(key, password)
-
-                    // Request to test connection based on the provided data
-                    IPCRenderer.send('pty:test-connection', {
-                      requestID: cqlshrc.name,
-                      processID: testConnectionProcessID,
-                      secrets: {
-                        username: encryptedUsername,
-                        password: encryptedPassword
-                      },
-                      workspaceID: getActiveWorkspaceID(),
-                      cqlshrcPath: tempConfigFile,
-                      ...override
-                    })
-                  })
-                } else {
-                  /**
-                   * No need to encrypt any data or wait for an encryption process
-                   *
-                   * Request to test connection based on the provided data
-                   */
-                  IPCRenderer.send('pty:test-connection', {
-                    requestID: cqlshrc.name,
-                    processID: testConnectionProcessID,
-                    ...override,
-                    workspaceID: getActiveWorkspaceID(),
-                    cqlshrcPath: tempConfigFile
-                  })
-                }
-
-                // In both cases listen to the response about the connection test
-                IPCRenderer.on(`pty:test-connection:${cqlshrc.name}`, async (_, result) => {
-                  try {
-                    IPCRenderer.removeAllListeners(`pty:test-connection:${cqlshrc.name}`)
-                  } catch (e) {}
-
-                  setTimeout(async () => {
-                    // Delete the temp file which contains the `cqlsh.rc` config file's content
-                    try {
-                      await FS.unlinkSync(tempConfigFile)
-                    } catch (e) {
-                      try {
-                        errorLog(e, 'connections')
-                      } catch (e) {}
-                    }
-
-                    /**
-                     * If there's a post-connection script(s) to be executed
-                     *
-                     * Set this variable to hold the overall script's execution feedback
-                     */
-                    let executionFeedback = ''
-
-                    // Hold the tested connection's object
-                    testedConnectionObject = result
-
-                    /**
-                     * Implement a data center(s) check
-                     * Define a flag to tell if the provided data center - if provided - exists and is seen by the app or not
-                     */
-                    let isDataCenterExists = true,
-                      // Hold all detected/seen data centers' names in array
-                      allDataCenters
-
-                    try {
-                      // If there's no provided data center by the user then skip this try-catch block
-                      if (dataCenter.trim().length <= 0)
-                        throw 0
-
-                      // Determine if the provided data center exists
-                      isDataCenterExists = result.datacenters.filter((_dataCenter) => _dataCenter.datacenter == dataCenter).length != 0
-
-                      // Hold all detected/seen data centers
-                      allDataCenters = [...new Set(result.datacenters.map((_dataCenter) => _dataCenter.datacenter))]
-                    } catch (e) {}
-
-                    try {
-                      // Remove the test connection class
-                      dialogElement.removeClass('test-connection enable-terminate-process')
-
-                      // Hide the termination process' button after a set time out
-                      setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-                      // Enable the `TEST CONNECTION` button
-                      button.add('#switchEditor').removeAttr('disabled', 'disabled')
-
-                      $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
-
-                      // Determine if the connection test has succeeded or not, or terminated
-                      let notConnected = !result.connected || [undefined, null].includes(result.version) || result.terminated != undefined
-
-                      // Enable or disable the save button based on the test's result
-                      $('#addConnection').attr('disabled', !notConnected || getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') != undefined ? null : 'disabled')
-
-                      // If the provided data center doesn't exist
-                      if (!isDataCenterExists) {
-                        let allDataCentersStr = JSON.stringify(allDataCenters)
-
-                        // Format the string format of the data centers array for the toast
-                        allDataCentersStr = allDataCentersStr.slice(1, allDataCentersStr.length - 1).replace(/\"/g, '').split(',').join('[/code], [code]')
-
-                        // Show feedback to the user
-                        showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData('the set data center [code]$data[/code] is not recognized but the following data center(s): [code]$data[/code]. Please consider updating the data center input field or leaving it blank', [dataCenter, allDataCentersStr])) + '.', 'failure')
-
-                        // Enable or disable the save button based on the test's result
-                        $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
-
-                        // Skip the upcoming code
-                        throw 0
-                      }
-
-                      // Failed to connect with the connection - process hasn't been terminated -
-                      if (notConnected && result.terminated == undefined) {
-                        // Define the error message
-                        let error = result.error.trim().length != 0 ? ` ${I18next.capitalizeFirstLetter(I18next.t('error details'))}: ${result.error}` : ''
-
-                        // Show feedback to the user
-                        showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('failed to activate connection'))}${error}${executionFeedback}.`, 'failure')
-
-                        // Skip the upcoming code
-                        throw 0
-                      }
-
-                      // If the process has been terminated then skip this try-catch block
-                      if (result.terminated != undefined)
-                        throw 0
-
-                      try {
-                        // If there's no provided data center by the user then skip this try-catch block
-                        if (dataCenter.trim().length <= 0 || `${dataCenter}` == 'undefined')
-                          throw 0
-
-                        // If the provided data center is not the same as the one connected with then show feedback to the user
-                        if (dataCenter != result.datacenter)
-                          showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.replaceData(`the specified data center [code]$data[/code] is not the one connected with [code]$data[/code]`, [dataCenter, result.datacenter]) + '.'), 'warning')
-                      } catch (e) {}
-
-                      /**
-                       * Successfully connected with the connection
-                       *
-                       * Get the success feedback suffix
-                       */
-                      let suffix = I18next.t('you may now add it')
-
-                      // Change the suffix if the dialog's current mode is `edit`
-                      if (getAttributes(dialogElement, 'data-edit-connection-id') != undefined)
-                        suffix = I18next.t('you can now complete the update')
-
-                      try {
-                        // If the version of Cassandra is not v3 then skip this try-catch block
-                        if (!result.version.startsWith('3.'))
-                          throw 0
-
-                        // Just warn the user about that unsupported version
-                        setTimeout(() => showToast(I18next.capitalize(I18next.t('unsupported version')), I18next.capitalizeFirstLetter(I18next.replaceData('the detected version of Apache Cassandra is [b]$data[/b], unwanted behaviour and compatibility issues may be encountered', [result.version])) + '.', 'warning'))
-                      } catch (e) {}
-
-                      // Show feedback to the user
-                      showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('connection test has finished with success'))}, ${I18next.capitalizeFirstLetter(suffix)}${executionFeedback}.`, 'success')
-
-                      // Refresh workspaces - to ensure synchronization with the latest data -
-                      $(document).trigger('refreshWorkspaces')
-                    } catch (e) {}
-
-                    // Check if there are post-connection scripts to be executed after the connection attempt
-                    if (scripts.post.length != 0) {
-                      // Show feedback to the user about starting the execution process
-                      setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.t('post-connection scripts are being executed after closing the connection, you\'ll be notified once the process is finished')) + '.'), 50)
-
-                      // Request to execute the post-connection scripts
-                      Modules.Connections.executeScript(0, scripts.post, (executionResult) => {
-                        /**
-                         * All scripts have been successfully executed and all of them have returned `0`
-                         * Show the success feedback to the user and skip the upcoming code
-                         */
-                        if (executionResult.status == 0)
-                          return setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of the connection have been successfully executed', [I18next.t('post')])) + '.', 'success'), 50)
-
-                        /**
-                         * There's an issue with one or more script
-                         *
-                         * Define the feedback info
-                         */
-                        let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
-
-                        // `-1000` error code means the app couldn't find the script in the given path
-                        if (status == -1000)
-                          info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
-
-                        // Final feedback to be shown to the user
-                        executionFeedback = `${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}`
-
-                        // Show feedback to the user
-                        setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('post')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of the connection', [I18next.t('post')]))}. ${executionFeedback}`, 'failure'), 50)
-                      })
-                    }
-                  })
-                })
-              }
-
-              /**
-               * Define the `cqlsh.rc` file content from the editor, and set its random name
-               * For testing the connection, a temporary file with the editor's content will be created in the OS temp folder
-               */
-              let cqlshrc = {
-                  value: addEditConnectionEditor.getValue(),
-                  name: `${getRandom.id(10)}.cwb` // [C]assandra [W]ork[B]ench
-                },
-                /**
-                 * Get the OS temp folder path
-                 * `OS` module will handle this for all operating systems
-                 */
-                tempConfigFile = Path.join(OS.tmpdir(), cqlshrc.name),
-                // Create the temp `*.cwb` file with the `cqlsh.rc` content from the editor
-                saveTemp = await FS.writeFileSync(tempConfigFile, cqlshrc.value)
-
-              try {
-                // If the app has successfully created the temp file then skip this try-catch block
-                if (saveTemp == undefined)
-                  throw 0
-
-                // Show feedback to the user the about failure to create a necessary temp file for the connection test process
-                showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('failed to complete the test process, please check the privileges of the app to read/write'))}.`, 'failure')
-
-                // Disable the `SAVE CLUSTER` button
-                $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
-
-                // Skip the upcoming code
-                return
-              } catch (e) {}
-
-              // Call the function which will start the connection test
-              startTestConnection()
-            }
-            // End of the function `afterSSHProcess`
-
-            // Inner function to check and - based on the check result - create an SSH tunnel
-            let checkAndCreateSSHTunnel = () => {
-
-              let resetDialogStatus = () => {
-                // Remove the test connection class
-                dialogElement.removeClass('test-connection enable-terminate-process')
-
-                // Hide the termination process' button after a set time out
-                setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-                // Enable the `TEST CONNECTION` button
-                button.add('#switchEditor').removeAttr('disabled', 'disabled')
-
-                $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
-              }
-
-              /**
-               * There's a need to create an SSH tunnel before testing the connection with the connection
-               *
-               * Check if an SSH client is installed and accessible
-               */
-              tunnelSSH.checkClient((exists) => {
-                // If the SSH client doesn't exist then end the process and show feedback to the user
-                if (!exists) {
-                  showToast(I18next.capitalize(I18next.t('test connection')), I18next.t('SSH client has to be installed and accessible in order to establish SSH tunnel, please make sure to install it on your machine') + '.', 'failure')
-
-                  return resetDialogStatus()
-                }
-
-                // Define the essential SSH tunnel creation info
-                ssh.host = $('[info-section="none"][info-key="ssh-host"]').val()
-                ssh.port = $('[info-section="none"][info-key="ssh-port"]').val() || 22
-                ssh.dstAddr = hostname
-                ssh.dstPort = cqlshContent.connection.port
-                ssh.connectionID = tempConnectionID
-
-                if (minifyText(ssh.host).length <= 0) {
-                  showToast(I18next.capitalize(I18next.t('test connection')), I18next.capitalizeFirstLetter(I18next.t('a valid SSH host is required in order to establish SSH tunnel, please make sure to provide it and try again')) + '.', 'failure')
-
-                  $('[info-section="none"][info-key="ssh-host"]').addClass('is-invalid')
-
-                  // Point at the basic section navigation button in the dialog
-                  let sshTunnelSectionBtn = dialogElement.find('div.btn[section="ssh-tunnel"]')
-
-                  // If the basic section is not the currently active one then show invalid inputs notification
-                  if (!sshTunnelSectionBtn.hasClass('active'))
-                    sshTunnelSectionBtn.children('div.invalid-inputs').fadeIn('fast')
-
-                  return resetDialogStatus()
-                }
-
-                // Add the generated requestID
-                ssh = {
-                  ...ssh,
-                  requestID: sshTunnelCreationRequestID
-                }
-
-                // Create an SSH tunnel
-                tunnelSSH.createTunnel(ssh, (creationResult) => {
-                  // If no error has occurred then perform the after SSH tunnel creation processes, and skip the upcoming code
-                  if (creationResult.error == undefined) {
-                    let host = ssh.dstAddr != '127.0.0.1' ? ssh.dstAddr : ssh.host,
-                      port = ssh.dstPort
-
-                    // Hold the created SSH tunnel's info
-                    testedSSHTunnelObject = {
-                      port: creationResult.port, // The port to be shown to the user
-                      oport: port, // The original port to be used within the creation process
-                      ...creationResult,
-                      host
-                    }
-
-                    // Call the next function in the process and skip the upcoming code
-                    return afterSSHProcess(creationResult)
-                  }
-
-                  resetDialogStatus()
-
-                  // Show feedback to the user
-                  if (!creationResult.terminated)
-                    showToast(I18next.capitalize(I18next.t('test connection')), `${I18next.capitalizeFirstLetter(I18next.t('failed to establish an SSH tunnel for the connection'))}. ${creationResult.error}.`, 'failure')
-                })
-              })
-            }
-
-            // Execute pre-connection scripts if needed
-            try {
-              // If there's no pre-connection script(s) to be executed then skip this try-catch block
-              if (scripts.pre.length <= 0)
-                throw 0
-
-              // Show feedback to the user about starting the execution process
-              setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.t('pre-connection scripts are being executed before starting the connection, you\'ll be notified once the process is finished')) + '.'), 50)
-
-              // Request to execute the pre-connection script(s)
-              Modules.Connections.executeScript(0, scripts.pre, (executionResult) => {
-                /**
-                 * All scripts have been executed successfully
-                 * Call the function which will start the connection test
-                 */
-                if (executionResult.status == 0) {
-                  // Show success feedback to the uers
-                  setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), I18next.capitalizeFirstLetter(I18next.replaceData('all $data-connection scripts of the connection have been successfully executed', [I18next.t('pre')])) + '.', 'success'), 50)
-
-                  // If there's no need to create an SSH tunnel then directly call the `afterSSHProcess` function
-                  if (!sshTunnel)
-                    return afterSSHProcess(null)
-
-                  // Otherwise, call the `checkAndCreateSSHTunnel` function
-                  checkAndCreateSSHTunnel()
-
-                  // Skip the upcoming code
-                  return
-                }
-
-                /**
-                 * There's an issue with one or more script
-                 *
-                 * Define the feedback info
-                 */
-                let info = `${I18next.t('script "$data" didn\'t return the success code [code]0[/code], but')} <code>${executionResult.status}</code>.`
-
-                // `-1000` error code means the app couldn't find the script in the given path
-                if (status == -1000)
-                  info = `${I18next.t('script "$data" seems not exist, please check its path and make sure it has no errors')}.`
-
-                // Show feedback to the user
-                setTimeout(() => showToast(I18next.capitalize(I18next.replaceData('$data-connection scripts execution', [I18next.t('pre')])), `${I18next.capitalizeFirstLetter(I18next.replaceData('an error has occurred while executing $data-connection scripts of the connection', [I18next.t('pre')]))}. ${I18next.capitalizeFirstLetter(I18next.replaceData(info, [executionResult.scripts[executionResult.scriptID]]))}`, 'failure'), 50)
-
-                // Remove the test connection class
-                dialogElement.removeClass('test-connection enable-terminate-process')
-
-                // Hide the termination process' button after a set time out
-                setTimeout(() => dialogElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-
-                // Enable the `TEST CONNECTION` button
-                button.add('#switchEditor').removeAttr('disabled', 'disabled')
-
-                $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').removeClass('disabled')
-
-                // Disable the `SAVE CLUSTER` button
-                $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
-              })
-
-              // Skip the upcoming code
-              return
-            } catch (e) {}
-
-            // Call the `afterSSHProcess` function if there's no need to create an SSH tunnel
-            if (!sshTunnel)
-              return afterSSHProcess(null)
-
-            // Call the `checkAndCreateSSHTunnel` function as there's a need to create an SSH tunnel
-            checkAndCreateSSHTunnel()
-          })
-
-          // Clicks the process termination button
-          $('#terminateConnectionTestProcess').add('#terminateConnectionTestProcessAstraDB').click(() => {
-            try {
-              if (!isSSHTunnelNeeded)
-                throw 0
-
-              // Attempt to close the SSH tunnel if it has already been created
-              try {
-                IPCRenderer.send('ssh-tunnel:close', tempConnectionID)
-              } catch (e) {}
-
-              // Send a request to terminate the SSH tunnel creation process
-              IPCRenderer.send(`ssh-tunnel:terminate`, sshTunnelCreationRequestID)
-
-              // Show success feedback to the user
-              showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData('the testing process of the connection to be added/edited in workspace [b]$data[/b] has been terminated with success', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), 'success')
-            } catch (e) {}
-
-            // Send request to the main thread to terminate the current ongoing connection test process
-            IPCRenderer.send(`process:terminate:${testConnectionProcessID}`)
-
-            // Send request to the main thread to terminate the connection test process - if there's any -
-            try {
-              IPCRenderer.send(`pty:test-connection:terminate`, checkCassandraProcessID)
-            } catch (e) {}
-
-            // Once the termination status is received
-            if (!isSSHTunnelNeeded)
-              IPCRenderer.on(`process:terminate:${testConnectionProcessID}:result`, (_, status) => showToast(I18next.capitalize(I18next.t('terminate test process')), I18next.capitalizeFirstLetter(I18next.replaceData(status ? 'the testing process of the connection to be added/edited in workspace [b]$data[/b] has been terminated with success' : 'something went wrong, failed to terminate the testing process of the connection to be added/edited in workspace [b]$data[/b]', [getWorkspaceName(getActiveWorkspaceID())]) + '.'), status ? 'success' : 'failure'))
-          })
-        }
-
-        // Clicks the `SAVE/UPDATE CLUSTER` button
-        {
-          $('#addConnection').click(async function() {
-            let connectionName = $('[info-section="none"][info-key="connectionName"]').val(), // The connection's unique name
-              dataCenter = $('[info-section="none"][info-key="datacenter"]').val(), // By default, no data center is set unless the user provides one
-              username = '', // Apache Cassandra's username
-              password = '', // Apache Cassandra's password
-              sshUsername = '', // SSH username - for creating a tunnel -
-              sshPassword = '', // SSH password
-              sshPrivatekey = '', // SSH RSA private key content - not a path -
-              sshPassphrase = '', // SSH private key's passphrase
-              sshTunnel = false, // There is no SSH tunneling info
-              saveAuthCredentials = $('input#saveAuthCredentials').prop('checked'),
-              saveSSHCredentials = $('input#saveSSHCredentials').prop('checked'),
-              waitForEncryption = false, // Don't wait for encryption, username and password are not provided
-              workspaceID = getActiveWorkspaceID(), // Current active workspace's ID
-              // Current active workspace's folder path
-              workspaceFolder = getAttributes($(`div.workspace[data-id="${workspaceID}"]`), 'data-folder'),
-              // Save/update button
-              button = $(this),
-              // We're in editing mode or not
-              editingMode = getAttributes($(`div.modal#addEditConnectionDialog`), 'data-edit-connection-id') != undefined,
-              finalConnection
-
-            // Add log about this request
-            try {
-              addLog(`Request to add/edit new connection after a successful test`, 'action')
-            } catch (e) {}
-
-            /**
-             * Inner function to do processes after saving/updating connection
-             *
-             * @Parameters:
-             * {boolean} `status` saving/updating process status [true: success, false: failed]
-             * {object} `?secrets` secrets to be updated for the connection after the saving/updating process
-             */
-            let postProcess = async (status, secrets = null) => {
-              // Enable the buttons in the footer
-              button.add('#testConnection').add('#switchEditor').removeAttr('disabled')
-
-              try {
-                // If the saving/updating process has succeeded then skip this try-catch block
-                if (status)
-                  throw 0
-
-                // Show feedback to the user about the failure
-                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), `${I18next.capitalizeFirstLetter(I18next.t(editingMode ? 'failed to update the connection' : 'failed to add the new connection'))}.`, 'failure')
-
-                // Skip the upcoming code - end the process -
-                return
-              } catch (e) {}
-
-              /**
-               * The connection has been successfully saved/updated
-               *
-               * Show feedback to the user
-               */
-              showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), `${I18next.capitalizeFirstLetter(I18next.t(editingMode ? 'the connection has been successfully updated' : 'the new connection has been successfully added'))}.`, 'success')
-
-              // Click the close button
-              $(`${dialog}-right`).parent().parent().find('button.btn-close').click()
-
-              // Make sure all fields are cleared
-              try {
-                /**
-                 * If this is an editing mode then there's no need for this try-catch block
-                 * When the user attempts to edit another connection all fields are updated
-                 * Also when attempting to add a new connection the app detects that the previous attempt was `edit` and do changes as needed
-                 */
-                if (editingMode)
-                  throw 0
-
-                setTimeout(() => {
-                  // Set the default `.cqlshrc` content
-                  addEditConnectionEditor.setValue(Modules.Consts.CQLSHRC)
-
-                  $('div.modal#addEditConnectionDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
-
-                  // Loop through each input not related to section nor key in the `.cqlshrc` content
-                  $('[info-section="none"][info-key]').each(function() {
-                    // Get the input's Material Design object
-                    let object_ = getElementMDBObject($(this))
-
-                    // Handle when the input is actually a file selector
-                    try {
-                      // If the input is not a file selector then skip this try-catch block
-                      if ($(this).parent().attr('file-name') == undefined)
-                        throw 0
-
-                      /**
-                       * Update the tooltip's content and state
-                       * Get the object
-                       */
-                      let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
-
-                      // Clear the file's name preview
-                      $(this).parent().attr('file-name', '-')
-
-                      // Disable the tooltip
-                      try {
-                        tooltipObject[0].object.disable()
-                      } catch (e) {}
-                    } catch (e) {}
-
-                    /**
-                     * If it is `undefined` then it hasn't been found in the `cqlsh.rc` file
-                     * Set the input value to ''
-                     */
-                    try {
-                      $(this).val('')
-                    } catch (e) {
-                      // If the previous set didn't work then try to call the `selected` attribute
-                      try {
-                        $(this).prop('checked', getAttributes($(this), 'default-value') == 'true' ? true : false)
-                      } catch (e) {}
-                    } finally {
-                      // Update the object
-                      object_.update()
-                      setTimeout(() => object_._deactivate())
-                    }
-                  })
-                }, 1000)
-
-                $('#axonOpsSaaS').prop('checked', true)
-                $('#axonOpsSaaS').trigger('change')
-              } catch (e) {}
-
-              try {
-                // If the current mode is not `edit` then skip this try-catch block
-                if (!editingMode)
-                  throw 0
-
-                // Point at the connection's UI element in the workspace connections' list
-                let connectionUI = $(`div.connections-container div.connections div.connection[data-id="${editedConnectionObject.info.id}"]`),
-                  // Get all saved connections
-                  getAllConnections = await Modules.Connections.getConnections(workspaceID),
-                  // Get the edited/updated connection
-                  newEditedConnection = getAllConnections.find((_connection) => _connection.info.id == finalConnection.info.id)
-
-                // Update the connection's name
-                try {
-                  connectionUI.find('div.header > div.title').text(newEditedConnection.name)
-                } catch (e) {}
-
-                // Update the connection's host
-                try {
-                  connectionUI.find('div.info[info="host"] div.text').text(newEditedConnection.host)
-                } catch (e) {}
-
-                // Hide cassandra and datacenter info elements and show their placeholder
-                (['cassandra', 'data-center']).forEach((info) => {
-                  info = connectionUI.find(`div.info[info="${info}"]`)
-                  info.children('div.text').text('')
-                  info.children('div._placeholder').fadeIn('fast')
-                })
-
-                // Update the connection's UI element's attributes
-                connectionUI.attr({
-                  'data-name': newEditedConnection.name,
-                  'data-folder': newEditedConnection.folder,
-                  'data-host': newEditedConnection.host,
-                  'data-connected': 'false',
-                  'data-workarea': 'false'
-                })
-
-                try {
-                  let relatedData = finalConnection.info.axonOpsIntegration,
-                    areAllDataValid = relatedData != undefined && Object.keys(relatedData).every((data) => relatedData[data].length > 0)
-
-                  connectionUI.attr({
-                    'data-axonops-integration-organization': areAllDataValid ? relatedData.organization : null,
-                    'data-axonops-integration-clusterName': areAllDataValid ? relatedData.clusterName : null,
-                    'data-axonops-integration-url': areAllDataValid ? relatedData.url : null
-                  })
-
-                  connectionUI.find('div.footer').find('div.actions').toggleClass('axonops-integration', areAllDataValid && isInitAxonOpsIntegrationEnabled)
-                  connectionUI.find('div.footer').find('div.actions').find('div.action[action="axonops-integration"]').toggle(areAllDataValid && isInitAxonOpsIntegrationEnabled)
-                  connectionUI.find('div.footer').find('div.actions').find('div.action[action="axonops-integration"]').attr('hidden', areAllDataValid && isInitAxonOpsIntegrationEnabled ? null : '')
-                } catch (e) {}
-
-                // Update the status of the connection in the mini connection's list
-                updateMiniConnection(workspaceID, getAttributes(connectionUI, 'data-id'), true)
-
-                try {
-                  // Update secrets data for the connection - Apache Cassandra's authentication and SSH credentials -
-                  connectionUI.attr({
-                    'data-username': saveAuthCredentials && secrets.auth == undefined ? (secrets != null ? secrets.username : null) : null,
-                    'data-password': saveAuthCredentials && secrets.auth == undefined ? (secrets != null ? secrets.password : null) : null,
-                    'data-ssh-username': saveSSHCredentials && secrets.ssh == undefined ? (secrets != null ? secrets.sshUsername : null) : null,
-                    'data-ssh-password': saveSSHCredentials && secrets.ssh == undefined ? (secrets != null ? secrets.sshPassword : null) : null,
-                    'data-ssh-passphrase': saveSSHCredentials && secrets.ssh == undefined ? (secrets != null ? secrets.sshPassphrase : null) : null,
-                    'data-credentials-auth': secrets.auth != undefined || (!saveAuthCredentials && (secrets != null && secrets.username != null && secrets.password != null)) ? 'true' : null,
-                    'data-credentials-ssh': secrets.ssh != undefined || !saveSSHCredentials && (secrets != null && secrets.sshUsername != null && secrets.sshPassword != null) ? 'true' : null,
-                  })
-                } catch (e) {
-                  try {
-                    errorLog(e, 'connections')
-                  } catch (e) {}
-                }
-
-                // Remove all test connection status classes
-                connectionUI.find('div.status').removeClass('show success failure')
-
-                // Update the global `editedConnectionObject` value
-                editedConnectionObject = newEditedConnection
-              } catch (e) {}
-
-              // Refresh connections for the currently active workspace
-              $(document).trigger('refreshConnections', {
-                workspaceID
-              })
-
-              // Get workspaces; to sync with newly added/updated connections
-              $(document).trigger('getWorkspaces')
-
-              {
-                setTimeout(() => {
-                  let connectionElement = $(`div.connections-container div.connection[data-id="${finalConnection.info.id}"]`),
-                    cassandraVersion = connectionElement.find('div[info="cassandra"]'),
-                    // Point at the data center element
-                    dataCenterElement = connectionElement.find('div[info="data-center"]'),
-                    // Point at the `CONNECT` button
-                    connectBtn = connectionElement.children('div.footer').children('div.button').children('button.connect'),
-                    // Point at the `TEST CONNECTION` button
-                    testConnectionBtn = connectionElement.children('div.footer').children('div.button').children('button.test-connection'),
-                    // Point at the status element - the flashing circle at the top right -
-                    statusElement = connectionElement.children('div.status')
-
-                  try {
-                    if (!secrets[0])
-                      throw 0
-
-                    getRSAKey('public', (key) => {
-                      try {
-                        // If the received key is valid to be used then skip this try-catch block
-                        if (key.length <= 0)
-                          throw 0
-
-                        for (secret of secrets) {
-                          if (typeof secret !== 'object')
-                            continue
-
-                          try {
-                            if (`${secret.value}`.length <= 0)
-                              throw 0
-
-                            let value = encryptText(key, secret.value)
-
-                            connectionElement.attr(`data-${secret.name.toLowerCase().replace('ssh', 'ssh-')}`, value)
-                          } catch (e) {}
-                        }
-                      } catch (e) {}
-                    })
-                  } catch (e) {}
-
-                  try {
-                    if (tempConnectionID == null)
-                      throw 0
-
-                    /**
-                     * Add the created SSH tunnel object to the `sshTunnelsObjects` array; to have the ability to identify if the connection has an SSH tunnel associated with it
-                     */
-                    sshTunnelsObjects[finalConnection.info.id] = testedSSHTunnelObject
-
-                    try {
-                      IPCRenderer.send('ssh-tunnel:update', {
-                        oldID: tempConnectionID,
-                        newID: finalConnection.info.id
-                      })
-                    } catch (e) {}
-                  } catch (e) {}
-
-                  // Show Apache Cassandra version
-                  try {
-                    if (testedConnectionObject.version != undefined) {
-                      cassandraVersion.children('div._placeholder').hide()
-                      cassandraVersion.children('div.text').text(`v${testedConnectionObject.version}`)
-                    }
-                  } catch (e) {}
-
-                  // Show data center
-                  try {
-                    if (testedConnectionObject.datacenter != undefined) {
-                      dataCenterElement.children('div._placeholder').hide()
-                      dataCenterElement.children('div.text').text(`${testedConnectionObject.datacenter}`)
-                    }
-                  } catch (e) {}
-
-                  // Update some attributes for the connection UI element alongside some classes
-                  let isConnected = false
-                  try {
-                    connectionElement.attr({
-                      'data-cassandra-version': testedConnectionObject.version,
-                      'data-datacenter': testedConnectionObject.datacenter,
-                      'data-datacenters': JSON.stringify(testedConnectionObject.datacenters),
-                      'data-connected': 'true'
-                    })
-
-                    isConnected = true
-                  } catch (e) {}
-
-                  if (!isConnected)
-                    return
-
-                  // Add the success state to the connection's UI element
-                  statusElement.removeClass('failure').addClass('show success')
-
-                  setTimeout(() => {
-                    // Enable the `CONNECT` button
-                    connectBtn.add(testConnectionBtn).removeAttr('disabled')
-
-                    // Remove the test connection state
-                    connectionElement.removeClass('test-connection enable-terminate-process')
-
-                    // Hide the termination process' button after a set time out
-                    setTimeout(() => connectionElement.removeClass('enable-terminate-process'), ConnectionTestProcessTerminationTimeout)
-                  })
-                }, 1000)
-              }
-            }
-            // End of the inner function to do processes after saving/updating connection
-
-            // For AstraDB Connection type
-            try {
-              let isAstraDBConnectionType = $('div#addEditConnectionDialog').attr('data-selected-modal-body') == 'astra-db'
-
-              if (!isAstraDBConnectionType)
-                throw 0
-
-              let astraDBConnectionData = {
-                ClientID: $('#astraDBClientID').val(),
-                ClientSecret: $('#astraDBClientSecret').val(),
-                SCBPath: $('#astraDBSCBPath').val()
-              }
-
-              connectionName = $('#astraDBConnectionName').val()
-
-              // For Apache Cassandra Connection type
-              try {
-                // If the provided connection's name is valid then skip this try-catch block
-                if (connectionName.trim().length > 0)
-                  throw 0
-
-                // Add an `invalid` class to the connection name's input field
-                $('#astraDBConnectionName').addClass('is-invalid')
-
-                // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('to add a connection, a unique valid name is required to be provided')) + '.', 'failure')
-
-                // Skip the upcoming code - terminate the connection's saving/updating process -
-                return
-              } catch (e) {}
-
-              username = astraDBConnectionData.ClientID
-
-              password = astraDBConnectionData.ClientSecret
-
-              // Disable the buttons in the footer
-              button.add('#testConnection').add('#switchEditor').attr('disabled', 'disabled')
-
-              $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type').addClass('disabled')
-
-              // Get all saved connections in the workspace
-              let _connections = await Modules.Connections.getConnections(workspaceID),
-                // Make sure the provided connection's name does not exist - duplication is not allowed -
-                exists = _connections.find((_connection) => (manipulateText(_connection.name) == manipulateText(connectionName)) && (manipulateText(Sanitize(_connection.folder)) == manipulateText(Sanitize(connectionName)))),
-                /**
-                 * If the current state of the dialog is `edit` then make sure to exclude the connection's name from duplication
-                 * `editedConnectionObject` is a global object that is updated with every attempt to edit/update a connection
-                 */
-                extraCondition = editingMode ? connectionName != editedConnectionObject.name : true
-
-              try {
-                if (Sanitize(minifyText(connectionName)).length > 0)
-                  throw 0
-
-                // Enable the buttons in the footer
-                button.add('#testConnection').add('#switchEditor').removeAttr('disabled')
-
-                // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('the given name seems invalid, please provide a unique valid name')) + '.', 'failure')
-
-                // Skip the upcoming code - terminate the saving/updating process -
-                return
-              } catch (e) {}
-
-              try {
-                // If there's no duplication then skip this try-catch block
-                if ([undefined, null].includes(exists) || !extraCondition)
-                  throw 0
-
-                // Enable the buttons in the footer
-                button.add('#testConnection').add('#switchEditor').removeAttr('disabled')
-
-                // Show feedback to the user
-                showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.replaceData('a connection is already exists with the given name [b]$data[/b] in workspace [b]$data[/b], please provide a unique valid name', [connectionName, getWorkspaceName(workspaceID)])) + '.', 'failure')
-
-                // Skip the upcoming code - terminate the saving/updating process -
-                return
-              } catch (e) {}
-
-              /**
-               * Reaching here means there's no duplication in the name of the connection
-               *
-               * Set the final connection's object which will be used to save it and its info - secrets, SSH tunneling info, etc... -
-               */
-              finalConnection = {
-                name: connectionName,
-                info: {
-                  id: editingMode ? editedConnectionObject.info.id : `connection-${getRandom.id(10)}`,
-                  datacenter: '',
-                  secureConnectionBundlePath: astraDBConnectionData.SCBPath
-                }
-              }
-
-              // If the current mode is `edit` then add an `original` object of the connection - which is the connection before being edited -
-              if (editingMode)
-                finalConnection.original = editedConnectionObject
-
-              // Determine the proper function to be called based on whether the current mode is `edit` or not
-              let connectionsCallFunction = editingMode ? Modules.Connections.updateConnection : Modules.Connections.saveConnection
-
-              /**
-               * Encrypt all provided secrets - for Apache Cassandra and SSH -
-               *
-               * Create an array of names and values of the secrets
-               */
-              let secrets = [{
-                name: 'username',
-                value: username
-              }, {
-                name: 'password',
-                value: password
-              }]
-
-              try {
-                // Get the apps' public RSA key
-                getRSAKey('public', (key) => {
-                  try {
-                    // If the received key is valid to be used then skip this try-catch block
-                    if (key.length != 0)
-                      throw 0
-
-                    // Show feedback to the user
-                    showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
-
-                    // Call the post-process function with `false` - failed to save/update the connection
-                    postProcess(false)
-
-                    // Stop the process; as something is not correct with the generator tool
-                    return
-                  } catch (e) {}
-
-                  // Values will be saved in the `secrets` object
-                  finalConnection.info.secrets = [],
-                    // Array to be a copy from the original secrets before manipulation
-                    savedSecrets = []
-
-                  // Set the `credentials` attribute
-                  finalConnection.info.credentials = {}
-
-                  // Loop through each secret's value
-                  for (let secret of secrets) {
-                    // Make sure there's a value to encrypt
-                    if (secret.value.trim().length != 0 && !([undefined, null].includes(secret.value))) {
-                      // Whether or not the current secret will be saved or the user will be asked to provide this secret next time
-                      let toBeSaved = saveAuthCredentials
-
-                      // This secret/credential will be saved
-                      if (toBeSaved) {
-                        savedSecrets[secret.name] = encryptText(key, secret.value)
-                      } else {
-                        // This credential should be provided by the user next time
-                        finalConnection.info.credentials['auth'] = true
-                      }
-                    }
-                  }
-
-                  // If there are no saved secrets then delete the `secrets` attribute
-                  if (Object.keys(savedSecrets).length <= 0) {
-                    delete finalConnection.info.secrets
-                  } else {
-                    // Otherwise, save it
-                    finalConnection.info.secrets = savedSecrets
-                  }
-
-                  // If ther are no required credentials then delete the `credentials` attribute
-                  if (Object.keys(finalConnection.info.credentials).length <= 0)
-                    delete finalConnection.info.credentials
-
-                  // Call the proper function, then pass the status to the `postProcess` inner function
-                  connectionsCallFunction(workspaceID, finalConnection).then((status) => postProcess(status, editingMode ? {
-                    ...savedSecrets,
-                    ...finalConnection.info.credentials
-                  } : [true, ...secrets]))
-                })
-              } catch (e) {}
-
-              return
-            } catch (e) {}
-
-            // For Apache Cassandra Connection type
-            try {
-              // If the provided connection's name is valid then skip this try-catch block
-              if (connectionName.trim().length > 0)
-                throw 0
-
-              // Add an `invalid` class to the connection name's input field
-              $('[info-section="none"][info-key="connectionName"]').addClass('is-invalid')
-
-              // Point at the basic section navigation button in the dialog
-              let basicSectionBtn = $(`div.modal#addEditConnectionDialog`).find('div.btn[section="basic"]')
-
-              // If the basic section is not the currently active one then show invalid inputs notification
-              if (!basicSectionBtn.hasClass('active'))
-                basicSectionBtn.children('div.invalid-inputs').fadeIn('fast')
-
-              // Show feedback to the user
-              showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('to add a connection, a unique valid name is required to be provided')) + '.', 'failure')
-
-              // Skip the upcoming code - terminate the connection's saving/updating process -
-              return
-            } catch (e) {}
-
-            // Disable the buttons in the footer
-            button.add('#testConnection').add('#switchEditor').attr('disabled', 'disabled')
-
-            // Get all saved connections in the workspace
-            let _connections = await Modules.Connections.getConnections(workspaceID),
-              // Make sure the provided connection's name does not exist - duplication is not allowed -
-              exists = _connections.find((_connection) => (manipulateText(_connection.name) == manipulateText(connectionName)) && (manipulateText(Sanitize(_connection.folder)) == manipulateText(Sanitize(connectionName)))),
-              /**
-               * If the current state of the dialog is `edit` then make sure to exclude the connection's name from duplication
-               * `editedConnectionObject` is a global object that is updated with every attempt to edit/update a connection
-               */
-              extraCondition = editingMode ? connectionName != editedConnectionObject.name : true
-
-            try {
-              if (Sanitize(minifyText(connectionName)).length > 0)
-                throw 0
-
-              // Enable the buttons in the footer
-              button.add('#testConnection').add('#switchEditor').removeAttr('disabled')
-
-              // Show feedback to the user
-              showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('the given name seems invalid, please provide a unique valid name')) + '.', 'failure')
-
-              // Skip the upcoming code - terminate the saving/updating process -
-              return
-            } catch (e) {}
-
-            try {
-              // If there's no duplication then skip this try-catch block
-              if ([undefined, null].includes(exists) || !extraCondition)
-                throw 0
-
-              // Enable the buttons in the footer
-              button.add('#testConnection').add('#switchEditor').removeAttr('disabled')
-
-              // Show feedback to the user
-              showToast(I18next.capitalize(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.replaceData('a connection is already exists with the given name [b]$data[/b] in workspace [b]$data[/b], please provide a unique valid name', [connectionName, getWorkspaceName(workspaceID)])) + '.', 'failure')
-
-              // Skip the upcoming code - terminate the saving/updating process -
-              return
-            } catch (e) {}
-
-            /**
-             * Reaching here means there's no duplication in the name of the connection
-             *
-             * Set the final connection's object which will be used to save it and its info - secrets, SSH tunneling info, etc... -
-             */
-            finalConnection = {
-              name: connectionName,
-              cqlshrc: addEditConnectionEditor.getValue(),
-              info: {
-                id: editingMode ? editedConnectionObject.info.id : `connection-${getRandom.id(10)}`,
-                datacenter: dataCenter.trim()
-              }
-            }
-
-            // Handle the AxonOps integration feature
-            try {
-              let axonOpsIntegration = {
-                organization: minifyText(`${$(`[info-section="none"][info-key="axonops-organization"]`).val()}`),
-                clusterName: minifyText(`${$(`[info-section="none"][info-key="axonops-clustername"]`).val()}`),
-                url: getCheckedValue('axonOpsURL')
-              }
-
-              try {
-                if (axonOpsIntegration.url == 'axonOpsSaaS') {
-                  axonOpsIntegration.url = 'axonops-saas'
-                  throw 0
-                }
-
-                let protocol = `${$('input#axonOpsDashboardIntegrationDefaultURLProtocol').val()}` || `https`,
-                  url = `${$('input#axonOpsDashboardIntegrationDefaultURL').val()}`
-
-                if ([protocol, url].some((value) => minifyText(value).length <= 0)) {
-                  showToast(I18next.capitalizeFirstLetter(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.replaceData('when the AxonOps Self-Host option is selected, a valid URL with both protocol and host is required. Please provide these before $data the connection', [editingMode ? 'saving' : 'updating'])) + '.', 'failure')
-
-                  return postProcess(false)
-                }
-
-                axonOpsIntegration.url = [protocol, url].some((part) => minifyText(part).length <= 0) ? '' : `${protocol}://${url}`
-              } catch (e) {}
-
-              if (Object.keys(axonOpsIntegration).some((data) => axonOpsIntegration[data].length <= 0))
-                throw 0
-
-              finalConnection.info.axonOpsIntegration = axonOpsIntegration
-            } catch (e) {}
-
-            // If the current mode is `edit` then add an `original` object of the connection - which is the connection before being edited -
-            if (editingMode)
-              finalConnection.original = editedConnectionObject
-
-            try {
-              /**
-               * Check username and password for both; Apache Cassandra and SSH tunnel
-               *
-               * Define the secrets to be checked
-               */
-              let values = ['username', 'password', 'ssh-sshUsername', 'ssh-sshPassword', 'ssh-sshPrivatekey', 'ssh-sshPassphrase']
-
-              // Loop through each secret
-              values.forEach((value) => {
-                /**
-                 * Get the secret's value from the related input field
-                 * Using `eval` here won't affect the performance at all
-                 */
-                eval(`${value.replace('ssh-', '')} = "${$(`[info-section="none"][info-key="${(value.replace('-ssh', '-')).toLowerCase()}"]`).val()}"`)
-              })
-
-              // If Apache Cassandra's username and password have been provided then the encryption process must be executed
-              if ([username, password].every((secret) => secret.trim().length != 0))
-                waitForEncryption = true
-
-              // If SSH's username and password have been provided then the encryption process must be executed, and add the tunnel creation info to the connection's object
-              if (sshUsername.trim().length != 0 && [sshPassword, sshPrivatekey].some((secret) => secret.trim().length != 0)) {
-                waitForEncryption = true
-                sshTunnel = true
-              }
-            } catch (e) {
-              try {
-                errorLog(e, 'connections')
-              } catch (e) {}
-            }
-
-            try {
-              // If there's no SSH tunnel creation info to be handled then skip this try-catch block
-              if (!sshTunnel)
-                throw 0
-
-              // Add `ssh` object to the final connection's object
-              finalConnection.ssh = {}
-
-              // Add the `privatekey` attribute if it has been provided
-              if (sshPrivatekey.trim().length != 0)
-                finalConnection.ssh.privatekey = sshPrivatekey
-
-              // Add the `passphrase` attribute if it has been provided
-              if (sshPassphrase.trim().length != 0)
-                finalConnection.ssh.passphrase = sshPassphrase
-
-              // Add other info; host, port, destination address, and destination port
-              finalConnection.ssh.host = $('[info-section="none"][info-key="ssh-host"]').val()
-              finalConnection.ssh.port = $('[info-section="none"][info-key="ssh-port"]').val() || 22
-              finalConnection.ssh.dstAddr = $('[info-section="connection"][info-key="hostname"]').val()
-              finalConnection.ssh.dstPort = $('[info-section="connection"][info-key="port"]').val()
-
-              if (minifyText(finalConnection.ssh.host).length <= 0) {
-                showToast(I18next.capitalizeFirstLetter(I18next.t(!editingMode ? 'add connection' : 'update connection')), I18next.capitalizeFirstLetter(I18next.t('a valid SSH host is required in order to establish SSH tunnel, please make sure to provide it and try again')) + '.', 'failure')
-
-                $('[info-section="none"][info-key="ssh-host"]').addClass('is-invalid')
-
-                // Point at the basic section navigation button in the dialog
-                let sshTunnelSectionBtn = dialogElement.find('div.btn[section="ssh-tunnel"]')
-
-                // If the basic section is not the currently active one then show invalid inputs notification
-                if (!sshTunnelSectionBtn.hasClass('active'))
-                  sshTunnelSectionBtn.children('div.invalid-inputs').fadeIn('fast')
-
-                return
-              }
-            } catch (e) {
-              try {
-                errorLog(e, 'connections')
-              } catch (e) {}
-            }
-
-            // Determine the proper function to be called based on whether the current mode is `edit` or not
-            let connectionsCallFunction = editingMode ? Modules.Connections.updateConnection : Modules.Connections.saveConnection
-
-            /**
-             * Encrypt all provided secrets - for Apache Cassandra and SSH -
-             *
-             * Create an array of names and values of the secrets
-             */
-            let secrets = [{
-                name: 'username',
-                value: username
-              }, {
-                name: 'password',
-                value: password
-              }, {
-                name: 'sshUsername',
-                value: sshUsername
-              }, {
-                name: 'sshPassword',
-                value: sshPassword
-              },
-              {
-                name: 'sshPassphrase',
-                value: sshPassphrase
-              }
-            ]
-
-            try {
-              // If there's no need to wait for the encryption process then skip this try-catch block
-              if (!waitForEncryption)
-                throw 0
-
-              // Get the apps' public RSA key
-              getRSAKey('public', (key) => {
-                try {
-                  // If the received key is valid to be used then skip this try-catch block
-                  if (key.length != 0)
-                    throw 0
-
-                  // Show feedback to the user
-                  showToast(I18next.capitalize(I18next.t('secret keys')), I18next.capitalizeFirstLetter(I18next.t('an error has occurred with secret keys, please check the app permissions and make sure the keychain feature is available on your system')) + '.', 'failure')
-
-                  // Call the post-process function with `false` - failed to save/update the connection
-                  postProcess(false)
-
-                  // Stop the process; as something is not correct with the generator tool
-                  return
-                } catch (e) {}
-
-                // Values will be saved in the `secrets` object
-                finalConnection.info.secrets = [],
-                  // Array to be a copy from the original secrets before manipulation
-                  savedSecrets = []
-
-                // Set the `credentials` attribute
-                finalConnection.info.credentials = {}
-
-                // Loop through each secret's value
-                for (let secret of secrets) {
-                  // Make sure there's a value to encrypt
-                  if (secret.value.trim().length != 0 && !([undefined, null].includes(secret.value))) {
-                    // Whether or not the current secret will be saved or the user will be asked to provide this secret next time
-                    let toBeSaved = secret.name.indexOf('ssh') != -1 ? saveSSHCredentials : saveAuthCredentials
-
-                    // This secret/credential will be saved
-                    if (toBeSaved) {
-                      savedSecrets[secret.name] = encryptText(key, secret.value)
-                    } else {
-                      // This credential should be provided by the user next time
-                      finalConnection.info.credentials[secret.name.indexOf('ssh') != -1 ? 'ssh' : 'auth'] = true
-                    }
-                  }
-                }
-
-                // If there are no saved secrets then delete the `secrets` attribute
-                if (Object.keys(savedSecrets).length <= 0) {
-                  delete finalConnection.info.secrets
-                } else {
-                  // Otherwise, save it
-                  finalConnection.info.secrets = savedSecrets
-                }
-
-                // If ther are no required credentials then delete the `credentials` attribute
-                if (Object.keys(finalConnection.info.credentials).length <= 0)
-                  delete finalConnection.info.credentials
-
-                // Call the proper function, then pass the status to the `postProcess` inner function
-                connectionsCallFunction(workspaceID, finalConnection).then((status) => postProcess(status, editingMode ? {
-                  ...savedSecrets,
-                  ...finalConnection.info.credentials
-                } : [true, ...secrets]))
-              })
-
-              // Skip the upcoming code
-              return
-            } catch (e) {}
-
-            /**
-             * Reaching here means there's no need to wait for the encryption process
-             *
-             * Call the proper function, then pass the status to the `postProcess` inner function
-             */
-            connectionsCallFunction(workspaceID, finalConnection).then((status) => postProcess(status))
-          })
-        }
-      }
-
-      // Click one of the select file inputs
-      {
-        // This selection covers all select file inputs and their click area
-        $('div.form-outline div.clickable').click(function() {
-          // Get the input key's name
-          let key = getAttributes($(this), 'for-info-key') || getAttributes($(this), 'for-input'),
-            // Whether or not empty value is allowed
-            allowEmptyValue = getAttributes($(this), 'data-empty-not-allowed') == undefined,
-            id = getRandom.id(5), // Get random ID for the selection file dialog
-            title = '' // Define the file selection dialog's title
-
-          // Switch between key values
-          switch (key) {
-            case 'workspacePath': {
-              title = 'select workspace folder path'
-              break
-            }
-          }
-
-          // Set other attributes to be used to create the dialog
-          let data = {
-            id,
-            title: I18next.capitalizeFirstLetter(I18next.t(title)),
-            properties: ['showHiddenFiles', 'createDirectory', 'promptToCreate', getAttributes($(this), 'for-input') == undefined ? 'openFile' : 'openDirectory']
-          }
-
-          // Send a request to the main thread to create a dialog
-          IPCRenderer.send('dialog:create', data)
-
-          // Listen for the response
-          IPCRenderer.on(`dialog:${id}`, (_, selected) => {
-            // The received value is either a path or convert it to an empty string
-            selected = selected || ``
-
-            if (!allowEmptyValue && selected.length <= 0)
-              return
-
-            // Get the MDB object for the current input field
-            let inputObject = getElementMDBObject($(this).parent().children('input'))
-
-            try {
-              // Update the input's value
-              $(this).parent().children('input').val(selected)
-
-              // Trigger a custom event
-              $(this).parent().children('input').trigger('inputChanged')
-
-              // Update its state
-              inputObject.update()
-            } catch (e) {}
-          })
-        })
-
-        /**
-         * This input is related to select files regards SSH, SSL, and Cassandra authentication
-         * Listeners are `click` and `keypress` - ENTER -
-         */
-        $('div.form-outline[role="file-selector"] input').on('click keypress', function(e) {
-          // If the event is key pressing and the key is not ENTER then end this process
-          if (e.type == 'keypress' && e.keyCode != 13)
-            return
-
-          // Prevent the default behavior of the event
-          e.preventDefault()
-
-          // Get the input key's name
-          let key = getAttributes($(this), 'info-key'),
-            id = getRandom.id(5), // Get random ID for the selection file dialog
-            title = '' // Define the file selection dialog's title
-
-          // Switch between key values
-          switch (key) {
-            case 'credentials': {
-              title = 'select cassandra credentials file'
-              break
-            }
-            case 'ssh-privatekey': {
-              title = 'select SSH private key file'
-              break
-            }
-            case 'certfile': {
-              title = 'select SSL CA certificate file'
-              break
-            }
-            case 'userkey': {
-              title = 'select SSL user key file'
-              break
-            }
-            case 'usercert': {
-              title = 'select SSL user certificate key file'
-              break
-            }
-          }
-
-          if ($(this).attr('id') == 'astraDBSCBPath')
-            title = 'select the secure connection bundle zip file'
-
-          // Set other attributes to be used to create the dialog
-          let data = {
-            id,
-            title: I18next.capitalize(I18next.t(title)),
-            properties: ['showHiddenFiles', 'createDirectory', 'promptToCreate', 'openFile']
-          }
-
-          // Send a request to the main thread to create a dialog
-          IPCRenderer.send('dialog:create', data)
-
-          // Listen for the response
-          IPCRenderer.on(`dialog:${id}`, (_, selected) => {
-            // The received value is either a path or convert it to an empty string
-            selected = selected || ``
-
-            /**
-             * Update the tooltip's content and state
-             * Get the object
-             */
-            let tooltipObject = getElementMDBObject($(this), 'Tooltip')
-
-            // If the path to the file is invalid or inaccessible then don't adopt it
-            if (!pathIsAccessible(selected[0])) {
-              // Clear the input's value
-              $(this).val('').trigger('input')
-
-              // CLear the file's name preview
-              $(this).parent().attr('file-name', '-')
-
-              try {
-                // Disable the tooltip
-                tooltipObject.disable()
-              } catch (e) {}
-
-              // Skip the upcoming code
-              return
-            }
-
-            try {
-              // Enable the tooltip and update its content
-              tooltipObject.enable()
-              tooltipObject.setContent(selected[0])
-            } catch (e) {}
-
-            // Set the selected file's path
-            $(this).val(selected[0]).trigger('input')
-            $(this).parent().attr('file-name', Path.basename(selected[0]))
-          })
-        })
-      }
-    }
-  }
-
-  // Load schema snapshot dialog
-  {
-    // Define a portion of the common CSS selector
-    let dialog = `div.modal#loadSnapshot div.modal-body`
-
-    // Once the user inputs something in the snapshot's search input field
-    {
-      $(`${dialog}`).find('input[type="text"]').on('input', function() {
-        // Get the search text
-        let text = minifyText($(this).val())
-
-        // Loop through each saved snapshot
-        $('div.modal#loadSnapshot div.snapshots div.snapshot').each(function() {
-          // Minify the snapshot's content
-          let content = minifyText($(this).text())
-
-          // Show/hide the snapshot based on whether its content has the search text or the search text's length is less than 2
-          $(this).toggle(content.search(text) || text.length < 2)
-        })
-      })
-    }
-
-    // Actions for multiple snapshots
-    {
-      // Clicks the selection button
-      $(`${dialog}`).find('div.actions-multiple a[action="select"]').click(function() {
-        // If the action to be performed is checking the snapshot's checkbox
-        let check = $(this).attr('check') == 'true'
-
-        // Loop through each snapshot's checkbox
-        $(`${dialog}`).find('input[type="checkbox"]').each(function() {
-          // Set its state based on the action to be performed
-          $(this).prop('checked', check)
-        })
-
-        // Toggle the `check` attribute's status
-        $(this).attr('check', `${!check}`)
-
-        // Toggle the actions' container based on the `check` status
-        $(this).parent().toggleClass('show', check)
-      })
-
-      // Clicks the deletion button
-      $(`${dialog}`).find('div.actions-multiple a[action="delete"]').click(function() {
-        // Open the confirmation dialog and wait for the response
-        openDialog(I18next.capitalizeFirstLetter(I18next.t('do you want to delete the selected snapshots? once you confirm, there is no undo')), (response) => {
-          // If canceled, or not confirmed then skip the upcoming code
-          if (!response.confirmed)
-            return
-
-          // Loop through each snapshot
-          $(`${dialog} div.snapshots div.snapshot`).each(function() {
-            // Check if the checkbox of it is checked
-            let checked = $(this).find('input[type="checkbox"]').prop('checked')
-
-            // If so, then delete that snapshot
-            if (checked)
-              $(this).find('a[action="delete"]').trigger('click', {
-                noConfirm: true,
-                checked: response.checked
-              })
-          })
-        }, true, 'keep the associated files in the system')
-      })
-    }
-  }
-
-  // Observe addition/removal of connections' switchers
-  {
-    // Point at the connections' switchers' container
-    let switchersContainer = $(`div.body div.left div.content div.switch-connections`),
-      // Create observer object
-      observer = new MutationObserver(function(mutations) {
-        // Loop through each detected mutation
-        mutations.forEach(function(mutation) {
-          // If the mutation is an appended/removed child
-          if (mutation.type === 'childList')
-            setTimeout(() => {
-              // Update the switchers' container's view
-              updateSwitcherView('connections')
-
-              // Handle the first switcher's margin
-              handleConnectionSwitcherMargin()
-            }, 100)
-        })
-      })
-
-    // Start the observation process
-    observer.observe(switchersContainer[0], {
-      childList: true
-    })
-  }
-}
-
-// Handle different events for input fields with `file` type
-{
-  $(`input[info-section][info-key][type="file"]`).parent().add(`input[info-section][info-key][type="file"]`).on('change click', function() {
-    // Point at the input field
-    let input = $(this)
-
-    // If the element is the parent of the input field then point at the input field instead
-    if ($(this).is($(`input[info-section][info-key][type="file"]`).parent()))
-      input = input.children('input')
-
-    /**
-     * Initial state is used to print the saved value of the input field
-     * It should be removed once an event is triggered
-     *
-     * Remove the initial indicator's attribute
-     */
-    input.removeAttr('data-initial')
-
-    // Remove the initial class
-    input.removeClass('initial')
-  })
-}
-
-// Clicks the `ADD CLUSTER` button which shows up if there are no added connections
-{
-  $(`button#addConnectionProcess`).on('click', function(e, editingMode = false) {
-    // Define the dialog path's CSS selector
-    let dialog = 'div.modal#addEditConnectionDialog'
-
-    try {
-      // if (getAttributes($(`${dialog}`), 'data-edit-connection-id') == undefined || editingMode)
-      //   throw 0
-
-      // Reset everything and make sure the `creation mode` is properly back
-      $(`${dialog}`).find('h5.modal-title').text(I18next.capitalize(I18next.t('add connection')))
-      $(`${dialog}`).removeAttr('data-edit-workspace-id data-edit-connection-id')
-
-      $(`${dialog} button#addConnection`).attr('disabled', 'disabled')
-      $(`${dialog} button#addConnection`).text(I18next.capitalize(I18next.t('add connection')))
-
-      $('div.modal#addEditConnectionDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
-
-      // Loop through all inputs in the dialog
-      $(`${dialog}`).find('[info-section][info-key]').each(function() {
-        // Get the input's Material Design object
-        let object_ = getElementMDBObject($(this))
-
-        // Handle when the input is actually a file selector
-        try {
-          // If the input is not a file selector then skip this try-catch block
-          if ($(this).parent().attr('file-name') == undefined)
-            throw 0
-
-          /**
-           * Update the tooltip's content and state
-           * Get the object
-           */
-          let tooltipObject = mdbObjects.filter((object) => object.type == 'Tooltip' && object.element.is($(this)))
-
-          // Clear the file's name preview
-          $(this).parent().attr('file-name', '-')
-
-          // Disable the tooltip
-          try {
-            tooltipObject[0].object.disable()
-          } catch (e) {}
-        } catch (e) {}
-
-        $('#axonOpsSaaS').prop('checked', true)
-        $('#axonOpsSaaS').trigger('change')
-
-        /**
-         * If it is `undefined` then it hasn't been found in the `cqlsh.rc` file
-         * Set the input value to ''
-         */
-        try {
-          $(this).val('')
-        } catch (e) {}
-
-        // If the previous set didn't work then try to call the `selected` attribute
-        try {
-          if ($(this).attr('type') == 'checkbox')
-            $(this).prop('checked', getAttributes($(this), 'default-value') == 'true' ? true : false)
-        } catch (e) {}
-
-        // Update the object
-        object_.update()
-        setTimeout(() => object_._deactivate())
-      })
-
-      // Reset editor's content
-      addEditConnectionEditor.setValue(Modules.Consts.CQLSHRC)
-    } catch (e) {}
-  })
-}
-
-// Click event for `add` and `refresh` actions in the connections' container
-{
-  // Define a portion of the common CSS selector
-  let selector = `div.body div.right div.content div[content="connections"] div.section-actions div.action`,
-    // Inner function to click the parent button - which shows/hides actions buttons
-    clickParentButton = (button) => {
-      $(button).parent().parent().find('button.btn.btn-lg').click()
-    }
-
-  // Clicks the add button
-  $(`${selector}[action="add"] button`).click(function() {
-    // Point at the button to be clicked - which is the `ADD CLUSTER` button -
-    let buttonToBeClicked = $(`button#addConnectionProcess`)
-
-    // If the current workspace is the sandbox then point at the `ADD PROJECT` button
-    if (getActiveWorkspaceID() == 'workspace-sandbox')
-      buttonToBeClicked = $(`button#createSandboxProjectProcess`)
-
-    // Click the pointed at button
-    buttonToBeClicked.click()
-
-    // Call the inner function
-    clickParentButton(this)
-
-    // Hide the tooltip
-    tooltips.addConnectionActionButton.hide()
-
-    if (!$('div.modal#addEditConnectionDialo').hasClass('test-connection'))
-      $('div.modal#addEditConnectionDialog div.modal-body.select-type').find('div.connection-type[data-type="apache-cassandra"]').click()
-
-    // For Astra  DB
-    try {
-      $('input#astraDBConnectionName').add('input#astraDBClientID').add('input#astraDBClientSecret').add('input#astraDBSCBPath').val('')
-
-      let scbFilePathInputTooltip = getElementMDBObject($('input#astraDBSCBPath'), 'Tooltip')
-
-      scbFilePathInputTooltip.setContent('-')
-      scbFilePathInputTooltip.disable()
-    } catch (e) {}
-  })
-
-  // Clicks the refresh button
-  $(`${selector}[action="refresh"] button`).click(function() {
-    // Refresh connections' list
-    $(document).trigger('refreshConnections', {
-      workspaceID: getActiveWorkspaceID()
-    })
-
-    // Call the inner function
-    clickParentButton(this)
-
-    // Hide the tooltip
-    tooltips.refreshConnectionActionButton.hide()
-  })
-}
-
-// Handle the connections' witcher's navigation arrows - up and down -
-{
-  $(`div.body div.left div.content div.switch-connections div.show-more-connections div.buttons button`).click(function() {
-    // Get the clicked button's navigation
-    let navigation = $(this).attr('navigation'),
-      // Point at the switchers' container
-      switchersContainer = $(`div.body div.left div.content div.switch-connections`),
-      // Get all currently visible switchers
-      visibleSwitchers = switchersContainer.children('div.connection[_connection-id]').filter(':visible')
-
-    // Remove the `hidden` attribute from all switchers; as they'll be shown or hidden as needed
-    switchersContainer.children('div.connection[_connection-id]').removeAttr('hidden')
-
-    // Handle the down arrow
-    try {
-      // If the navigation direction is not `down` then skip this try-catch block
-      if (navigation != 'down')
-        throw 0
-
-      // Point at the switcher to be shown
-      let switcherToBeShown = visibleSwitchers.last().nextAll().filter(':hidden').first()
-
-      // If we already have reached the latest switcher then no need to run the following code
-      if (switcherToBeShown.length <= 0)
-        return
-
-      // Hide the first `visible` switcher - will be at the very top -
-      visibleSwitchers.first().hide()
-
-      // Show the selected switcher to be shown
-      switcherToBeShown.show()
-
-      // Call the margin handler function
-      handleConnectionSwitcherMargin()
-
-      // Skip the upcoming code
-      return
-    } catch (e) {}
-
-    /**
-     * Reaching here means it's the up arrow
-     * Point at the switcher to be shown
-     */
-    let switcherToBeShown = visibleSwitchers.first().prevAll().filter(':hidden').first()
-
-    // If we already have reached the first switcher then no need to run the following code
-    if (switcherToBeShown.length <= 0)
-      return
-
-    // Hide the last `visible` switcher - will be at the very bottom -
-    visibleSwitchers.last().hide()
-
-    // Show the selected switcher to be shown
-    switcherToBeShown.show()
-
-    // Call the margin handler function
-    handleConnectionSwitcherMargin()
-  })
-}
-
-{
-  $('input[type="radio"][name="axonOpsURL"]').on('change', function() {
-    let modalSection = $('div.modal-section[section="axonops-integration"]'),
-      isSelectedValueSelfHost = getCheckedValue('axonOpsURL') == 'axonOpsSelfHost'
-
-    modalSection.find('div.axonops-self-host').toggle(isSelectedValueSelfHost)
-    modalSection.find('div.general-hint.axonops-integration.axonops-saas').toggle(!isSelectedValueSelfHost)
-  })
-}
-
-{
-  setTimeout(() => {
-    try {
-      let generateInsertStatementsEditorObject = monaco.editor.getEditors().find((editor) => $('div.modal#generateInsertStatements .editor').is(editor._domElement)),
-        generateInsertStatementsModal = getElementMDBObject($('#generateInsertStatements'), 'Modal')
-
-      $('button#copyGeneratedInsertStatements').click(function() {
-        let generatedStatements = generateInsertStatementsEditorObject.getValue(),
-          statementsSize = Bytes(ValueSize(generatedStatements))
-
-        // Copy the result to the clipboard
-        try {
-          Clipboard.writeText(generatedStatements)
-        } catch (e) {
-          try {
-            errorLog(e, 'connections')
-          } catch (e) {}
-        }
-
-        // Give feedback to the user
-        showToast(I18next.capitalize(I18next.t('copy generated insert statements')), I18next.capitalizeFirstLetter(I18next.replaceData('generated insert statements have been copied to the clipboard, the size is $data', [statementsSize])) + '.', 'success')
-
-        generateInsertStatementsModal.hide()
-      })
-
-      $('button#executeGeneratedInsertStatements').click(function() {
-        let consoleEditoObject = monaco.editor.getEditors().find((editor) => $(`div.workarea[connection-id="${activeConnectionID}"]`).find('div.console-editor').is(editor._domElement))
-
-        consoleEditoObject.setValue(generateInsertStatementsEditorObject.getValue())
-
-        $(`div.workarea[connection-id="${activeConnectionID}"]`).find('div.execute').find('button').click()
-
-        generateInsertStatementsModal.hide()
-      })
-    } catch (e) {}
-  }, 10000)
-}
-
-{
-  let searchModalObject = getElementMDBObject($("#searchConnections"), 'Modal'),
-    searchInputField = $('input#searchConnectionsInputField'),
-    workspacesAndConnections = [],
-    enableSearchFeature = (data, finished = false) => {
-      workspacesAndConnections.push(data)
-
-      if (!finished)
-        return
-
-      workspacesAndConnections = workspacesAndConnections.filter((data) => data.connections.length > 0)
-
-      searchInputField.attr('disabled', null)
-
-      setTimeout(() => searchInputField.focus())
-
-      $("#searchConnections").find('div.search-input').removeClass('loading')
-    }
-
-  $('button#searchConnectionsButton').click(function() {
-    let isModelOpened = $('div.modal-backdrop.show').length != 0
-
-    if (isModelOpened)
-      return
-
-    try {
-      searchModalObject.show()
-    } catch (e) {}
-
-    searchInputField.val('')
-
-    searchInputField.attr('disabled', '')
-
-    workspacesAndConnections = []
-
-    $("#searchConnections").find('div.search-input').addClass('loading')
-
-    try {
-      getElementMDBObject($('input#searchConnectionsInputField')).update()
-    } catch (e) {}
-
-    $('div#searchConnections div.search-result').hide()
-
-    $('div#searchConnections div.search-result').html('')
-
-    Modules.Workspaces.getWorkspaces().then((workspaces) => {
-      let numOfHandledWorkspaces = 0
-
-      workspaces.forEach(async (workspace) => {
-        let connections = await Modules.Connections.getConnections(workspace.id)
-
-        for (let connection of connections)
-          connection.cqlshrc = await Modules.Connections.getCQLSHRCContent(workspace.id, connection.cqlshrc)
-
-        numOfHandledWorkspaces += 1
-
-        enableSearchFeature({
-          workspace,
-          connections
-        }, numOfHandledWorkspaces >= workspaces.length)
-      })
-    })
-  })
-
-  searchInputField.on('input', function() {
-    let searchValue = minifyText($(this).val())
-
-    if (searchValue.length <= 0) {
-      $('div#searchConnections div.search-result').hide()
-
-      $('div#searchConnections div.search-result').html('')
-
-      return
-    }
-
-    let matchedData = workspacesAndConnections.map((data) => {
-      let matchedConnections = data.connections.filter((connection) => {
-        let isMatched = false
-
-        try {
-          // 1: Match with the name and folder host
-          if (minifyText(`${connection.info.name}${connection.folder}`).includes(searchValue))
-            isMatched = true
-        } catch (e) {}
-
-        try {
-          // 2: Match with the host and datacenter
-          if (!isMatched && minifyText(`${connection.host}${connection.info.datacenter}`).includes(searchValue))
-            isMatched = true
-        } catch (e) {}
-
-        return isMatched
-      })
-
-      return {
-        workspace: data.workspace,
-        connections: matchedConnections
-      }
-    })
-
-    matchedData = matchedData.filter((data) => data.connections.length > 0)
-
-    $('div#searchConnections div.search-result').html('')
-
-    $('div#searchConnections div.search-result').toggle(matchedData.length > 0)
-
-    for (let data of matchedData) {
-      let workspace = data.workspace,
-        color = HEXToRGB(workspace.color).join(' ')
-
-      for (let connection of data.connections) {
-        let connectionElement = `
-            <div class="result-connection" data-workspace-id="${workspace.id}" data-connection-id="${connection.info.id}" style="box-shadow: inset 0px 0px 0px 1px rgb(${color} / 50%);">
-              <div class="header">
-                <div class="name">${connection.name}</div>
-                <div class="workspace" style="background: rgb(${color} / 70%); ${TinyColor(workspace.color).isLight() ? 'color: #252525;' : ''}"><span class="name">${workspace.name}</span></div>
-              </div>
-              <div class="connection-info">
-                <div class="info" info="host">
-                  <div class="title"><span mulang="host" capitalize></span>
-                    <ion-icon name="right-arrow-filled" role="img" class="md hydrated" aria-label="right arrow filled"></ion-icon>
-                  </div>
-                  <div class="text">${connection.info.secureConnectionBundlePath != undefined ? 'AstraDB DataStax' : connection.host}</div>
-                </div>
-              </div>
-              <button type="button" class="btn btn-tertiary navigate" data-mdb-ripple-color="light">
-                <ion-icon name="arrow-down"></ion-icon>
-              </button>
-            </div>`
-
-        $('div#searchConnections div.search-result').append($(connectionElement).show(function() {
-          let connectionElement = $(this)
-
-          $(this).find('button.navigate').click(function() {
-            let [workspaceID, connectionID] = getAttributes(connectionElement, ['data-workspace-id', 'data-connection-id'])
-
-            try {
-              searchModalObject.hide()
-            } catch (e) {}
-
-            try {
-              let connectionSwitcher = $(`div.body div.left div.content div.switch-connections div.connection[_connection-id="${connectionID}"]`)
-
-              if (connectionSwitcher.length > 0)
-                return connectionSwitcher.find('button.btn').click()
-            } catch (e) {}
-
-            $(`div.body div.right div.content div[content="workspaces"] div.workspaces-container`).find(`div.workspace[data-id="${workspaceID}"]`).find('button.enter').trigger('click', {
-              callback: () => {
-                setTimeout(() => {
-                  let connectionCardElement = $(`div.body div.right div.content div[content="connections"] div.connections-container div.connections[workspace-id="${workspaceID}"]`).find(`div.connection[data-id="${connectionID}"]`)
-
-                  connectionCardElement.addClass('highlight')
-
-                  setTimeout(() => {
-                    try {
-                      connectionCardElement.removeClass('highlight')
-                    } catch (e) {}
-                  }, 5000)
-                }, 300)
-              }
-            })
-          })
-
-          // Apply the chosen language on the UI element after being fully loaded
-          setTimeout(() => Modules.Localization.applyLanguageSpecific($(this).find('span[mulang], [data-mulang]')))
-        }))
-      }
-    }
-  })
-
-  // searchModalObject._element.addEventListener('shown.mdb.modal', () => setTimeout(() => searchInputField.focus()))
-}

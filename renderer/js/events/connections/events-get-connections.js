@@ -2804,7 +2804,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                                  tabID: '_${cqlshSessionContentID}',
                                                  textareaID: '_${cqlshSessionStatementInputID}',
                                                  btnID: '_${executeStatementBtnID}'
-                                               })`
+                                               })`,
+                                              visible: false
                                   })
                                 } catch (e) {}
 

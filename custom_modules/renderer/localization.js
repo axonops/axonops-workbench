@@ -40,7 +40,6 @@ const JSONFile = require('jsonfile')
  */
 let loadLocalization = (callback) => {
   // Define the languages' JSON files path
-  // let localizationPath = Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'localization'),
   let localizationPath = Path.join(__dirname, '..', '..', 'localization'),
     // Define the final result which be returned
     result = {
@@ -161,84 +160,81 @@ let applyLanguageSpecific = (elements) => {
     // Get the `file selector` elements
     fileSelectors = elements.filter('[file-info]')
 
-  // Loop through each class - spans, tooltips, and file selectors -
-  {
-    /**
-     * Start with `span` elements
-     * Loop through each `span`
-     */
-    spans.each(function() {
-      // Get the value of the localized text based on the `mulang` value
-      let text = I18next.t(getAttributes($(this), 'mulang')),
-        textDataVariables = $(this).getAllAttributes().filter((attribute) => attribute.startsWith('lang-data'))
+  /**
+   * Start with `span` elements
+   * Loop through each `span`
+   */
+  spans.each(function() {
+    // Get the value of the localized text based on the `mulang` value
+    let text = I18next.t(getAttributes($(this), 'mulang')),
+      textDataVariables = $(this).getAllAttributes().filter((attribute) => attribute.startsWith('lang-data'))
 
-      try {
-        if (textDataVariables.length <= 0)
-          throw 0
+    try {
+      if (textDataVariables.length <= 0)
+        throw 0
 
-        let dataValues = textDataVariables.map((attribute) => $(this).attr(attribute))
+      let dataValues = textDataVariables.map((attribute) => $(this).attr(attribute))
 
-        text = I18next.replaceData(getAttributes($(this), 'mulang'), dataValues)
-      } catch (e) {}
+      text = I18next.replaceData(getAttributes($(this), 'mulang'), dataValues)
+    } catch (e) {}
 
-      // Capitalize the text if needed
-      if ($(this).attr('capitalize') != undefined)
-        text = I18next.capitalize(text)
+    // Capitalize the text if needed
+    if ($(this).attr('capitalize') != undefined)
+      text = I18next.capitalize(text)
 
-      // Capitalize the first character of the first word if needed
-      if ($(this).attr('capitalize-first') != undefined)
-        text = I18next.capitalizeFirstLetter(text)
+    // Capitalize the first character of the first word if needed
+    if ($(this).attr('capitalize-first') != undefined)
+      text = I18next.capitalizeFirstLetter(text)
 
-      // Apply the updated text
-      $(this)[Modules.Consts.AllowedHTMLTags.some((tag) => text.indexOf(`<${tag}>`) != -1) || textDataVariables.length > 0 ? 'html' : 'text'](text)
-    })
+    // Apply the updated text
+    $(this)[Modules.Consts.AllowedHTMLTags.some((tag) => text.indexOf(`<${tag}>`) != -1) || textDataVariables.length > 0 ? 'html' : 'text'](text)
+  })
 
-    // Loop through each `tooltip`
-    tooltips.each(function() {
-      // Get the value of the localized text based on the `data-mulang` value
-      let text = I18next.t(getAttributes($(this), 'data-mulang')),
-        // Get the MDB object for this tooltip
-        tooltipObject = getElementMDBObject($(this), 'Tooltip'),
-        textDataVariables = $(this).getAllAttributes().filter((attribute) => attribute.startsWith('lang-data'))
+  // Loop through each `tooltip`
+  tooltips.each(function() {
+    // Get the value of the localized text based on the `data-mulang` value
+    let text = I18next.t(getAttributes($(this), 'data-mulang')),
+      // Get the MDB object for this tooltip
+      tooltipObject = getElementMDBObject($(this), 'Tooltip'),
+      textDataVariables = $(this).getAllAttributes().filter((attribute) => attribute.startsWith('lang-data'))
 
-      try {
-        if (textDataVariables.length <= 0)
-          throw 0
+    try {
+      if (textDataVariables.length <= 0)
+        throw 0
 
-        let dataValues = textDataVariables.map((attribute) => $(this).attr(attribute))
+      let dataValues = textDataVariables.map((attribute) => $(this).attr(attribute))
 
-        text = I18next.replaceData(getAttributes($(this), 'data-mulang'), dataValues)
-      } catch (e) {}
+      text = I18next.replaceData(getAttributes($(this), 'data-mulang'), dataValues)
+    } catch (e) {}
 
-      // Capitalize the text if needed
-      if ($(this).attr('capitalize') != undefined)
-        text = I18next.capitalize(text)
+    // Capitalize the text if needed
+    if ($(this).attr('capitalize') != undefined)
+      text = I18next.capitalize(text)
 
-      // Capitalize the first character of the first word if needed
-      if ($(this).attr('capitalize-first') != undefined)
-        text = I18next.capitalizeFirstLetter(text)
+    // Capitalize the first character of the first word if needed
+    if ($(this).attr('capitalize-first') != undefined)
+      text = I18next.capitalizeFirstLetter(text)
 
-      // Apply the updated text
-      tooltipObject.setContent(text)
-    })
+    // Apply the updated text
+    tooltipObject.setContent(text)
+  })
 
-    // Loop through each `file selector`
-    fileSelectors.each(function() {
-      // Get the value of the localized text based on the `data-mulang` value
-      let text = I18next.t(getAttributes($(this), 'data-mulang'))
+  // Loop through each `file selector`
+  fileSelectors.each(function() {
+    // Get the value of the localized text based on the `data-mulang` value
+    let text = I18next.t(getAttributes($(this), 'data-mulang'))
 
-      // Capitalize the text if needed
-      if ($(this).attr('capitalize') != undefined)
-        text = I18next.capitalize(text)
+    // Capitalize the text if needed
+    if ($(this).attr('capitalize') != undefined)
+      text = I18next.capitalize(text)
 
-      // Capitalize the first character of the first word if needed
-      if ($(this).attr('capitalize-first') != undefined)
-        text = I18next.capitalizeFirstLetter(text)
+    // Capitalize the first character of the first word if needed
+    if ($(this).attr('capitalize-first') != undefined)
+      text = I18next.capitalizeFirstLetter(text)
 
-      // Apply the updated text
-      $(this).attr('file-info', text)
-    })
-  }
+    // Apply the updated text
+    $(this).attr('file-info', text)
+  })
 }
 
 module.exports = {

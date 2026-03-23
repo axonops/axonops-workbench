@@ -21,21 +21,11 @@
  * Once the content of the webview is loaded
  */
 document.addEventListener('DOMContentLoaded', () => {
-  /**
-   * Import important libraries
-   * JQuery library
-   */
   global.$ = require('jquery')
-
-  /**
-   * Electron renderer communication with the main thread
-   * Used for sending requests from the renderer threads to the main thread and listening to the responses
-   */
   global.IPCRenderer = require('electron').ipcRenderer
 
   // Add a reload button in the left menu-side of the AxonOps agent
   setTimeout(() => {
-    // The button's UI structure to be appended
     let element = `
         <div bis_skin_checked="1" data-id="reloadWebView">
           <div bis_skin_checked="1">

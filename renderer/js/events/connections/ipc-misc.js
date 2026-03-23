@@ -1,36 +1,32 @@
 // Handle choosing the connection type to added/updated
 {
   setTimeout(() => {
-    {
-      let selectionButtons = $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type')
+    let selectionButtons = $('div.modal#addEditConnectionDialog div.modal-body.select-type div.connection-type')
 
-      selectionButtons.click(function() {
-        if ($(this).hasClass('active'))
-          return
+    selectionButtons.click(function() {
+      if ($(this).hasClass('active'))
+        return
 
-        let type = $(this).attr('data-type')
+      let type = $(this).attr('data-type')
 
-        $(`div.modal#addEditConnectionDialog`).attr('data-selected-modal-body', type)
+      $('div.modal#addEditConnectionDialog').attr('data-selected-modal-body', type)
 
-        $(`div.modal#addEditConnectionDialog`).find('div.connection-type').removeClass('active')
+      $('div.modal#addEditConnectionDialog').find('div.connection-type').removeClass('active')
 
-        $(this).addClass('active')
+      $(this).addClass('active')
 
-        $('div.modal#addEditConnectionDialog div.modal-body[data-connection-type]').hide()
+      $('div.modal#addEditConnectionDialog div.modal-body[data-connection-type]').hide()
 
-        $(`div.modal#addEditConnectionDialog`).find('div.modal-content').css('height', `calc(202px + ${type == 'apache-cassandra' ? 470 : 326}px)`)
+      $('div.modal#addEditConnectionDialog').find('div.modal-content').css('height', `calc(202px + ${type == 'apache-cassandra' ? 470 : 326}px)`)
 
-        setTimeout(() => $(`div.modal#addEditConnectionDialog div.modal-body[data-connection-type="${type}"]`).fadeIn(150), 200)
+      setTimeout(() => $(`div.modal#addEditConnectionDialog div.modal-body[data-connection-type="${type}"]`).fadeIn(150), 200)
 
-        $('#addConnection').attr('disabled', 'disabled')
-      })
-    }
+      $('#addConnection').attr('disabled', 'disabled')
+    })
 
-    {
-      $('input.astradb-data-field').on('input', function() {
-        $(this).removeClass('is-invalid')
-      })
-    }
+    $('input.astradb-data-field').on('input', function() {
+      $(this).removeClass('is-invalid')
+    })
   })
 }
 
@@ -48,9 +44,7 @@
       getClusterURL = (withParams = false) => {
         try {
           let _urlParams = Modules.Consts.AxonOpsIntegration.Patterns.Cluster
-
           _urlParams = _urlParams.replace('{ORG}', `${integOrg}`)
-
           _urlParams = _urlParams.replace('{CLUSTERNAME}', `${integClusterName}`)
 
           if (withParams)
@@ -70,39 +64,26 @@
     try {
       switch (targetElement) {
         case 'cluster': {
-
           finalURL = getClusterURL()
-
           break
         }
 
         case 'keyspace': {
           urlParams = Modules.Consts.AxonOpsIntegration.Patterns.Keyspace
-
           urlParams = urlParams.replace('{ORG}', `${integOrg}`)
-
           urlParams = urlParams.replace('{CLUSTERNAME}', `${integClusterName}`)
-
           urlParams = urlParams.replace('{KEYSPACENAME}', `${data.keyspaceName}`)
-
           finalURL = (new URL(urlParams, urlHost)).href
-
           break
         }
 
         case 'table': {
           urlParams = Modules.Consts.AxonOpsIntegration.Patterns.Table
-
           urlParams = urlParams.replace('{ORG}', `${integOrg}`)
-
           urlParams = urlParams.replace('{CLUSTERNAME}', `${integClusterName}`)
-
           urlParams = urlParams.replace('{KEYSPACENAME}', `${data.keyspaceName}`)
-
           urlParams = urlParams.replace('{TABLENAME}', `${data.tableName}`)
-
           finalURL = (new URL(urlParams, urlHost)).href
-
           break
         }
       }
@@ -154,12 +135,10 @@
     let editorObject = monaco.editor.getEditors().find((editor) => $('div.modal#generateInsertStatements .editor').is(editor._domElement)),
       generateInsertStatementsModal = getElementMDBObject($('#generateInsertStatements'), 'Modal'),
       dataObject = tempObjects[data.tempObjectID],
-      tableColumns = dataObject.tableObject.columns.map((column) => {
-        return {
-          name: column.name,
-          type: column.cql_type
-        }
-      }),
+      tableColumns = dataObject.tableObject.columns.map((column) => ({
+        name: column.name,
+        type: column.cql_type
+      })),
       writeConsistencyLevel = `-- CONSISTENCY ${activeSessionsConsistencyLevels[activeConnectionID].standard} Note: CQL session already using this CL`,
       serialConsistencyLevel = `-- SERIAL CONSISTENCY ${activeSessionsConsistencyLevels[activeConnectionID].serial} Note: CQL session already using this CL`,
       statements = [],
@@ -219,7 +198,7 @@
     }
 
     let statement =
-      `${writeConsistencyLevel}` + OS.EOL + `${serialConsistencyLevel}` + OS.EOL +
+      writeConsistencyLevel + OS.EOL + serialConsistencyLevel + OS.EOL +
       statements.join(OS.EOL + OS.EOL)
 
     try {

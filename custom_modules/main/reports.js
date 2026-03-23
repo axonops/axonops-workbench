@@ -34,21 +34,16 @@ const CrashReporter = require('electron').crashReporter,
  * Main extra info: [Memory, CPU usage, and info about the machine]
  */
 let updateExtraInfo = async () => {
-  // Define extra info to be sent within the crash report
   let extraInfo = {
-    // Get information about the machine's memory/RAM and the app's total memory usage
     memory: await getMemory(),
-    // Get information about the machine's CPU
     cpu: await getCPU(),
-    // Get information about the machine - manufacturer, and model only -
     machine: await getMachineInfo()
   }; // This semicolon is critical here
 
-  // Update the extra info
   (['memory', 'cpu', 'machine']).forEach((info) => CrashReporter.addExtraParameter(info, extraInfo[info]))
 
   // Update the extra info every second - it waits till all info is fetched -
-  setTimeout(() => updateExtraInfo(), 1000)
+  setTimeout(updateExtraInfo, 1000)
 }
 
 /**
@@ -57,16 +52,10 @@ let updateExtraInfo = async () => {
  * @Return: {integer} total memory usage by the app in Bytes
  */
 let getMemoryUsage = () => {
-  // Get the app/process' memory usage
   let memoryUsage = process.memoryUsage(),
-    /**
-     * Final result to be returned
-     * Multiple values will be calculated together to get the total value
-     */
     totalMemoryUsage = 0
 
   try {
-    // Loop through each type of memory consuming and add its consumption/usage to `totalMemoryUsage`
     for (let type of Object.keys(memoryUsage))
       totalMemoryUsage += memoryUsage[type]
   } catch (e) {
@@ -89,35 +78,18 @@ let getMemoryUsage = () => {
  * @Return: {string} JSON string with different needed attributes which hold information about the memory - values converted from Bytes to human-readable string -
  */
 let getMemory = async () => {
-  // Final result to be returned
   let result = {}
 
   try {
-    // Get the machine's memory info
     let memory = await SystemInformation.mem()
 
-    // Get the app's total memory usage
     result.appUsage = getMemoryUsage()
-
-    // Get the machine's total amount of memory
     result.total = memory.total
-
-    // Get the currently available memory
     result.available = memory.available
 
-    // Loop through each attribute
     Object.keys(result).forEach((attribute) => {
-      // Get the current attribute's value
-      let value = result[attribute]
-
-      // Convert the value from bytes to a human-readable string
-      value = Bytes(value)
-
-      // Format the string to be the value and its unit - KB, MB, etc... -
-      value = `${value['value']}${value['unit']}`
-
-      // Save the updated value
-      result[attribute] = value
+      let value = Bytes(result[attribute])
+      result[attribute] = `${value['value']}${value['unit']}`
     })
   } catch (e) {
     try {
@@ -139,27 +111,19 @@ let getMemory = async () => {
  * @Return: {string} JSON string with different needed attributes which hold information about the CPU
  */
 let getCPU = async () => {
-  // Final result to be returned
   let result = {}
 
   try {
-    // Get the CPU's info
     let cpu = await SystemInformation.cpu()
 
-    // Get the CPU's manufacturer - for example Intel -
     result.manufacturer = cpu.manufacturer
-
-    // Get the CPU's brand - for example Core™ i7-9... -
     result.brand = cpu.brand
-
-    // Get the CPU's current, minimum, and maximum speed
     result.speed = {
       current: cpu.speed,
       min: cpu.speedMin,
       max: cpu.speedMax
     }
 
-    // Get the number of logical cores which the CPU has
     result.cores = cpu.cores
   } catch (e) {
     try {
@@ -181,17 +145,12 @@ let getCPU = async () => {
  * @Return: {string} JSON string with different needed attributes which hold information about the machine
  */
 let getMachineInfo = async () => {
-  // Final result to be returned
   let result = {}
 
   try {
-    // Get the machine's info
     let machine = await SystemInformation.system()
 
-    // Get the machine's manufacturer - for example HP -
     result.manufacturer = machine.manufacturer
-
-    // Get the machine's model - for example HP EliteBook... -
     result.model = machine.model
   } catch (e) {
     try {
@@ -220,7 +179,6 @@ let startCrashingHandler = async () => {
     }
   })
 
-  // Call the extra info-getter function
   updateExtraInfo()
 }
 

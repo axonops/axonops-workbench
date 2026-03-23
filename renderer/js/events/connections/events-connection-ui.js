@@ -305,22 +305,23 @@
 
     $('div#searchConnections div.search-result').html('')
 
-    Modules.Workspaces.getWorkspaces().then((workspaces) => {
-      let numOfHandledWorkspaces = 0
+    Modules.Workspaces.getWorkspaces().then(async (workspaces) => {
+      let results = await Promise.allSettled(
+        workspaces.map(async (workspace) => {
+          let connections = await Modules.Connections.getConnections(workspace.id)
+          return { workspace, connections }
+        })
+      )
 
-      workspaces.forEach(async (workspace) => {
-        let connections = await Modules.Connections.getConnections(workspace.id)
+      results
+        .filter((r) => r.status === 'fulfilled')
+        .forEach((r) => workspacesAndConnections.push(r.value))
 
-        for (let connection of connections)
-          connection.cqlshrc = await Modules.Connections.getCQLSHRCContent(workspace.id, connection.cqlshrc)
+      workspacesAndConnections = workspacesAndConnections.filter((data) => data.connections.length > 0)
 
-        numOfHandledWorkspaces += 1
-
-        enableSearchFeature({
-          workspace,
-          connections
-        }, numOfHandledWorkspaces >= workspaces.length)
-      })
+      searchInputField.attr('disabled', null)
+      setTimeout(() => searchInputField.focus())
+      $("#searchConnections").find('div.search-input').removeClass('loading')
     })
   })
 
@@ -379,9 +380,6 @@
               </div>
               <div class="connection-info">
                 <div class="info" info="host">
-                  <div class="title"><span mulang="host" capitalize></span>
-                    <ion-icon name="right-arrow-filled" role="img" class="md hydrated" aria-label="right arrow filled"></ion-icon>
-                  </div>
                   <div class="text">${connection.info.secureConnectionBundlePath != undefined ? 'AstraDB DataStax' : connection.host}</div>
                 </div>
               </div>

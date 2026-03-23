@@ -95,15 +95,6 @@
     "copyright": "©2025 AxonOps Limited",
     "appId": "com.axonops.workbench.cassandra",
     "compression": "maximum",
-    "electronLanguages": [
-      "en-US",
-      "ar",
-      "es",
-      "fr",
-      "gl",
-      "he",
-      "zh-CN"
-    ],
     "asarUnpack": [
       "**/*.node",
       "**/node_modules/@axonops/cqlai-node/lib/**"

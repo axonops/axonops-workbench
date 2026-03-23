@@ -60,11 +60,6 @@ jobs:
             target: Macos
             arch: x64
 
-          # macOS ARM64 (native)
-          - os: macos-14
-            target: Macos
-            arch: arm64
-
           - os: windows-latest
             target: Windows
             arch: x64

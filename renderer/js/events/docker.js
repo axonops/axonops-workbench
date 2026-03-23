@@ -19,13 +19,13 @@
   // Define the dialog path's CSS selector
   let dialog = 'div.modal#createSandboxProjectDialog',
     // Get the MDB object of the dropdown - version's select - UI element
-    selectDropdown = getElementMDBObject($(`${dialog}`).find('div.dropdown'), 'Dropdown')
+    selectDropdown = getElementMDBObject($(dialog).find('div.dropdown'), 'Dropdown')
 
   // On input's `focus` event show the dropdown menu
-  $(`${dialog}`).find(`input#apacheCassandraVersion`).on('focus', () => selectDropdown.show()).on('focusout', () => setTimeout(() => selectDropdown.hide(), 100))
+  $(dialog).find(`input#apacheCassandraVersion`).on('focus', () => selectDropdown.show()).on('focusout', () => setTimeout(() => selectDropdown.hide(), 100))
 
   // Clicks one of the items on the dropdown menu
-  $(`${dialog}`).find('ul li a.dropdown-item').click(function() {
+  $(dialog).find('ul li a.dropdown-item').click(function() {
     // Point at the main select/input field element
     let selectElement = $(`input#${$(this).parent().parent().parent().attr('for-select')}`)
 
@@ -120,14 +120,14 @@
            *
            * Get the project's name - optional -
            */
-          let dockerProjectName = $(`${dialog}`).find(`input#dockerProjectName`).val(),
+          let dockerProjectName = $(dialog).find(`input#dockerProjectName`).val(),
             // Get the preferred Cassandra version
-            cassandraVersion = $(`${dialog}`).find(`input#apacheCassandraVersion`).val(),
+            cassandraVersion = $(dialog).find(`input#apacheCassandraVersion`).val(),
             // Get the number of Cassandra's nodes in the project
             numOfNodes = parseInt($('input#numOfNodes').val()),
             // Get whether the project should be started once it's created or not
-            immediateProjectRun = $(`${dialog}`).find(`input#immediateProjectRun`).prop('checked'),
-            installAxonOps = $(`${dialog}`).find(`input#installAxonOps`).prop('checked'),
+            immediateProjectRun = $(dialog).find(`input#immediateProjectRun`).prop('checked'),
+            installAxonOps = $(dialog).find(`input#installAxonOps`).prop('checked'),
             // Get the minimum and maximum number of Cassandra's nodes in the project
             [minNumOfNodes, maxNumOfNodes] = getAttributes($('input#numOfNodes'), ['min', 'max'])
 
@@ -136,7 +136,7 @@
           maxNumOfNodes = parseInt(maxNumOfNodes)
 
           // Normalize the given number of nodes
-          numOfNodes = (numOfNodes < minNumOfNodes) ? minNumOfNodes : ((numOfNodes > maxNumOfNodes) ? maxNumOfNodes : numOfNodes)
+          numOfNodes = Math.max(minNumOfNodes, Math.min(maxNumOfNodes, numOfNodes))
 
           // Add log about the project's attributes
           try {
@@ -176,7 +176,7 @@
               })
 
               // Click the close button of the dialog
-              $(`${dialog}`).find('button.btn-close').click()
+              $(dialog).find('button.btn-close').click()
 
               // If there's no need to run the project then skip the upcoming code
               if (!immediateProjectRun)

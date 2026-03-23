@@ -26,14 +26,9 @@ let checkForUpdates = (callback) => {
   try {
     // Import the app's info from the `package.json` file
     let AppInfo = require(Path.join(__dirname, '..', '..', 'package.json')),
-      buildInfo = {
-        provider: "github",
-        owner: "axonops",
-        repo: "axonops-workbench"
-      },
       targetInfo = {
-        owner: buildInfo.owner,
-        repo: buildInfo.repo,
+        owner: 'axonops',
+        repo: 'axonops-workbench',
         currentVersion: AppInfo.version
       }
 

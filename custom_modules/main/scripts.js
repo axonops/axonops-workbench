@@ -26,12 +26,9 @@
  * {string} `id`, {string} `scriptPath`
  */
 let executeScript = (window, Terminal, data) => {
-  // Define the response's ID
   let responseID = `script:result:${data.id}`,
-    // Define the command which will be called to execute the script
     command = `"${data.scriptPath}"`
 
-  // Run the command
   Terminal.run(command, (err, data, stderr) => {
     try {
       stderr = `${stderr}`.length <= 0 ? null : stderr
@@ -41,16 +38,13 @@ let executeScript = (window, Terminal, data) => {
       err = `${err}`.length <= 0 ? null : err
     } catch (e) {}
 
-    // Whether or not an error has been found
-    let foundError = (err || stderr) != undefined ? true : false
+    let foundError = (err || stderr) != undefined
 
-    // Log the error if it has been occurred
     if (foundError)
       try {
         addLog(`Error regards executing script '${data.scriptPath}'. Details: ${err || stderr}`)
       } catch (e) {}
 
-    // Send the result to the renderer thread
     window.webContents.send(responseID, foundError ? -1000 : data)
   })
 }

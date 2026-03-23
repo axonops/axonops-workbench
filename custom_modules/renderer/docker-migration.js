@@ -39,7 +39,6 @@ const migrateDockerComposeFile = async (folderPath) => {
 
     // Read existing file
     let content = FS.readFileSync(composePath, 'utf8');
-    const originalContent = content;
 
     // Check if already has environment variable in the axon-dash service
     // We need to be more specific - only skip if axon-dash already has the env var

@@ -21,30 +21,20 @@
  * Once the content of the webview is loaded
  */
 document.addEventListener('DOMContentLoaded', () => {
-  // Define a function to handle the click event of the `Sign Up` button
   let handleClickEvent = () => {
     setTimeout(() => {
-      // Point at the sign up button
       let signUpButton = document.querySelector('#auth0-lock-container-1 > div > div.auth0-lock-center > form > div > div > div > div > div.auth0-lock-content-body-wrapper > div:nth-child(2) > span > div > div > div > div > div > div > div > div > div.auth0-lock-tabs-container > ul > li:nth-child(2) > a')
 
-      // If the buttons hasn't been found then call the function again
       if (signUpButton == null)
         return handleClickEvent()
 
-      // Remove any `click` event listener
       signUpButton.removeEventListener('click', () => {})
 
-      // Define a new event listener
       signUpButton.addEventListener('click', function(e) {
-        // Prevent the default behavior of the event
         e.preventDefault()
         e.stopPropagation()
 
-        // Open a new URL
         window.open("https://axonops.com/starter", "_self")
-
-        // End the process
-        return
       })
     }, 1000)
   }

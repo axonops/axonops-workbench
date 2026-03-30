@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Fail if tag is not prefixed by v
         run: |
@@ -69,7 +69,7 @@ jobs:
             arch: x64
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Change the package.json version to match the tag
         run: |
@@ -113,7 +113,7 @@ jobs:
         run: pip3 install -r requirements.txt
 
       - name: Setup Node.js v20.19.2
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20.19.2
 
@@ -121,7 +121,7 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: 1.25
-          
+
       - name: Install OpenSSL (macOS)
         if: ${{ startsWith(runner.os, 'macos') }}
         run: brew install openssl@3
@@ -290,10 +290,10 @@ jobs:
     if: ${{ !cancelled() && success() && !contains(github.ref, 'internal') }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js v20.17.0
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20.17.0
 
@@ -320,7 +320,7 @@ jobs:
     if: ${{ !cancelled() && success() && !contains(github.ref, 'internal') }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: main
           repository: axonops/homebrew-repository

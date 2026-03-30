@@ -129,12 +129,15 @@ jobs:
       - name: Install AxonOps Developer Workbench dependencies
         run: |
           npm cache clean --force
-          npm i
-          # For macOS x64 cross-compiled on ARM runner, rebuild native modules for x64
+          # For macOS x64 cross-compiled on ARM runner, set npm_config_arch so that
+          # packages with prebuilt binaries (e.g. cqlai-node's libcqlai.dylib) download
+          # the x64 variant rather than the runner's native arm64 variant.
           if [ "$(uname -s)" == "Darwin" ] && [ "${{ matrix.arch }}" == "x64" ] && [ "$(uname -m)" == "arm64" ]; then
+            npm_config_arch=x64 npm i
             npx electron-builder install-app-deps --arch x64
+          else
+            npm i
           fi
-          find . -name "*.so" -o -name "*.dylib"
 
       - name: Get credits and add them to the database
         run: |

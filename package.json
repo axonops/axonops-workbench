@@ -177,7 +177,6 @@
       ],
       "notarize": true,
       "binaries": [
-        "./app.asar.unpacked/node_modules/@axonops/cqlai-node/lib/libcqlai.so",
         "./main/bin/keys_generator/_internal/lib-dynload/_struct.cpython-312-darwin.so",
         "./main/bin/keys_generator/_internal/lib-dynload/array.cpython-312-darwin.so",
         "./main/bin/keys_generator/_internal/lib-dynload/_queue.cpython-312-darwin.so",

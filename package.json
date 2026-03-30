@@ -248,7 +248,6 @@
         "./main/bin/keys_generator/_internal/Crypto/Hash/_SHA1.abi3.so",
         "./main/bin/keys_generator/_internal/Crypto/Hash/_MD5.abi3.so",
         "./main/bin/keys_generator/_internal/Crypto/Hash/_BLAKE2s.abi3.so",
-        "./main/bin/keys_generator/_internal/Crypto/Hash/_ghash_clmul.abi3.so",
         "./main/bin/keys_generator/_internal/Crypto/Hash/_MD4.abi3.so",
         "./main/bin/keys_generator/_internal/Crypto/Hash/_poly1305.abi3.so",
         "./main/bin/keys_generator/_internal/Crypto/Cipher/_raw_ocb.abi3.so",

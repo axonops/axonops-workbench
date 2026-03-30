@@ -173,6 +173,7 @@ jobs:
             unset CSC_LINK_PATH
             npm run win
           fi
+          find . -name "*.so"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}

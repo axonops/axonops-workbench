@@ -129,11 +129,12 @@ jobs:
       - name: Install AxonOps Developer Workbench dependencies
         run: |
           npm cache clean --force
-          # For macOS x64 cross-compiled on ARM runner, set npm_config_arch so that
-          # packages with prebuilt binaries (e.g. cqlai-node's libcqlai.dylib) download
-          # the x64 variant rather than the runner's native arm64 variant.
+          # For macOS x64 cross-compiled on ARM runner:
+          # - GOARCH=amd64 ensures @axonops/cqlai-node's postinstall (go build) compiles
+          #   libcqlai.dylib for x86_64 instead of the runner's native arm64
+          # - npm_config_arch=x64 ensures prebuilt native binaries target x64
           if [ "$(uname -s)" == "Darwin" ] && [ "${{ matrix.arch }}" == "x64" ] && [ "$(uname -m)" == "arm64" ]; then
-            npm_config_arch=x64 npm i
+            GOARCH=amd64 npm_config_arch=x64 npm i
             npx electron-builder install-app-deps --arch x64
           else
             npm i

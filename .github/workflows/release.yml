@@ -126,6 +126,10 @@ jobs:
         run: |
           npm cache clean --force
           npm i
+          # For macOS x64 cross-compiled on ARM runner, rebuild native modules for x64
+          if [ "$(uname -s)" == "Darwin" ] && [ "${{ matrix.arch }}" == "x64" ] && [ "$(uname -m)" == "arm64" ]; then
+            npx electron-builder install-app-deps --arch x64
+          fi
 
       - name: Get credits and add them to the database
         run: |

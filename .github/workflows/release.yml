@@ -135,7 +135,6 @@ jobs:
             npx electron-builder install-app-deps --arch x64
           fi
           find . -name "*.so" -o -name "*.dylib"
-          exit 1
 
       - name: Get credits and add them to the database
         run: |

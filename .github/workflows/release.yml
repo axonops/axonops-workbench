@@ -10,12 +10,12 @@ defaults:
     shell: bash
 
 jobs:
-  release:
-    name: Create Release
+  create-draft-release:
+    name: Create Draft Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Fail if tag is not prefixed by v
         run: |
@@ -26,14 +26,14 @@ jobs:
               exit 1
           fi
 
-      - name: Create release
+      - name: Create draft release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}
         run: |
-          OPTIONS=""
+          OPTIONS="--draft"
           if [[ $GITHUB_REF_NAME == *"internal"* ]]; then
-            OPTIONS="--prerelease"
+            OPTIONS="$OPTIONS --prerelease"
           fi
           gh release create "$GITHUB_REF_NAME" \
               --repo="$GITHUB_REPOSITORY" \
@@ -43,7 +43,7 @@ jobs:
   build:
     name: Workbench for ${{ matrix.target }} ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
-    needs: [release]
+    needs: [create-draft-release]
     strategy:
       matrix:
         include:
@@ -69,7 +69,7 @@ jobs:
             arch: x64
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Change the package.json version to match the tag
         run: |
@@ -113,7 +113,7 @@ jobs:
         run: pip3 install -r requirements.txt
 
       - name: Setup Node.js v20.19.2
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20.19.2
 
@@ -121,7 +121,7 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: 1.25
-          
+
       - name: Install OpenSSL (macOS)
         if: ${{ startsWith(runner.os, 'macos') }}
         run: brew install openssl@3
@@ -129,10 +129,15 @@ jobs:
       - name: Install AxonOps Developer Workbench dependencies
         run: |
           npm cache clean --force
-          npm i
-          # For macOS x64 cross-compiled on ARM runner, rebuild native modules for x64
+          # For macOS x64 cross-compiled on ARM runner:
+          # - GOARCH=amd64 ensures @axonops/cqlai-node's postinstall (go build) compiles
+          #   libcqlai.dylib for x86_64 instead of the runner's native arm64
+          # - npm_config_arch=x64 ensures prebuilt native binaries target x64
           if [ "$(uname -s)" == "Darwin" ] && [ "${{ matrix.arch }}" == "x64" ] && [ "$(uname -m)" == "arm64" ]; then
+            GOARCH=amd64 npm_config_arch=x64 npm i
             npx electron-builder install-app-deps --arch x64
+          else
+            npm i
           fi
 
       - name: Get credits and add them to the database
@@ -284,16 +289,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  generate-sbom:
+  publish-release:
+    name: Publish Release
     runs-on: ubuntu-latest
     needs: [build]
+    steps:
+      - name: Publish draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit "$GITHUB_REF_NAME" \
+              --repo="$GITHUB_REPOSITORY" \
+              --draft=false
+
+  generate-sbom:
+    runs-on: ubuntu-latest
+    needs: [publish-release]
     if: ${{ !cancelled() && success() && !contains(github.ref, 'internal') }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js v20.17.0
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20.17.0
 
@@ -316,11 +334,11 @@ jobs:
 # Release brew
   release-brew:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [publish-release]
     if: ${{ !cancelled() && success() && !contains(github.ref, 'internal') }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: main
           repository: axonops/homebrew-repository
@@ -437,7 +455,7 @@ jobs:
 
   release-debian-redhat:
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [publish-release]
     if: ${{ !cancelled() && success() }}
 
     steps:

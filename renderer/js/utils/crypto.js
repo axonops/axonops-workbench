@@ -383,7 +383,7 @@ let decryptText = (privateKey, text) => {
     })
 
     // Decrypt the given text
-    decryptedText = private.decrypt(decryptedText).toString('utf8')
+    decryptedText = private.decrypt(text).toString('utf8')
   } catch (e) {
     try {
       errorLog(e, 'functions')

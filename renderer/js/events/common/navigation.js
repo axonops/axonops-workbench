@@ -454,14 +454,13 @@
     // Get the app's config/settings
     Modules.Config.getConfig(async (config) => {
       // Get different saved settings to be checked and applied on the UI
-      let maxNumCQLSHSessions = config.get('limit', 'cqlsh'),
+      let maxNumCQLSHSessions = config.get('limit', 'sessions'),
         maxNumSandboxProjects = config.get('limit', 'sandbox'),
         contentProtection = await Keytar.findPassword('AxonOpsWorkbenchContentProtection') || false,
         assistantAIEnabled = await Keytar.findPassword('AxonOpsWorkbenchAIAssistant') || false,
         loggingEnabled = config.get('security', 'loggingEnabled'),
         sandboxProjectsEnabled = config.get('features', 'localClusters'),
         containersManagementTool = config.get('features', 'containersManagementTool') || 'none',
-        basicCQLSHEnabled = config.get('features', 'basicCQLSH'),
         cqlSnippetsAuthorName = config.get('features', 'cqlSnippetsAuthorName') || '',
         checkForUpdates = config.get('updates', 'checkForUpdates'),
         autoUpdate = config.get('updates', 'autoUpdate'),
@@ -510,8 +509,6 @@
       } catch (e) {}
 
       $(`div.management-tools.settings-dialog div.tool[tool="${containersManagementTool}"]`).addClass('selected').click()
-
-      $('input#basicCQLSH[type="checkbox"]').prop('checked', basicCQLSHEnabled == 'true')
 
       $('input#cqlSnippetsAuthorName').val(minifyText(cqlSnippetsAuthorName).length <= 0 ? '' : cqlSnippetsAuthorName)
       setTimeout(() => cqlSnippetsAuthorNameObject.update())

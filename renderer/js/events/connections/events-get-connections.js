@@ -548,12 +548,11 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 // Get the app's config
                 Modules.Config.getConfig((config) => {
                   // Get the maximum allowed number of running connections at a time
-                  let maximumRunningConnections = parseInt(config.get('limit', 'cqlsh')),
+                  let maximumRunningConnections = parseInt(config.get('limit', 'sessions')),
                     // Get the number of currently running connections
                     numRunningConnections = $(`div[content="workarea"] div.workarea[connection-id*="connection-"], div[content="workarea"] div.workarea[connection-id*="cluster-"]`).length,
                     // Get the number of currently attempt to activate connections
-                    numAttemptingConnections = $(`div[content="connections"] div.connections-container div.connection[data-id*="connection-"].test-connection`).length,
-                    isBasicCQLSHEnabled = config.get('features', 'basicCQLSH') == 'true'
+                    numAttemptingConnections = $(`div[content="connections"] div.connections-container div.connection[data-id*="connection-"].test-connection`).length
 
                   // Make sure the maximum number is valid, or adopt the default value `10`
                   maximumRunningConnections = isNaN(maximumRunningConnections) || maximumRunningConnections < 1 ? 10 : maximumRunningConnections
@@ -935,7 +934,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       </div>
                                       <div class="terminal-container" data-id="${terminalContainerID}" style="display:none;"></div>
                                       <div class="interactive-terminal-container" data-id="${terminalContainerID}_interactive">
-                                        <div class="container-header" style="${!isBasicCQLSHEnabled ? 'width: 100%;' : ''}">
+                                        <div class="container-header" style="width: 100%;">
                                           <div class="form-outline form-white margin-bottom" style="margin-bottom:20px;">
                                             <ion-icon name="search" class="trailing" style="font-size: 120%;"></ion-icon>
                                             <input spellcheck="false" type="text" class="form-control form-icon-trailing form-control-lg" id="_${cqlshSessionSearchInputID}">
@@ -2134,8 +2133,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                     // Call the inner function - at the very end of this code block -; to create a pty instance for that connection
                     requestPtyInstanceCreation({
                       cqlshSessionContentID,
-                      terminalID,
-                      isBasicCQLSHEnabled
+                      terminalID
                     }, (connectionAttemptResult) => {
                       // Set the paging size if the user has set it
                       try {
@@ -8946,7 +8944,6 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 // Send a request to create a pty instance and connect with the connection
                 IPCRenderer.send('pty:create', {
                   ...creationData,
-                  isBasicCQLSHEnabled: info.isBasicCQLSHEnabled,
                   terminalID: info.terminalID,
                   workspaceID: getActiveWorkspaceID()
                 })

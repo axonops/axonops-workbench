@@ -199,7 +199,7 @@ try {
 
   /**
    * Loop through each module file
-   * Main modules are `pty`, `dialogs`, and `scripts`
+   * Main modules are `cqlsession`, `dialogs`, and `scripts`
    */
   modulesFiles.forEach((moduleFile) => {
     try {
@@ -246,7 +246,7 @@ global.views = {
   backgroundProcesses: null
 }
 
-// An array which saves all cqlsh instances with their ID - connection ID - given by the renderer thread
+// An array which saves all session instances with their ID - connection ID - given by the renderer thread
 global.CQLSHInstances = []
 // Whether or not the user wants to completely quit the application. This occurs when all renderer threads are terminated or closed
 global.isMacOSForcedClose = false

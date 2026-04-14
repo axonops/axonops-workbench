@@ -59,7 +59,6 @@
         axonOpsIntegration = $('input#enableAxonOpsDashboardIntegration[type="checkbox"]').prop('checked'),
         // Check the sandbox projects enable/disable status
         sandboxProjectsEnabled = $('input#sandboxProjects[type="checkbox"]').prop('checked'),
-        basicCQLSHEnabled = $('input#basicCQLSH[type="checkbox"]').prop('checked'),
         cqlSnippetsAuthorName = $('input#cqlSnippetsAuthorName').val(),
         assistantAIEnabled = $('input#enableAIAssistant[type="checkbox"]').prop('checked'),
         // Get the maximum allowed running instances
@@ -110,12 +109,11 @@
           Keytar.setPassword('AxonOpsWorkbenchContentProtection', 'value', `${contentProtection}`)
           config.set('security', 'loggingEnabled', loggingEnabled)
           config.set('features', 'localClusters', sandboxProjectsEnabled)
-          config.set('features', 'basicCQLSH', basicCQLSHEnabled)
           config.set('features', 'cqlSnippetsAuthorName', minifyText(cqlSnippetsAuthorName).length <= 0 ? '' : cqlSnippetsAuthorName)
           config.set('features', 'containersManagementTool', containersManagementTool)
           config.set('features', 'axonOpsIntegration', axonOpsIntegration)
           Keytar.setPassword('AxonOpsWorkbenchAIAssistant', 'value', `${assistantAIEnabled}`)
-          config.set('limit', 'cqlsh', maxNumCQLSHSessions)
+          config.set('limit', 'sessions', maxNumCQLSHSessions)
           config.set('limit', 'sandbox', maxNumSandboxProjects)
           config.set('ui', 'language', chosenDisplayLanguage)
           config.set('updates', 'checkForUpdates', checkForUpdatesOnLanuch)

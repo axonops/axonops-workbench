@@ -1660,6 +1660,23 @@ let updateActionStatusForInsertRow,
             }
           } catch (e) {}
 
+          let skeletonTarget = $('div.modal#rightClickActionsMetadata')
+          skeletonTarget.addClass('trees-loading')
+
+          {
+            let skeletonTimeout = null
+            let skeletonFallback = setTimeout(() => { skeletonObserver.disconnect(); skeletonTarget.removeClass('trees-loading') }, 10000)
+            let skeletonObserver = new MutationObserver(() => {
+              clearTimeout(skeletonTimeout)
+              skeletonTimeout = setTimeout(() => {
+                clearTimeout(skeletonFallback)
+                skeletonObserver.disconnect()
+                skeletonTarget.removeClass('trees-loading')
+              }, 200)
+            })
+            skeletonObserver.observe(skeletonTarget[0], { childList: true, subtree: true, attributes: true })
+          }
+
           let keys = [],
             columns = [],
             udts = [],
@@ -3294,6 +3311,23 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
               }
             } catch (e) {}
+
+            let skeletonTarget = $('div.modal#rightClickActionsMetadata')
+            skeletonTarget.addClass('trees-loading')
+
+            {
+              let skeletonTimeout = null
+              let skeletonFallback = setTimeout(() => { skeletonObserver.disconnect(); skeletonTarget.removeClass('trees-loading') }, 10000)
+              let skeletonObserver = new MutationObserver(() => {
+                clearTimeout(skeletonTimeout)
+                skeletonTimeout = setTimeout(() => {
+                  clearTimeout(skeletonFallback)
+                  skeletonObserver.disconnect()
+                  skeletonTarget.removeClass('trees-loading')
+                }, 200)
+              })
+              skeletonObserver.observe(skeletonTarget[0], { childList: true, subtree: true, attributes: true })
+            }
 
             let keys = [],
               columns = [],
@@ -4952,6 +4986,23 @@ let updateActionStatusForInsertRow,
               }
             } catch (e) {}
 
+            let skeletonTarget = $('div.modal#rightClickActionsMetadata')
+            skeletonTarget.addClass('trees-loading')
+
+            {
+              let skeletonTimeout = null
+              let skeletonFallback = setTimeout(() => { skeletonObserver.disconnect(); skeletonTarget.removeClass('trees-loading') }, 10000)
+              let skeletonObserver = new MutationObserver(() => {
+                clearTimeout(skeletonTimeout)
+                skeletonTimeout = setTimeout(() => {
+                  clearTimeout(skeletonFallback)
+                  skeletonObserver.disconnect()
+                  skeletonTarget.removeClass('trees-loading')
+                }, 200)
+              })
+              skeletonObserver.observe(skeletonTarget[0], { childList: true, subtree: true, attributes: true })
+            }
+
             let keys = [],
               columns = [],
               udts = [],
@@ -6499,6 +6550,23 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
               }
             } catch (e) {}
+
+            let skeletonTarget = $('div.modal#rightClickActionsMetadata')
+            skeletonTarget.addClass('trees-loading')
+
+            {
+              let skeletonTimeout = null
+              let skeletonFallback = setTimeout(() => { skeletonObserver.disconnect(); skeletonTarget.removeClass('trees-loading') }, 10000)
+              let skeletonObserver = new MutationObserver(() => {
+                clearTimeout(skeletonTimeout)
+                skeletonTimeout = setTimeout(() => {
+                  clearTimeout(skeletonFallback)
+                  skeletonObserver.disconnect()
+                  skeletonTarget.removeClass('trees-loading')
+                }, 200)
+              })
+              skeletonObserver.observe(skeletonTarget[0], { childList: true, subtree: true, attributes: true })
+            }
 
             let keys = [],
               columns = [],

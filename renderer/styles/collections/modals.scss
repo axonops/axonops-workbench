@@ -4062,7 +4062,7 @@ div#searchConnections {
           overflow: hidden;
           margin: 0 7px 0 0;
           width: fit-content;
-          padding: 0px 5px;
+          padding: 0 5px;
           display: flex;
           flex: {
             direction: row;
@@ -4605,5 +4605,83 @@ div.input-group-text.for-counter-value {
     &.selected {
       opacity: 1 !important;
     }
+  }
+}
+
+div.modal#rightClickActionsMetadata {
+  .trees-loading-overlay {
+    display: none;
+    pointer-events: none;
+  }
+
+  &.trees-loading .trees-loading-overlay {
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+    position: absolute;
+    top: 66px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    background: #1e1e1e;
+    padding: 10px;
+    gap: 3%;
+    border-radius: 0 0 8px 8px;
+
+    .skeleton-row {
+      display: flex;
+      gap: 3%;
+
+      &.tabs {
+        height: 6%;
+
+        .skeleton-block {
+          width: 100%;
+          border-radius: 6px;
+        }
+      }
+
+      &.columns {
+        flex: 1;
+        flex-direction: column;
+
+        .skeleton-block {
+          height: 100%;
+          width: 100%;
+          border-radius: 8px;
+        }
+      }
+
+      &.footer {
+        height: 7%;
+
+        .skeleton-block {
+          width: 100%;
+          border-radius: 6px;
+        }
+      }
+
+      .skeleton-block {
+        background: linear-gradient(90deg, #2a2a2a 25%, #333333 50%, #2a2a2a 75%);
+        background-size: 200% 100%;
+        animation: skeleton-shimmer 1.5s ease-in-out infinite;
+      }
+      display: flex;
+      gap: 3%;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-content: center;
+      justify-content: space-between;
+    }
+  }
+}
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
   }
 }

@@ -7,6 +7,10 @@ const keysServiceName = `AxonOpsWorkbench`
 {
   IPCMain.on('pty:create', (_, data) => {
     try {
+      data.rsaPrivateKey = KeysGenerator.getPrivateKey(keysServiceName)
+    } catch (e) {}
+
+    try {
       CQLSHInstances[data.id].close()
     } catch (e) {}
 
@@ -77,6 +81,10 @@ const keysServiceName = `AxonOpsWorkbench`
   })
 
   IPCMain.on('pty:test-connection', (_, data) => {
+    try {
+      data.rsaPrivateKey = KeysGenerator.getPrivateKey(keysServiceName)
+    } catch (e) {}
+
     Modules.Cqlsession.testConnection(views.main, data)
   })
 

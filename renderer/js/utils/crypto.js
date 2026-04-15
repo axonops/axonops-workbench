@@ -372,6 +372,10 @@ let decryptText = (privateKey, text) => {
     addLog(`Use the RSA cryptosystem to decrypt a text`, 'process')
   } catch (e) {}
 
+  // Don't attempt to decrypt an empty or undefined value
+  if (!decryptedText)
+    return decryptedText
+
   try {
     // Create a private RSA object
     let private = new NodeRSA(privateKey, 'private', {

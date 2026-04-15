@@ -457,7 +457,9 @@ let buildTreeview = async (metadata, ignoreTitles = false, _workspaceID = '', _c
       if (keyspace.replication_strategy == undefined)
         throw 0
 
-      let replicationStrategy = JSON.parse(repairJSONString(keyspace.replication_strategy)),
+      let replicationStrategy = typeof keyspace.replication_strategy === 'string'
+          ? JSON.parse(repairJSONString(keyspace.replication_strategy))
+          : keyspace.replication_strategy,
         replicationStrategyID = await getMD5IDForNode()
 
       // Tables' container that will be under the keyspace container
@@ -1860,4 +1862,30 @@ let goToNodeInTree = (keyspaceAndTableNames) => {
       $(`a.jstree-anchor[id="${hashedID}"]`).click()
     } catch (e) {}
   })
+}
+
+// Normalize metadata arrays to ensure consistent ordering in the diff
+let normalizeMetadata = (metadata) => {
+  try {
+    if (Array.isArray(metadata.keyspaces)) {
+      metadata.keyspaces.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+
+      for (let keyspace of metadata.keyspaces) {
+        try {
+          if (Array.isArray(keyspace.tables)) {
+            keyspace.tables.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+
+            for (let table of keyspace.tables) {
+              try {
+                if (Array.isArray(table.columns))
+                  table.columns.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+              } catch (e) {}
+            }
+          }
+        } catch (e) {}
+      }
+    }
+  } catch (e) {}
+
+  return metadata
 }

@@ -403,7 +403,8 @@ let updateActionStatusForInsertRow,
         $('div.modal#rightClickActionsMetadata div[action="keyspaces"]').show()
 
         try {
-          metadataInfo.replication_strategy = JSON.parse(repairJSONString(metadataInfo.replication_strategy))
+          if (typeof metadataInfo.replication_strategy === 'string')
+            metadataInfo.replication_strategy = JSON.parse(repairJSONString(metadataInfo.replication_strategy))
         } catch (e) {}
 
         try {
@@ -428,10 +429,10 @@ let updateActionStatusForInsertRow,
 
         $('input#keyspaceName').val(`${metadataInfo.name}`).trigger('input')
 
-        $('input#keyspaceReplicationStrategy').val(`${metadataInfo.replication_strategy.class}`).trigger('input')
+        $('input#keyspaceReplicationStrategy').val(`${metadataInfo.replication_strategy.class}`.split('.').pop()).trigger('input')
 
         try {
-          if (`${metadataInfo.replication_strategy.class}` != 'SimpleStrategy')
+          if (!`${metadataInfo.replication_strategy.class}`.includes('SimpleStrategy'))
             throw 0
 
           $('#rightClickActionsMetadata').attr('data-rf', `${metadataInfo.replication_strategy.replication_factor}`)
@@ -446,7 +447,7 @@ let updateActionStatusForInsertRow,
         } catch (e) {}
 
         try {
-          if (`${metadataInfo.replication_strategy.class}` != 'NetworkTopologyStrategy')
+          if (!`${metadataInfo.replication_strategy.class}`.includes('NetworkTopologyStrategy'))
             throw 0
 
           $('#rightClickActionsMetadata').attr('data-datacenters-rf', `${JSON.stringify(metadataInfo.replication_strategy)}`)
@@ -1717,7 +1718,8 @@ let updateActionStatusForInsertRow,
                 udts.push(udtStructure)
               }
 
-              columns = columns.filter((column) => udts.find((udt) => udt.name == column.name) == undefined)
+              let udtNames = new Set(udts.map((udt) => udt.name))
+              columns = columns.filter((column) => !udtNames.has(column.name))
             } catch (e) {}
           } catch (e) {}
 
@@ -1844,7 +1846,7 @@ let updateActionStatusForInsertRow,
               } catch (e) {}
 
               try {
-                primaryKeyTreeObject.on('loaded.jstree', () => setTimeout(() => primaryKeyTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${primaryKeyTreeObject.find('a.jstree-anchor').length - index}`))))
+                primaryKeyTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = primaryKeyTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
               } catch (e) {}
             } catch (e) {
               primaryKeyTreeElements.hide()
@@ -1871,7 +1873,7 @@ let updateActionStatusForInsertRow,
               } catch (e) {}
 
               try {
-                regularColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => regularColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${regularColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                regularColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = regularColumnsTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
               } catch (e) {}
             } catch (e) {
               columnsRegularTreeElements.hide()
@@ -1898,7 +1900,7 @@ let updateActionStatusForInsertRow,
               } catch (e) {}
 
               try {
-                collectionColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => collectionColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${collectionColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                collectionColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = collectionColumnsTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
               } catch (e) {}
             } catch (e) {
               columnsCollectionTreeElements.hide()
@@ -1920,7 +1922,7 @@ let updateActionStatusForInsertRow,
               } catch (e) {}
 
               try {
-                udtColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => udtColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${udtColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                udtColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = udtColumnsTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
               } catch (e) {}
             } catch (e) {
               columnsUDTTreeElements.hide()
@@ -3352,7 +3354,8 @@ let updateActionStatusForInsertRow,
                   udts.push(udtStructure)
                 }
 
-                columns = columns.filter((column) => udts.find((udt) => udt.name == column.name) == undefined)
+                let udtNames = new Set(udts.map((udt) => udt.name))
+                columns = columns.filter((column) => !udtNames.has(column.name))
               } catch (e) {}
             } catch (e) {}
 
@@ -3482,7 +3485,7 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
 
                 try {
-                  primaryKeyTreeObject.on('loaded.jstree', () => setTimeout(() => primaryKeyTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${primaryKeyTreeObject.find('a.jstree-anchor').length - index}`))))
+                  primaryKeyTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = primaryKeyTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                 } catch (e) {}
               } catch (e) {
                 primaryKeyTreeElements.hide()
@@ -3513,7 +3516,7 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
 
                 try {
-                  regularColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => regularColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${regularColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                  regularColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = regularColumnsTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                 } catch (e) {}
               } catch (e) {
                 columnsRegularTreeElements.hide()
@@ -3542,7 +3545,7 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
 
                 try {
-                  collectionColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => collectionColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${collectionColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                  collectionColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = collectionColumnsTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                 } catch (e) {}
               } catch (e) {
                 columnsCollectionTreeElements.hide()
@@ -3570,7 +3573,7 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
 
                 try {
-                  udtColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => udtColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${udtColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                  udtColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = udtColumnsTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                 } catch (e) {}
               } catch (e) {
                 columnsUDTTreeElements.hide()
@@ -5007,7 +5010,8 @@ let updateActionStatusForInsertRow,
                   udts.push(udtStructure)
                 }
 
-                columns = columns.filter((column) => udts.find((udt) => udt.name == column.name) == undefined)
+                let udtNames = new Set(udts.map((udt) => udt.name))
+                columns = columns.filter((column) => !udtNames.has(column.name))
               } catch (e) {}
             } catch (e) {}
 
@@ -5135,7 +5139,7 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
 
                 try {
-                  primaryKeyTreeObject.on('loaded.jstree', () => setTimeout(() => primaryKeyTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${primaryKeyTreeObject.find('a.jstree-anchor').length - index}`))))
+                  primaryKeyTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = primaryKeyTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                 } catch (e) {}
               } catch (e) {
                 primaryKeyTreeElements.hide()
@@ -5163,7 +5167,7 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
 
                 try {
-                  regularColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => regularColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${regularColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                  regularColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = regularColumnsTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                 } catch (e) {}
               } catch (e) {
                 columnsRegularTreeElements.hide()
@@ -5191,7 +5195,7 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
 
                 try {
-                  collectionColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => collectionColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${collectionColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                  collectionColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = collectionColumnsTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                 } catch (e) {}
               } catch (e) {
                 columnsCollectionTreeElements.hide()
@@ -5218,7 +5222,7 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
 
                 try {
-                  udtColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => udtColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${udtColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                  udtColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = udtColumnsTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                 } catch (e) {}
               } catch (e) {
                 columnsUDTTreeElements.hide()
@@ -5254,7 +5258,7 @@ let updateActionStatusForInsertRow,
                   } catch (e) {}
 
                   try {
-                    lwtRegularTreeObject.on('loaded.jstree', () => setTimeout(() => lwtRegularTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${lwtRegularTreeObject.find('a.jstree-anchor').length - index}`))))
+                    lwtRegularTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = lwtRegularTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                   } catch (e) {}
                 } catch (e) {
                   lwtRegularTreeElements.hide()
@@ -5281,7 +5285,7 @@ let updateActionStatusForInsertRow,
                   } catch (e) {}
 
                   try {
-                    lwtCollectionTreeObject.on('loaded.jstree', () => setTimeout(() => lwtCollectionTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${lwtCollectionTreeObject.find('a.jstree-anchor').length - index}`))))
+                    lwtCollectionTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = lwtCollectionTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                   } catch (e) {}
                 } catch (e) {
                   lwtCollectionTreeElements.hide()
@@ -5308,7 +5312,7 @@ let updateActionStatusForInsertRow,
                   } catch (e) {}
 
                   try {
-                    lwtUDTTreeObject.on('loaded.jstree', () => setTimeout(() => lwtUDTTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${lwtUDTTreeObject.find('a.jstree-anchor').length - index}`))))
+                    lwtUDTTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = lwtUDTTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                   } catch (e) {}
                 } catch (e) {
                   lwtUDTTreeElements.hide()
@@ -6556,7 +6560,8 @@ let updateActionStatusForInsertRow,
                   udts.push(udtStructure)
                 }
 
-                columns = columns.filter((column) => udts.find((udt) => udt.name == column.name) == undefined)
+                let udtNames = new Set(udts.map((udt) => udt.name))
+                columns = columns.filter((column) => !udtNames.has(column.name))
               } catch (e) {}
             } catch (e) {}
 
@@ -6686,7 +6691,7 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
 
                 try {
-                  primaryKeyTreeObject.on('loaded.jstree', () => setTimeout(() => primaryKeyTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${primaryKeyTreeObject.find('a.jstree-anchor').length - index}`))))
+                  primaryKeyTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = primaryKeyTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                 } catch (e) {}
               } catch (e) {
                 primaryKeyTreeElements.hide()
@@ -6717,7 +6722,7 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
 
                 try {
-                  regularColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => regularColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${regularColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                  regularColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = regularColumnsTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                 } catch (e) {}
               } catch (e) {
                 columnsRegularTreeElements.hide()
@@ -6746,7 +6751,7 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
 
                 try {
-                  collectionColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => collectionColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${collectionColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                  collectionColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = collectionColumnsTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                 } catch (e) {}
               } catch (e) {
                 columnsCollectionTreeElements.hide()
@@ -6774,7 +6779,7 @@ let updateActionStatusForInsertRow,
                 } catch (e) {}
 
                 try {
-                  udtColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => udtColumnsTreeObject.find('a.jstree-anchor').get().forEach((anchor, index) => $(anchor).css('z-index', `${udtColumnsTreeObject.find('a.jstree-anchor').length - index}`))))
+                  udtColumnsTreeObject.on('loaded.jstree', () => setTimeout(() => { let anchors = udtColumnsTreeObject.find('a.jstree-anchor'), total = anchors.length; anchors.each((index, anchor) => $(anchor).css('z-index', `${total - index}`)) }))
                 } catch (e) {}
               } catch (e) {
                 columnsUDTTreeElements.hide()

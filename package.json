@@ -182,7 +182,13 @@
     "deb": {
       "depends": [
         "libnss3",
-        "libsecret-1-0"
+        "libsecret-1-0",
+        "libatk1.0-0",
+        "libatk-bridge2.0-0",
+        "libcups2",
+        "libcairo2",
+        "libgtk-3-0",
+        "libgbm1"
       ]
     },
     "dmg": {

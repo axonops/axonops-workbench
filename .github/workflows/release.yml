@@ -47,7 +47,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: [ubuntu-24.04]
+          - os: [ubuntu-22.04]
             target: Linux
             arch: x64
 

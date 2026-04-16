@@ -78,7 +78,39 @@ let getWorkspacesInternal = async () => {
 
 let getWorkspaces = async () => await getWorkspacesInternal()
 
-let getWorkspacesNoAsync = () => getWorkspacesInternal()
+let getWorkspacesNoAsync = () => {
+  let workspaces = []
+  try {
+    let savedWorkspaces = FS.readFileSync(Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces', 'workspaces.json'), 'utf8')
+    try {
+      savedWorkspaces = JSON.parse(savedWorkspaces)
+    } catch (e) {
+      savedWorkspaces = []
+    }
+    workspaces = savedWorkspaces
+    for (let workspace of workspaces) {
+      try {
+        let folderPath = !workspace.defaultPath ? workspace.path : Path.join((extraResourcesPath != null ? Path.join(extraResourcesPath) : Path.join(__dirname, '..', '..')), 'data', 'workspaces'),
+          connections = FS.readFileSync(Path.join(folderPath, workspace.folder, 'connections.json'), 'utf8')
+        try {
+          connections = JSON.parse(connections)
+        } catch (e) {
+          connections = []
+        }
+        workspace.connections = connections
+      } catch (e) {
+        try {
+          errorLog(e, 'workspaces')
+        } catch (e) {}
+      }
+    }
+  } catch (e) {
+    try {
+      errorLog(e, 'workspaces')
+    } catch (e) {}
+  }
+  return workspaces
+}
 
 /**
  * Save a passed workspace object

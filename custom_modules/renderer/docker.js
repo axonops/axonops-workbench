@@ -590,7 +590,7 @@ let checkCassandraInContainer = (pinnedToastID, port, callback, timestamp = null
   // Send test request to the main thread and pass the port and the request's ID
   IPCRenderer.send('pty:test-connection', {
     host: '127.0.0.1',
-    port,
+    port: parseInt(port),
     requestID,
     processID: getRandom.id(20)
   })

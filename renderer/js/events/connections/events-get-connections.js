@@ -2163,7 +2163,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                           // Inner function to create either the old or new editor
                           let createEditor = (type, metadata) => {
-                            let editor = monaco.editor.createModel(beautifyJSON(metadata, true), 'json')
+                            let editor = monaco.editor.createModel(beautifyJSON(normalizeMetadata(metadata), true), 'json')
 
                             workareaElement.find(`span[data-id="${oldSnapshotNameID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
                             workareaElement.find(`span[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
@@ -2406,7 +2406,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     $('#rightClickActionsMetadata').attr('data-keyspace-info', `${JSON.stringify(keyspaceInfo)}`)
                                   } catch (e) {}
 
-                                  replicationStrategy = JSON.parse(repairJSONString(`${keyspaceInfo.replication_strategy}`) || `{}`)
+                                  replicationStrategy = typeof keyspaceInfo.replication_strategy === 'string'
+                                    ? JSON.parse(repairJSONString(keyspaceInfo.replication_strategy) || '{}')
+                                    : keyspaceInfo.replication_strategy
 
                                   keyspaceJSONObj = metadata.keyspaces.find((keyspace) => keyspace.name == targetName)
 
@@ -2414,7 +2416,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                   keyspaceTables = (keyspaceJSONObj.tables || []).map((table) => table.name)
 
-                                  if ((replicationStrategy || {}).class == 'LocalStrategy')
+                                  if (`${(replicationStrategy || {}).class}`.includes('LocalStrategy'))
                                     throw 0
 
                                   if (contextMenu.length != 0)
@@ -2723,7 +2725,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 } catch (e) {}
 
                                 try {
-                                  if ((replicationStrategy || {}).class == 'LocalStrategy' && !isSystemKeyspace)
+                                  if (`${(replicationStrategy || {}).class}`.includes('LocalStrategy') && !isSystemKeyspace)
                                     throw 0
 
                                   commands.dql.push({
@@ -5866,20 +5868,19 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                           // Refresh the new metadata and do a differentiation check
                           workareaElement.find(`span.btn[data-id="${refreshDifferentiationBtnID}"]`).click(function() {
+                            let btn = $(this)
+
                             // Disable the button
-                            $(this).attr('disabled', '').addClass('disabled refreshing')
+                            btn.attr('disabled', '').addClass('disabled refreshing')
 
                             // Get the latest metadata
                             Modules.Connections.getMetadata(connectionID, (metadata) => {
                               try {
-                                // Convert the metadata from JSON string to an object
-                                metadata = JSON.parse(metadata)
-
                                 // Detect differences
                                 // detectDifferentiationShow(JSON.parse(metadataDiffEditors.old.object.getValue()), metadata)
 
                                 // Beautify the received metadata
-                                metadata = beautifyJSON(metadata, true)
+                                metadata = beautifyJSON(normalizeMetadata(metadata), true)
 
                                 // Update the fetch date and time of the new metadata
                                 workareaElement.find(`span.new-metadata-time[data-id="${newMetadataTimeID}"]`).text(`: ${formatTimestamp(new Date().getTime())}`)
@@ -5889,11 +5890,13 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 metadataDiffEditors.new.object.setValue(metadata)
 
                                 // Enable the button again
-                                $(this).removeAttr('disabled').removeClass('disabled refreshing')
+                                btn.removeAttr('disabled').removeClass('disabled refreshing')
                               } catch (e) {
                                 try {
                                   errorLog(e, 'connections')
                                 } catch (e) {}
+
+                                btn.removeAttr('disabled').removeClass('disabled refreshing')
                               }
                             })
                           })
@@ -6073,7 +6076,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                       } catch (e) {}
 
                                       // Update the old editor's value
-                                      metadataDiffEditors.old.object.setValue(beautifyJSON(snapshotContent, true))
+                                      metadataDiffEditors.old.object.setValue(beautifyJSON(normalizeMetadata(snapshotContent), true))
 
                                       try {
                                         if (snapshotTakenTime.length <= 0)

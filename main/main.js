@@ -339,8 +339,12 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
 // Define some app's properties
 const AppProps = {
   Paths: {
-    // The app's default icon path
-    Icon: Path.join(__dirname, '..', 'renderer', 'assets', 'images', 'icon.ico'),
+    // The app's default icon path (platform-specific — icon.ico does not exist)
+    Icon: process.platform === 'win32'
+      ? Path.join(__dirname, '..', 'renderer', 'assets', 'images', 'axonops-icon-256x256.ico')
+      : process.platform === 'darwin'
+        ? Path.join(__dirname, '..', 'renderer', 'assets', 'images', 'axonops-icon-512x512.icns')
+        : Path.join(__dirname, '..', 'renderer', 'assets', 'images', 'axonops-icon-256x256.png'),
     // The app's main view/window - HTML file - path
     MainView: Path.join(__dirname, '..', 'renderer', 'views', 'index.html')
   },

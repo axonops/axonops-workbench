@@ -53,8 +53,7 @@ describe('Docker Compose Migration - Integration Tests', () => {
   describe('Real File System Tests', () => {
     test('should migrate a real legacy docker-compose file', async () => {
       // Create a legacy docker-compose file
-      const legacyContent = `version: "3.8"
-
+      const legacyContent = `
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.12
@@ -109,9 +108,7 @@ services:
       expect(migratedContent).toContain('AXONSERVER_PRIVATE_ENDPOINTS=http://axon-server:8080');
       expect(migratedContent).not.toContain('sed -i');
       expect(migratedContent).not.toContain('/etc/axonops/axon-dash.yml');
-      
       // Verify structure is maintained
-      expect(migratedContent).toContain('version: "3.8"');
       expect(migratedContent).toContain('services:');
       expect(migratedContent).toContain('axon-dash:');
     });

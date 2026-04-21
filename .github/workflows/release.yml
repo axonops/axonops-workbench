@@ -47,7 +47,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: [ubuntu-24.04]
+          - os: [ubuntu-22.04]
             target: Linux
             arch: x64
 
@@ -77,31 +77,6 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           sed -i.bak 's/"version": "[^"]*"/"version": "'"$VERSION"'"/' package.json && rm package.json.bak
           rm -f package.json.bak
-
-      - name: Download CQLSH prebuilt binaries from axonops-workbench-cqlsh
-        run: |
-          # Map matrix arch to binary arch
-          if [ "${{ matrix.arch }}" == "x64" ]; then
-            BINARY_ARCH="x86_64"
-          elif [ "${{ matrix.arch }}" == "arm64" ] && [ "$(uname -s)" == "Darwin" ]; then
-            BINARY_ARCH="arm64"
-          elif [ "${{ matrix.arch }}" == "arm64" ] && [ "$(uname -s)" == "Linux" ]; then
-            BINARY_ARCH="aarch64"
-          else
-            BINARY_ARCH="$(uname -m)"
-          fi
-
-          mkdir -p main/bin
-          for binary in cqlsh keys_generator; do
-            curl -fL ${CQLSH_GITHUB_URL}/${CQLSH_BUILD_VERSION}/${binary}-$(uname -s)-${BINARY_ARCH}.tar | tar xf - -C main/bin
-            mv main/bin/${binary}-$(uname -s)-${BINARY_ARCH} main/bin/${binary}
-            mv main/bin/${binary}/${binary}-$(uname -s)-${BINARY_ARCH} main/bin/${binary}/${binary}
-          done
-          sed -i.bak "s/%CQLSH_VERSION%/$CQLSH_BUILD_VERSION/g" renderer/views/index.html
-          rm -f renderer/views/index.html.bak
-        env:
-          CQLSH_BUILD_VERSION: "1.0.1"
-          CQLSH_GITHUB_URL: "${{ secrets.CQLSH_GITHUB_URL || 'https://github.com/axonops/axonops-workbench-cqlsh/releases/download' }}"
 
       - name: Setup Python v3.12
         uses: actions/setup-python@v5

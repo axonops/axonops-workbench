@@ -199,7 +199,7 @@ try {
 
   /**
    * Loop through each module file
-   * Main modules are `pty`, `dialogs`, and `scripts`
+   * Main modules are `cqlsession`, `dialogs`, and `scripts`
    */
   modulesFiles.forEach((moduleFile) => {
     try {
@@ -246,7 +246,7 @@ global.views = {
   backgroundProcesses: null
 }
 
-// An array which saves all cqlsh instances with their ID - connection ID - given by the renderer thread
+// An array which saves all session instances with their ID - connection ID - given by the renderer thread
 global.CQLSHInstances = []
 // Whether or not the user wants to completely quit the application. This occurs when all renderer threads are terminated or closed
 global.isMacOSForcedClose = false
@@ -339,8 +339,12 @@ let createWindow = (properties, viewPath, extraProperties = {}, callback = null)
 // Define some app's properties
 const AppProps = {
   Paths: {
-    // The app's default icon path
-    Icon: Path.join(__dirname, '..', 'renderer', 'assets', 'images', 'icon.ico'),
+    // The app's default icon path (platform-specific — icon.ico does not exist)
+    Icon: process.platform === 'win32'
+      ? Path.join(__dirname, '..', 'renderer', 'assets', 'images', 'axonops-icon-256x256.ico')
+      : process.platform === 'darwin'
+        ? Path.join(__dirname, '..', 'renderer', 'assets', 'images', 'axonops-icon-512x512.icns')
+        : Path.join(__dirname, '..', 'renderer', 'assets', 'images', 'axonops-icon-256x256.png'),
     // The app's main view/window - HTML file - path
     MainView: Path.join(__dirname, '..', 'renderer', 'views', 'index.html')
   },

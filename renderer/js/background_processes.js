@@ -43,13 +43,95 @@ $(document).ready(() => IPCRenderer.on('extra-resources-path', (_, path) => {
 
   let internalDataPath = Path.join(extraResourcesPath || Path.join(__dirname, '..', '..'), 'internal_data')
 
-  $(document).ready(() => {
-    $.ajax({
-      async: false,
-      url: Path.join(__dirname, '..', 'js', 'funcs.js'),
-      dataType: 'script'
+  // Define utility functions required by this background process (previously loaded from funcs.js)
+  let addLog = (log, type = 'info') => {
+    if (!isLoggingFeatureEnabled)
+      return
+    IPCRenderer.send('logging:add', {
+      date: new Date().getTime(),
+      log,
+      type
     })
-  })
+  }
+
+  let errorLog = (error, process) => {
+    if (!isNaN(parseInt(error.toString())))
+      return
+    let errorStack = ''
+    try {
+      errorStack = error.stack ? `. Stack ${error.stack}` : ''
+    } catch (e) {}
+    try {
+      addLog(`Error in process ${process}. Details: ${error}${errorStack}`, 'error')
+    } catch (e) {}
+  }
+
+  let manipulateText = (text) => `${text}`.replace(/\s+/gm, '').toLowerCase()
+
+  let minifyText = (text) => {
+    ;(['\\n', '\\r']).forEach((regex) => {
+      text = `${text}`.replace(new RegExp(regex, 'g'), '')
+    })
+    return manipulateText(text)
+  }
+
+  let getRandom = {
+    port: async (amount = 1) => {
+      let ports = []
+      for (let i = 0; i < amount; i++)
+        try {
+          ports.push(await PortGet())
+        } catch (e) {}
+      try {
+        addLog(`Get ${amount} free-to-use port(s), returned '${amount == 1 ? ports[0] : JSON.stringify(ports)}'`, 'network')
+      } catch (e) {}
+      return amount == 1 ? ports[0] : ports
+    },
+    id: (length, amount = 1) => {
+      let ids = []
+      for (let i = 0; i < amount; i++)
+        ids.push(RandomID.generate(length))
+      return amount == 1 ? ids[0] : ids
+    }
+  }
+
+  let encryptText = (pubKey, text) => {
+    let encryptedText = text || ''
+    try {
+      addLog(`Use the RSA cryptosystem to encrypt a text`, 'process')
+    } catch (e) {}
+    try {
+      let rsa = new NodeRSA(pubKey, 'public', {
+        encryptionScheme: 'pkcs1_oaep'
+      })
+      encryptedText = rsa.encrypt(text).toString('base64')
+    } catch (e) {
+      try {
+        errorLog(e, 'functions')
+      } catch (e) {}
+    }
+    return encryptedText
+  }
+
+  let decryptText = (privKey, text) => {
+    let decryptedText = text || ''
+    try {
+      addLog(`Use the RSA cryptosystem to decrypt a text`, 'process')
+    } catch (e) {}
+    if (!decryptedText)
+      return decryptedText
+    try {
+      let rsa = new NodeRSA(privKey, 'private', {
+        encryptionScheme: 'pkcs1_oaep'
+      })
+      decryptedText = rsa.decrypt(text).toString('utf8')
+    } catch (e) {
+      try {
+        errorLog(e, 'functions')
+      } catch (e) {}
+    }
+    return decryptedText
+  }
 
   Config.getConfig(async (config) => {
     isLoggingFeatureEnabled = config.get('security', 'loggingEnabled') || isLoggingFeatureEnabled

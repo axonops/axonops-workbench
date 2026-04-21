@@ -87,17 +87,6 @@
           // Enable the button again
           $(this).removeAttr('disabled')
 
-          // If `podman` is the selected management tool then check if the host is Linux Ubuntu
-          try {
-            if (_selectedManagementTool != 'podman')
-              throw 0
-
-            if (!isHostUbuntu())
-              throw 0
-
-            return showToast(I18next.capitalize(I18next.t('create local cluster')), I18next.capitalizeFirstLetter(I18next.t(`Linux distributions based on Ubuntu often face compatibility issues with Podman containers management tool. Switching to Docker is highly recommended for better compatibility`)) + '.', 'failure')
-          } catch (e) {}
-
           // If Docker doesn't exist then show feedback to the user and skip the upcoming code
           if (!dockerExists) {
             if (_selectedManagementTool != 'podman')

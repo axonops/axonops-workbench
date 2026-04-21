@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-const DockerYAML = `version: '3.8'
-
-services:
+const DockerYAML = `services:
   opensearch:
     image: opensearchproject/opensearch:2.18.0
     restart: unless-stopped

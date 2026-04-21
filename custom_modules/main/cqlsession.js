@@ -15,9 +15,9 @@
  */
 
 /**
- * New module to handle connections' sessions instead of cqlsh Python session using `node-pty
+ * Module to handle connections' sessions using cqlai-node
  *
- * Load the new module
+ * Load the module
  */
 const CQLNode = require('@axonops/cqlai-node').CQLSession
 

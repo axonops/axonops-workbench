@@ -83,69 +83,43 @@ class DockerCompose {
     // Replace `version` placeholders with the chosen Cassandra's version
     yamlContent = yamlContent.replace(/\{version\}/gm, `${cassandraVersion}`)
 
-    // Handle if the number of nodes to be created in the project is not the default one `3`
+    // Generate additional Cassandra nodes (cassandra-1, cassandra-2, ...) by cloning cassandra-0
     try {
-      // If the number of nodes is `3` then skip this try-catch block; as this is the default case already
-      if (numOfNodes == 3)
-        throw 0
+      let yamlObject = YAML.load(yamlContent)
 
-      // Load the YAML content as a JSON object
-      let yamlObject = YAML.load(yamlContent),
-        // Get the template of different sub-objects to be used later
-        cassandraNodeInfo = {
-          services: {
-            cassandra: {
-              ...yamlObject.services['cassandra-1']
-            }
-          },
-          volumes: {
-            axonops: yamlObject.volumes['axonops-1'],
-            cassandra: yamlObject.volumes['cassandra-1'],
-            cassandraLogs: yamlObject.volumes['cassandra-logs-1']
-          }
-        }
+      let nodeZero = yamlObject.services['cassandra-0']
+      if (nodeZero == undefined)
+        throw new Error('cassandra-0 missing from docker-compose template')
 
-      // Loop through services which starts with `cassandra-`
-      Object.keys(yamlObject.services).filter((service) => service.startsWith('cassandra-')).forEach((service) => {
-        // Get the number of the current Cassandra service
-        let number = parseInt(`${service}`.slice(10)) + 1
+      // Remove any pre-existing cassandra-N (N >= numOfNodes) services and their volumes
+      Object.keys(yamlObject.services)
+        .filter((service) => service.startsWith('cassandra-'))
+        .forEach((service) => {
+          let number = parseInt(`${service}`.slice('cassandra-'.length))
+          if (Number.isNaN(number) || number < numOfNodes)
+            return
+          delete yamlObject.services[service]
+          if (yamlObject.volumes != undefined)
+            delete yamlObject.volumes[service]
+        })
 
-        // If it's less than the chosen number of nodes then skip it and move to the next service
-        if (number <= numOfNodes)
-          return
-
-        // Manipulate the value to be started from `0` again
-        number -= 1
-
-        // Delete all related services and volumes to the current Cassandra service
-        delete yamlObject.services[`cassandra-${number}`]
-        delete yamlObject.volumes[`axonops-${number}`]
-        delete yamlObject.volumes[`cassandra-${number}`]
-        delete yamlObject.volumes[`cassandra-logs-${number}`]
-      })
-
-      /**
-       * Loop based on the given number of nodes
-       * The loop starts from `1`; as the first node `0` always exists no matter what the number of nodes is
-       */
+      // Clone cassandra-0 to create the remaining nodes
       for (let i = 1; i < numOfNodes; i++) {
-        // If the current number is already defined then skip it and move to the next number
         if (yamlObject.services[`cassandra-${i}`] != undefined)
           continue
 
-        // Set Cassandra service
-        yamlObject.services[`cassandra-${i}`] = this.applyCassandraNodeID(cassandraNodeInfo.services.cassandra, i)
+        let node = JSON.parse(JSON.stringify(nodeZero))
+        node.hostname = `cassandra-${i}`
+        if (Array.isArray(node.volumes))
+          node.volumes = node.volumes.map((v) => `${v}`.replace(/^cassandra-0:/, `cassandra-${i}:`))
 
-        // Set different volumes related to the services
-        yamlObject.volumes[`axonops-${i}`] = cassandraNodeInfo.volumes.axonops
-        yamlObject.volumes[`cassandra-${i}`] = cassandraNodeInfo.volumes.cassandra
-        yamlObject.volumes[`cassandra-logs-${i}`] = cassandraNodeInfo.volumes.cassandraLogs
+        yamlObject.services[`cassandra-${i}`] = node
+        if (yamlObject.volumes == undefined)
+          yamlObject.volumes = {}
+        yamlObject.volumes[`cassandra-${i}`] = null
       }
 
-      // Convert YAML JSON object to a string
       yamlContent = YAML.dump(yamlObject)
-
-      // Get rid of `null` value
       yamlContent = `${yamlContent}`.replace(/null/gm, '')
     } catch (e) {
       try {

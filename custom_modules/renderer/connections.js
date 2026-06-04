@@ -1344,7 +1344,16 @@ let getCQLDescription = (connectionID, scope, callback) => {
        * If `null` has been received then we weren't able to get the result
        * Call the `callback` function and pass the final CQL description
        */
-      callback(data.result.data.ddl)
+      let ddl = data.result.data.ddl
+
+      // Workaround for upstream cqlai-node bug: the last column line before
+      // `PRIMARY KEY` is emitted without a trailing comma, producing invalid CQL.
+      try {
+        if (typeof ddl === 'string')
+          ddl = ddl.replace(/([^,\s])(\s*\r?\n\s+PRIMARY KEY\b)/g, '$1,$2')
+      } catch (e) {}
+
+      callback(ddl)
     } catch (e) {
       // If any error has occurred then return the `null` value
       callback(null)

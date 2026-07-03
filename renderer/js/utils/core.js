@@ -816,7 +816,27 @@ let convertTableToTabulator = (json, container, paginationSize = 100, pagination
             // selectableRowsRangeMode: 'click',
             virtualDom: true,
             paginationSizeSelector: paginationSizeSelectorEnabled ? [5, 10, 20, 40, 60, 80, 100] : false,
-            paginationCounter: 'rows',
+            /**
+             * Custom counter instead of the built-in `rows` preset
+             *
+             * The built-in counter only ever knows about rows already loaded into
+             * the table, so a server-paged query looks "complete" after every
+             * chunk. `this.table.hasMorePending` is set by the caller (see
+             * `events-get-connections.js`) whenever the server still has more
+             * rows to fetch, so the total shown here can be marked as partial
+             * instead of misrepresented as final.
+             */
+            paginationCounter: function(pageSize, currentRow, currentPage, totalRows, totalPages) {
+              let hasMorePending = this.table.hasMorePending === true,
+                lastRow = totalRows > 0 ? Math.min(currentRow + pageSize - 1, totalRows) : 0,
+                el = document.createElement('span')
+
+              el.textContent = totalRows > 0 ?
+                `Showing ${currentRow}-${lastRow} of ${totalRows}${hasMorePending ? '+' : ''} rows${hasMorePending ? ' (more available)' : ''}` :
+                'No rows'
+
+              return el
+            },
             rowFormatter: function(row) {
               /**
                * Format some data in the rows

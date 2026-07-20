@@ -107,6 +107,12 @@ jobs:
         if: ${{ startsWith(runner.os, 'macos') }}
         run: brew install openssl@3
 
+      - name: Install build tools (macOS)
+        if: ${{ startsWith(runner.os, 'macos') }}
+        run: |
+          brew install python3
+          xcode-select --install || true
+
       - name: Install AxonOps Developer Workbench dependencies
         run: |
           npm cache clean --force

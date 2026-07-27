@@ -29,6 +29,12 @@ module.exports = {
         'main/**/*.js',
         '!main/bin/**',
         '!main/**/*.min.js'
+      ],
+      // Per-project so it actually applies: in a multi-project config the
+      // root-level coveragePathIgnorePatterns is ignored.
+      coveragePathIgnorePatterns: [
+        '/node_modules/',
+        '<rootDir>/custom_modules/'
       ]
     },
     {
@@ -46,6 +52,12 @@ module.exports = {
         '!renderer/js/external/**',
         '!renderer/js/**/*.min.js',
         '!custom_modules/**'
+      ],
+      // Per-project so it actually applies: in a multi-project config the
+      // root-level coveragePathIgnorePatterns is ignored.
+      coveragePathIgnorePatterns: [
+        '/node_modules/',
+        '<rootDir>/custom_modules/'
       ],
       testEnvironmentOptions: {
         url: 'http://localhost'

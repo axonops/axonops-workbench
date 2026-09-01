@@ -257,7 +257,7 @@
     "ansi-to-html": "^0.7.2",
     "appdata-path": "^1.0.0",
     "autosize": "^6.0.1",
-    "axios": "^1.11.0",
+    "axios": "^1.16.0",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.10.0",
     "bytes": "^3.1.2",
@@ -298,7 +298,7 @@
     "material-icons": "^1.13.14",
     "monaco-editor": "^0.55.1",
     "node-cmd": "^5.0.0",
-    "node-gyp": "^10.3.1",
+    "node-gyp": "^12.4.0",
     "node-machine-id": "^1.1.12",
     "node-rsa": "^1.1.1",
     "open": "^8.4.0",
@@ -311,14 +311,14 @@
     "store": "^2.0.12",
     "stripchar": "^1.2.1",
     "sudo-prompt": "^9.2.1",
-    "systeminformation": "^5.27.0",
+    "systeminformation": "^5.31.7",
     "tabulator-tables": "^6.3.1",
     "text-extensions": "^3.1.0",
     "tinycolor2": "^1.6.0",
     "tinykeys": "^2.1.0",
     "tree-kill": "^1.2.2",
     "url-join": "^5.0.0",
-    "uuid": "^11.1.0",
+    "uuid": "^11.1.1",
     "v8-compile-cache": "^2.3.0",
     "validate-date": "^2.1.0",
     "value-size": "^1.0.1",
@@ -327,5 +327,70 @@
     "yaml": "^2.8.1",
     "yargs": "^17.7.2",
     "zxcvbn": "^4.4.2"
+  },
+  "overrides": {
+    "brace-expansion": "^5.0.7",
+    "tar": "^7.5.19",
+    "dompurify": "^3.4.11",
+    "form-data": "^4.0.6",
+    "ip-address": "^10.1.1",
+    "undici": "^8.5.0",
+    "@electron/rebuild": {
+      "undici": "^6.27.0",
+      "node-gyp": {
+        "undici": "^6.25.0"
+      }
+    },
+    "@istanbuljs/load-nyc-config": {
+      "js-yaml": "^3.15.0"
+    },
+    "front-matter": {
+      "js-yaml": "^3.15.0"
+    },
+    "@electron/asar": {
+      "brace-expansion": "^1.1.16"
+    },
+    "@eslint/eslintrc": {
+      "brace-expansion": "^1.1.16"
+    },
+    "@humanwhocodes/config-array": {
+      "brace-expansion": "^1.1.16"
+    },
+    "@jest/reporters": {
+      "brace-expansion": "^1.1.16"
+    },
+    "dir-compare": {
+      "brace-expansion": "^1.1.16"
+    },
+    "eslint": {
+      "brace-expansion": "^1.1.16"
+    },
+    "jest-config": {
+      "brace-expansion": "^1.1.16"
+    },
+    "jest-runtime": {
+      "brace-expansion": "^1.1.16"
+    },
+    "read-package-json": {
+      "brace-expansion": "^1.1.16"
+    },
+    "rimraf": {
+      "brace-expansion": "^1.1.16"
+    },
+    "temp": {
+      "brace-expansion": "^1.1.16"
+    },
+    "test-exclude": {
+      "brace-expansion": "^1.1.16"
+    },
+    "@electron/universal": {
+      "brace-expansion": "^2.1.2"
+    },
+    "filelist": {
+      "brace-expansion": "^2.1.2"
+    },
+    "node-gyp": {
+      "brace-expansion": "^2.1.2"
+    }
   }
 }

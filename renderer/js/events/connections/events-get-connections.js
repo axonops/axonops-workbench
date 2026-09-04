@@ -3440,6 +3440,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                     })
                                   } catch (e) {}
 
+                                  // Update the pagination counter's partial/complete state for this chunk before it redraws
+                                  tableObj.hasMorePending = isOutputWithPaging && !isOutputCompleted
+
                                   tableObj.blockRedraw()
                                   tableObj.clearSort()
                                   tableObj.addData(newPage.json, false).then(() => {
@@ -3729,6 +3732,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                   // Hold the created object
                                   tabulatorObject = _tabulatorObject
+
+                                  // Flag the pagination counter as partial while the server still has more rows to fetch
+                                  tabulatorObject.hasMorePending = isOutputWithPaging && !isOutputCompleted
 
                                   tabulatorObject.selectorTableInfo = selectorTableInfo
 

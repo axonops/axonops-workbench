@@ -10,6 +10,15 @@ existed, see the [GitHub releases](https://github.com/axonops/axonops-workbench/
 
 ## [Unreleased]
 
+### Fixed
+
+- The `generate-sbom` release job no longer fails during dependency installation.
+  It was pinned to Node 20.17.0, where `require()` of an ES module is not yet
+  supported, so Electron's post-install script crashed with `ERR_REQUIRE_ESM`
+  loading `@electron/get@5`. The job now runs on Node 22.12.0, the version
+  `electron@41` declares in its `engines` field
+  ([#1091](https://github.com/axonops/axonops-workbench/issues/1091)).
+
 ### Security
 
 - Resolved all 8 outstanding `npm audit` advisories (6 high, 2 moderate). Most were

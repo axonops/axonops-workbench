@@ -297,10 +297,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v6
 
-      - name: Setup Node.js v20.17.0
+      - name: Setup Node.js v22.12.0
         uses: actions/setup-node@v6
         with:
-          node-version: 20.17.0
+          node-version: 22.12.0
 
       - name: Install AxonOps Developer Workbench dependencies
         run: |

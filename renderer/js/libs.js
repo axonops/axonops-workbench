@@ -29,12 +29,6 @@ require('v8-compile-cache')
  * Used for operating system-related utilities and properties
  */
 const OS = require('os'),
-  /**
-   * Electron clipboard module
-   * Perform copy and paste operations on the system clipboard
-   * Mainly used for copying the connection's metadata
-   */
-  Clipboard = require('electron').clipboard,
   // A utility layer to interact with Web API objects (Files, Blobs, etc.)
   WebUtils = require('electron').webUtils,
   /**

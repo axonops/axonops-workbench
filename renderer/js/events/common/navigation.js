@@ -2194,7 +2194,7 @@
 
             let clipboardContent = clipboardLines.join('\n')
 
-            Clipboard.writeText(clipboardContent)
+            navigator.clipboard.writeText(clipboardContent)
 
             selectedCells.addClass('copied')
 

@@ -1160,8 +1160,8 @@ $(document).on('initialize', () => {
         }, 250)
       })
 
-      addEditConnectionEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
-        let text = Clipboard.readText(),
+      addEditConnectionEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, async () => {
+        let text = await navigator.clipboard.readText(),
           selection = addEditConnectionEditor.getSelection()
 
         addEditConnectionEditor.executeEdits('paste', [{
@@ -1202,8 +1202,8 @@ $(document).on('initialize', () => {
             fontLigatures: true
           })
 
-          tempEditorObject.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
-            let text = Clipboard.readText(),
+          tempEditorObject.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, async () => {
+            let text = await navigator.clipboard.readText(),
               selection = tempEditorObject.getSelection()
 
             tempEditorObject.executeEdits('paste', [{
@@ -1338,8 +1338,8 @@ $(document).on('initialize', () => {
           }
         })
 
-        cqlSnippets.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
-          let text = Clipboard.readText(),
+        cqlSnippets.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, async () => {
+          let text = await navigator.clipboard.readText(),
             selection = cqlSnippets.editor.getSelection()
 
           cqlSnippets.editor.executeEdits('paste', [{
@@ -1630,7 +1630,7 @@ $(document).on('initialize', () => {
     $('button#copyReleaseVersion').click(() => {
       // Copy the result to the clipboard
       try {
-        Clipboard.writeText(`v${AppInfo.version}`)
+        navigator.clipboard.writeText(`v${AppInfo.version}`)
       } catch (e) {
         try {
           errorLog(e, 'init')

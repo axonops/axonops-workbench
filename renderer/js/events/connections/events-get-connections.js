@@ -1834,7 +1834,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                               // Copy the result to the clipboard
                               try {
-                                Clipboard.writeText(resultBeautified)
+                                navigator.clipboard.writeText(resultBeautified)
                               } catch (e) {
                                 try {
                                   errorLog(e, 'connections')
@@ -3989,7 +3989,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                     // Copy content to the clipboard
                                     try {
-                                      Clipboard.writeText(contentBeautified)
+                                      navigator.clipboard.writeText(contentBeautified)
                                     } catch (e) {
                                       try {
                                         errorLog(e, 'connections')
@@ -5282,8 +5282,8 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                               }
                             })
 
-                            consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, () => {
-                              let text = Clipboard.readText(),
+                            consoleEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, async () => {
+                              let text = await navigator.clipboard.readText(),
                                 selection = consoleEditor.getSelection()
 
                               consoleEditor.executeEdits('paste', [{
@@ -5741,7 +5741,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                             // Copy metadata to the clipboard
                             try {
-                              Clipboard.writeText(metadataBeautified)
+                              navigator.clipboard.writeText(metadataBeautified)
                             } catch (e) {
                               try {
                                 errorLog(e, 'connections')
@@ -7125,7 +7125,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                                 // Copy the result to the clipboard
                                 try {
-                                  Clipboard.writeText(statement)
+                                  navigator.clipboard.writeText(statement)
 
                                   icon.attr('name', 'copy')
 
@@ -8647,7 +8647,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
                   // Copy the path to the clipboard
                   try {
-                    Clipboard.writeText(inaccessibleConnectionPath)
+                    navigator.clipboard.writeText(inaccessibleConnectionPath)
                   } catch (e) {
                     try {
                       errorLog(e, 'connections')

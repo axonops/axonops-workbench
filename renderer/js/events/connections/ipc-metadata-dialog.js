@@ -750,7 +750,7 @@
             let credentials = `user: ${roleName}\npassword: ${password}`
 
             try {
-              Clipboard.writeText(credentials)
+              navigator.clipboard.writeText(credentials)
             } catch (e) {
               try {
                 errorLog(e, 'connections')
@@ -889,7 +889,7 @@
             let credentials = `user: ${roleName}\npassword: ${password}`
 
             try {
-              Clipboard.writeText(credentials)
+              navigator.clipboard.writeText(credentials)
             } catch (e) {
               try {
                 errorLog(e, 'connections')

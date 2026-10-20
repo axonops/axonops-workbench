@@ -234,7 +234,7 @@
 
         // Copy the result to the clipboard
         try {
-          Clipboard.writeText(generatedStatements)
+          navigator.clipboard.writeText(generatedStatements)
         } catch (e) {
           try {
             errorLog(e, 'connections')

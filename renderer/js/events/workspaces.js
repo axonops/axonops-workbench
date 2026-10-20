@@ -881,7 +881,7 @@ $(document).on('getWorkspaces refreshWorkspaces', function(e) {
 
                     // Copy the path to the clipboard
                     try {
-                      Clipboard.writeText(inaccessibleWorkspacePath)
+                      navigator.clipboard.writeText(inaccessibleWorkspacePath)
                     } catch (e) {
                       try {
                         errorLog(e, 'workspaces')

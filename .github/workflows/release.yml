@@ -307,6 +307,11 @@ jobs:
           npm cache clean --force
           npm i
 
+      - name: Remove existing SBOM assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete-asset "$GITHUB_REF_NAME" sbom.spdx.json sbom.cyclonedx.json -R "$GITHUB_REPOSITORY" -y || true
+
       - name: Generate SBOM 1/2
         uses: anchore/sbom-action@v0
         with:

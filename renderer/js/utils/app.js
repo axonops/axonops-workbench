@@ -726,7 +726,7 @@ let copyStatement = (button) => {
 
   // Copy statement to the clipboard
   try {
-    Clipboard.writeText(content)
+    navigator.clipboard.writeText(content)
   } catch (e) {
     try {
       errorLog(e, 'connections')

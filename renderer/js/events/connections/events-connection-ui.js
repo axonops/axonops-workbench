@@ -92,6 +92,9 @@
 
       // Reset editor's content
       addEditConnectionEditor.setValue(Modules.Consts.CQLSHRC)
+
+      // Username and password is the default credentials source
+      setConnectionDialogCredentialsSource(false)
     } catch (e) {}
   })
 }

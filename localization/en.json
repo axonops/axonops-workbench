@@ -715,7 +715,18 @@
       "your username in the host": "your username in the host",
       "zoom in": "zoom in",
       "zoom out": "zoom out",
-      "zoom reset": "zoom reset"
+      "zoom reset": "zoom reset",
+      "address": "address",
+      "credentials source": "credentials source",
+      "namespace": "namespace",
+      "secret path": "secret path",
+      "select Vault CA certificate file": "select Vault CA certificate file",
+      "the username and password are read from Vault on every connection. Vault is reached from this machine, not through the SSH tunnel": "the username and password are read from Vault on every connection. Vault is reached from this machine, not through the SSH tunnel",
+      "to use Vault credentials, the secret path and the Vault address are required": "to use Vault credentials, the secret path and the Vault address are required",
+      "token": "token",
+      "username and password": "username and password",
+      "Vault CA certificate file": "Vault CA certificate file",
+      "when left empty, VAULT_TOKEN, BAO_TOKEN or ~/.vault-token is used": "when left empty, VAULT_TOKEN, BAO_TOKEN or ~/.vault-token is used"
     }
   }
 }

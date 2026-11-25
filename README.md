@@ -153,6 +153,7 @@ Automate your workflow with powerful CLI commands for workspace and connection m
 ### 🚀 Additional Features
 
 - **🔐 Secure Credential Management** - Store and manage connection credentials securely in your system keychain
+- **🔑 Vault / OpenBao Credentials** - Use short-lived Cassandra credentials from the Vault or OpenBao database secrets engine instead of a stored password. Leases are revoked when the session closes or the app exits
 - **📊 Schema Visualization** *(Coming Soon)* - Visual representation of keyspaces, tables, and relationships
 - **🎯 Smart Auto-completion** - Context-aware CQL suggestions and table/column name completion
 - **📝 Query History** - Access and search through your previously executed queries

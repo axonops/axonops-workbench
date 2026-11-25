@@ -353,26 +353,32 @@
       onlyOneSection = ''
 
     // Define the ID of the associated inputs
-    let credentialsInputs = ['AuthUsername', 'AuthPassword', 'SSHUsername', 'SSHPassword', 'SSHPassphrase', 'confirmSaveAuthCredentials', 'confirmSaveSSHCredentials'],
+    let credentialsInputs = ['AuthUsername', 'AuthPassword', 'VaultToken', 'SSHUsername', 'SSHPassword', 'SSHPassphrase', 'confirmSaveAuthCredentials', 'confirmSaveSSHCredentials'],
       // Define a JSON object which will hold the values of each input
-      credentialsArray = {}
+      credentialsArray = {},
+      // A connection with Vault credentials asks for its Vault token instead of a username and password
+      isVault = getConnectionElementVaultSettings(connectionElement) != undefined
 
     // Loop through all inputs
     credentialsInputs.forEach((input) => {
       // Define the input's name
       let name = input,
         // Is it a confirm checkbox or a text input field?
-        confirm = !name.search('confirm')
+        confirm = name.startsWith('confirm')
 
       // Point at the checkbox/text field
-      input = $(`input#${confirm ? 'realtimeCredentials' : ''}${name}`)
+      input = $(`input#${confirm ? '' : 'realtimeCredentials'}${name}`)
 
       // Get the input's value
-      input = confirm ? input.val() : input.prop('checked')
+      input = confirm ? input.prop('checked') : `${input.val() || ''}`
 
       // Store the final value of the current input
       credentialsArray[`${name.toLowerCase()}`] = input
     })
+
+    // The Vault token takes the place of the username and password in the checks below
+    if (isVault)
+      credentialsArray.authusername = credentialsArray.authpassword = credentialsArray.vaulttoken
 
     // Check if only one section is needed
     if ($('div.modal#connectionCredentials').hasClass('one-only'))
@@ -420,7 +426,9 @@
           throw 0
 
         // Set the DB auth credentials
-        connectionElement.attr({
+        connectionElement.attr(isVault ? {
+          'data-vault-token': credentialsArray.vaulttoken.trim().length <= 0 ? null : encryptText(key, credentialsArray.vaulttoken.trim())
+        } : {
           'data-username': credentialsArray.authusername.trim().length <= 0 ? null : encryptText(key, credentialsArray.authusername),
           'data-password': credentialsArray.authpassword.trim().length <= 0 ? null : encryptText(key, credentialsArray.authpassword)
         })
@@ -480,6 +488,13 @@
               // If the user didn't confirm the saving of DB auth credentials then skip this try-catch block
               if (!saveAuthCredentialsConfirmed)
                 throw 0
+
+              // Save the Vault token
+              if (isVault) {
+                connection.info.secrets.vaultToken = encryptText(key, credentialsArray.vaulttoken.trim())
+
+                throw 0
+              }
 
               // Save `username`
               if (credentialsArray.authusername.trim().length != 0)

@@ -61,12 +61,12 @@ jobs:
             target: Linux
             arch: arm64
 
-          - os: macos-14
+          - os: macos-15
             target: Macos
             arch: arm64
 
           # macOS x64 (cross-compiled on ARM via Rosetta)
-          - os: macos-14
+          - os: macos-15
             target: Macos
             arch: x64
 

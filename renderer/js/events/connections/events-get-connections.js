@@ -137,6 +137,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
           // Check the DB authentication's password
           secrets += secretsInfo.password != undefined ? `data-password="${secretsInfo.password}" ` : ''
 
+          // Check the Vault token
+          secrets += secretsInfo.vaultToken != undefined ? `data-vault-token="${secretsInfo.vaultToken}" ` : ''
+
           // Check the SSH username
           secrets += secretsInfo.sshUsername != undefined ? `data-ssh-username="${secretsInfo.sshUsername}" ` : ''
 
@@ -181,6 +184,21 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
             throw 0
 
           axonOpsIntegration = `data-axonops-integration-organization="${relatedData.organization}" data-axonops-integration-clusterName="${relatedData.clusterName}" data-axonops-integration-url="${relatedData.url}"`
+        } catch (e) {}
+
+        // Vault settings, when the connection reads its username and password from Vault
+        let vaultSettings = ''
+
+        try {
+          let vault = connection.info.vault
+
+          if (vault == undefined || `${vault.path || ''}`.trim().length <= 0)
+            throw 0
+
+          for (let [key, attribute] of [['path', 'path'], ['addr', 'addr'], ['namespace', 'namespace'], ['caCert', 'cacert']]) {
+            if (`${vault[key] || ''}`.length > 0)
+              vaultSettings += ` data-vault-${attribute}="${`${vault[key]}`.replace(/"/g, '&quot;')}"`
+          }
         } catch (e) {}
 
         /**
@@ -298,7 +316,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
 
         // Connection UI element structure
         let element = `
-                 <div class="connection ${inAccessible ? 'inaccessible' : ''}" data-name="${connection.name}" data-folder="${connection.folder}" data-id="${connectionID}" data-workspace-id="${workspaceID}" data-host="${connection.host}" data-datacenter="${connection.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-axonops-installed="${connection.axonops || 'unknown'}" data-workarea="false" ${secrets} ${credentials} ${scbFilePath} ${axonOpsIntegration} ${axonOpsIntegration.length != 0 ? 'axonops-integration="true"' : ''}>
+                 <div class="connection ${inAccessible ? 'inaccessible' : ''}" data-name="${connection.name}" data-folder="${connection.folder}" data-id="${connectionID}" data-workspace-id="${workspaceID}" data-host="${connection.host}" data-datacenter="${connection.info.datacenter}" data-connected="false" data-is-sandbox="${isSandbox}" data-axonops-installed="${connection.axonops || 'unknown'}" data-workarea="false" ${secrets} ${credentials} ${vaultSettings} ${scbFilePath} ${axonOpsIntegration} ${axonOpsIntegration.length != 0 ? 'axonops-integration="true"' : ''}>
                    <div class="header">
                      <div class="title connection-name">${connection.name}</div>
                      <div class="connection-info" ${isSCBConnection ? 'style="flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; align-items: flex-start;"' : ''}>
@@ -441,7 +459,20 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                   // By default, the credentials requirements process hasn't been passed yet
                   let pass = false,
                     // Get all attributes that hold the values of different secrets/credentials
-                    allSecrets = getAttributes(connectionElement, ['data-username', 'data-password', 'data-ssh-username', 'data-ssh-password', 'data-ssh-passphrase'])
+                    allSecrets = getAttributes(connectionElement, ['data-username', 'data-password', 'data-ssh-username', 'data-ssh-password', 'data-ssh-passphrase']),
+                    // A connection with Vault credentials asks for its Vault token instead of a username and password
+                    isVault = getConnectionElementVaultSettings(connectionElement) != undefined
+
+                  if (isVault)
+                    allSecrets[0] = allSecrets[1] = getAttributes(connectionElement, 'data-vault-token')
+
+                  toggleCredentialsSourceFields(connectionCredentialsDialog.find('div.modal-section[section="authentication"]'), isVault)
+
+                  // A token typed for another connection must not be reused
+                  try {
+                    $('input#realtimeCredentialsVaultToken').val('')
+                    getElementMDBObject($('input#realtimeCredentialsVaultToken')).update()
+                  } catch (e) {}
 
                   /**
                    * Multiple conditions to check
@@ -6251,7 +6282,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                                 if (credentialsAuth == undefined)
                                   throw 0
 
-                                connectionElement.removeAttr('data-username data-password data-got-credentials')
+                                connectionElement.removeAttr('data-username data-password data-vault-token data-got-credentials')
                               } catch (e) {}
 
                               try {
@@ -8280,6 +8311,18 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       } catch (e) {}
                     }
 
+                    // Vault settings - the token is a secret and is handled with the other secrets -
+                    let vault = currentConnection.info.vault
+
+                    setConnectionDialogCredentialsSource(vault != undefined)
+
+                    for (let [key, field] of [['path', 'path'], ['addr', 'addr'], ['namespace', 'namespace'], ['caCert', 'cacert']])
+                      inputs.push({
+                        section: 'none',
+                        key: `vault-${field}`,
+                        val: vault != undefined && vault[key] != undefined ? `${vault[key]}` : ''
+                      })
+
                     // Loop through all inputs in the `inputs` array and set their proper values
                     inputs.forEach((input) => {
                       // Get the MDB object for the current input
@@ -8354,6 +8397,10 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                             section: 'none',
                             key: 'password',
                             val: password
+                          }, {
+                            section: 'none',
+                            key: 'vault-token',
+                            val: decryptText(key, currentConnection.info.secrets.vaultToken)
                           })
 
                           // Check if SSH username is provided
@@ -8449,6 +8496,9 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                       }, {
                         section: 'none',
                         key: 'password',
+                      }, {
+                        section: 'none',
+                        key: 'vault-token',
                       }, {
                         section: 'none',
                         key: 'ssh-username',
@@ -8836,13 +8886,28 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 if (isSCBConnection)
                   creationData.scbFilePath = connectionElement.attr('data-scb-path')
 
+                // Vault settings and token - the token is passed encrypted, as the username and password are -
+                try {
+                  creationData.vault = getConnectionElementVaultSettings(connectionElement)
+
+                  if (creationData.vault == undefined)
+                    throw 0
+
+                  let vaultToken = getAttributes(connectionElement, 'data-vault-token')
+
+                  if (vaultToken != undefined && vaultToken.trim().length > 0)
+                    creationData.secrets = {
+                      vaultToken
+                    }
+                } catch (e) {}
+
                 // Check if username and password are provided
                 try {
                   // Get them from the connection's attributes
                   let [username, password] = getAttributes(connectionElement, ['data-username', 'data-password'])
 
-                  // Make sure both are defined, and not empty
-                  if ([username, password].some((secret) => secret == undefined || secret.trim().length <= 0))
+                  // Make sure both are defined, and not empty, and the credentials don't come from Vault
+                  if (creationData.vault != undefined || [username, password].some((secret) => secret == undefined || secret.trim().length <= 0))
                     throw 0
 
                   // Add them in the `creationData.secrets`
@@ -9114,6 +9179,20 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
         }
       } catch (e) {}
 
+      // With Vault, the username and password are read from Vault; only the encrypted token - if any - is passed
+      try {
+        testData.vault = getConnectionElementVaultSettings(connectionElement)
+
+        if (testData.vault == undefined)
+          throw 0
+
+        let vaultToken = getAttributes(connectionElement, 'data-vault-token')
+
+        testData.secrets = vaultToken != undefined && vaultToken.trim().length > 0 ? {
+          vaultToken
+        } : undefined
+      } catch (e) {}
+
       /**
        * Inner function to start the connection test process with connection
        *
@@ -9278,7 +9357,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
                 if (credentialsAuth == undefined)
                   throw 0
 
-                connectionElement.removeAttr('data-username data-password data-got-credentials')
+                connectionElement.removeAttr('data-username data-password data-vault-token data-got-credentials')
               } catch (e) {}
 
               // If there's no SSH credentials for the connection then remove all associated attributes
@@ -9491,7 +9570,7 @@ $(document).on('getConnections refreshConnections', function(e, passedData) {
             throw 0
 
           // Remove all related attributes
-          connectionElement.removeAttr('data-username data-password data-got-credentials')
+          connectionElement.removeAttr('data-username data-password data-vault-token data-got-credentials')
         } catch (e) {}
 
         try {

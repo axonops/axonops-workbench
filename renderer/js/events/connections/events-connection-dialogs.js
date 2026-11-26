@@ -241,6 +241,31 @@
         })
       }
 
+      // Switch the credentials source between username and password, and Vault
+      {
+        $('input[name="credentialsSource"]').on('change', function() {
+          let isVault = $(this).attr('id') == 'credentialsSourceVault'
+
+          setConnectionDialogCredentialsSource(isVault)
+
+          // Suggest the Vault address from the environment - same order as cqlai-node - when none has been given yet
+          try {
+            let addrInput = $('div.modal#addEditConnectionDialog [info-section="none"][info-key="vault-addr"]'),
+              envAddr = `${process.env.BAO_ADDR || process.env.VAULT_ADDR || ''}`.trim()
+
+            if (!isVault || envAddr.length <= 0 || `${addrInput.val() || ''}`.trim().length > 0)
+              throw 0
+
+            addrInput.val(envAddr)
+
+            getElementMDBObject(addrInput).update()
+          } catch (e) {}
+
+          // The connection has to be tested again before saving it
+          $('#addConnection').attr('disabled', getAttributes($('div.modal#addEditConnectionDialog'), 'data-edit-connection-id') == undefined ? 'disabled' : null)
+        })
+      }
+
       {
         // Define a temporary connection ID to be used in the testing and adding prcoesses
         let tempConnectionID = null,
@@ -532,6 +557,10 @@
               return
             }
 
+            // With Vault as the credentials source, its secret path and address are required
+            if (!validateConnectionDialogVaultSettings(dialogElement, 'test connection'))
+              return
+
             // Determine if any sensitive data has been added to the `cqlsh.rc` file
             let foundSensitiveData = false,
               // Determine if there's pre-post connection script(s) to be executed
@@ -631,6 +660,18 @@
                 waitForEncryption = [username, password].every((secret) => secret.trim().length != 0)
               } catch (e) {}
 
+              // With Vault, the username and password are read from Vault and only the token - if given - needs encryption
+              let vault = getConnectionDialogVaultSettings(),
+                vaultOptions = vault.enabled ? {
+                  path: vault.path,
+                  addr: vault.addr,
+                  namespace: vault.namespace,
+                  caCert: vault.caCert
+                } : undefined
+
+              if (vault.enabled)
+                waitForEncryption = vault.token.length != 0
+
               // Inner function inside `afterSSHProcess` function; to start the connection test with connection
               let startTestConnection = async () => {
                 /**
@@ -726,10 +767,13 @@
                     IPCRenderer.send('pty:test-connection', {
                       requestID: cqlshrc.name,
                       processID: testConnectionProcessID,
-                      secrets: {
+                      secrets: vault.enabled ? {
+                        vaultToken: encryptText(key, vault.token)
+                      } : {
                         username: encryptedUsername,
                         password: encryptedPassword
                       },
+                      vault: vaultOptions,
                       workspaceID: getActiveWorkspaceID(),
                       cqlshrcPath: tempConfigFile,
                       ...override
@@ -745,6 +789,7 @@
                     requestID: cqlshrc.name,
                     processID: testConnectionProcessID,
                     ...override,
+                    vault: vaultOptions,
                     workspaceID: getActiveWorkspaceID(),
                     cqlshrcPath: tempConfigFile
                   })
@@ -1220,6 +1265,9 @@
                   // Set the default `.cqlshrc` content
                   addEditConnectionEditor.setValue(Modules.Consts.CQLSHRC)
 
+                  // Username and password is the default credentials source
+                  setConnectionDialogCredentialsSource(false)
+
                   $('div.modal#addEditConnectionDialog div.modal-body div.side-left div.sections div.section div.btn[section="basic"]').click()
 
                   // Loop through each input not related to section nor key in the `.cqlshrc` content
@@ -1329,11 +1377,35 @@
                 // Update the status of the connection in the mini connection's list
                 updateMiniConnection(workspaceID, getAttributes(connectionUI, 'data-id'), true)
 
+                /**
+                 * Update the Vault settings, and drop the credentials of the source no longer in use
+                 * This also covers updates with no secrets to encrypt, which don't refresh the secrets' attributes below
+                 */
+                try {
+                  let vault = finalConnection.info.vault
+
+                  connectionUI.attr({
+                    'data-vault-path': vault != undefined ? vault.path : null,
+                    'data-vault-addr': vault != undefined && vault.addr.length > 0 ? vault.addr : null,
+                    'data-vault-namespace': vault != undefined && vault.namespace.length > 0 ? vault.namespace : null,
+                    'data-vault-cacert': vault != undefined && vault.caCert.length > 0 ? vault.caCert : null
+                  })
+
+                  connectionUI.removeAttr(vault != undefined ? 'data-username data-password' : 'data-vault-token')
+
+                  if (vault != undefined && (secrets == null || secrets.vaultToken == undefined))
+                    connectionUI.removeAttr('data-vault-token')
+
+                  if (secrets == null)
+                    connectionUI.removeAttr('data-credentials-auth')
+                } catch (e) {}
+
                 try {
                   // Update secrets data for the connection - Apache Cassandra's authentication and SSH credentials -
                   connectionUI.attr({
                     'data-username': saveAuthCredentials && secrets.auth == undefined ? (secrets != null ? secrets.username : null) : null,
                     'data-password': saveAuthCredentials && secrets.auth == undefined ? (secrets != null ? secrets.password : null) : null,
+                    'data-vault-token': saveAuthCredentials && secrets.auth == undefined ? (secrets != null ? secrets.vaultToken : null) : null,
                     'data-ssh-username': saveSSHCredentials && secrets.ssh == undefined ? (secrets != null ? secrets.sshUsername : null) : null,
                     'data-ssh-password': saveSSHCredentials && secrets.ssh == undefined ? (secrets != null ? secrets.sshPassword : null) : null,
                     'data-ssh-passphrase': saveSSHCredentials && secrets.ssh == undefined ? (secrets != null ? secrets.sshPassphrase : null) : null,
@@ -1394,7 +1466,7 @@
 
                             let value = encryptText(key, secret.value)
 
-                            connectionElement.attr(`data-${secret.name.toLowerCase().replace('ssh', 'ssh-')}`, value)
+                            connectionElement.attr(`data-${secret.name.toLowerCase().replace('ssh', 'ssh-').replace('vaulttoken', 'vault-token')}`, value)
                           } catch (e) {}
                         }
                       } catch (e) {}
@@ -1794,6 +1866,32 @@
               } catch (e) {}
             }
 
+            /**
+             * With Vault as the credentials source, the Vault settings are saved with the connection's info and the token - if given - as a secret
+             * Any username and password typed before switching to Vault are dropped
+             */
+            let vault = getConnectionDialogVaultSettings(),
+              vaultToken = ''
+
+            if (!validateConnectionDialogVaultSettings($(`div.modal#addEditConnectionDialog`), !editingMode ? 'add connection' : 'update connection'))
+              return button.add('#testConnection').add('#switchEditor').removeAttr('disabled')
+
+            if (vault.enabled) {
+              username = ''
+              password = ''
+              vaultToken = vault.token
+
+              finalConnection.info.vault = {
+                path: vault.path,
+                addr: vault.addr,
+                namespace: vault.namespace,
+                caCert: vault.caCert
+              }
+
+              if (vaultToken.length != 0)
+                waitForEncryption = true
+            }
+
             try {
               // If there's no SSH tunnel creation info to be handled then skip this try-catch block
               if (!sshTunnel)
@@ -1850,6 +1948,9 @@
               }, {
                 name: 'password',
                 value: password
+              }, {
+                name: 'vaultToken',
+                value: vaultToken
               }, {
                 name: 'sshUsername',
                 value: sshUsername
@@ -2037,6 +2138,10 @@
             }
             case 'usercert': {
               title = 'select SSL user certificate key file'
+              break
+            }
+            case 'vault-cacert': {
+              title = 'select Vault CA certificate file'
               break
             }
           }

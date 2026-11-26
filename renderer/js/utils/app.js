@@ -1398,6 +1398,104 @@ let getCheckedValue = (groupName) => {
   return selectedValue
 }
 
+/**
+ * Get the Vault settings given in the add/edit connection dialog
+ * The token is in plain text and must be encrypted before being saved or sent to the main thread
+ *
+ * @Return: {object} `{ enabled, path, addr, namespace, caCert, token }`
+ */
+let getConnectionDialogVaultSettings = () => {
+  let value = (key) => `${$(`div.modal#addEditConnectionDialog [info-section="none"][info-key="vault-${key}"]`).val() || ''}`.trim()
+
+  return {
+    enabled: getCheckedValue('credentialsSource') == 'credentialsSourceVault',
+    path: value('path'),
+    addr: value('addr'),
+    namespace: value('namespace'),
+    caCert: value('cacert'),
+    token: value('token')
+  }
+}
+
+/**
+ * Check the add/edit connection dialog has a Vault secret path and address when Vault is the credentials source
+ * The address is required as the app is usually started without a shell environment to read `VAULT_ADDR` from
+ *
+ * @Parameters:
+ * {object} `dialogElement` the add/edit connection dialog's element
+ * {string} `toastTitle` the title of the feedback shown when a value is missing
+ *
+ * @Return: {boolean} whether the process can continue
+ */
+let validateConnectionDialogVaultSettings = (dialogElement, toastTitle) => {
+  let vault = getConnectionDialogVaultSettings()
+
+  if (!vault.enabled)
+    return true
+
+  let missing = ['path', 'addr'].filter((key) => vault[key].length <= 0)
+
+  if (missing.length <= 0)
+    return true
+
+  missing.forEach((key) => dialogElement.find(`[info-section="none"][info-key="vault-${key}"]`).addClass('is-invalid'))
+
+  let authenticationSectionBtn = dialogElement.find('div.btn[section="authentication"]')
+
+  if (!authenticationSectionBtn.hasClass('active'))
+    authenticationSectionBtn.children('div.invalid-inputs').fadeIn('fast')
+
+  showToast(I18next.capitalize(I18next.t(toastTitle)), I18next.capitalizeFirstLetter(I18next.t('to use Vault credentials, the secret path and the Vault address are required')) + '.', 'failure')
+
+  return false
+}
+
+/**
+ * Show either the username and password fields or the Vault fields in a dialog's authentication section
+ *
+ * @Parameters:
+ * {object} `section` the authentication section's element
+ * {boolean} `vault` whether the credentials come from Vault
+ */
+let toggleCredentialsSourceFields = (section, vault) => {
+  section.find('div.credentials-vault').attr('hidden', vault ? null : '')
+  section.find('div.credentials-basic').attr('hidden', vault ? '' : null)
+}
+
+/**
+ * Select the credentials source in the add/edit connection dialog
+ *
+ * @Parameters:
+ * {boolean} `vault` whether the credentials come from Vault
+ */
+let setConnectionDialogCredentialsSource = (vault) => {
+  $(`input#${vault ? 'credentialsSourceVault' : 'credentialsSourceBasic'}`).prop('checked', true)
+
+  toggleCredentialsSourceFields($('div.modal#addEditConnectionDialog div.modal-section[section="authentication"]'), vault)
+}
+
+/**
+ * Get the Vault settings stored in a connection's UI element attributes
+ *
+ * @Parameters:
+ * {object} `connectionElement` the connection's UI element
+ *
+ * @Return: {object} `{ path, addr, namespace, caCert }`, or `undefined` if the connection doesn't use Vault
+ */
+let getConnectionElementVaultSettings = (connectionElement) => {
+  let [path, addr, namespace, caCert] = getAttributes(connectionElement, ['data-vault-path', 'data-vault-addr', 'data-vault-namespace', 'data-vault-cacert'])
+
+  if (path == undefined || `${path}`.trim().length <= 0)
+    return undefined
+
+  return {
+    path,
+    addr: addr || '',
+    namespace: namespace || '',
+    caCert: caCert || ''
+  }
+}
+
 let removeFrozenKeyword = (text, attemptNum = 1) => {
   try {
     if (`${text}`.match(/frozen</) == null || attemptNum >= 100)

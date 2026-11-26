@@ -22,6 +22,41 @@
 const CQLNode = require('@axonops/cqlai-node').CQLSession
 
 /**
+ * Turn the connection's `vault` object and the encrypted `secrets.vaultToken` into cqlai-node's Vault options
+ * With a Vault path the username and password come from Vault, so any given ones are dropped
+ *
+ * @Parameters:
+ * {object} `options` the options to be passed to cqlai-node
+ * {object} `vault` the connection's Vault settings - path, addr, namespace, and caCert -
+ * {object} `secrets` the connection's encrypted secrets
+ *
+ * @Return: {object} the updated options
+ */
+let applyVaultOptions = (options, vault, secrets) => {
+  delete options.vault
+
+  if (vault == undefined || vault == null || `${vault.path || ''}`.trim().length <= 0)
+    return options
+
+  delete options.username
+  delete options.password
+
+  options.vaultPath = `${vault.path}`.trim()
+
+  for (let [key, option] of [['addr', 'vaultAddr'], ['namespace', 'vaultNamespace'], ['caCert', 'vaultCaCert']]) {
+    if (`${vault[key] || ''}`.trim().length > 0)
+      options[option] = `${vault[key]}`.trim()
+  }
+
+  try {
+    if (`${secrets.vaultToken || ''}`.length > 0)
+      options.vaultToken = secrets.vaultToken
+  } catch (e) {}
+
+  return options
+}
+
+/**
  * The module is mainly this class with different attributes and methods
  * With each session we create an instance from this class
  */
@@ -75,6 +110,8 @@ class Session {
       parameters.username = this.secrets.username
       parameters.password = this.secrets.password
     } catch (e) {}
+
+    parameters = applyVaultOptions(parameters, data.vault, this.secrets)
 
     try {
       if ([null, undefined].includes(this.ssh))
@@ -323,6 +360,9 @@ let testConnection = (window, data) => {
       ...data,
       ...options
     }
+
+    if (!isAstraDB)
+      options = applyVaultOptions(options, data.vault, data.secrets)
 
     if (!isAstraDB) {
       options = {

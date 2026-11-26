@@ -739,6 +739,7 @@
                 <div class="section">
                   <div class="btn btn-tertiary btn-lg" data-mdb-ripple-color="dark" section="authentication">
                     <span mulang="authentication" capitalize></span>
+                    <div class="invalid-inputs"></div>
                   </div>
                 </div>
                 <div class="section">
@@ -859,30 +860,115 @@
                 <div class="form-outline form-white margin-bottom file" data-mulang="cassandra credentials" capitalize file-info="Cassandra Credentials" role="file-selector" file-name="-" hidden>
                   <input data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000" type="text" class="form-control form-icon-trailing form-control-lg" info-section="authentication" info-key="credentials" readonly>
                 </div>
-                <div class="form-outline form-white margin-bottom">
-                  <ion-icon name class="trailing"></ion-icon>
-                  <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="none" info-key="username">
-                  <label class="form-label">
-                    <span mulang="username" capitalize></span>
-                  </label>
-                  <div class="valid-feedback"></div>
-                  <div class="invalid-feedback"></div>
-                  <div class="form-helper">
-                    <span mulang="example" capitalize></span>: cassandra
-                  </div>
-                </div>
-                <div class="form-outline form-white margin-bottom">
-                  <div class="reveal-password">
-                    <div class="btn btn-tertiary" data-mdb-ripple-color="light">
-                      <ion-icon name="eye-opened"></ion-icon>
+                <div class="row" style="margin-top: 5px; margin-bottom: 15px;">
+                  <div class="col-md-12 credentials-source">
+                    <div style="display: inline-block; margin-right: 5px;"><span mulang="credentials source" capitalize-first></span>:</div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="credentialsSource" id="credentialsSourceBasic" checked>
+                      <label class="form-check-label" for="credentialsSourceBasic"><span mulang="username and password" capitalize-first></span></label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="credentialsSource" id="credentialsSourceVault">
+                      <label class="form-check-label" for="credentialsSourceVault">Vault / OpenBao</label>
                     </div>
                   </div>
-                  <input type="password" class="form-control form-control-lg" info-section="none" info-key="password">
-                  <label class="form-label">
-                    <span mulang="password" capitalize></span>
-                  </label>
-                  <div class="valid-feedback"></div>
-                  <div class="invalid-feedback"></div>
+                </div>
+                <div class="credentials-vault" hidden>
+                  <div class="row">
+                    <div class="col-md-6 right-padding">
+                      <div class="form-outline form-white margin-bottom">
+                        <input type="text" class="form-control form-control-lg" info-section="none" info-key="vault-path">
+                        <label class="form-label">
+                          <span mulang="secret path" capitalize></span>
+                        </label>
+                        <div class="valid-feedback"></div>
+                        <div class="invalid-feedback"></div>
+                        <div class="form-helper">
+                          <span mulang="example" capitalize></span>: database/creds/readonly
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6 left-padding">
+                      <div class="form-outline form-white margin-bottom">
+                        <input type="text" class="form-control form-control-lg" info-section="none" info-key="vault-addr">
+                        <label class="form-label">
+                          Vault <span mulang="address" capitalize></span>
+                        </label>
+                        <div class="valid-feedback"></div>
+                        <div class="invalid-feedback"></div>
+                        <div class="form-helper">
+                          <span mulang="example" capitalize></span>: https://vault.example.com:8200
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-outline form-white margin-bottom">
+                    <div class="reveal-password">
+                      <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                        <ion-icon name="eye-opened"></ion-icon>
+                      </div>
+                    </div>
+                    <input type="password" class="form-control form-control-lg" info-section="none" info-key="vault-token">
+                    <label class="form-label">
+                      <span mulang="token" capitalize></span>
+                    </label>
+                    <div class="valid-feedback"></div>
+                    <div class="invalid-feedback"></div>
+                    <div class="form-helper">
+                      <span mulang="hint" capitalize></span>: <span mulang="when left empty, VAULT_TOKEN, BAO_TOKEN or ~/.vault-token is used" capitalize-first></span>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-4 right-padding">
+                      <div class="form-outline form-white margin-bottom">
+                        <input type="text" class="form-control form-control-lg" info-section="none" info-key="vault-namespace">
+                        <label class="form-label">
+                          <span mulang="namespace" capitalize></span>
+                        </label>
+                        <div class="valid-feedback"></div>
+                        <div class="invalid-feedback"></div>
+                        <div class="form-helper">
+                          <span mulang="optional" capitalize></span>, Vault Enterprise
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-8 left-padding">
+                      <div class="form-outline form-white margin-bottom file" role="file-selector" file-name="-" data-mulang="Vault CA certificate file" capitalize file-info="Vault CA Certificate File">
+                        <input data-tippy="tooltip" data-mdb-placement="top" data-title="-" data-tippy-maxWidth="1000" type="text" class="form-control form-icon-trailing form-control-lg" info-section="none" info-key="vault-cacert" readonly>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="general-hint">
+                    <ion-icon name="info-circle-outline" class="hint-icon no-select"></ion-icon> <span
+                      mulang="the username and password are read from Vault on every connection. Vault is reached from this machine, not through the SSH tunnel" capitalize-first></span>.
+                  </div>
+                </div>
+                <div class="credentials-basic">
+                  <div class="form-outline form-white margin-bottom">
+                    <ion-icon name class="trailing"></ion-icon>
+                    <input type="text" class="form-control form-icon-trailing form-control-lg" info-section="none" info-key="username">
+                    <label class="form-label">
+                      <span mulang="username" capitalize></span>
+                    </label>
+                    <div class="valid-feedback"></div>
+                    <div class="invalid-feedback"></div>
+                    <div class="form-helper">
+                      <span mulang="example" capitalize></span>: cassandra
+                    </div>
+                  </div>
+                  <div class="form-outline form-white margin-bottom">
+                    <div class="reveal-password">
+                      <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                        <ion-icon name="eye-opened"></ion-icon>
+                      </div>
+                    </div>
+                    <input type="password" class="form-control form-control-lg" info-section="none" info-key="password">
+                    <label class="form-label">
+                      <span mulang="password" capitalize></span>
+                    </label>
+                    <div class="valid-feedback"></div>
+                    <div class="invalid-feedback"></div>
+                  </div>
                 </div>
                 <div class="form-check margin-bottom" style="margin-top: -10px;">
                   <input class="form-check-input" type="checkbox" value id="saveAuthCredentials" checked>
@@ -1795,25 +1881,40 @@
             </div>
             <div class="side-right">
               <div class="modal-section" section="authentication">
-                <div class="form-outline form-white margin-bottom">
-                  <input type="text" class="form-control form-control-lg" id="realtimeCredentialsAuthUsername">
-                  <label class="form-label">
-                    <span mulang="username" capitalize></span>
-                  </label>
-                  <div class="form-helper">
-                    <span mulang="example" capitalize></span>: cassandra
-                  </div>
-                </div>
-                <div class="form-outline form-white margin-bottom">
-                  <div class="reveal-password">
-                    <div class="btn btn-tertiary" data-mdb-ripple-color="light">
-                      <ion-icon name="eye-opened"></ion-icon>
+                <div class="credentials-basic">
+                  <div class="form-outline form-white margin-bottom">
+                    <input type="text" class="form-control form-control-lg" id="realtimeCredentialsAuthUsername">
+                    <label class="form-label">
+                      <span mulang="username" capitalize></span>
+                    </label>
+                    <div class="form-helper">
+                      <span mulang="example" capitalize></span>: cassandra
                     </div>
                   </div>
-                  <input type="password" class="form-control form-control-lg" id="realtimeCredentialsAuthPassword">
-                  <label class="form-label">
-                    <span mulang="password" capitalize></span>
-                  </label>
+                  <div class="form-outline form-white margin-bottom">
+                    <div class="reveal-password">
+                      <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                        <ion-icon name="eye-opened"></ion-icon>
+                      </div>
+                    </div>
+                    <input type="password" class="form-control form-control-lg" id="realtimeCredentialsAuthPassword">
+                    <label class="form-label">
+                      <span mulang="password" capitalize></span>
+                    </label>
+                  </div>
+                </div>
+                <div class="credentials-vault" hidden>
+                  <div class="form-outline form-white margin-bottom">
+                    <div class="reveal-password">
+                      <div class="btn btn-tertiary" data-mdb-ripple-color="light">
+                        <ion-icon name="eye-opened"></ion-icon>
+                      </div>
+                    </div>
+                    <input type="password" class="form-control form-control-lg" id="realtimeCredentialsVaultToken">
+                    <label class="form-label">
+                      Vault <span mulang="token" capitalize></span>
+                    </label>
+                  </div>
                 </div>
                 <div class="form-check margin-bottom" style="margin-top: -10px;">
                   <input class="form-check-input" type="checkbox" id="confirmSaveAuthCredentials">
